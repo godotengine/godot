@@ -30,8 +30,8 @@
 
 #include "graph_edit.h"
 
-#include "os/input.h"
-#include "os/keyboard.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 
 #define ZOOM_SCALE 1.2
@@ -406,7 +406,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_color = Object::cast_to<GraphNode>(to)->get_connection_input_color(E->get().to_port);
 									connecting_target = false;
 									connecting_to = pos;
-									just_disconected = true;
+									just_disconnected = true;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port);
 									to = get_node(String(connecting_from)); //maybe it was erased
@@ -427,7 +427,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_output_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconected = false;
+					just_disconnected = false;
 					return;
 				}
 			}
@@ -453,7 +453,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_color = Object::cast_to<GraphNode>(fr)->get_connection_output_color(E->get().from_port);
 									connecting_target = false;
 									connecting_to = pos;
-									just_disconected = true;
+									just_disconnected = true;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port);
 									fr = get_node(String(connecting_from)); //maybe it was erased
@@ -474,7 +474,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_input_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconected = true;
+					just_disconnected = true;
 
 					return;
 				}
@@ -544,7 +544,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			}
 			emit_signal("connection_request", from, from_slot, to, to_slot);
 
-		} else if (!just_disconected) {
+		} else if (!just_disconnected) {
 			String from = connecting_from;
 			int from_slot = connecting_index;
 			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
@@ -1042,7 +1042,7 @@ void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_por
 
 		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
 
-			if (ABS(E->get().activity != p_activity)) {
+			if (ABS(E->get().activity - p_activity) < CMP_EPSILON) {
 				//update only if changed
 				top_layer->update();
 				connections_layer->update();
@@ -1279,7 +1279,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "p_position")));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
-	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node")));
+	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
@@ -1304,7 +1304,7 @@ GraphEdit::GraphEdit() {
 	add_child(connections_layer);
 	connections_layer->connect("draw", this, "_connections_layer_draw");
 	connections_layer->set_name("CLAYER");
-	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offseted
+	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset
 	connections_layer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	h_scroll = memnew(HScrollBar);
@@ -1339,21 +1339,25 @@ GraphEdit::GraphEdit() {
 
 	zoom_minus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_minus);
+	zoom_minus->set_tooltip(RTR("Zoom Out"));
 	zoom_minus->connect("pressed", this, "_zoom_minus");
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
 	zoom_reset = memnew(ToolButton);
 	zoom_hb->add_child(zoom_reset);
+	zoom_reset->set_tooltip(RTR("Zoom Reset"));
 	zoom_reset->connect("pressed", this, "_zoom_reset");
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 
 	zoom_plus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_plus);
+	zoom_plus->set_tooltip(RTR("Zoom In"));
 	zoom_plus->connect("pressed", this, "_zoom_plus");
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
 	snap_button = memnew(ToolButton);
 	snap_button->set_toggle_mode(true);
+	snap_button->set_tooltip(RTR("Enable snap and show grid."));
 	snap_button->connect("pressed", this, "_snap_toggled");
 	snap_button->set_pressed(true);
 	snap_button->set_focus_mode(FOCUS_NONE);
@@ -1368,6 +1372,6 @@ GraphEdit::GraphEdit() {
 	zoom_hb->add_child(snap_amount);
 
 	setting_scroll_ofs = false;
-	just_disconected = false;
+	just_disconnected = false;
 	set_clip_contents(true);
 }

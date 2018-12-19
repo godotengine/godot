@@ -72,11 +72,18 @@ bool	btSubsimplexConvexCast::calcTimeOfImpact(
 
 
 	btScalar dist2 = v.length2();
+
 #ifdef BT_USE_DOUBLE_PRECISION
-	btScalar epsilon = btScalar(0.0001);
+	btScalar epsilon = SIMD_EPSILON * 10;
 #else
+//todo: epsilon kept for backward compatibility of unit tests.
+//will need to digg deeper to make the algorithm more robust
+//since, a large epsilon can cause an early termination with false
+//positive results (ray intersections that shouldn't be there)
 	btScalar epsilon = btScalar(0.0001);
 #endif //BT_USE_DOUBLE_PRECISION
+
+
 	btVector3	w,p;
 	btScalar VdotR;
 	

@@ -31,8 +31,8 @@
 #ifndef IMAGE_LOADER_SVG_H
 #define IMAGE_LOADER_SVG_H
 
-#include "io/image_loader.h"
-#include "ustring.h"
+#include "core/io/image_loader.h"
+#include "core/ustring.h"
 
 #include <nanosvg.h>
 #include <nanosvgrast.h>

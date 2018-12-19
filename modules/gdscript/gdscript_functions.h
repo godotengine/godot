@@ -31,7 +31,7 @@
 #ifndef GDSCRIPT_FUNCTIONS_H
 #define GDSCRIPT_FUNCTIONS_H
 
-#include "variant.h"
+#include "core/variant.h"
 
 class GDScriptFunctions {
 public:
@@ -97,6 +97,8 @@ public:
 		TEXT_PRINTERR,
 		TEXT_PRINTRAW,
 		TEXT_PRINT_DEBUG,
+		PUSH_ERROR,
+		PUSH_WARNING,
 		VAR_TO_STR,
 		STR_TO_VAR,
 		VAR_TO_BYTES,
@@ -117,7 +119,6 @@ public:
 		LEN,
 		IS_INSTANCE_VALID,
 		FUNC_MAX
-
 	};
 
 	static const char *get_func_name(Function p_func);

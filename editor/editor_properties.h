@@ -106,6 +106,7 @@ class EditorPropertyPath : public EditorProperty {
 	Vector<String> extensions;
 	bool folder;
 	bool global;
+	bool save_mode;
 	EditorFileDialog *dialog;
 	LineEdit *path;
 	Button *path_edit;
@@ -120,6 +121,7 @@ protected:
 
 public:
 	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global);
+	void set_save_mode();
 	virtual void update_property();
 	EditorPropertyPath();
 };
@@ -265,7 +267,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(int p_min, int p_max, bool p_allow_greater, bool p_allow_lesser);
+	void setup(int p_min, int p_max, int p_step, bool p_allow_greater, bool p_allow_lesser);
 	EditorPropertyInteger();
 };
 
@@ -522,10 +524,11 @@ class EditorPropertyResource : public EditorProperty {
 		OBJ_MENU_EDIT = 1,
 		OBJ_MENU_CLEAR = 2,
 		OBJ_MENU_MAKE_UNIQUE = 3,
-		OBJ_MENU_COPY = 4,
-		OBJ_MENU_PASTE = 5,
-		OBJ_MENU_NEW_SCRIPT = 6,
-		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 7,
+		OBJ_MENU_SAVE = 4,
+		OBJ_MENU_COPY = 5,
+		OBJ_MENU_PASTE = 6,
+		OBJ_MENU_NEW_SCRIPT = 7,
+		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 8,
 		TYPE_BASE_ID = 100,
 		CONVERT_BASE_ID = 1000
 
@@ -548,9 +551,11 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _file_selected(const String &p_path);
 	void _menu_option(int p_which);
-	void _resource_preview(const String &p_path, const Ref<Texture> &p_preview, ObjectID p_obj);
+	void _resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj);
 	void _resource_selected();
 	void _viewport_selected(const NodePath &p_path);
+
+	void _update_menu_items();
 
 	void _update_menu();
 
@@ -564,6 +569,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _button_input(const Ref<InputEvent> &p_event);
 	void _open_editor_pressed();
 
 protected:

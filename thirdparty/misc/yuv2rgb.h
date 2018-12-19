@@ -27,7 +27,7 @@ ship it.
 #ifndef YUV2RGB_H
 #define YUV2RGB_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 
 static const uint32_t tables[256*3] = {
 	/* y_table */

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 Import('env')
+
 from platform_methods import run_in_subprocess
 import editor_icons_builders
-
 
 make_editor_icons_builder = Builder(action=run_in_subprocess(editor_icons_builders.make_editor_icons_action),
                                     suffix='.h',
@@ -11,5 +11,3 @@ make_editor_icons_builder = Builder(action=run_in_subprocess(editor_icons_builde
 
 env['BUILDERS']['MakeEditorIconsBuilder'] = make_editor_icons_builder
 env.Alias('editor_icons', [env.MakeEditorIconsBuilder('#editor/editor_icons.gen.h', Glob("*.svg"))])
-
-Export('env')

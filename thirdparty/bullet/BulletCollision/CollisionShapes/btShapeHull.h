@@ -34,7 +34,7 @@ protected:
 	unsigned int m_numIndices;
 	const btConvexShape* m_shape;
 
-	static btVector3* getUnitSpherePoints();
+	static btVector3* getUnitSpherePoints(int highres=0);
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
@@ -42,7 +42,7 @@ public:
 	btShapeHull (const btConvexShape* shape);
 	~btShapeHull ();
 
-	bool buildHull (btScalar margin);
+	bool buildHull (btScalar margin, int highres=0);
 
 	int numTriangles () const;
 	int numVertices () const;

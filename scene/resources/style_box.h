@@ -31,7 +31,7 @@
 #ifndef STYLE_BOX_H
 #define STYLE_BOX_H
 
-#include "resource.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 /**

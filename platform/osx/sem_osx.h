@@ -37,7 +37,7 @@ struct cgsem {
 
 typedef struct cgsem cgsem_t;
 
-#include "os/semaphore.h"
+#include "core/os/semaphore.h"
 
 class SemaphoreOSX : public Semaphore {
 

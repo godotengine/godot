@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "geometry.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
 
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 

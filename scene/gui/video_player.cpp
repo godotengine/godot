@@ -31,7 +31,7 @@
 #include "video_player.h"
 #include "scene/scene_string_names.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 #include "servers/audio_server.h"
 
 int VideoPlayer::sp_get_channel_count() const {
@@ -90,49 +90,32 @@ void VideoPlayer::_mix_audio() {
 
 	AudioFrame vol = AudioFrame(volume, volume);
 
-	// Copy to server's audio buffer
-	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+	int cc = AudioServer::get_singleton()->get_channel_count();
 
-		case AudioServer::SPEAKER_MODE_STEREO: {
-			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
+	if (cc == 1) {
+		AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 0);
+		ERR_FAIL_COND(!target);
 
-			for (int j = 0; j < buffer_size; j++) {
+		for (int j = 0; j < buffer_size; j++) {
 
-				target[j] += buffer[j] * vol;
+			target[j] += buffer[j] * vol;
+		}
+
+	} else {
+		AudioFrame *targets[4];
+
+		for (int k = 0; k < cc; k++) {
+			targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, k);
+			ERR_FAIL_COND(!targets[k]);
+		}
+
+		for (int j = 0; j < buffer_size; j++) {
+
+			AudioFrame frame = buffer[j] * vol;
+			for (int k = 0; k < cc; k++) {
+				targets[k][j] += frame;
 			}
-
-		} break;
-		case AudioServer::SPEAKER_SURROUND_51: {
-
-			AudioFrame *targets[2] = {
-				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1),
-				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 2),
-			};
-
-			for (int j = 0; j < buffer_size; j++) {
-
-				AudioFrame frame = buffer[j] * vol;
-				targets[0][j] = frame;
-				targets[1][j] = frame;
-			}
-		} break;
-		case AudioServer::SPEAKER_SURROUND_71: {
-
-			AudioFrame *targets[3] = {
-				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 1),
-				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 2),
-				AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus_index, 3)
-			};
-
-			for (int j = 0; j < buffer_size; j++) {
-
-				AudioFrame frame = buffer[j] * vol;
-				targets[0][j] += frame;
-				targets[1][j] += frame;
-				targets[2][j] += frame;
-			}
-
-		} break;
+		}
 	}
 }
 

@@ -30,16 +30,16 @@
 
 #include "editor_file_system.h"
 
+#include "core/io/resource_import.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/variant_parser.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
 #include "editor_settings.h"
-#include "io/resource_import.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "variant_parser.h"
 
 EditorFileSystem *EditorFileSystem::singleton = NULL;
 
@@ -389,7 +389,7 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 
 	memdelete(f);
 
-	// Read the md5's from a separate file (so the import parameters aren't dependant on the file version
+	// Read the md5's from a separate file (so the import parameters aren't dependent on the file version
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_path);
 	FileAccess *md5s = FileAccess::open(base_path + ".md5", FileAccess::READ, &err);
 	if (!md5s) { // No md5's stored for this resource
@@ -466,6 +466,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	bool fs_changed = false;
 
 	Vector<String> reimports;
+	Vector<String> reloads;
 
 	for (List<ItemAction>::Element *E = scan_actions.front(); E; E = E->next()) {
 
@@ -545,11 +546,24 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				fs_changed = true;
 			} break;
+			case ItemAction::ACTION_FILE_RELOAD: {
+
+				int idx = ia.dir->find_file_index(ia.file);
+				ERR_CONTINUE(idx == -1);
+				String full_path = ia.dir->get_file_path(idx);
+
+				reloads.push_back(full_path);
+
+			} break;
 		}
 	}
 
 	if (reimports.size()) {
 		reimport_files(reimports);
+	}
+
+	if (reloads.size()) {
+		emit_signal("resources_reload", reloads);
 	}
 	scan_actions.clear();
 
@@ -905,10 +919,10 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 			continue;
 		}
 
+		String path = cd.plus_file(p_dir->files[i]->file);
+
 		if (import_extensions.has(p_dir->files[i]->file.get_extension().to_lower())) {
 			//check here if file must be imported or not
-
-			String path = cd.plus_file(p_dir->files[i]->file);
 
 			uint64_t mt = FileAccess::get_modified_time(path);
 
@@ -932,6 +946,20 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
+				ia.dir = p_dir;
+				ia.file = p_dir->files[i]->file;
+				scan_actions.push_back(ia);
+			}
+		} else if (ResourceCache::has(path)) { //test for potential reload
+
+			uint64_t mt = FileAccess::get_modified_time(path);
+
+			if (mt != p_dir->files[i]->modified_time) {
+
+				p_dir->files[i]->modified_time = mt; //save new time, but test for reload
+
+				ItemAction ia;
+				ia.action = ItemAction::ACTION_FILE_RELOAD;
 				ia.dir = p_dir;
 				ia.file = p_dir->files[i]->file;
 				scan_actions.push_back(ia);
@@ -1305,11 +1333,6 @@ void EditorFileSystem::_save_late_updated_files() {
 	}
 }
 
-void EditorFileSystem::_resource_saved(const String &p_path) {
-
-	EditorFileSystem::get_singleton()->update_file(p_path);
-}
-
 Vector<String> EditorFileSystem::_get_dependencies(const String &p_path) {
 
 	List<String> deps;
@@ -1358,6 +1381,7 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 		}
 		ScriptServer::add_global_class(files[i]->script_class_name, files[i]->script_class_extends, lang, p_dir->get_file_path(i));
 		EditorNode::get_editor_data().script_class_set_icon_path(files[i]->script_class_name, files[i]->script_class_icon_path);
+		EditorNode::get_editor_data().script_class_set_name(files[i]->file, files[i]->script_class_name);
 	}
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		_scan_script_classes(p_dir->get_subdir(i));
@@ -1377,7 +1401,14 @@ void EditorFileSystem::update_script_classes() {
 
 	ScriptServer::save_global_classes();
 	EditorNode::get_editor_data().script_class_save_icon_paths();
-	emit_signal("script_classes_updated");
+
+	// Rescan custom loaders and savers.
+	// Doing the following here because the `filesystem_changed` signal fires multiple times and isn't always followed by script classes update.
+	// So I thought it's better to do this when script classes really get updated
+	ResourceLoader::remove_custom_loaders();
+	ResourceLoader::add_custom_loaders();
+	ResourceSaver::remove_custom_savers();
+	ResourceSaver::add_custom_savers();
 }
 
 void EditorFileSystem::_queue_update_script_classes() {
@@ -1479,12 +1510,16 @@ void EditorFileSystem::_reimport_file(const String &p_file) {
 		cf.instance();
 		Error err = cf->load(p_file + ".import");
 		if (err == OK) {
-			List<String> sk;
-			cf->get_section_keys("params", &sk);
-			for (List<String>::Element *E = sk.front(); E; E = E->next()) {
-				params[E->get()] = cf->get_value("params", E->get());
+			if (cf->has_section("params")) {
+				List<String> sk;
+				cf->get_section_keys("params", &sk);
+				for (List<String>::Element *E = sk.front(); E; E = E->next()) {
+					params[E->get()] = cf->get_value("params", E->get());
+				}
 			}
-			importer_name = cf->get_value("remap", "importer");
+			if (cf->has_section("remap")) {
+				importer_name = cf->get_value("remap", "importer");
+			}
 		}
 
 	} else {
@@ -1701,6 +1736,17 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	emit_signal("resources_reimported", p_files);
 }
 
+Error EditorFileSystem::_resource_import(const String &p_path) {
+
+	Vector<String> files;
+	files.push_back(p_path);
+
+	singleton->update_file(p_path);
+	singleton->reimport_files(files);
+
+	return OK;
+}
+
 void EditorFileSystem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_filesystem"), &EditorFileSystem::get_filesystem);
@@ -1716,7 +1762,7 @@ void EditorFileSystem::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
 	ADD_SIGNAL(MethodInfo("sources_changed", PropertyInfo(Variant::BOOL, "exist")));
 	ADD_SIGNAL(MethodInfo("resources_reimported", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
-	ADD_SIGNAL(MethodInfo("script_classes_updated"));
+	ADD_SIGNAL(MethodInfo("resources_reload", PropertyInfo(Variant::POOL_STRING_ARRAY, "resources")));
 }
 
 void EditorFileSystem::_update_extensions() {
@@ -1741,6 +1787,7 @@ void EditorFileSystem::_update_extensions() {
 
 EditorFileSystem::EditorFileSystem() {
 
+	ResourceLoader::import = _resource_import;
 	reimport_on_missing_imported_files = GLOBAL_DEF("editor/reimport_missing_imported_files", true);
 
 	singleton = this;
@@ -1757,7 +1804,6 @@ EditorFileSystem::EditorFileSystem() {
 	abort_scan = false;
 	scanning_changes = false;
 	scanning_changes_done = false;
-	ResourceSaver::set_save_callback(_resource_saved);
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->change_dir("res://.import") != OK) {

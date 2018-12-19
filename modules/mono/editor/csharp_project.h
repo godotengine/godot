@@ -31,7 +31,7 @@
 #ifndef CSHARP_PROJECT_H
 #define CSHARP_PROJECT_H
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 namespace CSharpProject {
 
@@ -40,6 +40,9 @@ String generate_editor_api_project(const String &p_dir, const String &p_core_dll
 String generate_game_project(const String &p_dir, const String &p_name, const Vector<String> &p_files = Vector<String>());
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include);
+
+Error generate_scripts_metadata(const String &p_project_path, const String &p_output_path);
+
 } // namespace CSharpProject
 
 #endif // CSHARP_PROJECT_H

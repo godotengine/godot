@@ -31,8 +31,8 @@
 #ifndef EDITOR_RUN_SCRIPT_H
 #define EDITOR_RUN_SCRIPT_H
 
+#include "core/reference.h"
 #include "editor_plugin.h"
-#include "reference.h"
 class EditorNode;
 class EditorScript : public Reference {
 

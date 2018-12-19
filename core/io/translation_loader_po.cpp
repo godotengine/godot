@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "translation_loader_po.h"
-#include "os/file_access.h"
-#include "translation.h"
+
+#include "core/os/file_access.h"
+#include "core/translation.h"
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const String &p_path) {
 

@@ -232,7 +232,7 @@
  #endif
 
 #else /* not windows */
- static inline int compatible_close(int fd) { return close(fd); }
+ static LWS_INLINE int compatible_close(int fd) { return close(fd); }
 
  #include <sys/stat.h>
  #include <sys/time.h>
@@ -351,7 +351,15 @@ extern "C" {
 
 #define LWS_H2_RX_SCRATCH_SIZE 512
 
-
+#if defined(WIN32) || defined(_WIN32)
+	 // Visual studio older than 2015 and WIN_CE has only _stricmp
+	#if (defined(_MSC_VER) && _MSC_VER < 1900) || defined(_WIN32_WCE)
+	#define strcasecmp _stricmp
+	#elif !defined(__MINGW32__)
+	#define strcasecmp stricmp
+	#endif
+	#define getdtablesize() 30000
+#endif
 
 /*
  * All lws_tls...() functions must return this type, converting the
@@ -863,6 +871,7 @@ struct lws_context {
 	unsigned int timeout_secs;
 	unsigned int pt_serv_buf_size;
 	int max_http_header_data;
+	int max_http_header_pool;
 	int simultaneous_ssl_restriction;
 	int simultaneous_ssl;
 #if defined(LWS_WITH_PEER_LIMITS)
@@ -889,7 +898,6 @@ struct lws_context {
 	volatile int service_tid;
 	int service_tid_detected;
 
-	short max_http_header_pool;
 	short count_threads;
 	short plugin_protocol_count;
 	short plugin_extension_count;
@@ -1216,7 +1224,7 @@ LWS_EXTERN int
 lws_rxflow_cache(struct lws *wsi, unsigned char *buf, int n, int len);
 
 #ifndef LWS_LATENCY
-static inline void
+static LWS_INLINE void
 lws_latency(struct lws_context *context, struct lws *wsi, const char *action,
 	    int ret, int completion) {
 	do {
@@ -1224,7 +1232,7 @@ lws_latency(struct lws_context *context, struct lws *wsi, const char *action,
 		(void)completion;
 	} while (0);
 }
-static inline void
+static LWS_INLINE void
 lws_latency_pre(struct lws_context *context, struct lws *wsi) {
 	do { (void)context; (void)wsi; } while (0);
 }
@@ -1597,6 +1605,9 @@ void lws_free(void *p);
 #define lws_free_set_NULL(P)	do { lws_realloc(P, 0, "free"); (P) = NULL; } while(0)
 #endif
 
+char *
+lws_strdup(const char *s);
+
 int
 lws_plat_pipe_create(struct lws *wsi);
 int
@@ -1605,6 +1616,9 @@ void
 lws_plat_pipe_close(struct lws *wsi);
 int
 lws_create_event_pipes(struct lws_context *context);
+
+int lws_open(const char *__file, int __oflag, ...);
+void lws_plat_apply_FD_CLOEXEC(int n);
 
 const struct lws_plat_file_ops *
 lws_vfs_select_fops(const struct lws_plat_file_ops *fops, const char *vfs_path,
@@ -1673,10 +1687,10 @@ lws_broadcast(struct lws_context *context, int reason, void *in, size_t len);
  lws_stats_atomic_max(struct lws_context * context,
 		struct lws_context_per_thread *pt, int index, uint64_t val);
 #else
- static inline uint64_t lws_stats_atomic_bump(struct lws_context * context,
+ static LWS_INLINE uint64_t lws_stats_atomic_bump(struct lws_context * context,
 		struct lws_context_per_thread *pt, int index, uint64_t bump) {
 	(void)context; (void)pt; (void)index; (void)bump; return 0; }
- static inline uint64_t lws_stats_atomic_max(struct lws_context * context,
+ static LWS_INLINE uint64_t lws_stats_atomic_max(struct lws_context * context,
 		struct lws_context_per_thread *pt, int index, uint64_t val) {
 	(void)context; (void)pt; (void)index; (void)val; return 0; }
 #endif
@@ -1701,6 +1715,11 @@ lws_peer_add_wsi(struct lws_context *context, struct lws_peer *peer,
 		 struct lws *wsi);
 void
 lws_peer_dump_from_wsi(struct lws *wsi);
+#endif
+
+#ifdef LWS_WITH_HTTP_PROXY
+hubbub_error
+html_parser_cb(const hubbub_token *token, void *pw);
 #endif
 
 

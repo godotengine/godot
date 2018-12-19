@@ -31,13 +31,13 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
+#include "core/os/input.h"
 #include "crash_handler_osx.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/coremidi/core_midi.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_osx.h"
 #include "main/input_default.h"
-#include "os/input.h"
 #include "power_osx.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -74,8 +74,12 @@ public:
 
 	IP_Unix *ip_unix;
 
+#ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
+#endif
+#ifdef COREMIDI_ENABLED
 	MIDIDriverCoreMidi midi_driver;
+#endif
 
 	InputDefault *input;
 	JoypadOSX *joypad_osx;
@@ -120,8 +124,8 @@ public:
 
 	Point2 im_position;
 	bool im_active;
-	ImeCallback im_callback;
-	void *im_target;
+	String im_text;
+	Point2 im_selection;
 
 	power_osx *power_manager;
 
@@ -241,7 +245,8 @@ public:
 
 	virtual void set_ime_active(const bool p_active);
 	virtual void set_ime_position(const Point2 &p_pos);
-	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp);
+	virtual Point2 get_ime_selection() const;
+	virtual String get_ime_text() const;
 
 	virtual String get_unique_id() const;
 

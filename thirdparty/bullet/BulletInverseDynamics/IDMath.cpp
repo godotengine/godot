@@ -81,7 +81,7 @@ idScalar maxAbsMat3x(const mat3x &m) {
 
 void mul(const mat33 &a, const mat3x &b, mat3x *result) {
     if (b.cols() != result->cols()) {
-        error_message("size missmatch. b.cols()= %d, result->cols()= %d\n",
+        bt_id_error_message("size missmatch. b.cols()= %d, result->cols()= %d\n",
                       static_cast<int>(b.cols()), static_cast<int>(result->cols()));
         abort();
     }
@@ -97,7 +97,7 @@ void mul(const mat33 &a, const mat3x &b, mat3x *result) {
 }
 void add(const mat3x &a, const mat3x &b, mat3x *result) {
     if (a.cols() != b.cols()) {
-        error_message("size missmatch. a.cols()= %d, b.cols()= %d\n",
+        bt_id_error_message("size missmatch. a.cols()= %d, b.cols()= %d\n",
                       static_cast<int>(a.cols()), static_cast<int>(b.cols()));
         abort();
     }
@@ -109,7 +109,7 @@ void add(const mat3x &a, const mat3x &b, mat3x *result) {
 }
 void sub(const mat3x &a, const mat3x &b, mat3x *result) {
     if (a.cols() != b.cols()) {
-        error_message("size missmatch. a.cols()= %d, b.cols()= %d\n",
+        bt_id_error_message("size missmatch. a.cols()= %d, b.cols()= %d\n",
                       static_cast<int>(a.cols()), static_cast<int>(b.cols()));
         abort();
     }
@@ -305,10 +305,10 @@ bool isValidInertiaMatrix(const mat33 &I, const int index, bool has_fixed_joint)
 	//			  the determinant of the inertia tensor about the joint axis is almost
 	//			  zero and can have a very small negative value.
 	if (!isPositiveSemiDefiniteFuzzy(I)) {
-		error_message("invalid inertia matrix for body %d, not positive definite "
+		bt_id_error_message("invalid inertia matrix for body %d, not positive definite "
 					  "(fixed joint)\n",
 					  index);
-		error_message("matrix is:\n"
+		bt_id_error_message("matrix is:\n"
 					  "[%.20e %.20e %.20e;\n"
 					  "%.20e %.20e %.20e;\n"
 					  "%.20e %.20e %.20e]\n",
@@ -321,8 +321,8 @@ bool isValidInertiaMatrix(const mat33 &I, const int index, bool has_fixed_joint)
 	// check triangle inequality, must have I(i,i)+I(j,j)>=I(k,k)
 	if (!has_fixed_joint) {
 		if (I(0, 0) + I(1, 1) < I(2, 2)) {
-			error_message("invalid inertia tensor for body %d, I(0,0) + I(1,1) < I(2,2)\n", index);
-			error_message("matrix is:\n"
+			bt_id_error_message("invalid inertia tensor for body %d, I(0,0) + I(1,1) < I(2,2)\n", index);
+			bt_id_error_message("matrix is:\n"
 						  "[%.20e %.20e %.20e;\n"
 						  "%.20e %.20e %.20e;\n"
 						  "%.20e %.20e %.20e]\n",
@@ -331,8 +331,8 @@ bool isValidInertiaMatrix(const mat33 &I, const int index, bool has_fixed_joint)
 			return false;
 		}
 		if (I(0, 0) + I(1, 1) < I(2, 2)) {
-			error_message("invalid inertia tensor for body %d, I(0,0) + I(1,1) < I(2,2)\n", index);
-			error_message("matrix is:\n"
+			bt_id_error_message("invalid inertia tensor for body %d, I(0,0) + I(1,1) < I(2,2)\n", index);
+			bt_id_error_message("matrix is:\n"
 						  "[%.20e %.20e %.20e;\n"
 						  "%.20e %.20e %.20e;\n"
 						  "%.20e %.20e %.20e]\n",
@@ -341,8 +341,8 @@ bool isValidInertiaMatrix(const mat33 &I, const int index, bool has_fixed_joint)
 			return false;
 		}
 		if (I(1, 1) + I(2, 2) < I(0, 0)) {
-			error_message("invalid inertia tensor for body %d, I(1,1) + I(2,2) < I(0,0)\n", index);
-			error_message("matrix is:\n"
+			bt_id_error_message("invalid inertia tensor for body %d, I(1,1) + I(2,2) < I(0,0)\n", index);
+			bt_id_error_message("matrix is:\n"
 						  "[%.20e %.20e %.20e;\n"
 						  "%.20e %.20e %.20e;\n"
 						  "%.20e %.20e %.20e]\n",
@@ -354,25 +354,25 @@ bool isValidInertiaMatrix(const mat33 &I, const int index, bool has_fixed_joint)
 	// check positive/zero diagonal elements
 	for (int i = 0; i < 3; i++) {
 		if (I(i, i) < 0) {  // accept zero
-			error_message("invalid inertia tensor, I(%d,%d)= %e <0\n", i, i, I(i, i));
+			bt_id_error_message("invalid inertia tensor, I(%d,%d)= %e <0\n", i, i, I(i, i));
 			return false;
 		}
 	}
 	// check symmetry
 	if (BT_ID_FABS(I(1, 0) - I(0, 1)) > kIsZero) {
-		error_message("invalid inertia tensor for body %d I(1,0)!=I(0,1). I(1,0)-I(0,1)= "
+		bt_id_error_message("invalid inertia tensor for body %d I(1,0)!=I(0,1). I(1,0)-I(0,1)= "
 					  "%e\n",
 					  index, I(1, 0) - I(0, 1));
 		return false;
 	}
 	if (BT_ID_FABS(I(2, 0) - I(0, 2)) > kIsZero) {
-		error_message("invalid inertia tensor for body %d I(2,0)!=I(0,2). I(2,0)-I(0,2)= "
+		bt_id_error_message("invalid inertia tensor for body %d I(2,0)!=I(0,2). I(2,0)-I(0,2)= "
 					  "%e\n",
 					  index, I(2, 0) - I(0, 2));
 		return false;
 	}
 	if (BT_ID_FABS(I(1, 2) - I(2, 1)) > kIsZero) {
-		error_message("invalid inertia tensor body %d I(1,2)!=I(2,1). I(1,2)-I(2,1)= %e\n", index,
+		bt_id_error_message("invalid inertia tensor body %d I(1,2)!=I(2,1). I(1,2)-I(2,1)= %e\n", index,
 					  I(1, 2) - I(2, 1));
 		return false;
 	}
@@ -381,7 +381,7 @@ bool isValidInertiaMatrix(const mat33 &I, const int index, bool has_fixed_joint)
 
 bool isValidTransformMatrix(const mat33 &m) {
 #define print_mat(x)																			   \
-	error_message("matrix is [%e, %e, %e; %e, %e, %e; %e, %e, %e]\n", x(0, 0), x(0, 1), x(0, 2),   \
+	bt_id_error_message("matrix is [%e, %e, %e; %e, %e, %e; %e, %e, %e]\n", x(0, 0), x(0, 1), x(0, 2),   \
 				  x(1, 0), x(1, 1), x(1, 2), x(2, 0), x(2, 1), x(2, 2))
 
 	// check for unit length column vectors
@@ -389,7 +389,7 @@ bool isValidTransformMatrix(const mat33 &m) {
 		const idScalar length_minus_1 =
 			BT_ID_FABS(m(0, i) * m(0, i) + m(1, i) * m(1, i) + m(2, i) * m(2, i) - 1.0);
 		if (length_minus_1 > kAxisLengthEpsilon) {
-			error_message("Not a valid rotation matrix (column %d not unit length)\n"
+			bt_id_error_message("Not a valid rotation matrix (column %d not unit length)\n"
 						  "column = [%.18e %.18e %.18e]\n"
 						  "length-1.0= %.18e\n",
 						  i, m(0, i), m(1, i), m(2, i), length_minus_1);
@@ -399,23 +399,23 @@ bool isValidTransformMatrix(const mat33 &m) {
 	}
 	// check for orthogonal column vectors
 	if (BT_ID_FABS(m(0, 0) * m(0, 1) + m(1, 0) * m(1, 1) + m(2, 0) * m(2, 1)) > kAxisLengthEpsilon) {
-		error_message("Not a valid rotation matrix (columns 0 and 1 not orthogonal)\n");
+		bt_id_error_message("Not a valid rotation matrix (columns 0 and 1 not orthogonal)\n");
 		print_mat(m);
 		return false;
 	}
 	if (BT_ID_FABS(m(0, 0) * m(0, 2) + m(1, 0) * m(1, 2) + m(2, 0) * m(2, 2)) > kAxisLengthEpsilon) {
-		error_message("Not a valid rotation matrix (columns 0 and 2 not orthogonal)\n");
+		bt_id_error_message("Not a valid rotation matrix (columns 0 and 2 not orthogonal)\n");
 		print_mat(m);
 		return false;
 	}
 	if (BT_ID_FABS(m(0, 1) * m(0, 2) + m(1, 1) * m(1, 2) + m(2, 1) * m(2, 2)) > kAxisLengthEpsilon) {
-		error_message("Not a valid rotation matrix (columns 0 and 2 not orthogonal)\n");
+		bt_id_error_message("Not a valid rotation matrix (columns 0 and 2 not orthogonal)\n");
 		print_mat(m);
 		return false;
 	}
 	// check determinant (rotation not reflection)
 	if (determinant(m) <= 0) {
-		error_message("Not a valid rotation matrix (determinant <=0)\n");
+		bt_id_error_message("Not a valid rotation matrix (determinant <=0)\n");
 		print_mat(m);
 		return false;
 	}

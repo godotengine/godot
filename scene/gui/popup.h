@@ -77,10 +77,12 @@ class PopupPanel : public Popup {
 	GDCLASS(PopupPanel, Popup);
 
 protected:
+	void _update_child_rects();
 	void _notification(int p_what);
 
 public:
 	void set_child_rect(Control *p_child);
+	virtual Size2 get_minimum_size() const;
 	PopupPanel();
 };
 

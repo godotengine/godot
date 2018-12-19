@@ -151,8 +151,8 @@ static btScalar EdgeSeparation(const btBox2dShape* poly1, const btTransform& xf1
 	int index = 0;
 	btScalar minDot = BT_LARGE_FLOAT;
 
-    if( count2 > 0 )
-        index = (int) normal1.minDot( vertices2, count2, minDot);
+	if( count2 > 0 )
+		index = (int) normal1.minDot( vertices2, count2, minDot);
 
 	btVector3 v1 = b2Mul(xf1, vertices1[edge1]);
 	btVector3 v2 = b2Mul(xf2, vertices2[index]);
@@ -175,8 +175,8 @@ static btScalar FindMaxSeparation(int* edgeIndex,
 	// Find edge normal on poly1 that has the largest projection onto d.
 	int edge = 0;
     btScalar maxDot;
-    if( count1 > 0 )
-        edge = (int) dLocal1.maxDot( normals1, count1, maxDot);
+	if( count1 > 0 )
+		edge = (int) dLocal1.maxDot( normals1, count1, maxDot);
 
 	// Get the separation for the edge normal.
 	btScalar s = EdgeSeparation(poly1, xf1, edge, poly2, xf2);

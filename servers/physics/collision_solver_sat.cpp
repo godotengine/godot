@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "collision_solver_sat.h"
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.02
 
@@ -98,7 +98,6 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 	Vector3 c = rel_A.cross(rel_B).cross(rel_B);
 
-	//if ( Math::abs(rel_A.dot(c) )<_EDGE_IS_VALID_SUPPORT_TRESHOLD ) {
 	if (Math::abs(rel_A.dot(c)) < CMP_EPSILON) {
 
 		// should handle somehow..

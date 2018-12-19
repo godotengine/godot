@@ -43,8 +43,8 @@ class NavigationMeshEditor : public Control {
 	AcceptDialog *err_dialog;
 
 	HBoxContainer *bake_hbox;
-	Button *button_bake;
-	Button *button_reset;
+	ToolButton *button_bake;
+	ToolButton *button_reset;
 	Label *bake_info;
 
 	NavigationMeshInstance *node;

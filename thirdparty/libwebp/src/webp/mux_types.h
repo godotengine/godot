@@ -95,4 +95,4 @@ static WEBP_INLINE int WebPDataCopy(const WebPData* src, WebPData* dst) {
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_WEBP_MUX_TYPES_H_ */
+#endif  // WEBP_WEBP_MUX_TYPES_H_

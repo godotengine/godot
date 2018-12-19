@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_blend_tree.cpp                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_blend_tree.h"
 #include "scene/scene_string_names.h"
 
@@ -10,12 +40,11 @@ StringName AnimationNodeAnimation::get_animation() const {
 	return animation;
 }
 
-float AnimationNodeAnimation::get_playback_time() const {
-	return time;
-}
-
 Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = NULL;
 
+void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
+	r_list->push_back(PropertyInfo(Variant::REAL, time, PROPERTY_HINT_NONE, "", 0));
+}
 void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "animation" && get_editable_animation_list) {
@@ -40,6 +69,8 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
+	float time = get_parameter(this->time);
+
 	if (!ap->has_animation(animation)) {
 
 		AnimationNodeBlendTree *tree = Object::cast_to<AnimationNodeBlendTree>(parent);
@@ -55,6 +86,8 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 	}
 
 	Ref<Animation> anim = ap->get_animation(animation);
+
+	float step;
 
 	if (p_seek) {
 		time = p_time;
@@ -79,6 +112,8 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 
 	blend_animation(animation, time, step, p_seek, 1.0);
 
+	set_parameter(this->time, time);
+
 	return anim_size - time;
 }
 
@@ -90,16 +125,13 @@ void AnimationNodeAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_animation", "name"), &AnimationNodeAnimation::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimationNodeAnimation::get_animation);
 
-	ClassDB::bind_method(D_METHOD("get_playback_time"), &AnimationNodeAnimation::get_playback_time);
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 }
 
 AnimationNodeAnimation::AnimationNodeAnimation() {
 	last_version = 0;
 	skip = false;
-	time = 0;
-	step = 0;
+	time = "time";
 }
 
 ////////////////////////////////////////////////////////
@@ -236,7 +268,6 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 
 	if (do_start) {
 		remaining = os_rem;
-		do_start = false;
 	}
 
 	if (!p_seek) {
@@ -669,7 +700,7 @@ String AnimationNodeTransition::get_input_caption(int p_input) const {
 
 	if (tree.is_valid() && current >= 0) {
 		prev = current;
-		prev_xfading = xfade;		
+		prev_xfading = xfade;
 		time = 0;
 		current = p_current;
 		switched = true;
@@ -739,8 +770,6 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 			rem = blend_input(current, p_time, p_seek, 1.0 - blend, FILTER_IGNORE, false);
 		}
-
-		switched = false;
 
 		if (p_seek) { // don't seek prev animation
 			blend_input(prev, 0, false, blend, FILTER_IGNORE, false);

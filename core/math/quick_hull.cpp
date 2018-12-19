@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "quick_hull.h"
-#include "map.h"
+
+#include "core/map.h"
 
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 

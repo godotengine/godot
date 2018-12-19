@@ -31,7 +31,7 @@
 #ifndef PLATFORM_ANDROID_POWER_ANDROID_H_
 #define PLATFORM_ANDROID_POWER_ANDROID_H_
 
-#include "os/os.h"
+#include "core/os/os.h"
 #include <android/native_window_jni.h>
 
 class power_android {

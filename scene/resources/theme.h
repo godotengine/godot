@@ -31,8 +31,8 @@
 #ifndef THEME_H
 #define THEME_H
 
-#include "io/resource_loader.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/resource.h"
 #include "scene/resources/font.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/style_box.h"
@@ -47,12 +47,6 @@ class Theme : public Resource {
 	RES_BASE_EXTENSION("theme");
 
 	static Ref<Theme> default_theme;
-
-	//keep a reference count to font, so each time the font changes, we emit theme changed too
-	Map<Ref<Font>, int> font_refcount;
-
-	void _ref_font(Ref<Font> p_sc);
-	void _unref_font(Ref<Font> p_sc);
 	void _emit_theme_changed();
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
@@ -190,17 +184,10 @@ public:
 	void get_type_list(List<StringName> *p_list) const;
 
 	void copy_default_theme();
+	void clear();
 
 	Theme();
 	~Theme();
-};
-
-class ResourceFormatLoaderTheme : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
 };
 
 #endif

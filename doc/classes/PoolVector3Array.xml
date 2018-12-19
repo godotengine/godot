@@ -47,7 +47,7 @@
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array (so first element will now be the last).
+				Reverse the order of the elements in the array.
 			</description>
 		</method>
 		<method name="push_back">

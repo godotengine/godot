@@ -31,7 +31,7 @@
 #include "body_pair_sw.h"
 
 #include "collision_solver_sw.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "space_sw.h"
 
 /*

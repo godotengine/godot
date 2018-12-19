@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "graph_node.h"
-#include "method_bind_ext.gen.inc"
+
+#include "core/method_bind_ext.gen.inc"
 
 bool GraphNode::_set(const StringName &p_name, const Variant &p_value) {
 

@@ -31,11 +31,11 @@
 #ifndef EDITOR_FILE_SYSTEM_H
 #define EDITOR_FILE_SYSTEM_H
 
-#include "os/dir_access.h"
-#include "os/thread.h"
-#include "os/thread_safe.h"
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+#include "core/os/thread_safe.h"
+#include "core/set.h"
 #include "scene/main/node.h"
-#include "set.h"
 class FileAccess;
 
 struct EditorProgressBG;
@@ -116,7 +116,8 @@ class EditorFileSystem : public Node {
 			ACTION_DIR_REMOVE,
 			ACTION_FILE_ADD,
 			ACTION_FILE_REMOVE,
-			ACTION_FILE_TEST_REIMPORT
+			ACTION_FILE_TEST_REIMPORT,
+			ACTION_FILE_RELOAD
 		};
 
 		Action action;
@@ -204,8 +205,6 @@ class EditorFileSystem : public Node {
 
 	bool _update_scan_actions();
 
-	static void _resource_saved(const String &p_path);
-
 	void _update_extensions();
 
 	void _reimport_file(const String &p_file);
@@ -229,6 +228,8 @@ class EditorFileSystem : public Node {
 	void _queue_update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
+
+	static Error _resource_import(const String &p_path);
 
 protected:
 	void _notification(int p_what);

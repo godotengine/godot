@@ -36,6 +36,12 @@
 
 void InspectorDock::_menu_option(int p_option) {
 	switch (p_option) {
+		case EXPAND_ALL: {
+			_menu_expandall();
+		} break;
+		case COLLAPSE_ALL: {
+			_menu_collapseall();
+		} break;
 		case RESOURCE_MAKE_BUILT_IN: {
 			_unref_resource();
 		} break;
@@ -98,6 +104,7 @@ void InspectorDock::_menu_option(int p_option) {
 								res = duplicates[res];
 
 								current->set(E->get().name, res);
+								editor->get_inspector()->update_property(E->get().name);
 							}
 						}
 					}
@@ -152,7 +159,6 @@ void InspectorDock::_resource_file_selected(String p_file) {
 	RES res = ResourceLoader::load(p_file);
 
 	if (res.is_null()) {
-		warning_dialog->get_ok()->set_text(TTR("OK"));
 		warning_dialog->set_text(TTR("Failed to load resource."));
 		return;
 	};
@@ -225,11 +231,10 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture> icon = get_icon("Object", "EditorIcons");
-		if (has_icon(obj->get_class(), "EditorIcons"))
-			icon = get_icon(obj->get_class(), "EditorIcons");
-		else
+		Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
+		if (icon.is_null()) {
 			icon = base_icon;
+		}
 
 		String text;
 		if (Object::cast_to<Resource>(obj)) {
@@ -254,6 +259,8 @@ void InspectorDock::_prepare_history() {
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
+
+	editor_path->update_path();
 }
 
 void InspectorDock::_select_history(int p_idx) const {
@@ -314,12 +321,27 @@ void InspectorDock::_transform_keyed(Object *sp, const String &p_sub, const Tran
 }
 
 void InspectorDock::_warning_pressed() {
-	warning_dialog->get_ok()->set_text(TTR("Ok"));
 	warning_dialog->popup_centered_minsize();
 }
 
 Container *InspectorDock::get_addon_area() {
 	return this;
+}
+
+void InspectorDock::_notification(int p_what) {
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			set_theme(editor->get_gui_base()->get_theme());
+			resource_new_button->set_icon(get_icon("New", "EditorIcons"));
+			resource_load_button->set_icon(get_icon("Load", "EditorIcons"));
+			resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
+			backward_button->set_icon(get_icon("Back", "EditorIcons"));
+			forward_button->set_icon(get_icon("Forward", "EditorIcons"));
+			history_menu->set_icon(get_icon("History", "EditorIcons"));
+			object_menu->set_icon(get_icon("Tools", "EditorIcons"));
+			warning->set_icon(get_icon("NodeWarning", "EditorIcons"));
+		} break;
+	}
 }
 
 void InspectorDock::_bind_methods() {
@@ -395,12 +417,13 @@ void InspectorDock::update(Object *p_object) {
 
 	object_menu->set_disabled(false);
 	search->set_editable(true);
+	resource_save_button->set_disabled(!is_resource);
 
 	PopupMenu *p = object_menu->get_popup();
 
 	p->clear();
-	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand all properties")), EXPAND_ALL);
-	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse all properties")), COLLAPSE_ALL);
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_all", TTR("Expand All Properties")), EXPAND_ALL);
+	p->add_shortcut(ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All Properties")), COLLAPSE_ALL);
 	p->add_separator();
 	if (is_resource) {
 		p->add_item(TTR("Save"), RESOURCE_SAVE);
@@ -493,6 +516,16 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	general_options_hb->add_child(resource_load_button);
 	resource_load_button->connect("pressed", this, "_open_resource_selector");
 	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
+
+	resource_save_button = memnew(MenuButton);
+	resource_save_button->set_tooltip(TTR("Save the currently edited resource."));
+	resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
+	general_options_hb->add_child(resource_save_button);
+	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
+	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
+	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_disabled(true);
 
 	general_options_hb->add_spacer();
 

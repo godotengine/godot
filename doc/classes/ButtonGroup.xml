@@ -12,18 +12,21 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="get_buttons">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an [Array] of [Button]s who have this as their [code]ButtonGroup[/code] (see [member BaseButton.group]).
+			</description>
+		</method>
 		<method name="get_pressed_button">
 			<return type="BaseButton">
 			</return>
 			<description>
-				Return the pressed button.
+				Returns the current pressed button.
 			</description>
 		</method>
 	</methods>
 	<constants>
 	</constants>
-	<theme_items>
-		<theme_item name="panel" type="StyleBox">
-		</theme_item>
-	</theme_items>
 </class>

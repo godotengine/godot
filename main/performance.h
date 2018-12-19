@@ -31,7 +31,7 @@
 #ifndef PERFORMANCE_H
 #define PERFORMANCE_H
 
-#include "object.h"
+#include "core/object.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC

@@ -31,8 +31,8 @@
 #ifndef IP_H
 #define IP_H
 
-#include "io/ip_address.h"
-#include "os/os.h"
+#include "core/io/ip_address.h"
+#include "core/os/os.h"
 
 struct _IP_ResolverPrivate;
 

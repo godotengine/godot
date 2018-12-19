@@ -86,7 +86,7 @@ public:
 
 	Vector<Vector3> handles;
 	Vector<Vector3> secondary_handles;
-	float selectable_icon_size = -1.0f;
+	float selectable_icon_size;
 	bool billboard_handle;
 
 	bool valid;
@@ -127,9 +127,7 @@ public:
 	virtual void redraw();
 	virtual void free();
 
-	//TODO remove (?)
 	virtual bool is_editable() const;
-	virtual bool can_draw() const;
 
 	void set_hidden(bool p_hidden);
 	void set_plugin(EditorSpatialGizmoPlugin *p_gizmo);
@@ -194,7 +192,7 @@ private:
 	EditorSelection *editor_selection;
 	UndoRedo *undo_redo;
 
-	Button *preview_camera;
+	CheckBox *preview_camera;
 	ViewportContainer *viewport_container;
 
 	MenuButton *view_menu;
@@ -213,6 +211,7 @@ private:
 	Label *info_label;
 	Label *fps_label;
 	Label *cinema_label;
+	Label *locked_label;
 
 	struct _RayResult {
 
@@ -226,7 +225,7 @@ private:
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
 	void _select_clicked(bool p_append, bool p_single);
-	void _select(Spatial *p_node, bool p_append, bool p_single);
+	void _select(Node *p_node, bool p_append, bool p_single);
 	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
@@ -406,6 +405,7 @@ public:
 			AcceptDialog *p_accept);
 
 	Viewport *get_viewport_node() { return viewport; }
+	Camera *get_camera() { return camera; } // return the default camera object.
 
 	SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
 };
@@ -444,6 +444,9 @@ private:
 	bool mouseover;
 	float ratio_h;
 	float ratio_v;
+
+	bool hovering_v;
+	bool hovering_h;
 
 	bool dragging_v;
 	bool dragging_h;
@@ -512,7 +515,6 @@ private:
 	RID grid[3];
 	RID grid_instance[3];
 	bool grid_visible[3]; //currently visible
-	float last_grid_snap;
 	bool grid_enable[3]; //should be always visible if true
 	bool grid_enabled;
 
@@ -677,7 +679,7 @@ public:
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 
 	void update_transform_gizmo();
-	void update_all_gizmos();
+	void update_all_gizmos(Node *p_node = NULL);
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
@@ -710,7 +712,6 @@ public:
 
 	void register_gizmo_plugin(Ref<EditorSpatialGizmoPlugin> ref);
 
-	Camera *get_camera() { return NULL; }
 	void edit(Spatial *p_spatial);
 	void clear();
 
@@ -753,9 +754,9 @@ class EditorSpatialGizmoPlugin : public Resource {
 	GDCLASS(EditorSpatialGizmoPlugin, Resource);
 
 public:
-	static const int ON_TOP = 0;
-	static const int VISIBLE = 1;
-	static const int HIDDEN = 2;
+	static const int VISIBLE = 0;
+	static const int HIDDEN = 1;
+	static const int ON_TOP = 2;
 
 private:
 	int current_state;

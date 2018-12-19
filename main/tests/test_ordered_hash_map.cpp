@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "ordered_hash_map.h"
-#include "os/os.h"
-#include "pair.h"
-#include "vector.h"
+#include "core/ordered_hash_map.h"
+#include "core/os/os.h"
+#include "core/pair.h"
+#include "core/vector.h"
 
 namespace TestOrderedHashMap {
 

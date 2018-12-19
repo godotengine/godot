@@ -27,12 +27,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "shader_gles2.h"
 
-#include "memory.h"
-#include "print_string.h"
-#include "string_builder.h"
-
+#include "core/os/memory.h"
+#include "core/print_string.h"
+#include "core/string_builder.h"
 #include "rasterizer_gles2.h"
 #include "rasterizer_storage_gles2.h"
 
@@ -57,7 +57,7 @@
 
 ShaderGLES2 *ShaderGLES2::active = NULL;
 
-// #define DEBUG_SHADER
+//#define DEBUG_SHADER
 
 #ifdef DEBUG_SHADER
 
@@ -99,7 +99,7 @@ void ShaderGLES2::bind_uniforms() {
 	const Map<uint32_t, CameraMatrix>::Element *C = uniform_cameras.front();
 
 	while (C) {
-		int idx = E->key();
+		int idx = C->key();
 		int location = version->uniform_location[idx];
 
 		if (location < 0) {
@@ -131,6 +131,11 @@ bool ShaderGLES2::bind() {
 	}
 
 	ERR_FAIL_COND_V(!version, false);
+
+	if (!version->ok) { //broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
+		glUseProgram(0);
+		return false;
+	}
 
 	glUseProgram(version->id);
 
@@ -171,72 +176,30 @@ void ShaderGLES2::unbind() {
 	active = NULL;
 }
 
-static String _fix_error_code_line(const String &p_error, int p_code_start, int p_offset) {
+static void _display_error_with_code(const String &p_error, const Vector<const char *> &p_code) {
 
-	int last_find_pos = -1;
-	// NVIDIA
-	String error = p_error;
-	while ((last_find_pos = p_error.find("(", last_find_pos + 1)) != -1) {
+	int line = 1;
+	String total_code;
 
-		int end_pos = last_find_pos + 1;
-
-		while (true) {
-
-			if (p_error[end_pos] >= '0' && p_error[end_pos] <= '9') {
-
-				end_pos++;
-				continue;
-			} else if (p_error[end_pos] == ')') {
-				break;
-			} else {
-
-				end_pos = -1;
-				break;
-			}
-		}
-
-		if (end_pos == -1)
-			continue;
-
-		String numstr = error.substr(last_find_pos + 1, (end_pos - last_find_pos) - 1);
-		String begin = error.substr(0, last_find_pos + 1);
-		String end = error.substr(end_pos, error.length());
-		int num = numstr.to_int() + p_code_start - p_offset;
-		error = begin + itos(num) + end;
+	for (int i = 0; i < p_code.size(); i++) {
+		total_code += String(p_code[i]);
 	}
 
-	// ATI
-	last_find_pos = -1;
-	while ((last_find_pos = p_error.find("ERROR: ", last_find_pos + 1)) != -1) {
+	Vector<String> lines = String(total_code).split("\n");
 
-		last_find_pos += 6;
-		int end_pos = last_find_pos + 1;
+	for (int j = 0; j < lines.size(); j++) {
 
-		while (true) {
-
-			if (p_error[end_pos] >= '0' && p_error[end_pos] <= '9') {
-
-				end_pos++;
-				continue;
-			} else if (p_error[end_pos] == ':') {
-				break;
-			} else {
-
-				end_pos = -1;
-				break;
-			}
-		}
-		continue;
-		if (end_pos == -1)
-			continue;
-
-		String numstr = error.substr(last_find_pos + 1, (end_pos - last_find_pos) - 1);
-		String begin = error.substr(0, last_find_pos + 1);
-		String end = error.substr(end_pos, error.length());
-		int num = numstr.to_int() + p_code_start - p_offset;
-		error = begin + itos(num) + end;
+		print_line(itos(line) + ": " + lines[j]);
+		line++;
 	}
-	return error;
+
+	ERR_PRINTS(p_error);
+}
+
+static String _mkid(const String &p_id) {
+
+	String id = "m_" + p_id;
+	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
 }
 
 ShaderGLES2::Version *ShaderGLES2::get_current_version() {
@@ -293,7 +256,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		}
 	}
 
-	// keep them around during the functino
+	// keep them around during the function
 	CharString code_string;
 	CharString code_string2;
 	CharString code_globals;
@@ -316,7 +279,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	if (cc) {
 		for (int i = 0; i < cc->custom_defines.size(); i++) {
 			strings.push_back(cc->custom_defines.write[i]);
-			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i]));
+			DEBUG_PRINT("CD #" + itos(i) + ": " + String(cc->custom_defines[i].get_data()));
 		}
 	}
 
@@ -375,9 +338,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			String err_string = get_shader_name() + ": Vertex shader compilation failed:\n";
 
 			err_string += ilogmem;
-			err_string = _fix_error_code_line(err_string, vertex_code_start, define_line_ofs);
 
-			ERR_PRINTS(err_string);
+			_display_error_with_code(err_string, strings);
 
 			Memory::free_static(ilogmem);
 			glDeleteShader(v.vert_id);
@@ -402,14 +364,14 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	strings.push_back(fragment_code1.get_data());
 
 	if (cc) {
-		code_string = cc->fragment.ascii();
+		code_string = cc->light.ascii();
 		strings.push_back(code_string.get_data());
 	}
 
 	strings.push_back(fragment_code2.get_data());
 
 	if (cc) {
-		code_string2 = cc->light.ascii();
+		code_string2 = cc->fragment.ascii();
 		strings.push_back(code_string2.get_data());
 	}
 
@@ -451,9 +413,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			String err_string = get_shader_name() + ": Fragment shader compilation failed:\n";
 
 			err_string += ilogmem;
-			err_string = _fix_error_code_line(err_string, fragment_code_start, define_line_ofs);
 
-			ERR_PRINTS(err_string);
+			_display_error_with_code(err_string, strings);
 
 			Memory::free_static(ilogmem);
 			glDeleteShader(v.frag_id);
@@ -503,9 +464,8 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		String err_string = get_shader_name() + ": Program linking failed:\n";
 
 		err_string += ilogmem;
-		err_string = _fix_error_code_line(err_string, fragment_code_start, define_line_ofs);
 
-		ERR_PRINTS(err_string);
+		_display_error_with_code(err_string, strings);
 
 		Memory::free_static(ilogmem);
 		glDeleteShader(v.frag_id);
@@ -538,15 +498,15 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	if (cc) {
 		// uniforms
 		for (int i = 0; i < cc->custom_uniforms.size(); i++) {
-			StringName native_uniform_name = "m_" + cc->custom_uniforms[i];
-			GLint location = glGetUniformLocation(v.id, ((String)native_uniform_name).ascii().get_data());
+			String native_uniform_name = _mkid(cc->custom_uniforms[i]);
+			GLint location = glGetUniformLocation(v.id, (native_uniform_name).ascii().get_data());
 			v.custom_uniform_locations[cc->custom_uniforms[i]] = location;
 		}
 
 		// textures
 		for (int i = 0; i < cc->texture_uniforms.size(); i++) {
-			StringName native_uniform_name = "m_" + cc->texture_uniforms[i];
-			GLint location = glGetUniformLocation(v.id, ((String)native_uniform_name).ascii().get_data());
+			String native_uniform_name = _mkid(cc->texture_uniforms[i]);
+			GLint location = glGetUniformLocation(v.id, (native_uniform_name).ascii().get_data());
 			v.custom_uniform_locations[cc->texture_uniforms[i]] = location;
 		}
 	}
@@ -628,22 +588,24 @@ void ShaderGLES2::setup(
 			fragment_code0 = code.substr(0, cpos).ascii();
 			code = code.substr(cpos + globals_tag.length(), code.length());
 
-			cpos = code.find(code_tag);
+			cpos = code.find(light_code_tag);
 
-			if (cpos == -1) {
-				fragment_code1 = code.ascii();
-			} else {
+			String code2;
+
+			if (cpos != -1) {
 
 				fragment_code1 = code.substr(0, cpos).ascii();
-				String code2 = code.substr(cpos + code_tag.length(), code.length());
+				code2 = code.substr(cpos + light_code_tag.length(), code.length());
+			} else {
+				code2 = code;
+			}
 
-				cpos = code2.find(light_code_tag);
-				if (cpos == -1) {
-					fragment_code2 = code2.ascii();
-				} else {
-					fragment_code2 = code2.substr(0, cpos).ascii();
-					fragment_code3 = code2.substr(cpos + light_code_tag.length(), code2.length()).ascii();
-				}
+			cpos = code2.find(code_tag);
+			if (cpos == -1) {
+				fragment_code2 = code2.ascii();
+			} else {
+				fragment_code2 = code2.substr(0, cpos).ascii();
+				fragment_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
 			}
 		}
 	}
@@ -735,11 +697,6 @@ void ShaderGLES2::use_material(void *p_material) {
 	}
 
 	Version *v = version_map.getptr(conditional_version);
-
-	CustomCode *cc = NULL;
-	if (v) {
-		cc = custom_code_map.getptr(v->code_version);
-	}
 
 	// bind uniforms
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
@@ -1028,7 +985,7 @@ void ShaderGLES2::use_material(void *p_material) {
 
 				value.second.resize(default_arg_size);
 
-				for (int i = 0; i < default_arg_size; i++) {
+				for (size_t i = 0; i < default_arg_size; i++) {
 					if (is_float) {
 						value.second.write[i].real = 0.0;
 					} else {
@@ -1037,8 +994,6 @@ void ShaderGLES2::use_material(void *p_material) {
 				}
 			}
 		}
-
-		// GLint location = get_uniform_location(E->key());
 
 		GLint location;
 		if (v->custom_uniform_locations.has(E->key())) {
@@ -1058,8 +1013,6 @@ void ShaderGLES2::use_material(void *p_material) {
 	// bind textures
 	int tc = material->textures.size();
 	Pair<StringName, RID> *textures = material->textures.ptrw();
-
-	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = material->shader->texture_hints.ptrw();
 
 	for (int i = 0; i < tc; i++) {
 

@@ -30,8 +30,6 @@
 
 #include "image_compress_squish.h"
 
-#include "print_string.h"
-
 #include <squish.h>
 
 void image_decompress_squish(Image *p_image) {
@@ -64,17 +62,19 @@ void image_decompress_squish(Image *p_image) {
 		return;
 	}
 
-	int dst_ofs = 0;
-
 	for (int i = 0; i <= mm_count; i++) {
 		int src_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
 		p_image->get_mipmap_offset_size_and_dimensions(i, src_ofs, mipmap_size, mipmap_w, mipmap_h);
-		squish::DecompressImage(&wb[dst_ofs], mipmap_w, mipmap_h, &rb[src_ofs], squish_flags);
+		int dst_ofs = Image::get_image_mipmap_offset(p_image->get_width(), p_image->get_height(), target_format, i);
+		squish::DecompressImage(&wb[dst_ofs], w, h, &rb[src_ofs], squish_flags);
+		w >>= 1;
+		h >>= 1;
 	}
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
+#ifdef TOOLS_ENABLED
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
@@ -193,8 +193,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 			int src_ofs = p_image->get_mipmap_offset(i);
 			squish::CompressImage(&rb[src_ofs], w, h, &wb[dst_ofs], squish_comp);
 			dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
-			w >>= 1;
-			h >>= 1;
+			w = MAX(w / 2, 1);
+			h = MAX(h / 2, 1);
 		}
 
 		rb = PoolVector<uint8_t>::Read();
@@ -203,3 +203,4 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 		p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 	}
 }
+#endif

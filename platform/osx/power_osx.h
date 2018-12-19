@@ -31,9 +31,9 @@
 #ifndef PLATFORM_OSX_POWER_OSX_H_
 #define PLATFORM_OSX_POWER_OSX_H_
 
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "dir_access_osx.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include <CoreFoundation/CoreFoundation.h>
 
 class power_osx {

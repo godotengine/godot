@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream_player_3d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "scene/3d/area.h"
 #include "scene/3d/camera.h"
 #include "scene/main/viewport.h"
@@ -112,8 +112,10 @@ void AudioStreamPlayer3D::_mix_audio() {
 			AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
 			AudioFrame vol = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : current.vol[k];
 
-			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
+			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k))
+				continue; //may have been deleted, will be updated on process
 
+			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			current.filter.set_mode(AudioFilterSW::HIGHSHELF);
 			current.filter.set_sampling_rate(AudioServer::get_singleton()->get_mix_rate());
 			current.filter.set_cutoff(attenuation_filter_cutoff_hz);
@@ -158,6 +160,9 @@ void AudioStreamPlayer3D::_mix_audio() {
 			}
 
 			if (current.reverb_bus_index >= 0) {
+
+				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.reverb_bus_index, k))
+					continue; //may have been deleted, will be updated on process
 
 				AudioFrame *rtarget = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.reverb_bus_index, k);
 
@@ -290,7 +295,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			PhysicsDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
 
-			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask);
+			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
 			Area *area = NULL;
 
 			for (int i = 0; i < areas; i++) {
@@ -417,7 +422,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 					}
 				}
 
-				for (int k = 0; k < cc; k++) {
+				for (unsigned int k = 0; k < cc; k++) {
 					output.vol[k] *= multiplier;
 				}
 
@@ -448,7 +453,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
 
-							float center_val[3] = { 0.5, 0.25, 0.16666 };
+							float center_val[3] = { 0.5f, 0.25f, 0.16666f };
 							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
 
 							if (attenuation < 1.0) {
@@ -636,6 +641,7 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 void AudioStreamPlayer3D::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
+		active = true;
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);
@@ -814,7 +820,7 @@ AudioStreamPlayer3D::AttenuationModel AudioStreamPlayer3D::get_attenuation_model
 
 void AudioStreamPlayer3D::set_out_of_range_mode(OutOfRangeMode p_mode) {
 
-	ERR_FAIL_INDEX(p_mode, 2);
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	out_of_range_mode = p_mode;
 }
 

@@ -7,7 +7,7 @@
 		2-element structure that can be used to represent positions in 2d space or any other pair of numeric values.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -109,7 +109,7 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], or a percentage of how far along the interpolation is.
+				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -175,7 +175,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="normalized">
@@ -227,7 +227,7 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
+				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
 				Both vectors need to be normalized.
 			</description>
 		</method>
@@ -259,24 +259,33 @@
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="">
-			The vector's x component.
+			The vector's x component. Also accessible by using the index position [code][0][/code].
 		</member>
 		<member name="y" type="float" setter="" getter="">
-			The vector's y component.
+			The vector's y component. Also accessible by using the index position [code][1][/code].
 		</member>
 	</members>
 	<constants>
 		<constant name="ZERO" value="Vector2( 0, 0 )">
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector2( 1, 1 )">
+			One vector.
 		</constant>
 		<constant name="INF" value="Vector2( inf, inf )">
+			Infinite vector.
 		</constant>
 		<constant name="LEFT" value="Vector2( -1, 0 )">
+			Left unit vector.
 		</constant>
 		<constant name="RIGHT" value="Vector2( 1, 0 )">
+			Right unit vector.
 		</constant>
 		<constant name="UP" value="Vector2( 0, -1 )">
+			Up unit vector.
 		</constant>
 		<constant name="DOWN" value="Vector2( 0, 1 )">
+			Down unit vector.
 		</constant>
 	</constants>
 </class>

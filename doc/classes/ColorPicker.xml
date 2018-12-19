@@ -20,13 +20,29 @@
 				Adds the given color to a list of color presets. The presets are displayed in the color picker and the user will be able to select them. Note: the presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
+		<method name="erase_preset">
+			<return type="void">
+			</return>
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Remove the given color from the list of color presets of this color picker.
+			</description>
+		</method>
+		<method name="get_presets" qualifiers="const">
+			<return type="PoolColorArray">
+			</return>
+			<description>
+				Return the list of colors in the presets of the color picker.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color">
 			The currently selected color.
 		</member>
 		<member name="deferred_mode" type="bool" setter="set_deferred_mode" getter="is_deferred_mode">
-			If [code]true[/code] the color will apply only after the user releases the mouse button, otherwise it will apply immediatly even in mouse motion event (which can cause performance issues).
+			If [code]true[/code] the color will apply only after the user releases the mouse button, otherwise it will apply immediately even in mouse motion event (which can cause performance issues).
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
 			If [code]true[/code] shows an alpha channel slider (transparency).
@@ -41,6 +57,20 @@
 			</argument>
 			<description>
 				Emitted when the color is changed.
+			</description>
+		</signal>
+		<signal name="preset_added">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Emitted when a preset is added.
+			</description>
+		</signal>
+		<signal name="preset_removed">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+				Emitted when a preset is removed.
 			</description>
 		</signal>
 	</signals>

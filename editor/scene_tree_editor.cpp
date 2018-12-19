@@ -30,11 +30,11 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/message_queue.h"
+#include "core/print_string.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor_node.h"
-#include "message_queue.h"
-#include "print_string.h"
 #include "scene/gui/label.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
@@ -73,7 +73,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->create_action(TTR("Toggle Visible"));
 		_toggle_visible(n);
 		List<Node *> selection = editor_selection->get_selected_node_list();
-		if (selection.size() > 1) {
+		if (selection.size() > 1 && selection.find(n) != NULL) {
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 				Node *nv = E->get();
 				ERR_FAIL_COND(!nv);
@@ -186,11 +186,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->set_collapsed(true);
 	}
 
-	Ref<Texture> icon;
-	if (p_node->has_meta("_editor_icon"))
-		icon = p_node->get_meta("_editor_icon");
-	else
-		icon = get_icon((has_icon(p_node->get_class(), "EditorIcons") ? p_node->get_class() : String("Object")), "EditorIcons");
+	Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
@@ -669,6 +665,13 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
+	// Empty node names are not allowed, so resets it to previous text and show warning
+	if (which->get_text(0).strip_edges().empty()) {
+		which->set_text(0, n->get_name());
+		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
+		return;
+	}
+
 	String new_name = which->get_text(0);
 	if (!Node::_validate_node_name(new_name)) {
 
@@ -977,8 +980,11 @@ void SceneTreeEditor::_editor_settings_changed() {
 	if (enable_rl) {
 		tree->add_constant_override("draw_relationship_lines", 1);
 		tree->add_color_override("relationship_line_color", rl_color);
-	} else
+		tree->add_constant_override("draw_guides", 0);
+	} else {
 		tree->add_constant_override("draw_relationship_lines", 0);
+		tree->add_constant_override("draw_guides", 1);
+	}
 }
 
 void SceneTreeEditor::_bind_methods() {
@@ -1142,7 +1148,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	set_title(TTR("Select a Node"));
 
-	tree = memnew(SceneTreeEditor(false, false));
+	tree = memnew(SceneTreeEditor(false, false, true));
 	add_child(tree);
 	//set_child_rect(tree);
 

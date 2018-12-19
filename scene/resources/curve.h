@@ -31,7 +31,7 @@
 #ifndef CURVE_H
 #define CURVE_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 // y(x) curve
 class Curve : public Resource {

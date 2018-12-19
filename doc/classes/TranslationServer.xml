@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TranslationServer" inherits="Object" category="Core" version="3.1">
 	<brief_description>
-		Server that manages all translations. Translations can be set to it and removed from it.
+		Server that manages all translations.
 	</brief_description>
 	<description>
+		Server that manages all translations. Translations can be set to it and removed from it.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html</link>
+		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -16,18 +19,21 @@
 			<argument index="0" name="translation" type="Translation">
 			</argument>
 			<description>
+				Adds a [Translation] resource.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
+				Clears the server from all translations.
 			</description>
 		</method>
 		<method name="get_locale" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
+				Returns the current locale of the game.
 			</description>
 		</method>
 		<method name="get_locale_name" qualifiers="const">
@@ -36,6 +42,7 @@
 			<argument index="0" name="locale" type="String">
 			</argument>
 			<description>
+				Returns a locale's language and its variant (e.g. "en_US" would return "English (United States)").
 			</description>
 		</method>
 		<method name="remove_translation">
@@ -44,6 +51,7 @@
 			<argument index="0" name="translation" type="Translation">
 			</argument>
 			<description>
+				Removes the given translation from the server.
 			</description>
 		</method>
 		<method name="set_locale">
@@ -52,6 +60,7 @@
 			<argument index="0" name="locale" type="String">
 			</argument>
 			<description>
+				Sets the locale of the game.
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">
@@ -60,6 +69,7 @@
 			<argument index="0" name="message" type="String">
 			</argument>
 			<description>
+				Returns the current locale's translation for the given message (key).
 			</description>
 		</method>
 	</methods>

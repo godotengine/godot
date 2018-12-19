@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 uniform highp mat4 projection_matrix;
+/* clang-format on */
 uniform highp mat4 light_matrix;
 uniform highp mat4 world_matrix;
 uniform highp float distance_norm;
@@ -15,9 +17,11 @@ void main() {
 	position_interp = gl_Position;
 }
 
+/* clang-format off */
 [fragment]
 
 in highp vec4 position_interp;
+/* clang-format on */
 
 #ifdef USE_RGBA_SHADOWS
 layout(location = 0) out lowp vec4 distance_buf;

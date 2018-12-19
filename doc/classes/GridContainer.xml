@@ -11,16 +11,6 @@
 	<demos>
 	</demos>
 	<methods>
-		<method name="get_child_control_at_cell">
-			<return type="Control">
-			</return>
-			<argument index="0" name="row" type="int">
-			</argument>
-			<argument index="1" name="column" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">

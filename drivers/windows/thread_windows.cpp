@@ -32,7 +32,7 @@
 
 #if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
 
-#include "os/memory.h"
+#include "core/os/memory.h"
 
 Thread::ID ThreadWindows::get_id() const {
 
@@ -93,9 +93,8 @@ void ThreadWindows::make_default() {
 	wait_to_finish_func = wait_to_finish_func_windows;
 }
 
-ThreadWindows::ThreadWindows() {
-
-	handle = NULL;
+ThreadWindows::ThreadWindows() :
+		handle(NULL) {
 }
 
 ThreadWindows::~ThreadWindows() {

@@ -7,8 +7,8 @@
 		An animation player is used for general purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/animations.html</link>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/animation/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -108,6 +108,12 @@
 			</return>
 			<description>
 				Get the actual playing speed of current animation or 0 if not playing. This speed is the [code]playback_speed[/code] property multiplied by [code]custom_speed[/code] argument specified when calling the [code]play[/code] method.
+			</description>
+		</method>
+		<method name="get_queue">
+			<return type="PoolStringArray">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="has_animation" qualifiers="const">
@@ -238,7 +244,7 @@
 			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision. Default value: [code]0[/code].
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationPlayer.AnimationProcessMode">
-			The process notification in which to update animations. Default value: [enum ANIMATION_PROCESS_IDLE].
+			The process notification in which to update animations. Default value: [code]ANIMATION_PROCESS_IDLE[/code].
 		</member>
 		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
 			The speed scaling ratio. For instance, if this value is 1 then the animation plays at normal speed. If it's 0.5 then it plays at half speed. If it's 2 then it plays at double speed. Default value: [code]1[/code].

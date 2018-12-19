@@ -194,7 +194,7 @@ void Polygon2D::_notification(int p_what) {
 				}
 			}
 
-			if (!invert && bone_weights.size()) {
+			if (skeleton_node && !invert && bone_weights.size()) {
 				//a skeleton is set! fill indices and weights
 				int vc = points.size();
 				bones.resize(vc * 4);

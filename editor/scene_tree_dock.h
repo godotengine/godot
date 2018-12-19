@@ -36,6 +36,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_sub_scene.h"
 #include "editor/groups_editor.h"
+#include "editor/quick_open.h"
 #include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
@@ -75,6 +76,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX,
+		TOOL_OPEN_DOCUMENTATION,
 		TOOL_SCENE_EDITABLE_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
 		TOOL_SCENE_MAKE_LOCAL,
@@ -121,9 +123,10 @@ class SceneTreeDock : public VBoxContainer {
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
+	ConfirmationDialog *editable_instance_remove_dialog;
 
 	ReparentDialog *reparent_dialog;
-	EditorFileDialog *file;
+	EditorQuickOpen *quick_open;
 	EditorSubScene *import_subscene_dialog;
 	EditorFileDialog *new_scene_from_dialog;
 
@@ -169,6 +172,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _delete_confirm();
 
+	void _toggle_editable_children();
+
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
 	void _nodes_drag_begin();
@@ -190,6 +195,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _nodes_dragged(Array p_nodes, NodePath p_to, int p_type);
 	void _files_dropped(Vector<String> p_files, NodePath p_to, int p_type);
 	void _script_dropped(String p_file, NodePath p_to);
+	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
 

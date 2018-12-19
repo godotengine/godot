@@ -32,7 +32,7 @@
 #define TILE_SET_H
 
 #include "core/array.h"
-#include "resource.h"
+#include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_polygon.h"
 #include "scene/resources/shape_2d.h"
@@ -80,21 +80,21 @@ public:
 
 	struct AutotileData {
 		BitmaskMode bitmask_mode;
-		int spacing;
 		Size2 size;
+		int spacing;
 		Vector2 icon_coord;
 		Map<Vector2, uint16_t> flags;
 		Map<Vector2, Ref<OccluderPolygon2D> > occluder_map;
 		Map<Vector2, Ref<NavigationPolygon> > navpoly_map;
 		Map<Vector2, int> priority_map;
+		Map<Vector2, int> z_index_map;
 
 		// Default size to prevent invalid value
 		explicit AutotileData() :
+				bitmask_mode(BITMASK_2X2),
 				size(64, 64),
 				spacing(0),
-				icon_coord(0, 0) {
-			bitmask_mode = BITMASK_2X2;
-		}
+				icon_coord(0, 0) {}
 	};
 
 private:
@@ -111,8 +111,8 @@ private:
 		Vector2 navigation_polygon_offset;
 		Ref<NavigationPolygon> navigation_polygon;
 		Ref<ShaderMaterial> material;
-		Color modulate;
 		TileMode tile_mode;
+		Color modulate;
 		AutotileData autotile_data;
 		int z_index;
 
@@ -172,6 +172,9 @@ public:
 	void autotile_set_subtile_priority(int p_id, const Vector2 &p_coord, int p_priority);
 	int autotile_get_subtile_priority(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, int> &autotile_get_priority_map(int p_id) const;
+
+	void autotile_set_z_index(int p_id, const Vector2 &p_coord, int p_z_index);
+	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
 
 	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag);
 	uint16_t autotile_get_bitmask(int p_id, Vector2 p_coord);

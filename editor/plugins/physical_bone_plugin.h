@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,7 @@ class PhysicalBonePlugin : public EditorPlugin {
 
 	EditorNode *editor;
 	PhysicalBone *selected;
-	PhysicalBoneEditor *physical_bone_editor;
+	PhysicalBoneEditor physical_bone_editor;
 
 public:
 	virtual String get_name() const { return "PhysicalBone"; }

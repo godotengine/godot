@@ -31,8 +31,8 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "map.h"
-#include "resource.h"
+#include "core/map.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -201,6 +201,7 @@ public:
 };
 
 class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderBMFont, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

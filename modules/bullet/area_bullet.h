@@ -142,6 +142,7 @@ public:
 	_FORCE_INLINE_ void set_spOv_priority(int p_priority) { spOv_priority = p_priority; }
 	_FORCE_INLINE_ int get_spOv_priority() { return spOv_priority; }
 
+	virtual void main_shape_changed();
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
@@ -156,6 +157,7 @@ public:
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}
+	virtual void on_collision_checker_end() { isTransformChanged = false; }
 
 	void add_overlap(CollisionObjectBullet *p_otherObject);
 	void put_overlap_as_exit(int p_index);

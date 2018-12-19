@@ -27,11 +27,14 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #include "rasterizer_canvas_gles2.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/visual_server_raster.h"
+
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -347,7 +350,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandLine *line = static_cast<Item::CommandLine *>(command);
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
 					state.canvas_shader.use_material((void *)p_material);
@@ -388,10 +390,86 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				glDisableVertexAttribArray(VS::ARRAY_COLOR);
 				glVertexAttrib4fv(VS::ARRAY_COLOR, r->modulate.components);
 
+#if 1
+				//more compatible
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
+
+				if (state.canvas_shader.bind()) {
+					_set_uniforms();
+					state.canvas_shader.use_material((void *)p_material);
+				}
+
+				Size2 abs_size = r->rect.size.abs();
+				Vector2 points[4] = {
+					r->rect.position,
+					r->rect.position + Vector2(abs_size.x, 0.0),
+					r->rect.position + abs_size,
+					r->rect.position + Vector2(0.0, abs_size.y),
+				};
+
+				if (r->rect.size.x < 0) {
+					SWAP(points[0], points[1]);
+					SWAP(points[2], points[3]);
+				}
+				if (r->rect.size.y < 0) {
+					SWAP(points[0], points[3]);
+					SWAP(points[1], points[2]);
+				}
+
+				RasterizerStorageGLES2::Texture *texture = _bind_canvas_texture(r->texture, r->normal_map);
+
+				if (texture) {
+					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
+
+					Rect2 src_rect = (r->flags & CANVAS_RECT_REGION) ? Rect2(r->source.position * texpixel_size, r->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
+
+					Vector2 uvs[4] = {
+						src_rect.position,
+						src_rect.position + Vector2(src_rect.size.x, 0.0),
+						src_rect.position + src_rect.size,
+						src_rect.position + Vector2(0.0, src_rect.size.y),
+					};
+
+					if (r->flags & CANVAS_RECT_FLIP_H) {
+						SWAP(uvs[0], uvs[1]);
+						SWAP(uvs[2], uvs[3]);
+					}
+					if (r->flags & CANVAS_RECT_FLIP_V) {
+						SWAP(uvs[0], uvs[3]);
+						SWAP(uvs[1], uvs[2]);
+					}
+
+					if (r->flags & CANVAS_RECT_TRANSPOSE) {
+						SWAP(uvs[1], uvs[3]);
+					}
+
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
+
+					bool untile = false;
+
+					if (r->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+						untile = true;
+					}
+
+					_draw_gui_primitive(4, points, NULL, uvs);
+
+					if (untile) {
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+					}
+				} else {
+					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, Vector2());
+					_draw_gui_primitive(4, points, NULL, NULL);
+				}
+
+#else
+				//disabled because it fails on buggy nvidia drivers
 				_bind_quad_buffer();
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
+
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
 					state.canvas_shader.use_material((void *)p_material);
@@ -466,7 +544,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+#endif
 			} break;
 
 			case Item::Command::TYPE_NINEPATCH: {
@@ -474,7 +552,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandNinePatch *np = static_cast<Item::CommandNinePatch *>(command);
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
 					state.canvas_shader.use_material((void *)p_material);
@@ -562,7 +639,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					buffer[(1 * 4 * 4) + 14] = (source.position.x + source.size.x) * texpixel_size.x;
 					buffer[(1 * 4 * 4) + 15] = (source.position.y + np->margin[MARGIN_TOP]) * texpixel_size.y;
 
-					// thrid row
+					// third row
 
 					buffer[(2 * 4 * 4) + 0] = np->rect.position.x;
 					buffer[(2 * 4 * 4) + 1] = np->rect.position.y + np->rect.size.y - np->margin[MARGIN_BOTTOM];
@@ -638,7 +715,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandCircle *circle = static_cast<Item::CommandCircle *>(command);
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
@@ -669,7 +745,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandPolygon *polygon = static_cast<Item::CommandPolygon *>(command);
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
@@ -690,7 +765,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				Item::CommandPolyLine *pline = static_cast<Item::CommandPolyLine *>(command);
 
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, false);
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
@@ -723,7 +797,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				Item::CommandPrimitive *primitive = static_cast<Item::CommandPrimitive *>(command);
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
-				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_UV_ATTRIBUTE, true);
 
 				if (state.canvas_shader.bind()) {
 					_set_uniforms();
@@ -807,8 +880,6 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 	RasterizerStorageGLES2::Shader *shader_cache = NULL;
 
 	bool rebind_shader = true;
-
-	Size2 rt_size = Size2(storage->frame.current_rt->width, storage->frame.current_rt->height);
 
 	state.current_tex = RID();
 	state.current_tex_ptr = NULL;
@@ -1048,6 +1119,43 @@ void RasterizerCanvasGLES2::draw_generic_textured_rect(const Rect2 &p_rect, cons
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void RasterizerCanvasGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
+	Vector2 half_size;
+	if (storage->frame.current_rt) {
+		half_size = Vector2(storage->frame.current_rt->width, storage->frame.current_rt->height);
+	} else {
+		half_size = OS::get_singleton()->get_window_size();
+	}
+	half_size *= 0.5;
+	Vector2 offset((p_rect.position.x - half_size.x) / half_size.x, (p_rect.position.y - half_size.y) / half_size.y);
+	Vector2 scale(p_rect.size.x / half_size.x, p_rect.size.y / half_size.y);
+
+	float aspect_ratio = p_rect.size.x / p_rect.size.y;
+
+	// setup our lens shader
+	state.lens_shader.bind();
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::OFFSET, offset);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::SCALE, scale);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::K1, p_k1);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::K2, p_k2);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::EYE_CENTER, p_eye_center);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::UPSCALE, p_oversample);
+	state.lens_shader.set_uniform(LensDistortedShaderGLES2::ASPECT_RATIO, aspect_ratio);
+
+	// bind our quad buffer
+	_bind_quad_buffer();
+
+	// and draw
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	// and cleanup
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+		glDisableVertexAttribArray(i);
+	}
+}
+
 void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_image) {
 }
 
@@ -1073,6 +1181,7 @@ void RasterizerCanvasGLES2::initialize() {
 	// polygon buffer
 	{
 		uint32_t poly_size = GLOBAL_DEF("rendering/limits/buffers/canvas_polygon_buffer_size_kb", 128);
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/canvas_polygon_buffer_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/canvas_polygon_buffer_size_kb", PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
 		poly_size *= 1024;
 		poly_size = MAX(poly_size, (2 + 2 + 4) * 4 * sizeof(float));
 		glGenBuffers(1, &data.polygon_buffer);
@@ -1084,6 +1193,7 @@ void RasterizerCanvasGLES2::initialize() {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		uint32_t index_size = GLOBAL_DEF("rendering/limits/buffers/canvas_polygon_index_size_kb", 128);
+		ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/buffers/canvas_polygon_index_size_kb", PropertyInfo(Variant::INT, "rendering/limits/buffers/canvas_polygon_index_size_kb", PROPERTY_HINT_RANGE, "0,256,1,or_greater"));
 		index_size *= 1024; // kb
 		glGenBuffers(1, &data.polygon_index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.polygon_index_buffer);
@@ -1147,7 +1257,6 @@ void RasterizerCanvasGLES2::initialize() {
 			_EIDX(1, 1), _EIDX(1, 2), _EIDX(2, 2),
 			_EIDX(2, 2), _EIDX(2, 1), _EIDX(1, 1)
 		};
-		;
 #undef _EIDX
 
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elems), elems, GL_STATIC_DRAW);
@@ -1160,6 +1269,10 @@ void RasterizerCanvasGLES2::initialize() {
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
 
 	state.canvas_shader.bind();
+
+	state.lens_shader.init();
+
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
 }
 
 void RasterizerCanvasGLES2::finalize() {

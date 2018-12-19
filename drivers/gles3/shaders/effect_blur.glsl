@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -22,11 +24,13 @@ void main() {
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 #if !defined(GLES_OVER_GL)
 precision mediump float;
 #endif
+/* clang-format on */
 
 in vec2 uv_interp;
 uniform sampler2D source_color; //texunit:0
@@ -90,6 +94,7 @@ uniform sampler2D source_dof_original; //texunit:2
 
 uniform float exposure;
 uniform float white;
+uniform highp float luminance_cap;
 
 #ifdef GLOW_USE_AUTO_EXPOSURE
 
@@ -267,7 +272,7 @@ void main() {
 	float luminance = max(frag_color.r, max(frag_color.g, frag_color.b));
 	float feedback = max(smoothstep(glow_hdr_threshold, glow_hdr_threshold + glow_hdr_scale, luminance), glow_bloom);
 
-	frag_color *= feedback;
+	frag_color = min(frag_color * feedback, vec4(luminance_cap));
 
 #endif
 

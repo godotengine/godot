@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatSaver" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+		Saves a specific resource type to a file.
+	</brief_description>
+	<description>
+		The engine can save resources when you do it from the editor, or when you call `ResourceSaver.save(resource)`. This is accomplished with multiple `ResourceFormatSavers`, each handling its own format.
+		By default, Godot saves resources as `.tres`, `.res` or another built-in format, but you can choose to create your own format by extending this class. You should give it a global class name with `class_name` for it to be registered. You may as well implement a [ResourceFormatLoader].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_recognized_extensions" qualifiers="virtual">
+			<return type="PoolStringArray">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				Gets the list of extensions for files this saver is able to write.
+			</description>
+		</method>
+		<method name="recognize" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="resource" type="Resource">
+			</argument>
+			<description>
+				Returns true if the given resource object can be saved by this saver.
+			</description>
+		</method>
+		<method name="save" qualifiers="virtual">
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="resource" type="Resource">
+			</argument>
+			<argument index="2" name="flags" type="int">
+			</argument>
+			<description>
+				Saves the given resource object to a file. flags is a bitmask composed with FLAG_* constants defined in [ResourceSaver]. Returns OK on success, or an ERR_* constant listed in [@GlobalScope] if it failed.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

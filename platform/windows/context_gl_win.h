@@ -35,9 +35,9 @@
 #ifndef CONTEXT_GL_WIN_H
 #define CONTEXT_GL_WIN_H
 
+#include "core/error_list.h"
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "error_list.h"
-#include "os/os.h"
 
 #include <windows.h>
 
@@ -69,7 +69,7 @@ public:
 	virtual bool is_using_vsync() const;
 
 	ContextGL_Win(HWND hwnd, bool p_opengl_3_context);
-	~ContextGL_Win();
+	virtual ~ContextGL_Win();
 };
 
 #endif

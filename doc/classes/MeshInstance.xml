@@ -41,6 +41,12 @@
 				Returns the [Material] for a surface of the [Mesh] resource.
 			</description>
 		</method>
+		<method name="get_surface_material_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_surface_material">
 			<return type="void">
 			</return>

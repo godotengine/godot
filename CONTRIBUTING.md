@@ -59,7 +59,8 @@ by drag and dropping the file in the GitHub edition field.
 
 If you want to add new engine functionalities, please make sure that:
 
-* This functionality is desired.
+* This functionality is desired, which means that it solves a common use case
+  that several users will need in their real-life projects.
 * You talked to other developers on how to implement it best (on either
   communication channel, and maybe in a GitHub issue first before making your
   PR).
@@ -70,11 +71,23 @@ Similar rules can be applied when contributing bug fixes - it's always best to
 discuss the implementation in the bug report first if you are not 100% about
 what would be the best fix.
 
+[This blog post](https://godotengine.org/article/will-your-contribution-be-merged-heres-how-tell)
+outlines the process used by core developers when assessing PRs. We strongly
+recommend that you have a look at it to know what's important to take into
+account for a PR to be considered for merging.
+
+In addition to the following tips, also take a look at the
+[Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
+for an introduction to developing on Godot.
+
+The [Contributing docs](http://docs.godotengine.org/en/latest/community/contributing/index.html)
+also have important information on the PR workflow and the code style we use.
+
 #### Be nice to the git history
 
-Try to make simple PRs with that handle one specific topic. Just like for
-reporting issues, it's better to open 3 different PRs that each address a
-different issue than one big PR with three commits.
+Try to make simple PRs that handle one specific topic. Just like for reporting
+issues, it's better to open 3 different PRs that each address a different issue
+than one big PR with three commits.
 
 When updating your fork with upstream changes, please use ``git pull --rebase``
 to avoid creating "merge commits". Those commits unnecessarily pollute the git
@@ -88,6 +101,9 @@ Internet).
 
 This git style guide has some good practices to have in mind:
 [Git Style Guide](https://github.com/agis-/git-style-guide)
+
+See our [PR workflow](http://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
+documentation for tips on using Git, amending commits and rebasing branches.
 
 #### Format your commit logs with readability in mind
 
@@ -133,6 +149,10 @@ You can contribute to Godot's translation from the [Hosted
 Weblate](https://hosted.weblate.org/projects/godot-engine/godot), an open
 source and web-based translation platform. Please refer to the [translation
 readme](editor/translations/README.md) for more information.
+
+You can also help translate [Godot's
+documentation](https://hosted.weblate.org/projects/godot-engine/godot-docs/)
+on Weblate.
 
 ## Communicating with developers
 

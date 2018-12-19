@@ -45,7 +45,7 @@ class PathSpatialGizmo : public EditorSpatialGizmo {
 
 public:
 	virtual String get_handle_name(int p_idx) const;
-	virtual Variant get_handle_value(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx);
 	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 

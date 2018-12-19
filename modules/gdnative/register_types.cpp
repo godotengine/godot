@@ -29,12 +29,10 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "gdnative/gdnative.h"
 
 #include "gdnative.h"
-
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
 
 #include "arvr/register_types.h"
 #include "nativescript/register_types.h"
@@ -42,6 +40,8 @@
 #include "pluginscript/register_types.h"
 
 #include "core/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
@@ -148,7 +148,7 @@ protected:
 };
 
 struct LibrarySymbol {
-	char *name;
+	const char *name;
 	bool is_required;
 };
 
@@ -239,7 +239,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 		String additional_code = "extern void register_dynamic_symbol(char *name, void *address);\n"
 								 "extern void add_ios_init_callback(void (*cb)());\n";
 		String linker_flags = "";
-		for (int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+		for (unsigned int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
 			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
 			String code = declare_pattern.replace("$name", full_name);
 			code = code.replace("$weak", expected_symbols[i].is_required ? "" : " __attribute__((weak))");
@@ -255,7 +255,7 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 
 		additional_code += String("void $prefixinit() {\n").replace("$prefix", lib->get_symbol_prefix());
 		String register_pattern = "  if (&$name) register_dynamic_symbol((char *)\"$name\", (void *)$name);\n";
-		for (int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
+		for (unsigned int i = 0; i < sizeof(expected_symbols) / sizeof(expected_symbols[0]); ++i) {
 			String full_name = lib->get_symbol_prefix() + expected_symbols[i].name;
 			additional_code += register_pattern.replace("$name", full_name);
 		}
@@ -299,8 +299,8 @@ GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
 Vector<Ref<GDNative> > singleton_gdnatives;
 
-GDNativeLibraryResourceLoader *resource_loader_gdnlib = NULL;
-GDNativeLibraryResourceSaver *resource_saver_gdnlib = NULL;
+Ref<GDNativeLibraryResourceLoader> resource_loader_gdnlib;
+Ref<GDNativeLibraryResourceSaver> resource_saver_gdnlib;
 
 void register_gdnative_types() {
 
@@ -312,8 +312,8 @@ void register_gdnative_types() {
 	ClassDB::register_class<GDNativeLibrary>();
 	ClassDB::register_class<GDNative>();
 
-	resource_loader_gdnlib = memnew(GDNativeLibraryResourceLoader);
-	resource_saver_gdnlib = memnew(GDNativeLibraryResourceSaver);
+	resource_loader_gdnlib.instance();
+	resource_saver_gdnlib.instance();
 
 	ResourceLoader::add_resource_format_loader(resource_loader_gdnlib);
 	ResourceSaver::add_resource_format_saver(resource_saver_gdnlib);
@@ -391,8 +391,11 @@ void unregister_gdnative_types() {
 	}
 #endif
 
-	memdelete(resource_loader_gdnlib);
-	memdelete(resource_saver_gdnlib);
+	ResourceLoader::remove_resource_format_loader(resource_loader_gdnlib);
+	ResourceSaver::remove_resource_format_saver(resource_saver_gdnlib);
+
+	resource_loader_gdnlib.unref();
+	resource_saver_gdnlib.unref();
 
 	// This is for printing out the sizes of the core types
 

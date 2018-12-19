@@ -47,7 +47,7 @@ void MonoDevelopInstance::execute(const Vector<String> &p_files) {
 	execute_method->invoke(gc_handle->get_target(), args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL();
 	}
 }
@@ -59,7 +59,7 @@ void MonoDevelopInstance::execute(const String &p_file) {
 	execute(files);
 }
 
-MonoDevelopInstance::MonoDevelopInstance(const String &p_solution) {
+MonoDevelopInstance::MonoDevelopInstance(const String &p_solution, EditorId p_editor_id) {
 
 	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
 
@@ -67,15 +67,16 @@ MonoDevelopInstance::MonoDevelopInstance(const String &p_solution) {
 
 	MonoObject *obj = mono_object_new(TOOLS_DOMAIN, klass->get_mono_ptr());
 
-	GDMonoMethod *ctor = klass->get_method(".ctor", 1);
+	GDMonoMethod *ctor = klass->get_method(".ctor", 2);
 	MonoException *exc = NULL;
 
 	Variant solution = p_solution;
-	const Variant *args[1] = { &solution };
+	Variant editor_id = p_editor_id;
+	const Variant *args[2] = { &solution, &editor_id };
 	ctor->invoke(obj, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL();
 	}
 

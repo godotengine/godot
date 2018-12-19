@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
 	char *cwd = (char *)malloc(PATH_MAX);
-	getcwd(cwd, PATH_MAX);
+	char *ret = getcwd(cwd, PATH_MAX);
 
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
 	if (err != OK) {
@@ -55,7 +55,8 @@ int main(int argc, char *argv[]) {
 		os.run(); // it is actually the OS that decides how to run
 	Main::cleanup();
 
-	chdir(cwd);
+	if (ret)
+		chdir(cwd);
 	free(cwd);
 
 	return os.get_exit_code();

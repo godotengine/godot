@@ -30,9 +30,12 @@
 
 #include "particles_2d.h"
 
-#include "engine.h"
-#include "scene/3d/particles.h"
+#include "scene/resources/particles_material.h"
 #include "scene/scene_string_names.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/engine.h"
+#endif
 
 void Particles2D::set_emitting(bool p_emitting) {
 
@@ -114,7 +117,7 @@ void Particles2D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	Ref<ParticlesMaterial> pm = p_material;
 	if (pm.is_valid() && !pm->get_flag(ParticlesMaterial::FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
-		//likely a new material, modify it!
+		// Likely a new (3D) material, modify it to match 2D space
 		pm->set_flag(ParticlesMaterial::FLAG_DISABLE_Z, true);
 		pm->set_gravity(Vector3(0, 98, 0));
 	}
@@ -216,6 +219,20 @@ String Particles2D::get_configuration_warning() const {
 		if (warnings != String())
 			warnings += "\n";
 		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+	} else {
+
+		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
+
+		if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
+			const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
+			if (process &&
+					(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
+							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
+				if (warnings != String())
+					warnings += "\n";
+				warnings += "- " + TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+			}
+		}
 	}
 
 	return warnings;
@@ -254,30 +271,6 @@ Ref<Texture> Particles2D::get_normal_map() const {
 void Particles2D::_validate_property(PropertyInfo &property) const {
 }
 
-void Particles2D::set_v_frames(int p_count) {
-
-	ERR_FAIL_COND(p_count < 1);
-	v_frames = p_count;
-	update();
-}
-
-int Particles2D::get_v_frames() const {
-
-	return v_frames;
-}
-
-void Particles2D::set_h_frames(int p_count) {
-
-	ERR_FAIL_COND(p_count < 1);
-	h_frames = p_count;
-	update();
-}
-
-int Particles2D::get_h_frames() const {
-
-	return h_frames;
-}
-
 void Particles2D::restart() {
 	VS::get_singleton()->particles_restart(particles);
 }
@@ -293,7 +286,7 @@ void Particles2D::_notification(int p_what) {
 		if (normal_map.is_valid())
 			normal_rid = normal_map->get_rid();
 
-		VS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid, h_frames, v_frames);
+		VS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid);
 
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint() && (this == get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->is_a_parent_of(this))) {
@@ -358,12 +351,6 @@ void Particles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("capture_rect"), &Particles2D::capture_rect);
 
-	ClassDB::bind_method(D_METHOD("set_v_frames", "frames"), &Particles2D::set_v_frames);
-	ClassDB::bind_method(D_METHOD("get_v_frames"), &Particles2D::get_v_frames);
-
-	ClassDB::bind_method(D_METHOD("set_h_frames", "frames"), &Particles2D::set_h_frames);
-	ClassDB::bind_method(D_METHOD("get_h_frames"), &Particles2D::get_h_frames);
-
 	ClassDB::bind_method(D_METHOD("restart"), &Particles2D::restart);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
@@ -386,8 +373,6 @@ void Particles2D::_bind_methods() {
 	ADD_GROUP("Textures", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "h_frames", PROPERTY_HINT_RANGE, "1,1024,1"), "set_h_frames", "get_h_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "v_frames", PROPERTY_HINT_RANGE, "1,1024,1"), "set_v_frames", "get_v_frames");
 
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
@@ -410,8 +395,6 @@ Particles2D::Particles2D() {
 	set_use_local_coordinates(true);
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
-	h_frames = 1;
-	v_frames = 1;
 }
 
 Particles2D::~Particles2D() {

@@ -30,13 +30,13 @@
 
 #include "gdscript.h"
 
-#include "engine.h"
+#include "core/engine.h"
+#include "core/global_constants.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "gdscript_compiler.h"
-#include "global_constants.h"
-#include "io/file_access_encrypted.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
 
 ///////////////////////////
 
@@ -421,31 +421,40 @@ bool GDScript::_update_exports() {
 				base_cache = Ref<GDScript>();
 			}
 
-			if (c->extends_used && String(c->extends_file) != "" && String(c->extends_file) != get_path()) {
+			if (c->extends_used) {
+				String path = "";
+				if (String(c->extends_file) != "" && String(c->extends_file) != get_path()) {
+					path = c->extends_file;
+					if (path.is_rel_path()) {
 
-				String path = c->extends_file;
-				if (path.is_rel_path()) {
+						String base = get_path();
+						if (base == "" || base.is_rel_path()) {
 
-					String base = get_path();
-					if (base == "" || base.is_rel_path()) {
-
-						ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
-					} else {
-						path = base.get_base_dir().plus_file(path);
+							ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
+						} else {
+							path = base.get_base_dir().plus_file(path);
+						}
 					}
+				} else if (c->extends_class.size() != 0) {
+					String base = c->extends_class[0];
+
+					if (ScriptServer::is_global_class(base))
+						path = ScriptServer::get_global_class_path(base);
 				}
 
-				if (path != get_path()) {
+				if (path != "") {
+					if (path != get_path()) {
 
-					Ref<GDScript> bf = ResourceLoader::load(path);
+						Ref<GDScript> bf = ResourceLoader::load(path);
 
-					if (bf.is_valid()) {
+						if (bf.is_valid()) {
 
-						base_cache = bf;
-						bf->inheriters_cache.insert(get_instance_id());
+							base_cache = bf;
+							bf->inheriters_cache.insert(get_instance_id());
+						}
+					} else {
+						ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
 					}
-				} else {
-					ERR_PRINT(("Path extending itself in  " + path).utf8().get_data());
 				}
 			}
 
@@ -469,8 +478,15 @@ bool GDScript::_update_exports() {
 			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
 				E->get()->set_build_failed(true);
 			}
+			return false;
 		}
 	} else {
+		if (!valid) {
+			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+				E->get()->set_build_failed(true);
+			}
+			return false;
+		}
 	}
 
 	if (base_cache.is_valid()) {
@@ -719,22 +735,36 @@ Error GDScript::load_byte_code(const String &p_path) {
 
 		FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
 		ERR_FAIL_COND_V(!fa, ERR_CANT_OPEN);
+
 		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 		ERR_FAIL_COND_V(!fae, ERR_CANT_OPEN);
+
 		Vector<uint8_t> key;
 		key.resize(32);
 		for (int i = 0; i < key.size(); i++) {
 			key.write[i] = script_encryption_key[i];
 		}
+
 		Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_READ);
-		ERR_FAIL_COND_V(err, err);
+
+		if (err) {
+			fa->close();
+			memdelete(fa);
+			memdelete(fae);
+
+			ERR_FAIL_COND_V(err, err);
+		}
+
 		bytecode.resize(fae->get_len());
 		fae->get_buffer(bytecode.ptrw(), bytecode.size());
+		fae->close();
 		memdelete(fae);
+
 	} else {
 
 		bytecode = FileAccess::get_file_as_array(p_path);
 	}
+
 	ERR_FAIL_COND_V(bytecode.size() == 0, ERR_PARSE_ERROR);
 	path = p_path;
 
@@ -837,7 +867,6 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 	else if (base_cache.is_valid()) {
 		return base_cache->has_script_signal(p_signal);
 	}
-
 #endif
 	return false;
 }
@@ -1762,10 +1791,11 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"remote",
 		"sync",
 		"master",
+		"puppet",
 		"slave",
 		"remotesync",
 		"mastersync",
-		"slavesync",
+		"puppetsync",
 		0
 	};
 
@@ -1956,14 +1986,19 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case UNSAFE_CAST: {
 			CHECK_SYMBOLS(1);
-			return "The value is cast to '" + symbols[0] + "' but has an unkown type.";
+			return "The value is cast to '" + symbols[0] + "' but has an unknown type.";
 		} break;
 		case UNSAFE_CALL_ARGUMENT: {
 			CHECK_SYMBOLS(4);
 			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
 		} break;
+		case DEPRECATED_KEYWORD: {
+			CHECK_SYMBOLS(2);
+			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
+		} break;
+		case WARNING_MAX: break; // Can't happen, but silences warning
 	}
-	ERR_EXPLAIN("Invalid GDScript waring code: " + get_name_from_code(code));
+	ERR_EXPLAIN("Invalid GDScript warning code: " + get_name_from_code(code));
 	ERR_FAIL_V(String());
 
 #undef CHECK_SYMBOLS
@@ -2001,6 +2036,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
+		"DEPRECATED_KEYWORD",
 		NULL
 	};
 
@@ -2014,7 +2050,7 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 		}
 	}
 
-	ERR_EXPLAIN("Invalid GDScript waring name: " + p_name);
+	ERR_EXPLAIN("Invalid GDScript warning name: " + p_name);
 	ERR_FAIL_V(WARNING_MAX);
 }
 
@@ -2044,12 +2080,12 @@ GDScriptLanguage::GDScriptLanguage() {
 
 	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF("debug/settings/gdscript/max_call_stack", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/gdscript/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/gdscript/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
+
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 
 		_debug_max_call_stack = dmcs;
-		if (_debug_max_call_stack < 1024)
-			_debug_max_call_stack = 1024;
 		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 
 	} else {
@@ -2060,6 +2096,7 @@ GDScriptLanguage::GDScriptLanguage() {
 #ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
+	GLOBAL_DEF("debug/gdscript/completion/autocomplete_setters_and_getters", false);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		String warning = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)i).to_lower();
 		GLOBAL_DEF("debug/gdscript/warnings/" + warning, !warning.begins_with("unsafe_"));
@@ -2095,23 +2132,14 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 		script->set_script_path(p_original_path); // script needs this.
 		script->set_path(p_original_path);
 		Error err = script->load_byte_code(p_path);
-
-		if (err != OK) {
-
-			ERR_FAIL_COND_V(err != OK, RES());
-		}
+		ERR_FAIL_COND_V(err != OK, RES());
 
 	} else {
 		Error err = script->load_source_code(p_path);
-
-		if (err != OK) {
-
-			ERR_FAIL_COND_V(err != OK, RES());
-		}
+		ERR_FAIL_COND_V(err != OK, RES());
 
 		script->set_script_path(p_original_path); // script needs this.
 		script->set_path(p_original_path);
-		//script->set_name(p_path.get_file());
 
 		script->reload();
 	}
@@ -2120,6 +2148,7 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_ori
 
 	return scriptres;
 }
+
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 
 	p_extensions->push_back("gd");

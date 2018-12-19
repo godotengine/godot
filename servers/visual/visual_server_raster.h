@@ -31,8 +31,8 @@
 #ifndef VISUAL_SERVER_RASTER_H
 #define VISUAL_SERVER_RASTER_H
 
-#include "allocators.h"
-#include "octree.h"
+#include "core/allocators.h"
+#include "core/math/octree.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 #include "visual_server_canvas.h"
@@ -59,7 +59,6 @@ class VisualServerRaster : public VisualServer {
 	};
 
 	static int changes;
-	bool draw_extra_frame;
 	RID test_cube;
 
 	int black_margin[4];
@@ -203,6 +202,7 @@ public:
 
 	BIND3(material_set_param, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, material_get_param, RID, const StringName &)
+	BIND2RC(Variant, material_get_param_default, RID, const StringName &)
 
 	BIND2(material_set_render_priority, RID, int)
 	BIND2(material_set_line_width, RID, float)
@@ -336,6 +336,7 @@ public:
 	BIND2(reflection_probe_set_enable_box_projection, RID, bool)
 	BIND2(reflection_probe_set_enable_shadows, RID, bool)
 	BIND2(reflection_probe_set_cull_mask, RID, uint32_t)
+	BIND2(reflection_probe_set_resolution, RID, int)
 
 	/* BAKED LIGHT API */
 
@@ -473,7 +474,7 @@ public:
 	BIND2(viewport_set_transparent_background, RID, bool)
 
 	BIND2(viewport_set_global_canvas_transform, RID, const Transform2D &)
-	BIND3(viewport_set_canvas_layer, RID, RID, int)
+	BIND4(viewport_set_canvas_stacking, RID, RID, int, int)
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
@@ -494,6 +495,7 @@ public:
 	BIND2(environment_set_background, RID, EnvironmentBG)
 	BIND2(environment_set_sky, RID, RID)
 	BIND2(environment_set_sky_custom_fov, RID, float)
+	BIND2(environment_set_sky_orientation, RID, const Basis &)
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
@@ -503,14 +505,14 @@ public:
 
 	BIND6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	BIND6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	BIND10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
+	BIND11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	BIND9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
 	BIND6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
 	BIND5(environment_set_fog, RID, bool, const Color &, const Color &, float)
-	BIND6(environment_set_fog_depth, RID, bool, float, float, bool, float)
+	BIND7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	BIND5(environment_set_fog_height, RID, bool, float, float, float)
 
 	/* SCENARIO API */
@@ -574,6 +576,8 @@ public:
 	BIND2(canvas_item_set_visible, RID, bool)
 	BIND2(canvas_item_set_light_mask, RID, int)
 
+	BIND2(canvas_item_set_update_when_visible, RID, bool)
+
 	BIND2(canvas_item_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_set_clip, RID, bool)
 	BIND2(canvas_item_set_distance_field_mode, RID, bool)
@@ -596,7 +600,7 @@ public:
 	BIND10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
 	BIND4(canvas_item_add_mesh, RID, const RID &, RID, RID)
 	BIND4(canvas_item_add_multimesh, RID, RID, RID, RID)
-	BIND6(canvas_item_add_particles, RID, RID, RID, RID, int, int)
+	BIND4(canvas_item_add_particles, RID, RID, RID, RID)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)
 	BIND2(canvas_item_add_clip_ignore, RID, bool)
 	BIND2(canvas_item_set_sort_children_by_y, RID, bool)
@@ -685,6 +689,8 @@ public:
 	virtual void set_debug_generate_wireframes(bool p_generate);
 
 	virtual void call_set_use_vsync(bool p_enable);
+
+	virtual bool is_low_end() const;
 
 	VisualServerRaster();
 	~VisualServerRaster();

@@ -32,9 +32,9 @@
 
 #include "dir_access_windows.h"
 
-#include "os/memory.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
 
-#include "print_string.h"
 #include <stdio.h>
 #include <wchar.h>
 #include <windows.h>

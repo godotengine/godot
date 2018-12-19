@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "error_macros.h"
+#include "core/error_macros.h"
 #include "networked_multiplayer_enet.h"
 
 static bool enet_ok = false;

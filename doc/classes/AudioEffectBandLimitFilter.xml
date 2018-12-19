@@ -4,7 +4,7 @@
 		Adds a band limit filter to the Audio Bus.
 	</brief_description>
 	<description>
-		Limits the frequencies in a range around the [member cutoff_hz] and allows frequencies outside of this range to pass.
+		Limits the frequencies in a range around the [member AudioEffectFilter.cutoff_hz] and allows frequencies outside of this range to pass.
 	</description>
 	<tutorials>
 	</tutorials>

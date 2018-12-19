@@ -30,10 +30,10 @@
 
 #include "global_constants.h"
 
-#include "object.h"
-#include "os/input_event.h"
-#include "os/keyboard.h"
-#include "variant.h"
+#include "core/object.h"
+#include "core/os/input_event.h"
+#include "core/os/keyboard.h"
+#include "core/variant.h"
 
 struct _GlobalConstant {
 
@@ -547,8 +547,9 @@ void register_global_constants() {
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_INTERNATIONALIZED);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_GROUP);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_CATEGORY);
-	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONZERO);
-	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONONE);
+	//deprecated, replaced by ClassDB function to check default value
+	//BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONZERO);
+	//BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_STORE_IF_NONONE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_NO_INSTANCE_STATE);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_RESTART_IF_CHANGED);
 	BIND_GLOBAL_ENUM_CONSTANT(PROPERTY_USAGE_SCRIPT_VARIABLE);

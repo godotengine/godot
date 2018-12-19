@@ -30,12 +30,12 @@
 
 #include "rename_dialog.h"
 
+#include "core/print_string.h"
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
 #include "modules/regex/regex.h"
 #include "plugins/script_editor_plugin.h"
-#include "print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tab_container.h"
@@ -220,21 +220,21 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 
 	Label *lbl_count_step = memnew(Label);
 	lbl_count_step->set_text(TTR("Step"));
-	lbl_count_step->set_tooltip(TTR("Ammount by which counter is incremented for each node"));
+	lbl_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node"));
 	hbc_count_options->add_child(lbl_count_step);
 
 	spn_count_step = memnew(SpinBox);
-	spn_count_step->set_tooltip(TTR("Ammount by which counter is incremented for each node"));
+	spn_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node"));
 	spn_count_step->set_step(1);
 	hbc_count_options->add_child(spn_count_step);
 
 	Label *lbl_count_padding = memnew(Label);
 	lbl_count_padding->set_text(TTR("Padding"));
-	lbl_count_padding->set_tooltip(TTR("Minium number of digits for the counter.\nMissing digits are padded with leading zeros."));
+	lbl_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	hbc_count_options->add_child(lbl_count_padding);
 
 	spn_count_padding = memnew(SpinBox);
-	spn_count_padding->set_tooltip(TTR("Minium number of digits for the counter.\nMissing digits are padded with leading zeros."));
+	spn_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	spn_count_padding->set_step(1);
 	hbc_count_options->add_child(spn_count_padding);
 

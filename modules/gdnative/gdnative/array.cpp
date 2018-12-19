@@ -318,6 +318,38 @@ void GDAPI godot_array_destroy(godot_array *p_self) {
 	((Array *)p_self)->~Array();
 }
 
+godot_array GDAPI godot_array_duplicate(const godot_array *p_self, const godot_bool p_deep) {
+	const Array *self = (const Array *)p_self;
+	godot_array res;
+	Array *val = (Array *)&res;
+	memnew_placement(val, Array);
+	*val = self->duplicate(p_deep);
+	return res;
+}
+
+godot_variant GDAPI godot_array_max(const godot_array *p_self) {
+	const Array *self = (const Array *)p_self;
+	godot_variant v;
+	Variant *val = (Variant *)&v;
+	memnew_placement(val, Variant);
+	*val = self->max();
+	return v;
+}
+
+godot_variant GDAPI godot_array_min(const godot_array *p_self) {
+	const Array *self = (const Array *)p_self;
+	godot_variant v;
+	Variant *val = (Variant *)&v;
+	memnew_placement(val, Variant);
+	*val = self->min();
+	return v;
+}
+
+void GDAPI godot_array_shuffle(godot_array *p_self) {
+	Array *self = (Array *)p_self;
+	self->shuffle();
+}
+
 #ifdef __cplusplus
 }
 #endif

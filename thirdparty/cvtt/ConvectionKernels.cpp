@@ -1420,6 +1420,16 @@ namespace cvtt
             return v;
         }
 
+        static bool MakeBoolInt16(bool b)
+        {
+            return b;
+        }
+
+        static bool MakeBoolFloat(bool b)
+        {
+            return b;
+        }
+
         static bool AndNot(bool a, bool b)
         {
             return a && !b;

@@ -22,7 +22,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/getting_started/step_by_step/filesystem.html</link>
+		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/filesystem.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -100,7 +100,7 @@
 			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma).
+				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
@@ -325,6 +325,17 @@
 			</argument>
 			<description>
 				Stores the given array of bytes in the file.
+			</description>
+		</method>
+		<method name="store_csv_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="values" type="PoolStringArray">
+			</argument>
+			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
+			</argument>
+			<description>
+				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
 			</description>
 		</method>
 		<method name="store_double">

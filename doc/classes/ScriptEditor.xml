@@ -70,14 +70,14 @@
 	</methods>
 	<signals>
 		<signal name="editor_script_changed">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when user changed active script. Argument is a freshly activated [Script].
 			</description>
 		</signal>
 		<signal name="script_close">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when editor is about to close the active script. Argument is a [Script] that is going to be closed.

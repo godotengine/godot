@@ -30,7 +30,7 @@
 
 #include "editor_scale.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 static float scale = 1.0;
 

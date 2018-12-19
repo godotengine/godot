@@ -30,11 +30,9 @@
 
 #include "rasterizer_gles3.h"
 
-#include "gl_context/context_gl.h"
-#include "os/os.h"
-#include "project_settings.h"
-
-#include <string.h>
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "drivers/gl_context/context_gl.h"
 
 RasterizerStorage *RasterizerGLES3::get_storage() {
 
@@ -75,12 +73,12 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
 
-#if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
-#define GLAPIENTRY APIENTRY
-#else
-#define GLAPIENTRY
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define strcpy strcpy_s
 #endif
 
+#ifdef GLAD_ENABLED
+// Restricting to GLAD as only used in initialize() with GLAD_GL_ARB_debug_output
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
@@ -125,6 +123,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINTS(output);
 }
+#endif // GLAD_ENABLED
 
 typedef void (*DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -136,28 +135,32 @@ typedef void (*DEBUGPROCARB)(GLenum source,
 
 typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
 
+Error RasterizerGLES3::is_viable() {
+
+#ifdef GLAD_ENABLED
+	if (!gladLoadGL()) {
+		ERR_PRINT("Error initializing GLAD");
+		return ERR_UNAVAILABLE;
+	}
+
+// GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
+#ifdef OPENGL_ENABLED // OpenGL 3.3 Core Profile required
+	if (GLVersion.major < 3 || (GLVersion.major == 3 && GLVersion.minor < 3)) {
+#else // OpenGL ES 3.0
+	if (GLVersion.major < 3) {
+#endif
+		return ERR_UNAVAILABLE;
+	}
+
+#endif // GLAD_ENABLED
+	return OK;
+}
+
 void RasterizerGLES3::initialize() {
 
 	print_verbose("Using GLES3 video driver");
 
 #ifdef GLAD_ENABLED
-	if (!gladLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
-	}
-
-// GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
-#ifdef OPENGL_ENABLED // OpenGL 3.3 Core Profile required
-	if (GLVersion.major < 3 && GLVersion.minor < 3) {
-#else // OpenGL ES 3.0
-	if (GLVersion.major < 3) {
-#endif
-		ERR_PRINT("Your system's graphic drivers seem not to support OpenGL 3.3 / OpenGL ES 3.0, sorry :(\n"
-				  "Try a drivers update, buy a new GPU or try software rendering on Linux; Godot will now crash with a segmentation fault.");
-		OS::get_singleton()->alert("Your system's graphic drivers seem not to support OpenGL 3.3 / OpenGL ES 3.0, sorry :(\n"
-								   "Godot Engine will self-destruct as soon as you acknowledge this error message.",
-				"Fatal error: Insufficient OpenGL / GLES driver support");
-	}
-
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
@@ -167,7 +170,6 @@ void RasterizerGLES3::initialize() {
 			print_line("OpenGL debugging not supported!");
 		}
 	}
-
 #endif // GLAD_ENABLED
 
 	/* // For debugging
@@ -358,6 +360,26 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 #endif
 }
 
+void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
+	ERR_FAIL_COND(storage->frame.current_rt);
+
+	RasterizerStorageGLES3::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	glDisable(GL_BLEND);
+
+	// render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+	// output our texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, rt->color);
+
+	canvas->draw_lens_distortion_rect(p_screen_rect, p_k1, p_k2, p_eye_center, p_oversample);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 
 	if (OS::get_singleton()->is_layered_allowed()) {
@@ -404,10 +426,10 @@ void RasterizerGLES3::make_current() {
 
 void RasterizerGLES3::register_config() {
 
-	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF("rendering/quality/filters/anisotropic_filter_level", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/anisotropic_filter_level", PropertyInfo(Variant::INT, "rendering/quality/filters/anisotropic_filter_level", PROPERTY_HINT_RANGE, "1,16,1"));
 	GLOBAL_DEF("rendering/limits/time/time_rollover_secs", 3600);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/limits/time/time_rollover_secs", PropertyInfo(Variant::REAL, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"));
 }
 
 RasterizerGLES3::RasterizerGLES3() {

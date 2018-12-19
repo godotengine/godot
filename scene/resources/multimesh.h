@@ -51,11 +51,19 @@ public:
 		COLOR_FLOAT = VS::MULTIMESH_COLOR_FLOAT,
 	};
 
+	enum CustomDataFormat {
+		CUSTOM_DATA_NONE,
+		CUSTOM_DATA_8BIT,
+		CUSTOM_DATA_FLOAT,
+	};
+
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
 	TransformFormat transform_format;
 	ColorFormat color_format;
+	CustomDataFormat custom_data_format;
+	int instance_count;
 
 protected:
 	static void _bind_methods();
@@ -66,12 +74,18 @@ protected:
 	void _set_color_array(const PoolVector<Color> &p_array);
 	PoolVector<Color> _get_color_array() const;
 
+	void _set_custom_data_array(const PoolVector<Color> &p_array);
+	PoolVector<Color> _get_custom_data_array() const;
+
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
 	void set_color_format(ColorFormat p_color_format);
 	ColorFormat get_color_format() const;
+
+	void set_custom_data_format(CustomDataFormat p_custom_data_format);
+	CustomDataFormat get_custom_data_format() const;
 
 	void set_transform_format(TransformFormat p_transform_format);
 	TransformFormat get_transform_format() const;
@@ -85,6 +99,9 @@ public:
 	void set_instance_color(int p_instance, const Color &p_color);
 	Color get_instance_color(int p_instance) const;
 
+	void set_instance_custom_data(int p_instance, const Color &p_custom_data);
+	Color get_instance_custom_data(int p_instance) const;
+
 	virtual AABB get_aabb() const;
 
 	virtual RID get_rid() const;
@@ -95,5 +112,6 @@ public:
 
 VARIANT_ENUM_CAST(MultiMesh::TransformFormat);
 VARIANT_ENUM_CAST(MultiMesh::ColorFormat);
+VARIANT_ENUM_CAST(MultiMesh::CustomDataFormat);
 
 #endif // MULTI_MESH_H

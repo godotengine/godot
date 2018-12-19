@@ -31,7 +31,7 @@
 #ifndef GODOTSHARP_DIRS_H
 #define GODOTSHARP_DIRS_H
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 namespace GodotSharpDirs {
 
@@ -49,11 +49,18 @@ String get_mono_logs_dir();
 #ifdef TOOLS_ENABLED
 String get_mono_solutions_dir();
 String get_build_logs_dir();
-String get_custom_project_settings_dir();
-#endif
 
 String get_project_sln_path();
 String get_project_csproj_path();
+
+String get_data_mono_bin_dir();
+String get_data_editor_tools_dir();
+String get_data_editor_prebuilt_api_dir();
+#endif
+
+String get_data_mono_etc_dir();
+String get_data_mono_lib_dir();
+
 } // namespace GodotSharpDirs
 
 #endif // GODOTSHARP_DIRS_H

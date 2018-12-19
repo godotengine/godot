@@ -29,18 +29,18 @@
 /*************************************************************************/
 
 #include "export.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
+#include "core/io/zip_io.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/version.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
-#include "io/zip_io.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "platform/osx/logo.gen.h"
-#include "project_settings.h"
 #include "string.h"
-#include "version.h"
 #include <sys/stat.h>
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
@@ -74,7 +74,14 @@ public:
 	virtual String get_os_name() const { return "OSX"; }
 	virtual Ref<Texture> get_logo() const { return logo; }
 
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const { return use_dmg() ? "dmg" : "zip"; }
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+		List<String> list;
+		if (use_dmg()) {
+			list.push_back("dmg");
+		}
+		list.push_back("zip");
+		return list;
+	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
@@ -132,10 +139,76 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 }
 
+void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
+
+	int src_len = p_size * p_size;
+
+	Vector<uint8_t> result;
+	result.resize(src_len * 1.25); //temp vector for rle encoded data, make it 25% larger for worst case scenario
+	int res_size = 0;
+
+	uint8_t buf[128];
+	int buf_size = 0;
+
+	int i = 0;
+	while (i < src_len) {
+		uint8_t cur = p_source.read()[i * 4 + p_ch];
+
+		if (i < src_len - 2) {
+
+			if ((p_source.read()[(i + 1) * 4 + p_ch] == cur) && (p_source.read()[(i + 2) * 4 + p_ch] == cur)) {
+				if (buf_size > 0) {
+					result.write[res_size++] = (uint8_t)(buf_size - 1);
+					copymem(&result.write[res_size], &buf, buf_size);
+					res_size += buf_size;
+					buf_size = 0;
+				}
+
+				uint8_t lim = i + 130 >= src_len ? src_len - i - 1 : 130;
+				bool hit_lim = true;
+
+				for (int j = 3; j <= lim; j++) {
+					if (p_source.read()[(i + j) * 4 + p_ch] != cur) {
+						hit_lim = false;
+						i = i + j - 1;
+						result.write[res_size++] = (uint8_t)(j - 3 + 0x80);
+						result.write[res_size++] = cur;
+						break;
+					}
+				}
+				if (hit_lim) {
+					result.write[res_size++] = (uint8_t)(lim - 3 + 0x80);
+					result.write[res_size++] = cur;
+					i = i + lim;
+				}
+			} else {
+				buf[buf_size++] = cur;
+				if (buf_size == 128) {
+					result.write[res_size++] = (uint8_t)(buf_size - 1);
+					copymem(&result.write[res_size], &buf, buf_size);
+					res_size += buf_size;
+					buf_size = 0;
+				}
+			}
+		} else {
+			buf[buf_size++] = cur;
+			result.write[res_size++] = (uint8_t)(buf_size - 1);
+			copymem(&result.write[res_size], &buf, buf_size);
+			res_size += buf_size;
+			buf_size = 0;
+		}
+
+		i++;
+	}
+
+	int ofs = p_dest.size();
+	p_dest.resize(p_dest.size() + res_size);
+	copymem(&p_dest.write[ofs], result.ptr(), res_size);
+}
+
 void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_t> &p_data) {
 
 	Ref<ImageTexture> it = memnew(ImageTexture);
-	int size = 512;
 
 	Vector<uint8_t> data;
 
@@ -145,32 +218,82 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 	data.write[2] = 'n';
 	data.write[3] = 's';
 
-	const char *name[] = { "ic09", "ic08", "ic07", "icp6", "icp5", "icp4" };
-	int index = 0;
+	struct MacOSIconInfo {
+		const char *name;
+		const char *mask_name;
+		bool is_png;
+		int size;
+	};
 
-	while (size >= 16) {
+	static const MacOSIconInfo icon_infos[] = {
+		{ "ic10", "", true, 1024 }, //1024x1024 32-bit PNG and 512x512@2x 32-bit "retina" PNG
+		{ "ic09", "", true, 512 }, //512×512 32-bit PNG
+		{ "ic14", "", true, 512 }, //256x256@2x 32-bit "retina" PNG
+		{ "ic08", "", true, 256 }, //256×256 32-bit PNG
+		{ "ic13", "", true, 256 }, //128x128@2x 32-bit "retina" PNG
+		{ "ic07", "", true, 128 }, //128x128 32-bit PNG
+		{ "ic12", "", true, 64 }, //32x32@2x 32-bit "retina" PNG
+		{ "ic11", "", true, 32 }, //16x16@2x 32-bit "retina" PNG
+		{ "il32", "l8mk", false, 32 }, //32x32 24-bit RLE + 8-bit uncompressed mask
+		{ "is32", "s8mk", false, 16 } //16x16 24-bit RLE + 8-bit uncompressed mask
+	};
 
+	for (unsigned int i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		Ref<Image> copy = p_icon; // does this make sense? doesn't this just increase the reference count instead of making a copy? Do we even need a copy?
 		copy->convert(Image::FORMAT_RGBA8);
-		copy->resize(size, size);
-		it->create_from_image(copy);
-		String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("icon.png");
-		ResourceSaver::save(path, it);
+		copy->resize(icon_infos[i].size, icon_infos[i].size);
 
-		FileAccess *f = FileAccess::open(path, FileAccess::READ);
-		ERR_FAIL_COND(!f);
+		if (icon_infos[i].is_png) {
+			//encode png icon
+			it->create_from_image(copy);
+			String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("icon.png");
+			ResourceSaver::save(path, it);
 
-		int ofs = data.size();
-		uint32_t len = f->get_len();
-		data.resize(data.size() + len + 8);
-		f->get_buffer(&data.write[ofs + 8], len);
-		memdelete(f);
-		len += 8;
-		len = BSWAP32(len);
-		copymem(&data.write[ofs], name[index], 4);
-		encode_uint32(len, &data.write[ofs + 4]);
-		index++;
-		size /= 2;
+			FileAccess *f = FileAccess::open(path, FileAccess::READ);
+			ERR_FAIL_COND(!f);
+
+			int ofs = data.size();
+			uint32_t len = f->get_len();
+			data.resize(data.size() + len + 8);
+			f->get_buffer(&data.write[ofs + 8], len);
+			memdelete(f);
+			len += 8;
+			len = BSWAP32(len);
+			copymem(&data.write[ofs], icon_infos[i].name, 4);
+			encode_uint32(len, &data.write[ofs + 4]);
+		} else {
+			PoolVector<uint8_t> src_data = copy->get_data();
+
+			//encode 24bit RGB RLE icon
+			{
+				int ofs = data.size();
+				data.resize(data.size() + 8);
+
+				_rgba8_to_packbits_encode(0, icon_infos[i].size, src_data, data); // encode R
+				_rgba8_to_packbits_encode(1, icon_infos[i].size, src_data, data); // encode G
+				_rgba8_to_packbits_encode(2, icon_infos[i].size, src_data, data); // encode B
+
+				int len = data.size() - ofs;
+				len = BSWAP32(len);
+				copymem(&data.write[ofs], icon_infos[i].name, 4);
+				encode_uint32(len, &data.write[ofs + 4]);
+			}
+
+			//encode 8bit mask uncompressed icon
+			{
+				int ofs = data.size();
+				int len = copy->get_width() * copy->get_height();
+				data.resize(data.size() + len + 8);
+
+				for (int j = 0; j < len; j++) {
+					data.write[ofs + 8 + j] = src_data.read()[j * 4 + 3];
+				}
+				len += 8;
+				len = BSWAP32(len);
+				copymem(&data.write[ofs], icon_infos[i].mask_name, 4);
+				encode_uint32(len, &data.write[ofs + 4]);
+			}
+		}
 	}
 
 	uint32_t total_len = data.size();
@@ -334,7 +457,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	io2.opaque = &dst_f;
 	zipFile dst_pkg_zip = NULL;
 
-	if (use_dmg()) {
+	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
+	if (export_format == "dmg") {
 		// We're on OSX so we can export to DMG, but first we create our application bundle
 		tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".app");
 		print_line("Exporting to " + tmp_app_path_name);
@@ -429,7 +553,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
-			if (use_dmg()) {
+			if (export_format == "dmg") {
 				// write it into our application bundle
 				file = tmp_app_path_name + "/" + file;
 
@@ -461,7 +585,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				fi.internal_fa = info.internal_fa;
 				fi.external_fa = info.external_fa;
 
-				int zerr = zipOpenNewFileInZip(dst_pkg_zip,
+				zipOpenNewFileInZip(dst_pkg_zip,
 						file.utf8().get_data(),
 						&fi,
 						NULL,
@@ -472,7 +596,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
-				zerr = zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
+				zipWriteInFileInZip(dst_pkg_zip, data.ptr(), data.size());
 				zipCloseFileInZip(dst_pkg_zip);
 			}
 		}
@@ -491,7 +615,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	if (err == OK) {
 		ep.step("Making PKG", 1);
 
-		if (use_dmg()) {
+		if (export_format == "dmg") {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 			Vector<SharedObject> shared_objects;
 			err = save_pack(p_preset, pack_path, &shared_objects);

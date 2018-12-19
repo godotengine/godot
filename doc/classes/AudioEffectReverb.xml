@@ -15,7 +15,7 @@
 	</methods>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping">
-			Widens or narrows the stereo image of the reverb tail. 1 means fully widens. Value can range from 0 to 1. Default value: [code]1[/code].
+			Defines how reflective the imaginary room's walls are. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="dry" type="float" setter="set_dry" getter="get_dry">
 			Output percent of original sound. At 0, only modified sound is outputted. Value can range from 0 to 1. Default value: [code]1[/code].
@@ -33,7 +33,7 @@
 			Dimensions of simulated room. Bigger means more echoes. Value can range from 0 to 1. Default value: [code]0.8[/code].
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread">
-			Defines how reflective the imaginary room's walls are. Value can range from 0 to 1. Default value: [code]1[/code].
+			Widens or narrows the stereo image of the reverb tail. 1 means fully widens. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="wet" type="float" setter="set_wet" getter="get_wet">
 			Output percent of modified sound. At 0, only original sound is outputted. Value can range from 0 to 1. Default value: [code]0.5[/code].

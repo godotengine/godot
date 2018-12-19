@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "script_language.h"
-#include "project_settings.h"
+
+#include "core/project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -562,7 +563,8 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :
 		owner(p_owner),
 		language(p_language),
-		script(p_script) {
+		script(p_script),
+		build_failed(false) {
 }
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {

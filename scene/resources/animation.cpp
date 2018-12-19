@@ -30,7 +30,7 @@
 
 #include "animation.h"
 
-#include "geometry.h"
+#include "core/math/geometry.h"
 
 #define ANIM_MIN_LENGTH 0.001
 
@@ -1442,7 +1442,7 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_tra
 		case TYPE_BEZIER:
 		case TYPE_AUDIO:
 		case TYPE_ANIMATION: {
-			// they dont use transition
+			// they don't use transition
 		} break;
 	}
 }
@@ -1469,7 +1469,7 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 		middle = (low + high) / 2;
 
-		if (p_time == keys[middle].time) { //match
+		if (Math::abs(p_time - keys[middle].time) < CMP_EPSILON) { //match
 			return middle;
 		} else if (p_time < keys[middle].time)
 			high = middle - 1; //search low end of array
@@ -1901,7 +1901,7 @@ void Animation::value_track_set_update_mode(int p_track, UpdateMode p_mode) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND(t->type != TYPE_VALUE);
-	ERR_FAIL_INDEX(p_mode, 4);
+	ERR_FAIL_INDEX((int)p_mode, 4);
 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	vt->update_mode = p_mode;

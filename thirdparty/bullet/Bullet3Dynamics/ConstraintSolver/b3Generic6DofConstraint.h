@@ -69,7 +69,7 @@ public:
     {
     	m_accumulatedImpulse = 0.f;
         m_targetVelocity = 0;
-        m_maxMotorForce = 0.1f;
+        m_maxMotorForce = 6.0f;
         m_maxLimitForce = 300.0f;
         m_loLimit = 1.0f;
         m_hiLimit = -1.0f;

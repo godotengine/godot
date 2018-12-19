@@ -7,7 +7,7 @@
 		A PacketPeer implementation that should be passed to [method SceneTree.set_network_peer] after being initialized as either a client or server. Events can then be handled by connecting to [SceneTree] signals.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/high_level_multiplayer.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
 		<link>http://enet.bespin.org/usergroup0.html</link>
 	</tutorials>
 	<demos>
@@ -36,7 +36,7 @@
 			<argument index="4" name="client_port" type="int" default="0">
 			</argument>
 			<description>
-				Create client that connects to a server at [code]address[/code] using specified [code]port[/code]. The given address needs to be either a fully qualified domain nome (e.g. [code]www.example.com[/code]) or an IP address in IPv4 or IPv6 format (e.g. [code]192.168.1.1[/code]). The [code]port[/code] is the port the server is listening on. The [code]in_bandwidth[/code] and [code]out_bandwidth[/code] parameters can be used to limit the incoming and outgoing bandwidth to the given number of bytes per second. The default of 0 means unlimited bandwidth. Note that ENet will strategically drop packets on specific sides of a connection between peers to ensure the peer's bandwidth is not overwhelmed. The bandwidth parameters also determine the window size of a connection which limits the amount of reliable packets that may be in transit at any given time. Returns [code]OK[/code] if a client was created, [code]ERR_ALREADY_IN_USE[/code] if this NetworkedMultiplayerEnet instance already has an open connection (in which case you need to call [method close_connection] first) or [code]ERR_CANT_CREATE[/code] if the client could not be created. If [code]client_port[/code] is specified, the client will also listen to the given port, this is useful in some NAT traveral technique.
+				Create client that connects to a server at [code]address[/code] using specified [code]port[/code]. The given address needs to be either a fully qualified domain nome (e.g. [code]www.example.com[/code]) or an IP address in IPv4 or IPv6 format (e.g. [code]192.168.1.1[/code]). The [code]port[/code] is the port the server is listening on. The [code]in_bandwidth[/code] and [code]out_bandwidth[/code] parameters can be used to limit the incoming and outgoing bandwidth to the given number of bytes per second. The default of 0 means unlimited bandwidth. Note that ENet will strategically drop packets on specific sides of a connection between peers to ensure the peer's bandwidth is not overwhelmed. The bandwidth parameters also determine the window size of a connection which limits the amount of reliable packets that may be in transit at any given time. Returns [code]OK[/code] if a client was created, [code]ERR_ALREADY_IN_USE[/code] if this NetworkedMultiplayerEnet instance already has an open connection (in which case you need to call [method close_connection] first) or [code]ERR_CANT_CREATE[/code] if the client could not be created. If [code]client_port[/code] is specified, the client will also listen to the given port, this is useful in some NAT traversal technique.
 			</description>
 		</method>
 		<method name="create_server">
@@ -76,7 +76,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet_peer]
+				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet]
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">

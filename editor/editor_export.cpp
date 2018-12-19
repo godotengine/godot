@@ -30,20 +30,20 @@
 
 #include "editor_export.h"
 
+#include "core/io/config_file.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/io/zip_io.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
+#include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-#include "io/config_file.h"
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "io/zip_io.h"
-#include "os/file_access.h"
-#include "project_settings.h"
 #include "scene/resources/scene_format_text.h"
-#include "script_language.h"
 #include "thirdparty/misc/md5.h"
-#include "version.h"
 
 static int _get_pad(int p_alignment, int p_n) {
 
@@ -144,6 +144,17 @@ String EditorExportPreset::get_include_filter() const {
 	return include_filter;
 }
 
+void EditorExportPreset::set_export_path(const String &p_path) {
+
+	export_path = p_path;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_export_path() const {
+
+	return export_path;
+}
+
 void EditorExportPreset::set_exclude_filter(const String &p_exclude) {
 
 	exclude_filter = p_exclude;
@@ -211,10 +222,10 @@ String EditorExportPreset::get_custom_features() const {
 	return custom_features;
 }
 
-EditorExportPreset::EditorExportPreset() {
-
-	export_filter = EXPORT_ALL_RESOURCES;
-	runnable = false;
+EditorExportPreset::EditorExportPreset() :
+		export_filter(EXPORT_ALL_RESOURCES),
+		export_path(""),
+		runnable(false) {
 }
 
 ///////////////////////////////////
@@ -534,6 +545,13 @@ void EditorExportPlugin::_export_begin_script(const PoolVector<String> &p_featur
 	}
 }
 
+void EditorExportPlugin::_export_end_script() {
+
+	if (get_script_instance()) {
+		get_script_instance()->call("_export_end");
+	}
+}
+
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
 }
 
@@ -575,6 +593,20 @@ EditorExportPlatform::FeatureContainers EditorExportPlatform::get_feature_contai
 		result.features.insert(E->get());
 		result.features_pv.push_back(E->get());
 	}
+
+	if (p_preset->get_custom_features() != String()) {
+
+		Vector<String> tmp_custom_list = p_preset->get_custom_features().split(",");
+
+		for (int i = 0; i < tmp_custom_list.size(); i++) {
+			String f = tmp_custom_list[i].strip_edges();
+			if (f != String()) {
+				result.features.insert(f);
+				result.features_pv.push_back(f);
+			}
+		}
+	}
+
 	return result;
 }
 
@@ -594,6 +626,9 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->get_script_instance()) {
+			export_plugins.write[i]->_export_end_script();
+		}
 		export_plugins.write[i]->_export_end();
 	}
 }
@@ -667,7 +702,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				String remap = F->get();
 				String feature = remap.get_slice(".", 1);
-				if (feature == "fallback" || features.has(feature)) {
+				if (features.has(feature)) {
 					remap_features.insert(feature);
 				}
 			}
@@ -1034,6 +1069,7 @@ void EditorExport::_save() {
 		}
 		config->set_value(section, "include_filter", preset->get_include_filter());
 		config->set_value(section, "exclude_filter", preset->get_exclude_filter());
+		config->set_value(section, "export_path", preset->get_export_path());
 		config->set_value(section, "patch_list", preset->get_patches());
 
 		String option_section = "preset." + itos(i) + ".options";
@@ -1097,6 +1133,7 @@ Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
 void EditorExport::remove_export_preset(int p_idx) {
 
 	export_presets.remove(p_idx);
+	save_presets();
 }
 
 void EditorExport::add_export_plugin(const Ref<EditorExportPlugin> &p_plugin) {
@@ -1188,6 +1225,7 @@ void EditorExport::load_config() {
 
 		preset->set_include_filter(config->get_value(section, "include_filter"));
 		preset->set_exclude_filter(config->get_value(section, "exclude_filter"));
+		preset->set_export_path(config->get_value(section, "export_path", ""));
 
 		Vector<String> patch_list = config->get_value(section, "patch_list");
 
@@ -1336,18 +1374,21 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	return valid;
 }
 
-String EditorExportPlatformPC::get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
+List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	List<String> list;
 	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
 		if (p_preset->get(E->key())) {
-			return extensions[E->key()];
+			list.push_back(extensions[E->key()]);
+			return list;
 		}
 	}
 
 	if (extensions.has("default")) {
-		return extensions["default"];
+		list.push_back(extensions["default"]);
+		return list;
 	}
 
-	return "";
+	return list;
 }
 
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
@@ -1457,7 +1498,6 @@ void EditorExportPlatformPC::resolve_platform_feature_priorities(const Ref<Edito
 	if (p_features.has("bptc")) {
 		if (p_preset->has("texture_format/no_bptc_fallbacks")) {
 			p_features.erase("s3tc");
-			p_features.erase("fallback");
 		}
 	}
 }

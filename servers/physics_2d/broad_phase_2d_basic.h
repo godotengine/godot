@@ -31,7 +31,7 @@
 #ifndef BROAD_PHASE_2D_BASIC_H
 #define BROAD_PHASE_2D_BASIC_H
 
-#include "map.h"
+#include "core/map.h"
 #include "space_2d_sw.h"
 class BroadPhase2DBasic : public BroadPhase2DSW {
 

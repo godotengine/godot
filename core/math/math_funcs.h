@@ -31,8 +31,9 @@
 #ifndef MATH_FUNCS_H
 #define MATH_FUNCS_H
 
-#include "math_defs.h"
-#include "typedefs.h"
+#include "core/math/math_defs.h"
+#include "core/math/random_pcg.h"
+#include "core/typedefs.h"
 
 #include "thirdparty/misc/pcg.h"
 
@@ -41,12 +42,12 @@
 
 class Math {
 
-	static pcg32_random_t default_pcg;
+	static RandomPCG default_rand;
 
 public:
 	Math() {} // useless to instance
 
-	static const uint64_t RANDOM_MAX = 4294967295;
+	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
 
 	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
 	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
@@ -304,16 +305,6 @@ public:
 #endif
 		return b;
 	}
-
-#if defined(__GNUC__)
-
-	static _ALWAYS_INLINE_ int64_t dtoll(double p_double) { return (int64_t)p_double; } ///@TODO OPTIMIZE
-	static _ALWAYS_INLINE_ int64_t dtoll(float p_float) { return (int64_t)p_float; } ///@TODO OPTIMIZE and rename
-#else
-
-	static _ALWAYS_INLINE_ int64_t dtoll(double p_double) { return (int64_t)p_double; } ///@TODO OPTIMIZE
-	static _ALWAYS_INLINE_ int64_t dtoll(float p_float) { return (int64_t)p_float; } ///@TODO OPTIMIZE and rename
-#endif
 
 	static _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t h) {
 		uint16_t h_exp, h_sig;

@@ -30,9 +30,9 @@
 
 #include "resource_preloader_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
 
 void ResourcePreloaderEditor::_gui_input(Ref<InputEvent> p_event) {
 }
@@ -44,7 +44,6 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		load->set_icon(get_icon("Folder", "EditorIcons"));
-		_delete->set_icon(get_icon("Remove", "EditorIcons"));
 	}
 
 	if (p_what == NOTIFICATION_READY) {
@@ -138,15 +137,11 @@ void ResourcePreloaderEditor::_item_edited() {
 	}
 }
 
-void ResourcePreloaderEditor::_delete_confirm_pressed() {
+void ResourcePreloaderEditor::_remove_resource(const String &p_to_remove) {
 
-	if (!tree->get_selected())
-		return;
-
-	String to_remove = tree->get_selected()->get_text(0);
 	undo_redo->create_action(TTR("Delete Resource"));
-	undo_redo->add_do_method(preloader, "remove_resource", to_remove);
-	undo_redo->add_undo_method(preloader, "add_resource", to_remove, preloader->get_resource(to_remove));
+	undo_redo->add_do_method(preloader, "remove_resource", p_to_remove);
+	undo_redo->add_undo_method(preloader, "add_resource", p_to_remove, preloader->get_resource(p_to_remove));
 	undo_redo->add_do_method(this, "_update_library");
 	undo_redo->add_undo_method(this, "_update_library");
 	undo_redo->commit_action();
@@ -184,21 +179,6 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	undo_redo->commit_action();
 }
 
-void ResourcePreloaderEditor::_delete_pressed() {
-
-	if (!tree->get_selected())
-		return;
-
-	_delete_confirm_pressed(); //it has undo.. why bother with a dialog..
-	/*
-	dialog->set_title("Confirm...");
-	dialog->set_text("Remove Resource '"+tree->get_selected()->get_text(0)+"' ?");
-	//dialog->get_cancel()->set_text("Cancel");
-	//dialog->get_ok()->show();
-	dialog->get_ok()->set_text("Remove");
-	dialog->popup_centered(Size2(300,60));*/
-}
-
 void ResourcePreloaderEditor::_update_library() {
 
 	tree->clear();
@@ -228,18 +208,20 @@ void ResourcePreloaderEditor::_update_library() {
 
 		ERR_CONTINUE(r.is_null());
 
-		ti->set_tooltip(0, r->get_path());
+		String type = r->get_class();
+		ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(type, "Object"));
+		ti->set_tooltip(0, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + type);
+
 		ti->set_text(1, r->get_path());
-		ti->add_button(1, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
-		ti->set_tooltip(1, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + r->get_class());
 		ti->set_editable(1, false);
 		ti->set_selectable(1, false);
-		String type = r->get_class();
-		ti->set_text(2, type);
-		ti->set_selectable(2, false);
 
-		if (has_icon(type, "EditorIcons"))
-			ti->set_icon(2, get_icon(type, "EditorIcons"));
+		if (type == "PackedScene") {
+			ti->add_button(1, get_icon("InstanceOptions", "EditorIcons"), BUTTON_OPEN_SCENE, false, TTR("Open in Editor"));
+		} else {
+			ti->add_button(1, get_icon("Load", "EditorIcons"), BUTTON_EDIT_RESOURCE, false, TTR("Open in Editor"));
+		}
+		ti->add_button(1, get_icon("Remove", "EditorIcons"), BUTTON_REMOVE, false, TTR("Remove"));
 	}
 
 	//player->add_resource("default",resource);
@@ -250,10 +232,16 @@ void ResourcePreloaderEditor::_cell_button_pressed(Object *p_item, int p_column,
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
 	ERR_FAIL_COND(!item);
 
-	String rpath = item->get_text(p_column);
-
-	if (p_id == BUTTON_SUBSCENE) {
+	if (p_id == BUTTON_OPEN_SCENE) {
+		String rpath = item->get_text(p_column);
 		EditorInterface::get_singleton()->open_scene_from_path(rpath);
+
+	} else if (p_id == BUTTON_EDIT_RESOURCE) {
+		RES r = preloader->get_resource(item->get_text(0));
+		EditorInterface::get_singleton()->edit_resource(r);
+
+	} else if (p_id == BUTTON_REMOVE) {
+		_remove_resource(item->get_text(0));
 	}
 }
 
@@ -366,12 +354,11 @@ void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ResourcePreloaderEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_load_pressed"), &ResourcePreloaderEditor::_load_pressed);
 	ClassDB::bind_method(D_METHOD("_item_edited"), &ResourcePreloaderEditor::_item_edited);
-	ClassDB::bind_method(D_METHOD("_delete_pressed"), &ResourcePreloaderEditor::_delete_pressed);
 	ClassDB::bind_method(D_METHOD("_paste_pressed"), &ResourcePreloaderEditor::_paste_pressed);
-	ClassDB::bind_method(D_METHOD("_delete_confirm_pressed"), &ResourcePreloaderEditor::_delete_confirm_pressed);
 	ClassDB::bind_method(D_METHOD("_files_load_request"), &ResourcePreloaderEditor::_files_load_request);
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &ResourcePreloaderEditor::_cell_button_pressed);
+	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
@@ -392,9 +379,6 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	load->set_tooltip(TTR("Load Resource"));
 	hbc->add_child(load);
 
-	_delete = memnew(Button);
-	hbc->add_child(_delete);
-
 	paste = memnew(Button);
 	paste->set_text(TTR("Paste"));
 	hbc->add_child(paste);
@@ -404,13 +388,11 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 
 	tree = memnew(Tree);
 	tree->connect("button_pressed", this, "_cell_button_pressed");
-	tree->set_columns(3);
-	tree->set_column_min_width(0, 3);
-	tree->set_column_min_width(1, 1);
-	tree->set_column_min_width(2, 1);
+	tree->set_columns(2);
+	tree->set_column_min_width(0, 2);
+	tree->set_column_min_width(1, 3);
 	tree->set_column_expand(0, true);
 	tree->set_column_expand(1, true);
-	tree->set_column_expand(2, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tree->set_drag_forwarding(this);
@@ -420,10 +402,8 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	add_child(dialog);
 
 	load->connect("pressed", this, "_load_pressed");
-	_delete->connect("pressed", this, "_delete_pressed");
 	paste->connect("pressed", this, "_paste_pressed");
 	file->connect("files_selected", this, "_files_load_request");
-	//dialog->connect("confirmed", this,"_delete_confirm_pressed");
 	tree->connect("item_edited", this, "_item_edited");
 	loading_scene = false;
 }

@@ -30,7 +30,7 @@
 
 #include "parallax_layer.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "parallax_background.h"
 
 void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {

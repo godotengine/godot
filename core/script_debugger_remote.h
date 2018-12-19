@@ -31,11 +31,11 @@
 #ifndef SCRIPT_DEBUGGER_REMOTE_H
 #define SCRIPT_DEBUGGER_REMOTE_H
 
-#include "io/packet_peer.h"
-#include "io/stream_peer_tcp.h"
-#include "list.h"
-#include "os/os.h"
-#include "script_language.h"
+#include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/list.h"
+#include "core/os/os.h"
+#include "core/script_language.h"
 
 class ScriptDebuggerRemote : public ScriptDebugger {
 

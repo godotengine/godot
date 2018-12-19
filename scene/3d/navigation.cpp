@@ -30,6 +30,8 @@
 
 #include "navigation.h"
 
+#define USE_ENTRY_POINT
+
 void Navigation::_navmesh_link(int p_id) {
 
 	ERR_FAIL_COND(!navmesh_map.has(p_id));
@@ -331,7 +333,18 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 		if (begin_poly->edges[i].C) {
 
 			begin_poly->edges[i].C->prev_edge = begin_poly->edges[i].C_edge;
+#ifdef USE_ENTRY_POINT
+			Vector3 edge[2] = {
+				_get_vertex(begin_poly->edges[i].point),
+				_get_vertex(begin_poly->edges[(i + 1) % begin_poly->edges.size()].point)
+			};
+
+			Vector3 entry = Geometry::get_closest_point_to_segment(begin_poly->entry, edge);
+			begin_poly->edges[i].C->distance = begin_poly->entry.distance_to(entry);
+			begin_poly->edges[i].C->entry = entry;
+#else
 			begin_poly->edges[i].C->distance = begin_poly->center.distance_to(begin_poly->edges[i].C->center);
+#endif
 			open_list.push_back(begin_poly->edges[i].C);
 
 			if (begin_poly->edges[i].C == end_poly) {
@@ -356,10 +369,33 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 			Polygon *p = E->get();
 
 			float cost = p->distance;
+#ifdef USE_ENTRY_POINT
+			int es = p->edges.size();
+
+			float shortest_distance = 1e30;
+
+			for (int i = 0; i < es; i++) {
+				Polygon::Edge &e = p->edges.write[i];
+
+				if (!e.C)
+					continue;
+
+				Vector3 edge[2] = {
+					_get_vertex(p->edges[i].point),
+					_get_vertex(p->edges[(i + 1) % es].point)
+				};
+
+				Vector3 edge_point = Geometry::get_closest_point_to_segment(p->entry, edge);
+				float dist = p->entry.distance_to(edge_point);
+				if (dist < shortest_distance)
+					shortest_distance = dist;
+			}
+
+			cost += shortest_distance;
+#else
 			cost += p->center.distance_to(end_point);
-
+#endif
 			if (cost < least_cost) {
-
 				least_cost_poly = E;
 				least_cost = cost;
 			}
@@ -527,7 +563,6 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	float closest_point_d = 1e20;
-	NavMesh *closest_navmesh = NULL;
 
 	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
 
@@ -546,12 +581,10 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 						closest_point = inters;
 						use_collision = true;
 						closest_point_d = p_from.distance_to(inters);
-						closest_navmesh = p.owner;
 					} else if (closest_point_d > inters.distance_to(p_from)) {
 
 						closest_point = inters;
 						closest_point_d = p_from.distance_to(inters);
-						closest_navmesh = p.owner;
 					}
 				}
 			}
@@ -569,7 +602,6 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 
 						closest_point_d = d;
 						closest_point = b;
-						closest_navmesh = p.owner;
 					}
 				}
 			}

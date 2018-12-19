@@ -30,8 +30,8 @@
 
 #include "resource_importer_obj.h"
 
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/mesh.h"
@@ -126,7 +126,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -141,7 +146,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 
@@ -156,7 +166,12 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path;
+			if (p.is_abs_path()) {
+				path = p;
+			} else {
+				path = base_path.plus_file(p);
+			}
 
 			Ref<Texture> texture = ResourceLoader::load(path);
 

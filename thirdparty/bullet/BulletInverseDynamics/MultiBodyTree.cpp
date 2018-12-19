@@ -83,11 +83,11 @@ int MultiBodyTree::numDoFs() const { return m_impl->m_num_dofs; }
 int MultiBodyTree::calculateInverseDynamics(const vecx &q, const vecx &u, const vecx &dot_u,
 											vecx *joint_forces) {
 	if (false == m_is_finalized) {
-		error_message("system has not been initialized\n");
+		bt_id_error_message("system has not been initialized\n");
 		return -1;
 	}
 	if (-1 == m_impl->calculateInverseDynamics(q, u, dot_u, joint_forces)) {
-		error_message("error in inverse dynamics calculation\n");
+		bt_id_error_message("error in inverse dynamics calculation\n");
 		return -1;
 	}
 	return 0;
@@ -97,13 +97,13 @@ int MultiBodyTree::calculateMassMatrix(const vecx &q, const bool update_kinemati
 									   const bool initialize_matrix,
 									   const bool set_lower_triangular_matrix, matxx *mass_matrix) {
 	if (false == m_is_finalized) {
-		error_message("system has not been initialized\n");
+		bt_id_error_message("system has not been initialized\n");
 		return -1;
 	}
 	if (-1 ==
 		m_impl->calculateMassMatrix(q, update_kinematics, initialize_matrix,
 									set_lower_triangular_matrix, mass_matrix)) {
-		error_message("error in mass matrix calculation\n");
+		bt_id_error_message("error in mass matrix calculation\n");
 		return -1;
 	}
 	return 0;
@@ -121,12 +121,12 @@ int MultiBodyTree::calculateKinematics(const vecx& q, const vecx& u, const vecx&
     setZero(m_impl->m_world_gravity);
 
     if (false == m_is_finalized) {
-        error_message("system has not been initialized\n");
+        bt_id_error_message("system has not been initialized\n");
         return -1;
     }
     if (-1 == m_impl->calculateKinematics(q, u, dot_u,
                                           MultiBodyTree::MultiBodyImpl::POSITION_VELOCITY_ACCELERATION)) {
-        error_message("error in kinematics calculation\n");
+        bt_id_error_message("error in kinematics calculation\n");
         return -1;
     }
 
@@ -137,12 +137,12 @@ int MultiBodyTree::calculateKinematics(const vecx& q, const vecx& u, const vecx&
 
 int MultiBodyTree::calculatePositionKinematics(const vecx& q) {
 	if (false == m_is_finalized) {
-		error_message("system has not been initialized\n");
+		bt_id_error_message("system has not been initialized\n");
 		return -1;
 	}
 	if (-1 == m_impl->calculateKinematics(q, q, q,
                                               MultiBodyTree::MultiBodyImpl::POSITION_VELOCITY)) {
-		error_message("error in kinematics calculation\n");
+		bt_id_error_message("error in kinematics calculation\n");
 		return -1;
 	}
 	return 0;
@@ -150,12 +150,12 @@ int MultiBodyTree::calculatePositionKinematics(const vecx& q) {
 
 int MultiBodyTree::calculatePositionAndVelocityKinematics(const vecx& q, const vecx& u) {
 	if (false == m_is_finalized) {
-		error_message("system has not been initialized\n");
+		bt_id_error_message("system has not been initialized\n");
 		return -1;
 	}
 	if (-1 == m_impl->calculateKinematics(q, u, u,
                                               MultiBodyTree::MultiBodyImpl::POSITION_VELOCITY)) {
-		error_message("error in kinematics calculation\n");
+		bt_id_error_message("error in kinematics calculation\n");
 		return -1;
 	}
 	return 0;
@@ -165,12 +165,12 @@ int MultiBodyTree::calculatePositionAndVelocityKinematics(const vecx& q, const v
 #if (defined BT_ID_HAVE_MAT3X) && (defined BT_ID_WITH_JACOBIANS)
 int MultiBodyTree::calculateJacobians(const vecx& q, const vecx& u) {
     if (false == m_is_finalized) {
-        error_message("system has not been initialized\n");
+        bt_id_error_message("system has not been initialized\n");
         return -1;
     }
     if (-1 == m_impl->calculateJacobians(q, u,
                                          MultiBodyTree::MultiBodyImpl::POSITION_VELOCITY)) {
-        error_message("error in jacobian calculation\n");
+        bt_id_error_message("error in jacobian calculation\n");
         return -1;
     }
     return 0;
@@ -178,12 +178,12 @@ int MultiBodyTree::calculateJacobians(const vecx& q, const vecx& u) {
 
 int MultiBodyTree::calculateJacobians(const vecx& q){
     if (false == m_is_finalized) {
-        error_message("system has not been initialized\n");
+        bt_id_error_message("system has not been initialized\n");
         return -1;
     }
     if (-1 == m_impl->calculateJacobians(q, q,
                                          MultiBodyTree::MultiBodyImpl::POSITION_ONLY)) {
-        error_message("error in jacobian calculation\n");
+        bt_id_error_message("error in jacobian calculation\n");
         return -1;
     }
     return 0;
@@ -214,7 +214,7 @@ int MultiBodyTree::addBody(int body_index, int parent_index, JointType joint_typ
 						   const vec3 &body_r_body_com, const mat33 &body_I_body,
 						   const int user_int, void *user_ptr) {
 	if (body_index < 0) {
-		error_message("body index must be positive (got %d)\n", body_index);
+		bt_id_error_message("body index must be positive (got %d)\n", body_index);
 		return -1;
 	}
 	vec3 body_axis_of_motion(body_axis_of_motion_);
@@ -223,14 +223,14 @@ int MultiBodyTree::addBody(int body_index, int parent_index, JointType joint_typ
 		case PRISMATIC:
 			// check if axis is unit vector
 			if (!isUnitVector(body_axis_of_motion)) {
-				warning_message(
+				bt_id_warning_message(
 					"axis of motion not a unit axis ([%f %f %f]), will use normalized vector\n",
 					body_axis_of_motion(0), body_axis_of_motion(1), body_axis_of_motion(2));
 				idScalar length = BT_ID_SQRT(BT_ID_POW(body_axis_of_motion(0), 2) +
 									   BT_ID_POW(body_axis_of_motion(1), 2) +
 									   BT_ID_POW(body_axis_of_motion(2), 2));
 				if (length < BT_ID_SQRT(std::numeric_limits<idScalar>::min())) {
-					error_message("axis of motion vector too short (%e)\n", length);
+					bt_id_error_message("axis of motion vector too short (%e)\n", length);
 					return -1;
 				}
 				body_axis_of_motion = (1.0 / length) * body_axis_of_motion;
@@ -241,14 +241,14 @@ int MultiBodyTree::addBody(int body_index, int parent_index, JointType joint_typ
 		case FLOATING:
 			break;
 		default:
-			error_message("unknown joint type %d\n", joint_type);
+			bt_id_error_message("unknown joint type %d\n", joint_type);
 			return -1;
 	}
 
 	// sanity check for mass properties. Zero mass is OK.
 	if (mass < 0) {
 		m_mass_parameters_are_valid = false;
-		error_message("Body %d has invalid mass %e\n", body_index, mass);
+		bt_id_error_message("Body %d has invalid mass %e\n", body_index, mass);
 		if (!m_accept_invalid_mass_parameters) {
 			return -1;
 		}
@@ -296,7 +296,7 @@ int MultiBodyTree::finalize() {
 	const int &num_dofs = m_init_cache->numDoFs();
 
         if(num_dofs<=0) {
-            error_message("Need num_dofs>=1, but num_dofs= %d\n", num_dofs);
+            bt_id_error_message("Need num_dofs>=1, but num_dofs= %d\n", num_dofs);
             //return -1;
         }
 
@@ -330,6 +330,22 @@ int MultiBodyTree::finalize() {
 		rigid_body.m_body_T_parent_ref = joint.m_child_T_parent_ref;
 		rigid_body.m_parent_pos_parent_body_ref = joint.m_parent_pos_parent_child_ref;
 		rigid_body.m_joint_type = joint.m_type;
+
+		int user_int;
+		if (-1 == m_init_cache->getUserInt(index, &user_int)) {
+			return -1;
+		}
+		if (-1 == m_impl->setUserInt(index, user_int)) {
+			return -1;
+		}
+
+		void* user_ptr;
+		if (-1 == m_init_cache->getUserPtr(index, &user_ptr)) {
+			return -1;
+		}
+		if (-1 == m_impl->setUserPtr(index, user_ptr)) {
+			return -1;
+		}
 
 		// Set joint Jacobians. Note that the dimension is always 3x1 here to avoid variable sized
 		// matrices.
@@ -370,14 +386,14 @@ int MultiBodyTree::finalize() {
 				rigid_body.m_Jac_JT(2) = 0.0;
 				break;
 			default:
-				error_message("unsupported joint type %d\n", rigid_body.m_joint_type);
+				bt_id_error_message("unsupported joint type %d\n", rigid_body.m_joint_type);
 				return -1;
 		}
 	}
 
 	// 4 assign degree of freedom indices & build per-joint-type index arrays
 	if (-1 == m_impl->generateIndexSets()) {
-		error_message("generating index sets\n");
+		bt_id_error_message("generating index sets\n");
 		return -1;
 	}
 

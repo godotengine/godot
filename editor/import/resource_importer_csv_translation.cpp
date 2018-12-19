@@ -30,10 +30,10 @@
 
 #include "resource_importer_csv_translation.h"
 
-#include "compressed_translation.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
-#include "translation.h"
+#include "core/compressed_translation.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/translation.h"
 
 String ResourceImporterCSVTranslation::get_importer_name() const {
 

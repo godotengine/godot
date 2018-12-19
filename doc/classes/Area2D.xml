@@ -130,14 +130,14 @@
 	</members>
 	<signals>
 		<signal name="area_entered">
-			<argument index="0" name="area" type="Object">
+			<argument index="0" name="area" type="Area2D">
 			</argument>
 			<description>
 				Emitted when another area enters.
 			</description>
 		</signal>
 		<signal name="area_exited">
-			<argument index="0" name="area" type="Object">
+			<argument index="0" name="area" type="Area2D">
 			</argument>
 			<description>
 				Emitted when another area exits.
@@ -146,7 +146,7 @@
 		<signal name="area_shape_entered">
 			<argument index="0" name="area_id" type="int">
 			</argument>
-			<argument index="1" name="area" type="Object">
+			<argument index="1" name="area" type="Area2D">
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
@@ -159,7 +159,7 @@
 		<signal name="area_shape_exited">
 			<argument index="0" name="area_id" type="int">
 			</argument>
-			<argument index="1" name="area" type="Object">
+			<argument index="1" name="area" type="Area2D">
 			</argument>
 			<argument index="2" name="area_shape" type="int">
 			</argument>
@@ -170,14 +170,14 @@
 			</description>
 		</signal>
 		<signal name="body_entered">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="PhysicsBody2D">
 			</argument>
 			<description>
 				Emitted when a [PhysicsBody2D] object enters.
 			</description>
 		</signal>
 		<signal name="body_exited">
-			<argument index="0" name="body" type="Object">
+			<argument index="0" name="body" type="PhysicsBody2D">
 			</argument>
 			<description>
 				Emitted when a [PhysicsBody2D] object exits.
@@ -186,7 +186,7 @@
 		<signal name="body_shape_entered">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="PhysicsBody2D">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>
@@ -199,7 +199,7 @@
 		<signal name="body_shape_exited">
 			<argument index="0" name="body_id" type="int">
 			</argument>
-			<argument index="1" name="body" type="Object">
+			<argument index="1" name="body" type="PhysicsBody2D">
 			</argument>
 			<argument index="2" name="body_shape" type="int">
 			</argument>

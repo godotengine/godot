@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -11,11 +13,13 @@ void main() {
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 #if !defined(GLES_OVER_GL)
 precision mediump float;
 #endif
+/* clang-format on */
 
 in vec2 uv_interp;
 uniform sampler2D source_specular; // texunit:0

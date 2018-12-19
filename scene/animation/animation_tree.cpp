@@ -1,14 +1,56 @@
+/*************************************************************************/
+/*  animation_tree.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_tree.h"
+
 #include "animation_blend_tree.h"
+#include "core/engine.h"
 #include "core/method_bind_ext.gen.inc"
-#include "engine.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
+	if (get_script_instance()) {
+		Array parameters = get_script_instance()->call("get_parameter_list");
+		for (int i = 0; i < parameters.size(); i++) {
+			Dictionary d = parameters[i];
+			ERR_CONTINUE(d.empty());
+			r_list->push_back(PropertyInfo::from_dict(d));
+		}
+	}
 }
 
 Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
+	if (get_script_instance()) {
+		return get_script_instance()->call("get_parameter_default_value");
+	}
 	return Variant();
 }
 
@@ -31,6 +73,18 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 }
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
+
+	if (get_script_instance()) {
+		Dictionary cn = get_script_instance()->call("get_child_nodes");
+		List<Variant> keys;
+		cn.get_key_list(&keys);
+		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			ChildNode child;
+			child.name = E->get();
+			child.node = cn[E->get()];
+			r_child_nodes->push_back(child);
+		}
+	}
 }
 
 void AnimationNode::blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend) {
@@ -161,7 +215,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			case FILTER_IGNORE:
 				break; //will not happen anyway
 			case FILTER_PASS: {
-				//values filtered pass, the rest dont
+				//values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] == 0) //not filtered, does not pass
 						continue;
@@ -175,7 +229,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			} break;
 			case FILTER_STOP: {
 
-				//values filtered dont pass, the rest are blended
+				//values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] > 0) //filtered, does not pass
@@ -261,7 +315,7 @@ String AnimationNode::get_caption() const {
 }
 
 void AnimationNode::add_input(const String &p_name) {
-	//root nodes cant add inputs
+	//root nodes can't add inputs
 	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL)
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
@@ -342,6 +396,9 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
 }
 
 Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
+	if (get_script_instance()) {
+		return get_script_instance()->call("get_child_by_name");
+	}
 	return Ref<AnimationNode>();
 }
 
@@ -372,6 +429,14 @@ void AnimationNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "get_child_nodes"));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_child_by_name", PropertyInfo(Variant::STRING, "name")));
+	{
+		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING, "name"));
+		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+		BIND_VMETHOD(mi);
+	}
 	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::REAL, "time"), PropertyInfo(Variant::BOOL, "seek")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_caption"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "has_filter"));
@@ -1196,7 +1261,7 @@ void AnimationTree::_process_graph(float p_delta) {
 					t->object->set_indexed(t->subpath, t->value);
 
 				} break;
-				default: {} //the rest dont matter
+				default: {} //the rest don't matter
 			}
 		}
 	}

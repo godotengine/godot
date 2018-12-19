@@ -30,7 +30,7 @@
 
 #include "shader_gles3.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 
 //#define DEBUG_OPENGL
 
@@ -121,6 +121,11 @@ bool ShaderGLES3::bind() {
 	}
 
 	ERR_FAIL_COND_V(!version, false);
+
+	if (!version->ok) { //broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
+		glUseProgram(0);
+		return false;
+	}
 
 	glUseProgram(version->id);
 
@@ -214,20 +219,15 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	strings.push_back("#version 300 es\n");
 #endif
 
-	int define_line_ofs = 1;
-
 	for (int i = 0; i < custom_defines.size(); i++) {
 
 		strings.push_back(custom_defines[i].get_data());
-		define_line_ofs++;
 	}
 
 	for (int j = 0; j < conditional_count; j++) {
 
 		bool enable = ((1 << j) & conditional_version.version);
 		strings.push_back(enable ? conditional_defines[j] : "");
-		if (enable)
-			define_line_ofs++;
 
 		if (enable) {
 			DEBUG_PRINT(conditional_defines[j]);
@@ -248,7 +248,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		ERR_FAIL_COND_V(!custom_code_map.has(conditional_version.code_version), NULL);
 		cc = &custom_code_map[conditional_version.code_version];
 		v.code_version = cc->version;
-		define_line_ofs += 2;
 	}
 
 	/* CREATE PROGRAM */

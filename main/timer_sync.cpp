@@ -83,7 +83,7 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 	int min_typical_steps = typical_physics_steps[0];
 	int max_typical_steps = min_typical_steps + 1;
 
-	// given the past recorded steps and typcial steps to match, calculate bounds for this
+	// given the past recorded steps and typical steps to match, calculate bounds for this
 	// step to be typical
 	bool update_typical = false;
 

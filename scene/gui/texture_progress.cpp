@@ -30,7 +30,7 @@
 
 #include "texture_progress.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void TextureProgress::set_under_texture(const Ref<Texture> &p_texture) {
 
@@ -59,14 +59,14 @@ Ref<Texture> TextureProgress::get_over_texture() const {
 }
 
 void TextureProgress::set_stretch_margin(Margin p_margin, int p_size) {
-	ERR_FAIL_INDEX(p_margin, 4);
+	ERR_FAIL_INDEX((int)p_margin, 4);
 	stretch_margin[p_margin] = p_size;
 	update();
 	minimum_size_changed();
 }
 
 int TextureProgress::get_stretch_margin(Margin p_margin) const {
-	ERR_FAIL_INDEX_V(p_margin, 4, 0);
+	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 	return stretch_margin[p_margin];
 }
 
@@ -148,9 +148,9 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 	float angle = (val * Math_TAU) - Math_PI * 0.5;
 	Point2 dir = Vector2(Math::cos(angle), Math::sin(angle));
 	float t1 = 1.0;
-	float cp;
-	float cq;
-	float cr;
+	float cp = 0;
+	float cq = 0;
+	float cr = 0;
 	float edgeLeft = 0.0;
 	float edgeRight = 1.0;
 	float edgeBottom = 0.0;
@@ -229,6 +229,17 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				first_section_size = topleft.y;
 				last_section_size = bottomright.y;
 			} break;
+			case FILL_BILINEAR_LEFT_AND_RIGHT: {
+				// TODO: Implement
+			} break;
+			case FILL_BILINEAR_TOP_AND_BOTTOM: {
+				// TODO: Implement
+			} break;
+			case FILL_CLOCKWISE:
+			case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE:
+			case FILL_COUNTER_CLOCKWISE: {
+				// Those modes are circular, not relevant for nine patch
+			} break;
 		}
 
 		double width_filled = width_total * p_ratio;
@@ -262,6 +273,17 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.position.y += width_total - width_filled;
 				dst_rect.size.y = width_filled;
 				topleft.y = last_section_size;
+			} break;
+			case FILL_BILINEAR_LEFT_AND_RIGHT: {
+				// TODO: Implement
+			} break;
+			case FILL_BILINEAR_TOP_AND_BOTTOM: {
+				// TODO: Implement
+			} break;
+			case FILL_CLOCKWISE:
+			case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE:
+			case FILL_COUNTER_CLOCKWISE: {
+				// Those modes are circular, not relevant for nine patch
 			} break;
 		}
 	}
@@ -464,21 +486,21 @@ void TextureProgress::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_under", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_under_texture", "get_under_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_over", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_over_texture", "get_over_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_progress", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_progress_texture", "get_progress_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom), Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise,Bilinear (Left and Right),Bilinear (Top and Bottom), Clockwise and Counter Clockwise"), "set_fill_mode", "get_fill_mode");
 	ADD_GROUP("Tint", "tint_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_under", "get_tint_under");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_over", "get_tint_over");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress", PROPERTY_HINT_COLOR_NO_ALPHA), "set_tint_progress", "get_tint_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_under"), "set_tint_under", "get_tint_under");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_over"), "set_tint_over", "get_tint_over");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "tint_progress"), "set_tint_progress", "get_tint_progress");
 	ADD_GROUP("Radial Fill", "radial_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radial_initial_angle", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_radial_initial_angle", "get_radial_initial_angle");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radial_fill_degrees", PROPERTY_HINT_RANGE, "0.0,360.0,0.1,slider"), "set_fill_degrees", "get_fill_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "radial_center_offset"), "set_radial_center_offset", "get_radial_center_offset");
 	ADD_GROUP("Stretch", "stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "nine_patch_stretch"), "set_nine_patch_stretch", "get_nine_patch_stretch");
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_LEFT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_RIGHT);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "stretch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_BOTTOM);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_left", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_top", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_right", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::INT, "stretch_margin_bottom", PROPERTY_HINT_RANGE, "0,16384,1"), "set_stretch_margin", "get_stretch_margin", MARGIN_BOTTOM);
 
 	BIND_ENUM_CONSTANT(FILL_LEFT_TO_RIGHT);
 	BIND_ENUM_CONSTANT(FILL_RIGHT_TO_LEFT);

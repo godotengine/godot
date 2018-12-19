@@ -1,3 +1,6 @@
+		// The following is concatenated with generated code, and acts as the end
+		// of a wrapper for said code. See pre.js for the other part of the
+		// wrapper.
 		exposedLibs['PATH'] = PATH;
 		exposedLibs['FS'] = FS;
 		return Module;

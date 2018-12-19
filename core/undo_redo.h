@@ -31,8 +31,8 @@
 #ifndef UNDO_REDO_H
 #define UNDO_REDO_H
 
-#include "object.h"
-#include "resource.h"
+#include "core/object.h"
+#include "core/resource.h"
 
 class UndoRedo : public Object {
 
@@ -112,7 +112,7 @@ public:
 	bool redo();
 	bool undo();
 	String get_current_action_name() const;
-	void clear_history();
+	void clear_history(bool p_increase_version = true);
 
 	uint64_t get_version() const;
 

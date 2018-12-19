@@ -33,7 +33,8 @@
 
 #if defined(WINDOWS_ENABLED)
 
-#include "os/rw_lock.h"
+#include "core/os/rw_lock.h"
+
 #include <windows.h>
 
 class RWLockWindows : public RWLock {

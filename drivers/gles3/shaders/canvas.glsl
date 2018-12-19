@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec2 vertex;
+/* clang-format on */
 layout(location = 3) in vec4 color_attrib;
 
 #ifdef USE_SKELETON
@@ -90,34 +92,35 @@ const bool at_light_pass = true;
 const bool at_light_pass = false;
 #endif
 
-#ifdef USE_PARTICLES
-uniform int h_frames;
-uniform int v_frames;
-#endif
-
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData { //ubo:2
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 VERTEX_SHADER_GLOBALS
+
+/* clang-format on */
 
 void main() {
 
 	vec4 color = color_attrib;
 
 #ifdef USE_INSTANCING
-	mat4 extra_matrix2 = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
+	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
 	color *= instance_color;
 	vec4 instance_custom = instance_custom_data;
 
 #else
-	mat4 extra_matrix2 = extra_matrix;
+	mat4 extra_matrix_instance = extra_matrix;
 	vec4 instance_custom = vec4(0.0);
 #endif
 
@@ -138,24 +141,21 @@ void main() {
 #ifdef USE_PARTICLES
 	//scale by texture size
 	outvec.xy /= color_texpixel_size;
-
-	//compute h and v frames and adjust UV interp for animation
-	int total_frames = h_frames * v_frames;
-	int frame = min(int(float(total_frames) * instance_custom.z), total_frames - 1);
-	float frame_w = 1.0 / float(h_frames);
-	float frame_h = 1.0 / float(v_frames);
-	uv_interp.x = uv_interp.x * frame_w + frame_w * float(frame % h_frames);
-	uv_interp.y = uv_interp.y * frame_h + frame_h * float(frame / h_frames);
-
 #endif
 
-#define extra_matrix extra_matrix2
+#define extra_matrix extra_matrix_instance
 
-{
+	//for compatibility with the fragment shader we need to use uv here
+	vec2 uv = uv_interp;
+	{
+		/* clang-format off */
 
 VERTEX_SHADER_CODE
 
-}
+		/* clang-format on */
+	}
+
+	uv_interp = uv;
 
 #ifdef USE_NINEPATCH
 
@@ -172,7 +172,6 @@ VERTEX_SHADER_CODE
 	color_interp = color;
 
 #ifdef USE_PIXEL_SNAP
-
 	outvec.xy = floor(outvec + 0.5).xy;
 #endif
 
@@ -188,29 +187,29 @@ VERTEX_SHADER_CODE
 		highp mat2x4 m;
 		m = mat2x4(
 					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.x;
+					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			bone_weights.x;
 
 		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 2);
 
 		m += mat2x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.y;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			 bone_weights.y;
 
 		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 2);
 
 		m += mat2x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.z;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			 bone_weights.z;
 
 		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 2);
 
 		m += mat2x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0))
-				* bone_weights.w;
+					 texelFetch(skeleton_texture, tex_ofs, 0),
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0)) *
+			 bone_weights.w;
 
 		mat4 bone_matrix = skeleton_transform * transpose(mat4(m[0], m[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))) * skeleton_transform_inverse;
 
@@ -236,8 +235,8 @@ VERTEX_SHADER_CODE
 	pos = outvec.xy;
 #endif
 
-	local_rot.xy = normalize((modelview_matrix * (extra_matrix * vec4(1.0, 0.0, 0.0, 0.0))).xy);
-	local_rot.zw = normalize((modelview_matrix * (extra_matrix * vec4(0.0, 1.0, 0.0, 0.0))).xy);
+	local_rot.xy = normalize((modelview_matrix * (extra_matrix_instance * vec4(1.0, 0.0, 0.0, 0.0))).xy);
+	local_rot.zw = normalize((modelview_matrix * (extra_matrix_instance * vec4(0.0, 1.0, 0.0, 0.0))).xy);
 #ifdef USE_TEXTURE_RECT
 	local_rot.xy *= sign(src_rect.z);
 	local_rot.zw *= sign(src_rect.w);
@@ -246,9 +245,11 @@ VERTEX_SHADER_CODE
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 uniform mediump sampler2D color_texture; // texunit:0
+/* clang-format on */
 uniform highp vec2 color_texpixel_size;
 uniform mediump sampler2D normal_texture; // texunit:1
 
@@ -313,15 +314,21 @@ layout(location = 0) out mediump vec4 frag_color;
 
 #if defined(USE_MATERIAL)
 
+/* clang-format off */
 layout(std140) uniform UniformData {
 
 MATERIAL_UNIFORMS
 
 };
+/* clang-format on */
 
 #endif
 
+/* clang-format off */
+
 FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
 
 void light_compute(
 		inout vec4 light,
@@ -339,7 +346,11 @@ void light_compute(
 
 #if defined(USE_LIGHT_SHADER_CODE)
 
+	/* clang-format off */
+
 LIGHT_SHADER_CODE
+
+	/* clang-format on */
 
 #endif
 }
@@ -470,9 +481,14 @@ void main() {
 
 #if defined(NORMALMAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
+		normal_used = true;
 #endif
 
+		/* clang-format off */
+
 FRAGMENT_SHADER_CODE
+
+		/* clang-format on */
 
 #if defined(NORMALMAP_USED)
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);

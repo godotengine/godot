@@ -599,8 +599,8 @@ int b3Generic6DofConstraint::get_limit_motor_info2(
 													tag_vel, 
 													info->fps * limot->m_stopERP);
 				info->m_constraintError[srow] += mot_fact * limot->m_targetVelocity;
-                info->m_lowerLimit[srow] = -limot->m_maxMotorForce;
-                info->m_upperLimit[srow] = limot->m_maxMotorForce;
+                info->m_lowerLimit[srow] = -limot->m_maxMotorForce / info->fps;
+                info->m_upperLimit[srow] = limot->m_maxMotorForce / info->fps;
             }
         }
         if(limit)

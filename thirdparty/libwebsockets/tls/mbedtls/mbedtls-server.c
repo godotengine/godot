@@ -631,7 +631,7 @@ lws_tls_acme_sni_csr_create(struct lws_context *context, const char *elements[],
 
 	/* subject must be formatted like "C=TW,O=warmcat,CN=myserver" */
 
-	for (n = 0; n < (int)ARRAY_SIZE(x5); n++) {
+	for (n = 0; n < (int)LWS_ARRAY_SIZE(x5); n++) {
 		if (p != subject)
 			*p++ = ',';
 		if (elements[n])

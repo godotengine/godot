@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceSaver" inherits="Object" category="Core" version="3.1">
 	<brief_description>
-		Resource Saving Interface.
+		Resource saving interface.
 	</brief_description>
 	<description>
-		Resource Saving Interface. This interface is used for saving resources to disk.
+		Resource saving interface, used for saving resources to disk.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 			<argument index="0" name="type" type="Resource">
 			</argument>
 			<description>
-				Return the list of extensions available for saving a resource of a given type.
+				Returns the list of extensions available for saving a resource of a given type.
 			</description>
 		</method>
 		<method name="save">
@@ -30,7 +30,7 @@
 			<argument index="2" name="flags" type="int" default="0">
 			</argument>
 			<description>
-				Save a resource to disk, to a given path.
+				Saves a resource to disk.
 			</description>
 		</method>
 	</methods>
@@ -46,6 +46,8 @@
 		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16" enum="SaverFlags">
 		</constant>
 		<constant name="FLAG_COMPRESS" value="32" enum="SaverFlags">
+		</constant>
+		<constant name="FLAG_REPLACE_SUBRESOURCE_PATHS" value="64" enum="SaverFlags">
 		</constant>
 	</constants>
 </class>

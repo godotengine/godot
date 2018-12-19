@@ -30,10 +30,9 @@
 
 #include "image_loader_svg.h"
 
-#include "os/os.h"
-#include "print_string.h"
-
-#include <ustring.h>
+#include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/ustring.h"
 
 void SVGRasterizer::rasterize(NSVGimage *p_image, float p_tx, float p_ty, float p_scale, unsigned char *p_dst, int p_w, int p_h, int p_stride) {
 	nsvgRasterize(rasterizer, p_image, p_tx, p_ty, p_scale, p_dst, p_w, p_h, p_stride);

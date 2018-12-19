@@ -39,6 +39,7 @@
 #include "scene/3d/camera.h"
 #include "scene/gui/popup_menu.h"
 #include "servers/visual_server.h"
+
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 
 	Vector<Ref<Mesh> > meshes;
@@ -474,7 +475,6 @@ void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {
-	if (scn_root == NULL) return;
 	emit_signal("scene_changed", scn_root);
 }
 
@@ -503,17 +503,17 @@ bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
-void EditorPlugin::forward_draw_over_viewport(Control *p_overlay) {
+void EditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_draw_over_viewport")) {
-		get_script_instance()->call("forward_draw_over_viewport", p_overlay);
+	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_draw_over_viewport")) {
+		get_script_instance()->call("forward_canvas_draw_over_viewport", p_overlay);
 	}
 }
 
-void EditorPlugin::forward_force_draw_over_viewport(Control *p_overlay) {
+void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_force_draw_over_viewport")) {
-		get_script_instance()->call("forward_force_draw_over_viewport", p_overlay);
+	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_force_draw_over_viewport")) {
+		get_script_instance()->call("forward_canvas_force_draw_over_viewport", p_overlay);
 	}
 }
 
@@ -522,7 +522,7 @@ int EditorPlugin::update_overlays() const {
 
 	if (SpatialEditor::get_singleton()->is_visible()) {
 		int count = 0;
-		for (int i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
+		for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
 			SpatialEditorViewport *vp = SpatialEditor::get_singleton()->get_editor_viewport(i);
 			if (vp->is_visible()) {
 				vp->update_surface();
@@ -544,6 +544,20 @@ bool EditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEv
 	}
 
 	return false;
+}
+
+void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
+
+	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_draw_over_viewport")) {
+		get_script_instance()->call("forward_spatial_draw_over_viewport", p_overlay);
+	}
+}
+
+void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
+
+	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_force_draw_over_viewport")) {
+		get_script_instance()->call("forward_spatial_force_draw_over_viewport", p_overlay);
+	}
 }
 String EditorPlugin::get_name() const {
 
@@ -684,6 +698,34 @@ void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
 }
 
+int find(const PoolStringArray &a, const String &v) {
+	PoolStringArray::Read r = a.read();
+	for (int j = 0; j < a.size(); ++j) {
+		if (r[j] == v) {
+			return j;
+		}
+	}
+	return -1;
+}
+
+void EditorPlugin::enable_plugin() {
+	// Called when the plugin gets enabled in project settings, after it's added to the tree.
+	// You can implement it to register autoloads.
+
+	if (get_script_instance() && get_script_instance()->has_method("enable_plugin")) {
+		get_script_instance()->call("enable_plugin");
+	}
+}
+
+void EditorPlugin::disable_plugin() {
+	// Last function called when the plugin gets disabled in project settings.
+	// Implement it to cleanup things from the project, such as unregister autoloads.
+
+	if (get_script_instance() && get_script_instance()->has_method("disable_plugin")) {
+		get_script_instance()->call("disable_plugin");
+	}
+}
+
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 
 	if (get_script_instance() && get_script_instance()->has_method("set_window_layout")) {
@@ -769,8 +811,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "get_plugin_icon"));
@@ -787,6 +829,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "build"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("enable_plugin"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo("disable_plugin"));
 
 	ADD_SIGNAL(MethodInfo("scene_changed", PropertyInfo(Variant::OBJECT, "scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "filepath")));
@@ -815,11 +859,11 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
 }
 
-EditorPlugin::EditorPlugin() {
-	undo_redo = NULL;
-	input_event_forwarding_always_enabled = false;
-	force_draw_over_forwarding_enabled = false;
-	last_main_screen_name = "";
+EditorPlugin::EditorPlugin() :
+		undo_redo(NULL),
+		input_event_forwarding_always_enabled(false),
+		force_draw_over_forwarding_enabled(false),
+		last_main_screen_name("") {
 }
 
 EditorPlugin::~EditorPlugin() {

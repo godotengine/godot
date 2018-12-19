@@ -65,14 +65,6 @@ void MeshEditor::_notification(int p_what) {
 			first_enter = false;
 		}
 	}
-
-	if (p_what == NOTIFICATION_DRAW) {
-
-		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
-		Size2 size = get_size();
-
-		//draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
-	}
 }
 
 void MeshEditor::_update_rotation() {

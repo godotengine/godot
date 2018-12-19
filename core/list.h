@@ -31,8 +31,8 @@
 #ifndef GLOBALS_LIST_H
 #define GLOBALS_LIST_H
 
-#include "os/memory.h"
-#include "sort.h"
+#include "core/os/memory.h"
+#include "core/sort.h"
 
 /**
  * Generic Templatized Linked List Implementation.

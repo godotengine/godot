@@ -31,7 +31,7 @@
 #ifndef GLOBAL_CONSTANTS_H
 #define GLOBAL_CONSTANTS_H
 
-#include "string_db.h"
+#include "core/string_db.h"
 
 class GlobalConstants {
 public:

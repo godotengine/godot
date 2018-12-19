@@ -42,7 +42,7 @@ class GIProbeEditorPlugin : public EditorPlugin {
 
 	GIProbe *gi_probe;
 
-	Button *bake;
+	ToolButton *bake;
 	EditorNode *editor;
 
 	static EditorProgress *tmp_progress;

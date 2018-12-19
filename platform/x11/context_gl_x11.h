@@ -38,8 +38,8 @@
 
 #if defined(OPENGL_ENABLED)
 
+#include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-#include "os/os.h"
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrender.h>
 
@@ -79,7 +79,7 @@ public:
 	virtual bool is_using_vsync() const;
 
 	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	~ContextGL_X11();
+	virtual ~ContextGL_X11();
 };
 
 #endif

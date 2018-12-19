@@ -31,8 +31,8 @@
 #ifndef STRING_FORMAT_H
 #define STRING_FORMAT_H
 
-#include "ustring.h"
-#include "variant.h"
+#include "core/ustring.h"
+#include "core/variant.h"
 
 String sformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
 
@@ -41,5 +41,7 @@ bool is_csharp_keyword(const String &p_name);
 
 String escape_csharp_keyword(const String &p_name);
 #endif
+
+Error read_all_file_utf8(const String &p_path, String &r_content);
 
 #endif // STRING_FORMAT_H

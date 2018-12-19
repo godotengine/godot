@@ -35,7 +35,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include <jni.h>
 #include <pthread.h>
 #include <sys/types.h>

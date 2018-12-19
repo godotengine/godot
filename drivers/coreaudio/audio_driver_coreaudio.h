@@ -43,6 +43,7 @@
 class AudioDriverCoreAudio : public AudioDriver {
 
 	AudioComponentInstance audio_unit;
+	AudioComponentInstance input_unit;
 
 	bool active;
 	Mutex *mutex;
@@ -82,6 +83,9 @@ class AudioDriverCoreAudio : public AudioDriver {
 			const AudioTimeStamp *inTimeStamp,
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
+
+	Error capture_init();
+	void capture_finish();
 
 public:
 	const char *get_name() const {

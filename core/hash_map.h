@@ -31,12 +31,12 @@
 #ifndef HASH_MAP_H
 #define HASH_MAP_H
 
-#include "error_macros.h"
-#include "hashfuncs.h"
-#include "list.h"
-#include "math_funcs.h"
-#include "os/memory.h"
-#include "ustring.h"
+#include "core/error_macros.h"
+#include "core/hashfuncs.h"
+#include "core/list.h"
+#include "core/math/math_funcs.h"
+#include "core/os/memory.h"
+#include "core/ustring.h"
 
 /**
  * @class HashMap
@@ -150,7 +150,7 @@ private:
 		if (new_hash_table_power == -1)
 			return;
 
-		Element **new_hash_table = memnew_arr(Element *, (1 << new_hash_table_power));
+		Element **new_hash_table = memnew_arr(Element *, ((uint64_t)1 << new_hash_table_power));
 		if (!new_hash_table) {
 
 			ERR_PRINT("Out of Memory");
@@ -230,7 +230,7 @@ private:
 		if (!p_t.hash_table || p_t.hash_table_power == 0)
 			return; /* not copying from empty table */
 
-		hash_table = memnew_arr(Element *, 1 << p_t.hash_table_power);
+		hash_table = memnew_arr(Element *, (uint64_t)1 << p_t.hash_table_power);
 		hash_table_power = p_t.hash_table_power;
 		elements = p_t.elements;
 

@@ -35,8 +35,8 @@
 #include "core/class_db.h"
 #include "core/engine.h"
 #include "core/global_constants.h"
+#include "core/os/file_access.h"
 #include "core/pair.h"
-#include "os/file_access.h"
 
 // helper stuff
 
@@ -292,6 +292,7 @@ List<ClassAPI> generate_c_api_classes() {
 				method_api.has_varargs = method_bind && method_bind->is_vararg();
 
 				// Method flags
+				method_api.is_virtual = false;
 				if (method_info.flags) {
 					const uint32_t flags = method_info.flags;
 					method_api.is_editor = flags & METHOD_FLAG_EDITOR;

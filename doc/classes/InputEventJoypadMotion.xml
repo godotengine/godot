@@ -7,7 +7,7 @@
 		Stores information about joystick motions. One [code]InputEventJoypadMotion[/code] represents one axis at a time.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<demos>
 	</demos>

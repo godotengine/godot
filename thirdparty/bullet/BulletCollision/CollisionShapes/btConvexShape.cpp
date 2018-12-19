@@ -118,9 +118,13 @@ static btVector3 convexHullSupport (const btVector3& localDirOrg, const btVector
 	return supVec;
 #else
 
-    btScalar maxDot;
-    long ptIndex = vec.maxDot( points, numPoints, maxDot);
+	btScalar maxDot;
+	long ptIndex = vec.maxDot( points, numPoints, maxDot);
 	btAssert(ptIndex >= 0);
+	if (ptIndex<0)
+	{
+		ptIndex = 0;
+	}
 	btVector3 supVec = points[ptIndex] * localScaling;
 	return supVec;
 #endif //__SPU__

@@ -31,10 +31,10 @@
 #include "node.h"
 
 #include "core/core_string_names.h"
+#include "core/io/resource_loader.h"
+#include "core/message_queue.h"
+#include "core/print_string.h"
 #include "instance_placeholder.h"
-#include "io/resource_loader.h"
-#include "message_queue.h"
-#include "print_string.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"
@@ -157,7 +157,7 @@ void Node::_notification(int p_notification) {
 			// kill children as cleanly as possible
 			while (data.children.size()) {
 
-				Node *child = data.children[0];
+				Node *child = data.children[data.children.size() - 1]; //begin from the end because its faster and more consistent with creation
 				remove_child(child);
 				memdelete(child);
 			}
@@ -238,6 +238,16 @@ void Node::_propagate_enter_tree() {
 	// enter groups
 }
 
+void Node::_propagate_after_exit_tree() {
+
+	data.blocked++;
+	for (int i = 0; i < data.children.size(); i++) {
+		data.children[i]->_propagate_after_exit_tree();
+	}
+	data.blocked--;
+	emit_signal(SceneStringNames::get_singleton()->tree_exited);
+}
+
 void Node::_propagate_exit_tree() {
 
 	//block while removing children
@@ -299,8 +309,6 @@ void Node::_propagate_exit_tree() {
 	data.ready_notified = false;
 	data.tree = NULL;
 	data.depth = -1;
-
-	emit_signal(SceneStringNames::get_singleton()->tree_exited);
 }
 
 void Node::move_child(Node *p_child, int p_pos) {
@@ -1000,6 +1008,32 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	}
 }
 
+// Return s + 1 as if it were an integer
+String increase_numeric_string(const String &s) {
+
+	String res = s;
+	bool carry = res.length() > 0;
+
+	for (int i = res.length() - 1; i >= 0; i--) {
+		if (!carry) {
+			break;
+		}
+		CharType n = s[i];
+		if (n == '9') { // keep carry as true: 9 + 1
+			res[i] = '0';
+		} else {
+			res[i] = s[i] + 1;
+			carry = false;
+		}
+	}
+
+	if (carry) {
+		res = "1" + res;
+	}
+
+	return res;
+}
+
 String Node::_generate_serial_child_name(Node *p_child) {
 
 	String name = p_child->data.name;
@@ -1032,42 +1066,38 @@ String Node::_generate_serial_child_name(Node *p_child) {
 	}
 
 	String nnsep = _get_name_num_separator();
-	int num = 0;
-	bool explicit_zero = false;
-	if (nums.length() > 0 && name.substr(name.length() - nnsep.length() - nums.length(), nnsep.length()) == nnsep) {
-		// Base name + Separator + Number
-		num = nums.to_int();
-		name = name.substr(0, name.length() - nnsep.length() - nums.length()); // Keep base name
-		if (num == 0) {
-			explicit_zero = true;
+	int name_last_index = name.length() - nnsep.length() - nums.length();
+
+	// Assign the base name + separator to name if we have numbers preceded by a separator
+	if (nums.length() > 0 && name.substr(name_last_index, nnsep.length()) == nnsep) {
+		name = name.substr(0, name_last_index + nnsep.length()).strip_edges();
+	} else {
+		nums = "";
+	}
+
+	Vector<String> children_names;
+
+	for (int i = 0; i < data.children.size(); i++) {
+		String child_name = data.children[i]->data.name;
+		if (data.children[i] == p_child)
+			continue;
+		if (child_name.begins_with(name)) {
+			children_names.push_back(child_name);
 		}
 	}
 
-	int num_places = nums.length();
 	for (;;) {
-		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num).pad_zeros(num_places) : "")).strip_edges();
-		bool found = false;
-		for (int i = 0; i < data.children.size(); i++) {
-			if (data.children[i] == p_child)
-				continue;
-			if (data.children[i]->data.name == attempt) {
-				found = true;
-				break;
-			}
-		}
-		if (!found) {
+		String attempt = name + nums;
+
+		if (children_names.find(attempt) == -1) {
 			return attempt;
 		} else {
-			if (num == 0) {
-				if (explicit_zero) {
-					// Name ended in separator + 0; user expects to get to separator + 1
-					num = 1;
-				} else {
-					// Name was undecorated so skip to 2 for a more natural result
-					num = 2;
-				}
+			if (nums.length() == 0) {
+				// Name was undecorated so skip to 2 for a more natural result
+				nums = "2";
+				name += nnsep; // Add separator because nums.length() > 0 was false
 			} else {
-				num++;
+				nums = increase_numeric_string(nums);
 			}
 		}
 	}
@@ -1174,13 +1204,24 @@ void Node::remove_child(Node *p_child) {
 		ERR_FAIL_COND(data.blocked > 0);
 	}
 
+	int child_count = data.children.size();
+	Node **children = data.children.ptrw();
 	int idx = -1;
-	for (int i = 0; i < data.children.size(); i++) {
 
-		if (data.children[i] == p_child) {
+	if (p_child->data.pos >= 0 && p_child->data.pos < child_count) {
+		if (children[p_child->data.pos] == p_child) {
+			idx = p_child->data.pos;
+		}
+	}
 
-			idx = i;
-			break;
+	if (idx == -1) { //maybe removed while unparenting or something and index was not updated, so just in case the above fails, try this.
+		for (int i = 0; i < child_count; i++) {
+
+			if (children[i] == p_child) {
+
+				idx = i;
+				break;
+			}
 		}
 	}
 
@@ -1197,9 +1238,14 @@ void Node::remove_child(Node *p_child) {
 
 	data.children.remove(idx);
 
-	for (int i = idx; i < data.children.size(); i++) {
+	//update pointer and size
+	child_count = data.children.size();
+	children = data.children.ptrw();
 
-		data.children[i]->data.pos = i;
+	for (int i = idx; i < child_count; i++) {
+
+		children[i]->data.pos = i;
+		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = NULL;
@@ -1207,6 +1253,10 @@ void Node::remove_child(Node *p_child) {
 
 	// validate owner
 	p_child->_propagate_validate_owner();
+
+	if (data.inside_tree) {
+		p_child->_propagate_after_exit_tree();
+	}
 }
 
 int Node::get_child_count() const {
@@ -1334,6 +1384,19 @@ Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) cons
 Node *Node::get_parent() const {
 
 	return data.parent;
+}
+
+Node *Node::find_parent(const String &p_mask) const {
+
+	Node *p = data.parent;
+	while (p) {
+
+		if (p->data.name.operator String().match(p_mask))
+			return p;
+		p = p->data.parent;
+	}
+
+	return NULL;
 }
 
 bool Node::is_a_parent_of(const Node *p_node) const {
@@ -1810,7 +1873,7 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	}
 }
 
-bool Node::is_editable_instance(Node *p_node) const {
+bool Node::is_editable_instance(const Node *p_node) const {
 
 	if (!p_node)
 		return false; //easier, null is never editable :)
@@ -2104,6 +2167,12 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 		node->set(name, value);
 	}
 
+	List<GroupInfo> groups;
+	get_groups(&groups);
+
+	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next())
+		node->add_to_group(E->get().name, E->get().persistent);
+
 	node->set_name(get_name());
 	p_new_parent->add_child(node);
 
@@ -2151,15 +2220,17 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				continue;
 			}
 			NodePath ptarget = p_original->get_path_to(target);
-			Node *copytarget = p_copy->get_node(ptarget);
 
-			// Cannot find a path to the duplicate target, so it seems it's not part
-			// of the duplicated and not yet parented hierarchy, so at least try to connect
+			Node *copytarget = target;
+
+			// Atempt to find a path to the duplicate target, if it seems it's not part
+			// of the duplicated and not yet parented hierarchy then at least try to connect
 			// to the same target as the original
-			if (!copytarget)
-				copytarget = target;
 
-			if (copy && copytarget) {
+			if (p_copy->has_node(ptarget))
+				copytarget = p_copy->get_node(ptarget);
+
+			if (copy && copytarget && !copy->is_connected(E->get().signal, copytarget, E->get().method)) {
 				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, E->get().flags);
 			}
 		}
@@ -2197,6 +2268,12 @@ Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 		String name = E->get().name;
 		node->set(name, get(name));
 	}
+
+	List<GroupInfo> groups;
+	get_groups(&groups);
+
+	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next())
+		node->add_to_group(E->get().name, E->get().persistent);
 
 	for (int i = 0; i < get_child_count(); i++) {
 
@@ -2449,6 +2526,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 		tree_changed_b->tree_changed();
 }
 
+#ifdef DEBUG_ENABLED
 static void _Node_debug_sn(Object *p_obj) {
 
 	Node *n = Object::cast_to<Node>(p_obj);
@@ -2470,6 +2548,7 @@ static void _Node_debug_sn(Object *p_obj) {
 		path = String(p->get_name()) + "/" + p->get_path_to(n);
 	print_line(itos(p_obj->get_instance_id()) + " - Stray Node: " + path + " (Type: " + n->get_class() + ")");
 }
+#endif // DEBUG_ENABLED
 
 void Node::_print_stray_nodes() {
 
@@ -2479,7 +2558,6 @@ void Node::_print_stray_nodes() {
 void Node::print_stray_nodes() {
 
 #ifdef DEBUG_ENABLED
-
 	ObjectDB::debug_objects(_Node_debug_sn);
 #endif
 }
@@ -2605,6 +2683,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);
 
@@ -2683,7 +2762,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
-	ADD_PROPERTYNZ(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
 
 	{
 		MethodInfo mi;
@@ -2741,18 +2820,18 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 
-	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/process" ),"set_process","is_processing") ;
-	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/physics_process" ), "set_physics_process","is_physics_processing") ;
-	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/input" ), "set_process_input","is_processing_input" ) ;
-	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), "set_process_unhandled_input","is_processing_unhandled_input" ) ;
+	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/process" ),"set_process","is_processing") ;
+	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/physics_process" ), "set_physics_process","is_physics_processing") ;
+	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/input" ), "set_process_input","is_processing_input" ) ;
+	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), "set_process_unhandled_input","is_processing_unhandled_input" ) ;
 	ADD_GROUP("Pause", "pause_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "editor/display_folded", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_display_folded", "is_displayed_folded");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor/display_folded", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_display_folded", "is_displayed_folded");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, "", 0), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "filename", PROPERTY_HINT_NONE, "", 0), "set_filename", "get_filename");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_owner", "get_owner");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "", "get_multiplayer");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_multiplayer", PROPERTY_HINT_RESOURCE_TYPE, "MultiplayerAPI", 0), "set_custom_multiplayer", "get_custom_multiplayer");
 
 	BIND_VMETHOD(MethodInfo("_process", PropertyInfo(Variant::REAL, "delta")));
 	BIND_VMETHOD(MethodInfo("_physics_process", PropertyInfo(Variant::REAL, "delta")));

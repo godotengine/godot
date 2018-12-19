@@ -61,6 +61,10 @@ void Body2DSW::update_inertias() {
 
 			for (int i = 0; i < get_shape_count(); i++) {
 
+				if (is_shape_disabled(i)) {
+					continue;
+				}
+
 				const Shape2DSW *shape = get_shape(i);
 
 				real_t area = get_shape_aabb(i).get_area();
@@ -511,8 +515,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 		if (continuous_cd_mode != Physics2DServer::CCD_MODE_DISABLED) {
 
-			motion = new_transform.get_origin() - get_transform().get_origin();
-			//linear_velocity*p_step;
+			motion = linear_velocity * p_step;
 			do_motion = true;
 		}
 	}

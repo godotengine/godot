@@ -7,6 +7,8 @@
 		Translations are resources that can be loaded/unloaded on demand. They map a string to another string.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html</link>
+		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -19,7 +21,7 @@
 			<argument index="1" name="xlated_message" type="String">
 			</argument>
 			<description>
-				Add a message for translation.
+				Adds a message if nonexistent, followed by its translation.
 			</description>
 		</method>
 		<method name="erase_message">
@@ -28,7 +30,7 @@
 			<argument index="0" name="src_message" type="String">
 			</argument>
 			<description>
-				Erase a message.
+				Erases a message.
 			</description>
 		</method>
 		<method name="get_message" qualifiers="const">
@@ -37,25 +39,27 @@
 			<argument index="0" name="src_message" type="String">
 			</argument>
 			<description>
-				Return a message for translation.
+				Returns a message's translation.
 			</description>
 		</method>
 		<method name="get_message_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of existing messages.
 			</description>
 		</method>
 		<method name="get_message_list" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Return all the messages (keys).
+				Returns all the messages (keys).
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="locale" type="String" setter="set_locale" getter="get_locale">
+			The locale of the translation.
 		</member>
 	</members>
 	<constants>

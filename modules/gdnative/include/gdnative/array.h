@@ -130,6 +130,14 @@ godot_int GDAPI godot_array_bsearch_custom(godot_array *p_self, const godot_vari
 
 void GDAPI godot_array_destroy(godot_array *p_self);
 
+godot_array GDAPI godot_array_duplicate(const godot_array *p_self, const godot_bool p_deep);
+
+godot_variant GDAPI godot_array_max(const godot_array *p_self);
+
+godot_variant GDAPI godot_array_min(const godot_array *p_self);
+
+void GDAPI godot_array_shuffle(godot_array *p_self);
+
 #ifdef __cplusplus
 }
 #endif

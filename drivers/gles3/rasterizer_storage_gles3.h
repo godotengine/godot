@@ -31,16 +31,23 @@
 #ifndef RASTERIZERSTORAGEGLES3_H
 #define RASTERIZERSTORAGEGLES3_H
 
-#include "self_list.h"
+#include "core/self_list.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"
+
 #include "shaders/blend_shape.glsl.gen.h"
 #include "shaders/canvas.glsl.gen.h"
 #include "shaders/copy.glsl.gen.h"
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/particles.glsl.gen.h"
+
+// WebGL 2.0 has no MapBufferRange/UnmapBuffer, but offers a non-ES style BufferSubData API instead.
+#ifdef __EMSCRIPTEN__
+void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid *data);
+void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data);
+#endif
 
 class RasterizerCanvasGLES3;
 class RasterizerSceneGLES3;
@@ -174,22 +181,12 @@ public:
 
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
 
-		_FORCE_INLINE_ void instance_change_notify() {
+		_FORCE_INLINE_ void instance_change_notify(bool p_aabb, bool p_materials) {
 
 			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
 			while (instances) {
 
-				instances->self()->base_changed();
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_material_change_notify() {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				instances->self()->base_material_changed();
+				instances->self()->base_changed(p_aabb, p_materials);
 				instances = instances->next();
 			}
 		}
@@ -288,29 +285,30 @@ public:
 		VisualServer::TextureDetectCallback detect_normal;
 		void *detect_normal_ud;
 
-		Texture() {
-
-			using_srgb = false;
-			stored_cube_sides = 0;
-			ignore_mipmaps = false;
-			render_target = NULL;
-			flags = width = height = 0;
-			tex_id = 0;
-			data_size = 0;
-			format = Image::FORMAT_L8;
-			active = false;
-			compressed = false;
-			total_data_size = 0;
-			target = GL_TEXTURE_2D;
-			mipmaps = 0;
-			detect_3d = NULL;
-			detect_3d_ud = NULL;
-			detect_srgb = NULL;
-			detect_srgb_ud = NULL;
-			detect_normal = NULL;
-			detect_normal_ud = NULL;
-			proxy = NULL;
-			redraw_if_visible = false;
+		Texture() :
+				proxy(NULL),
+				flags(0),
+				width(0),
+				height(0),
+				format(Image::FORMAT_L8),
+				target(GL_TEXTURE_2D),
+				data_size(0),
+				compressed(false),
+				total_data_size(0),
+				ignore_mipmaps(false),
+				mipmaps(0),
+				active(false),
+				tex_id(0),
+				using_srgb(false),
+				redraw_if_visible(false),
+				stored_cube_sides(0),
+				render_target(NULL),
+				detect_3d(NULL),
+				detect_3d_ud(NULL),
+				detect_srgb(NULL),
+				detect_srgb_ud(NULL),
+				detect_normal(NULL),
+				detect_normal_ud(NULL) {
 		}
 
 		_ALWAYS_INLINE_ Texture *get_ptr() {
@@ -442,6 +440,7 @@ public:
 			};
 
 			int light_mode;
+
 			bool uses_screen_texture;
 			bool uses_screen_uv;
 			bool uses_time;
@@ -555,16 +554,16 @@ public:
 		bool is_animated_cache;
 
 		Material() :
+				shader(NULL),
+				ubo_id(0),
+				ubo_size(0),
 				list(this),
-				dirty_list(this) {
-			can_cast_shadow_cache = false;
-			is_animated_cache = false;
-			shader = NULL;
-			line_width = 1.0;
-			ubo_id = 0;
-			ubo_size = 0;
-			last_pass = 0;
-			render_priority = 0;
+				dirty_list(this),
+				line_width(1.0),
+				render_priority(0),
+				last_pass(0),
+				can_cast_shadow_cache(false),
+				is_animated_cache(false) {
 		}
 	};
 
@@ -582,6 +581,7 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value);
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const;
+	virtual Variant material_get_param_default(RID p_material, const StringName &p_param) const;
 
 	virtual void material_set_line_width(RID p_material, float p_width);
 	virtual void material_set_next_pass(RID p_material, RID p_next_material);
@@ -656,40 +656,37 @@ public:
 		bool active;
 
 		virtual void material_changed_notify() {
-			mesh->instance_material_change_notify();
+			mesh->instance_change_notify(false, true);
 			mesh->update_multimeshes();
 		}
 
 		int total_data_size;
 
-		Surface() {
-
-			array_byte_size = 0;
-			index_array_byte_size = 0;
-			mesh = NULL;
-			format = 0;
-			array_id = 0;
-			vertex_id = 0;
-			index_id = 0;
-			array_len = 0;
+		Surface() :
+				mesh(NULL),
+				format(0),
+				array_id(0),
+				vertex_id(0),
+				index_id(0),
+				index_wireframe_id(0),
+				array_wireframe_id(0),
+				instancing_array_wireframe_id(0),
+				index_wireframe_len(0),
+				array_len(0),
+				index_array_len(0),
+				array_byte_size(0),
+				index_array_byte_size(0),
+				primitive(VS::PRIMITIVE_POINTS),
+				active(false),
+				total_data_size(0) {
 			type = GEOMETRY_SURFACE;
-			primitive = VS::PRIMITIVE_POINTS;
-			index_array_len = 0;
-			active = false;
-
-			total_data_size = 0;
-
-			index_wireframe_id = 0;
-			array_wireframe_id = 0;
-			instancing_array_wireframe_id = 0;
-			index_wireframe_len = 0;
 		}
 
 		~Surface() {
 		}
 	};
 
-	class MultiMesh;
+	struct MultiMesh;
 
 	struct Mesh : public GeometryOwner {
 
@@ -704,16 +701,16 @@ public:
 
 			SelfList<MultiMesh> *mm = multimeshes.first();
 			while (mm) {
-				mm->self()->instance_material_change_notify();
+				mm->self()->instance_change_notify(false, true);
 				mm = mm->next();
 			}
 		}
 
-		Mesh() {
-			blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
-			blend_shape_count = 0;
-			last_pass = 0;
-			active = false;
+		Mesh() :
+				active(false),
+				blend_shape_count(0),
+				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED),
+				last_pass(0) {
 		}
 	};
 
@@ -781,19 +778,19 @@ public:
 		bool dirty_data;
 
 		MultiMesh() :
+				size(0),
+				transform_format(VS::MULTIMESH_TRANSFORM_2D),
+				color_format(VS::MULTIMESH_COLOR_NONE),
+				custom_data_format(VS::MULTIMESH_CUSTOM_DATA_NONE),
 				update_list(this),
-				mesh_list(this) {
-			dirty_aabb = true;
-			dirty_data = true;
-			xform_floats = 0;
-			color_floats = 0;
-			custom_data_floats = 0;
-			visible_instances = -1;
-			size = 0;
-			buffer = 0;
-			transform_format = VS::MULTIMESH_TRANSFORM_2D;
-			color_format = VS::MULTIMESH_COLOR_NONE;
-			custom_data_format = VS::MULTIMESH_CUSTOM_DATA_NONE;
+				mesh_list(this),
+				buffer(0),
+				visible_instances(-1),
+				xform_floats(0),
+				color_floats(0),
+				custom_data_floats(0),
+				dirty_aabb(true),
+				dirty_data(true) {
 		}
 	};
 
@@ -890,11 +887,10 @@ public:
 		Transform2D base_transform_2d;
 
 		Skeleton() :
+				use_2d(false),
+				size(0),
+				texture(0),
 				update_list(this) {
-			size = 0;
-
-			use_2d = false;
-			texture = 0;
 		}
 	};
 
@@ -1003,6 +999,7 @@ public:
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
+	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution);
 
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const;
 	virtual VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
@@ -1174,37 +1171,31 @@ public:
 		Transform emission_transform;
 
 		Particles() :
-				particle_element(this) {
-			cycle_number = 0;
-			emitting = false;
-			one_shot = false;
-			amount = 0;
-			lifetime = 1.0;
-			pre_process_time = 0.0;
-			explosiveness = 0.0;
-			randomness = 0.0;
-			use_local_coords = true;
-			fixed_fps = 0;
-			fractional_delta = false;
-			frame_remainder = 0;
-			histories_enabled = false;
-			speed_scale = 1.0;
-			random_seed = 0;
-
-			restart_request = false;
-
-			custom_aabb = AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8));
-
-			draw_order = VS::PARTICLES_DRAW_ORDER_INDEX;
+				inactive(true),
+				inactive_time(0.0),
+				emitting(false),
+				one_shot(false),
+				amount(0),
+				lifetime(1.0),
+				pre_process_time(0.0),
+				explosiveness(0.0),
+				randomness(0.0),
+				restart_request(false),
+				custom_aabb(AABB(Vector3(-4, -4, -4), Vector3(8, 8, 8))),
+				use_local_coords(true),
+				draw_order(VS::PARTICLES_DRAW_ORDER_INDEX),
+				histories_enabled(false),
+				particle_element(this),
+				prev_ticks(0),
+				random_seed(0),
+				cycle_number(0),
+				speed_scale(1.0),
+				fixed_fps(0),
+				fractional_delta(false),
+				frame_remainder(0),
+				clear(true) {
 			particle_buffers[0] = 0;
 			particle_buffers[1] = 0;
-
-			prev_ticks = 0;
-
-			clear = true;
-			inactive = true;
-			inactive_time = 0.0;
-
 			glGenBuffers(2, particle_buffers);
 			glGenVertexArrays(2, particle_vaos);
 		}
@@ -1261,6 +1252,8 @@ public:
 	virtual int particles_get_draw_passes(RID p_particles) const;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const;
 
+	virtual bool particles_is_inactive(RID p_particles) const;
+
 	/* INSTANCE */
 
 	virtual void instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance);
@@ -1307,9 +1300,9 @@ public:
 				GLuint color;
 				int levels;
 
-				MipMaps() {
-					color = 0;
-					levels = 0;
+				MipMaps() :
+						color(0),
+						levels(0) {
 				}
 			};
 
@@ -1324,10 +1317,10 @@ public:
 
 				Vector<GLuint> depth_mipmap_fbos; //fbos for depth mipmapsla ver
 
-				SSAO() {
+				SSAO() :
+						linear_depth(0) {
 					blur_fbo[0] = 0;
 					blur_fbo[1] = 0;
-					linear_depth = 0;
 				}
 			} ssao;
 
@@ -1339,7 +1332,8 @@ public:
 			GLuint fbo;
 			GLuint color;
 
-			Exposure() { fbo = 0; }
+			Exposure() :
+					fbo(0) {}
 		} exposure;
 
 		uint64_t last_exposure_tick;
@@ -1353,26 +1347,22 @@ public:
 
 		RID texture;
 
-		RenderTarget() {
-
-			msaa = VS::VIEWPORT_MSAA_DISABLED;
-			width = 0;
-			height = 0;
-			depth = 0;
-			fbo = 0;
+		RenderTarget() :
+				fbo(0),
+				depth(0),
+				last_exposure_tick(0),
+				width(0),
+				height(0),
+				used_in_frame(false),
+				msaa(VS::VIEWPORT_MSAA_DISABLED) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
-			used_in_frame = false;
-
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; i++) {
 				flags[i] = false;
 			}
 			flags[RENDER_TARGET_HDR] = true;
-
 			buffers.active = false;
 			buffers.effects_active = false;
-
-			last_exposure_tick = 0;
 		}
 	};
 

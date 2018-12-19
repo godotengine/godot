@@ -35,7 +35,7 @@ void CanvasLayer::set_layer(int p_xform) {
 
 	layer = p_xform;
 	if (viewport.is_valid())
-		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
+		VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
 }
 
 int CanvasLayer::get_layer() const {
@@ -146,17 +146,26 @@ void CanvasLayer::_notification(int p_what) {
 				vp = Node::get_viewport();
 			}
 			ERR_FAIL_COND(!vp);
+
+			vp->_canvas_layer_add(this);
 			viewport = vp->get_viewport_rid();
 
 			VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
-			VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
+			VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
 			VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
+			vp->_canvas_layer_remove(this);
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 			viewport = RID();
+
+		} break;
+		case NOTIFICATION_MOVED_IN_PARENT: {
+
+			if (is_inside_tree())
+				VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
 
 		} break;
 	}
@@ -179,6 +188,7 @@ RID CanvasLayer::get_viewport() const {
 void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 	ERR_FAIL_NULL(p_viewport);
 	if (is_inside_tree()) {
+		vp->_canvas_layer_remove(this);
 		VisualServer::get_singleton()->viewport_remove_canvas(viewport, canvas);
 		viewport = RID();
 	}
@@ -198,10 +208,11 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		else
 			vp = Node::get_viewport();
 
+		vp->_canvas_layer_add(this);
 		viewport = vp->get_viewport_rid();
 
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport, canvas);
-		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport, canvas, layer);
+		VisualServer::get_singleton()->viewport_set_canvas_stacking(viewport, canvas, layer, get_position_in_parent());
 		VisualServer::get_singleton()->viewport_set_canvas_transform(viewport, canvas, transform);
 	}
 }

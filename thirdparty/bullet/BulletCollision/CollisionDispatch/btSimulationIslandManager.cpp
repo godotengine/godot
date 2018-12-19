@@ -199,6 +199,22 @@ class btPersistentManifoldSortPredicate
 		}
 };
 
+class btPersistentManifoldSortPredicateDeterministic
+{
+public:
+
+	SIMD_FORCE_INLINE bool operator() (const btPersistentManifold* lhs, const btPersistentManifold* rhs) const
+	{
+		return (
+			(getIslandId(lhs) < getIslandId(rhs))
+							|| ((getIslandId(lhs) == getIslandId(rhs)) && lhs->getBody0()->getBroadphaseHandle()->m_uniqueId < rhs->getBody0()->getBroadphaseHandle()->m_uniqueId) 
+						||((getIslandId(lhs) == getIslandId(rhs)) && (lhs->getBody0()->getBroadphaseHandle()->m_uniqueId == rhs->getBody0()->getBroadphaseHandle()->m_uniqueId) &&
+					(lhs->getBody1()->getBroadphaseHandle()->m_uniqueId < rhs->getBody1()->getBroadphaseHandle()->m_uniqueId))
+			);
+
+	}
+};
+
 
 void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher,btCollisionWorld* collisionWorld)
 {
@@ -245,13 +261,11 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher,btCollisio
 			btAssert((colObj0->getIslandTag() == islandId) || (colObj0->getIslandTag() == -1));
 			if (colObj0->getIslandTag() == islandId)
 			{
-				if (colObj0->getActivationState()== ACTIVE_TAG)
+				if (colObj0->getActivationState()== ACTIVE_TAG ||
+				   colObj0->getActivationState()== DISABLE_DEACTIVATION)
 				{
 					allSleeping = false;
-				}
-				if (colObj0->getActivationState()== DISABLE_DEACTIVATION)
-				{
-					allSleeping = false;
+					break;
 				}
 			}
 		}
@@ -318,7 +332,12 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher,btCollisio
 	for (i=0;i<maxNumManifolds ;i++)
 	{
 		 btPersistentManifold* manifold = dispatcher->getManifoldByIndexInternal(i);
-		 
+		 if (collisionWorld->getDispatchInfo().m_deterministicOverlappingPairs)
+		 {
+			if (manifold->getNumContacts() == 0)
+				continue;
+		 }
+
 		 const btCollisionObject* colObj0 = static_cast<const btCollisionObject*>(manifold->getBody0());
 		 const btCollisionObject* colObj1 = static_cast<const btCollisionObject*>(manifold->getBody1());
 		
@@ -379,7 +398,16 @@ void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher,
 
 		//tried a radix sort, but quicksort/heapsort seems still faster
 		//@todo rewrite island management
-		m_islandmanifold.quickSort(btPersistentManifoldSortPredicate());
+		//btPersistentManifoldSortPredicateDeterministic sorts contact manifolds based on islandid,
+		//but also based on object0 unique id and object1 unique id
+		if (collisionWorld->getDispatchInfo().m_deterministicOverlappingPairs)
+		{
+			m_islandmanifold.quickSort(btPersistentManifoldSortPredicateDeterministic());
+		} else
+		{
+			m_islandmanifold.quickSort(btPersistentManifoldSortPredicate());
+		}
+
 		//m_islandmanifold.heapSort(btPersistentManifoldSortPredicate());
 
 		//now process all active islands (sets of manifolds for now)

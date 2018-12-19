@@ -50,63 +50,6 @@ subject to the following restrictions:
 #include "LinearMath/btSerializer.h"
 
 
-struct InplaceSolverIslandCallbackMt : public btSimulationIslandManagerMt::IslandCallback
-{
-	btContactSolverInfo*	m_solverInfo;
-	btConstraintSolver*		m_solver;
-	btIDebugDraw*			m_debugDrawer;
-	btDispatcher*			m_dispatcher;
-
-	InplaceSolverIslandCallbackMt(
-		btConstraintSolver*	solver,
-		btStackAlloc* stackAlloc,
-		btDispatcher* dispatcher)
-		:m_solverInfo(NULL),
-		m_solver(solver),
-		m_debugDrawer(NULL),
-		m_dispatcher(dispatcher)
-	{
-
-	}
-
-	InplaceSolverIslandCallbackMt& operator=(InplaceSolverIslandCallbackMt& other)
-	{
-		btAssert(0);
-		(void)other;
-		return *this;
-	}
-
-	SIMD_FORCE_INLINE void setup ( btContactSolverInfo* solverInfo, btIDebugDraw* debugDrawer)
-	{
-		btAssert(solverInfo);
-		m_solverInfo = solverInfo;
-		m_debugDrawer = debugDrawer;
-	}
-
-
-	virtual	void	processIsland( btCollisionObject** bodies,
-                                   int numBodies,
-                                   btPersistentManifold** manifolds,
-                                   int numManifolds,
-                                   btTypedConstraint** constraints,
-                                   int numConstraints,
-                                   int islandId
-                                   )
-	{
-        m_solver->solveGroup( bodies,
-                              numBodies,
-                              manifolds,
-                              numManifolds,
-                              constraints,
-                              numConstraints,
-                              *m_solverInfo,
-                              m_debugDrawer,
-                              m_dispatcher
-                              );
-    }
-
-};
-
 
 ///
 /// btConstraintSolverPoolMt
@@ -209,7 +152,12 @@ void btConstraintSolverPoolMt::reset()
 /// btDiscreteDynamicsWorldMt
 ///
 
-btDiscreteDynamicsWorldMt::btDiscreteDynamicsWorldMt(btDispatcher* dispatcher, btBroadphaseInterface* pairCache, btConstraintSolverPoolMt* constraintSolver, btCollisionConfiguration* collisionConfiguration)
+btDiscreteDynamicsWorldMt::btDiscreteDynamicsWorldMt(btDispatcher* dispatcher,
+    btBroadphaseInterface* pairCache,
+    btConstraintSolverPoolMt* constraintSolver,
+    btConstraintSolver* constraintSolverMt,
+    btCollisionConfiguration* collisionConfiguration
+)
 : btDiscreteDynamicsWorld(dispatcher,pairCache,constraintSolver,collisionConfiguration)
 {
 	if (m_ownsIslandManager)
@@ -217,31 +165,18 @@ btDiscreteDynamicsWorldMt::btDiscreteDynamicsWorldMt(btDispatcher* dispatcher, b
 		m_islandManager->~btSimulationIslandManager();
 		btAlignedFree( m_islandManager);
 	}
-    {
-		void* mem = btAlignedAlloc(sizeof(InplaceSolverIslandCallbackMt),16);
-		m_solverIslandCallbackMt = new (mem) InplaceSolverIslandCallbackMt (m_constraintSolver, 0, dispatcher);
-    }
 	{
 		void* mem = btAlignedAlloc(sizeof(btSimulationIslandManagerMt),16);
 		btSimulationIslandManagerMt* im = new (mem) btSimulationIslandManagerMt();
         im->setMinimumSolverBatchSize( m_solverInfo.m_minimumSolverBatchSize );
         m_islandManager = im;
 	}
+    m_constraintSolverMt = constraintSolverMt;
 }
 
 
 btDiscreteDynamicsWorldMt::~btDiscreteDynamicsWorldMt()
 {
-	if (m_solverIslandCallbackMt)
-	{
-		m_solverIslandCallbackMt->~InplaceSolverIslandCallbackMt();
-		btAlignedFree(m_solverIslandCallbackMt);
-	}
-	if (m_ownsConstraintSolver)
-	{
-		m_constraintSolver->~btConstraintSolver();
-		btAlignedFree(m_constraintSolver);
-	}
 }
 
 
@@ -249,12 +184,17 @@ void btDiscreteDynamicsWorldMt::solveConstraints(btContactSolverInfo& solverInfo
 {
 	BT_PROFILE("solveConstraints");
 
-	m_solverIslandCallbackMt->setup(&solverInfo, getDebugDrawer());
 	m_constraintSolver->prepareSolve(getCollisionWorld()->getNumCollisionObjects(), getCollisionWorld()->getDispatcher()->getNumManifolds());
 
 	/// solve all the constraints for this island
     btSimulationIslandManagerMt* im = static_cast<btSimulationIslandManagerMt*>(m_islandManager);
-    im->buildAndProcessIslands( getCollisionWorld()->getDispatcher(), getCollisionWorld(), m_constraints, m_solverIslandCallbackMt );
+    btSimulationIslandManagerMt::SolverParams solverParams;
+    solverParams.m_solverPool = m_constraintSolver;
+    solverParams.m_solverMt = m_constraintSolverMt;
+    solverParams.m_solverInfo = &solverInfo;
+    solverParams.m_debugDrawer = m_debugDrawer;
+    solverParams.m_dispatcher = getCollisionWorld()->getDispatcher();
+    im->buildAndProcessIslands( getCollisionWorld()->getDispatcher(), getCollisionWorld(), m_constraints, solverParams );
 
 	m_constraintSolver->allSolved(solverInfo, m_debugDrawer);
 }
@@ -325,3 +265,14 @@ void btDiscreteDynamicsWorldMt::integrateTransforms( btScalar timeStep )
     }
 }
 
+
+int	btDiscreteDynamicsWorldMt::stepSimulation( btScalar timeStep, int maxSubSteps, btScalar fixedTimeStep )
+{
+    int numSubSteps = btDiscreteDynamicsWorld::stepSimulation(timeStep, maxSubSteps, fixedTimeStep);
+    if (btITaskScheduler* scheduler = btGetTaskScheduler())
+    {
+        // tell Bullet's threads to sleep, so other threads can run
+        scheduler->sleepWorkerThreadsHint();
+    }
+    return numSubSteps;
+}

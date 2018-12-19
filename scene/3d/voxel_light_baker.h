@@ -92,6 +92,16 @@ private:
 		float accum[6][3]; //rgb anisotropic
 		float direct_accum[6][3]; //for direct bake
 		int next_leaf;
+		Light() {
+			x = y = z = 0;
+			for (int i = 0; i < 6; i++) {
+				for (int j = 0; j < 3; j++) {
+					accum[i][j] = 0;
+					direct_accum[i][j] = 0;
+				}
+			}
+			next_leaf = 0;
+		}
 	};
 
 	int first_leaf;

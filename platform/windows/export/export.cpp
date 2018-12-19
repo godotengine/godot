@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "editor/editor_export.h"
 #include "editor/editor_settings.h"
-#include "os/file_access.h"
-#include "os/os.h"
 #include "platform/windows/logo.gen.h"
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {

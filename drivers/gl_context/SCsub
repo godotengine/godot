@@ -10,13 +10,14 @@ if (env["platform"] in ["haiku", "osx", "windows", "x11"]):
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env.add_source_files(env.drivers_sources, thirdparty_sources)
     env.Append(CPPPATH=[thirdparty_dir])
 
     env.Append(CPPFLAGS=['-DGLAD_ENABLED'])
     env.Append(CPPFLAGS=['-DGLES_OVER_GL'])
 
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.drivers_sources, thirdparty_sources)
+
 # Godot source files
 env.add_source_files(env.drivers_sources, "*.cpp")
-
-Export('env')

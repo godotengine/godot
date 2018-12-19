@@ -126,6 +126,18 @@ int lws_issue_raw(struct lws *wsi, unsigned char *buf, size_t len)
 				lwsl_info("** %p signalling to close now\n", wsi);
 				return -1; /* retry closing now */
 			}
+
+#if defined(LWS_ROLE_H1) || defined(LWS_ROLE_H2)
+#if !defined(LWS_WITHOUT_SERVER)
+			if (wsi->http.deferred_transaction_completed) {
+				lwsl_notice("%s: partial completed, doing "
+					    "deferred transaction completed\n",
+					    __func__);
+				wsi->http.deferred_transaction_completed = 0;
+				return lws_http_transaction_completed(wsi);
+			}
+#endif
+#endif
 		}
 		/* always callback on writeable */
 		lws_callback_on_writable(wsi);

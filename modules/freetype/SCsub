@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 Import('env')
+Import('env_modules')
+
 from compat import isbasestring
 
-# Not building in a separate env as scene needs it
+env_freetype = env_modules.Clone()
 
 # Thirdparty source files
 if env['builtin_freetype']:
@@ -54,26 +56,35 @@ if env['builtin_freetype']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
+    if env['platform'] == 'uwp':
+        # Include header for UWP to fix build issues
+        env_freetype.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
+        # Globally too, as freetype is used in scene (see bottom)
+        env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
+
     sfnt = thirdparty_dir + 'src/sfnt/sfnt.c'
-
-    if 'platform' in env:
-        if env['platform'] == 'uwp':
-            # Include header for UWP to fix build issues
-            env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
-        elif env['platform'] == 'javascript':
-            # Forcibly undefine this macro so SIMD is not used in this file,
-            # since currently unsuported in WASM
-            sfnt = env.Object(sfnt, CPPFLAGS=['-U__OPTIMIZE__'])
-
+    if env['platform'] == 'javascript':
+        # Forcibly undefine this macro so SIMD is not used in this file,
+        # since currently unsupported in WASM
+        sfnt = env_freetype.Object(sfnt, CPPFLAGS=['-U__OPTIMIZE__'])
     thirdparty_sources += [sfnt]
 
-    env.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+    env_freetype.Append(CPPPATH=[thirdparty_dir + "/include"])
+    # Also needed in main env for scene/
+    env.Append(CPPPATH=[thirdparty_dir + "/include"])
 
-    # also requires libpng headers
+    env_freetype.Append(CCFLAGS=['-DFT2_BUILD_LIBRARY', '-DFT_CONFIG_OPTION_USE_PNG'])
+    if (env['target'] != 'release'):
+        env_freetype.Append(CCFLAGS=['-DZLIB_DEBUG'])
+
+    # Also requires libpng headers
     if env['builtin_libpng']:
-        env.Append(CPPPATH=["#thirdparty/libpng"])
+        env_freetype.Append(CPPPATH=["#thirdparty/libpng"])
 
-    lib = env.add_library("freetype_builtin", thirdparty_sources)
+    env_thirdparty = env_freetype.Clone()
+    env_thirdparty.disable_warnings()
+    lib = env_thirdparty.add_library("freetype_builtin", thirdparty_sources)
+
     # Needs to be appended to arrive after libscene in the linker call,
     # but we don't want it to arrive *after* system libs, so manual hack
     # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
@@ -86,12 +97,8 @@ if env['builtin_freetype']:
             break
     if not inserted:
         env.Append(LIBS=[lib])
-    env.Append(CCFLAGS=['-DFT2_BUILD_LIBRARY'])
-    if (env['target'] != 'release'):
-        env.Append(CCFLAGS=['-DZLIB_DEBUG'])
 
 # Godot source files
-env.add_source_files(env.modules_sources, "*.cpp")
-env.Append(CCFLAGS=['-DFREETYPE_ENABLED', '-DFT_CONFIG_OPTION_USE_PNG'])
-
-Export('env')
+env_freetype.add_source_files(env.modules_sources, "*.cpp")
+# Used in scene/, needs to be in main env
+env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])

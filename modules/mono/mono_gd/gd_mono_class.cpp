@@ -151,6 +151,7 @@ void GDMonoClass::fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base
 	while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
 		StringName name = mono_method_get_name(raw_method);
 
+		// get_method implicitly fetches methods and adds them to this->methods
 		GDMonoMethod *method = get_method(raw_method, name);
 		ERR_CONTINUE(!method);
 
@@ -449,6 +450,21 @@ const Vector<GDMonoClass *> &GDMonoClass::get_all_delegates() {
 	return delegates_list;
 }
 
+const Vector<GDMonoMethod *> &GDMonoClass::get_all_methods() {
+
+	if (!method_list_fetched) {
+		void *iter = NULL;
+		MonoMethod *raw_method = NULL;
+		while ((raw_method = mono_class_get_methods(get_mono_ptr(), &iter)) != NULL) {
+			method_list.push_back(memnew(GDMonoMethod(mono_method_get_name(raw_method), raw_method)));
+		}
+
+		method_list_fetched = true;
+	}
+
+	return method_list;
+}
+
 GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name, MonoClass *p_class, GDMonoAssembly *p_assembly) {
 
 	namespace_name = p_namespace;
@@ -460,6 +476,7 @@ GDMonoClass::GDMonoClass(const StringName &p_namespace, const StringName &p_name
 	attributes = NULL;
 
 	methods_fetched = false;
+	method_list_fetched = false;
 	fields_fetched = false;
 	properties_fetched = false;
 	delegates_fetched = false;
@@ -511,5 +528,9 @@ GDMonoClass::~GDMonoClass() {
 		}
 
 		methods.clear();
+	}
+
+	for (int i = 0; i < method_list.size(); ++i) {
+		memdelete(method_list[i]);
 	}
 }

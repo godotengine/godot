@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "texture.h"
-#include "bit_mask.h"
+
+#include "core/core_string_names.h"
+#include "core/io/image_loader.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
-#include "core_string_names.h"
-#include "io/image_loader.h"
+#include "scene/resources/bit_mask.h"
 
 Size2 Texture::get_size() const {
 
@@ -206,6 +207,9 @@ void ImageTexture::set_flags(uint32_t p_flags) {
 
 	flags=p_flags|cube;	*/
 	flags = p_flags;
+	if (w == 0 || h == 0) {
+		return; //uninitialized, do not set to texture
+	}
 	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
 }
 
@@ -421,6 +425,15 @@ ImageTexture::~ImageTexture() {
 }
 
 //////////////////////////////////////////
+
+void StreamTexture::set_path(const String &p_path, bool p_take_over) {
+
+	if (texture.is_valid()) {
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
 
 void StreamTexture::_requested_3d(void *p_ud) {
 
@@ -981,10 +994,10 @@ void AtlasTexture::_bind_methods() {
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -1000,10 +1013,10 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -1035,10 +1048,10 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return false;
+
+	Rect2 rc = region;
 
 	Rect2 src = p_src_rect;
 	if (src.size == Size2()) {
@@ -1071,11 +1084,13 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 
 bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 
-	if (atlas.is_valid()) {
-		return atlas->is_pixel_opaque(p_x + region.position.x + margin.position.x, p_x + region.position.y + margin.position.y);
-	}
+	if (!atlas.is_valid())
+		return true;
 
-	return true;
+	int x = p_x + region.position.x + margin.position.x;
+	int y = p_y + region.position.y + margin.position.y;
+
+	return atlas->is_pixel_opaque(x, y);
 }
 
 AtlasTexture::AtlasTexture() {
@@ -1606,7 +1621,7 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -1632,15 +1647,16 @@ void GradientTexture::_queue_update() {
 	if (update_pending)
 		return;
 
+	update_pending = true;
 	call_deferred("_update");
 }
 
 void GradientTexture::_update() {
 
+	update_pending = false;
+
 	if (gradient.is_null())
 		return;
-
-	update_pending = false;
 
 	PoolVector<uint8_t> data;
 	data.resize(width * 4);
@@ -1944,8 +1960,8 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_frame_texture", "get_frame_texture", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::REAL, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01"), "set_frame_delay", "get_frame_delay", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::REAL, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_frame_delay", "get_frame_delay", i);
 	}
 }
 

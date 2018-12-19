@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
@@ -11,6 +13,7 @@ void main() {
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 //#define QUALIFIER uniform // some guy on the interweb says it may be faster with this
@@ -18,6 +21,7 @@ void main() {
 
 #ifdef USE_25_SAMPLES
 const int kernel_size = 25;
+/* clang-format on */
 QUALIFIER vec2 kernel[25] = vec2[](
 		vec2(0.530605, 0.0),
 		vec2(0.000973794, -3.0),

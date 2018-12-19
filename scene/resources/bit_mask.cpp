@@ -30,7 +30,7 @@
 
 #include "bit_mask.h"
 
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 void BitMap::create(const Size2 &p_size) {
 
@@ -183,7 +183,6 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 	unsigned int count = 0;
 	Set<Point2i> case9s;
 	Set<Point2i> case6s;
-	int i;
 	Vector<Vector2> _points;
 	do {
 		int sv = 0;
@@ -433,8 +432,8 @@ static void fill_bits(const BitMap *p_src, Ref<BitMap> &p_map, const Point2i &p_
 	int stack_size = 0;
 
 	Point2i pos = p_pos;
-	int next_i;
-	int next_j;
+	int next_i = 0;
+	int next_j = 0;
 
 	bool reenter = true;
 	bool popped = false;

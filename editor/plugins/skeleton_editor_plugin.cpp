@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "skeleton_editor_plugin.h"
+
 #include "scene/3d/collision_shape.h"
 #include "scene/3d/physics_body.h"
-#include "scene/3d/physics_joint.h";
+#include "scene/3d/physics_joint.h"
 #include "scene/resources/capsule_shape.h"
 #include "scene/resources/sphere_shape.h"
 #include "spatial_editor_plugin.h"
@@ -150,6 +151,7 @@ void SkeletonEditor::_bind_methods() {
 }
 
 SkeletonEditor::SkeletonEditor() {
+	skeleton = NULL;
 	options = memnew(MenuButton);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 

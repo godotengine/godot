@@ -1,34 +1,30 @@
 #!/usr/bin/env python
 
+Import('env')
+
 import shutil
 from compat import open_utf8
 from distutils.version import LooseVersion
 from detect import get_ndk_version
 
-Import('env')
-
 android_files = [
 
     'os_android.cpp',
-    'godot_android.cpp',
     'file_access_android.cpp',
-    'dir_access_android.cpp',
     'audio_driver_opensl.cpp',
     'file_access_jandroid.cpp',
     'dir_access_jandroid.cpp',
     'thread_jandroid.cpp',
     'audio_driver_jandroid.cpp',
-    'ifaddrs_android.cpp',
-    'android_native_app_glue.c',
     'java_glue.cpp',
-    'cpu-features.c',
     'java_class_wrapper.cpp',
 #    'power_android.cpp'
 ]
 
-# env.Depends('#core/math/vector3.h', 'vector3_psp.h')
-
-#obj = env.SharedObject('godot_android.cpp')
+thirdparty_files = [
+    'ifaddrs_android.cpp',
+    'cpu-features.c',
+]
 
 env_android = env.Clone()
 if env['target'] == "profile":
@@ -37,6 +33,11 @@ if env['target'] == "profile":
 android_objects = []
 for x in android_files:
     android_objects.append(env_android.SharedObject(x))
+
+env_thirdparty = env_android.Clone()
+env_thirdparty.disable_warnings()
+for x in thirdparty_files:
+    android_objects.append(env_thirdparty.SharedObject(x))
 
 prog = None
 
@@ -107,7 +108,7 @@ for x in env.android_asset_dirs:
 gradle_default_config_text = ""
 
 minSdk = 18
-targetSdk = 27
+targetSdk = 28
 
 for x in env.android_default_config:
     if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk:

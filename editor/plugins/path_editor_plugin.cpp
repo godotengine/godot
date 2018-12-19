@@ -30,7 +30,7 @@
 
 #include "path_editor_plugin.h"
 
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 #include "scene/resources/curve.h"
 #include "spatial_editor_plugin.h"
 
@@ -57,7 +57,7 @@ String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	return n;
 }
-Variant PathSpatialGizmo::get_handle_value(int p_idx) const {
+Variant PathSpatialGizmo::get_handle_value(int p_idx) {
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -215,8 +215,8 @@ void PathSpatialGizmo::redraw() {
 
 	clear();
 
-	Ref<SpatialMaterial> path_material = gizmo_plugin->get_material("path_material");
-	Ref<SpatialMaterial> path_thin_material = gizmo_plugin->get_material("path_thin_material");
+	Ref<SpatialMaterial> path_material = gizmo_plugin->get_material("path_material", this);
+	Ref<SpatialMaterial> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
 	Ref<SpatialMaterial> handles_material = gizmo_plugin->get_material("handles");
 
 	Ref<Curve3D> c = path->get_curve();
@@ -641,24 +641,8 @@ String PathSpatialGizmoPlugin::get_name() const {
 PathSpatialGizmoPlugin::PathSpatialGizmoPlugin() {
 
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
-
-	Ref<SpatialMaterial> path_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	path_color.a = 0.8;
-	path_material->set_albedo(path_color);
-	path_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	path_material->set_line_width(3);
-	path_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	path_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-	Ref<SpatialMaterial> path_thin_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+	create_material("path_material", path_color);
 	path_color.a = 0.4;
-	path_thin_material->set_albedo(path_color);
-	path_thin_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	path_thin_material->set_line_width(1);
-	path_thin_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	path_thin_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-	add_material("path_material", path_material);
-	add_material("path_thin_material", path_thin_material);
+	create_material("path_thin_material", path_color);
 	create_handle_material("handles");
 }

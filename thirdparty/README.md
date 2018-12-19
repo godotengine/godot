@@ -19,7 +19,7 @@ comments.
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: git (d05ad4b, 2017)
+- Version: git (12409f1118a7c7a266f9071350c70789dfe73bb9, Commits on Sep 6, 2018 )
 - License: zlib
 
 Files extracted from upstream source:
@@ -128,7 +128,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 0.1.25
+- Version: 0.1.28
 - License: MIT
 
 The files we package are automatically generated.
@@ -233,7 +233,7 @@ Godot-made change marked with `// -- GODOT --` comments.
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.0.0
+- Version: 1.0.1
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -264,8 +264,8 @@ File extracted from upstream source:
     - From `roles/ws` exclude `ext` folder.
   - From `tls` exclude `openssl` folder.
 - Also copy `win32helpers/` from `win32port/` inside `thirdparty/libwebsockets`
-- A small fix has been added in `libwebsockets/libwebsockets.h` to `#include <sys/socket.h>` for the BSD family.
-  This change has been PRed upstream, and should be merged before the next update. Remember to check and remove this line.
+- A fix has been added to allow building for 32-bits UWP, replacing `GetFileSize[Ex]` and `CreateFileW` with supported functions.
+  There is a diff for this change in `thirdparty/libwebsockets/uwp_fixes.diff`
 
 Important: `lws_config.h` and `lws_config_private.h` contains custom
 Godot build configurations, check them out when updating.
@@ -354,6 +354,11 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
   * License: MIT
+- `open-simplex-noise.{c,h}`
+  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
+  * Version: git (0d555e7, 2015)
+  * License: Unlicense
+
 
 ### modules
 
@@ -368,6 +373,10 @@ Collection of single-file libraries used in Godot components.
 
 ### scene
 
+- `easing_equations.cpp`
+  * Upstream: http://robertpenner.com/easing/ via https://github.com/jesusgollonet/ofpennereasing (modified to fit Godot types)
+  * Version: git (af72c14, 2008) + Godot types and style changes
+  * License: BSD-3-Clause
 - `mikktspace.{c,h}`
   * Upstream: https://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps
   * Version: 1.0
@@ -494,7 +503,7 @@ changes are marked with `// -- GODOT --` comments.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: git (e385dad, 2018)
+- Version: git (5ae30aa, 2018)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -523,3 +532,5 @@ Files extracted from upstream source:
 
 - lib/{common/,compress/,decompress/,zstd.h}
 - LICENSE
+
+- Applied the patch in `thirdparty/zstd/1314.diff` (PR 1314 upstream, already merged). Needed to build on UWP ARM. Can be removed when a new version is released with the patch.

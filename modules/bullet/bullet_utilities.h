@@ -35,13 +35,12 @@
 	@author AndreaCatania
 */
 
-#pragma once
-
 #define bulletnew(cl) \
 	new cl
 
 #define bulletdelete(cl) \
-	delete cl;           \
-	cl = NULL;
-
+	{                    \
+		delete cl;       \
+		cl = NULL;       \
+	}
 #endif

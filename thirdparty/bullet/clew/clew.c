@@ -15,7 +15,7 @@
 
     typedef HMODULE             CLEW_DYNLIB_HANDLE;
 
-    #define CLEW_DYNLIB_OPEN    LoadLibrary
+    #define CLEW_DYNLIB_OPEN    LoadLibraryA
     #define CLEW_DYNLIB_CLOSE   FreeLibrary
     #define CLEW_DYNLIB_IMPORT  GetProcAddress
 #else

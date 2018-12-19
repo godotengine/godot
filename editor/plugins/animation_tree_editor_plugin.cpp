@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  animation_tree_editor_plugin.cpp                                     */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_tree_editor_plugin.h"
 
 #include "animation_blend_space_1d_editor.h"
@@ -5,10 +35,10 @@
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
 #include "core/io/resource_loader.h"
+#include "core/math/delaunay.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "core/project_settings.h"
-#include "math/delaunay.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/menu_button.h"
@@ -34,34 +64,15 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
 
-	Ref<AnimationNode> node = tree->get_tree_root();
-	if (node.is_null())
-		return;
-
 	edited_path.clear();
-	if (p_path >= 0) {
-		for (int i = 0; i <= p_path; i++) {
-			Ref<AnimationNode> child = node->get_child_by_name(button_path[i]);
-			ERR_BREAK(child.is_null());
-			node = child;
-			edited_path.push_back(button_path[i]);
-		}
-	}
-
-	for (int i = 0; i < editors.size(); i++) {
-		if (editors[i]->can_edit(node)) {
-			editors[i]->edit(node);
-			editors[i]->show();
-		} else {
-			editors[i]->edit(Ref<AnimationNode>());
-			editors[i]->hide();
-		}
+	for (int i = 0; i <= p_path; i++) {
+		edited_path.push_back(button_path[i]);
 	}
 }
 
 void AnimationTreeEditor::_update_path() {
-	while (path_hb->get_child_count()) {
-		memdelete(path_hb->get_child(0));
+	while (path_hb->get_child_count() > 1) {
+		memdelete(path_hb->get_child(1));
 	}
 
 	Ref<ButtonGroup> group;
@@ -146,6 +157,10 @@ void AnimationTreeEditor::_notification(int p_what) {
 		if (root != current_root) {
 			edit_path(Vector<String>());
 		}
+
+		if (button_path.size() != edited_path.size()) {
+			edit_path(edited_path);
+		}
 	}
 }
 
@@ -221,6 +236,9 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	path_edit->set_enable_v_scroll(false);
 	path_hb = memnew(HBoxContainer);
 	path_edit->add_child(path_hb);
+	path_hb->add_child(memnew(Label(TTR("Path:"))));
+
+	add_child(memnew(HSeparator));
 
 	current_root = 0;
 	singleton = this;

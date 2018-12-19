@@ -30,16 +30,16 @@
 
 #include "progress_dialog.h"
 
+#include "core/message_queue.h"
+#include "core/os/os.h"
 #include "editor_scale.h"
 #include "main/main.h"
-#include "message_queue.h"
-#include "os/os.h"
 
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND(tasks.has(p_task));
-	Task t;
+	BackgroundProgress::Task t;
 	t.hb = memnew(HBoxContainer);
 	Label *l = memnew(Label);
 	l->set_text(p_label + " ");
@@ -112,7 +112,7 @@ void BackgroundProgress::add_task(const String &p_task, const String &p_label, i
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
 
 	//this code is weird, but it prevents deadlock.
-	bool no_updates;
+	bool no_updates = true;
 	{
 		_THREAD_SAFE_METHOD_
 		no_updates = updates.empty();
@@ -167,7 +167,7 @@ void ProgressDialog::_popup() {
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 
 	ERR_FAIL_COND(tasks.has(p_task));
-	Task t;
+	ProgressDialog::Task t;
 	t.vb = memnew(VBoxContainer);
 	VBoxContainer *vb2 = memnew(VBoxContainer);
 	t.vb->add_margin_child(p_label, vb2);

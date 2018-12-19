@@ -7,7 +7,7 @@
 		AABB consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>

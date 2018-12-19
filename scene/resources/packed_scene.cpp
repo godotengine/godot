@@ -31,9 +31,9 @@
 #include "packed_scene.h"
 
 #include "core/core_string_names.h"
-#include "engine.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
+#include "core/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
@@ -264,7 +264,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			}
 
 			if (n.instance >= 0 || n.type != TYPE_INSTANCED || i == 0) {
-				//if node was not part of instance, must set it's name, parenthood and ownership
+				//if node was not part of instance, must set its name, parenthood and ownership
 				if (i > 0) {
 					if (parent) {
 						parent->_add_child_nocheck(node, snames[n.name]);
@@ -472,6 +472,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
+	StringName type = p_node->get_class();
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 
@@ -482,11 +483,22 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 		String name = E->get().name;
 		Variant value = p_node->get(E->get().name);
 
-		bool isdefault = ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one());
+		bool isdefault = false;
+		Variant default_value = ClassDB::class_get_default_property_value(type, name);
 
-		if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
-			isdefault = true; //is script default value
+		if (default_value.get_type() != Variant::NIL) {
+			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
 		}
+
+		Ref<Script> script = p_node->get_script();
+		if (!isdefault && script.is_valid() && script->get_property_default_value(name, default_value)) {
+			isdefault = bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value));
+		}
+		// the version above makes more sense, because it does not rely on placeholder or usage flag
+		// in the script, just the default value function.
+		// if (E->get().usage & PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE) {
+		// 	isdefault = true; //is script default value
+		// }
 
 		if (pack_state_stack.size()) {
 			// we are on part of an instanced subscene

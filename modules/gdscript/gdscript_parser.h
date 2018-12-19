@@ -31,11 +31,11 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
+#include "core/map.h"
+#include "core/object.h"
+#include "core/script_language.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
-#include "map.h"
-#include "object.h"
-#include "script_language.h"
 
 struct GDScriptDataType;
 struct GDScriptWarning;
@@ -87,6 +87,8 @@ public:
 				} break;
 				case CLASS: {
 					return class_type == other.class_type;
+				} break;
+				case UNRESOLVED: {
 				} break;
 			}
 			return false;
@@ -345,6 +347,7 @@ public:
 			OP_PARENT_CALL,
 			OP_YIELD,
 			OP_IS,
+			OP_IS_BUILTIN,
 			//indexing operator
 			OP_INDEX,
 			OP_INDEX_NAMED,
@@ -552,7 +555,6 @@ private:
 
 	CompletionType completion_type;
 	StringName completion_cursor;
-	bool completion_static;
 	Variant::Type completion_built_in_constant;
 	Node *completion_node;
 	ClassNode *completion_class;

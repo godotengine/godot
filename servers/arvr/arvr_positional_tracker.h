@@ -31,7 +31,7 @@
 #ifndef ARVR_POSITIONAL_TRACKER_H
 #define ARVR_POSITIONAL_TRACKER_H
 
-#include "os/thread_safe.h"
+#include "core/os/thread_safe.h"
 #include "servers/arvr_server.h"
 
 /**

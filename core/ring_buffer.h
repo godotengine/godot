@@ -31,7 +31,7 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
-#include "vector.h"
+#include "core/vector.h"
 
 template <typename T>
 class RingBuffer {
@@ -134,6 +134,12 @@ public:
 		inc(read_pos, p_n);
 		return p_n;
 	};
+
+	inline int decrease_write(int p_n) {
+		p_n = MIN(p_n, data_left());
+		inc(write_pos, size_mask + 1 - p_n);
+		return p_n;
+	}
 
 	Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);

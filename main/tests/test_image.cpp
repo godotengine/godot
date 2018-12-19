@@ -30,10 +30,10 @@
 
 #include "test_image.h"
 
-#include "io/image_loader.h"
-#include "math_funcs.h"
-#include "os/main_loop.h"
-#include "print_string.h"
+#include "core/io/image_loader.h"
+#include "core/math/math_funcs.h"
+#include "core/os/main_loop.h"
+#include "core/print_string.h"
 
 namespace TestImage {
 

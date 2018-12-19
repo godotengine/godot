@@ -113,12 +113,7 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 	if ((relLinVelocLength+maxAngularProjectedVelocity) == 0.f)
 		return false;
 
-
-
 	btScalar lambda = btScalar(0.);
-	btVector3 v(1,0,0);
-
-	int maxIter = MAX_ITERATIONS;
 
 	btVector3 n;
 	n.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
@@ -137,8 +132,7 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 
 	btPointCollector	pointCollector1;
 
-	{
-	
+	{	
 		computeClosestPoints(fromA,fromB,pointCollector1);
 
 		hasResult = pointCollector1.m_hasResult;
@@ -172,27 +166,19 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 			
 			dLambda = dist / (projectedLinearVelocity+ maxAngularProjectedVelocity);
 
-			
-			
-			lambda = lambda + dLambda;
+			lambda += dLambda;
 
-			if (lambda > btScalar(1.))
+			if (lambda > btScalar(1.) || lambda < btScalar(0.))
 				return false;
-
-			if (lambda < btScalar(0.))
-				return false;
-
 
 			//todo: next check with relative epsilon
 			if (lambda <= lastLambda)
 			{
 				return false;
 				//n.setValue(0,0,0);
-				break;
+				//break;
 			}
 			lastLambda = lambda;
-
-			
 
 			//interpolate to next lambda
 			btTransform interpolatedTransA,interpolatedTransB,relativeTrans;
@@ -223,7 +209,7 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 			}
 
 			numIter++;
-			if (numIter > maxIter)
+			if (numIter > MAX_ITERATIONS)
 			{
 				result.reportFailure(-2, numIter);
 				return false;
@@ -237,6 +223,5 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 	}
 
 	return false;
-
 }
 

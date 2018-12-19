@@ -1,13 +1,12 @@
 /*************************************************************************/
-/*  soft_physics_body.cpp                                                */
-/*  Author: AndreaCatania                                                */
+/*  soft_body.cpp                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +29,12 @@
 /*************************************************************************/
 
 #include "soft_body.h"
-#include "os/os.h"
+#include "core/list.h"
+#include "core/object.h"
+#include "core/os/os.h"
+#include "core/rid.h"
 #include "scene/3d/collision_object.h"
+#include "scene/3d/physics_body.h"
 #include "scene/3d/skeleton.h"
 #include "servers/physics_server.h"
 
@@ -336,6 +339,7 @@ void SoftBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parent_collision_ignore", "parent_collision_ignore"), &SoftBody::set_parent_collision_ignore);
 	ClassDB::bind_method(D_METHOD("get_parent_collision_ignore"), &SoftBody::get_parent_collision_ignore);
 
+	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &SoftBody::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &SoftBody::add_collision_exception_with);
 	ClassDB::bind_method(D_METHOD("remove_collision_exception_with", "body"), &SoftBody::remove_collision_exception_with);
 
@@ -397,11 +401,11 @@ String SoftBody::get_configuration_warning() const {
 	}
 
 	Transform t = get_transform();
-	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(0).length() - 1.0) > 0.05)) {
+	if ((ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		if (!warning.empty())
 			warning += "\n\n";
 
-		warning += TTR("Size changes to SoftBody will be overriden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warning += TTR("Size changes to SoftBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
 
 	return warning;
@@ -546,6 +550,20 @@ void SoftBody::set_pinned_points_indices(PoolVector<SoftBody::PinnedPoint> p_pin
 
 PoolVector<SoftBody::PinnedPoint> SoftBody::get_pinned_points_indices() {
 	return pinned_points;
+}
+
+Array SoftBody::get_collision_exceptions() {
+	List<RID> exceptions;
+	PhysicsServer::get_singleton()->soft_body_get_collision_exceptions(physics_rid, &exceptions);
+	Array ret;
+	for (List<RID>::Element *E = exceptions.front(); E; E = E->next()) {
+		RID body = E->get();
+		ObjectID instance_id = PhysicsServer::get_singleton()->body_get_object_instance_id(body);
+		Object *obj = ObjectDB::get_instance(instance_id);
+		PhysicsBody *physics_body = Object::cast_to<PhysicsBody>(obj);
+		ret.append(physics_body);
+	}
+	return ret;
 }
 
 void SoftBody::add_collision_exception_with(Node *p_node) {

@@ -32,10 +32,8 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
-#include <pulse/pulseaudio.h>
-
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)userdata;
@@ -45,9 +43,12 @@ void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
 		case PA_CONTEXT_FAILED:
 			ad->pa_ready = -1;
 			break;
-
 		case PA_CONTEXT_READY:
 			ad->pa_ready = 1;
+			break;
+		default:
+			// TODO: Check if we want to handle some of the other
+			// PA context states like PA_CONTEXT_UNCONNECTED.
 			break;
 	}
 }
@@ -342,12 +343,12 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					unsigned int out_idx = 0;
 
 					for (unsigned int i = 0; i < ad->buffer_frames; i++) {
-						for (unsigned int j = 0; j < ad->pa_map.channels - 1; j++) {
+						for (int j = 0; j < ad->pa_map.channels - 1; j++) {
 							ad->samples_out.write[out_idx++] = ad->samples_in[in_idx++] >> 16;
 						}
-						uint32_t l = ad->samples_in[in_idx++];
-						uint32_t r = ad->samples_in[in_idx++];
-						ad->samples_out.write[out_idx++] = ((l >> 1) + (r >> 1)) >> 16;
+						uint32_t l = ad->samples_in[in_idx++] >> 16;
+						uint32_t r = ad->samples_in[in_idx++] >> 16;
+						ad->samples_out.write[out_idx++] = (l + r) / 2;
 					}
 				}
 			}
@@ -373,7 +374,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				const void *ptr = ad->samples_out.ptr();
 				ret = pa_stream_write(ad->pa_str, (char *)ptr + write_ofs, bytes_to_write, NULL, 0LL, PA_SEEK_RELATIVE);
 				if (ret != 0) {
-					ERR_PRINT("pa_stream_write error");
+					ERR_PRINTS("PulseAudio: pa_stream_write error: " + String(pa_strerror(ret)));
 				} else {
 					avail_bytes -= bytes_to_write;
 					write_ofs += bytes_to_write;
@@ -400,6 +401,9 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 					break;
 				}
 			}
+
+			avail_bytes = 0;
+			write_ofs = 0;
 		}
 
 		if (ad->pa_rec_str && pa_stream_get_state(ad->pa_rec_str) == PA_STREAM_READY) {
@@ -612,20 +616,18 @@ Error AudioDriverPulseAudio::capture_init_device() {
 			break;
 	}
 
-	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
-
 	pa_sample_spec spec;
 
 	spec.format = PA_SAMPLE_S16LE;
 	spec.channels = pa_rec_map.channels;
 	spec.rate = mix_rate;
 
-	int latency = 30;
-	input_buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
-	int buffer_size = input_buffer_frames * spec.channels;
+	int input_latency = 30;
+	int input_buffer_frames = closest_power_of_2(input_latency * mix_rate / 1000);
+	int input_buffer_size = input_buffer_frames * spec.channels;
 
 	pa_buffer_attr attr;
-	attr.fragsize = buffer_size * sizeof(int16_t);
+	attr.fragsize = input_buffer_size * sizeof(int16_t);
 
 	pa_rec_str = pa_stream_new(pa_ctx, "Record", &spec, &pa_rec_map);
 	if (pa_rec_str == NULL) {
@@ -641,9 +643,10 @@ Error AudioDriverPulseAudio::capture_init_device() {
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	input_buffer.resize(input_buffer_frames * 8);
-	input_position = 0;
-	input_size = 0;
+	input_buffer_init(input_buffer_frames);
+
+	print_verbose("PulseAudio: detected " + itos(pa_rec_map.channels) + " input channels");
+	print_verbose("PulseAudio: input buffer frames: " + itos(input_buffer_frames) + " calculated latency: " + itos(input_buffer_frames * 1000 / mix_rate) + "ms");
 
 	return OK;
 }
@@ -740,36 +743,28 @@ String AudioDriverPulseAudio::capture_get_device() {
 	return name;
 }
 
-AudioDriverPulseAudio::AudioDriverPulseAudio() {
-
-	pa_ml = NULL;
-	pa_ctx = NULL;
-	pa_str = NULL;
-	pa_rec_str = NULL;
-
-	mutex = NULL;
-	thread = NULL;
-
-	device_name = "Default";
-	new_device = "Default";
-	default_device = "";
-
+AudioDriverPulseAudio::AudioDriverPulseAudio() :
+		thread(NULL),
+		mutex(NULL),
+		pa_ml(NULL),
+		pa_ctx(NULL),
+		pa_str(NULL),
+		pa_rec_str(NULL),
+		device_name("Default"),
+		new_device("Default"),
+		default_device(""),
+		mix_rate(0),
+		buffer_frames(0),
+		pa_buffer_size(0),
+		channels(0),
+		pa_ready(0),
+		pa_status(0),
+		active(false),
+		thread_exited(false),
+		exit_thread(false),
+		latency(0) {
 	samples_in.clear();
 	samples_out.clear();
-
-	mix_rate = 0;
-	buffer_frames = 0;
-	input_buffer_frames = 0;
-	pa_buffer_size = 0;
-	channels = 0;
-	pa_ready = 0;
-	pa_status = 0;
-
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
-
-	latency = 0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {

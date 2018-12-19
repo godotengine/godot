@@ -54,6 +54,7 @@ class ProjectManager : public Control {
 	EditorAssetLibrary *asset_library;
 
 	ProjectListFilter *project_filter;
+	ProjectListFilter *project_order_filter;
 
 	ConfirmationDialog *language_restart_ask;
 	ConfirmationDialog *erase_ask;
@@ -130,6 +131,7 @@ private:
 
 	OptionButton *filter_option;
 	LineEdit *search_box;
+	bool has_search_box;
 
 	enum FilterOption {
 		FILTER_NAME,
@@ -138,7 +140,6 @@ private:
 	FilterOption _current_filter;
 
 	void _search_text_changed(const String &p_newtext);
-	void _setup_filters();
 	void _filter_option_selected(int p_idx);
 
 protected:
@@ -146,8 +147,12 @@ protected:
 	static void _bind_methods();
 
 public:
+	void _setup_filters(Vector<String> options);
+	void add_search_box();
+	void set_filter_size(int h_size);
 	String get_search_term();
 	FilterOption get_filter_option();
+	void set_filter_option(FilterOption);
 	ProjectListFilter();
 };
 

@@ -31,7 +31,7 @@
 #ifndef PATH_UTILS_H
 #define PATH_UTILS_H
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 _FORCE_INLINE_ String path_join(const String &e1, const String &e2) {
 	return e1.plus_file(e2);

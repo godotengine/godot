@@ -31,7 +31,7 @@
 #ifndef FUNC_REF_H
 #define FUNC_REF_H
 
-#include "reference.h"
+#include "core/reference.h"
 
 class FuncRef : public Reference {
 

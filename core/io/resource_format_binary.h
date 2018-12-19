@@ -31,9 +31,9 @@
 #ifndef RESOURCE_FORMAT_BINARY_H
 #define RESOURCE_FORMAT_BINARY_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
@@ -100,6 +100,7 @@ public:
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderBinary, ResourceFormatLoader)
 public:
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -119,7 +120,6 @@ class ResourceFormatSaverBinaryInstance {
 	bool skip_editor;
 	bool big_endian;
 	bool takeover_paths;
-	int bin_meta_idx;
 	FileAccess *f;
 	String magic;
 	Set<RES> resource_set;
@@ -153,7 +153,7 @@ public:
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
-
+	GDCLASS(ResourceFormatSaverBinary, ResourceFormatSaver)
 public:
 	static ResourceFormatSaverBinary *singleton;
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

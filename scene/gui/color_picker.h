@@ -105,6 +105,9 @@ public:
 	Color get_pick_color() const;
 
 	void add_preset(const Color &p_color);
+	void erase_preset(const Color &p_color);
+	PoolColorArray get_presets() const;
+
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
 

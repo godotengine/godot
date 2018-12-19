@@ -97,6 +97,8 @@ private:
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
+
+	void _update_hover();
 	void _update_cache();
 
 protected:

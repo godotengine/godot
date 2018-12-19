@@ -30,15 +30,16 @@
 
 #include "os_javascript.h"
 
-#include "gles2/rasterizer_gles2.h"
-#include "gles3/rasterizer_gles3.h"
-#include "io/file_access_buffered_fa.h"
+#include "core/io/file_access_buffered_fa.h"
+#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
-#include "unix/dir_access_unix.h"
-#include "unix/file_access_unix.h"
 
 #include <emscripten.h>
+#include <png.h>
 #include <stdlib.h>
 
 #include "dom_keys.inc"
@@ -120,14 +121,14 @@ void OS_JavaScript::set_window_size(const Size2 p_size) {
 			emscripten_exit_soft_fullscreen();
 			window_maximized = false;
 		}
-		emscripten_set_canvas_size(p_size.x, p_size.y);
+		emscripten_set_canvas_element_size(NULL, p_size.x, p_size.y);
 	}
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
-	int canvas[3];
-	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
+	int canvas[2];
+	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
 	return Size2(canvas[0], canvas[1]);
 }
 
@@ -294,6 +295,30 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 		default: return false;
 	}
 
+	if (ev->is_pressed()) {
+
+		uint64_t diff = p_event->timestamp - os->last_click_ms;
+
+		if (ev->get_button_index() == os->last_click_button_index) {
+
+			if (diff < 400 && Point2(os->last_click_pos).distance_to(ev->get_position()) < 5) {
+
+				os->last_click_ms = 0;
+				os->last_click_pos = Point2(-100, -100);
+				os->last_click_button_index = -1;
+				ev->set_doubleclick(true);
+			}
+
+		} else {
+			os->last_click_button_index = ev->get_button_index();
+		}
+
+		if (!ev->is_doubleclick()) {
+			os->last_click_ms += diff;
+			os->last_click_pos = ev->get_position();
+		}
+	}
+
 	int mask = os->input->get_mouse_button_mask();
 	int button_flag = 1 << (ev->get_button_index() - 1);
 	if (ev->is_pressed()) {
@@ -377,15 +402,13 @@ static void set_css_cursor(const char *p_cursor) {
 	/* clang-format on */
 }
 
-static const char *get_css_cursor() {
+static bool is_css_cursor_hidden() {
 
-	char cursor[16];
 	/* clang-format off */
-	EM_ASM_INT({
-		stringToUTF8(Module.canvas.style.cursor ? Module.canvas.style.cursor : 'auto', $0, 16);
-	}, cursor);
+	return EM_ASM_INT({
+		return Module.canvas.style.cursor === 'none';
+	});
 	/* clang-format on */
-	return cursor;
 }
 
 void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
@@ -429,7 +452,7 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
 OS::MouseMode OS_JavaScript::get_mouse_mode() const {
 
-	if (String::utf8(get_css_cursor()) == "none")
+	if (is_css_cursor_hidden())
 		return MOUSE_MODE_HIDDEN;
 
 	EmscriptenPointerlockChangeEvent ev;
@@ -453,7 +476,6 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	InputDefault *input = get_singleton()->input;
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_button_mask(input->get_mouse_button_mask());
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
@@ -476,10 +498,14 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
+	int button_flag = 1 << (ev->get_button_index() - 1);
+
 	ev->set_pressed(true);
+	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
 	input->parse_input_event(ev);
 
 	ev->set_pressed(false);
+	ev->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
 	input->parse_input_event(ev);
 
 	return true;
@@ -565,8 +591,11 @@ void OS_JavaScript::process_joypads() {
 	int joypad_count = emscripten_get_num_gamepads();
 	for (int joypad = 0; joypad < joypad_count; joypad++) {
 		EmscriptenGamepadEvent state;
-		emscripten_get_gamepad_status(joypad, &state);
-		if (state.connected) {
+		EMSCRIPTEN_RESULT query_result = emscripten_get_gamepad_status(joypad, &state);
+		// Chromium reserves gamepads slots, so NO_DATA is an expected result.
+		ERR_CONTINUE(query_result != EMSCRIPTEN_RESULT_SUCCESS &&
+					 query_result != EMSCRIPTEN_RESULT_NO_DATA);
+		if (query_result == EMSCRIPTEN_RESULT_SUCCESS && state.connected) {
 
 			int button_count = MIN(state.numButtons, 18);
 			int axis_count = MIN(state.numAxes, 8);
@@ -652,26 +681,60 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	attributes.alpha = false;
 	attributes.antialias = false;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
-	switch (p_video_driver) {
-		case VIDEO_DRIVER_GLES3:
-			attributes.majorVersion = 2;
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-			break;
-		case VIDEO_DRIVER_GLES2:
-			attributes.majorVersion = 1;
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-			break;
+
+	bool gles3 = true;
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		gles3 = false;
+	}
+
+	bool gl_initialization_error = false;
+
+	while (true) {
+		if (gles3) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				attributes.majorVersion = 2;
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					gles3 = false;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		} else {
+			if (RasterizerGLES2::is_viable() == OK) {
+				attributes.majorVersion = 1;
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
+		gl_initialization_error = true;
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your browser does not support any of the supported WebGL versions.\n"
+								   "Please update your browser version.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
 	}
 
 	video_driver_index = p_video_driver;
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
-	ERR_EXPLAIN("WebGL " + itos(attributes.majorVersion) + ".0 not available");
-	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	video_mode = p_desired;
-	// Can't fulfil fullscreen request during start-up due to browser security.
+	// Can't fulfill fullscreen request during start-up due to browser security.
 	video_mode.fullscreen = false;
 	/* clang-format off */
 	if (EM_ASM_INT_V({ return Module.resizeCanvasOnStart })) {
@@ -797,13 +860,13 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.canvasResizedCallback = NULL;
 			emscripten_enter_soft_fullscreen(NULL, &strategy);
 		} else {
-			emscripten_set_canvas_size(windowed_size.width, windowed_size.height);
+			emscripten_set_canvas_element_size(NULL, windowed_size.width, windowed_size.height);
 		}
 		just_exited_fullscreen = false;
 	}
 
-	int canvas[3];
-	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
+	int canvas[2];
+	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
 	video_mode.width = canvas[0];
 	video_mode.height = canvas[1];
 	if (!window_maximized && !video_mode.fullscreen && !just_exited_fullscreen && !entering_fullscreen) {
@@ -825,6 +888,24 @@ void OS_JavaScript::finalize() {
 }
 
 // Miscellaneous
+
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+
+	ERR_EXPLAIN("OS::execute() is not available on the HTML5 platform");
+	ERR_FAIL_V(ERR_UNAVAILABLE);
+}
+
+Error OS_JavaScript::kill(const ProcessID &p_pid) {
+
+	ERR_EXPLAIN("OS::kill() is not available on the HTML5 platform");
+	ERR_FAIL_V(ERR_UNAVAILABLE);
+}
+
+int OS_JavaScript::get_process_id() const {
+
+	ERR_EXPLAIN("OS::get_process_id() is not available on the HTML5 platform");
+	ERR_FAIL_V(0);
+}
 
 extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int p_notification) {
 
@@ -872,6 +953,57 @@ void OS_JavaScript::set_window_title(const String &p_title) {
 	EM_ASM_({
 		document.title = UTF8ToString($0);
 	}, p_title.utf8().get_data());
+	/* clang-format on */
+}
+
+void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
+
+	ERR_FAIL_COND(p_icon.is_null());
+	Ref<Image> icon = p_icon;
+	if (icon->is_compressed()) {
+		icon = icon->duplicate();
+		ERR_FAIL_COND(icon->decompress() != OK)
+	}
+	if (icon->get_format() != Image::FORMAT_RGBA8) {
+		if (icon == p_icon)
+			icon = icon->duplicate();
+		icon->convert(Image::FORMAT_RGBA8);
+	}
+
+	png_image png_meta;
+	memset(&png_meta, 0, sizeof png_meta);
+	png_meta.version = PNG_IMAGE_VERSION;
+	png_meta.width = icon->get_width();
+	png_meta.height = icon->get_height();
+	png_meta.format = PNG_FORMAT_RGBA;
+
+	PoolByteArray png;
+	size_t len;
+	PoolByteArray::Read r = icon->get_data().read();
+	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+
+	png.resize(len);
+	PoolByteArray::Write w = png.write();
+	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
+	w = PoolByteArray::Write();
+
+	r = png.read();
+	/* clang-format off */
+	EM_ASM_ARGS({
+		var PNG_PTR = $0;
+		var PNG_LEN = $1;
+
+		var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: "image/png" });
+		var url = URL.createObjectURL(png);
+		var link = document.getElementById('-gd-engine-icon');
+		if (link === null) {
+			link = document.createElement('link');
+			link.rel = 'icon';
+			link.id = '-gd-engine-icon';
+			document.head.appendChild(link);
+		}
+		link.href = url;
+	}, r.ptr(), len);
 	/* clang-format on */
 }
 
@@ -961,6 +1093,10 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 		arguments.push_back(String::utf8(p_argv[i]));
 	}
 	set_cmdline(p_argv[0], arguments);
+
+	last_click_button_index = -1;
+	last_click_ms = 0;
+	last_click_pos = Point2(-100, -100);
 
 	window_maximized = false;
 	entering_fullscreen = false;

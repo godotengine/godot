@@ -45,9 +45,10 @@ public:
 	};
 
 private:
-	bool vertical;
+	bool should_clamp_split_offset;
 	int split_offset;
 	int middle_sep;
+	bool vertical;
 	bool dragging;
 	int drag_from;
 	int drag_ofs;
@@ -67,6 +68,7 @@ protected:
 public:
 	void set_split_offset(int p_offset);
 	int get_split_offset() const;
+	void clamp_split_offset();
 
 	void set_collapsed(bool p_collapsed);
 	bool is_collapsed() const;

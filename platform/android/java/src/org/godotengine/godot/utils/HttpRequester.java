@@ -69,7 +69,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 /**
- * 
+ *
  * @author Luis Linietsky <luis.linietsky@gmail.com>
  */
 public class HttpRequester {
@@ -105,7 +105,7 @@ public class HttpRequester {
 			long timeInit = new Date().getTime();
 			response = request(httpget);
 			long delay = new Date().getTime() - timeInit;
-			Log.d("com.app11tt.android.utils.HttpRequest::get(url)", "Url: " + params.getUrl() + " downloaded in " + String.format("%.03f", delay / 1000.0f) + " seconds");
+			Log.d("HttpRequest::get(url)", "Url: " + params.getUrl() + " downloaded in " + String.format("%.03f", delay / 1000.0f) + " seconds");
 			if (response == null || response.length() == 0) {
 				response = "";
 			} else {
@@ -200,7 +200,7 @@ public class HttpRequester {
 		SharedPreferences.Editor editor = sharedPref.edit();
 		editor.putString("request_" + Crypt.md5(request), response);
 		editor.putLong("request_" + Crypt.md5(request) + "_ttl", new Date().getTime() + getTtl());
-		editor.commit();
+		editor.apply();
 	}
 
 	public String getResponseFromCache(String request) {

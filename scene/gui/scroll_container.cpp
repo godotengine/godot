@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "scroll_container.h"
-#include "os/os.h"
+#include "core/os/os.h"
+
 bool ScrollContainer::clips_input() const {
 
 	return true;
@@ -170,7 +171,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			Vector2 motion = Vector2(mm->get_relative().x, mm->get_relative().y);
 			drag_accum -= motion;
 
-			if (beyond_deadzone || scroll_h && Math::abs(drag_accum.x) > deadzone || scroll_v && Math::abs(drag_accum.y) > deadzone) {
+			if (beyond_deadzone || (scroll_h && Math::abs(drag_accum.x) > deadzone) || (scroll_v && Math::abs(drag_accum.y) > deadzone)) {
 				if (!beyond_deadzone) {
 					propagate_notification(NOTIFICATION_SCROLL_BEGIN);
 					emit_signal("scroll_started");
@@ -245,7 +246,7 @@ void ScrollContainer::_notification(int p_what) {
 			size.y -= h_scroll->get_minimum_size().y;
 
 		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) //scrolls may have been moved out for reasons
-			size.x -= h_scroll->get_minimum_size().x;
+			size.x -= v_scroll->get_minimum_size().x;
 
 		for (int i = 0; i < get_child_count(); i++) {
 

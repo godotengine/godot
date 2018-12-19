@@ -31,8 +31,8 @@
 #ifndef AREA_2D_H
 #define AREA_2D_H
 
+#include "core/vset.h"
 #include "scene/2d/collision_object_2d.h"
-#include "vset.h"
 
 class Area2D : public CollisionObject2D {
 

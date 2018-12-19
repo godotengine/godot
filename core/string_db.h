@@ -31,9 +31,9 @@
 #ifndef STRING_DB_H
 #define STRING_DB_H
 
-#include "os/mutex.h"
-#include "safe_refcount.h"
-#include "ustring.h"
+#include "core/os/mutex.h"
+#include "core/safe_refcount.h"
+#include "core/ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

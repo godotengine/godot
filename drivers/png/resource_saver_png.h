@@ -31,10 +31,11 @@
 #ifndef RESOURCE_SAVER_PNG_H
 #define RESOURCE_SAVER_PNG_H
 
-#include "image.h"
-#include "io/resource_saver.h"
+#include "core/image.h"
+#include "core/io/resource_saver.h"
 
 class ResourceSaverPNG : public ResourceFormatSaver {
+	GDCLASS(ResourceSaverPNG, ResourceFormatSaver)
 public:
 	static Error save_image(const String &p_path, const Ref<Image> &p_img);
 

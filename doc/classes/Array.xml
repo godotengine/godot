@@ -84,14 +84,14 @@
 			</description>
 		</method>
 		<method name="append">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Append an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="back">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the last element of the array if the array is not empty (size&gt;0).
@@ -100,7 +100,7 @@
 		<method name="bsearch">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<argument index="1" name="before" type="bool" default="True">
 			</argument>
@@ -111,7 +111,7 @@
 		<method name="bsearch_custom">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<argument index="1" name="obj" type="Object">
 			</argument>
@@ -120,7 +120,7 @@
 			<argument index="3" name="before" type="bool" default="True">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a before specifier can be passed. If false, the returned index comes after all existing entries of the value in the array.  The custom method receives two arguments (an element from the array and the value searched for) and must return true if the first argument is less than the second, and return false otherwise. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a before specifier can be passed. If false, the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return true if the first argument is less than the second, and return false otherwise. Note that calling bsearch on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">
@@ -131,7 +131,7 @@
 		<method name="count">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Return the amount of times an element is in the array.
@@ -155,7 +155,7 @@
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Remove the first occurrence of a value from the array.
@@ -164,7 +164,7 @@
 		<method name="find">
 			<return type="int">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
@@ -175,14 +175,14 @@
 		<method name="find_last">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Searches the array in reverse order for a value and returns its index or -1 if not found.
 			</description>
 		</method>
 		<method name="front">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns the first element of the array if the array is not empty (size&gt;0).
@@ -191,15 +191,15 @@
 		<method name="has">
 			<return type="bool">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Return true if the array contains given value.
 				[codeblock]
-				[ "inside", 7 ].has("inside") == true
-				[ "inside", 7 ].has("outside") == false
-				[ "inside", 7 ].has(7) == true
-				[ "inside", 7 ].has("7") == false
+				["inside", 7].has("inside") == true
+				["inside", 7].has("outside") == false
+				["inside", 7].has(7) == true
+				["inside", 7].has("7") == false
 				[/codeblock]
 			</description>
 		</method>
@@ -213,40 +213,54 @@
 		<method name="insert">
 			<argument index="0" name="position" type="int">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array (so first element will now be the last) and return reference to the array.
+				Reverse the order of the elements in the array.
+			</description>
+		</method>
+		<method name="max">
+			<return type="Variant">
+			</return>
+			<description>
+				Return maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="min">
+			<return type="Variant">
+			</return>
+			<description>
+				Return minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="pop_back">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
 				Remove the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
 				Remove the first element of the array.
 			</description>
 		</method>
 		<method name="push_back">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Append an element at the end of the array.
 			</description>
 		</method>
 		<method name="push_front">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Add an element at the beginning of the array.
@@ -269,7 +283,7 @@
 		<method name="rfind">
 			<return type="int">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
@@ -307,7 +321,7 @@
 				    static func sort(a, b):
 				        if a[0] &lt; b[0]:
 				            return true
-				    return false
+				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
 				my_items.sort_custom(MyCustomSorter, "sort")

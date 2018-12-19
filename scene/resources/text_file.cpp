@@ -30,7 +30,7 @@
 
 #include "text_file.h"
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 bool TextFile::has_text() const {
 	return text != "";

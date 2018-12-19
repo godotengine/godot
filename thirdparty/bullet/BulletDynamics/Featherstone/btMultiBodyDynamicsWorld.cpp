@@ -277,7 +277,11 @@ struct MultiBodyInplaceSolverIslandCallback : public btSimulationIslandManager::
 		m_multiBodyConstraints.resize(0);
 	}
 
-	
+    void    setMultiBodyConstraintSolver(btMultiBodyConstraintSolver* solver)
+    {
+        m_solver = solver;
+    }
+    
 	virtual	void	processIsland(btCollisionObject** bodies,int numBodies,btPersistentManifold**	manifolds,int numManifolds, int islandId)
 	{
 		if (islandId<0)
@@ -348,7 +352,7 @@ struct MultiBodyInplaceSolverIslandCallback : public btSimulationIslandManager::
 				for (i=0;i<numCurMultiBodyConstraints;i++)
 					m_multiBodyConstraints.push_back(startMultiBodyConstraint[i]);
 				
-				if ((m_constraints.size()+m_manifolds.size())>m_solverInfo->m_minimumSolverBatchSize)
+				if ((m_multiBodyConstraints.size()+m_constraints.size()+m_manifolds.size())>m_solverInfo->m_minimumSolverBatchSize)
 				{
 					processConstraints();
 				} else
@@ -394,6 +398,22 @@ btMultiBodyDynamicsWorld::~btMultiBodyDynamicsWorld ()
 	delete m_solverMultiBodyIslandCallback;
 }
 
+void    btMultiBodyDynamicsWorld::setMultiBodyConstraintSolver(btMultiBodyConstraintSolver* solver)
+{
+    m_multiBodyConstraintSolver = solver;
+    m_solverMultiBodyIslandCallback->setMultiBodyConstraintSolver(solver);
+    btDiscreteDynamicsWorld::setConstraintSolver(solver);
+}
+
+void    btMultiBodyDynamicsWorld::setConstraintSolver(btConstraintSolver* solver)
+{
+    if (solver->getSolverType()==BT_MULTIBODY_SOLVER)
+    {
+        m_multiBodyConstraintSolver = (btMultiBodyConstraintSolver*)solver;
+    }
+    btDiscreteDynamicsWorld::setConstraintSolver(solver);
+}
+
 void	btMultiBodyDynamicsWorld::forwardKinematics()
 {
 
@@ -411,6 +431,8 @@ void	btMultiBodyDynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo)
 
 	BT_PROFILE("solveConstraints");
 	
+	clearMultiBodyConstraintForces();
+
 	m_sortedConstraints.resize( m_constraints.size());
 	int i; 
 	for (i=0;i<getNumConstraints();i++)
@@ -433,8 +455,6 @@ void	btMultiBodyDynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo)
 	m_solverMultiBodyIslandCallback->setup(&solverInfo,constraintsPtr,m_sortedConstraints.size(),sortedMultiBodyConstraints,m_sortedMultiBodyConstraints.size(), getDebugDrawer());
 	m_constraintSolver->prepareSolve(getCollisionWorld()->getNumCollisionObjects(), getCollisionWorld()->getDispatcher()->getNumManifolds());
 	
-	/// solve all the constraints for this island
-	m_islandManager->buildAndProcessIslands(getCollisionWorld()->getDispatcher(),getCollisionWorld(),m_solverMultiBodyIslandCallback);
 
 #ifndef BT_USE_VIRTUAL_CLEARFORCES_AND_GRAVITY
 	{
@@ -669,7 +689,9 @@ void	btMultiBodyDynamicsWorld::solveConstraints(btContactSolverInfo& solverInfo)
 		}
 	}
 
-	clearMultiBodyConstraintForces();
+	/// solve all the constraints for this island
+	m_islandManager->buildAndProcessIslands(getCollisionWorld()->getDispatcher(), getCollisionWorld(), m_solverMultiBodyIslandCallback);
+
 
 	m_solverMultiBodyIslandCallback->processConstraints();
 	
@@ -824,21 +846,24 @@ void	btMultiBodyDynamicsWorld::debugDrawWorld()
 			{
 				btMultiBody* bod = m_multiBodies[b];
 				bod->forwardKinematics(m_scratch_world_to_local1,m_scratch_local_origin1);
-				
-				getDebugDrawer()->drawTransform(bod->getBaseWorldTransform(), 0.1);
-
+		
+				if (mode  & btIDebugDraw::DBG_DrawFrames)
+				{
+					getDebugDrawer()->drawTransform(bod->getBaseWorldTransform(), 0.1);
+				}
 
 				for (int m = 0; m<bod->getNumLinks(); m++)
 				{
 					
 					const btTransform& tr = bod->getLink(m).m_cachedWorldTransform;
-
-					getDebugDrawer()->drawTransform(tr, 0.1);
-
+					if (mode  & btIDebugDraw::DBG_DrawFrames)
+					{
+						getDebugDrawer()->drawTransform(tr, 0.1);
+					}
 						//draw the joint axis
 					if (bod->getLink(m).m_jointType==btMultibodyLink::eRevolute)
 					{
-						btVector3 vec = quatRotate(tr.getRotation(),bod->getLink(m).m_axes[0].m_topVec);
+						btVector3 vec = quatRotate(tr.getRotation(),bod->getLink(m).m_axes[0].m_topVec)*0.1;
 					
 						btVector4 color(0,0,0,1);//1,1,1);
 						btVector3 from = vec+tr.getOrigin()-quatRotate(tr.getRotation(),bod->getLink(m).m_dVector);
@@ -847,7 +872,7 @@ void	btMultiBodyDynamicsWorld::debugDrawWorld()
 					}
 					if (bod->getLink(m).m_jointType==btMultibodyLink::eFixed)
 					{
-						btVector3 vec = quatRotate(tr.getRotation(),bod->getLink(m).m_axes[0].m_bottomVec);
+						btVector3 vec = quatRotate(tr.getRotation(),bod->getLink(m).m_axes[0].m_bottomVec)*0.1;
 					
 						btVector4 color(0,0,0,1);//1,1,1);
 						btVector3 from = vec+tr.getOrigin()-quatRotate(tr.getRotation(),bod->getLink(m).m_dVector);
@@ -856,7 +881,7 @@ void	btMultiBodyDynamicsWorld::debugDrawWorld()
 					}
 					if (bod->getLink(m).m_jointType==btMultibodyLink::ePrismatic)
 					{
-						btVector3 vec = quatRotate(tr.getRotation(),bod->getLink(m).m_axes[0].m_bottomVec);
+						btVector3 vec = quatRotate(tr.getRotation(),bod->getLink(m).m_axes[0].m_bottomVec)*0.1;
 					
 						btVector4 color(0,0,0,1);//1,1,1);
 						btVector3 from = vec+tr.getOrigin()-quatRotate(tr.getRotation(),bod->getLink(m).m_dVector);
@@ -970,6 +995,8 @@ void	btMultiBodyDynamicsWorld::serialize(btSerializer* serializer)
 
 	serializeCollisionObjects(serializer);
 
+	serializeContactManifolds(serializer);
+
 	serializer->finishSerialization();
 }
 
@@ -985,6 +1012,19 @@ void	btMultiBodyDynamicsWorld::serializeMultiBodies(btSerializer* serializer)
 			btChunk* chunk = serializer->allocate(len,1);
 			const char* structType = mb->serialize(chunk->m_oldPtr, serializer);
 			serializer->finalizeChunk(chunk,structType,BT_MULTIBODY_CODE,mb);
+		}
+	}
+
+	//serialize all multibody links (collision objects)
+	for (i=0;i<m_collisionObjects.size();i++)
+	{
+		btCollisionObject* colObj = m_collisionObjects[i];
+		if (colObj->getInternalType() == btCollisionObject::CO_FEATHERSTONE_LINK)
+		{
+			int len = colObj->calculateSerializeBufferSize();
+			btChunk* chunk = serializer->allocate(len,1);
+			const char* structType = colObj->serialize(chunk->m_oldPtr, serializer);
+			serializer->finalizeChunk(chunk,structType,BT_MB_LINKCOLLIDER_CODE,colObj);
 		}
 	}
 

@@ -29,10 +29,10 @@
 /*************************************************************************/
 
 #include "audio_server.h"
-#include "io/resource_loader.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
@@ -78,6 +78,14 @@ double AudioDriver::get_mix_time() const {
 	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
 	total += _mix_amount / (double)get_mix_rate();
 	return total;
+}
+
+void AudioDriver::input_buffer_init(int driver_buffer_frames) {
+
+	const int input_buffer_channels = 2;
+	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
+	input_position = 0;
+	input_size = 0;
 }
 
 void AudioDriver::input_buffer_write(int32_t sample) {
@@ -164,6 +172,7 @@ int AudioDriverManager::get_driver_count() {
 }
 
 void AudioDriverManager::initialize(int p_driver) {
+	GLOBAL_DEF_RST("audio/enable_audio_input", false);
 	int failed_driver = -1;
 
 	// Check if there is a selected driver
@@ -185,8 +194,12 @@ void AudioDriverManager::initialize(int p_driver) {
 
 		if (drivers[i]->init() == OK) {
 			drivers[i]->set_singleton();
-			return;
+			break;
 		}
+	}
+
+	if (driver_count > 1 && String(AudioDriver::get_singleton()->get_name()) == "Dummy") {
+		WARN_PRINT("All audio drivers failed, falling back to the dummy driver.");
 	}
 }
 
@@ -446,6 +459,14 @@ void AudioServer::_mix_step() {
 
 	mix_frames += buffer_size;
 	to_mix = buffer_size;
+}
+
+bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
+	if (p_bus < 0 || p_bus >= buses.size())
+		return false;
+	if (p_buffer < 0 || p_buffer >= buses[p_bus]->channels.size())
+		return false;
+	return true;
 }
 
 AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) {
@@ -717,6 +738,12 @@ float AudioServer::get_bus_volume_db(int p_bus) const {
 	return buses[p_bus]->volume_db;
 }
 
+int AudioServer::get_bus_channels(int p_bus) const {
+
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
+	return buses[p_bus]->channels.size();
+}
+
 void AudioServer::set_bus_send(int p_bus, const StringName &p_send) {
 
 	ERR_FAIL_INDEX(p_bus, buses.size());
@@ -922,6 +949,7 @@ void AudioServer::init() {
 
 	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST("audio/channel_disable_time", 2.0)) * get_mix_rate();
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/channel_disable_time", PropertyInfo(Variant::REAL, "audio/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 	buffer_size = 1024; //hardcoded for now
 
 	init_channels_and_buffers();
@@ -1000,11 +1028,16 @@ void AudioServer::update() {
 	AudioDriver::get_singleton()->reset_profiling_time();
 	prof_time = 0;
 #endif
+
+	for (Set<CallbackItem>::Element *E = update_callbacks.front(); E; E = E->next()) {
+
+		E->get().callback(E->get().userdata);
+	}
 }
 
 void AudioServer::load_default_bus_layout() {
 
-	if (FileAccess::exists("res://default_bus_layout.tres")) {
+	if (ResourceLoader::exists("res://default_bus_layout.tres")) {
 		Ref<AudioBusLayout> default_layout = ResourceLoader::load("res://default_bus_layout.tres");
 		if (default_layout.is_valid()) {
 			set_bus_layout(default_layout);
@@ -1122,6 +1155,25 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 	ci.callback = p_callback;
 	ci.userdata = p_userdata;
 	callbacks.erase(ci);
+	unlock();
+}
+
+void AudioServer::add_update_callback(AudioCallback p_callback, void *p_userdata) {
+	lock();
+	CallbackItem ci;
+	ci.callback = p_callback;
+	ci.userdata = p_userdata;
+	update_callbacks.insert(ci);
+	unlock();
+}
+
+void AudioServer::remove_update_callback(AudioCallback p_callback, void *p_userdata) {
+
+	lock();
+	CallbackItem ci;
+	ci.callback = p_callback;
+	ci.userdata = p_userdata;
+	update_callbacks.erase(ci);
 	unlock();
 }
 
@@ -1246,6 +1298,8 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bus_name", "bus_idx"), &AudioServer::get_bus_name);
 	ClassDB::bind_method(D_METHOD("get_bus_index", "bus_name"), &AudioServer::get_bus_index);
 
+	ClassDB::bind_method(D_METHOD("get_bus_channels", "bus_idx"), &AudioServer::get_bus_channels);
+
 	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_idx", "volume_db"), &AudioServer::set_bus_volume_db);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_idx"), &AudioServer::get_bus_volume_db);
 
@@ -1293,6 +1347,7 @@ void AudioServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
+	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_51);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_71);
 }

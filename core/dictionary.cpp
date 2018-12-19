@@ -30,9 +30,9 @@
 
 #include "dictionary.h"
 
-#include "ordered_hash_map.h"
-#include "safe_refcount.h"
-#include "variant.h"
+#include "core/ordered_hash_map.h"
+#include "core/safe_refcount.h"
+#include "core/variant.h"
 
 struct DictionaryPrivate {
 
@@ -112,6 +112,15 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 	return E.get();
 }
 
+Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
+	const Variant *result = getptr(p_key);
+	if (!result) {
+		return p_default;
+	}
+
+	return *result;
+}
+
 int Dictionary::size() const {
 
 	return _p->variant_map.size();
@@ -143,6 +152,11 @@ bool Dictionary::erase(const Variant &p_key) {
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
 
 	return _p == p_dictionary._p;
+}
+
+bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
+
+	return _p != p_dictionary._p;
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {

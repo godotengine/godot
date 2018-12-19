@@ -31,8 +31,8 @@
 #include "resource_saver_png.h"
 
 #include "core/image.h"
-#include "os/file_access.h"
-#include "project_settings.h"
+#include "core/os/file_access.h"
+#include "core/project_settings.h"
 #include "scene/resources/texture.h"
 
 #include <png.h>

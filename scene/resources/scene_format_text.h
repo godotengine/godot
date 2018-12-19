@@ -31,11 +31,11 @@
 #ifndef SCENE_FORMAT_TEXT_H
 #define SCENE_FORMAT_TEXT_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "os/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/os/file_access.h"
+#include "core/variant_parser.h"
 #include "scene/resources/packed_scene.h"
-#include "variant_parser.h"
 
 class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
@@ -128,7 +128,7 @@ public:
 };
 
 class ResourceFormatLoaderText : public ResourceFormatLoader {
-
+	GDCLASS(ResourceFormatLoaderText, ResourceFormatLoader)
 public:
 	static ResourceFormatLoaderText *singleton;
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
@@ -170,6 +170,7 @@ public:
 };
 
 class ResourceFormatSaverText : public ResourceFormatSaver {
+	GDCLASS(ResourceFormatSaverText, ResourceFormatSaver)
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

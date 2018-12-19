@@ -29,33 +29,21 @@
 /*************************************************************************/
 
 #include "reverb_sw.h"
-#include "print_string.h"
-#include "stdlib.h"
+
+#include "core/print_string.h"
+
+#include <stdlib.h>
+
 #define SETMIN(x, y) (x) = MIN((x), (y))
+
 #define rangeloop(c, min, max) \
 	for ((c) = (min); (c) < (max); (c)++)
 
 #define ABSDIFF(x, y) \
 	(((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
 
-#ifdef bleh_MSC_VER
-
-#if _MSC_VER >= 1400
-_FORCE_INLINE_ int32_tMULSHIFT_S32(
-		int32_t Factor1,
-		int32_t Factor2,
-		uint8_t Bits) {
-
-	return __ll_rshift(
-			__emul(Factor1, Factor2),
-			Bits);
-}
-#endif
-
-#else
 #define MULSHIFT_S32(Factor1, Factor2, Bits) \
 	((int)(((int64_t)(Factor1) * (Factor2)) >> (Bits)))
-#endif
 
 struct ReverbParamsSW {
 	unsigned int BufferSize; // Required buffer size

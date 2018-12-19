@@ -23,7 +23,7 @@ platform_exporters = []
 platform_apis = []
 global_defaults = []
 
-for x in glob.glob("platform/*"):
+for x in sorted(glob.glob("platform/*")):
     if (not os.path.isdir(x) or not os.path.exists(x + "/detect.py")):
         continue
     tmppath = "./" + x
@@ -123,6 +123,7 @@ env_base.__class__.add_shared_library = methods.add_shared_library
 env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
 env_base.__class__.CommandNoCache = methods.CommandNoCache
+env_base.__class__.disable_warnings = methods.disable_warnings
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
@@ -156,22 +157,24 @@ opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
 opts.Add(BoolVariable('gdscript', "Enable GDScript support", True))
 opts.Add(BoolVariable('minizip', "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable('xaudio2', "Enable the XAudio2 audio driver", False))
-opts.Add(BoolVariable('xml', "Enable XML format support for resources", True))
 
 # Advanced options
+opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
+opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
+opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
+opts.Add(BoolVariable('werror', "Treat compiler warnings as errors. Depends on the level of warnings set with 'warnings'", False))
+opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
+opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
+opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
+opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D GUI nodes and behaviors", False))
-opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
-opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", False))
-opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
-opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'no', ('extra', 'all', 'moderate', 'no')))
-opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
-opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
-opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
+opts.Add('system_certs_path', "Use this path as SSL certificates default for editor (for package maintainers)", '')
 
 # Thirdparty libraries
 opts.Add(BoolVariable('builtin_bullet', "Use the built-in Bullet library", True))
+opts.Add(BoolVariable('builtin_certs', "Bundle default SSL certificates to be used if you don't specify an override in the project settings", True))
 opts.Add(BoolVariable('builtin_enet', "Use the built-in ENet library", True))
 opts.Add(BoolVariable('builtin_freetype', "Use the built-in FreeType library", True))
 opts.Add(BoolVariable('builtin_libogg', "Use the built-in libogg library", True))
@@ -188,6 +191,7 @@ opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library)", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
 opts.Add(BoolVariable('builtin_thekla_atlas', "Use the built-in thekla_altas library", True))
+opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the built-in Zstd library", True))
 
@@ -224,14 +228,14 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#core', '#core/math', '#editor', '#drivers', '#'])
+env_base.Append(CPPPATH=['#editor', '#'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
 if (env_base['target'] == 'debug'):
-    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC', 'SCI_NAMESPACE'])
+    env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
 
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
@@ -314,34 +318,41 @@ if selected_platform in platform_list:
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
 
-    if (env["warnings"] == 'yes'):
-        print("WARNING: warnings=yes is deprecated; assuming warnings=all")
-
+    # Configure compiler warnings
     if env.msvc:
-        disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4800'] # Truncations, narrowing conversions...
+        # Truncations, narrowing conversions, signed/unsigned comparisons...
+        disable_nonessential_warnings = ['/wd4267', '/wd4244', '/wd4305', '/wd4018', '/wd4800']
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['/Wall']) # Implies /W4
-        elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
+        elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['/W3'] + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
-            # C4244 shouldn't be needed here being a level-3 warning, but it is
             env.Append(CCFLAGS=['/W2'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['/w'])
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=['/EHsc'])
+        if (env["werror"]):
+            env.Append(CCFLAGS=['/WX'])
     else: # Rest of the world
+        disable_nonessential_warnings = ['-Wno-sign-compare']
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra'])
-        elif (env["warnings"] == 'all' or env["warnings"] == 'yes'):
-            env.Append(CCFLAGS=['-Wall'])
+        elif (env["warnings"] == 'all'):
+            env.Append(CCFLAGS=['-Wall'] + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
-            env.Append(CCFLAGS=['-Wall', '-Wno-unused'])
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
-        env.Append(CCFLAGS=['-Werror=return-type'])
+        if (env["werror"]):
+            env.Append(CCFLAGS=['-Werror'])
+        else: # always enable those errors
+            env.Append(CCFLAGS=['-Werror=return-type'])
 
-    suffix = "." + selected_platform
+    if (hasattr(detect, 'get_program_suffix')):
+        suffix = "." + detect.get_program_suffix()
+    else:
+        suffix = "." + selected_platform
 
     if (env["target"] == "release"):
         if env["tools"]:
@@ -414,8 +425,13 @@ if selected_platform in platform_list:
     # (SH)LIBSUFFIX will be used for our own built libraries
     # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
     # so we need to append the default suffixes to keep the ability
-    # to link against thirdparty libraries (.a, .so, .dll, etc.).
-    env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
+    # to link against thirdparty libraries (.a, .so, .lib, etc.).
+    if os.name == "nt":
+        # On Windows, only static libraries and import libraries can be
+        # statically linked - both using .lib extension
+        env["LIBSUFFIXES"] += [env["LIBSUFFIX"]]
+    else:
+        env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
@@ -439,8 +455,6 @@ if selected_platform in platform_list:
             env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
-    if env['xml']:
-        env.Append(CPPDEFINES=['XML_ENABLED'])
 
     if not env['verbose']:
         methods.no_verbose(sys, env)
@@ -538,7 +552,7 @@ if 'env' in locals():
             [os.remove(f) for f in files]
 
         def file_list(self):
-            if self.path == None:
+            if self.path is None:
                 # Nothing to do
                 return []
             # Gather a list of (filename, (size, atime)) within the
@@ -563,7 +577,7 @@ if 'env' in locals():
                 if sum > self.limit:
                     mark = i
                     break
-            if mark == None:
+            if mark is None:
                 return []
             else:
                 return [x[0] for x in file_stat[mark:]]

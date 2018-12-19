@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec2 vertex;
+/* clang-format on */
 
 layout(location = 4) in highp vec2 uv;
 
@@ -12,9 +14,11 @@ void main() {
 	gl_Position = vec4(vertex, 0, 1);
 }
 
+/* clang-format off */
 [fragment]
 
 precision highp float;
+/* clang-format on */
 precision highp int;
 
 #ifdef USE_SOURCE_PANORAMA

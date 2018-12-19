@@ -94,6 +94,7 @@ class Navigation : public Spatial {
 		Vector<Edge> edges;
 
 		Vector3 center;
+		Vector3 entry;
 
 		float distance;
 		int prev_edge;

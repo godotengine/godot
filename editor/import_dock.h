@@ -60,6 +60,7 @@ class ImportDock : public VBoxContainer {
 	void _importer_selected(int i_idx);
 	void _update_options(const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 
+	void _property_toggled(const StringName &p_prop, bool p_checked);
 	void _reimport();
 
 	enum {

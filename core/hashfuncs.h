@@ -31,12 +31,12 @@
 #ifndef HASHFUNCS_H
 #define HASHFUNCS_H
 
-#include "math_defs.h"
-#include "math_funcs.h"
-#include "node_path.h"
-#include "string_db.h"
-#include "typedefs.h"
-#include "ustring.h"
+#include "core/math/math_defs.h"
+#include "core/math/math_funcs.h"
+#include "core/node_path.h"
+#include "core/string_db.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
 
 /**
  * Hashing functions

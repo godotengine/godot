@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
             android:layout_marginTop="10dp"
             android:textStyle="bold" />
 
@@ -23,12 +23,11 @@
             android:id="@+id/downloaderDashboard"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/statusText"
             android:orientation="vertical" >
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:layout_weight="1" >
 
                 <TextView
@@ -36,18 +35,15 @@
                     style="@android:style/TextAppearance.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginLeft="5dp"
-                    android:text="0MB / 0MB" >
-                </TextView>
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="5dp" />
 
                 <TextView
                     android:id="@+id/progressAsPercentage"
                     style="@android:style/TextAppearance.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignRight="@+id/progressBar"
-                    android:text="0%" />
+                    android:layout_alignEnd="@+id/progressBar" />
 
                 <ProgressBar
                     android:id="@+id/progressBar"
@@ -58,24 +54,23 @@
                     android:layout_marginBottom="10dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_weight="1" />
+                    android:layout_marginTop="10dp" />
 
                 <TextView
                     android:id="@+id/progressAverageSpeed"
                     style="@android:style/TextAppearance.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
                     android:layout_below="@+id/progressBar"
-                    android:layout_marginLeft="5dp" />
+                    android:layout_marginStart="5dp" />
 
                 <TextView
                     android:id="@+id/progressTimeRemaining"
                     style="@android:style/TextAppearance.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignRight="@+id/progressBar"
+                    android:layout_alignEnd="@+id/progressBar"
                     android:layout_below="@+id/progressBar" />
             </RelativeLayout>
 
@@ -84,20 +79,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal" >
-
-                <Button
-                    android:id="@+id/pauseButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="5dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_weight="0"
-                    android:minHeight="40dp"
-                    android:minWidth="94dp"
-                    android:text="@string/text_button_pause" />
 
                 <Button
                     android:id="@+id/cancelButton"
@@ -112,7 +93,23 @@
                     android:minHeight="40dp"
                     android:minWidth="94dp"
                     android:text="@string/text_button_cancel"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    style="?android:attr/buttonBarButtonStyle" />
+
+                <Button
+                    android:id="@+id/pauseButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="0"
+                    android:minHeight="40dp"
+                    android:minWidth="94dp"
+                    android:text="@string/text_button_pause"
+                    style="?android:attr/buttonBarButtonStyle" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
@@ -151,7 +148,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="10dp"
-                android:text="@string/text_button_resume_cellular" />
+                android:text="@string/text_button_resume_cellular"
+                style="?android:attr/buttonBarButtonStyle" />
 
             <Button
                 android:id="@+id/wifiSettingsButton"
@@ -159,7 +157,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="10dp"
-                android:text="@string/text_button_wifi_settings" />
+                android:text="@string/text_button_wifi_settings"
+                style="?android:attr/buttonBarButtonStyle" />
             </LinearLayout>
     </LinearLayout>
 

@@ -16,7 +16,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Returns the Shortcut's [InputEvent] as a [String].
+				Returns the shortcut's [InputEvent] as a [String].
 			</description>
 		</method>
 		<method name="is_shortcut" qualifiers="const">
@@ -25,20 +25,20 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the Shortcut's [InputEvent] equals [code]event[/code].
+				Returns [code]true[/code] if the shortcut's [InputEvent] equals [code]event[/code].
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] this Shortcut is valid.
+				If [code]true[/code] this shortcut is valid.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
-			The Shortcut's [InputEvent].
+			The shortcut's [InputEvent].
 			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
 		</member>
 	</members>

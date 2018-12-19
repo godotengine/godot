@@ -31,12 +31,12 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
-#include "class_db.h"
-#include "object.h"
-#include "ref_ptr.h"
-#include "reference.h"
-#include "safe_refcount.h"
-#include "self_list.h"
+#include "core/class_db.h"
+#include "core/object.h"
+#include "core/ref_ptr.h"
+#include "core/reference.h"
+#include "core/safe_refcount.h"
+#include "core/self_list.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

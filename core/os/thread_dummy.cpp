@@ -30,7 +30,7 @@
 
 #include "thread_dummy.h"
 
-#include "memory.h"
+#include "core/os/memory.h"
 
 Thread *ThreadDummy::create(ThreadCreateCallback p_callback, void *p_user, const Thread::Settings &p_settings) {
 	return memnew(ThreadDummy);

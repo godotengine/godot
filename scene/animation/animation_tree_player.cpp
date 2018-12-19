@@ -401,6 +401,9 @@ void AnimationTreePlayer::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			ERR_EXPLAIN("AnimationTreePlayer has been deprecated. Use AnimationTree instead.");
+			WARN_DEPRECATED
+
 			if (!processing) {
 				//make sure that a previous process state was not saved
 				//only process if "processing" is set
@@ -409,12 +412,14 @@ void AnimationTreePlayer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_READY: {
+
 			dirty_caches = true;
 			if (master != NodePath()) {
 				_update_sources();
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
+
 			if (animation_process_mode == ANIMATION_PROCESS_PHYSICS)
 				break;
 
@@ -877,6 +882,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 							tr.track->object->call(method, args[0], args[1], args[2], args[3], args[4]);
 						}
 					} break;
+					default: {}
 				}
 			}
 		}
@@ -1712,6 +1718,11 @@ Error AnimationTreePlayer::node_rename(const StringName &p_node, const StringNam
 	node_map.erase(p_node);
 
 	return OK;
+}
+
+String AnimationTreePlayer::get_configuration_warning() const {
+
+	return TTR("This node has been deprecated. Use AnimationTree instead.");
 }
 
 void AnimationTreePlayer::_bind_methods() {

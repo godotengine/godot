@@ -38,14 +38,14 @@
 void ARVRCamera::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			// need to find our ARVROrigin parent and let it know we're it's camera!
+			// need to find our ARVROrigin parent and let it know we're its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 			if (origin != NULL) {
 				origin->set_tracked_camera(this);
 			}
 		}; break;
 		case NOTIFICATION_EXIT_TREE: {
-			// need to find our ARVROrigin parent and let it know we're no longer it's camera!
+			// need to find our ARVROrigin parent and let it know we're no longer its camera!
 			ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 			if (origin != NULL) {
 				origin->clear_tracked_camera_if(this);
@@ -266,6 +266,7 @@ void ARVRController::set_controller_id(int p_controller_id) {
 	// We don't check any bounds here, this controller may not yet be active and just be a place holder until it is.
 	// Note that setting this to 0 means this node is not bound to a controller yet.
 	controller_id = p_controller_id;
+	update_configuration_warning();
 };
 
 int ARVRController::get_controller_id(void) const {
@@ -446,6 +447,7 @@ void ARVRAnchor::set_anchor_id(int p_anchor_id) {
 	// We don't check any bounds here, this anchor may not yet be active and just be a place holder until it is.
 	// Note that setting this to 0 means this node is not bound to an anchor yet.
 	anchor_id = p_anchor_id;
+	update_configuration_warning();
 };
 
 int ARVRAnchor::get_anchor_id(void) const {

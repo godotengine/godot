@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PARTICLES_FRAME_H
-#define PARTICLES_FRAME_H
+#ifndef PARTICLES_2D_H
+#define PARTICLES_2D_H
 
+#include "core/rid.h"
 #include "scene/2d/node_2d.h"
-#include "scene/resources/color_ramp.h"
 #include "scene/resources/texture.h"
 
 class Particles2D : public Node2D {
@@ -59,8 +59,6 @@ private:
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
-	int v_frames;
-	int h_frames;
 
 	Ref<Material> process_material;
 
@@ -118,12 +116,6 @@ public:
 
 	virtual String get_configuration_warning() const;
 
-	void set_v_frames(int p_count);
-	int get_v_frames() const;
-
-	void set_h_frames(int p_count);
-	int get_h_frames() const;
-
 	void restart();
 	Rect2 capture_rect() const;
 	Particles2D();
@@ -132,4 +124,4 @@ public:
 
 VARIANT_ENUM_CAST(Particles2D::DrawOrder)
 
-#endif // PARTICLES_FRAME_H
+#endif // PARTICLES_2D_H

@@ -842,6 +842,9 @@ public:
 
 		btCollisionObject* otherObj = (btCollisionObject*) proxy0->m_clientObject;
 
+		if(!m_dispatcher->needsCollision(m_me, otherObj))
+			return false;
+
 		//call needsResponse, see http://code.google.com/p/bullet/issues/detail?id=179
 		if (m_dispatcher->needsResponse(m_me,otherObj))
 		{
@@ -1342,9 +1345,12 @@ void btDiscreteDynamicsWorld::debugDrawConstraint(btTypedConstraint* constraint)
 					btVector3 axis = tr.getBasis().getColumn(0);
 					btScalar minTh = p6DOF->getRotationalLimitMotor(1)->m_loLimit;
 					btScalar maxTh = p6DOF->getRotationalLimitMotor(1)->m_hiLimit;
-					btScalar minPs = p6DOF->getRotationalLimitMotor(2)->m_loLimit;
-					btScalar maxPs = p6DOF->getRotationalLimitMotor(2)->m_hiLimit;
-					getDebugDrawer()->drawSpherePatch(center, up, axis, dbgDrawSize * btScalar(.9f), minTh, maxTh, minPs, maxPs, btVector3(0, 0, 0));
+					if (minTh <= maxTh)
+					{
+						btScalar minPs = p6DOF->getRotationalLimitMotor(2)->m_loLimit;
+						btScalar maxPs = p6DOF->getRotationalLimitMotor(2)->m_hiLimit;
+						getDebugDrawer()->drawSpherePatch(center, up, axis, dbgDrawSize * btScalar(.9f), minTh, maxTh, minPs, maxPs, btVector3(0, 0, 0));
+					}
 					axis = tr.getBasis().getColumn(1);
 					btScalar ay = p6DOF->getAngle(1);
 					btScalar az = p6DOF->getAngle(2);
@@ -1532,6 +1538,8 @@ void	btDiscreteDynamicsWorld::serialize(btSerializer* serializer)
 	serializeCollisionObjects(serializer);
 
 	serializeRigidBodies(serializer);
+
+	serializeContactManifolds(serializer);
 
 	serializer->finishSerialization();
 }

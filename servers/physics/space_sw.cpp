@@ -31,8 +31,8 @@
 #include "space_sw.h"
 
 #include "collision_solver_sw.h"
+#include "core/project_settings.h"
 #include "physics_server_sw.h"
-#include "project_settings.h"
 
 _FORCE_INLINE_ static bool _can_collide_with(CollisionObjectSW *p_object, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
@@ -105,7 +105,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 
 	int amount = space->broadphase->cull_segment(begin, end, space->intersection_query_results, SpaceSW::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 
-	//todo, create another array tha references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
+	//todo, create another array that references results, compute AABBs and check closest point to ray origin, sort, and stop evaluating results when beyond first collision
 
 	bool collided = false;
 	Vector3 res_point, res_normal;
@@ -544,14 +544,24 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 
 	AABB body_aabb;
 
+	bool shapes_found = false;
+
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
 	}
 
+	if (!shapes_found) {
+		return 0;
+	}
 	// Undo the currently transform the physics server is aware of and apply the provided one
 	body_aabb = p_transform.xform(p_body->get_inv_transform().xform(body_aabb));
 	body_aabb = body_aabb.grow(p_margin);
@@ -691,13 +701,23 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		r_result->collider_shape = 0;
 	}
 	AABB body_aabb;
+	bool shapes_found = false;
 
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
-		if (i == 0)
+		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
-		else
+			shapes_found = true;
+		} else {
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
+		}
+	}
+
+	if (!shapes_found) {
+		return false;
 	}
 
 	// Undo the currently transform the physics server is aware of and apply the provided one
@@ -1183,6 +1203,7 @@ SpaceSW::SpaceSW() {
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);
 	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI));
 	body_time_to_sleep = GLOBAL_DEF("physics/3d/time_before_sleep", 0.5);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/time_before_sleep", PropertyInfo(Variant::REAL, "physics/3d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 	body_angular_velocity_damp_ratio = 10;
 
 	broadphase = BroadPhaseSW::create_func();

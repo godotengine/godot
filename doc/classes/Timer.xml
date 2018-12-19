@@ -32,25 +32,26 @@
 			<return type="void">
 			</return>
 			<description>
-				Stop (cancel) the Timer.
+				Stops the timer.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="autostart" type="bool" setter="set_autostart" getter="has_autostart">
-			If [code]true[/code], Timer will automatically start when entering the scene tree. Default value: [code]false[/code].
+			If [code]true[/code] the timer will automatically start when entering the scene tree. Default value: [code]false[/code].
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="is_one_shot">
-			If [code]true[/code], Timer will stop when reaching 0. If [code]false[/code], it will restart. Default value: [code]false[/code].
+			If [code]true[/code] the timer will stop when reaching 0. If [code]false[/code] it will restart. Default value: [code]false[/code].
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
-			If [code]true[/code], the timer is paused and will not process until it is unpaused again, even if [method start] is called.
+			If [code]true[/code] the timer is paused and will not process until it is unpaused again, even if [method start] is called.
 		</member>
 		<member name="process_mode" type="int" setter="set_timer_process_mode" getter="get_timer_process_mode" enum="Timer.TimerProcessMode">
-			Processing mode. Uses TIMER_PROCESS_* constants as value.
+			Processing mode. See [enum TimerProcessMode].
 		</member>
 		<member name="time_left" type="float" setter="" getter="get_time_left">
 			The timer's remaining time in seconds. Returns 0 if the timer is inactive.
+			Note: You cannot set this value. To change the timer's remaining time, use [member wait_time].
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time">
 			Wait time in seconds.
@@ -59,16 +60,16 @@
 	<signals>
 		<signal name="timeout">
 			<description>
-				Emitted when the Timer reaches 0.
+				Emitted when the timer reaches 0.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="TIMER_PROCESS_PHYSICS" value="0" enum="TimerProcessMode">
-			Update the Timer during the physics step at each frame (fixed framerate processing).
+			Update the timer during the physics step at each frame (fixed framerate processing).
 		</constant>
 		<constant name="TIMER_PROCESS_IDLE" value="1" enum="TimerProcessMode">
-			Update the Timer during the idle time at each frame.
+			Update the timer during the idle time at each frame.
 		</constant>
 	</constants>
 </class>

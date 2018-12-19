@@ -49,9 +49,9 @@ GodotRayWorldAlgorithm::SwappedCreateFunc::SwappedCreateFunc(const btDiscreteDyn
 
 GodotRayWorldAlgorithm::GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *world, btPersistentManifold *mf, const btCollisionAlgorithmConstructionInfo &ci, const btCollisionObjectWrapper *body0Wrap, const btCollisionObjectWrapper *body1Wrap, bool isSwapped) :
 		btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap),
+		m_world(world),
 		m_manifoldPtr(mf),
 		m_ownManifold(false),
-		m_world(world),
 		m_isSwapped(isSwapped) {}
 
 GodotRayWorldAlgorithm::~GodotRayWorldAlgorithm() {

@@ -30,7 +30,7 @@
 
 #include "undo_redo.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 void UndoRedo::_discard_redo() {
 
@@ -268,7 +268,24 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 			case Operation::TYPE_METHOD: {
 
-				obj->call(op.name, VARIANT_ARGS_FROM_ARRAY(op.args));
+				Vector<const Variant *> argptrs;
+				argptrs.resize(VARIANT_ARG_MAX);
+				int argc = 0;
+
+				for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+					if (op.args[i].get_type() == Variant::NIL) {
+						break;
+					}
+					argptrs.write[i] = &op.args[i];
+					argc++;
+				}
+				argptrs.resize(argc);
+
+				Variant::CallError ce;
+				obj->call(op.name, (const Variant **)argptrs.ptr(), argc, ce);
+				if (ce.error != Variant::CallError::CALL_OK) {
+					ERR_PRINTS("Error calling method from signal '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, (const Variant **)argptrs.ptr(), argc, ce));
+				}
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
 				if (res)
@@ -325,7 +342,7 @@ bool UndoRedo::undo() {
 	return true;
 }
 
-void UndoRedo::clear_history() {
+void UndoRedo::clear_history(bool p_increase_version) {
 
 	ERR_FAIL_COND(action_level > 0);
 	_discard_redo();
@@ -333,7 +350,8 @@ void UndoRedo::clear_history() {
 	while (actions.size())
 		_pop_history_tail();
 
-	//version++;
+	if (p_increase_version)
+		version++;
 }
 
 String UndoRedo::get_current_action_name() const {
@@ -493,7 +511,7 @@ void UndoRedo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_undo_property", "object", "property", "value"), &UndoRedo::add_undo_property);
 	ClassDB::bind_method(D_METHOD("add_do_reference", "object"), &UndoRedo::add_do_reference);
 	ClassDB::bind_method(D_METHOD("add_undo_reference", "object"), &UndoRedo::add_undo_reference);
-	ClassDB::bind_method(D_METHOD("clear_history"), &UndoRedo::clear_history);
+	ClassDB::bind_method(D_METHOD("clear_history", "increase_version"), &UndoRedo::clear_history, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_current_action_name"), &UndoRedo::get_current_action_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &UndoRedo::get_version);
 	ClassDB::bind_method(D_METHOD("redo"), &UndoRedo::redo);

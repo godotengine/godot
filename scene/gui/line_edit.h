@@ -122,7 +122,6 @@ private:
 
 	Timer *caret_blink_timer;
 
-	static void _ime_text_callback(void *p_self, String p_text, Point2 p_selection);
 	void _text_changed();
 	void _emit_text_change();
 	bool expand_to_text_length;

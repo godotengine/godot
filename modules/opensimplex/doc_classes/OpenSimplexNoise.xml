@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenSimplexNoise" inherits="Resource" category="Core" version="3.1">
+	<brief_description>
+		Noise generator based on Open Simplex.
+	</brief_description>
+	<description>
+		This resource allows you to configure and sample a fractal noise space. Here is a brief usage example that configures an OpenSimplexNoise and gets samples at various positions and dimensions:
+		[codeblock]
+		var noise = OpenSimplexNoise.new()
+
+		# Configure
+		noise.seed = randi()
+		noise.octaves = 4
+		noise.period = 20.0
+		noise.persistence = 0.8
+
+		# Sample
+		print("Values:")
+		print(noise.get_noise_2d(1.0, 1.0))
+		print(noise.get_noise_3d(0.5, 3.0, 15.0))
+		print(noise.get_noise_4d(0.5, 1.9, 4.7, 0.0))
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_image">
+			<return type="Image">
+			</return>
+			<argument index="0" name="width" type="int">
+			</argument>
+			<argument index="1" name="height" type="int">
+			</argument>
+			<description>
+				Generate a noise image with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
+			</description>
+		</method>
+		<method name="get_noise_2d">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<description>
+				Returns the 2D noise value [code][-1,1][/code] at the given position.
+			</description>
+		</method>
+		<method name="get_noise_2dv">
+			<return type="float">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+				Returns the 2D noise value [code][-1,1][/code] at the given position.
+			</description>
+		</method>
+		<method name="get_noise_3d">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<description>
+				Returns the 3D noise value [code][-1,1][/code] at the given position.
+			</description>
+		</method>
+		<method name="get_noise_3dv">
+			<return type="float">
+			</return>
+			<argument index="0" name="pos" type="Vector3">
+			</argument>
+			<description>
+				Returns the 3D noise value [code][-1,1][/code] at the given position.
+			</description>
+		</method>
+		<method name="get_noise_4d">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<argument index="1" name="y" type="float">
+			</argument>
+			<argument index="2" name="z" type="float">
+			</argument>
+			<argument index="3" name="w" type="float">
+			</argument>
+			<description>
+				Returns the 4D noise value [code][-1,1][/code] at the given position.
+			</description>
+		</method>
+		<method name="get_seamless_image">
+			<return type="Image">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+				Generate a tileable noise image, based on the current noise parameters. Generated seamless images are always square ([code]size[/code] x [code]size[/code]).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="lacunarity" type="float" setter="set_lacunarity" getter="get_lacunarity">
+			Difference in period between [member octaves].
+		</member>
+		<member name="octaves" type="int" setter="set_octaves" getter="get_octaves">
+			Number of OpenSimplex noise layers that are sampled to get the fractal noise.
+		</member>
+		<member name="period" type="float" setter="set_period" getter="get_period">
+			Period of the base octave. A lower period results in a higher-frequency noise (more value changes across the same distance).
+		</member>
+		<member name="persistence" type="float" setter="set_persistence" getter="get_persistence">
+			Contribution factor of the different octaves. A [code]persistence[/code] value of 1 means all the octaves have the same contribution, a value of 0.5 means each octave contributes half as much as the previous one.
+		</member>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed">
+			Seed used to generate random values, different seeds will generate different noise maps.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

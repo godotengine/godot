@@ -30,11 +30,12 @@
 
 #ifdef ALSAMIDI_ENABLED
 
-#include <errno.h>
-
 #include "alsa_midi.h"
-#include "os/os.h"
-#include "print_string.h"
+
+#include "core/os/os.h"
+#include "core/print_string.h"
+
+#include <errno.h>
 
 static int get_message_size(uint8_t message) {
 	switch (message & 0xF0) {

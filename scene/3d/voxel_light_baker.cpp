@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "voxel_light_baker.h"
-#include "os/os.h"
-#include "os/threaded_array_processor.h"
+#include "core/os/os.h"
+#include "core/os/threaded_array_processor.h"
 
 #include <stdlib.h>
 
@@ -261,7 +261,7 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
 
 	if (p_level == cell_subdiv - 1) {
-		//plot the face by guessing it's albedo and emission value
+		//plot the face by guessing its albedo and emission value
 
 		//find best axis to map to, for scanning values
 		int closest_axis = 0;
@@ -734,7 +734,8 @@ void VoxelLightBaker::_check_init_light() {
 		leaf_voxel_count = 0;
 		_fixup_plot(0, 0); //pre fixup, so normal, albedo, emission, etc. work for lighting.
 		bake_light.resize(bake_cells.size());
-		zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
+		print_line("bake light size: " + itos(bake_light.size()));
+		//zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
 		first_leaf = -1;
 		_init_light_plot(0, 0, 0, 0, 0, CHILD_EMPTY);
 	}
@@ -1586,10 +1587,10 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	Vector3 bitangent = tangent.cross(p_normal).normalized();
 	Basis normal_xform = Basis(tangent, bitangent, p_normal).transposed();
 
-	const Vector3 *cone_dirs;
-	const float *cone_weights;
-	int cone_dir_count;
-	float cone_aperture;
+	const Vector3 *cone_dirs = NULL;
+	const float *cone_weights = NULL;
+	int cone_dir_count = 0;
+	float cone_aperture = 0;
 
 	switch (bake_quality) {
 		case BAKE_QUALITY_LOW: {
@@ -1618,7 +1619,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 				Vector3(-0.700629, -0.509037, 0.5),
 				Vector3(0.267617, -0.823639, 0.5)
 			};
-			static const float weights[6] = { 0.25, 0.15, 0.15, 0.15, 0.15, 0.15 };
+			static const float weights[6] = { 0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f };
 			//
 			cone_dirs = dirs;
 			cone_dir_count = 6;
@@ -1640,7 +1641,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 				Vector3(0.19124006749743122, 0.39355745585016605, 0.8991883926788214),
 				Vector3(0.19124006749743122, -0.39355745585016605, 0.8991883926788214),
 			};
-			static const float weights[10] = { 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.133333, 0.133333, 0.13333 };
+			static const float weights[10] = { 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.133333f, 0.133333f, 0.13333f };
 			cone_dirs = dirs;
 			cone_dir_count = 10;
 			cone_aperture = 0.404; // tan(angle) 45 degrees
@@ -1874,7 +1875,7 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 		if (bake_mode == BAKE_MODE_RAY_TRACE) {
 			//blur
 			//gauss kernel, 7 step sigma 2
-			static const float gauss_kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
+			static const float gauss_kernel[4] = { 0.214607f, 0.189879f, 0.131514f, 0.071303f };
 			//horizontal pass
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {

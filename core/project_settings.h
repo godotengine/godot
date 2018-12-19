@@ -31,9 +31,10 @@
 #ifndef GLOBAL_CONFIG_H
 #define GLOBAL_CONFIG_H
 
-#include "object.h"
-#include "os/thread_safe.h"
-#include "set.h"
+#include "core/object.h"
+#include "core/os/thread_safe.h"
+#include "core/set.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -110,6 +111,8 @@ protected:
 	bool _load_resource_pack(const String &p_pack);
 
 	void _add_property_info_bind(const Dictionary &p_info);
+
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 
 protected:
 	static void _bind_methods();

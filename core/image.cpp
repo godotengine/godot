@@ -30,15 +30,15 @@
 
 #include "image.h"
 
+#include "core/hash_map.h"
 #include "core/io/image_loader.h"
+#include "core/io/resource_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/os/copymem.h"
-#include "hash_map.h"
-#include "math_funcs.h"
-#include "print_string.h"
+#include "core/print_string.h"
 
-#include "io/resource_loader.h"
-#include "math_funcs.h"
 #include "thirdparty/misc/hq2x.h"
+
 #include <stdio.h>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
@@ -307,6 +307,7 @@ void Image::_get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_widt
 	r_width = w;
 	r_height = h;
 }
+
 int Image::get_mipmap_offset(int p_mipmap) const {
 
 	ERR_FAIL_INDEX_V(p_mipmap, get_mipmap_count() + 1, -1);
@@ -498,8 +499,6 @@ void Image::convert(Format p_new_format) {
 	w = PoolVector<uint8_t>::Write();
 
 	bool gen_mipmaps = mipmaps;
-
-	//mipmaps=false;
 
 	_copy_internals_from(new_img);
 
@@ -781,9 +780,9 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	// Setup mipmap-aware scaling
 	Image dst2;
-	int mip1;
-	int mip2;
-	float mip1_weight;
+	int mip1 = 0;
+	int mip2 = 0;
+	float mip1_weight = 0;
 	if (mipmap_aware) {
 		float avg_scale = ((float)p_width / width + (float)p_height / height) * 0.5f;
 		if (avg_scale >= 1.0f) {
@@ -799,6 +798,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	if (interpolate_mipmaps) {
 		dst2.create(p_width, p_height, 0, format);
 	}
+
 	bool had_mipmaps = mipmaps;
 	if (interpolate_mipmaps && !had_mipmaps) {
 		generate_mipmaps();
@@ -951,6 +951,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 }
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
+
 	if (!_can_modify(format)) {
 		ERR_EXPLAIN("Cannot crop in indexed, compressed or custom image formats.");
 		ERR_FAIL();
@@ -996,7 +997,7 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 		}
 	}
 
-	if (mipmaps > 0)
+	if (has_mipmaps())
 		dst.generate_mipmaps();
 	_copy_internals_from(dst);
 }
@@ -1013,10 +1014,10 @@ void Image::flip_y() {
 		ERR_FAIL();
 	}
 
-	bool gm = mipmaps;
-
-	if (gm)
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
 		clear_mipmaps();
+	}
 
 	{
 		PoolVector<uint8_t>::Write w = data.write();
@@ -1037,8 +1038,9 @@ void Image::flip_y() {
 		}
 	}
 
-	if (gm)
+	if (used_mipmaps) {
 		generate_mipmaps();
+	}
 }
 
 void Image::flip_x() {
@@ -1048,9 +1050,10 @@ void Image::flip_x() {
 		ERR_FAIL();
 	}
 
-	bool gm = mipmaps;
-	if (gm)
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
 		clear_mipmaps();
+	}
 
 	{
 		PoolVector<uint8_t>::Write w = data.write();
@@ -1071,8 +1074,9 @@ void Image::flip_x() {
 		}
 	}
 
-	if (gm)
+	if (used_mipmaps) {
 		generate_mipmaps();
+	}
 }
 
 int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps) {
@@ -1133,20 +1137,23 @@ template <class Component, int CC, bool renormalize,
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
 
 	//fast power of 2 mipmap generation
-	uint32_t dst_w = p_width >> 1;
-	uint32_t dst_h = p_height >> 1;
+	uint32_t dst_w = MAX(p_width >> 1, 1);
+	uint32_t dst_h = MAX(p_height >> 1, 1);
+
+	int right_step = (p_width == 1) ? 0 : CC;
+	int down_step = (p_height == 1) ? 0 : (p_width * CC);
 
 	for (uint32_t i = 0; i < dst_h; i++) {
 
-		const Component *rup_ptr = &p_src[i * 2 * p_width * CC];
-		const Component *rdown_ptr = rup_ptr + p_width * CC;
+		const Component *rup_ptr = &p_src[i * 2 * down_step];
+		const Component *rdown_ptr = rup_ptr + down_step;
 		Component *dst_ptr = &p_dst[i * dst_w * CC];
 		uint32_t count = dst_w;
 
 		while (count--) {
 
 			for (int j = 0; j < CC; j++) {
-				average_func(dst_ptr[j], rup_ptr[j], rup_ptr[j + CC], rdown_ptr[j], rdown_ptr[j + CC]);
+				average_func(dst_ptr[j], rup_ptr[j], rup_ptr[j + right_step], rdown_ptr[j], rdown_ptr[j + right_step]);
 			}
 
 			if (renormalize) {
@@ -1154,8 +1161,8 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 			}
 
 			dst_ptr += CC;
-			rup_ptr += CC * 2;
-			rdown_ptr += CC * 2;
+			rup_ptr += right_step * 2;
+			rdown_ptr += right_step * 2;
 		}
 	}
 }
@@ -1164,11 +1171,12 @@ void Image::expand_x2_hq2x() {
 
 	ERR_FAIL_COND(!_can_modify(format));
 
-	Format current = format;
-	bool mm = has_mipmaps();
-	if (mm) {
+	bool used_mipmaps = has_mipmaps();
+	if (used_mipmaps) {
 		clear_mipmaps();
 	}
+
+	Format current = format;
 
 	if (current != FORMAT_RGBA8)
 		convert(FORMAT_RGBA8);
@@ -1190,6 +1198,8 @@ void Image::expand_x2_hq2x() {
 	if (current != FORMAT_RGBA8)
 		convert(current);
 
+	// FIXME: This is likely meant to use "used_mipmaps" as defined above, but if we do,
+	// we end up with a regression: GH-22747
 	if (mipmaps) {
 		generate_mipmaps();
 	}
@@ -1313,7 +1323,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 	int prev_h = height;
 	int prev_w = width;
 
-	for (int i = 1; i < mmcount; i++) {
+	for (int i = 1; i <= mmcount; i++) {
 
 		int ofs, w, h;
 		_get_mipmap_offset_and_size(i, ofs, w, h);
@@ -1463,7 +1473,8 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 void Image::create(const char **p_xpm) {
 
-	int size_width, size_height;
+	int size_width = 0;
+	int size_height = 0;
 	int pixelchars = 0;
 	mipmaps = false;
 	bool has_alpha = false;
@@ -1479,8 +1490,8 @@ void Image::create(const char **p_xpm) {
 	int line = 0;
 
 	HashMap<String, Color> colormap;
-	int colormap_size;
-	uint32_t pixel_size;
+	int colormap_size = 0;
+	uint32_t pixel_size = 0;
 	PoolVector<uint8_t>::Write w;
 
 	while (status != DONE) {
@@ -1755,6 +1766,15 @@ int Image::get_image_required_mipmaps(int p_width, int p_height, Format p_format
 	return mm;
 }
 
+int Image::get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap) {
+
+	if (p_mipmap <= 0) {
+		return 0;
+	}
+	int mm;
+	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmap - 1);
+}
+
 bool Image::is_compressed() const {
 	return format > FORMAT_RGBE9995;
 }
@@ -1911,7 +1931,8 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
@@ -1965,7 +1986,8 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr = wp.ptr();
@@ -2022,7 +2044,8 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	lock();
 	Ref<Image> img = p_src;
@@ -2076,7 +2099,8 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	if (clipped_src_rect.size.x <= 0 || clipped_src_rect.size.y <= 0)
 		return;
 
-	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest, clipped_src_rect.size));
+	Point2 src_underscan = Point2(MIN(0, p_src_rect.position.x), MIN(0, p_src_rect.position.y));
+	Rect2i dest_rect = Rect2i(0, 0, width, height).clip(Rect2i(p_dest - src_underscan, clipped_src_rect.size));
 
 	lock();
 	Ref<Image> img = p_src;

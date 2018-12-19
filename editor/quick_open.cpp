@@ -30,9 +30,9 @@
 
 #include "quick_open.h"
 
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
-void EditorQuickOpen::popup(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
+void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
 
 	add_directories = p_add_dirs;
 	popup_centered_ratio(0.6);
@@ -261,6 +261,8 @@ void EditorQuickOpen::_notification(int p_what) {
 
 		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this, "_confirmed");
 	}
 }
 

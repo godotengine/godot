@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "list.h"
-#include "os/main_loop.h"
+#include "core/list.h"
+#include "core/os/main_loop.h"
 
 #ifdef DEBUG_ENABLED
 
+#include "test_astar.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
 #include "test_image.h"
-#include "test_io.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
@@ -56,7 +56,6 @@ const char **tests_get_names() {
 		"render",
 		"oa_hash_map",
 		"gui",
-		"io",
 		"shaderlang",
 		"gd_tokenizer",
 		"gd_parser",
@@ -64,6 +63,7 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"image",
 		"ordered_hash_map",
+		"astar",
 		NULL
 	};
 
@@ -109,11 +109,6 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 	}
 #endif
 
-	if (p_test == "io") {
-
-		return TestIO::test();
-	}
-
 	if (p_test == "shaderlang") {
 
 		return TestShaderLang::test();
@@ -147,6 +142,11 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 	if (p_test == "ordered_hash_map") {
 
 		return TestOrderedHashMap::test();
+	}
+
+	if (p_test == "astar") {
+
+		return TestAStar::test();
 	}
 
 	return NULL;

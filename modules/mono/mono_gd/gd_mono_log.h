@@ -31,7 +31,7 @@
 #ifndef GD_MONO_LOG_H
 #define GD_MONO_LOG_H
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 class GDMonoLog {
 

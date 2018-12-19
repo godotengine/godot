@@ -45,6 +45,8 @@
 		</member>
 		<member name="min_distance" type="float" setter="set_min_distance" getter="get_min_distance">
 		</member>
+		<member name="override_tip_basis" type="bool" setter="set_override_tip_basis" getter="is_override_tip_basis">
+		</member>
 		<member name="root_bone" type="String" setter="set_root_bone" getter="get_root_bone">
 		</member>
 		<member name="target" type="Transform" setter="set_target_transform" getter="get_target_transform">

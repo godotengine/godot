@@ -30,8 +30,8 @@
 
 #include "audio_driver_dummy.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 Error AudioDriverDummy::init() {
 

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "sky_box.h"
-#include "io/image_loader.h"
+#include "core/io/image_loader.h"
 
 void Sky::set_radiance_size(RadianceSize p_size) {
 	ERR_FAIL_INDEX(p_size, RADIANCE_SIZE_MAX);
@@ -190,9 +190,15 @@ Ref<Image> ProceduralSky::_generate_sky() {
 
 					float c = (v_angle - (Math_PI * 0.5)) / (Math_PI * 0.5);
 					color = ground_horizon_linear.linear_interpolate(ground_bottom_linear, Math::ease(c, ground_curve));
+					color.r *= ground_energy;
+					color.g *= ground_energy;
+					color.b *= ground_energy;
 				} else {
 					float c = v_angle / (Math_PI * 0.5);
 					color = sky_horizon_linear.linear_interpolate(sky_top_linear, Math::ease(1.0 - c, sky_curve));
+					color.r *= sky_energy;
+					color.g *= sky_energy;
+					color.b *= sky_energy;
 
 					float sun_angle = Math::rad2deg(Math::acos(CLAMP(sun.dot(normal), -1.0, 1.0)));
 

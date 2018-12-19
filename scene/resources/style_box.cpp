@@ -136,7 +136,7 @@ Ref<Texture> StyleBoxTexture::get_normal_map() const {
 
 void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 
-	ERR_FAIL_INDEX(p_margin, 4);
+	ERR_FAIL_INDEX((int)p_margin, 4);
 
 	margin[p_margin] = p_size;
 	emit_changed();
@@ -200,7 +200,7 @@ Size2 StyleBoxTexture::get_center_size() const {
 
 void StyleBoxTexture::set_expand_margin_size(Margin p_expand_margin, float p_size) {
 
-	ERR_FAIL_INDEX(p_expand_margin, 4);
+	ERR_FAIL_INDEX((int)p_expand_margin, 4);
 	expand_margin[p_expand_margin] = p_size;
 	emit_changed();
 }
@@ -223,7 +223,7 @@ void StyleBoxTexture::set_expand_margin_size_all(float p_expand_margin_size) {
 
 float StyleBoxTexture::get_expand_margin_size(Margin p_expand_margin) const {
 
-	ERR_FAIL_INDEX_V(p_expand_margin, 4, 0);
+	ERR_FAIL_INDEX_V((int)p_expand_margin, 4, 0);
 	return expand_margin[p_expand_margin];
 }
 
@@ -310,7 +310,7 @@ void StyleBoxTexture::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
 	ADD_GROUP("Margin", "margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_LEFT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_RIGHT);
@@ -322,8 +322,8 @@ void StyleBoxTexture::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_BOTTOM);
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_vertical", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_v_axis_stretch_mode", "get_v_axis_stretch_mode");
 	ADD_GROUP("Modulate", "modulate_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate_color"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
@@ -565,8 +565,6 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 		vert_offset = 0;
 	}
 	int adapted_corner_detail = (corner_radius[0] == 0 && corner_radius[1] == 0 && corner_radius[2] == 0 && corner_radius[3] == 0) ? 1 : corner_detail;
-	int rings = (border_width[0] == 0 && border_width[1] == 0 && border_width[2] == 0 && border_width[3] == 0) ? 1 : 2;
-	rings = 2;
 
 	int ring_corner_radius[4];
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
@@ -592,7 +590,7 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	//calculate the vert array
 	for (int corner_index = 0; corner_index < 4; corner_index++) {
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {
-			for (int inner_outer = (2 - rings); inner_outer < 2; inner_outer++) {
+			for (int inner_outer = 0; inner_outer < 2; inner_outer++) {
 				float radius;
 				Color color;
 				Point2 corner_point;
@@ -613,19 +611,17 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 		}
 	}
 
-	if (rings == 2) {
-		int vert_count = (adapted_corner_detail + 1) * 4 * rings;
-		//fill the indices and the colors for the border
-		for (int i = 0; i < vert_count; i++) {
-			//poly 1
-			indices.push_back(vert_offset + ((i + 0) % vert_count));
-			indices.push_back(vert_offset + ((i + 2) % vert_count));
-			indices.push_back(vert_offset + ((i + 1) % vert_count));
-			//poly 2
-			indices.push_back(vert_offset + ((i + 1) % vert_count));
-			indices.push_back(vert_offset + ((i + 2) % vert_count));
-			indices.push_back(vert_offset + ((i + 3) % vert_count));
-		}
+	int vert_count = (adapted_corner_detail + 1) * 4 * 2;
+	//fill the indices and the colors for the border
+	for (int i = 0; i < vert_count; i++) {
+		//poly 1
+		indices.push_back(vert_offset + ((i + 0) % vert_count));
+		indices.push_back(vert_offset + ((i + 2) % vert_count));
+		indices.push_back(vert_offset + ((i + 1) % vert_count));
+		//poly 2
+		indices.push_back(vert_offset + ((i + 1) % vert_count));
+		indices.push_back(vert_offset + ((i + 2) % vert_count));
+		indices.push_back(vert_offset + ((i + 3) % vert_count));
 	}
 }
 

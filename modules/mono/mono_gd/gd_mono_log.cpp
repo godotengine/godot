@@ -33,8 +33,8 @@
 #include <mono/utils/mono-logger.h>
 #include <stdlib.h> // abort
 
-#include "os/dir_access.h"
-#include "os/os.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
 
 #include "../godotsharp_dirs.h"
 

@@ -31,10 +31,12 @@
 #ifndef TRANSLATION_LOADER_PO_H
 #define TRANSLATION_LOADER_PO_H
 
-#include "io/resource_loader.h"
-#include "os/file_access.h"
-#include "translation.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
+#include "core/translation.h"
+
 class TranslationLoaderPO : public ResourceFormatLoader {
+	GDCLASS(TranslationLoaderPO, ResourceFormatLoader)
 public:
 	static RES load_translation(FileAccess *f, Error *r_error, const String &p_path = String());
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);

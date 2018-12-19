@@ -30,8 +30,8 @@
 
 #include "image_loader_tinyexr.h"
 
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
@@ -129,15 +129,45 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 
 	PoolVector<uint8_t> imgdata;
 	Image::Format format;
+	int output_channels = 0;
 
 	if (idxA > 0) {
 
 		imgdata.resize(exr_image.width * exr_image.height * 8); //RGBA16
 		format = Image::FORMAT_RGBAH;
+		output_channels = 4;
 	} else {
 
 		imgdata.resize(exr_image.width * exr_image.height * 6); //RGB16
 		format = Image::FORMAT_RGBH;
+		output_channels = 3;
+	}
+
+	EXRTile single_image_tile;
+	int num_tiles;
+	int tile_width = 0;
+	int tile_height = 0;
+
+	const EXRTile *exr_tiles;
+
+	if (!exr_header.tiled) {
+		single_image_tile.images = exr_image.images;
+		single_image_tile.width = exr_image.width;
+		single_image_tile.height = exr_image.height;
+		single_image_tile.level_x = exr_image.width;
+		single_image_tile.level_y = exr_image.height;
+		single_image_tile.offset_x = 0;
+		single_image_tile.offset_y = 0;
+
+		exr_tiles = &single_image_tile;
+		num_tiles = 1;
+		tile_width = exr_image.width;
+		tile_height = exr_image.height;
+	} else {
+		tile_width = exr_header.tile_size_x;
+		tile_height = exr_header.tile_size_y;
+		num_tiles = exr_image.num_tiles;
+		exr_tiles = exr_image.tiles;
 	}
 
 	{
@@ -145,22 +175,51 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 		uint16_t *iw = (uint16_t *)wd.ptr();
 
 		// Assume `out_rgba` have enough memory allocated.
-		for (int i = 0; i < exr_image.width * exr_image.height; i++) {
+		for (int tile_index = 0; tile_index < num_tiles; tile_index++) {
 
-			Color color(
-					reinterpret_cast<float **>(exr_image.images)[idxR][i],
-					reinterpret_cast<float **>(exr_image.images)[idxG][i],
-					reinterpret_cast<float **>(exr_image.images)[idxB][i]);
+			const EXRTile &tile = exr_tiles[tile_index];
 
-			if (p_force_linear)
-				color = color.to_linear();
+			int tw = tile.width;
+			int th = tile.height;
 
-			*iw++ = Math::make_half_float(color.r);
-			*iw++ = Math::make_half_float(color.g);
-			*iw++ = Math::make_half_float(color.b);
+			const float *r_channel_start = reinterpret_cast<const float *>(tile.images[idxR]);
+			const float *g_channel_start = reinterpret_cast<const float *>(tile.images[idxG]);
+			const float *b_channel_start = reinterpret_cast<const float *>(tile.images[idxB]);
+			const float *a_channel_start = NULL;
 
 			if (idxA > 0) {
-				*iw++ = Math::make_half_float(reinterpret_cast<float **>(exr_image.images)[idxA][i]);
+				a_channel_start = reinterpret_cast<const float *>(tile.images[idxA]);
+			}
+
+			uint16_t *first_row_w = iw + (tile.offset_y * tile_height * exr_image.width + tile.offset_x * tile_width) * output_channels;
+
+			for (int y = 0; y < th; y++) {
+				const float *r_channel = r_channel_start + y * tile_width;
+				const float *g_channel = g_channel_start + y * tile_width;
+				const float *b_channel = b_channel_start + y * tile_width;
+				const float *a_channel = NULL;
+
+				if (a_channel_start) {
+					a_channel = a_channel_start + y * tile_width;
+				}
+
+				uint16_t *row_w = first_row_w + (y * exr_image.width * output_channels);
+
+				for (int x = 0; x < tw; x++) {
+
+					Color color(*r_channel++, *g_channel++, *b_channel++);
+
+					if (p_force_linear)
+						color = color.to_linear();
+
+					*row_w++ = Math::make_half_float(color.r);
+					*row_w++ = Math::make_half_float(color.g);
+					*row_w++ = Math::make_half_float(color.b);
+
+					if (idxA > 0) {
+						*row_w++ = Math::make_half_float(*a_channel++);
+					}
+				}
 			}
 		}
 	}

@@ -31,12 +31,14 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "aabb.h"
-#include "matrix3.h"
-#include "plane.h"
+#include "core/math/aabb.h"
+#include "core/math/matrix3.h"
+#include "core/math/plane.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class Transform {
 public:
 	Basis basis;

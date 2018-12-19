@@ -24,7 +24,7 @@
 			If [code]true[/code] the user can resize the window. Default value: [code]false[/code].
 		</member>
 		<member name="window_title" type="String" setter="set_title" getter="get_title">
-			The text displayed in the window's title bar. Default value: "Save a File".
+			The text displayed in the window's title bar.
 		</member>
 	</members>
 	<constants>

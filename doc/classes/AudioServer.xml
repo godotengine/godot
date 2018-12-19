@@ -7,7 +7,7 @@
 		AudioServer is a low level server interface for audio access. It is in charge of creating sample data (playable audio) as well as its playback via a voice interface.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/audio/audio_buses.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -59,6 +59,15 @@
 			</return>
 			<description>
 				Generates an [AudioBusLayout] using the available busses and effects.
+			</description>
+		</method>
+		<method name="get_bus_channels" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<description>
+				Returns the amount of channels of the bus at index [code]bus_idx[/code].
 			</description>
 		</method>
 		<method name="get_bus_count" qualifiers="const">
@@ -384,6 +393,8 @@
 	<constants>
 		<constant name="SPEAKER_MODE_STEREO" value="0" enum="SpeakerMode">
 			Two or fewer speakers are detected.
+		</constant>
+		<constant name="SPEAKER_SURROUND_31" value="1" enum="SpeakerMode">
 		</constant>
 		<constant name="SPEAKER_SURROUND_51" value="2" enum="SpeakerMode">
 			A 5.1 channel surround setup detected.

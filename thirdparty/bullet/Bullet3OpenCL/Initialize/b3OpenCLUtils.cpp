@@ -619,7 +619,7 @@ cl_program b3OpenCLUtils_compileCLProgramFromString(cl_context clContext, cl_dev
 		strippedName = strip2(clFileNameForCaching,"\\");
 		strippedName = strip2(strippedName,"/");
 	
-#ifdef _MSVC_VER
+#ifdef _MSC_VER
 		sprintf_s(binaryFileName,B3_MAX_STRING_LENGTH,"%s/%s.%s.%s.bin",sCachedBinaryPath,strippedName, deviceName,driverVersion );
 #else
 		sprintf(binaryFileName,"%s/%s.%s.%s.bin",sCachedBinaryPath,strippedName, deviceName,driverVersion );

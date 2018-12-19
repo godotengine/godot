@@ -33,12 +33,11 @@
 #ifndef CORE_MIDI_H
 #define CORE_MIDI_H
 
-#include <stdio.h>
+#include "core/os/midi_driver.h"
+#include "core/vector.h"
 
 #include <CoreMIDI/CoreMIDI.h>
-
-#include "core/vector.h"
-#include "os/midi_driver.h"
+#include <stdio.h>
 
 class MIDIDriverCoreMidi : public MIDIDriver {
 

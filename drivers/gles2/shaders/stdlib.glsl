@@ -35,3 +35,13 @@ highp vec4 texel2DFetch(highp sampler2D tex, ivec2 size, ivec2 coord) {
 
 	return texture2DLod(tex, vec2(x_coord, y_coord), 0.0);
 }
+
+#ifndef USE_GLES_OVER_GL
+highp mat4 transpose(highp mat4 src) {
+	return mat4(
+			vec4(src[0].x, src[1].x, src[2].x, src[3].x),
+			vec4(src[0].y, src[1].y, src[2].y, src[3].y),
+			vec4(src[0].z, src[1].z, src[2].z, src[3].z),
+			vec4(src[0].w, src[1].w, src[2].w, src[3].w));
+}
+#endif

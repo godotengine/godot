@@ -37,7 +37,7 @@
 
 #if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
 
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include <pthread.h>
 #include <sys/types.h>
 

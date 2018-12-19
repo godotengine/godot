@@ -1,7 +1,7 @@
 import os
 import string
 import sys
-
+from methods import detect_darwin_sdk_path
 
 def is_active():
     return True
@@ -22,9 +22,8 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable
     return [
-        ('IPHONEPLATFORM', 'Name of the iPhone platform', 'iPhoneOS'),
         ('IPHONEPATH', 'Path to iPhone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
-        ('IPHONESDK', 'Path to the iPhone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/${IPHONEPLATFORM}.platform/Developer/SDKs/${IPHONEPLATFORM}.sdk/'),
+        ('IPHONESDK', 'Path to the iPhone SDK', ''),
         BoolVariable('game_center', 'Support for game center', True),
         BoolVariable('store_kit', 'Support for in-app store', True),
         BoolVariable('icloud', 'Support for iCloud', True),
@@ -87,7 +86,7 @@ def configure(env):
     s_compiler_path = '$IPHONEPATH/Developer/usr/bin/'
 
     ccache_path = os.environ.get("CCACHE")
-    if ccache_path == None:
+    if ccache_path is None:
         env['CC'] = compiler_path + 'clang'
         env['CXX'] = compiler_path + 'clang++'
         env['S_compiler'] = s_compiler_path + 'gcc'
@@ -103,14 +102,16 @@ def configure(env):
     ## Compile flags
 
     if (env["arch"] == "x86" or env["arch"] == "x86_64"):
-        env['IPHONEPLATFORM'] = 'iPhoneSimulator'
+        detect_darwin_sdk_path('iphonesimulator', env)
         env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
         arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
-        env.Append(CCFLAGS=('-arch ' + arch_flag + ' -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=9.0 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"').split())
+        env.Append(CCFLAGS=('-arch ' + arch_flag + ' -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=10.0 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"').split())
     elif (env["arch"] == "arm"):
-        env.Append(CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=9.0 -MMD -MT dependencies'.split())
+        detect_darwin_sdk_path('iphone', env)
+        env.Append(CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=10.0 -MMD -MT dependencies'.split())
     elif (env["arch"] == "arm64"):
-        env.Append(CCFLAGS='-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=9.0 -isysroot $IPHONESDK'.split())
+        detect_darwin_sdk_path('iphone', env)
+        env.Append(CCFLAGS='-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=10.0 -isysroot $IPHONESDK'.split())
         env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
 
@@ -123,7 +124,7 @@ def configure(env):
 
     if (env["arch"] == "x86" or env["arch"] == "x86_64"):
         arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
-        env.Append(LINKFLAGS=['-arch', arch_flag, '-mios-simulator-version-min=9.0',
+        env.Append(LINKFLAGS=['-arch', arch_flag, '-mios-simulator-version-min=10.0',
                               '-isysroot', '$IPHONESDK',
                               '-Xlinker',
                               '-objc_abi_version',
@@ -131,9 +132,9 @@ def configure(env):
                               '-F$IPHONESDK',
                               ])
     elif (env["arch"] == "arm"):
-        env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=9.0'])
+        env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=10.0'])
     if (env["arch"] == "arm64"):
-        env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=9.0'])
+        env.Append(LINKFLAGS=['-arch', 'arm64', '-Wl,-dead_strip', '-miphoneos-version-min=10.0'])
 
     env.Append(LINKFLAGS=['-isysroot', '$IPHONESDK',
                           '-framework', 'AudioToolbox',

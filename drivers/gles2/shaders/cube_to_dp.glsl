@@ -1,3 +1,4 @@
+/* clang-format off */
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
@@ -9,6 +10,7 @@ precision mediump int;
 #endif
 
 attribute highp vec4 vertex_attrib; // attrib:0
+/* clang-format on */
 attribute vec2 uv_in; // attrib:4
 
 varying vec2 uv_interp;
@@ -19,6 +21,7 @@ void main() {
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 #ifdef USE_GLES_OVER_GL
@@ -30,6 +33,7 @@ precision mediump int;
 #endif
 
 uniform highp samplerCube source_cube; //texunit:0
+/* clang-format on */
 varying vec2 uv_interp;
 
 uniform bool z_flip;

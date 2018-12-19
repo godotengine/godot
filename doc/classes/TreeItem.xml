@@ -25,7 +25,7 @@
 			<argument index="4" name="tooltip" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [code]get_buton_count()[/code] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
+				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
 		<method name="clear_custom_bg_color">
@@ -400,6 +400,7 @@
 			</argument>
 			<description>
 				Sets the given column's custom draw callback to [code]callback[/code] method on [code]object[/code].
+				The [code]callback[/code] should accept two arguments: the [TreeItem] that is drawn and its position and size as a [Rect2].
 			</description>
 		</method>
 		<method name="set_editable">
@@ -558,13 +559,10 @@
 		<constant name="CELL_MODE_RANGE" value="2" enum="TreeCellMode">
 			Cell contains a range.
 		</constant>
-		<constant name="CELL_MODE_RANGE_EXPRESSION" value="3" enum="TreeCellMode">
-			Cell contains a range expression.
-		</constant>
-		<constant name="CELL_MODE_ICON" value="4" enum="TreeCellMode">
+		<constant name="CELL_MODE_ICON" value="3" enum="TreeCellMode">
 			Cell contains an icon.
 		</constant>
-		<constant name="CELL_MODE_CUSTOM" value="5" enum="TreeCellMode">
+		<constant name="CELL_MODE_CUSTOM" value="4" enum="TreeCellMode">
 		</constant>
 		<constant name="ALIGN_LEFT" value="0" enum="TextAlign">
 			Align text to the left. See [code]set_text_align()[/code].

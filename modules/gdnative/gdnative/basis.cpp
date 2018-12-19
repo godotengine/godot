@@ -113,6 +113,40 @@ godot_vector3 GDAPI godot_basis_get_scale(const godot_basis *p_self) {
 	return dest;
 }
 
+godot_quat GDAPI godot_basis_get_quat(const godot_basis *p_self) {
+	godot_quat dest;
+	const Basis *self = (const Basis *)p_self;
+	*((Quat *)&dest) = self->get_quat();
+	return dest;
+}
+
+void GDAPI godot_basis_set_quat(godot_basis *p_self, const godot_quat *p_quat) {
+	Basis *self = (Basis *)p_self;
+	const Quat *quat = (const Quat *)p_quat;
+	self->set_quat(*quat);
+}
+
+void GDAPI godot_basis_set_axis_angle_scale(godot_basis *p_self, const godot_vector3 *p_axis, godot_real p_phi, const godot_vector3 *p_scale) {
+	Basis *self = (Basis *)p_self;
+	const Vector3 *axis = (const Vector3 *)p_axis;
+	const Vector3 *scale = (const Vector3 *)p_scale;
+	self->set_axis_angle_scale(*axis, p_phi, *scale);
+}
+
+void GDAPI godot_basis_set_euler_scale(godot_basis *p_self, const godot_vector3 *p_euler, const godot_vector3 *p_scale) {
+	Basis *self = (Basis *)p_self;
+	const Vector3 *euler = (const Vector3 *)p_euler;
+	const Vector3 *scale = (const Vector3 *)p_scale;
+	self->set_euler_scale(*euler, *scale);
+}
+
+void GDAPI godot_basis_set_quat_scale(godot_basis *p_self, const godot_quat *p_quat, const godot_vector3 *p_scale) {
+	Basis *self = (Basis *)p_self;
+	const Quat *quat = (const Quat *)p_quat;
+	const Vector3 *scale = (const Vector3 *)p_scale;
+	self->set_quat_scale(*quat, *scale);
+}
+
 godot_vector3 GDAPI godot_basis_get_euler(const godot_basis *p_self) {
 	godot_vector3 dest;
 	const Basis *self = (const Basis *)p_self;
@@ -245,6 +279,15 @@ godot_basis GDAPI godot_basis_operator_multiply_scalar(const godot_basis *p_self
 	Basis *dest = (Basis *)&raw_dest;
 	const Basis *self = (const Basis *)p_self;
 	*dest = *self * p_b;
+	return raw_dest;
+}
+
+godot_basis GDAPI godot_basis_slerp(const godot_basis *p_self, const godot_basis *p_b, const godot_real p_t) {
+	godot_basis raw_dest;
+	Basis *dest = (Basis *)&raw_dest;
+	const Basis *self = (const Basis *)p_self;
+	const Basis *b = (const Basis *)p_b;
+	*dest = self->slerp(*b, p_t);
 	return raw_dest;
 }
 

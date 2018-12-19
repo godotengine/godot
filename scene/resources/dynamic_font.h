@@ -32,10 +32,10 @@
 #define DYNAMIC_FONT_H
 
 #ifdef FREETYPE_ENABLED
-#include "io/resource_loader.h"
-#include "os/mutex.h"
-#include "os/thread_safe.h"
-#include "pair.h"
+#include "core/io/resource_loader.h"
+#include "core/os/mutex.h"
+#include "core/os/thread_safe.h"
+#include "core/pair.h"
 #include "scene/resources/font.h"
 
 #include <ft2build.h>
@@ -71,12 +71,15 @@ public:
 		HINTING_NORMAL
 	};
 
+	bool is_antialiased() const;
+	void set_antialiased(bool p_antialiased);
 	Hinting get_hinting() const;
 	void set_hinting(Hinting p_hinting);
 
 private:
 	const uint8_t *font_mem;
 	int font_mem_size;
+	bool antialiased;
 	bool force_autohinter;
 	Hinting hinting;
 
@@ -285,7 +288,7 @@ public:
 	SelfList<DynamicFont> font_list;
 
 	static Mutex *dynamic_font_mutex;
-	static SelfList<DynamicFont>::List dynamic_fonts;
+	static SelfList<DynamicFont>::List *dynamic_fonts;
 
 	static void initialize_dynamic_fonts();
 	static void finish_dynamic_fonts();
@@ -300,6 +303,7 @@ VARIANT_ENUM_CAST(DynamicFont::SpacingType);
 /////////////
 
 class ResourceFormatLoaderDynamicFont : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderDynamicFont, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

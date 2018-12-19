@@ -4,7 +4,8 @@
 		Base class for all non built-in types.
 	</brief_description>
 	<description>
-		Base class for all non built-in types. Everything not a built-in type starts the inheritance chain from this class.
+		Base class for all non built-in types. Everything which is not a built-in type starts the inheritance chain from this class.
+		Objects can be constructed from scripting languages, using `Object.new()` in GDScript, `new Object` in C#, or the "Construct Object" node in VisualScript.
 		Objects do not manage memory, if inheriting from one the object will most likely have to be deleted manually (call the [method free] function from the script or delete from C++).
 		Some derivatives add memory management, such as [Reference] (which keeps a reference count and deletes itself automatically when no longer referenced) and [Node], which deletes the children tree when deleted.
 		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
@@ -185,7 +186,7 @@
 			</argument>
 			<description>
 				Get indexed object property by String.
-				Property indices get accessed with colon seperation, for example: [code]position:x[/code]
+				Property indices get accessed with colon separation, for example: [code]position:x[/code]
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">
@@ -346,6 +347,16 @@
 			</argument>
 			<description>
 				If set to true, signal emission is blocked.
+			</description>
+		</method>
+		<method name="set_deferred">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_indexed">

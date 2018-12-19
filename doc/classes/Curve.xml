@@ -49,6 +49,13 @@
 				Removes all points from the curve.
 			</description>
 		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of points describing the curve.
+			</description>
+		</method>
 		<method name="get_point_left_mode" qualifiers="const">
 			<return type="int" enum="Curve.TangentMode">
 			</return>

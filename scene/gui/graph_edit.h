@@ -94,7 +94,7 @@ private:
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
-	bool just_disconected;
+	bool just_disconnected;
 
 	bool dragging;
 	bool just_selected;

@@ -18,6 +18,14 @@
 				Returns a Rect2 representing the Sprite's boundary relative to its local coordinates.
 			</description>
 		</method>
+		<method name="is_pixel_opaque" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">

@@ -343,6 +343,8 @@ public:
 	int node_get_input_count(const StringName &p_node) const;
 	StringName node_get_input_source(const StringName &p_node, int p_input) const;
 
+	String get_configuration_warning() const;
+
 	/* ANIMATION NODE */
 	void animation_node_set_animation(const StringName &p_node, const Ref<Animation> &p_animation);
 	Ref<Animation> animation_node_get_animation(const StringName &p_node) const;

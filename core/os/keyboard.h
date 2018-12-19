@@ -31,13 +31,10 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include "ustring.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/ustring.h"
 
 /**
-@author Juan Linietsky <reduzio@gmail.com>
+	@author Juan Linietsky <reduzio@gmail.com>
 */
 
 /*

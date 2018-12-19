@@ -6,6 +6,7 @@
 	<description>
 		A RayCast represents a line from its origin to its destination position, [code]cast_to[/code]. It is used to query the 3D space in order to find the closest object along the path of the ray.
 		RayCast can ignore some objects by adding them to the exception list via [code]add_exception[/code], by setting proper filtering with collision layers, or by filtering object types with type masks.
+		RayCast can be configured to report collisions with [Area]s ([member collide_with_areas]) and/or [PhysicsBody]s ([member collide_with_bodies]).
 		Only enabled raycasts will be able to query the space and report collisions.
 		RayCast calculates intersection every physics frame (see [Node]), and the result is cached so it can be used later until the next frame. If multiple queries are required between physics frames (or during the same frame) use [method force_raycast_update] after adjusting the raycast.
 	</description>
@@ -51,24 +52,14 @@
 			<return type="Object">
 			</return>
 			<description>
-				Return the closest object the ray is pointing to. Note that this does not consider the length of the ray, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray.
-				Example:
-				[codeblock]
-				if RayCast.is_colliding():
-				    var collider = RayCast.get_collider()
-				[/codeblock]
+				Return the first object that the ray intersects, or [code]null[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the collision shape of the closest object the ray is pointing to.  Note that this does not consider the length of the ray, so you must also use [method is_colliding] to check if the object returned is actually colliding with the ray.
-				Example:
-				[codeblock]
-				if RayCast.is_colliding():
-				    var shape = RayCast.get_collider_shape()
-				[/codeblock]
+				Returns the shape ID of the first object that the ray intersects, or [code]0[/code] if no object is intersecting the ray (i.e. [method is_colliding] returns [code]false[/code]).
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -98,7 +89,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return whether the closest object the ray is pointing to is colliding with the vector (considering the vector length).
+				Return whether any object is intersecting with the ray's vector (considering the vector length).
 			</description>
 		</method>
 		<method name="remove_exception">
@@ -134,6 +125,12 @@
 	<members>
 		<member name="cast_to" type="Vector3" setter="set_cast_to" getter="get_cast_to">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
+		</member>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled">
+			If [code]true[/code], collision with [Area]s will be reported. Default value: [code]false[/code].
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled">
+			If [code]true[/code], collision with [PhysicsBody]s will be reported. Default value: [code]true[/code].
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.

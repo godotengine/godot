@@ -31,7 +31,7 @@
 #ifndef SHADERCOMPILERGLES3_H
 #define SHADERCOMPILERGLES3_H
 
-#include "pair.h"
+#include "core/pair.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual/shader_types.h"
 #include "servers/visual_server.h"

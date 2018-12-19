@@ -30,6 +30,7 @@
 
 #include "array_property_edit.h"
 
+#include "core/io/marshalls.h"
 #include "editor_node.h"
 
 #define ITEMS_PER_PAGE 100
@@ -202,6 +203,11 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 			int idx = pn.get_slicec('/', 1).to_int();
 			bool valid;
 			r_ret = arr.get(idx, &valid);
+
+			if (r_ret.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(r_ret)) {
+				r_ret = Object::cast_to<EncodedObjectAsID>(r_ret)->get_object_id();
+			}
+
 			return valid;
 		}
 	}
@@ -230,6 +236,11 @@ void ArrayPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		if (!is_typed) {
 			p_list->push_back(PropertyInfo(Variant::INT, "indices/" + itos(i + offset) + "_type", PROPERTY_HINT_ENUM, vtypes));
+		}
+
+		if (v.get_type() == Variant::OBJECT && Object::cast_to<EncodedObjectAsID>(v)) {
+			p_list->push_back(PropertyInfo(Variant::INT, "indices/" + itos(i + offset), PROPERTY_HINT_OBJECT_ID, "Object"));
+			continue;
 		}
 
 		if (is_typed || v.get_type() != Variant::NIL) {

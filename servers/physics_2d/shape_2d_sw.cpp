@@ -30,8 +30,8 @@
 
 #include "shape_2d_sw.h"
 
-#include "geometry.h"
-#include "sort.h"
+#include "core/math/geometry.h"
+#include "core/sort.h"
 
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;

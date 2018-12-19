@@ -30,9 +30,9 @@
 
 #include "editor_autoload_settings.h"
 
+#include "core/global_constants.h"
+#include "core/project_settings.h"
 #include "editor_node.h"
-#include "global_constants.h"
-#include "project_settings.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
 
@@ -185,6 +185,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 		if (path.begins_with("*"))
 			path = path.substr(1, path.length());
 
+		// Singleton autoloads are represented with a leading "*" in their path.
 		if (checked)
 			path = "*" + path;
 
@@ -651,6 +652,7 @@ void EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	undo_redo->create_action(TTR("Add AutoLoad"));
+	// Singleton autoloads are represented with a leading "*" in their path.
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
 
 	if (ProjectSettings::get_singleton()->has_setting(name)) {

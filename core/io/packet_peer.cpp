@@ -30,14 +30,14 @@
 
 #include "packet_peer.h"
 
-#include "io/marshalls.h"
-#include "project_settings.h"
+#include "core/io/marshalls.h"
+#include "core/project_settings.h"
+
 /* helpers / binders */
 
-PacketPeer::PacketPeer() {
-
-	allow_object_decoding = false;
-	last_get_error = OK;
+PacketPeer::PacketPeer() :
+		last_get_error(OK),
+		allow_object_decoding(false) {
 }
 
 void PacketPeer::set_allow_object_decoding(bool p_enable) {

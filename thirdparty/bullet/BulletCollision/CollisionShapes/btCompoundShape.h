@@ -160,7 +160,7 @@ public:
 	///"principal" has to be applied inversely to all children transforms in order for the local coordinate system of the compound
 	///shape to be centered at the center of mass and to coincide with the principal axes. This also necessitates a correction of the world transform
 	///of the collision object by the principal transform.
-	void calculatePrincipalAxisTransform(btScalar* masses, btTransform& principal, btVector3& inertia) const;
+	void calculatePrincipalAxisTransform(const btScalar* masses, btTransform& principal, btVector3& inertia) const;
 
 	int	getUpdateRevision() const
 	{

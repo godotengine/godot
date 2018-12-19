@@ -1,6 +1,8 @@
+/* clang-format off */
 [vertex]
 
 layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 layout(location = 4) in vec3 cube_in;
 #else
@@ -45,6 +47,7 @@ void main() {
 #endif
 }
 
+/* clang-format off */
 [fragment]
 
 #define M_PI 3.14159265359
@@ -58,6 +61,7 @@ in vec3 cube_interp;
 #else
 in vec2 uv_interp;
 #endif
+/* clang-format on */
 
 #ifdef USE_ASYM_PANO
 uniform highp mat4 pano_transform;
@@ -75,6 +79,7 @@ uniform float multiplier;
 #endif
 
 #if defined(USE_PANORAMA) || defined(USE_ASYM_PANO)
+uniform highp mat4 sky_transform;
 
 vec4 texturePanorama(vec3 normal, sampler2D pano) {
 
@@ -117,7 +122,12 @@ void main() {
 
 #ifdef USE_PANORAMA
 
-	vec4 color = texturePanorama(normalize(cube_interp), source);
+	vec3 cube_normal = normalize(cube_interp);
+	cube_normal.z = -cube_normal.z;
+	cube_normal = mat3(sky_transform) * cube_normal;
+	cube_normal.z = -cube_normal.z;
+
+	vec4 color = texturePanorama(cube_normal, source);
 
 #elif defined(USE_ASYM_PANO)
 
@@ -129,7 +139,7 @@ void main() {
 	cube_normal.z = -1000000.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - asym_proj.x)) / asym_proj.y;
 	cube_normal.y = (cube_normal.z * (-uv_interp.y - asym_proj.z)) / asym_proj.a;
-	cube_normal = mat3(pano_transform) * cube_normal;
+	cube_normal = mat3(sky_transform) * mat3(pano_transform) * cube_normal;
 	cube_normal.z = -cube_normal.z;
 
 	vec4 color = texturePanorama(normalize(cube_normal.xyz), source);

@@ -30,25 +30,58 @@
 
 package org.godotengine.godot.payments;
 
-import java.util.ArrayList;
+import android.content.Context;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+
+import com.android.vending.billing.IInAppBillingService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.godotengine.godot.Dictionary;
-import org.godotengine.godot.Godot;
-import com.android.vending.billing.IInAppBillingService;
-
-import android.content.Context;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.RemoteException;
-import android.util.Log;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 abstract public class ReleaseAllConsumablesTask {
 
 	private Context context;
 	private IInAppBillingService mService;
+
+	private static class ReleaseAllConsumablesAsyncTask extends AsyncTask<String, String, String> {
+
+		private WeakReference<ReleaseAllConsumablesTask> mTask;
+		private String mSku;
+		private String mReceipt;
+		private String mSignature;
+		private String mToken;
+
+		ReleaseAllConsumablesAsyncTask(ReleaseAllConsumablesTask task, String sku, String receipt, String signature, String token) {
+			mTask = new WeakReference<ReleaseAllConsumablesTask>(task);
+
+			mSku = sku;
+			mReceipt = receipt;
+			mSignature = signature;
+			mToken = token;
+		}
+
+		@Override
+		protected String doInBackground(String... params) {
+			ReleaseAllConsumablesTask consume = mTask.get();
+			if (consume != null) {
+				return consume.doInBackground(mToken);
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(String param) {
+			ReleaseAllConsumablesTask consume = mTask.get();
+			if (consume != null) {
+				consume.success(mSku, mReceipt, mSignature, mToken);
+			}
+		}
+	}
 
 	public ReleaseAllConsumablesTask(IInAppBillingService mService, Context context) {
 		this.context = context;
@@ -59,12 +92,6 @@ abstract public class ReleaseAllConsumablesTask {
 		try {
 			//Log.d("godot", "consumeItall for " + context.getPackageName());
 			Bundle bundle = mService.getPurchases(3, context.getPackageName(), "inapp", null);
-
-			for (String key : bundle.keySet()) {
-				Object value = bundle.get(key);
-				//Log.d("godot", String.format("%s %s (%s)", key,
-				//value.toString(), value.getClass().getName()));
-			}
 
 			if (bundle.getInt("RESPONSE_CODE") == 0) {
 
@@ -87,14 +114,7 @@ abstract public class ReleaseAllConsumablesTask {
 						String token = inappPurchaseData.getString("purchaseToken");
 						String signature = mySignatures.get(i);
 						//Log.d("godot", "A punto de consumir un item con token:" + token + "\n" + receipt);
-						new GenericConsumeTask(context, mService, sku, receipt, signature, token) {
-							@Override
-							public void onSuccess(String sku, String receipt, String signature, String token) {
-								ReleaseAllConsumablesTask.this.success(sku, receipt, signature, token);
-							}
-						}
-								.execute();
-
+						new ReleaseAllConsumablesAsyncTask(this, sku, receipt, signature, token).execute();
 					} catch (JSONException e) {
 					}
 				}
@@ -102,6 +122,20 @@ abstract public class ReleaseAllConsumablesTask {
 		} catch (Exception e) {
 			Log.d("godot", "Error releasing products:" + e.getClass().getName() + ":" + e.getMessage());
 		}
+	}
+
+	private String doInBackground(String token) {
+		try {
+			//Log.d("godot", "Requesting to consume an item with token ." + token);
+			int response = mService.consumePurchase(3, context.getPackageName(), token);
+			//Log.d("godot", "consumePurchase response: " + response);
+			if (response == 0 || response == 8) {
+				return null;
+			}
+		} catch (Exception e) {
+			Log.d("godot", "Error " + e.getClass().getName() + ":" + e.getMessage());
+		}
+		return null;
 	}
 
 	abstract protected void success(String sku, String receipt, String signature, String token);

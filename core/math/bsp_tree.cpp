@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "bsp_tree.h"
-#include "error_macros.h"
-#include "print_string.h"
+
+#include "core/error_macros.h"
+#include "core/print_string.h"
 
 void BSP_Tree::from_aabb(const AABB &p_aabb) {
 
@@ -164,7 +165,6 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 	int pass_count = 0;
 	const Node *nodesptr = &nodes[0];
 	const Plane *planesptr = &planes[0];
-	int plane_count = planes.size();
 	int node_count = nodes.size();
 
 	if (node_count == 0) // no nodes!
@@ -191,9 +191,9 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 				break;
 			}
 
-			uint16_t plane = nodesptr[idx].plane;
 #ifdef DEBUG_ENABLED
-
+			int plane_count = planes.size();
+			uint16_t plane = nodesptr[idx].plane;
 			ERR_FAIL_INDEX_V(plane, plane_count, false);
 #endif
 

@@ -10,7 +10,7 @@
 		A GridMap is split into a sparse collection of octants for efficient rendering and physics processing. Every octant has the same dimensions and can contain several cells.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/3d/using_gridmaps.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_gridmaps.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -65,7 +65,7 @@
 			<argument index="2" name="z" type="int">
 			</argument>
 			<description>
-				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is retuned if the cell is empty.
+				The orientation of the cell at the grid-based X, Y and Z coordinates. -1 is returned if the cell is empty.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
@@ -212,8 +212,11 @@
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 		</member>
-		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
+		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
+		</member>
+		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">
+			Deprecated, use [member mesh_library] instead.
 		</member>
 	</members>
 	<constants>

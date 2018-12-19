@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "texture_loader_dummy.h"
+
 #include "core/os/file_access.h"
-#include "print_string.h"
+#include "core/print_string.h"
+
 #include <string.h>
 
 RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {

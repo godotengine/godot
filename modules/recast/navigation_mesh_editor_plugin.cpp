@@ -30,8 +30,8 @@
 
 #include "navigation_mesh_editor_plugin.h"
 
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/box_container.h"
 
@@ -103,24 +103,25 @@ void NavigationMeshEditor::_bind_methods() {
 NavigationMeshEditor::NavigationMeshEditor() {
 
 	bake_hbox = memnew(HBoxContainer);
+
 	button_bake = memnew(ToolButton);
-	button_bake->set_text(TTR("Bake!"));
+	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
-	button_reset = memnew(Button);
-	button_bake->set_tooltip(TTR("Bake the navigation mesh.") + "\n");
+	button_bake->set_text(TTR("Bake NavMesh"));
+	button_bake->connect("pressed", this, "_bake_pressed");
+
+	button_reset = memnew(ToolButton);
+	bake_hbox->add_child(button_reset);
+	// No button text, we only use a revert icon which is set when entering the tree.
+	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
+	button_reset->connect("pressed", this, "_clear_pressed");
 
 	bake_info = memnew(Label);
-	bake_hbox->add_child(button_bake);
-	bake_hbox->add_child(button_reset);
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 	node = NULL;
-
-	button_bake->connect("pressed", this, "_bake_pressed");
-	button_reset->connect("pressed", this, "_clear_pressed");
-	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
 }
 
 NavigationMeshEditor::~NavigationMeshEditor() {

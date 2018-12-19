@@ -30,11 +30,11 @@
 
 #include "engine.h"
 
-#include "authors.gen.h"
-#include "donors.gen.h"
-#include "license.gen.h"
-#include "version.h"
-#include "version_hash.gen.h"
+#include "core/authors.gen.h"
+#include "core/donors.gen.h"
+#include "core/license.gen.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 
 void Engine::set_iterations_per_second(int p_ips) {
 

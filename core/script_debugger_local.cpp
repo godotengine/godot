@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "script_debugger_local.h"
-#include "scene/main/scene_tree.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
+#include "scene/main/scene_tree.h"
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 

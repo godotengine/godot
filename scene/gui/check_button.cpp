@@ -30,7 +30,7 @@
 
 #include "check_button.h"
 
-#include "print_string.h"
+#include "core/print_string.h"
 #include "servers/visual_server.h"
 
 Size2 CheckButton::get_icon_size() const {

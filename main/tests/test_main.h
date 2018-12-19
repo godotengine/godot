@@ -31,8 +31,8 @@
 #ifndef TEST_MAIN_H
 #define TEST_MAIN_H
 
-#include "list.h"
-#include "ustring.h"
+#include "core/list.h"
+#include "core/ustring.h"
 
 const char **tests_get_names();
 MainLoop *test_main(String p_test, const List<String> &p_args);

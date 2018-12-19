@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "file_access_jandroid.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "thread_jandroid.h"
 #include <unistd.h>
 
@@ -212,5 +210,3 @@ FileAccessJAndroid::~FileAccessJAndroid() {
 	if (is_open())
 		close();
 }
-
-#endif

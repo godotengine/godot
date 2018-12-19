@@ -31,9 +31,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 
 class Shader : public Resource {
@@ -79,6 +79,8 @@ public:
 	Ref<Texture> get_default_texture_param(const StringName &p_param) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
 
+	virtual bool is_text_shader() const;
+
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
 		if (params_cache_dirty)
 			get_param_list(NULL);
@@ -98,6 +100,7 @@ public:
 VARIANT_ENUM_CAST(Shader::Mode);
 
 class ResourceFormatLoaderShader : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderShader, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -106,6 +109,7 @@ public:
 };
 
 class ResourceFormatSaverShader : public ResourceFormatSaver {
+	GDCLASS(ResourceFormatSaverShader, ResourceFormatSaver)
 public:
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;

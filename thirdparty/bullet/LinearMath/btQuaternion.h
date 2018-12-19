@@ -173,10 +173,28 @@ public:
 		sqy = m_floats[1] * m_floats[1];
 		sqz = m_floats[2] * m_floats[2];
 		squ = m_floats[3] * m_floats[3];
-		rollX = btAtan2(2 * (m_floats[1] * m_floats[2] + m_floats[3] * m_floats[0]), squ - sqx - sqy + sqz);
-		sarg = btScalar(-2.) * (m_floats[0] * m_floats[2] - m_floats[3] * m_floats[1]);
-		pitchY = sarg <= btScalar(-1.0) ? btScalar(-0.5) * SIMD_PI: (sarg >= btScalar(1.0) ? btScalar(0.5) * SIMD_PI : btAsin(sarg));
-		yawZ = btAtan2(2 * (m_floats[0] * m_floats[1] + m_floats[3] * m_floats[2]), squ + sqx - sqy - sqz);
+	    sarg = btScalar(-2.) * (m_floats[0] * m_floats[2] - m_floats[3] * m_floats[1]);
+		
+		// If the pitch angle is PI/2 or -PI/2, we can only compute
+		// the sum roll + yaw.  However, any combination that gives
+		// the right sum will produce the correct orientation, so we
+		// set rollX = 0 and compute yawZ.
+		if (sarg <= -btScalar(0.99999))
+		{
+			pitchY = btScalar(-0.5)*SIMD_PI;
+			rollX  = 0;
+			yawZ   = btScalar(2) * btAtan2(m_floats[0],-m_floats[1]);
+		} else if (sarg >= btScalar(0.99999))
+		{
+			pitchY = btScalar(0.5)*SIMD_PI;
+			rollX  = 0;
+			yawZ   = btScalar(2) * btAtan2(-m_floats[0], m_floats[1]);
+		} else
+		{
+			pitchY = btAsin(sarg);
+			rollX = btAtan2(2 * (m_floats[1] * m_floats[2] + m_floats[3] * m_floats[0]), squ - sqx - sqy + sqz);
+			yawZ = btAtan2(2 * (m_floats[0] * m_floats[1] + m_floats[3] * m_floats[2]), squ + sqx - sqy - sqz);
+		}
 	}
 
   /**@brief Add two quaternions
@@ -602,7 +620,9 @@ public:
 
 	SIMD_FORCE_INLINE	void	serialize(struct	btQuaternionData& dataOut) const;
 
-	SIMD_FORCE_INLINE	void	deSerialize(const struct	btQuaternionData& dataIn);
+	SIMD_FORCE_INLINE	void	deSerialize(const struct	btQuaternionFloatData& dataIn);
+
+	SIMD_FORCE_INLINE	void	deSerialize(const struct	btQuaternionDoubleData& dataIn);
 
 	SIMD_FORCE_INLINE	void	serializeFloat(struct	btQuaternionFloatData& dataOut) const;
 
@@ -1003,10 +1023,16 @@ SIMD_FORCE_INLINE	void	btQuaternion::serialize(struct	btQuaternionData& dataOut)
 		dataOut.m_floats[i] = m_floats[i];
 }
 
-SIMD_FORCE_INLINE void	btQuaternion::deSerialize(const struct	btQuaternionData& dataIn)
+SIMD_FORCE_INLINE void	btQuaternion::deSerialize(const struct	btQuaternionFloatData& dataIn)
+{
+	for (int i = 0; i<4; i++)
+		m_floats[i] = (btScalar)dataIn.m_floats[i];
+}
+
+SIMD_FORCE_INLINE void	btQuaternion::deSerialize(const struct	btQuaternionDoubleData& dataIn)
 {
 	for (int i=0;i<4;i++)
-		m_floats[i] = dataIn.m_floats[i];
+		m_floats[i] = (btScalar)dataIn.m_floats[i];
 }
 
 

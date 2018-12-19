@@ -88,12 +88,10 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 protected:
 	enum {
-
 		MODE_CREATE,
 		MODE_EDIT,
 		MODE_DELETE,
 		MODE_CONT,
-
 	};
 
 	int mode;
@@ -103,6 +101,7 @@ protected:
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
 	void _wip_close();
+	void _wip_cancel();
 	bool _delete_point(const Vector2 &p_gpoint);
 
 	void _notification(int p_what);
@@ -115,13 +114,12 @@ protected:
 	PosVertex closest_edge_point(const Vector2 &p_pos) const;
 
 	bool _is_empty() const;
-	void _commit_action();
 
-protected:
 	virtual Node2D *_get_node() const = 0;
 	virtual void _set_node(Node *p_polygon) = 0;
 
 	virtual bool _is_line() const;
+	virtual bool _has_uv() const;
 	virtual int _get_polygon_count() const;
 	virtual Vector2 _get_offset(int p_idx) const;
 	virtual Variant _get_polygon(int p_idx) const;
@@ -131,13 +129,14 @@ protected:
 	virtual void _action_remove_polygon(int p_idx);
 	virtual void _action_set_polygon(int p_idx, const Variant &p_polygon);
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon);
+	virtual void _commit_action();
 
 	virtual bool _has_resource() const;
 	virtual void _create_resource();
 
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
-	void forward_draw_over_viewport(Control *p_overlay);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_polygon);
 	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
@@ -153,7 +152,7 @@ class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 
 public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
-	virtual void forward_draw_over_viewport(Control *p_overlay) { polygon_editor->forward_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	bool has_main_screen() const { return false; }
 	virtual String get_name() const { return klass; }

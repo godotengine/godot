@@ -31,11 +31,11 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
+#include "core/math/transform_2d.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
 #include "servers/visual_server.h"
-#include "transform_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -45,10 +45,12 @@ class Camera2D;
 class Listener;
 class Control;
 class CanvasItem;
+class CanvasLayer;
 class Panel;
 class Label;
 class Timer;
 class Viewport;
+class CollisionObject;
 
 class ViewportTexture : public Texture {
 
@@ -163,6 +165,7 @@ private:
 
 	Camera *camera;
 	Set<Camera *> cameras;
+	Set<CanvasLayer *> canvas_layers;
 
 	RID viewport;
 	RID current_canvas;
@@ -203,7 +206,26 @@ private:
 	List<Ref<InputEvent> > physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
+	Transform physics_last_object_transform;
+	Transform physics_last_camera_transform;
+	ObjectID physics_last_id;
+	bool physics_has_last_mousepos;
 	Vector2 physics_last_mousepos;
+	struct {
+
+		bool alt;
+		bool control;
+		bool shift;
+		bool meta;
+		int mouse_mask;
+
+	} physics_last_mouse_state;
+
+	void _collision_object_input_event(CollisionObject *p_object, Camera *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape, bool p_discard_empty_motion);
+
+	bool handle_input_locally;
+	bool local_input_handled;
+
 	void _test_new_mouseover(ObjectID new_collider);
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
@@ -250,8 +272,9 @@ private:
 
 		bool key_event_accepted;
 		Control *mouse_focus;
+		Control *last_mouse_focus;
 		Control *mouse_click_grabber;
-		int mouse_focus_button;
+		int mouse_focus_mask;
 		Control *key_focus;
 		Control *mouse_over;
 		Control *tooltip;
@@ -353,6 +376,12 @@ private:
 	bool _camera_add(Camera *p_camera); //true if first
 	void _camera_remove(Camera *p_camera);
 	void _camera_make_next_current(Camera *p_exclude);
+
+	friend class CanvasLayer;
+	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
+	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
+
+	void _drop_mouse_focus();
 
 protected:
 	void _notification(int p_what);
@@ -474,6 +503,12 @@ public:
 	bool is_snap_controls_to_pixels_enabled() const;
 
 	void _subwindow_visibility_changed();
+
+	void set_input_as_handled();
+	bool is_input_handled() const;
+
+	void set_handle_input_locally(bool p_enable);
+	bool is_handling_input_locally() const;
 
 	bool gui_is_dragging() const;
 

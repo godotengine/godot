@@ -33,8 +33,6 @@
 
 void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
 
-	int instance_count = get_instance_count();
-
 	PoolVector<Vector3> xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 4) != instance_count);
@@ -56,8 +54,6 @@ void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
 }
 
 PoolVector<Vector3> MultiMesh::_get_transform_array() const {
-
-	int instance_count = get_instance_count();
 
 	if (instance_count == 0)
 		return PoolVector<Vector3>();
@@ -81,13 +77,11 @@ PoolVector<Vector3> MultiMesh::_get_transform_array() const {
 
 void MultiMesh::_set_color_array(const PoolVector<Color> &p_array) {
 
-	int instance_count = get_instance_count();
-
 	PoolVector<Color> colors = p_array;
 	int len = colors.size();
-	ERR_FAIL_COND(len != instance_count);
 	if (len == 0)
 		return;
+	ERR_FAIL_COND(len != instance_count);
 
 	PoolVector<Color>::Read r = colors.read();
 
@@ -99,9 +93,7 @@ void MultiMesh::_set_color_array(const PoolVector<Color> &p_array) {
 
 PoolVector<Color> MultiMesh::_get_color_array() const {
 
-	int instance_count = get_instance_count();
-
-	if (instance_count == 0)
+	if (instance_count == 0 || color_format == COLOR_NONE)
 		return PoolVector<Color>();
 
 	PoolVector<Color> colors;
@@ -115,6 +107,37 @@ PoolVector<Color> MultiMesh::_get_color_array() const {
 	return colors;
 }
 
+void MultiMesh::_set_custom_data_array(const PoolVector<Color> &p_array) {
+
+	PoolVector<Color> custom_datas = p_array;
+	int len = custom_datas.size();
+	if (len == 0)
+		return;
+	ERR_FAIL_COND(len != instance_count);
+
+	PoolVector<Color>::Read r = custom_datas.read();
+
+	for (int i = 0; i < len; i++) {
+
+		set_instance_custom_data(i, r[i]);
+	}
+}
+
+PoolVector<Color> MultiMesh::_get_custom_data_array() const {
+
+	if (instance_count == 0 || custom_data_format == CUSTOM_DATA_NONE)
+		return PoolVector<Color>();
+
+	PoolVector<Color> custom_datas;
+	custom_datas.resize(instance_count);
+
+	for (int i = 0; i < instance_count; i++) {
+
+		custom_datas.set(i, get_instance_custom_data(i));
+	}
+
+	return custom_datas;
+}
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	mesh = p_mesh;
@@ -130,12 +153,13 @@ Ref<Mesh> MultiMesh::get_mesh() const {
 }
 
 void MultiMesh::set_instance_count(int p_count) {
-
-	VisualServer::get_singleton()->multimesh_allocate(multimesh, p_count, VS::MultimeshTransformFormat(transform_format), VS::MultimeshColorFormat(color_format));
+	ERR_FAIL_COND(p_count < 0);
+	VisualServer::get_singleton()->multimesh_allocate(multimesh, p_count, VS::MultimeshTransformFormat(transform_format), VS::MultimeshColorFormat(color_format), VS::MultimeshCustomDataFormat(custom_data_format));
+	instance_count = p_count;
 }
 int MultiMesh::get_instance_count() const {
 
-	return VisualServer::get_singleton()->multimesh_get_instance_count(multimesh);
+	return instance_count;
 }
 
 void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
@@ -156,6 +180,15 @@ Color MultiMesh::get_instance_color(int p_instance) const {
 	return VisualServer::get_singleton()->multimesh_instance_get_color(multimesh, p_instance);
 }
 
+void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_data) {
+
+	VisualServer::get_singleton()->multimesh_instance_set_custom_data(multimesh, p_instance, p_custom_data);
+}
+Color MultiMesh::get_instance_custom_data(int p_instance) const {
+
+	return VisualServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
+}
+
 AABB MultiMesh::get_aabb() const {
 
 	return VisualServer::get_singleton()->multimesh_get_aabb(multimesh);
@@ -168,6 +201,7 @@ RID MultiMesh::get_rid() const {
 
 void MultiMesh::set_color_format(ColorFormat p_color_format) {
 
+	ERR_FAIL_COND(instance_count > 0);
 	color_format = p_color_format;
 }
 
@@ -176,8 +210,20 @@ MultiMesh::ColorFormat MultiMesh::get_color_format() const {
 	return color_format;
 }
 
+void MultiMesh::set_custom_data_format(CustomDataFormat p_custom_data_format) {
+
+	ERR_FAIL_COND(instance_count > 0);
+	custom_data_format = p_custom_data_format;
+}
+
+MultiMesh::CustomDataFormat MultiMesh::get_custom_data_format() const {
+
+	return custom_data_format;
+}
+
 void MultiMesh::set_transform_format(TransformFormat p_transform_format) {
 
+	ERR_FAIL_COND(instance_count > 0);
 	transform_format = p_transform_format;
 }
 MultiMesh::TransformFormat MultiMesh::get_transform_format() const {
@@ -191,6 +237,8 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MultiMesh::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_color_format", "format"), &MultiMesh::set_color_format);
 	ClassDB::bind_method(D_METHOD("get_color_format"), &MultiMesh::get_color_format);
+	ClassDB::bind_method(D_METHOD("set_custom_data_format", "format"), &MultiMesh::set_custom_data_format);
+	ClassDB::bind_method(D_METHOD("get_custom_data_format"), &MultiMesh::get_custom_data_format);
 	ClassDB::bind_method(D_METHOD("set_transform_format", "format"), &MultiMesh::set_transform_format);
 	ClassDB::bind_method(D_METHOD("get_transform_format"), &MultiMesh::get_transform_format);
 
@@ -200,19 +248,25 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_transform", "instance"), &MultiMesh::get_instance_transform);
 	ClassDB::bind_method(D_METHOD("set_instance_color", "instance", "color"), &MultiMesh::set_instance_color);
 	ClassDB::bind_method(D_METHOD("get_instance_color", "instance"), &MultiMesh::get_instance_color);
+	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
+	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("_set_transform_array"), &MultiMesh::_set_transform_array);
 	ClassDB::bind_method(D_METHOD("_get_transform_array"), &MultiMesh::_get_transform_array);
 	ClassDB::bind_method(D_METHOD("_set_color_array"), &MultiMesh::_set_color_array);
 	ClassDB::bind_method(D_METHOD("_get_color_array"), &MultiMesh::_get_color_array);
+	ClassDB::bind_method(D_METHOD("_set_custom_data_array"), &MultiMesh::_set_custom_data_array);
+	ClassDB::bind_method(D_METHOD("_get_custom_data_array"), &MultiMesh::_get_custom_data_array);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_format", PROPERTY_HINT_ENUM, "None,Byte,Float"), "set_color_format", "get_color_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_format", PROPERTY_HINT_ENUM, "2D,3D"), "set_transform_format", "get_transform_format");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1"), "set_instance_count", "get_instance_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_data_format", PROPERTY_HINT_ENUM, "None,Byte,Float"), "set_custom_data_format", "get_custom_data_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"), "set_instance_count", "get_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "transform_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_transform_array", "_get_transform_array");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_color_array", "_get_color_array");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_custom_data_array", "_get_custom_data_array");
 
 	BIND_ENUM_CONSTANT(TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(TRANSFORM_3D);
@@ -220,13 +274,19 @@ void MultiMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(COLOR_NONE);
 	BIND_ENUM_CONSTANT(COLOR_8BIT);
 	BIND_ENUM_CONSTANT(COLOR_FLOAT);
+
+	BIND_ENUM_CONSTANT(CUSTOM_DATA_NONE);
+	BIND_ENUM_CONSTANT(CUSTOM_DATA_8BIT);
+	BIND_ENUM_CONSTANT(CUSTOM_DATA_FLOAT);
 }
 
 MultiMesh::MultiMesh() {
 
 	multimesh = VisualServer::get_singleton()->multimesh_create();
 	color_format = COLOR_NONE;
+	custom_data_format = CUSTOM_DATA_NONE;
 	transform_format = TRANSFORM_2D;
+	instance_count = 0;
 }
 
 MultiMesh::~MultiMesh() {

@@ -80,6 +80,8 @@ godot_bool GDAPI godot_node_path_is_empty(const godot_node_path *p_self);
 
 godot_bool GDAPI godot_node_path_operator_equal(const godot_node_path *p_self, const godot_node_path *p_b);
 
+godot_node_path godot_node_path_get_as_property_path(const godot_node_path *p_self);
+
 #ifdef __cplusplus
 }
 #endif

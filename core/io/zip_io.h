@@ -31,114 +31,28 @@
 #ifndef ZIP_IO_H
 #define ZIP_IO_H
 
-#include "os/copymem.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
+// Not direclty used in this header, but assumed available in downstream users
+// like platform/*/export/export.cpp. Could be fixed, but probably better to have
+// thirdparty includes in as little headers as possible.
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
 
-static void *zipio_open(void *data, const char *p_fname, int mode) {
+void *zipio_open(void *data, const char *p_fname, int mode);
+uLong zipio_read(void *data, void *fdata, void *buf, uLong size);
+uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size);
 
-	FileAccess *&f = *(FileAccess **)data;
+long zipio_tell(voidpf opaque, voidpf stream);
+long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin);
 
-	String fname;
-	fname.parse_utf8(p_fname);
+int zipio_close(voidpf opaque, voidpf stream);
 
-	if (mode & ZLIB_FILEFUNC_MODE_WRITE) {
-		f = FileAccess::open(fname, FileAccess::WRITE);
-	} else {
+int zipio_testerror(voidpf opaque, voidpf stream);
 
-		f = FileAccess::open(fname, FileAccess::READ);
-	}
+voidpf zipio_alloc(voidpf opaque, uInt items, uInt size);
+void zipio_free(voidpf opaque, voidpf address);
 
-	if (!f)
-		return NULL;
-
-	return data;
-};
-
-static uLong zipio_read(void *data, void *fdata, void *buf, uLong size) {
-
-	FileAccess *f = *(FileAccess **)data;
-	return f->get_buffer((uint8_t *)buf, size);
-};
-
-static uLong zipio_write(voidpf opaque, voidpf stream, const void *buf, uLong size) {
-
-	FileAccess *f = *(FileAccess **)opaque;
-	f->store_buffer((uint8_t *)buf, size);
-	return size;
-};
-
-static long zipio_tell(voidpf opaque, voidpf stream) {
-
-	FileAccess *f = *(FileAccess **)opaque;
-	return f->get_position();
-};
-
-static long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
-
-	FileAccess *f = *(FileAccess **)opaque;
-
-	int pos = offset;
-	switch (origin) {
-
-		case ZLIB_FILEFUNC_SEEK_CUR:
-			pos = f->get_position() + offset;
-			break;
-		case ZLIB_FILEFUNC_SEEK_END:
-			pos = f->get_len() + offset;
-			break;
-		default:
-			break;
-	};
-
-	f->seek(pos);
-	return 0;
-};
-
-static int zipio_close(voidpf opaque, voidpf stream) {
-
-	FileAccess *&f = *(FileAccess **)opaque;
-	if (f) {
-		f->close();
-		f = NULL;
-	}
-	return 0;
-};
-
-static int zipio_testerror(voidpf opaque, voidpf stream) {
-
-	FileAccess *f = *(FileAccess **)opaque;
-	return (f && f->get_error() != OK) ? 1 : 0;
-};
-
-static voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
-
-	voidpf ptr = memalloc(items * size);
-	zeromem(ptr, items * size);
-	return ptr;
-}
-
-static void zipio_free(voidpf opaque, voidpf address) {
-
-	memfree(address);
-}
-
-static zlib_filefunc_def zipio_create_io_from_file(FileAccess **p_file) {
-
-	zlib_filefunc_def io;
-	io.opaque = p_file;
-	io.zopen_file = zipio_open;
-	io.zread_file = zipio_read;
-	io.zwrite_file = zipio_write;
-	io.ztell_file = zipio_tell;
-	io.zseek_file = zipio_seek;
-	io.zclose_file = zipio_close;
-	io.zerror_file = zipio_testerror;
-	io.alloc_mem = zipio_alloc;
-	io.free_mem = zipio_free;
-	return io;
-}
+zlib_filefunc_def zipio_create_io_from_file(FileAccess **p_file);
 
 #endif // ZIP_IO_H

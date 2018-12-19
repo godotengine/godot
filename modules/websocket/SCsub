@@ -7,7 +7,7 @@ Import('env_modules')
 
 env_lws = env_modules.Clone()
 
-if env['builtin_libwebsockets']:
+if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # already builtin for javascript
     thirdparty_dir = "#thirdparty/libwebsockets/"
     helper_dir = "win32helpers/"
     thirdparty_sources = [
@@ -61,34 +61,33 @@ if env['builtin_libwebsockets']:
         "tls/mbedtls/mbedtls-server.c"
     ]
 
-    if env_lws["platform"] == "android": # Builtin getifaddrs
+    if env["platform"] == "android": # Builtin getifaddrs
         thirdparty_sources += ["misc/getifaddrs.c"]
 
-    if env_lws["platform"] == "windows" or env_lws["platform"] == "uwp": # Winsock
+    if env["platform"] == "windows" or env["platform"] == "uwp": # Winsock
         thirdparty_sources += ["plat/lws-plat-win.c", helper_dir + "getopt.c", helper_dir + "getopt_long.c", helper_dir + "gettimeofday.c"]
     else: # Unix socket
         thirdparty_sources += ["plat/lws-plat-unix.c"]
 
-
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    if env_lws["platform"] == "javascript": # No need to add third party libraries at all
-        pass
-    else:
-        env_lws.add_source_files(env.modules_sources, thirdparty_sources)
-        env_lws.Append(CPPPATH=[thirdparty_dir])
+    env_lws.Append(CPPPATH=[thirdparty_dir])
 
-        wrapper_includes = ["#thirdparty/libwebsockets/tls/mbedtls/wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
-        env_lws.Prepend(CPPPATH=wrapper_includes)
+    if env['builtin_mbedtls']:
+        mbedtls_includes = "#thirdparty/mbedtls/include"
+        env_lws.Prepend(CPPPATH=[mbedtls_includes])
 
-        if env['builtin_mbedtls']:
-            mbedtls_includes = "#thirdparty/mbedtls/include"
-            env_lws.Prepend(CPPPATH=[mbedtls_includes])
+    wrapper_includes = ["#thirdparty/libwebsockets/tls/mbedtls/wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
+    env_lws.Prepend(CPPPATH=wrapper_includes)
 
-        if env_lws["platform"] == "windows" or env_lws["platform"] == "uwp":
-            env_lws.Append(CPPPATH=[thirdparty_dir + helper_dir])
+    if env["platform"] == "windows" or env["platform"] == "uwp":
+        env_lws.Append(CPPPATH=[thirdparty_dir + helper_dir])
 
-        if env_lws["platform"] == "uwp":
-            env_lws.Append(CCFLAGS=["/DLWS_MINGW_SUPPORT"])
+    if env["platform"] == "uwp":
+        env_lws.Append(CCFLAGS=["/DLWS_MINGW_SUPPORT"])
+
+    env_thirdparty = env_lws.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 env_lws.add_source_files(env.modules_sources, "*.cpp")

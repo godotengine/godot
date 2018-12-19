@@ -32,10 +32,10 @@
 
 #include <mono/metadata/exception.h>
 
-#include "os/dir_access.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "reference.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/reference.h"
 
 #include "../csharp_script.h"
 #include "../utils/macros.h"
@@ -126,10 +126,11 @@ void MonoCache::clear_members() {
 	class_RemoteAttribute = NULL;
 	class_SyncAttribute = NULL;
 	class_MasterAttribute = NULL;
+	class_PuppetAttribute = NULL;
 	class_SlaveAttribute = NULL;
 	class_RemoteSyncAttribute = NULL;
 	class_MasterSyncAttribute = NULL;
-	class_SlaveSyncAttribute = NULL;
+	class_PuppetSyncAttribute = NULL;
 	class_GodotMethodAttribute = NULL;
 	field_GodotMethodAttribute_methodName = NULL;
 
@@ -138,6 +139,7 @@ void MonoCache::clear_members() {
 	field_Image_ptr = NULL;
 	field_RID_ptr = NULL;
 
+	methodthunk_GodotObject_Dispose = NULL;
 	methodthunk_Array_GetPtr = NULL;
 	methodthunk_Dictionary_GetPtr = NULL;
 	methodthunk_MarshalUtils_IsArrayGenericType = NULL;
@@ -156,6 +158,7 @@ void MonoCache::cleanup() {
 }
 
 #define GODOT_API_CLASS(m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, #m_class))
+#define GODOT_API_NS_CLAS(m_ns, m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(m_ns, #m_class))
 
 void update_corlib_cache() {
 
@@ -206,8 +209,8 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
 	CACHE_CLASS_AND_CHECK(Spatial, GODOT_API_CLASS(Spatial));
 	CACHE_CLASS_AND_CHECK(WeakRef, GODOT_API_CLASS(WeakRef));
-	CACHE_CLASS_AND_CHECK(Array, GODOT_API_CLASS(Array));
-	CACHE_CLASS_AND_CHECK(Dictionary, GODOT_API_CLASS(Dictionary));
+	CACHE_CLASS_AND_CHECK(Array, GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Array));
+	CACHE_CLASS_AND_CHECK(Dictionary, GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary));
 	CACHE_CLASS_AND_CHECK(MarshalUtils, GODOT_API_CLASS(MarshalUtils));
 
 #ifdef DEBUG_ENABLED
@@ -223,10 +226,11 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(RemoteAttribute, GODOT_API_CLASS(RemoteAttribute));
 	CACHE_CLASS_AND_CHECK(SyncAttribute, GODOT_API_CLASS(SyncAttribute));
 	CACHE_CLASS_AND_CHECK(MasterAttribute, GODOT_API_CLASS(MasterAttribute));
+	CACHE_CLASS_AND_CHECK(PuppetAttribute, GODOT_API_CLASS(PuppetAttribute));
 	CACHE_CLASS_AND_CHECK(SlaveAttribute, GODOT_API_CLASS(SlaveAttribute));
 	CACHE_CLASS_AND_CHECK(RemoteSyncAttribute, GODOT_API_CLASS(RemoteSyncAttribute));
 	CACHE_CLASS_AND_CHECK(MasterSyncAttribute, GODOT_API_CLASS(MasterSyncAttribute));
-	CACHE_CLASS_AND_CHECK(SlaveSyncAttribute, GODOT_API_CLASS(SlaveSyncAttribute));
+	CACHE_CLASS_AND_CHECK(PuppetSyncAttribute, GODOT_API_CLASS(PuppetSyncAttribute));
 	CACHE_CLASS_AND_CHECK(GodotMethodAttribute, GODOT_API_CLASS(GodotMethodAttribute));
 	CACHE_FIELD_AND_CHECK(GodotMethodAttribute, methodName, CACHED_CLASS(GodotMethodAttribute)->get_field("methodName"));
 
@@ -234,8 +238,9 @@ void update_godot_api_cache() {
 	CACHE_FIELD_AND_CHECK(NodePath, ptr, CACHED_CLASS(NodePath)->get_field(BINDINGS_PTR_FIELD));
 	CACHE_FIELD_AND_CHECK(RID, ptr, CACHED_CLASS(RID)->get_field(BINDINGS_PTR_FIELD));
 
-	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_CLASS(Array)->get_method_thunk("GetPtr", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_CLASS(Dictionary)->get_method_thunk("GetPtr", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, Dispose, (GodotObject_Dispose)CACHED_CLASS(GodotObject)->get_method_thunk("Dispose", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Array)->get_method_thunk("GetPtr", 0));
+	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary)->get_method_thunk("GetPtr", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsArrayGenericType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsDictionaryGenericType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("SignalCallback", 1));
@@ -246,7 +251,7 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, (DebugUtils_StackFrameInfo)GODOT_API_CLASS(DebuggingUtils)->get_method_thunk("GetStackFrameInfo", 4));
 #endif
 
-	// TODO Move to CSharpLanguage::init()
+	// TODO Move to CSharpLanguage::init() and do handle disposal
 	MonoObject *task_scheduler = mono_object_new(SCRIPTS_DOMAIN, GODOT_API_CLASS(GodotTaskScheduler)->get_mono_ptr());
 	GDMonoUtils::runtime_object_init(task_scheduler);
 	mono_cache.task_scheduler_handle = MonoGCHandle::create_strong(task_scheduler);
@@ -269,11 +274,48 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 			}
 		}
 
-		// Only called if the owner does not have a CSharpInstance
+		// If the owner does not have a CSharpInstance...
+
 		void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
 		if (data) {
-			return ((Map<Object *, Ref<MonoGCHandle> >::Element *)data)->value()->get_target();
+			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
+
+			Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
+			ERR_FAIL_COND_V(gchandle.is_null(), NULL);
+
+			MonoObject *target = gchandle->get_target();
+
+			if (target)
+				return target;
+
+			CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
+
+			// Create a new one
+
+#ifdef DEBUG_ENABLED
+			CRASH_COND(script_binding.type_name == StringName());
+			CRASH_COND(script_binding.wrapper_class == NULL);
+#endif
+
+			MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(script_binding.wrapper_class, script_binding.type_name, unmanaged);
+			ERR_FAIL_NULL_V(mono_object, NULL);
+
+			gchandle->set_handle(MonoGCHandle::new_strong_handle(mono_object), MonoGCHandle::STRONG_HANDLE);
+
+			// Tie managed to unmanaged
+			Reference *ref = Object::cast_to<Reference>(unmanaged);
+
+			if (ref) {
+				// Unsafe refcount increment. The managed instance also counts as a reference.
+				// This way if the unmanaged world has no references to our owner
+				// but the managed instance is alive, the refcount will be 1 instead of 0.
+				// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+
+				ref->reference();
+			}
+
+			return mono_object;
 		}
 	}
 
@@ -303,6 +345,7 @@ MonoThread *get_current_thread() {
 
 void runtime_object_init(MonoObject *p_this_obj) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	// FIXME: Do not use mono_runtime_object_init, it aborts if an exception is thrown
 	mono_runtime_object_init(p_this_obj);
 	GD_MONO_END_RUNTIME_INVOKE;
 }
@@ -588,38 +631,71 @@ void set_pending_exception(MonoException *p_exc) {
 _THREAD_LOCAL_(int)
 current_invoke_count = 0;
 
-MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc) {
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)p_exc);
+	MonoObject *ret = mono_runtime_invoke(p_method, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc) {
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)p_exc);
+	MonoObject *ret = mono_runtime_invoke_array(p_method, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
-MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc) {
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoString *ret = mono_object_to_string(p_obj, (MonoObject **)p_exc);
+	MonoString *ret = mono_object_to_string(p_obj, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
 }
 
-void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc) {
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	mono_property_set_value(p_prop, p_obj, p_params, (MonoObject **)p_exc);
+	mono_property_set_value(p_prop, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 }
 
-MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc) {
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	MonoObject *ret = mono_property_get_value(p_prop, p_obj, p_params, (MonoObject **)p_exc);
+	MonoObject *ret = mono_property_get_value(p_prop, p_obj, p_params, (MonoObject **)r_exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 	return ret;
+}
+
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error) {
+	r_error = false;
+	switch (mono_type_get_type(p_enum_basetype)) {
+		case MONO_TYPE_BOOLEAN:
+			return (bool)GDMonoMarshal::unbox<MonoBoolean>(p_boxed) ? 1 : 0;
+		case MONO_TYPE_CHAR:
+			return GDMonoMarshal::unbox<uint16_t>(p_boxed);
+		case MONO_TYPE_U1:
+			return GDMonoMarshal::unbox<uint8_t>(p_boxed);
+		case MONO_TYPE_U2:
+			return GDMonoMarshal::unbox<uint16_t>(p_boxed);
+		case MONO_TYPE_U4:
+			return GDMonoMarshal::unbox<uint32_t>(p_boxed);
+		case MONO_TYPE_U8:
+			return GDMonoMarshal::unbox<uint64_t>(p_boxed);
+		case MONO_TYPE_I1:
+			return GDMonoMarshal::unbox<int8_t>(p_boxed);
+		case MONO_TYPE_I2:
+			return GDMonoMarshal::unbox<int16_t>(p_boxed);
+		case MONO_TYPE_I4:
+			return GDMonoMarshal::unbox<int32_t>(p_boxed);
+		case MONO_TYPE_I8:
+			return GDMonoMarshal::unbox<int64_t>(p_boxed);
+		default:
+			r_error = true;
+			return 0;
+	}
+}
+
+void dispose(MonoObject *p_mono_object, MonoException **r_exc) {
+	invoke_method_thunk(CACHED_METHOD_THUNK(GodotObject, Dispose), p_mono_object, (MonoObject **)r_exc);
 }
 
 } // namespace GDMonoUtils

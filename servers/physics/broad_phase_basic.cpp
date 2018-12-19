@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "broad_phase_basic.h"
-#include "list.h"
-#include "print_string.h"
+#include "core/list.h"
+#include "core/print_string.h"
 
 BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object, int p_subindex) {
 

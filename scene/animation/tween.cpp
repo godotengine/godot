@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "tween.h"
-#include "method_bind_ext.gen.inc"
+
+#include "core/method_bind_ext.gen.inc"
 
 void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5, const Variant &p_arg6, const Variant &p_arg7, const Variant &p_arg8, const Variant &p_arg9, const Variant &p_arg10) {
 
@@ -276,7 +277,10 @@ Variant &Tween::_get_initial_val(InterpolateData &p_data) {
 				ERR_FAIL_COND_V(error.error != Variant::CallError::CALL_OK, p_data.initial_val);
 			}
 			return initial_val;
-		} break;
+		}
+
+		case INTER_CALLBACK:
+			break;
 	}
 	return p_data.delta_val;
 }
@@ -312,7 +316,7 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 			if (final_val.get_type() == Variant::INT) final_val = final_val.operator real_t();
 			_calc_delta_val(p_data.initial_val, final_val, p_data.delta_val);
 			return p_data.delta_val;
-		} break;
+		}
 
 		case TARGETING_PROPERTY:
 		case TARGETING_METHOD: {
@@ -324,7 +328,10 @@ Variant &Tween::_get_delta_val(InterpolateData &p_data) {
 			//_calc_delta_val(p_data.initial_val, p_data.final_val, p_data.delta_val);
 			_calc_delta_val(initial_val, p_data.final_val, p_data.delta_val);
 			return p_data.delta_val;
-		} break;
+		}
+
+		case INTER_CALLBACK:
+			break;
 	}
 	return p_data.initial_val;
 }
@@ -673,6 +680,10 @@ float Tween::get_speed_scale() const {
 }
 
 bool Tween::start() {
+	if (pending_update != 0) {
+		call_deferred("start");
+		return true;
+	}
 
 	set_active(true);
 	return true;
@@ -852,12 +863,8 @@ bool Tween::seek(real_t p_time) {
 			data.finish = false;
 		}
 
-		switch (data.type) {
-			case INTER_PROPERTY:
-			case INTER_METHOD:
-				break;
-			case INTER_CALLBACK:
-				continue;
+		if (data.type == INTER_CALLBACK) {
+			continue;
 		}
 
 		Variant result = _run_equation(data);

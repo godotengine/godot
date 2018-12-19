@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import android.app.*;
 import android.content.*;
+import android.util.SparseArray;
 import android.view.*;
 import android.view.inputmethod.InputMethodManager;
 import android.os.*;
@@ -61,7 +62,6 @@ public class GodotIO {
 	Godot activity;
 	GodotEditText edit;
 
-	Context applicationContext;
 	MediaPlayer mediaPlayer;
 
 	final int SCREEN_LANDSCAPE = 0;
@@ -87,7 +87,7 @@ public class GodotIO {
 		public int pos;
 	}
 
-	HashMap<Integer, AssetData> streams;
+	SparseArray<AssetData> streams;
 
 	public int file_open(String path, boolean write) {
 
@@ -125,7 +125,7 @@ public class GodotIO {
 	}
 	public int file_get_size(int id) {
 
-		if (!streams.containsKey(id)) {
+		if (streams.get(id) == null) {
 			System.out.printf("file_get_size: Invalid file id: %d\n", id);
 			return -1;
 		}
@@ -134,7 +134,7 @@ public class GodotIO {
 	}
 	public void file_seek(int id, int bytes) {
 
-		if (!streams.containsKey(id)) {
+		if (streams.get(id) == null) {
 			System.out.printf("file_get_size: Invalid file id: %d\n", id);
 			return;
 		}
@@ -174,7 +174,7 @@ public class GodotIO {
 
 	public int file_tell(int id) {
 
-		if (!streams.containsKey(id)) {
+		if (streams.get(id) == null) {
 			System.out.printf("file_read: Can't tell eof for invalid file id: %d\n", id);
 			return 0;
 		}
@@ -184,7 +184,7 @@ public class GodotIO {
 	}
 	public boolean file_eof(int id) {
 
-		if (!streams.containsKey(id)) {
+		if (streams.get(id) == null) {
 			System.out.printf("file_read: Can't check eof for invalid file id: %d\n", id);
 			return false;
 		}
@@ -195,7 +195,7 @@ public class GodotIO {
 
 	public byte[] file_read(int id, int bytes) {
 
-		if (!streams.containsKey(id)) {
+		if (streams.get(id) == null) {
 			System.out.printf("file_read: Can't read invalid file id: %d\n", id);
 			return new byte[0];
 		}
@@ -243,7 +243,7 @@ public class GodotIO {
 
 	public void file_close(int id) {
 
-		if (!streams.containsKey(id)) {
+		if (streams.get(id) == null) {
 			System.out.printf("file_close: Can't close invalid file id: %d\n", id);
 			return;
 		}
@@ -264,7 +264,7 @@ public class GodotIO {
 
 	public int last_dir_id = 1;
 
-	HashMap<Integer, AssetDir> dirs;
+	SparseArray<AssetDir> dirs;
 
 	public int dir_open(String path) {
 
@@ -293,7 +293,7 @@ public class GodotIO {
 	}
 
 	public boolean dir_is_dir(int id) {
-		if (!dirs.containsKey(id)) {
+		if (dirs.get(id) == null) {
 			System.out.printf("dir_next: invalid dir id: %d\n", id);
 			return false;
 		}
@@ -320,7 +320,7 @@ public class GodotIO {
 
 	public String dir_next(int id) {
 
-		if (!dirs.containsKey(id)) {
+		if (dirs.get(id) == null) {
 			System.out.printf("dir_next: invalid dir id: %d\n", id);
 			return "";
 		}
@@ -339,7 +339,7 @@ public class GodotIO {
 
 	public void dir_close(int id) {
 
-		if (!dirs.containsKey(id)) {
+		if (dirs.get(id) == null) {
 			System.out.printf("dir_close: invalid dir id: %d\n", id);
 			return;
 		}
@@ -351,9 +351,9 @@ public class GodotIO {
 
 		am = p_activity.getAssets();
 		activity = p_activity;
-		streams = new HashMap<Integer, AssetData>();
-		dirs = new HashMap<Integer, AssetDir>();
-		applicationContext = activity.getApplicationContext();
+		//streams = new HashMap<Integer, AssetData>();
+		streams = new SparseArray<AssetData>();
+		dirs = new SparseArray<AssetDir>();
 	}
 
 	/////////////////////////
@@ -365,7 +365,7 @@ public class GodotIO {
 	private AudioTrack mAudioTrack;
 
 	public Object audioInit(int sampleRate, int desiredFrames) {
-		int channelConfig = AudioFormat.CHANNEL_CONFIGURATION_STEREO;
+		int channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
 		int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
 		int frameSize = 4;
 
@@ -496,13 +496,13 @@ public class GodotIO {
 	}
 
 	public int getScreenDPI() {
-		DisplayMetrics metrics = applicationContext.getResources().getDisplayMetrics();
+		DisplayMetrics metrics = activity.getApplicationContext().getResources().getDisplayMetrics();
 		return (int)(metrics.density * 160f);
 	}
 
 	public boolean needsReloadHooks() {
 
-		return android.os.Build.VERSION.SDK_INT < 11;
+		return false;
 	}
 
 	public void showKeyboard(String p_existing_text) {
@@ -564,7 +564,7 @@ public class GodotIO {
 
 		try {
 			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.setDataSource(applicationContext, filePath);
+			mediaPlayer.setDataSource(activity.getApplicationContext(), filePath);
 			mediaPlayer.prepare();
 			mediaPlayer.start();
 		} catch (IOException e) {

@@ -33,13 +33,13 @@
 #ifndef WIN_MIDI_H
 #define WIN_MIDI_H
 
+#include "core/os/midi_driver.h"
+#include "core/vector.h"
+
 #include <stdio.h>
 #include <windows.h>
 
 #include <mmsystem.h>
-
-#include "core/vector.h"
-#include "os/midi_driver.h"
 
 class MIDIDriverWinMidi : public MIDIDriver {
 

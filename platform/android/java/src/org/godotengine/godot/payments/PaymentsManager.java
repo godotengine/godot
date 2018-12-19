@@ -112,7 +112,7 @@ public class PaymentsManager {
 	};
 
 	public void requestPurchase(final String sku, String transactionId) {
-		new PurchaseTask(mService, Godot.getInstance()) {
+		new PurchaseTask(mService, activity) {
 			@Override
 			protected void error(String message) {
 				godotPaymentV3.callbackFail(message);
@@ -159,7 +159,7 @@ public class PaymentsManager {
 
 	public void requestPurchased() {
 		try {
-			PaymentsCache pc = new PaymentsCache(Godot.getInstance());
+			PaymentsCache pc = new PaymentsCache(activity);
 
 			String continueToken = null;
 

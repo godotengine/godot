@@ -31,8 +31,8 @@
 #ifndef TEXTFILE_H
 #define TEXTFILE_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 
 class TextFile : public Resource {
 

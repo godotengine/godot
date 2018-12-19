@@ -31,10 +31,10 @@
 #ifndef THREAD_DUMMY_H
 #define THREAD_DUMMY_H
 
-#include "mutex.h"
-#include "rw_lock.h"
-#include "semaphore.h"
-#include "thread.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 
 class ThreadDummy : public Thread {
 

@@ -30,10 +30,10 @@
 
 #include "resource_importer_texture.h"
 
+#include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "io/config_file.h"
-#include "io/image_loader.h"
 #include "scene/resources/texture.h"
 
 void ResourceImporterTexture::_texture_reimport_srgb(const Ref<StreamTexture> &p_tex) {
@@ -164,9 +164,17 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_option, cons
 		if (compress_mode != COMPRESS_LOSSY && compress_mode != COMPRESS_VIDEO_RAM) {
 			return false;
 		}
-	} else if (p_option == "compress/no_bptc_if_rgb" || p_option == "compress/hdr_mode") {
+	} else if (p_option == "compress/hdr_mode") {
 		int compress_mode = int(p_options["compress/mode"]);
 		if (compress_mode != COMPRESS_VIDEO_RAM) {
+			return false;
+		}
+	} else if (p_option == "compress/bptc_ldr") {
+		int compress_mode = int(p_options["compress/mode"]);
+		if (compress_mode != COMPRESS_VIDEO_RAM) {
+			return false;
+		}
+		if (!ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
 			return false;
 		}
 	}
@@ -193,8 +201,8 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,Video RAM,Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 2 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/no_bptc_if_rgb"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_mode", PROPERTY_HINT_ENUM, "LDR Fallback,Force RGBE,RGBE Fallback"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_mode", PROPERTY_HINT_ENUM, "Enabled,Force RGBE"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/bptc_ldr", PROPERTY_HINT_ENUM, "Enabled,RGBA Only"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), p_preset == PRESET_3D ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), p_preset == PRESET_2D_PIXEL ? false : true));
@@ -208,7 +216,7 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.1"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
 }
 
 void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal) {
@@ -227,7 +235,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	if (p_streamable)
 		format |= StreamTexture::FORMAT_BIT_STREAM;
-	if (p_mipmaps || p_compress_mode == COMPRESS_VIDEO_RAM) //VRAM always uses mipmaps
+	if (p_mipmaps)
 		format |= StreamTexture::FORMAT_BIT_HAS_MIPMAPS; //mipmaps bit
 	if (p_detect_3d)
 		format |= StreamTexture::FORMAT_BIT_DETECT_3D;
@@ -302,7 +310,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		case COMPRESS_VIDEO_RAM: {
 
 			Ref<Image> image = p_image->duplicate();
-			image->generate_mipmaps(p_force_normal);
+			if (p_mipmaps) {
+				image->generate_mipmaps(p_force_normal);
+			}
 
 			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
 				image->convert(Image::FORMAT_RGBE9995);
@@ -353,7 +363,6 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
 
 	int compress_mode = p_options["compress/mode"];
-	int no_bptc_if_rgb = p_options["compress/no_bptc_if_rgb"];
 	float lossy = p_options["compress/lossy_quality"];
 	int repeat = p_options["flags/repeat"];
 	bool filter = p_options["flags/filter"];
@@ -365,11 +374,11 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool invert_color = p_options["process/invert_color"];
 	bool stream = p_options["stream"];
 	int size_limit = p_options["size_limit"];
-	bool force_rgbe = int(p_options["compress/hdr_mode"]) == 1;
-	bool rgbe_fallback = int(p_options["compress/hdr_mode"]) == 2;
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 	int normal = p_options["compress/normal_map"];
 	float scale = p_options["svg/scale"];
+	bool force_rgbe = p_options["compress/hdr_mode"];
+	int bptc_ldr = p_options["compress/bptc_ldr"];
 
 	Ref<Image> image;
 	image.instance();
@@ -406,7 +415,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
 		}
 
-		if (normal) {
+		if (normal == 1) {
 			image->normalize();
 		}
 	}
@@ -424,8 +433,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		int width = image->get_width();
 
 		image->lock();
-		for (int i = 0; i < height; i++) {
-			for (int j = 0; j < width; j++) {
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
 				image->set_pixel(i, j, image->get_pixel(i, j).inverted());
 			}
 		}
@@ -442,61 +451,57 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		//Android, GLES 2.x
 
 		bool ok_on_pc = false;
-		bool encode_bptc = false;
 		bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
-		bool no_ldr_compression = (is_hdr && rgbe_fallback);
+		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGBA5551);
+		bool can_bptc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc");
+		bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc");
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
+		if (can_bptc) {
+			Image::DetectChannels channels = image->get_detected_channels();
+			if (is_hdr) {
 
-			encode_bptc = true;
+				if (channels == Image::DETECTED_LA || channels == Image::DETECTED_RGBA) {
+					can_bptc = false;
+				}
+			} else if (is_ldr) {
 
-			if (no_bptc_if_rgb && !is_hdr) {
-				Image::DetectChannels channels = image->get_detected_channels();
-				if (channels != Image::DETECTED_LA && channels != Image::DETECTED_RGBA) {
-					encode_bptc = false;
+				//handle "RGBA Only" setting
+				if (bptc_ldr == 1 && channels != Image::DETECTED_LA && channels != Image::DETECTED_RGBA) {
+					can_bptc = false;
 				}
 			}
 		}
 
-		if (encode_bptc) {
-
-			_save_stex(image, p_save_path + ".bptc.stex", compress_mode, lossy, Image::COMPRESS_BPTC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
-			r_platform_variants->push_back("bptc");
-			ok_on_pc = true;
+		if (!can_bptc && is_hdr && !force_rgbe) {
+			//convert to ldr if this can't be stored hdr
+			image->convert(Image::FORMAT_RGBA8);
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc") && !no_ldr_compression) {
-
-			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
+		if (can_bptc || can_s3tc) {
+			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("s3tc");
 			ok_on_pc = true;
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2") && !no_ldr_compression) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
 
 			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("etc2");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc") && !no_ldr_compression) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
 			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("etc");
 		}
 
-		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc") && !no_ldr_compression) {
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
 
 			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal);
 			r_platform_variants->push_back("pvrtc");
 		}
 
-		if (is_hdr && rgbe_fallback) {
-			_save_stex(image, p_save_path + ".fallback.stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags, stream, detect_3d, detect_srgb, true, detect_normal, force_normal);
-			r_platform_variants->push_back("fallback");
-			ok_on_pc = true;
-		}
-
 		if (!ok_on_pc) {
-			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correcly on PC.");
+			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
 		}
 	} else {
 		//import normally

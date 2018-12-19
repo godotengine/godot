@@ -31,7 +31,7 @@
 #ifndef ERROR_MACROS_H
 #define ERROR_MACROS_H
 
-#include "typedefs.h"
+#include "core/typedefs.h"
 /**
  * Error macros. Unlike exceptions and asserts, these macros try to maintain consistency and stability
  * inside the code. It is recommended to always return processable data, so in case of an error, the

@@ -30,8 +30,8 @@
 
 #include "visual_script.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 
@@ -48,20 +48,22 @@ bool VisualScriptNode::is_breakpoint() const {
 void VisualScriptNode::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
+		_update_input_ports();
+	}
+}
 
-		int dvc = get_input_value_port_count();
-		for (int i = 0; i < dvc; i++) {
-			Variant::Type expected = get_input_value_port_info(i).type;
-			Variant::CallError ce;
-			default_input_values.push_back(Variant::construct(expected, NULL, 0, ce, false));
-		}
+void VisualScriptNode::_update_input_ports() {
+	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
+	int port_count = get_input_value_port_count();
+	for (int i = 0; i < port_count; i++) {
+		Variant::Type expected = get_input_value_port_info(i).type;
+		Variant::CallError ce;
+		set_default_input_value(i, Variant::construct(expected, NULL, 0, ce, false));
 	}
 }
 
 void VisualScriptNode::ports_changed_notify() {
-
-	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
-
+	_update_input_ports();
 	emit_signal("ports_changed");
 }
 
@@ -977,6 +979,10 @@ Error VisualScript::reload(bool p_keep_state) {
 bool VisualScript::is_tool() const {
 
 	return false;
+}
+
+bool VisualScript::is_valid() const {
+	return true; //always valid
 }
 
 ScriptLanguage *VisualScript::get_language() const {
@@ -2697,11 +2703,11 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_debug_parse_err_file = "";
 	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF("debug/settings/visual_script/max_call_stack", 1024);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/visual_script/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/visual_script/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
+
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 		_debug_max_call_stack = dmcs;
-		if (_debug_max_call_stack < 1024)
-			_debug_max_call_stack = 1024;
 		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 
 	} else {

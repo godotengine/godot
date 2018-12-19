@@ -32,8 +32,8 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
+#include "core/rid.h"
 #include "joint_bullet.h"
-#include "rid.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "shape_bullet.h"
@@ -59,13 +59,6 @@ class BulletPhysicsServer : public PhysicsServer {
 	mutable RID_Owner<RigidBodyBullet> rigid_body_owner;
 	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
 	mutable RID_Owner<JointBullet> joint_owner;
-
-private:
-	/// This is used when a collision shape is not active, so the bullet compound shapes index are always sync with godot index
-	static btEmptyShape *emptyShape;
-
-public:
-	static btEmptyShape *get_empty_shape();
 
 protected:
 	static void _bind_methods();
@@ -382,6 +375,9 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag);
 
+	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision);
+	virtual int generic_6dof_joint_get_precision(RID p_joint);
+
 	/* MISC */
 
 	virtual void free(RID p_rid);
@@ -403,6 +399,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const { return false; }
 
 	virtual int get_process_info(ProcessInfo p_info);
 

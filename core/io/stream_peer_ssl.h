@@ -31,7 +31,7 @@
 #ifndef STREAM_PEER_SSL_H
 #define STREAM_PEER_SSL_H
 
-#include "io/stream_peer.h"
+#include "core/io/stream_peer.h"
 
 class StreamPeerSSL : public StreamPeer {
 	GDCLASS(StreamPeerSSL, StreamPeer);
@@ -45,9 +45,6 @@ protected:
 
 	static LoadCertsFromMemory load_certs_func;
 	static bool available;
-
-	friend class Main;
-	static bool initialize_certs;
 
 	bool blocking_handshake;
 
@@ -72,7 +69,9 @@ public:
 
 	static StreamPeerSSL *create();
 
+	static PoolByteArray get_cert_file_as_array(String p_path);
 	static PoolByteArray get_project_cert_array();
+	static void load_certs_from_file(String p_path);
 	static void load_certs_from_memory(const PoolByteArray &p_memory);
 	static bool is_available();
 

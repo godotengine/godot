@@ -30,7 +30,7 @@
 
 #include "visual_server_viewport.h"
 
-#include "project_settings.h"
+#include "core/project_settings.h"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
 #include "visual_server_scene.h"
@@ -137,7 +137,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				}
 			}
 
-			canvas_map[Viewport::CanvasKey(E->key(), E->get().layer)] = &E->get();
+			canvas_map[Viewport::CanvasKey(E->key(), E->get().layer, E->get().sublayer)] = &E->get();
 		}
 
 		if (lights_with_shadow) {
@@ -176,7 +176,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 		VSG::rasterizer->restore_render_target();
 
-		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().layer > scenario_canvas_max_layer) {
+		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().get_layer() > scenario_canvas_max_layer) {
 			Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
 			if (!can_draw_3d) {
@@ -209,7 +209,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			VSG::canvas->render_canvas(canvas, xform, canvas_lights, lights_with_mask, clip_rect);
 			i++;
 
-			if (scenario_draw_canvas_bg && E->key().layer >= scenario_canvas_max_layer) {
+			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
 				Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
 				if (!can_draw_3d) {
@@ -294,7 +294,7 @@ void VisualServerViewport::draw_viewports() {
 				arvr_interface->commit_for_eye(ARVRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
 			}
 
-			// and for our frame timing, mark when we've finished commiting our eyes
+			// and for our frame timing, mark when we've finished committing our eyes
 			ARVRServer::get_singleton()->_mark_commit();
 		} else {
 			VSG::rasterizer->set_current_render_target(vp->render_target);
@@ -496,6 +496,7 @@ void VisualServerViewport::viewport_attach_canvas(RID p_viewport, RID p_canvas) 
 	canvas->viewports.insert(p_viewport);
 	viewport->canvas_map[p_canvas] = Viewport::CanvasData();
 	viewport->canvas_map[p_canvas].layer = 0;
+	viewport->canvas_map[p_canvas].sublayer = 0;
 	viewport->canvas_map[p_canvas].canvas = canvas;
 }
 
@@ -534,13 +535,14 @@ void VisualServerViewport::viewport_set_global_canvas_transform(RID p_viewport, 
 
 	viewport->global_transform = p_transform;
 }
-void VisualServerViewport::viewport_set_canvas_layer(RID p_viewport, RID p_canvas, int p_layer) {
+void VisualServerViewport::viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer) {
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
 	ERR_FAIL_COND(!viewport->canvas_map.has(p_canvas));
 	viewport->canvas_map[p_canvas].layer = p_layer;
+	viewport->canvas_map[p_canvas].sublayer = p_sublayer;
 }
 
 void VisualServerViewport::viewport_set_shadow_atlas_size(RID p_viewport, int p_size) {

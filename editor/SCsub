@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 Import('env')
+
 env.editor_sources = []
 
 import os
@@ -61,10 +62,6 @@ if env['tools']:
     env.Depends("#editor/doc_data_compressed.gen.h", docs)
     env.CommandNoCache("#editor/doc_data_compressed.gen.h", docs, run_in_subprocess(editor_builders.make_doc_header))
 
-    # Certificates
-    env.Depends("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt")
-    env.CommandNoCache("#editor/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", run_in_subprocess(editor_builders.make_certs_header))
-
     import glob
 
     path = env.Dir('.').abspath
@@ -76,24 +73,15 @@ if env['tools']:
 
     # Fonts
     flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
-    flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    flist.extend(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    flist.sort()
     env.Depends('#editor/builtin_fonts.gen.h', flist)
     env.CommandNoCache('#editor/builtin_fonts.gen.h', flist, run_in_subprocess(editor_builders.make_fonts_header))
 
-    # Authors
-    env.Depends('#editor/authors.gen.h', "../AUTHORS.md")
-    env.CommandNoCache('#editor/authors.gen.h', "../AUTHORS.md", run_in_subprocess(editor_builders.make_authors_header))
-
-    # Donors
-    env.Depends('#editor/donors.gen.h', "../DONORS.md")
-    env.CommandNoCache('#editor/donors.gen.h', "../DONORS.md", run_in_subprocess(editor_builders.make_donors_header))
-
-    # License
-    env.Depends('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"])
-    env.CommandNoCache('#editor/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"], run_in_subprocess(editor_builders.make_license_header))
-
     env.add_source_files(env.editor_sources, "*.cpp")
-    env.add_source_files(env.editor_sources, ["#thirdparty/misc/clipper.cpp"])
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.editor_sources, ["#thirdparty/misc/clipper.cpp"])
 
     SConscript('collada/SCsub')
     SConscript('doc/SCsub')
@@ -104,5 +92,3 @@ if env['tools']:
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])
-
-    Export('env')

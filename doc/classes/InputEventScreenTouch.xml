@@ -8,7 +8,7 @@
 		Stores multi-touch press/release information. Supports touch press, touch release and [member index] for multi-touch count and order.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/inputevent.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
 	<demos>
 	</demos>

@@ -30,8 +30,8 @@
 
 #include "editor_name_dialog.h"
 
-#include "class_db.h"
-#include "os/keyboard.h"
+#include "core/class_db.h"
+#include "core/os/keyboard.h"
 
 void EditorNameDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 

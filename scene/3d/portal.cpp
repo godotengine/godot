@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "portal.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/visual_server.h"
 

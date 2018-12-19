@@ -41,6 +41,14 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="property_toggled">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="checked" type="bool">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="resource_selected">
 			<argument index="0" name="res" type="Object">
 			</argument>

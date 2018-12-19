@@ -7,7 +7,7 @@
 		Node for 2D tile-based maps. Tilemaps use a [TileSet] which contain a list of tiles (textures plus optional collision, navigation, and/or occluder shapes) which are used to create grid-based maps.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/2d/using_tilemaps.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/using_tilemaps.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -157,16 +157,6 @@
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 			</description>
 		</method>
-		<method name="set_celld">
-			<return type="void">
-			</return>
-			<argument index="0" name="position" type="Vector2">
-			</argument>
-			<argument index="1" name="data" type="Dictionary">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_cellv">
 			<return type="void">
 			</return>
@@ -258,7 +248,7 @@
 			Amount to offset alternating tiles. Uses HALF_OFFSET_* constants. Default value: HALF_OFFSET_DISABLED.
 		</member>
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size">
-			The TileMap's quadrant size.  Optimizes drawing by batching, using chunks of this size. Default value: 16.
+			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size. Default value: 16.
 		</member>
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size">
 			The TileMap's cell size.
@@ -288,7 +278,7 @@
 			The TileMap orientation mode. Uses MODE_* constants. Default value: MODE_SQUARE.
 		</member>
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask">
-			The light mask assigned to all light occluders in the TileMap.  The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
+			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
 		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].

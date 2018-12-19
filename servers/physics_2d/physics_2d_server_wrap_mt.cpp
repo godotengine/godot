@@ -30,7 +30,7 @@
 
 #include "physics_2d_server_wrap_mt.h"
 
-#include "os/os.h"
+#include "core/os/os.h"
 
 void Physics2DServerWrapMT::thread_exit() {
 

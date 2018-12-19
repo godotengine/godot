@@ -30,8 +30,8 @@
 
 #include "image_loader_jpegd.h"
 
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 #include <jpgd.h>
 #include <string.h>
@@ -48,9 +48,9 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 	const int image_width = decoder.get_width();
 	const int image_height = decoder.get_height();
-	int comps = decoder.get_num_components();
-	if (comps == 3)
-		comps = 4; //weird
+	const int comps = decoder.get_num_components();
+	if (comps != 1 && comps != 3)
+		return ERR_FILE_CORRUPT;
 
 	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS)
 		return ERR_FILE_CORRUPT;
@@ -73,7 +73,19 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		}
 
 		jpgd::uint8 *pDst = pImage_data + y * dst_bpl;
-		memcpy(pDst, pScan_line, dst_bpl);
+
+		if (comps == 1) {
+			memcpy(pDst, pScan_line, dst_bpl);
+		} else {
+			// For images with more than 1 channel pScan_line will always point to a buffer
+			// containing 32-bit RGBA pixels. Alpha is always 255 and we ignore it.
+			for (int x = 0; x < image_width; x++) {
+				pDst[0] = pScan_line[x * 4 + 0];
+				pDst[1] = pScan_line[x * 4 + 1];
+				pDst[2] = pScan_line[x * 4 + 2];
+				pDst += 3;
+			}
+		}
 	}
 
 	//all good
@@ -82,7 +94,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	if (comps == 1)
 		fmt = Image::FORMAT_L8;
 	else
-		fmt = Image::FORMAT_RGBA8;
+		fmt = Image::FORMAT_RGB8;
 
 	dw = PoolVector<uint8_t>::Write();
 	p_image->create(image_width, image_height, 0, fmt, data);

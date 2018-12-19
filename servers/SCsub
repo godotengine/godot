@@ -5,8 +5,6 @@ Import('env')
 env.servers_sources = []
 env.add_source_files(env.servers_sources, "*.cpp")
 
-Export('env')
-
 SConscript('arvr/SCsub')
 SConscript('physics/SCsub')
 SConscript('physics_2d/SCsub')

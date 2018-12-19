@@ -719,8 +719,8 @@ int btGeneric6DofSpring2Constraint::get_limit_motor_info2(
 			tag_vel,
 			info->fps * limot->m_motorERP);
 		info->m_constraintError[srow] = mot_fact * limot->m_targetVelocity;
-		info->m_lowerLimit[srow] = -limot->m_maxMotorForce;
-		info->m_upperLimit[srow] = limot->m_maxMotorForce;
+		info->m_lowerLimit[srow] = -limot->m_maxMotorForce / info->fps;
+		info->m_upperLimit[srow] = limot->m_maxMotorForce / info->fps;
 		info->cfm[srow] = limot->m_motorCFM;
 		srow += info->rowskip;
 		++count;
@@ -769,8 +769,8 @@ int btGeneric6DofSpring2Constraint::get_limit_motor_info2(
 			mot_fact = 0;
 		}
 		info->m_constraintError[srow] = mot_fact * targetvelocity * (rotational ? -1 : 1);
-		info->m_lowerLimit[srow] = -limot->m_maxMotorForce;
-		info->m_upperLimit[srow] = limot->m_maxMotorForce;
+		info->m_lowerLimit[srow] = -limot->m_maxMotorForce / info->fps;
+		info->m_upperLimit[srow] = limot->m_maxMotorForce / info->fps;
 		info->cfm[srow] = limot->m_motorCFM;
 		srow += info->rowskip;
 		++count;
@@ -797,6 +797,12 @@ int btGeneric6DofSpring2Constraint::get_limit_motor_info2(
 		btScalar cfm = BT_ZERO;
 		btScalar mA = BT_ONE / m_rbA.getInvMass();
 		btScalar mB = BT_ONE / m_rbB.getInvMass();
+		if (rotational) {
+			btScalar rrA = (m_calculatedTransformA.getOrigin() - transA.getOrigin()).length2();
+			btScalar rrB = (m_calculatedTransformB.getOrigin() - transB.getOrigin()).length2();
+			if (m_rbA.getInvMass()) mA = mA * rrA + 1 / (m_rbA.getInvInertiaTensorWorld() * ax1).length();
+			if (m_rbB.getInvMass()) mB = mB * rrB + 1 / (m_rbB.getInvInertiaTensorWorld() * ax1).length();
+		}
 		btScalar m = mA > mB ? mB : mA;
 		btScalar angularfreq = sqrt(ks / m);
 
@@ -815,7 +821,18 @@ int btGeneric6DofSpring2Constraint::get_limit_motor_info2(
 		btScalar fd = -kd * (vel) * (rotational ? -1 : 1) * dt;
 		btScalar f = (fs+fd);
 
-		info->m_constraintError[srow] = (vel + f * (rotational ? -1 : 1)) ;
+		// after the spring force affecting the body(es) the new velocity will be
+		// vel + f / m * (rotational ? -1 : 1)
+		// so in theory this should be set here for m_constraintError
+		// (with m_constraintError we set a desired velocity for the affected body(es))
+		// however in practice any value is fine as long as it is greater then the "proper" velocity,
+		// because the m_lowerLimit and the m_upperLimit will determinate the strength of the final pulling force
+		// so it is much simpler (and more robust) just to simply use inf (with the proper sign)
+		// you may also wonder what if the current velocity (vel) so high that the pulling force will not change its direction (in this iteration)
+		// will we not request a velocity with the wrong direction ?
+		// and the answare is not, because in practice during the solving the current velocity is subtracted from the m_constraintError
+		// so the sign of the force that is really matters
+		info->m_constraintError[srow] = (rotational ? -1 : 1) * (f < 0 ? -SIMD_INFINITY : SIMD_INFINITY);
 
 		btScalar minf = f < fd ? f : fd;
 		btScalar maxf = f < fd ? fd : f;

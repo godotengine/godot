@@ -453,6 +453,33 @@ void btParallelFor( int iBegin, int iEnd, int grainSize, const btIParallelForBod
 #endif// #if BT_THREADSAFE
 }
 
+btScalar btParallelSum( int iBegin, int iEnd, int grainSize, const btIParallelSumBody& body )
+{
+#if BT_THREADSAFE
+
+#if BT_DETECT_BAD_THREAD_INDEX
+    if ( !btThreadsAreRunning() )
+    {
+        // clear out thread ids
+        for ( int i = 0; i < BT_MAX_THREAD_COUNT; ++i )
+        {
+            gDebugThreadIds[ i ] = kInvalidThreadId;
+        }
+    }
+#endif // #if BT_DETECT_BAD_THREAD_INDEX
+
+    btAssert( gBtTaskScheduler != NULL );  // call btSetTaskScheduler() with a valid task scheduler first!
+    return gBtTaskScheduler->parallelSum( iBegin, iEnd, grainSize, body );
+
+#else // #if BT_THREADSAFE
+
+    // non-parallel version of btParallelSum
+    btAssert( !"called btParallelFor in non-threadsafe build. enable BT_THREADSAFE" );
+    return body.sumLoop( iBegin, iEnd );
+
+#endif //#else // #if BT_THREADSAFE
+}
+
 
 ///
 /// btTaskSchedulerSequential -- non-threaded implementation of task scheduler
@@ -469,6 +496,11 @@ public:
     {
         BT_PROFILE( "parallelFor_sequential" );
         body.forLoop( iBegin, iEnd );
+    }
+    virtual btScalar parallelSum( int iBegin, int iEnd, int grainSize, const btIParallelSumBody& body ) BT_OVERRIDE
+    {
+        BT_PROFILE( "parallelSum_sequential" );
+        return body.sumLoop( iBegin, iEnd );
     }
 };
 
@@ -514,10 +546,24 @@ public:
 #pragma omp parallel for schedule( static, 1 )
         for ( int i = iBegin; i < iEnd; i += grainSize )
         {
-            BT_PROFILE( "OpenMP_job" );
+            BT_PROFILE( "OpenMP_forJob" );
             body.forLoop( i, ( std::min )( i + grainSize, iEnd ) );
         }
         btPopThreadsAreRunning();
+    }
+    virtual btScalar parallelSum( int iBegin, int iEnd, int grainSize, const btIParallelSumBody& body ) BT_OVERRIDE
+    {
+        BT_PROFILE( "parallelFor_OpenMP" );
+        btPushThreadsAreRunning();
+        btScalar sum = btScalar( 0 );
+#pragma omp parallel for schedule( static, 1 ) reduction(+:sum)
+        for ( int i = iBegin; i < iEnd; i += grainSize )
+        {
+            BT_PROFILE( "OpenMP_sumJob" );
+            sum += body.sumLoop( i, ( std::min )( i + grainSize, iEnd ) );
+        }
+        btPopThreadsAreRunning();
+        return sum;
     }
 };
 #endif // #if BT_USE_OPENMP && BT_THREADSAFE
@@ -571,28 +617,50 @@ public:
             btResetThreadIndexCounter();
         }
     }
-    struct BodyAdapter
+    struct ForBodyAdapter
     {
         const btIParallelForBody* mBody;
 
+        ForBodyAdapter( const btIParallelForBody* body ) : mBody( body ) {}
         void operator()( const tbb::blocked_range<int>& range ) const
         {
-            BT_PROFILE( "TBB_job" );
+            BT_PROFILE( "TBB_forJob" );
             mBody->forLoop( range.begin(), range.end() );
         }
     };
     virtual void parallelFor( int iBegin, int iEnd, int grainSize, const btIParallelForBody& body ) BT_OVERRIDE
     {
         BT_PROFILE( "parallelFor_TBB" );
-        // TBB dispatch
-        BodyAdapter tbbBody;
-        tbbBody.mBody = &body;
+        ForBodyAdapter tbbBody( &body );
         btPushThreadsAreRunning();
         tbb::parallel_for( tbb::blocked_range<int>( iBegin, iEnd, grainSize ),
             tbbBody,
             tbb::simple_partitioner()
         );
         btPopThreadsAreRunning();
+    }
+    struct SumBodyAdapter
+    {
+        const btIParallelSumBody* mBody;
+        btScalar mSum;
+
+        SumBodyAdapter( const btIParallelSumBody* body ) : mBody( body ), mSum( btScalar( 0 ) ) {}
+        SumBodyAdapter( const SumBodyAdapter& src, tbb::split ) : mBody( src.mBody ), mSum( btScalar( 0 ) ) {}
+        void join( const SumBodyAdapter& src ) { mSum += src.mSum; }
+        void operator()( const tbb::blocked_range<int>& range )
+        {
+            BT_PROFILE( "TBB_sumJob" );
+            mSum += mBody->sumLoop( range.begin(), range.end() );
+        }
+    };
+    virtual btScalar parallelSum( int iBegin, int iEnd, int grainSize, const btIParallelSumBody& body ) BT_OVERRIDE
+    {
+        BT_PROFILE( "parallelSum_TBB" );
+        SumBodyAdapter tbbBody( &body );
+        btPushThreadsAreRunning();
+        tbb::parallel_deterministic_reduce( tbb::blocked_range<int>( iBegin, iEnd, grainSize ), tbbBody );
+        btPopThreadsAreRunning();
+        return tbbBody.mSum;
     }
 };
 #endif // #if BT_USE_TBB && BT_THREADSAFE
@@ -605,6 +673,7 @@ public:
 class btTaskSchedulerPPL : public btITaskScheduler
 {
     int m_numThreads;
+    concurrency::combinable<btScalar> m_sum;  // for parallelSum
 public:
     btTaskSchedulerPPL() : btITaskScheduler( "PPL" )
     {
@@ -644,15 +713,16 @@ public:
             btResetThreadIndexCounter();
         }
     }
-    struct BodyAdapter
+    struct ForBodyAdapter
     {
         const btIParallelForBody* mBody;
         int mGrainSize;
         int mIndexEnd;
 
+        ForBodyAdapter( const btIParallelForBody* body, int grainSize, int end ) : mBody( body ), mGrainSize( grainSize ), mIndexEnd( end ) {}
         void operator()( int i ) const
         {
-            BT_PROFILE( "PPL_job" );
+            BT_PROFILE( "PPL_forJob" );
             mBody->forLoop( i, ( std::min )( i + mGrainSize, mIndexEnd ) );
         }
     };
@@ -660,10 +730,7 @@ public:
     {
         BT_PROFILE( "parallelFor_PPL" );
         // PPL dispatch
-        BodyAdapter pplBody;
-        pplBody.mBody = &body;
-        pplBody.mGrainSize = grainSize;
-        pplBody.mIndexEnd = iEnd;
+        ForBodyAdapter pplBody( &body, grainSize, iEnd );
         btPushThreadsAreRunning();
         // note: MSVC 2010 doesn't support partitioner args, so avoid them
         concurrency::parallel_for( iBegin,
@@ -672,6 +739,36 @@ public:
             pplBody
         );
         btPopThreadsAreRunning();
+    }
+    struct SumBodyAdapter
+    {
+        const btIParallelSumBody* mBody;
+        concurrency::combinable<btScalar>* mSum;
+        int mGrainSize;
+        int mIndexEnd;
+
+        SumBodyAdapter( const btIParallelSumBody* body, concurrency::combinable<btScalar>* sum, int grainSize, int end ) : mBody( body ), mSum(sum), mGrainSize( grainSize ), mIndexEnd( end ) {}
+        void operator()( int i ) const
+        {
+            BT_PROFILE( "PPL_sumJob" );
+            mSum->local() += mBody->sumLoop( i, ( std::min )( i + mGrainSize, mIndexEnd ) );
+        }
+    };
+    static btScalar sumFunc( btScalar a, btScalar b ) { return a + b; }
+    virtual btScalar parallelSum( int iBegin, int iEnd, int grainSize, const btIParallelSumBody& body ) BT_OVERRIDE
+    {
+        BT_PROFILE( "parallelSum_PPL" );
+        m_sum.clear();
+        SumBodyAdapter pplBody( &body, &m_sum, grainSize, iEnd );
+        btPushThreadsAreRunning();
+        // note: MSVC 2010 doesn't support partitioner args, so avoid them
+        concurrency::parallel_for( iBegin,
+            iEnd,
+            grainSize,
+            pplBody
+        );
+        btPopThreadsAreRunning();
+        return m_sum.combine( sumFunc );
     }
 };
 #endif // #if BT_USE_PPL && BT_THREADSAFE

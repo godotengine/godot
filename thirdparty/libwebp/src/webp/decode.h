@@ -491,4 +491,4 @@ WEBP_EXTERN VP8StatusCode WebPDecode(const uint8_t* data, size_t data_size,
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_WEBP_DECODE_H_ */
+#endif  // WEBP_WEBP_DECODE_H_

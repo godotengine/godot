@@ -33,10 +33,10 @@
 #include "gdnative/gdnative.h"
 
 #include "core/global_constants.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "io/file_access_encrypted.h"
-#include "os/file_access.h"
-#include "os/os.h"
 
 #include "scene/main/scene_tree.h"
 #include "scene/resources/scene_format_text.h"
@@ -44,7 +44,7 @@
 #include <stdlib.h>
 
 #ifndef NO_THREADS
-#include "os/thread.h"
+#include "core/os/thread.h"
 #endif
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
@@ -72,11 +72,11 @@ void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_documentation", "signal_name"), &NativeScript::get_signal_documentation);
 	ClassDB::bind_method(D_METHOD("get_property_documentation", "path"), &NativeScript::get_property_documentation);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
 	ADD_GROUP("Script Class", "script_class_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
 }
@@ -292,6 +292,10 @@ MethodInfo NativeScript::get_method_info(const StringName &p_method) const {
 		script_data = script_data->base_data;
 	}
 	return MethodInfo();
+}
+
+bool NativeScript::is_valid() const {
+	return true;
 }
 
 bool NativeScript::is_tool() const {
@@ -810,18 +814,16 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rpc_mode(const StringName &p_m
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
 					return MultiplayerAPI::RPC_MODE_REMOTE;
-				case GODOT_METHOD_RPC_MODE_SYNC:
-					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
 					return MultiplayerAPI::RPC_MODE_MASTER;
-				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_PUPPET:
+					return MultiplayerAPI::RPC_MODE_PUPPET;
 				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
 					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
 				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
 					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-				case GODOT_METHOD_RPC_MODE_SLAVESYNC:
-					return MultiplayerAPI::RPC_MODE_SLAVESYNC;
+				case GODOT_METHOD_RPC_MODE_PUPPETSYNC:
+					return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
@@ -846,12 +848,16 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
 					return MultiplayerAPI::RPC_MODE_REMOTE;
-				case GODOT_METHOD_RPC_MODE_SYNC:
-					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
 					return MultiplayerAPI::RPC_MODE_MASTER;
-				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_PUPPET:
+					return MultiplayerAPI::RPC_MODE_PUPPET;
+				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
+					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
+					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				case GODOT_METHOD_RPC_MODE_PUPPETSYNC:
+					return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
@@ -1013,6 +1019,16 @@ NativeScriptLanguage::NativeScriptLanguage() {
 
 #ifdef DEBUG_ENABLED
 	profiling = false;
+#endif
+
+	_init_call_type = "nativescript_init";
+	_init_call_name = "nativescript_init";
+	_terminate_call_name = "nativescript_terminate";
+	_noarg_call_type = "nativescript_no_arg";
+	_frame_call_name = "nativescript_frame";
+#ifndef NO_THREADS
+	_thread_enter_call_name = "nativescript_thread_enter";
+	_thread_exit_call_name = "nativescript_thread_exit";
 #endif
 }
 
@@ -1370,6 +1386,54 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	delete &binding_data;
 }
 
+void NativeScriptLanguage::refcount_incremented_instance_binding(Object *p_object) {
+
+	void *data = p_object->get_script_instance_binding(lang_idx);
+
+	if (!data)
+		return;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)data;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (!binding_functions[i].first)
+			continue;
+
+		if (binding_functions[i].second.refcount_incremented_instance_binding) {
+			binding_functions[i].second.refcount_incremented_instance_binding(binding_data[i], p_object);
+		}
+	}
+}
+
+bool NativeScriptLanguage::refcount_decremented_instance_binding(Object *p_object) {
+
+	void *data = p_object->get_script_instance_binding(lang_idx);
+
+	if (!data)
+		return true;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)data;
+
+	bool can_die = true;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (!binding_functions[i].first)
+			continue;
+
+		if (binding_functions[i].second.refcount_decremented_instance_binding) {
+			can_die = can_die && binding_functions[i].second.refcount_decremented_instance_binding(binding_data[i], p_object);
+		}
+	}
+
+	return can_die;
+}
+
 void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {
 	if (!global_type_tags.has(p_idx)) {
 		global_type_tags.insert(p_idx, HashMap<StringName, const void *>());
@@ -1537,12 +1601,16 @@ bool NativeScriptLanguage::handles_global_class_type(const String &p_type) const
 String NativeScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
 	Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
 	if (script.is_valid()) {
-		*r_base_type = script->get_instance_base_type();
-		*r_icon_path = script->get_script_class_icon_path();
+		if (r_base_type)
+			*r_base_type = script->get_instance_base_type();
+		if (r_icon_path)
+			*r_icon_path = script->get_script_class_icon_path();
 		return script->get_script_class_name();
 	}
-	*r_base_type = String();
-	*r_icon_path = String();
+	if (r_base_type)
+		*r_base_type = String();
+	if (r_icon_path)
+		*r_icon_path = String();
 	return String();
 }
 
@@ -1647,8 +1715,7 @@ void NativeReloadNode::_notification(int p_what) {
 }
 
 RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	ResourceFormatLoaderText rsflt;
-	return rsflt.load(p_path, p_original_path, r_error);
+	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error);
 }
 
 void ResourceFormatLoaderNativeScript::get_recognized_extensions(List<String> *p_extensions) const {

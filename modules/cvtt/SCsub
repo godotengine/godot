@@ -14,8 +14,11 @@ if env['builtin_squish']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_cvtt.add_source_files(env.modules_sources, thirdparty_sources)
     env_cvtt.Append(CPPPATH=[thirdparty_dir])
+
+    env_thirdparty = env_cvtt.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_cvtt.add_source_files(env.modules_sources, "*.cpp")

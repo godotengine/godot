@@ -30,8 +30,8 @@
 
 #include "world.h"
 
-#include "camera_matrix.h"
-#include "octree.h"
+#include "core/math/camera_matrix.h"
+#include "core/math/octree.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/visibility_notifier.h"
 #include "scene/scene_string_names.h"

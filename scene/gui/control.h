@@ -31,13 +31,13 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#include "rid.h"
+#include "core/math/transform_2d.h"
+#include "core/rid.h"
 #include "scene/2d/canvas_item.h"
 #include "scene/gui/shortcut.h"
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
-#include "transform_2d.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -76,7 +76,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 		SIZE_SHRINK_CENTER = 4, //ignored by expand or fill
-		SIZE_SHRINK_END = 8, //ignored by expand or fil
+		SIZE_SHRINK_END = 8, //ignored by expand or fill
 
 	};
 

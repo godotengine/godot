@@ -7,7 +7,7 @@
 		Direct access object to a space in the [PhysicsServer]. It's used mainly to do queries against objects and areas residing in a given space.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/physics/ray-casting.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -21,7 +21,7 @@
 			</argument>
 			<description>
 				Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [1, 1].
-				If the shape can not move, the array will be empty ([code]dir.empty()==true[/code]).
+				If the shape can not move, the returned array will be [0, 0].
 			</description>
 		</method>
 		<method name="collide_shape">
@@ -41,14 +41,14 @@
 			<argument index="0" name="shape" type="PhysicsShapeQueryParameters">
 			</argument>
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters] object, against the space. If it collides with more than a shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters] object, against the space. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector3]. If the object is an [Area], the result is [code](0, 0, 0)[/code].
 				[code]normal[/code]: The object's surface normal at the intersection point.
 				[code]point[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				If the shape did not intersect anything, then an empty dictionary ([code]dir.empty()==true[/code]) is returned instead.
+				If the shape did not intersect anything, then an empty dictionary is returned instead.
 			</description>
 		</method>
 		<method name="intersect_ray">
@@ -60,7 +60,11 @@
 			</argument>
 			<argument index="2" name="exclude" type="Array" default="[  ]">
 			</argument>
-			<argument index="3" name="collision_layer" type="int" default="2147483647">
+			<argument index="3" name="collision_mask" type="int" default="2147483647">
+			</argument>
+			<argument index="4" name="collide_with_bodies" type="bool" default="true">
+			</argument>
+			<argument index="5" name="collide_with_areas" type="bool" default="false">
 			</argument>
 			<description>
 				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
@@ -70,8 +74,8 @@
 				[code]position[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				If the ray did not intersect anything, then an empty dictionary ([code]dir.empty()==true[/code]) is returned instead.
-				Additionally, the method can take an array of objects or [RID]s that are to be excluded from collisions, or a bitmask representing the physics layers to check in.
+				If the ray did not intersect anything, then an empty dictionary is returned instead.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody]s or [Area]s, respectively.
 			</description>
 		</method>
 		<method name="intersect_shape">
@@ -87,7 +91,7 @@
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
-				The number of intersections can be limited with the second parameter, to reduce the processing time.
+				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
 			</description>
 		</method>
 	</methods>

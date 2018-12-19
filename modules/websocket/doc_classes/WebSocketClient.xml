@@ -25,14 +25,18 @@
 			</argument>
 			<description>
 				Connect to the given URL requesting one of the given [code]protocols[/code] as sub-protocol.
-				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI]. Note: connnections to non Godot servers will not work, and [signal data_received] will not be emitted when this option is true.
+				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI]. Note: connections to non Godot servers will not work, and [signal data_received] will not be emitted when this option is true.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
 			<return type="void">
 			</return>
+			<argument index="0" name="code" type="int" default="1000">
+			</argument>
+			<argument index="1" name="reason" type="String" default="&quot;&quot;">
+			</argument>
 			<description>
-				Disconnect from the server if currently connected.
+				Disconnect this client from the connected host. See [method WebSocketPeer.close] for more info.
 			</description>
 		</method>
 	</methods>
@@ -43,8 +47,10 @@
 	</members>
 	<signals>
 		<signal name="connection_closed">
+			<argument index="0" name="was_clean_close" type="bool">
+			</argument>
 			<description>
-				Emitted when the connection to the server is closed.
+				Emitted when the connection to the server is closed. [code]was_clean_close[/code] will be [code]true[/code] if the connection was shutdown cleanly.
 			</description>
 		</signal>
 		<signal name="connection_error">
@@ -62,6 +68,15 @@
 		<signal name="data_received">
 			<description>
 				Emitted when a WebSocket message is received. Note: This signal is NOT emitted when used as high level multiplayer peer.
+			</description>
+		</signal>
+		<signal name="server_close_request">
+			<argument index="0" name="code" type="int">
+			</argument>
+			<argument index="1" name="reason" type="String">
+			</argument>
+			<description>
+				Emitted when the server requests a clean close. You should keep polling until you get a [signal connection_closed] signal to achieve the clean close. See [method WebSocketPeer.close] for more details.
 			</description>
 		</signal>
 	</signals>

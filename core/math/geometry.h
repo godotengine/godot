@@ -31,14 +31,15 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include "dvector.h"
-#include "face3.h"
-#include "object.h"
-#include "print_string.h"
-#include "rect2.h"
-#include "triangulate.h"
-#include "vector.h"
-#include "vector3.h"
+#include "core/dvector.h"
+#include "core/math/face3.h"
+#include "core/math/rect2.h"
+#include "core/math/triangulate.h"
+#include "core/math/vector3.h"
+#include "core/object.h"
+#include "core/print_string.h"
+#include "core/vector.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -797,6 +798,21 @@ public:
 			return _decompose_func(p_polygon);
 
 		return Vector<Vector<Vector2> >();
+	}
+
+	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3)
+			return false;
+		const Vector2 *p = p_polygon.ptr();
+		real_t sum = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			sum += (v2.x - v1.x) * (v2.y + v1.y);
+		}
+
+		return sum > 0.0f;
 	}
 
 	static PoolVector<PoolVector<Face3> > separate_objects(PoolVector<Face3> p_array);

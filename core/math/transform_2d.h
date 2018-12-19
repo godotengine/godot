@@ -31,7 +31,7 @@
 #ifndef TRANSFORM_2D_H
 #define TRANSFORM_2D_H
 
-#include "rect2.h" // also includes vector2, math_funcs, and ustring
+#include "core/math/rect2.h" // also includes vector2, math_funcs, and ustring
 
 struct Transform2D {
 	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":

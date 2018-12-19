@@ -31,8 +31,8 @@
 #ifndef VECTOR2_H
 #define VECTOR2_H
 
-#include "math_funcs.h"
-#include "ustring.h"
+#include "core/math/math_funcs.h"
+#include "core/ustring.h"
 
 struct Vector2i;
 
@@ -230,7 +230,7 @@ Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
 
 Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(is_normalized() == false, Vector2());
+	ERR_FAIL_COND_V(!is_normalized(), Vector2());
 #endif
 	real_t theta = angle_to(p_b);
 	return rotated(theta * p_t);

@@ -31,10 +31,10 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
-#include "aabb.h"
-#include "geometry.h"
-#include "list.h"
-#include "set.h"
+#include "core/list.h"
+#include "core/math/aabb.h"
+#include "core/math/geometry.h"
+#include "core/set.h"
 
 class QuickHull {
 

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ViewportContainer" inherits="Container" category="Core" version="3.1">
 	<brief_description>
+		Control for holding [Viewport]s.
 	</brief_description>
 	<description>
+		A [Container] node that holds a [Viewport], automatically setting its size.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -12,6 +14,7 @@
 	</methods>
 	<members>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled">
+			If [code]true[/code] the viewport will be scaled to the control's size. Default value:[code]false[/code].
 		</member>
 		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink">
 		</member>

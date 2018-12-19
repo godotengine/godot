@@ -31,9 +31,11 @@
 #ifndef GODOT_UPNP_H
 #define GODOT_UPNP_H
 
-#include "miniupnpc/miniupnpc.h"
+#include "core/reference.h"
+
 #include "upnpdevice.h"
-#include <reference.h>
+
+#include <miniupnpc/miniupnpc.h>
 
 class UPNP : public Reference {
 

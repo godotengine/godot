@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "thread_safe.h"
-#include "error_macros.h"
-#include "os/memory.h"
+
+#include "core/error_macros.h"
+#include "core/os/memory.h"
 
 ThreadSafe::ThreadSafe() {
 

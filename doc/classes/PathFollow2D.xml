@@ -23,6 +23,7 @@
 			The node's offset along the curve.
 		</member>
 		<member name="lookahead" type="float" setter="set_lookahead" getter="get_lookahead">
+			How far to look ahead of the curve to calculate the tangent if the node is rotating. E.g. shorter lookaheads will lead to faster rotations. Default value: [code]4[/code].
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop">
 			If [code]true[/code], any offset outside the path's length will wrap around, instead of stopping at the ends. Use it for cyclic paths.

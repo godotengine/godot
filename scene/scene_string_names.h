@@ -31,8 +31,8 @@
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
-#include "node_path.h"
-#include "string_db.h"
+#include "core/node_path.h"
+#include "core/string_db.h"
 class SceneStringNames {
 
 	friend void register_scene_types();

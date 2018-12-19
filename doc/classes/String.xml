@@ -339,7 +339,7 @@
 		<method name="format">
 			<return type="String">
 			</return>
-			<argument index="0" name="values" type="var">
+			<argument index="0" name="values" type="Variant">
 			</argument>
 			<argument index="1" name="placeholder" type="String" default="{_}">
 			</argument>
@@ -671,6 +671,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
+				Returns the SHA-256 hash of the string as an array of bytes.
 			</description>
 		</method>
 		<method name="sha256_text">

@@ -31,7 +31,7 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-#include "resource.h"
+#include "core/resource.h"
 
 class Canvas : public Resource {
 

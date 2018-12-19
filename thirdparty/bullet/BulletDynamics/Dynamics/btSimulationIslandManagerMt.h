@@ -19,7 +19,9 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionDispatch/btSimulationIslandManager.h"
 
 class btTypedConstraint;
-
+class btConstraintSolver;
+struct btContactSolverInfo;
+class btIDebugDraw;
 
 ///
 /// SimulationIslandManagerMt -- Multithread capable version of SimulationIslandManager
@@ -45,22 +47,19 @@ public:
 
         void append( const Island& other );  // add bodies, manifolds, constraints to my own
     };
-    struct	IslandCallback
+    struct SolverParams
     {
-        virtual ~IslandCallback() {};
-
-        virtual	void processIsland( btCollisionObject** bodies,
-                                    int numBodies,
-                                    btPersistentManifold** manifolds,
-                                    int numManifolds,
-                                    btTypedConstraint** constraints,
-                                    int numConstraints,
-                                    int islandId
-                                    ) = 0;
+        btConstraintSolver*		m_solverPool;
+        btConstraintSolver*		m_solverMt;
+        btContactSolverInfo*	m_solverInfo;
+        btIDebugDraw*			m_debugDrawer;
+        btDispatcher*			m_dispatcher;
     };
-    typedef void( *IslandDispatchFunc ) ( btAlignedObjectArray<Island*>* islands, IslandCallback* callback );
-    static void serialIslandDispatch( btAlignedObjectArray<Island*>* islandsPtr, IslandCallback* callback );
-    static void parallelIslandDispatch( btAlignedObjectArray<Island*>* islandsPtr, IslandCallback* callback );
+    static void solveIsland(btConstraintSolver* solver, Island& island, const SolverParams& solverParams);
+
+    typedef void( *IslandDispatchFunc ) ( btAlignedObjectArray<Island*>* islands, const SolverParams& solverParams );
+    static void serialIslandDispatch( btAlignedObjectArray<Island*>* islandsPtr, const SolverParams& solverParams );
+    static void parallelIslandDispatch( btAlignedObjectArray<Island*>* islandsPtr, const SolverParams& solverParams );
 protected:
     btAlignedObjectArray<Island*> m_allocatedIslands;  // owner of all Islands
     btAlignedObjectArray<Island*> m_activeIslands;  // islands actively in use
@@ -83,7 +82,11 @@ public:
 	btSimulationIslandManagerMt();
 	virtual ~btSimulationIslandManagerMt();
 
-    virtual void buildAndProcessIslands( btDispatcher* dispatcher, btCollisionWorld* collisionWorld, btAlignedObjectArray<btTypedConstraint*>& constraints, IslandCallback* callback );
+    virtual void buildAndProcessIslands( btDispatcher* dispatcher,
+        btCollisionWorld* collisionWorld,
+        btAlignedObjectArray<btTypedConstraint*>& constraints,
+        const SolverParams& solverParams
+    );
 
 	virtual void buildIslands(btDispatcher* dispatcher,btCollisionWorld* colWorld);
 
@@ -105,6 +108,7 @@ public:
         m_islandDispatch = func;
     }
 };
+
 
 #endif //BT_SIMULATION_ISLAND_MANAGER_H
 

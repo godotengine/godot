@@ -31,8 +31,8 @@
 #ifndef SET_H
 #define SET_H
 
-#include "os/memory.h"
-#include "typedefs.h"
+#include "core/os/memory.h"
+#include "core/typedefs.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -595,6 +595,7 @@ public:
 		return e;
 	}
 
+	inline bool empty() const { return _data.size_cache == 0; }
 	inline int size() const { return _data.size_cache; }
 
 	int calculate_depth() const {

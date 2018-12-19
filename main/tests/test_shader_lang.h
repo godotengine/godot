@@ -31,7 +31,7 @@
 #ifndef TEST_SHADER_LANG_H
 #define TEST_SHADER_LANG_H
 
-#include "os/main_loop.h"
+#include "core/os/main_loop.h"
 
 namespace TestShaderLang {
 

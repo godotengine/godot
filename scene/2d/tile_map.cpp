@@ -30,9 +30,9 @@
 
 #include "tile_map.h"
 
-#include "io/marshalls.h"
-#include "method_bind_ext.gen.inc"
-#include "os/os.h"
+#include "core/io/marshalls.h"
+#include "core/method_bind_ext.gen.inc"
+#include "core/os/os.h"
 #include "servers/physics_2d_server.h"
 
 int TileMap::_get_quadrant_size() const {
@@ -257,7 +257,6 @@ void TileMap::update_dirty_quadrants() {
 	VisualServer *vs = VisualServer::get_singleton();
 	Physics2DServer *ps = Physics2DServer::get_singleton();
 	Vector2 tofs = get_cell_draw_offset();
-	Vector2 tcenter = cell_size / 2;
 	Transform2D nav_rel;
 	if (navigation)
 		nav_rel = get_relative_transform_to_parent(navigation);
@@ -305,7 +304,7 @@ void TileMap::update_dirty_quadrants() {
 		}
 		q.occluder_instances.clear();
 		Ref<ShaderMaterial> prev_material;
-		int prev_z_index;
+		int prev_z_index = 0;
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
@@ -327,6 +326,11 @@ void TileMap::update_dirty_quadrants() {
 
 			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
 			int z_index = tile_set->tile_get_z_index(c.id);
+
+			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE ||
+					tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
+				z_index += tile_set->autotile_get_z_index(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
+			}
 
 			RID canvas_item;
 			RID debug_canvas_item;
@@ -594,7 +598,7 @@ void TileMap::update_dirty_quadrants() {
 
 	if (quadrant_order_dirty) {
 
-		int index = -0x80000000; //always must be drawn below children
+		int index = -(int64_t)0x80000000; //always must be drawn below children
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
@@ -726,7 +730,7 @@ void TileMap::set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x, bool p_
 	set_cell(p_pos.x, p_pos.y, p_tile, p_flip_x, p_flip_y, p_transpose);
 }
 
-void TileMap::set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
+void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
 
 	set_cell(p_pos.x, p_pos.y, p_data["id"], p_data["flip_h"], p_data["flip_y"], p_data["transpose"], p_data["auto_coord"]);
 }
@@ -1115,6 +1119,8 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 		*/
 		set_cell(x, y, v, flip_h, flip_v, transpose, Vector2(coord_x, coord_y));
 	}
+
+	format = FORMAT_2;
 }
 
 PoolVector<int> TileMap::_get_tile_data() const {
@@ -1404,7 +1410,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "format") {
-		r_ret = FORMAT_2;
+		r_ret = format;
 		return true;
 	} else if (p_name == "tile_data") {
 		r_ret = _get_tile_data();
@@ -1446,6 +1452,11 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 		default: {}
 	}
 
+	// Account for precision errors on the border (GH-23250).
+	// 0.00005 is 5*CMP_EPSILON, results would start being unpredictible if
+	// cell size is > 15,000, but we can hardly have more precision anyway with
+	// floating point.
+	ret += Vector2(0.00005, 0.00005);
 	return ret.floor();
 }
 
@@ -1612,7 +1623,7 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell", "x", "y", "tile", "flip_x", "flip_y", "transpose", "autotile_coord"), &TileMap::set_cell, DEFVAL(false), DEFVAL(false), DEFVAL(false), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("set_cellv", "position", "tile", "flip_x", "flip_y", "transpose"), &TileMap::set_cellv, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_celld", "position", "data"), &TileMap::set_celld);
+	ClassDB::bind_method(D_METHOD("_set_celld", "position", "data"), &TileMap::_set_celld);
 	ClassDB::bind_method(D_METHOD("get_cell", "x", "y"), &TileMap::get_cell);
 	ClassDB::bind_method(D_METHOD("get_cellv", "position"), &TileMap::get_cellv);
 	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);

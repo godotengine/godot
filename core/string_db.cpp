@@ -30,8 +30,8 @@
 
 #include "string_db.h"
 
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs;

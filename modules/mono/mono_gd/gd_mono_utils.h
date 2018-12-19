@@ -38,8 +38,8 @@
 #include "../utils/thread_local.h"
 #include "gd_mono_header.h"
 
-#include "object.h"
-#include "reference.h"
+#include "core/object.h"
+#include "core/reference.h"
 
 #define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
 	if (unlikely(m_exc != NULL)) {                     \
@@ -49,6 +49,7 @@
 
 namespace GDMonoUtils {
 
+typedef void (*GodotObject_Dispose)(MonoObject *, MonoObject **);
 typedef Array *(*Array_GetPtr)(MonoObject *, MonoObject **);
 typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoObject **);
 typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoObject **);
@@ -130,8 +131,9 @@ struct MonoCache {
 	GDMonoClass *class_SyncAttribute;
 	GDMonoClass *class_RemoteSyncAttribute;
 	GDMonoClass *class_MasterSyncAttribute;
-	GDMonoClass *class_SlaveSyncAttribute;
+	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_MasterAttribute;
+	GDMonoClass *class_PuppetAttribute;
 	GDMonoClass *class_SlaveAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
@@ -141,6 +143,7 @@ struct MonoCache {
 	GDMonoField *field_Image_ptr;
 	GDMonoField *field_RID_ptr;
 
+	GodotObject_Dispose methodthunk_GodotObject_Dispose;
 	Array_GetPtr methodthunk_Array_GetPtr;
 	Dictionary_GetPtr methodthunk_Dictionary_GetPtr;
 	IsArrayGenericType methodthunk_MarshalUtils_IsArrayGenericType;
@@ -230,13 +233,17 @@ _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }
 
-MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc);
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
 
-MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc);
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
 
-void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error);
+
+void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
 } // namespace GDMonoUtils
 
@@ -261,5 +268,94 @@ MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_param
 
 #define GD_MONO_END_RUNTIME_INVOKE \
 	_runtime_invoke_count_ref -= 1;
+
+inline void invoke_method_thunk(void (*p_method_thunk)()) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk();
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R>
+R invoke_method_thunk(R (*p_method_thunk)()) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk();
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1>
+void invoke_method_thunk(void (*p_method_thunk)(P1), P1 p_arg1) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1>
+R invoke_method_thunk(R (*p_method_thunk)(P1), P1 p_arg1) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2), P1 p_arg1, P2 p_arg2) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2), P1 p_arg1, P2 p_arg2) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3), P1 p_arg1, P2 p_arg2, P3 p_arg3) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3), P1 p_arg1, P2 p_arg2, P3 p_arg3) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3, class P4>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3, P4), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3, class P4>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3, P4), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3, class P4, class P5>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3, P4, P5), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4, P5 p_arg5) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3, class P4, class P5>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3, P4, P5), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4, P5 p_arg5) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
 
 #endif // GD_MONOUTILS_H

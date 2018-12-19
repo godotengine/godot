@@ -31,10 +31,10 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include "color.h"
-#include "dvector.h"
-#include "rect2.h"
-#include "resource.h"
+#include "core/color.h"
+#include "core/dvector.h"
+#include "core/math/rect2.h"
+#include "core/resource.h"
 
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>
@@ -286,6 +286,7 @@ public:
 
 	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
+	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
 
 	enum CompressMode {
 		COMPRESS_S3TC,

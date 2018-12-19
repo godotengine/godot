@@ -19,6 +19,8 @@
 		</method>
 	</methods>
 	<members>
+		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align">
+		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
 		</member>
 		<member name="prefix" type="String" setter="set_prefix" getter="get_prefix">

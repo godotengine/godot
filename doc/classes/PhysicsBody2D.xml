@@ -7,7 +7,7 @@
 		PhysicsBody2D is an abstract base class for implementing a physics body. All *Body2D types inherit from it.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -21,13 +21,20 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
+		<method name="get_collision_exceptions">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of nodes that were added as collision exceptions for this body.
+			</description>
+		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the collision mask.
+				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="get_collision_mask_bit" qualifiers="const">
@@ -36,7 +43,7 @@
 			<argument index="0" name="bit" type="int">
 			</argument>
 			<description>
-				Return an individual bit on the collision mask.
+				Returns an individual bit on the collision mask.
 			</description>
 		</method>
 		<method name="remove_collision_exception_with">
@@ -56,7 +63,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the layer mask. This makes getting a body in/out of only one layer easier.
+				Sets individual bits on the layer mask. Use this if you only need to change one layer's value.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -67,7 +74,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
+				Sets individual bits on the collision mask. Use this if you only need to change one layer's value.
 			</description>
 		</method>
 	</methods>
@@ -78,10 +85,10 @@
 			A contact is detected if object A is in any of the layers that object B scans, or object B is in any layer scanned by object A.
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
-			The physics layers this area can scan for collisions.
+			The physics layers this area scans for collisions.
 		</member>
 		<member name="layers" type="int" setter="_set_layers" getter="_get_layers">
-			Both collision_layer and collision_mask. Returns collision_layer when accessed. Updates collision_layers and collision_mask when modified.
+			Both [member collision_layer] and [member collision_mask]. Returns [member collision_layer] when accessed. Updates [member collision_layer] and [member collision_mask] when modified.
 		</member>
 	</members>
 	<constants>

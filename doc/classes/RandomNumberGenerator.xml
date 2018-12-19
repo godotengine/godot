@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RandomNumberGenerator" inherits="Reference" category="Core" version="3.1">
+	<brief_description>
+		A class for generation pseudo-random numbers.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="randf">
+			<return type="float">
+			</return>
+			<description>
+				Generates pseudo-random float between '0.0' and '1.0'.
+			</description>
+		</method>
+		<method name="randf_range">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<description>
+				Generates pseudo-random float between [code]from[/code] and [code]to[/code].
+			</description>
+		</method>
+		<method name="randi">
+			<return type="int">
+			</return>
+			<description>
+				Generates pseudo-random 32-bit unsigned integer between '0' and '4294967295'.
+			</description>
+		</method>
+		<method name="randi_range">
+			<return type="int">
+			</return>
+			<argument index="0" name="from" type="int">
+			</argument>
+			<argument index="1" name="to" type="int">
+			</argument>
+			<description>
+				Generates pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code](inclusive).
+			</description>
+		</method>
+		<method name="randomize">
+			<return type="void">
+			</return>
+			<description>
+				Setups a time-based seed to generator.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

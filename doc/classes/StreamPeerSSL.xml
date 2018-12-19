@@ -7,7 +7,7 @@
 		SSL Stream peer. This object can be used to connect to SSL servers.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -62,6 +62,8 @@
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			A status representing a [code]StreamPeerSSL[/code] that is disconnected.
+		</constant>
+		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2" enum="Status">
 			A status representing a [code]StreamPeerSSL[/code] that is connected to a host.

@@ -31,9 +31,9 @@
 #ifndef PHYSICS2DSERVERWRAPMT_H
 #define PHYSICS2DSERVERWRAPMT_H
 
-#include "command_queue_mt.h"
-#include "os/thread.h"
-#include "project_settings.h"
+#include "core/command_queue_mt.h"
+#include "core/os/thread.h"
+#include "core/project_settings.h"
 #include "servers/physics_2d_server.h"
 
 #ifdef DEBUG_SYNC
@@ -154,6 +154,9 @@ public:
 	FUNC2(area_attach_object_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, area_get_object_instance_id, RID);
 
+	FUNC2(area_attach_canvas_instance_id, RID, ObjectID);
+	FUNC1RC(ObjectID, area_get_canvas_instance_id, RID);
+
 	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
 	FUNC2(area_set_transform, RID, const Transform2D &);
 
@@ -198,6 +201,9 @@ public:
 
 	FUNC2(body_attach_object_instance_id, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_object_instance_id, RID);
+
+	FUNC2(body_attach_canvas_instance_id, RID, uint32_t);
+	FUNC1RC(uint32_t, body_get_canvas_instance_id, RID);
 
 	FUNC2(body_set_continuous_collision_detection_mode, RID, CCDMode);
 	FUNC1RC(CCDMode, body_get_continuous_collision_detection_mode, RID);
@@ -305,6 +311,10 @@ public:
 	virtual void end_sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const {
+		return physics_2d_server->is_flushing_queries();
+	}
 
 	int get_process_info(ProcessInfo p_info) {
 		return physics_2d_server->get_process_info(p_info);

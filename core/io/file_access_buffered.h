@@ -31,10 +31,9 @@
 #ifndef FILE_ACCESS_BUFFERED_H
 #define FILE_ACCESS_BUFFERED_H
 
-#include "os/file_access.h"
-
-#include "dvector.h"
-#include "ustring.h"
+#include "core/dvector.h"
+#include "core/os/file_access.h"
+#include "core/ustring.h"
 
 class FileAccessBuffered : public FileAccess {
 

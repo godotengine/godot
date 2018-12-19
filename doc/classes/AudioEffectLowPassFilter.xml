@@ -4,7 +4,7 @@
 		Adds a low pass filter to the Audio Bus.
 	</brief_description>
 	<description>
-		Cuts frequencies higher than the [member cutoff_hz] and allows lower frequencies to pass.
+		Cuts frequencies higher than the [member AudioEffectFilter.cutoff_hz] and allows lower frequencies to pass.
 	</description>
 	<tutorials>
 	</tutorials>

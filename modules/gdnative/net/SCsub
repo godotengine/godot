@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
-import os
-import methods
-
 Import('env')
-Import('env_modules')
+Import('env_gdnative')
 
-env_net_gdnative = env_modules.Clone()
+env_gdnative.add_source_files(env.modules_sources, '*.cpp')
 
-env_net_gdnative.Append(CPPPATH=['#modules/gdnative/include/'])
-env_net_gdnative.add_source_files(env.modules_sources, '*.cpp')

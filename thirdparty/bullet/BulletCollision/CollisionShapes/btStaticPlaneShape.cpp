@@ -69,8 +69,6 @@ void	btStaticPlaneShape::processAllTriangles(btTriangleCallback* callback,const 
 	//tangentDir0/tangentDir1 can be precalculated
 	btPlaneSpace1(m_planeNormal,tangentDir0,tangentDir1);
 
-	btVector3 supVertex0,supVertex1;
-
 	btVector3 projectedCenter = center - (m_planeNormal.dot(center) - m_planeConstant)*m_planeNormal;
 	
 	btVector3 triangle[3];

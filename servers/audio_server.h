@@ -31,11 +31,11 @@
 #ifndef AUDIO_SERVER_H
 #define AUDIO_SERVER_H
 
-#include "audio_frame.h"
-#include "object.h"
-#include "os/os.h"
+#include "core/math/audio_frame.h"
+#include "core/object.h"
+#include "core/os/os.h"
+#include "core/variant.h"
 #include "servers/audio/audio_effect.h"
-#include "variant.h"
 
 class AudioDriverDummy;
 class AudioStream;
@@ -59,6 +59,7 @@ protected:
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
+	void input_buffer_init(int driver_buffer_frames);
 	void input_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
@@ -262,6 +263,7 @@ private:
 	};
 
 	Set<CallbackItem> callbacks;
+	Set<CallbackItem> update_callbacks;
 
 	friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
@@ -281,6 +283,7 @@ public:
 	}
 
 	//do not use from outside audio thread
+	bool thread_has_channel_mix_buffer(int p_bus, int p_buffer) const;
 	AudioFrame *thread_get_channel_mix_buffer(int p_bus, int p_buffer);
 	int thread_get_mix_buffer_size() const;
 	int thread_find_bus_index(const StringName &p_name);
@@ -296,6 +299,8 @@ public:
 	void set_bus_name(int p_bus, const String &p_name);
 	String get_bus_name(int p_bus) const;
 	int get_bus_index(const StringName &p_bus_name) const;
+
+	int get_bus_channels(int p_bus) const;
 
 	void set_bus_volume_db(int p_bus, float p_volume_db);
 	float get_bus_volume_db(int p_bus) const;
@@ -356,6 +361,9 @@ public:
 
 	void add_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_callback(AudioCallback p_callback, void *p_userdata);
+
+	void add_update_callback(AudioCallback p_callback, void *p_userdata);
+	void remove_update_callback(AudioCallback p_callback, void *p_userdata);
 
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;

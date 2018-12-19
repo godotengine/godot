@@ -31,12 +31,14 @@
 #ifndef MAIN_LOOP_H
 #define MAIN_LOOP_H
 
-#include "os/input_event.h"
-#include "reference.h"
-#include "script_language.h"
+#include "core/os/input_event.h"
+#include "core/reference.h"
+#include "core/script_language.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class MainLoop : public Object {
 
 	GDCLASS(MainLoop, Object);
@@ -63,6 +65,7 @@ public:
 		NOTIFICATION_TRANSLATION_CHANGED = 90,
 		NOTIFICATION_WM_ABOUT = 91,
 		NOTIFICATION_CRASH = 92,
+		NOTIFICATION_OS_IME_UPDATE = 93,
 	};
 
 	virtual void input_event(const Ref<InputEvent> &p_event);

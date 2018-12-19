@@ -12,6 +12,12 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="clear_color">
 			<return type="void">
 			</return>

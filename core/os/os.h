@@ -31,13 +31,14 @@
 #ifndef OS_H
 #define OS_H
 
-#include "engine.h"
-#include "image.h"
-#include "io/logger.h"
-#include "list.h"
-#include "os/main_loop.h"
-#include "ustring.h"
-#include "vector.h"
+#include "core/engine.h"
+#include "core/image.h"
+#include "core/io/logger.h"
+#include "core/list.h"
+#include "core/os/main_loop.h"
+#include "core/ustring.h"
+#include "core/vector.h"
+
 #include <stdarg.h>
 
 /**
@@ -128,7 +129,7 @@ protected:
 
 	RenderThreadMode _render_thread_mode;
 
-	// functions used by main to initialize/deintialize the OS
+	// functions used by main to initialize/deinitialize the OS
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize_core() = 0;
@@ -241,7 +242,8 @@ public:
 
 	virtual void set_ime_active(const bool p_active) {}
 	virtual void set_ime_position(const Point2 &p_pos) {}
-	virtual void set_ime_intermediate_text_callback(ImeCallback p_callback, void *p_inp) {}
+	virtual Point2 get_ime_selection() const { return Point2(); }
+	virtual String get_ime_text() const { return String(); }
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false) { return ERR_UNAVAILABLE; }
 	virtual Error close_dynamic_library(void *p_library_handle) { return ERR_UNAVAILABLE; }
@@ -256,7 +258,7 @@ public:
 
 	virtual String get_executable_path() const;
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false) = 0;
-	virtual Error kill(const ProcessID &p_pid, const int p_max_wait_msec = -1) = 0;
+	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 
 	virtual Error shell_open(String p_uri);
@@ -479,6 +481,7 @@ public:
 	enum EngineContext {
 		CONTEXT_EDITOR,
 		CONTEXT_PROJECTMAN,
+		CONTEXT_ENGINE,
 	};
 
 	virtual void set_context(int p_context);

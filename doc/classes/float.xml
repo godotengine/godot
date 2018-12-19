@@ -35,7 +35,7 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Cast a [String] value to a floating point value. This method accepts float value strings like [code] '1.23' [/code] and exponential notation strings for its parameter so calling [code] float('1e3') [/code] will return 1000.0 and calling [code] float('1e-3') [/code] will return -0.001.
+				Cast a [String] value to a floating point value. This method accepts float value strings like [code] '1.23' [/code] and exponential notation strings for its parameter so calling [code] float('1e3') [/code] will return 1000.0 and calling [code] float('1e-3') [/code] will return 0.001.
 			</description>
 		</method>
 	</methods>

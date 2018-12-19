@@ -41,13 +41,11 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);
 
 	enum Mode {
-
 		MODE_EDIT_UV = MODE_CONT,
 		UVEDIT_POLYGON_TO_UV,
 		UVEDIT_UV_TO_POLYGON,
 		UVEDIT_UV_CLEAR,
 		UVEDIT_GRID_SETTINGS
-
 	};
 
 	enum UVMode {
@@ -73,7 +71,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	ToolButton *uv_button[UV_MODE_MAX];
 	ToolButton *b_snap_enable;
 	ToolButton *b_snap_grid;
-	Control *uv_edit_draw;
+	Panel *uv_edit_draw;
 	HSlider *uv_zoom;
 	SpinBox *uv_zoom_value;
 	HScrollBar *uv_hscroll;
@@ -125,6 +123,8 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	virtual void _menu_option(int p_option);
 
+	void _cancel_editing();
+
 	void _uv_scroll_changed(float);
 	void _uv_input(const Ref<InputEvent> &p_input);
 	void _uv_draw();
@@ -138,6 +138,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _set_snap_step_y(float p_val);
 
 	void _uv_edit_mode_select(int p_mode);
+	void _uv_edit_popup_hide();
 	void _bone_paint_selected(int p_index);
 
 protected:
@@ -145,6 +146,9 @@ protected:
 	virtual void _set_node(Node *p_polygon);
 
 	virtual Vector2 _get_offset(int p_idx) const;
+
+	virtual bool _has_uv() const { return true; };
+	virtual void _commit_action();
 
 	void _notification(int p_what);
 	static void _bind_methods();

@@ -125,12 +125,10 @@
 			</argument>
 			<description>
 				Execute the custom node's logic, returning the index of the output sequence port to use or a [String] when there is an error.
-				
 				The [code]inputs[/code] array contains the values of the input ports.
 				[code]outputs[/code] is an array whose indices should be set to the respective outputs.
 				The [code]start_mode[/code] is usually [code]START_MODE_BEGIN_SEQUENCE[/code], unless you have used the STEP_* constants.
 				[code]working_mem[/code] is an array which can be used to persist information between runs of the custom node.
-				
 				When returning, you can mask the returned value with one of the STEP_* constants.
 			</description>
 		</method>

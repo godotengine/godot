@@ -31,8 +31,8 @@
 #ifndef AUDIO_STREAM_H
 #define AUDIO_STREAM_H
 
-#include "image.h"
-#include "resource.h"
+#include "core/image.h"
+#include "core/resource.h"
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio_server.h"
 
@@ -121,8 +121,6 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 
 	GDCLASS(AudioStreamPlaybackMicrophone, AudioStreamPlayback)
 	friend class AudioStreamMicrophone;
-
-	const int MICROPHONE_PLAYBACK_DELAY = 256;
 
 	bool active;
 	unsigned int input_ofs;

@@ -110,6 +110,15 @@ godot_bool GDAPI godot_node_path_operator_equal(const godot_node_path *p_self, c
 	return *self == *b;
 }
 
+godot_node_path godot_node_path_get_as_property_path(const godot_node_path *p_self) {
+	const NodePath *self = (const NodePath *)p_self;
+	godot_node_path res;
+	NodePath *val = (NodePath *)&res;
+	memnew_placement(val, NodePath);
+	*val = self->get_as_property_path();
+	return res;
+}
+
 #ifdef __cplusplus
 }
 #endif

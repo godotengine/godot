@@ -74,7 +74,7 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Sets the [Texture] of the piece with index "idx" to  "ofs".
+				Sets the [Texture] of the piece with index "idx" to "texture".
 			</description>
 		</method>
 		<method name="set_size">

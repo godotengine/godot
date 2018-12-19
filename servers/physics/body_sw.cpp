@@ -87,6 +87,10 @@ void BodySW::update_inertias() {
 
 			for (int i = 0; i < get_shape_count(); i++) {
 
+				if (is_shape_disabled(i)) {
+					continue;
+				}
+
 				const ShapeSW *shape = get_shape(i);
 
 				real_t area = get_shape_area(i);
@@ -755,10 +759,10 @@ void BodySW::set_kinematic_margin(real_t p_margin) {
 
 BodySW::BodySW() :
 		CollisionObjectSW(TYPE_BODY),
+		locked_axis(0),
 		active_list(this),
 		inertia_update_list(this),
-		direct_state_query_list(this),
-		locked_axis(0) {
+		direct_state_query_list(this) {
 
 	mode = PhysicsServer::BODY_MODE_RIGID;
 	active = true;

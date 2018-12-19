@@ -30,10 +30,10 @@
 
 #include "test_physics_2d.h"
 
-#include "map.h"
-#include "os/main_loop.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/map.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "scene/resources/texture.h"
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"

@@ -30,18 +30,20 @@
 
 #include "project_manager.h"
 
-#include "editor_initialize_ssl.h"
+#include "core/io/config_file.h"
+#include "core/io/resource_saver.h"
+#include "core/io/stream_peer_ssl.h"
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/translation.h"
+#include "core/version.h"
+#include "core/version_hash.gen.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
 #include "editor_themes.h"
-#include "io/config_file.h"
-#include "io/resource_saver.h"
-#include "io/stream_peer_ssl.h"
-#include "io/zip_io.h"
-#include "os/dir_access.h"
-#include "os/file_access.h"
-#include "os/keyboard.h"
-#include "os/os.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -49,9 +51,6 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
-#include "translation.h"
-#include "version.h"
-#include "version_hash.gen.h"
 
 class ProjectDialog : public ConfirmationDialog {
 
@@ -746,7 +745,8 @@ public:
 				get_ok()->set_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
-				project_name->grab_focus();
+				project_name->call_deferred("grab_focus");
+				project_name->call_deferred("select_all");
 
 			} else if (mode == MODE_INSTALL) {
 
@@ -867,16 +867,22 @@ struct ProjectItem {
 	uint64_t last_modified;
 	bool favorite;
 	bool grayed;
+	bool ordered_latest_modification;
 	ProjectItem() {}
-	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified, bool p_favorite = false, bool p_grayed = false) {
+	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified, bool p_favorite = false, bool p_grayed = false, const bool p_ordered_latest_modification = true) {
 		project = p_project;
 		path = p_path;
 		conf = p_conf;
 		last_modified = p_last_modified;
 		favorite = p_favorite;
 		grayed = p_grayed;
+		ordered_latest_modification = p_ordered_latest_modification;
 	}
-	_FORCE_INLINE_ bool operator<(const ProjectItem &l) const { return last_modified > l.last_modified; }
+	_FORCE_INLINE_ bool operator<(const ProjectItem &l) const {
+		if (ordered_latest_modification)
+			return last_modified > l.last_modified;
+		return project < l.project;
+	}
 	_FORCE_INLINE_ bool operator==(const ProjectItem &l) const { return project == l.project; }
 };
 
@@ -999,6 +1005,10 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 			case KEY_ENTER: {
 
 				_open_project();
+			} break;
+			case KEY_DELETE: {
+
+				_erase_project();
 			} break;
 			case KEY_HOME: {
 
@@ -1153,6 +1163,15 @@ void ProjectManager::_load_recent_projects() {
 
 	Color font_color = gui_base->get_color("font_color", "Tree");
 
+	bool set_ordered_latest_modification;
+	ProjectListFilter::FilterOption filter_order_option = project_order_filter->get_filter_option();
+	if (filter_order_option == ProjectListFilter::FILTER_NAME) {
+		set_ordered_latest_modification = false;
+	} else {
+		set_ordered_latest_modification = true;
+	}
+	EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)filter_order_option);
+
 	List<ProjectItem> projects;
 	List<ProjectItem> favorite_projects;
 
@@ -1185,13 +1204,12 @@ void ProjectManager::_load_recent_projects() {
 			grayed = true;
 		}
 
-		ProjectItem item(project, path, conf, last_modified, favorite, grayed);
+		ProjectItem item(project, path, conf, last_modified, favorite, grayed, set_ordered_latest_modification);
 		if (favorite)
 			favorite_projects.push_back(item);
 		else
 			projects.push_back(item);
 	}
-
 	projects.sort();
 	favorite_projects.sort();
 
@@ -1309,7 +1327,7 @@ void ProjectManager::_load_recent_projects() {
 		show->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(show);
 		show->connect("pressed", this, "_show_project", varray(path));
-		show->set_tooltip(TTR("Show In File Manager"));
+		show->set_tooltip(TTR("Show in File Manager"));
 
 		Label *fpath = memnew(Label(path));
 		fpath->set_name("path");
@@ -1751,7 +1769,11 @@ ProjectManager::ProjectManager() {
 			} break;
 		}
 
+#ifndef OSX_ENABLED
+		// The macOS platform implementation uses its own hiDPI window resizing code
+		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
 		OS::get_singleton()->set_window_size(OS::get_singleton()->get_window_size() * MAX(1, EDSCALE));
+#endif
 	}
 
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
@@ -1811,16 +1833,44 @@ ProjectManager::ProjectManager() {
 	tabs->add_child(tree_hb);
 
 	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
-	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	tree_hb->add_child(search_tree_vb);
+	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	HBoxContainer *search_box = memnew(HBoxContainer);
-	search_box->add_spacer(true);
+	HBoxContainer *sort_filters = memnew(HBoxContainer);
+	Label *sort_label = memnew(Label);
+	sort_label->set_text(TTR("Sort:"));
+	sort_filters->add_child(sort_label);
+	Vector<String> sort_filter_titles;
+	sort_filter_titles.push_back("Name");
+	sort_filter_titles.push_back("Last Modified");
+	project_order_filter = memnew(ProjectListFilter);
+	project_order_filter->_setup_filters(sort_filter_titles);
+	project_order_filter->set_filter_size(150);
+	sort_filters->add_child(project_order_filter);
+	project_order_filter->connect("filter_changed", this, "_load_recent_projects");
+	project_order_filter->set_custom_minimum_size(Size2(180, 10) * EDSCALE);
+
+	int projects_sorting_order = (int)EditorSettings::get_singleton()->get("project_manager/sorting_order");
+	project_order_filter->set_filter_option((ProjectListFilter::FilterOption)projects_sorting_order);
+
+	sort_filters->add_spacer(true);
+	Label *search_label = memnew(Label);
+	search_label->set_text(TTR("Search:"));
+	sort_filters->add_child(search_label);
+
+	HBoxContainer *search_filters = memnew(HBoxContainer);
+	Vector<String> vec2;
+	vec2.push_back("Name");
+	vec2.push_back("Path");
 	project_filter = memnew(ProjectListFilter);
-	search_box->add_child(project_filter);
+	project_filter->_setup_filters(vec2);
+	project_filter->add_search_box();
+	search_filters->add_child(project_filter);
 	project_filter->connect("filter_changed", this, "_load_recent_projects");
 	project_filter->set_custom_minimum_size(Size2(280, 10) * EDSCALE);
-	search_tree_vb->add_child(search_box);
+	sort_filters->add_child(search_filters);
+
+	search_tree_vb->add_child(sort_filters);
 
 	PanelContainer *pc = memnew(PanelContainer);
 	pc->add_style_override("panel", gui_base->get_stylebox("bg", "Tree"));
@@ -2010,11 +2060,11 @@ ProjectManager::~ProjectManager() {
 		EditorSettings::destroy();
 }
 
-void ProjectListFilter::_setup_filters() {
+void ProjectListFilter::_setup_filters(Vector<String> options) {
 
 	filter_option->clear();
-	filter_option->add_item(TTR("Name"));
-	filter_option->add_item(TTR("Path"));
+	for (int i = 0; i < options.size(); i++)
+		filter_option->add_item(TTR(options[i]));
 }
 
 void ProjectListFilter::_search_text_changed(const String &p_newtext) {
@@ -2029,6 +2079,11 @@ ProjectListFilter::FilterOption ProjectListFilter::get_filter_option() {
 	return _current_filter;
 }
 
+void ProjectListFilter::set_filter_option(FilterOption option) {
+	filter_option->select((int)option);
+	_filter_option_selected(0);
+}
+
 void ProjectListFilter::_filter_option_selected(int p_idx) {
 	FilterOption selected = (FilterOption)(filter_option->get_selected());
 	if (_current_filter != selected) {
@@ -2039,7 +2094,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 
 void ProjectListFilter::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE && has_search_box) {
 		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		search_box->set_clear_button_enabled(true);
 	}
@@ -2053,22 +2108,27 @@ void ProjectListFilter::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("filter_changed"));
 }
 
-ProjectListFilter::ProjectListFilter() {
-
-	editor_initialize_certificates(); //for asset sharing
-
-	_current_filter = FILTER_NAME;
-
-	filter_option = memnew(OptionButton);
-	filter_option->set_custom_minimum_size(Size2(80 * EDSCALE, 10 * EDSCALE));
-	filter_option->set_clip_text(true);
-	filter_option->connect("item_selected", this, "_filter_option_selected");
-	add_child(filter_option);
-
-	_setup_filters();
-
+void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
 	search_box->connect("text_changed", this, "_search_text_changed");
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);
+	has_search_box = true;
+}
+
+void ProjectListFilter::set_filter_size(int h_size) {
+	filter_option->set_custom_minimum_size(Size2(h_size * EDSCALE, 10 * EDSCALE));
+}
+
+ProjectListFilter::ProjectListFilter() {
+
+	_current_filter = FILTER_NAME;
+
+	filter_option = memnew(OptionButton);
+	set_filter_size(80);
+	filter_option->set_clip_text(true);
+	filter_option->connect("item_selected", this, "_filter_option_selected");
+	add_child(filter_option);
+
+	has_search_box = false;
 }

@@ -30,56 +30,48 @@
 
 package org.godotengine.godot;
 
-import android.R;
+//import android.R;
+
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ConfigurationInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Messenger;
+import android.provider.Settings.Secure;
+import android.util.Log;
+import android.view.Display;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.view.ViewGroup.LayoutParams;
-import android.app.*;
-import android.content.*;
-import android.content.SharedPreferences.Editor;
-import android.view.*;
-import android.view.inputmethod.InputMethodManager;
-import android.os.*;
-import android.util.Log;
-import android.graphics.*;
-import android.text.method.*;
-import android.text.*;
-import android.media.*;
-import android.hardware.*;
-import android.content.*;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
-import android.media.MediaPlayer;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.godotengine.godot.payments.PaymentsManager;
-
-import java.io.IOException;
-
-import android.provider.Settings.Secure;
-import android.widget.FrameLayout;
-
-import org.godotengine.godot.input.*;
-
-import java.io.InputStream;
-import javax.microedition.khronos.opengles.GL10;
-import java.security.MessageDigest;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.LinkedList;
-
-import com.google.android.vending.expansion.downloader.Constants;
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
 import com.google.android.vending.expansion.downloader.DownloaderServiceMarshaller;
@@ -88,9 +80,20 @@ import com.google.android.vending.expansion.downloader.IDownloaderClient;
 import com.google.android.vending.expansion.downloader.IDownloaderService;
 import com.google.android.vending.expansion.downloader.IStub;
 
-import android.os.Bundle;
-import android.os.Messenger;
-import android.os.SystemClock;
+import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.godot.payments.PaymentsManager;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.microedition.khronos.opengles.GL10;
 
 public class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 
@@ -103,6 +106,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private TextView mAverageSpeed;
 	private TextView mTimeRemaining;
 	private ProgressBar mPB;
+	private ClipboardManager mClipboard;
 
 	private View mDashboard;
 	private View mCellMessage;
@@ -112,6 +116,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	private boolean use_32_bits = false;
 	private boolean use_immersive = false;
+	private boolean use_debug_opengl = false;
 	private boolean mStatePaused;
 	private int mState;
 	private boolean keep_screen_on = true;
@@ -180,6 +185,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		protected void onMainActivityResult(int requestCode, int resultCode, Intent data) {
 		}
 
+		protected void onMainRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		}
+
 		protected void onMainPause() {}
 		protected void onMainResume() {}
 		protected void onMainDestroy() {}
@@ -214,9 +222,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private Sensor mGyroscope;
 
 	public FrameLayout layout;
-	public RelativeLayout adLayout;
 
-	static public GodotIO io;
+	public static GodotIO io;
 
 	public static void setWindowTitle(String title) {
 		//setTitle(title);
@@ -247,25 +254,31 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	};
 
-	public void onVideoInit() {
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		for (int i = 0; i < singleton_count; i++) {
+			singletons[i].onMainRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
+	};
 
+	public void onVideoInit() {
 		boolean use_gl3 = getGLESVersionCode() >= 0x00030000;
 
 		//mView = new GodotView(getApplication(),io,use_gl3);
 		//setContentView(mView);
 
 		layout = new FrameLayout(this);
-		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		setContentView(layout);
 
 		// GodotEditText layout
 		GodotEditText edittext = new GodotEditText(this);
-		edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+		edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 		// ...add to FrameLayout
 		layout.addView(edittext);
 
-		mView = new GodotView(getApplication(), io, use_gl3, use_32_bits, this);
-		layout.addView(mView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		mView = new GodotView(getApplication(), io, use_gl3, use_32_bits, use_debug_opengl, this);
+		layout.addView(mView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		edittext.setView(mView);
 		io.setEdit(edittext);
 
@@ -282,11 +295,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				GodotLib.setVirtualKeyboardHeight(keyboardHeight);
 			}
 		});
-
-		// Ad layout
-		adLayout = new RelativeLayout(this);
-		adLayout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		layout.addView(adLayout);
 
 		final String[] current_command_line = command_line;
 		final GodotView view = mView;
@@ -317,10 +325,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	}
 
 	public void alert(final String message, final String title) {
+		final Activity activity = this;
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				AlertDialog.Builder builder = new AlertDialog.Builder(getInstance());
+				AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 				builder.setMessage(message).setTitle(title);
 				builder.setPositiveButton(
 						"OK",
@@ -335,14 +344,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		});
 	}
 
-	private static Godot _self;
-
-	public static Godot getInstance() {
-		return Godot._self;
-	}
-
 	public int getGLESVersionCode() {
-		ActivityManager am = (ActivityManager)Godot.getInstance().getSystemService(Context.ACTIVITY_SERVICE);
+		ActivityManager am = (ActivityManager)this.getSystemService(Context.ACTIVITY_SERVICE);
 		ConfigurationInfo deviceInfo = am.getDeviceConfigurationInfo();
 		return deviceInfo.reqGlEsVersion;
 	}
@@ -406,7 +409,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 
 		io = new GodotIO(this);
-		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+		io.unique_id = Secure.ANDROID_ID;
 		GodotLib.io = io;
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -437,10 +440,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	protected void onCreate(Bundle icicle) {
 
 		super.onCreate(icicle);
-		_self = this;
 		Window window = getWindow();
 		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 
 		//check for apk expansion API
 		if (true) {
@@ -456,9 +459,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				boolean has_extra = i < command_line.length - 1;
 				if (command_line[i].equals("--use_depth_32")) {
 					use_32_bits = true;
+				} else if (command_line[i].equals("--debug_opengl")) {
+					use_debug_opengl = true;
 				} else if (command_line[i].equals("--use_immersive")) {
 					use_immersive = true;
-					if (Build.VERSION.SDK_INT >= 19.0) { // check if the application runs on an android 4.4+
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
 						window.getDecorView().setSystemUiVisibility(
 								View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
 								View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
@@ -480,7 +485,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 					Editor editor = prefs.edit();
 					editor.putString("store_public_key", main_pack_key);
 
-					editor.commit();
+					editor.apply();
 					i++;
 				} else if (command_line[i].trim().length() != 0) {
 					new_args.add(command_line[i]);
@@ -607,6 +612,24 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	}
 
+	public String getClipboard() {
+
+		String copiedText = "";
+
+		if (mClipboard.getPrimaryClip() != null) {
+			ClipData.Item item = mClipboard.getPrimaryClip().getItemAt(0);
+			copiedText = item.getText().toString();
+		}
+
+		return copiedText;
+	}
+
+	public void setClipboard(String p_text) {
+
+		ClipData clip = ClipData.newPlainText("myLabel", p_text);
+		mClipboard.setPrimaryClip(clip);
+	}
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -629,7 +652,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
-		if (use_immersive && Build.VERSION.SDK_INT >= 19.0) { // check if the application runs on an android 4.4+
+		if (use_immersive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) { // check if the application runs on an android 4.4+
 			Window window = getWindow();
 			window.getDecorView().setSystemUiVisibility(
 					View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
@@ -652,13 +675,15 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			@Override
 			public void onSystemUiVisibilityChange(int visibility) {
 				if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-					decorView.setSystemUiVisibility(
-							View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-							View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-							View.SYSTEM_UI_FLAG_FULLSCREEN |
-							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+						decorView.setSystemUiVisibility(
+								View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+								View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+								View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+								View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+								View.SYSTEM_UI_FLAG_FULLSCREEN |
+								View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+					}
 				}
 			}
 		});
@@ -988,12 +1013,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mTimeRemaining.setText(getString(com.godot.game.R.string.time_remaining,
 				Helpers.getTimeRemaining(progress.mTimeRemaining)));
 
-		progress.mOverallTotal = progress.mOverallTotal;
 		mPB.setMax((int)(progress.mOverallTotal >> 8));
 		mPB.setProgress((int)(progress.mOverallProgress >> 8));
-		mProgressPercent.setText(Long.toString(progress.mOverallProgress * 100 /
-											   progress.mOverallTotal) +
-								 "%");
+		mProgressPercent.setText(String.format(Locale.ENGLISH, "%d %%", progress.mOverallProgress * 100 / progress.mOverallTotal));
 		mProgressFraction.setText(Helpers.getDownloadProgressString(progress.mOverallProgress,
 				progress.mOverallTotal));
 	}

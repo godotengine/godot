@@ -31,8 +31,8 @@
 #ifndef AUDIOEFFECT_H
 #define AUDIOEFFECT_H
 
-#include "audio_frame.h"
-#include "resource.h"
+#include "core/math/audio_frame.h"
+#include "core/resource.h"
 
 class AudioEffectInstance : public Reference {
 	GDCLASS(AudioEffectInstance, Reference)

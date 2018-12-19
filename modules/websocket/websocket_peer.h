@@ -32,7 +32,6 @@
 
 #include "core/error_list.h"
 #include "core/io/packet_peer.h"
-#include "core/ring_buffer.h"
 #include "websocket_macros.h"
 
 class WebSocketPeer : public PacketPeer {
@@ -58,7 +57,7 @@ public:
 	virtual WriteMode get_write_mode() const = 0;
 	virtual void set_write_mode(WriteMode p_mode) = 0;
 
-	virtual void close() = 0;
+	virtual void close(int p_code = 1000, String p_reason = "") = 0;
 
 	virtual bool is_connected_to_host() const = 0;
 	virtual IP_Address get_connected_host() const = 0;

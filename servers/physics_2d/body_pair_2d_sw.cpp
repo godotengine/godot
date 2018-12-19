@@ -138,7 +138,7 @@ void BodyPair2DSW::_validate_contacts() {
 		Contact &c = contacts[i];
 
 		bool erase = false;
-		if (c.reused == false) {
+		if (!c.reused) {
 			//was left behind in previous frame
 			erase = true;
 		} else {

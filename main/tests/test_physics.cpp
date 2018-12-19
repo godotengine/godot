@@ -30,12 +30,12 @@
 
 #include "test_physics.h"
 
-#include "map.h"
-#include "math_funcs.h"
-#include "os/main_loop.h"
-#include "os/os.h"
-#include "print_string.h"
-#include "quick_hull.h"
+#include "core/map.h"
+#include "core/math/math_funcs.h"
+#include "core/math/quick_hull.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"
 

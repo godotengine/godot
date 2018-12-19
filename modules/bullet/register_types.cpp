@@ -31,8 +31,8 @@
 #include "register_types.h"
 
 #include "bullet_physics_server.h"
-#include "class_db.h"
-#include "project_settings.h"
+#include "core/class_db.h"
+#include "core/project_settings.h"
 
 /**
 	@author AndreaCatania

@@ -6,15 +6,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2018-08-04 20:39+0000\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2018-12-13 14:39+0100\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -23,70 +25,65 @@ msgstr ""
 "Μη έγκυρη παράμετρος στην convert(). Χρησιμοποιήστε τις σταθερές TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
-#: modules/mono/glue/glue_header.h
+#: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Δεν υπάρχουν αρκετά byte για την αποκωδικοποίηση, ή άκυρη μορφή."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Άκυρη είσοδος %i (δεν πέρασε) στην έκφραση"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
+"Το self δεν μπορεί να χρησιμοποιηθεί επειδή το στιγμιότυπο είναι null (δεν "
+"πέρασε)"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Άκυρο όνομα ιδιότητας δείκτη '%s' στον κόμβο %s."
+msgstr "Άκυροι όροι στον τελεστή %s, %s και %s."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "Άκυρο όνομα ιδιότητας δείκτη '%s' στον κόμβο %s."
+msgstr "Άκυρος δείκτης τύπου %s για βασικό τύπο %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Άκυρος επώνυμος δείκτης '%s' για βασικό τύπο %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": Άκυρη παράμετρος τύπου: "
+msgstr "Άκυρα ορίσματα στην κατασκευή του '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "Στην κλήση στο '%s':"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr "Δωρεάν"
+msgstr "Ελεύθερο"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Ισορροπημένο"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Συμμετρία στον άξονα Χ"
+msgstr "Κατοπτρισμός"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Εισαγωγή κλειδιού"
+msgstr "Εισαγωγή κλειδιού εδώ"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
 msgstr "Διπλασιασμός επιλογής"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Διαγραφή επιλεγμένου"
+msgstr "Διαγραφή επιλογής"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -117,46 +114,40 @@ msgid "Anim Change Call"
 msgstr "Anim Αλλαγή κλήσης"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Property Track"
-msgstr "Ιδιότητα:"
+msgstr "Κομμάτι Ιδιότητας"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "Είδος μετασχηματισμού"
+msgstr "Κομμάτι 3D μετασχηματισμού"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Κομμάτι κλήσης μεθόδου"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Κομμάτι καμπύλης Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Κομμάτι αναπαραγωγής ήχου"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "Πάυση αναπαργωγής κίνησης. (S)"
+msgstr "Κομμάτι αναπαραγωγής κίνησης"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Anim Προσθήκη κομματιού"
+msgstr "Προσθήκη κομματιού"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "Μήκος animation (σε δευτερόλεπτα)."
+msgstr "Μήκος κίνησης (δευτερόλεπτα)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Μεγέθυνση animation."
+msgstr "Επανάληψη κίνησης"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -164,42 +155,36 @@ msgid "Functions:"
 msgstr "Συναρτήσεις:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Clips:"
-msgstr "Ακροατής ήχου"
+msgstr "Αποσπάσματα ήχου:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Clips:"
-msgstr "Αποσπάσματα"
+msgstr "Αποσπάσματα κίνησης:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Εναλλαγή λειτουργίας χωρίς περισπασμούς."
+msgstr "Εναλλαγή κομματιού on/off."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Μέθοδος ανανέωσης (της ιδιότητας)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "Κόμβος κίνησης"
+msgstr "Μέθοδος παρεμβολής"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "Μέθοδος επανάληψης (παρεμβολή τέλους με αρχή)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "Αφαίρεση επιλεγμένου κομματιού."
+msgstr "Αφαίρεση κομματιού."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "Χρόνος συνδιασμού (s):"
+msgstr "Χρόνος (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -214,13 +199,12 @@ msgid "Trigger"
 msgstr "Άμεση"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "Δυνατότητες"
+msgstr "Καταγραφή"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Πλησιέστερη"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -229,15 +213,15 @@ msgstr "Γραμμική"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Κυβική"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Περιορισμός παρεμβολής επανάληψης"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Αναδίπλωση παρεμβολής επανάληψης"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -245,14 +229,12 @@ msgid "Insert Key"
 msgstr "Εισαγωγή κλειδιού"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Διπλασιασμός κόμβων"
+msgstr "Διπλασιασμός κλειδιών"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Διαγραφή Κόμβων"
+msgstr "Διαγραφή κλειδιών"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -270,7 +252,6 @@ msgstr "Δημιουργία %d νέων κομματιών και εισαγω�
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
 #: editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
 msgid "Create"
@@ -282,7 +263,7 @@ msgstr "Anim Εισαγωγή"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "Ένα AnimationPlayer δεν μπορεί να κινήσει τον εαυτό του."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -299,6 +280,8 @@ msgstr "Anim εισαγωγή κλειδιού"
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
+"Τα κομμάτια μετασχηματισμού εφαρμόζονται μόνο σε κόμβους βασισμένους σε "
+"Spatial."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -307,44 +290,47 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Τα κομμάτια ήχου μπορούν να δείχνουν μόνο σε κόμβους τύπου:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
+"Τα κομμάτια κίνησης μπορούν να δείχνουν μόνο σε κόμβους AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "Ένα AnimationPlayer δεν μπορεί να κινήσει τον εαυτό του."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Αδύνατη η προσθήκη κομματιού χωρίς ρίζα"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Αδύνατη η προσθήκη κλειδιού, λόγω άκυρης διαδρομής κομματιού."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Αδύνατη η προσθήκη κλειδιού, το κομμάτι δεν είναι τύπου Spatial"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Αδύνατη η προσθήκη κλειδιού μεθόδου, λόγω άκυρης διαδρομής κομματιού."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "Το VariableGet δεν βρέθηκε στη δεσμή ενεργειών: "
+msgstr "Δεν βρέθηκε η μέθοδος στο αντικείμενο: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "Anim Μετακίνηση κελιδιών"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "Το πρόχειρο είναι άδειο!"
+msgstr "Το πρόχειρο είναι άδειο"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -354,24 +340,24 @@ msgstr "Anim Μεγέθυνση κλειδιών"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Αυτή η επιλογή δεν δουλεύει σε καμπύλες Bezier, καθώς είναι μεμονωμένο "
+"κομμάτι."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Δείξε μόνο κομμάτια απο επιλεγμένους κόμβους στο δέντρο."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "Ομαδοποίηση κομματιών ανα κόμβο, ή εμφάνιση σε λίστα."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap (s): "
-msgstr "Κούμπωμα (Εικονοστοιχεία):"
+msgstr "Κούμπωμα (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Το δέντρο κίνησης είναι έγκυρο."
+msgstr "Τιμή βήματος κίνησης."
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -383,19 +369,16 @@ msgid "Edit"
 msgstr "Επεξεργασία"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "Δέντρο κίνησης"
+msgstr "Ιδιότητες κίνησης."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "Αντιγραφή παραμέτρων"
+msgstr "Αντιγραφή κομματιών"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "Επικόλληση παραμέτρων"
+msgstr "Επικόλληση κομματιών"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -405,8 +388,7 @@ msgstr "Μεγέθυνση επιλογής"
 msgid "Scale From Cursor"
 msgstr "Μεγέθυνση από τον δείκτη"
 
-#: editor/animation_track_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
-#: modules/gridmap/grid_map_editor_plugin.cpp
+#: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
 msgstr "Διπλασιασμός επιλογής"
 
@@ -415,16 +397,17 @@ msgid "Duplicate Transposed"
 msgstr "Διπλασιασμός ανεστραμένων"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Διαγραφή επιλεγμένου"
+msgstr "Διαγραφή επιλογής"
 
 #: editor/animation_track_editor.cpp
-msgid "Goto Next Step"
+#, fuzzy
+msgid "Go to Next Step"
 msgstr "Πήγαινε στο επόμενο βήμα"
 
 #: editor/animation_track_editor.cpp
-msgid "Goto Prev Step"
+#, fuzzy
+msgid "Go to Previous Step"
 msgstr "Πήγαινε στο προηγούμενο βήμα"
 
 #: editor/animation_track_editor.cpp
@@ -437,11 +420,11 @@ msgstr "Καθαρισμός animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Επιλογή του κόμβου που θα κινηθεί:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Χρήση καμπυλών Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -489,7 +472,7 @@ msgstr "Λόγος μεγέθυνσης:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Επιλογή κομματιών για αντιγραφή:"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -527,11 +510,11 @@ msgstr "Δεν υπάρχουν αντιστοιχίες"
 msgid "Replaced %d occurrence(s)."
 msgstr "Αντικαταστάθηκαν %d εμφανίσεις."
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
 msgstr "Αντιστοίχηση πεζών-κεφαλαίων"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
 msgstr "Ολόκληρες λέξεις"
 
@@ -547,29 +530,32 @@ msgstr "Αντικατάσταση όλων"
 msgid "Selection Only"
 msgstr "Μόνο στην επιλογή"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
 msgstr "Μεγέθυνση"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
 msgstr "Σμύκρινση"
 
-#: editor/code_editor.cpp editor/plugins/tile_set_editor_plugin.cpp
+#: editor/code_editor.cpp
 msgid "Reset Zoom"
 msgstr "Επαναφορά μεγέθυνσης"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Warnings:"
-msgstr "Προειδοποιήσεις"
+msgstr "Προειδοποιήσεις:"
 
 #: editor/code_editor.cpp
 #, fuzzy
-msgid "Zoom:"
-msgstr "Μεγέθυνση (%):"
+msgid "Font Size:"
+msgstr "Μέγεθος πηγαίας γραμματοσειράς:"
 
-#: editor/code_editor.cpp editor/script_editor_debugger.cpp
+#: editor/code_editor.cpp
 msgid "Line:"
 msgstr "Γραμμή:"
 
@@ -602,6 +588,7 @@ msgstr "Προσθήκη"
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
+#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
@@ -658,9 +645,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Αποσύνδεση του '%s' απο το '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
-msgstr "Αποσύνδεση του '%s' απο το '%s'"
+msgstr "Αποσύνδεση όλων απο το σήμα: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -672,19 +658,18 @@ msgid "Disconnect"
 msgstr "Αποσύνδεση"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect Signal: "
-msgstr "Σύνδεση στο σήμα:"
+msgstr "Σύνδεση σήματος: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection: "
-msgstr "Επεξεργασία συνδέσεων"
+msgstr "Επεξεργασία σύνδεσης: "
 
 #: editor/connections_dialog.cpp
 #, fuzzy
-msgid "Are you sure you want to remove all connections from the \""
-msgstr "Είστε σίγουροι πως θέλετε να τρέξετε περισσότερα από ένα έργα;"
+msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
+msgstr ""
+"Είστε σίγουροι πως θέλετε να αφαιρέσετε όλες της συνδέσεις απο αυτό το σήμα;"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -693,21 +678,19 @@ msgstr "Σήματα"
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
+"Είστε σίγουροι πως θέλετε να αφαιρέσετε όλες της συνδέσεις απο αυτό το σήμα;"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "Αποσύνδεση"
+msgstr "Αποσύνδεση όλων"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "Επεξεργασία"
+msgstr "Επεξεργασία..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "Συναρτήσεις"
+msgstr "Πήγαινε σε συνάρτηση"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -732,23 +715,20 @@ msgid "Recent:"
 msgstr "Πρόσφατα:"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
 msgstr "Αναζήτηση:"
 
-#: editor/create_dialog.cpp editor/editor_help.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp
+#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
 msgstr "Αντιστοιχίες:"
 
-#: editor/create_dialog.cpp editor/editor_help.cpp
-#: editor/plugin_config_dialog.cpp
+#: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
-#: editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
 msgstr "Περιγραφή:"
@@ -787,8 +767,7 @@ msgid "Resource"
 msgstr "Πόρος"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
-#: editor/project_manager.cpp editor/project_settings_editor.cpp
-#: editor/script_create_dialog.cpp
+#: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
 msgstr "Διαδρομή"
 
@@ -809,9 +788,10 @@ msgid "Search Replacement Resource:"
 msgstr "Αναζήτηση αντικαταστάτη πόρου:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
-#: editor/editor_help.cpp editor/editor_node.cpp editor/filesystem_dock.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/property_selector.cpp
-#: editor/quick_open.cpp editor/script_create_dialog.cpp
+#: editor/editor_help_search.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/property_selector.cpp editor/quick_open.cpp
+#: editor/script_create_dialog.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 #: scene/gui/file_dialog.cpp
 msgid "Open"
@@ -843,7 +823,8 @@ msgid "Error loading:"
 msgstr "Σφάλμα κατά την φόρτωση:"
 
 #: editor/dependency_editor.cpp
-msgid "Scene failed to load due to missing dependencies:"
+#, fuzzy
+msgid "Load failed due to missing dependencies:"
 msgstr "Η φόρτωση της σκηνής απέτυχε, λόγω απόντων εξαρτήσεων:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
@@ -901,14 +882,6 @@ msgstr "Αλλαγή τιμής λεξικού"
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
 msgstr "Ευχαριστίες από την κοινότητα της Godot!"
-
-#: editor/editor_about.cpp editor/editor_node.cpp editor/inspector_dock.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
-#: editor/script_create_dialog.cpp scene/gui/dialogs.cpp
-msgid "OK"
-msgstr "Εντάξει"
 
 #: editor/editor_about.cpp
 msgid "Godot Engine contributors"
@@ -1086,8 +1059,7 @@ msgid "Bus options"
 msgstr "Επιλογές διαύλου"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Διπλασιασμός"
 
@@ -1256,8 +1228,8 @@ msgstr "Διαδρομή:"
 msgid "Node Name:"
 msgstr "Όνομα κόμβου:"
 
-#: editor/editor_autoload_settings.cpp editor/editor_profiler.cpp
-#: editor/project_manager.cpp editor/settings_config_dialog.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
+#: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
 msgstr "Όνομα"
 
@@ -1327,12 +1299,17 @@ msgid "Template file not found:"
 msgstr "Δεν βρέθηκε αρχείο προτύπου:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Select Current Folder"
+msgstr "Επιλογή τρέχοντα φακέλου"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
 msgstr "Το αρχείο υπάρχει. Θέλετε να το αντικαταστήσετε;"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-msgid "Select Current Folder"
-msgstr "Επιλογή τρέχοντα φακέλου"
+#, fuzzy
+msgid "Select This Folder"
+msgstr "Επιλογή αυτού του φακέλου"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1340,12 +1317,13 @@ msgstr "Αντιγραφή διαδρομής"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Open In File Manager"
-msgstr "Εμφάνιση στη διαχείριση αρχείων"
+msgid "Open in File Manager"
+msgstr "Άνοιγμα στη διαχείριση αρχείων"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #: editor/project_manager.cpp
-msgid "Show In File Manager"
+#, fuzzy
+msgid "Show in File Manager"
 msgstr "Εμφάνιση στη διαχείριση αρχείων"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -1381,7 +1359,8 @@ msgid "Open a File or Directory"
 msgstr "Άνοιγμα αρχείου ή φακέλου"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
-#: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_properties.cpp editor/inspector_dock.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Save"
 msgstr "Αποθήκευση"
@@ -1439,8 +1418,7 @@ msgstr "Φάκελοι & Αρχεία:"
 msgid "Preview:"
 msgstr "Προεπισκόπηση:"
 
-#: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
 msgstr "Αρχείο:"
 
@@ -1456,24 +1434,11 @@ msgstr "Σάρωση πηγών"
 msgid "(Re)Importing Assets"
 msgstr "(Επαν)εισαγωγή"
 
-#: editor/editor_help.cpp editor/editor_node.cpp
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Search Help"
-msgstr "Αναζήτηση βοήθειας"
-
-#: editor/editor_help.cpp
-msgid "Class List:"
-msgstr "Λίστα κλάσεων:"
-
-#: editor/editor_help.cpp
-msgid "Search Classes"
-msgstr "Αναζήτηση κλάσεων"
-
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
 msgstr "Κορυφή"
 
-#: editor/editor_help.cpp editor/property_editor.cpp
+#: editor/editor_help.cpp
 msgid "Class:"
 msgstr "Κλάση:"
 
@@ -1490,28 +1455,31 @@ msgid "Brief Description:"
 msgstr "Σύντομη περιγραφή:"
 
 #: editor/editor_help.cpp
-msgid "Members"
-msgstr "Μέλη"
-
-#: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Members:"
-msgstr "Μέλη:"
+msgid "Properties"
+msgstr "Ιδιότητες"
 
 #: editor/editor_help.cpp
-msgid "Public Methods"
-msgstr "Δημόσιες συναρτήσεις"
+msgid "Properties:"
+msgstr "Ιδιότητες:"
 
 #: editor/editor_help.cpp
-msgid "Public Methods:"
-msgstr "Δημόσιες συναρτήσεις:"
+msgid "Methods"
+msgstr "Συναρτήσεις"
 
 #: editor/editor_help.cpp
-msgid "GUI Theme Items"
-msgstr "Στοιχεία του θέματος GUI"
+#, fuzzy
+msgid "Methods:"
+msgstr "Συναρτήσεις"
 
 #: editor/editor_help.cpp
-msgid "GUI Theme Items:"
-msgstr "Στοιχεία του θέματος GUI:"
+#, fuzzy
+msgid "Theme Properties"
+msgstr "Ιδιότητες"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Theme Properties:"
+msgstr "Ιδιότητες:"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
@@ -1538,8 +1506,14 @@ msgid "Constants:"
 msgstr "Σταθερές:"
 
 #: editor/editor_help.cpp
-msgid "Description"
+#, fuzzy
+msgid "Class Description"
 msgstr "Περιγραφή"
+
+#: editor/editor_help.cpp
+#, fuzzy
+msgid "Class Description:"
+msgstr "Περιγραφή:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials:"
@@ -1556,11 +1530,13 @@ msgstr ""
 "url][/color]."
 
 #: editor/editor_help.cpp
-msgid "Properties"
-msgstr "Ιδιότητες"
+#, fuzzy
+msgid "Property Descriptions"
+msgstr "Περιγραφή ιδιότητας:"
 
 #: editor/editor_help.cpp
-msgid "Property Description:"
+#, fuzzy
+msgid "Property Descriptions:"
 msgstr "Περιγραφή ιδιότητας:"
 
 #: editor/editor_help.cpp
@@ -1572,11 +1548,13 @@ msgstr ""
 "[color=$color][url=$url]γράφοντας μία[/url][/color]!"
 
 #: editor/editor_help.cpp
-msgid "Methods"
-msgstr "Συναρτήσεις"
+#, fuzzy
+msgid "Method Descriptions"
+msgstr "Περιγραφή μεθόδου:"
 
 #: editor/editor_help.cpp
-msgid "Method Description:"
+#, fuzzy
+msgid "Method Descriptions:"
 msgstr "Περιγραφή μεθόδου:"
 
 #: editor/editor_help.cpp
@@ -1587,18 +1565,67 @@ msgstr ""
 "Δεν υπάρχει ακόμη περιγραφή για αυτήν την μέθοδο. Παρακαλούμε βοηθήστε μας "
 "[color=$color][url=$url]γράφοντας μία[/url][/color]!"
 
-#: editor/editor_inspector.cpp
+#: editor/editor_help_search.cpp editor/editor_node.cpp
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Search Help"
+msgstr "Αναζήτηση βοήθειας"
+
+#: editor/editor_help_search.cpp
 #, fuzzy
-msgid "Property: "
+msgid "Display All"
+msgstr "Κανονική εμφάνιση"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Classes Only"
+msgstr "Κλάσεις"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Methods Only"
+msgstr "Συναρτήσεις"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Signals Only"
+msgstr "Σήματα"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Constants Only"
+msgstr "Σταθερές"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Properties Only"
+msgstr "Ιδιότητες"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Theme Properties Only"
+msgstr "Ιδιότητες"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Member Type"
+msgstr "Μέλη"
+
+#: editor/editor_help_search.cpp
+#, fuzzy
+msgid "Class"
+msgstr "Κλάση:"
+
+#: editor/editor_inspector.cpp editor/project_settings_editor.cpp
+msgid "Property:"
 msgstr "Ιδιότητα:"
 
-#: editor/editor_inspector.cpp editor/property_editor.cpp
+#: editor/editor_inspector.cpp
 msgid "Set"
 msgstr "Όρισε"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "Ορισμός πολλών:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -1626,6 +1653,11 @@ msgstr "Η εξαγωγή του έργου απέτυχε με κωδικό %d.
 msgid "Error saving resource!"
 msgstr "Σφάλμα κατά την αποθήκευση πόρου!"
 
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr "Εντάξει"
+
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
 msgstr "Αποθήκευση πόρου ως..."
@@ -1645,6 +1677,7 @@ msgstr "Σφάλμα κατά την αποθήκευση."
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
+"Αδύνατο το άνοιγμα του '%s'. Το αρχείο πιθανώς μετακινήθηκε ή διαγράφηκε."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -1680,11 +1713,21 @@ msgstr "Αυτή η λειτουργία δεν μπορεί να γίνει χ�
 
 #: editor/editor_node.cpp
 msgid ""
+"This scene can't be saved because there is a cyclic instancing inclusion.\n"
+"Please resolve it and then attempt to save again."
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
 "Αδύνατη η αποθήκευση σκηνής. Πιθανώς οι εξαρτήσεις (στιγμιότυπα ή "
 "κληρονομιά) να μην μπορούσαν να ικανοποιηθούν."
+
+#: editor/editor_node.cpp editor/scene_tree_dock.cpp
+msgid "Can't overwrite scene that is still open!"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -1951,6 +1994,15 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Αδύνατη η φόρτωση δεσμής ενεργειών προσθέτου από τη διαδρομή: '%s'."
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid ""
+"Unable to load addon script from path: '%s' There seems to be an error in "
+"the code, please check the syntax."
+msgstr ""
+"Αδύνατη η φόρτωση δεσμής ενεργειών προσθέτου από τη διαδρομή: '%s'. Δεν "
+"είναι σε λειτουργία tool."
+
+#: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
@@ -2002,15 +2054,19 @@ msgstr "Διαγραφή διάταξης"
 msgid "Default"
 msgstr "Προεπιλογή"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/editor_properties.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 #, fuzzy
+msgid "Show in FileSystem"
+msgstr "Εμφάνιση στο σύστημα αρχείων"
+
+#: editor/editor_node.cpp
 msgid "Play This Scene"
 msgstr "Αναπαραγωγή σκηνής"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close Tab"
-msgstr "Κλείσιμο άλλον καρτελών"
+msgstr "Κλείσιμο καρτέλας"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2085,7 +2141,8 @@ msgid "Save Scene"
 msgstr "Αποθηκεύσετε σκηνής"
 
 #: editor/editor_node.cpp
-msgid "Save all Scenes"
+#, fuzzy
+msgid "Save All Scenes"
 msgstr "Αποθήκευση όλων των σκηνών"
 
 #: editor/editor_node.cpp
@@ -2114,7 +2171,7 @@ msgid "Undo"
 msgstr "Αναίρεση"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
-#: scene/gui/line_edit.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
 msgstr "Ακύρωση αναίρεσης"
 
@@ -2138,20 +2195,20 @@ msgstr "Ρυθμίσεις έργου"
 msgid "Export"
 msgstr "Εξαγωγή"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Εργαλεία"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "Άνοιγμα του διαχειριστή έργων;"
+msgstr "Άνοιγμα φακέλου δεδομένων έργου"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
 msgstr "Έξοδος στη λίστα έργων"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/project_export.cpp
 msgid "Debug"
 msgstr "Αποσφαλμάτωση"
 
@@ -2260,18 +2317,16 @@ msgid "Toggle Fullscreen"
 msgstr "Εναλλαγή πλήρους οθόνης"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Data/Settings Folder"
-msgstr "Ρυθμίσεις επεξεργαστή"
+msgstr "Άνοιγμα φακέλου δεδομένων/ρυθμίσεων επεξεργαστή"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "Άνοιγμα φακέλου δεδομένων επεξεργαστή"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Settings Folder"
-msgstr "Ρυθμίσεις επεξεργαστή"
+msgstr "Άνοιγμα φακέλου ρυθμίσεων επεξεργαστή"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2280,10 +2335,6 @@ msgstr "Διαχείριση προτύπων εξαγωγής"
 #: editor/editor_node.cpp
 msgid "Help"
 msgstr "Βοήθεια"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Classes"
-msgstr "Κλάσεις"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2355,13 +2406,12 @@ msgstr "Αναπαραγωγή προσαρμοσμένης σκηνής"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "Η αλλαγή του οδηγού βίντεο απαιτεί επανεκκίνηση του επεξεργαστή."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Save & Restart"
-msgstr "Αποθήκευση & Επανεισαγωγή"
+msgstr "Αποθήκευση & Επανεκκίνηση"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"
@@ -2379,27 +2429,26 @@ msgstr "Ενημέρωση αλλαγών"
 msgid "Disable Update Spinner"
 msgstr "Απενεργοποίηση δείκτη ενημέρωσης"
 
-#: editor/editor_node.cpp
-msgid "Inspector"
-msgstr "Επιθεωρητής"
-
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
 msgstr "Εισαγωγή"
 
 #: editor/editor_node.cpp
-msgid "Node"
-msgstr "Κόμβος"
-
-#: editor/editor_node.cpp
 msgid "FileSystem"
 msgstr "Σύστημα αρχείων"
 
 #: editor/editor_node.cpp
-#, fuzzy
+msgid "Inspector"
+msgstr "Επιθεωρητής"
+
+#: editor/editor_node.cpp
+msgid "Node"
+msgstr "Κόμβος"
+
+#: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr "Ανάπτυξη όλων"
+msgstr "Ανάπτυξη κάτω πλαισίου"
 
 #: editor/editor_node.cpp scene/resources/visual_shader.cpp
 msgid "Output"
@@ -2478,9 +2527,8 @@ msgid "Thumbnail..."
 msgstr "Μικρογραφία..."
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Edit Plugin"
-msgstr "Επεγεργασία πολυγώνου"
+msgstr "Επεγεργασία επέκτασης"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2504,15 +2552,13 @@ msgid "Status:"
 msgstr "Κατάσταση:"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Edit:"
-msgstr "Επεξεργασία"
+msgstr "Επεξεργασία:"
 
 #: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Start"
-msgstr "Εκκινιση!"
+msgstr "Εκκινιση"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -2534,7 +2580,7 @@ msgstr "Καρέ %"
 msgid "Physics Frame %"
 msgstr "Kαρέ φυσικής %"
 
-#: editor/editor_profiler.cpp editor/script_editor_debugger.cpp
+#: editor/editor_profiler.cpp
 msgid "Time:"
 msgstr "Χρόνος:"
 
@@ -2558,34 +2604,51 @@ msgstr "Χρόνος"
 msgid "Calls"
 msgstr "Κλήσεις"
 
-#: editor/editor_properties.cpp editor/property_editor.cpp
+#: editor/editor_properties.cpp
 msgid "On"
 msgstr "Ναι"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr ""
+msgstr "Στρώμα"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Bit %d, value %d"
-msgstr "Δυαδικό ψηφίο %d, τιμή %d."
+msgstr "Bit %d, τιμή %d"
 
-#: editor/editor_properties.cpp editor/property_editor.cpp
+#: editor/editor_properties.cpp
 msgid "[Empty]"
 msgstr "[Άδειο]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign.."
-msgstr "Ανάθεση"
+msgstr "Εκχώρηση.."
+
+#: editor/editor_properties.cpp
+msgid ""
+"The selected resource (%s) does not match the type expected for this "
+"property (%s)."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
+"Can't create a ViewportTexture on resources saved as a file.\n"
+"Resource needs to belong to a scene."
+msgstr ""
+
+#: editor/editor_properties.cpp
+msgid ""
+"Can't create a ViewportTexture on this resource because it's not set as "
+"local to scene.\n"
+"Please switch on the 'local to scene' property on it (and all resources "
+"containing it up to a node)."
+msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
 msgstr "Επιλέξτε μία οπτική γωνία"
 
-#: editor/editor_properties.cpp editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
 msgstr "Νεα δεσμή ενεργειών"
 
@@ -2597,10 +2660,6 @@ msgstr "Νέο %s"
 msgid "Make Unique"
 msgstr "Κάνε μοναδικό"
 
-#: editor/editor_properties.cpp editor/property_editor.cpp
-msgid "Show in File System"
-msgstr "Εμφάνιση στο σύστημα αρχείων"
-
 #: editor/editor_properties.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -2609,7 +2668,8 @@ msgstr "Εμφάνιση στο σύστημα αρχείων"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
 msgstr "Επικόληση"
@@ -2622,36 +2682,32 @@ msgstr "Μετατροπή σε %s"
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Open Editor"
-msgstr "Άνοιγμα στον επεξεργαστή"
+msgstr "Άνοιγμα επεξεργαστή"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
 msgstr "Ο επιλεγμένος κόμβος δεν είναι Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Size: "
-msgstr "Μέγεθος κελιού:"
+msgstr "Μέγεθος: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
-msgstr ""
+msgstr "Σελίδα: "
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "New Key:"
-msgstr "Νέο όνομα:"
+msgstr "Νέο κλειδί:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "New Value:"
-msgstr "Νέο όνομα:"
+msgstr "Νέα τιμή:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
-msgstr ""
+msgstr "Προσθήκη ζεύγους κλειδιού/τιμής"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -2744,9 +2800,8 @@ msgid "Can't open export templates zip."
 msgstr "Αδύνατο το άνοιγμα του zip των προτύπων εξαγωγής."
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "Άκυρη μορφή version.txt μέσα στα πρότυπα."
+msgstr "Άκυρη μορφή version.txt μέσα στα πρότυπα: %s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -2811,6 +2866,8 @@ msgid ""
 "Templates installation failed. The problematic templates archives can be "
 "found at '%s'."
 msgstr ""
+"Αποτυχία εγκατάστασης προτύπων. Οι προβληματικές αρχειοθήκες μπορούν να "
+"βρεθούν στο '%s'."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting url: "
@@ -2891,9 +2948,10 @@ msgid "Download Templates"
 msgstr "Λήψη προτύπων"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-msgstr "Επιλέξτε έναν διακοσμιτή κατοπτρισμού από την λίστα: "
+msgstr ""
+"Επιλέξτε έναν διακομιστή κατοπτρισμού: (Shift+Click για άνοιγμα στο "
+"πρόγραμμα περιήγησης)"
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -2902,19 +2960,22 @@ msgstr ""
 "αποθήκευσης cache τύπου αρχείου!"
 
 #: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Favorites"
+msgstr "Αγαπημένα:"
+
+#: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
 msgstr ""
 "Δεν ήταν δυνατή η πλοήγηση στο '%s', καθώς δεν βρέθηκε στο σύστημα αρχείων!"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "View items as a grid of thumbnails."
-msgstr "Εμφάνιση αντικειμένων σε πλέγμα μικργραφιών"
+msgstr "Εμφάνιση αντικειμένων σε πλέγμα μικργραφιών."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "View items as a list."
-msgstr "Εμφάνιση αντικειμένων σε λίστα"
+msgstr "Εμφάνιση αντικειμένων σε λίστα."
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -2942,7 +3003,7 @@ msgstr "Σφάλμα κατά τον διπλασιασμό:"
 msgid "Unable to update dependencies:"
 msgstr "Αδύνατη η ενημέρωση των εξαρτήσεων:"
 
-#: editor/filesystem_dock.cpp
+#: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
 msgid "No name provided"
 msgstr "Δεν δόθηκε όνομα"
 
@@ -2979,28 +3040,22 @@ msgid "Duplicating folder:"
 msgstr "Διπλασιασμός καταλόγου:"
 
 #: editor/filesystem_dock.cpp
-msgid "Expand all"
-msgstr "Ανάπτυξη όλων"
-
-#: editor/filesystem_dock.cpp
-msgid "Collapse all"
-msgstr "Σύμπτηξη όλων"
-
-#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Rename..."
-msgstr "Μετονομασία..."
-
-#: editor/filesystem_dock.cpp
-msgid "Move To..."
-msgstr "Μετακίνηση σε..."
-
-#: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
 msgstr "Άνοιγμα σκηνής"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "Στιγμιότυπο"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Add to favorites"
+msgstr "Αγαπημένα:"
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Remove from favorites"
+msgstr "Κατάργηση από την ομάδα"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -3010,19 +3065,35 @@ msgstr "Επεξεργασία εξαρτήσεων..."
 msgid "View Owners..."
 msgstr "Προβολή ιδιοκτητών..."
 
+#: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Rename..."
+msgstr "Μετονομασία..."
+
 #: editor/filesystem_dock.cpp
 msgid "Duplicate..."
 msgstr "Αναπαραγωγή..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
+msgid "Move To..."
+msgstr "Μετακίνηση σε..."
+
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
-msgstr "Νεα δεσμή ενεργειών"
+msgstr "Νεα δεσμή ενεργειών..."
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Resource..."
-msgstr "Αποθήκευση πόρου ως..."
+msgstr "Νέος πόρος..."
+
+#: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Expand All"
+msgstr "Ανάπτυξη όλων"
+
+#: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Collapse All"
+msgstr "Σύμπτηξη όλων"
 
 #: editor/filesystem_dock.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3045,28 +3116,18 @@ msgstr "Εκ νέου σάρωση το συστήματος αρχείων"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Toggle folder status as Favorite."
-msgstr "Εναλλαγή αγαπημένου"
+msgid "Toggle split mode"
+msgstr "Εναλλαγή λειτουργίας"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Show current scene file."
-msgstr "Επέλεξε το τρέχων επεξεργαζόμενο υπο-πλακίδιο."
+msgid "Search files"
+msgstr "Αναζήτηση αρχείων"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance the selected scene(s) as child of the selected node."
 msgstr ""
 "Δημιουργία στιγμιοτύπων των επιλεγμένων σκηνών ως παιδιά του επιλεγμένου "
 "κόμβου."
-
-#: editor/filesystem_dock.cpp
-msgid "Enter tree-view."
-msgstr ""
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "Search files"
-msgstr "Αναζήτηση κλάσεων"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -3076,18 +3137,17 @@ msgstr ""
 "Σάρωση αρχείων,\n"
 "Παρακαλώ περιμένετε..."
 
-#: editor/filesystem_dock.cpp editor/plugins/tile_map_editor_plugin.cpp
+#: editor/filesystem_dock.cpp
 msgid "Move"
 msgstr "Μετακίνηση"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "There is already file or folder with the same name in this location."
-msgstr "Υπάρχει ήδη φάκελος στην διαδρομή με το προσδιορισμένο όνομα."
+msgstr "Υπάρχει ήδη αρχείο ή φάκελος με το ίδιο όνομα στη διαδρομή."
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "Αντικατάσταση"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -3095,32 +3155,23 @@ msgstr "Δημιουργία δεσμής ενεργειών"
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Find in files"
-msgstr "Εύρεση πλακιδίου"
+msgid "Find in Files"
+msgstr "Εύρεση στα αρχεία"
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Find: "
-msgstr "Εύρεση"
+msgid "Find:"
+msgstr "Εύρεση: "
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Whole words"
-msgstr "Ολόκληρες λέξεις"
+msgid "Folder:"
+msgstr "Φάκελος: "
 
 #: editor/find_in_files.cpp
 #, fuzzy
-msgid "Match case"
-msgstr "Αντιστοίχηση πεζών-κεφαλαίων"
-
-#: editor/find_in_files.cpp
-msgid "Folder: "
-msgstr ""
-
-#: editor/find_in_files.cpp
-#, fuzzy
-msgid "Filter: "
-msgstr "Φίλτρο:"
+msgid "Filters:"
+msgstr "Φίλτρα"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -3136,52 +3187,49 @@ msgid "Cancel"
 msgstr "Ακύρωση"
 
 #: editor/find_in_files.cpp
-#, fuzzy
+msgid "Find: "
+msgstr "Εύρεση: "
+
+#: editor/find_in_files.cpp
 msgid "Replace: "
-msgstr "Αντικατάσταση"
+msgstr "Αντικατάσταση: "
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Replace all (no undo)"
-msgstr "Αντικατάσταση όλων"
+msgstr "Αντικατάσταση όλων (χωρίς ανέραιση)"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Searching..."
-msgstr "Αποθήκευση..."
+msgstr "Αναζήτηση..."
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Search complete"
-msgstr "Αναζήτηση κειμένου"
+msgstr "Ολοκλήρωση αναζήτησης"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group name already exists."
-msgstr "ΣΦΑΛΜΑ: Αυτό το όνομα κίνησης υπάρχει ήδη!"
+msgstr "Υπαρκτό όνομα ομάδας."
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "invalid Group name."
-msgstr "Μη έγκυρο όνομα."
+msgid "Invalid group name."
+msgstr "Άκυρο όνομα ομάδας."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Ομάδες"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes not in Group"
-msgstr "Προσθήκη σε Ομάδα"
+msgstr "Κόμβοι εκτός ομάδας"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 msgid "Filter nodes"
 msgstr "Φιλτράρισμα κόμβων"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes in Group"
-msgstr "Επεξεργασία Ομάδων"
+msgstr "Κόμβοι σε ομάδα"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
@@ -3192,9 +3240,8 @@ msgid "Remove from Group"
 msgstr "Κατάργηση από την ομάδα"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Manage Groups"
-msgstr "Ομάδες"
+msgstr "Διαχείρηση ομάδων"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -3303,17 +3350,14 @@ msgstr "Επανεισαγωγή"
 msgid "Failed to load resource."
 msgstr "Απέτυχε η φόρτωση πόρου."
 
-#: editor/inspector_dock.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
-msgid "Ok"
-msgstr "Εντάξει"
-
 #: editor/inspector_dock.cpp
-msgid "Expand all properties"
+#, fuzzy
+msgid "Expand All Properties"
 msgstr "Ανάπτυξη όλων των ιδιοτήτων"
 
 #: editor/inspector_dock.cpp
-msgid "Collapse all properties"
+#, fuzzy
+msgid "Collapse All Properties"
 msgstr "Σύμπτηξη όλων των ιδιοτήτων"
 
 #: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
@@ -3330,9 +3374,8 @@ msgid "Paste Params"
 msgstr "Επικόλληση παραμέτρων"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource Clipboard"
-msgstr "Το πρόχειρο πόρων είναι άδειο!"
+msgstr "Επεξεργασία προχείρου πόρων"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
@@ -3375,9 +3418,8 @@ msgid "Object properties."
 msgstr "Ιδιότητες αντικειμένου."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Filter properties"
-msgstr "Φιλτράρισμα κόμβων"
+msgstr "Φιλτράρισμα ιδιοτήτων"
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
@@ -3392,47 +3434,42 @@ msgid "Select a Node to edit Signals and Groups."
 msgstr "Επιλέξτε ένα κόμβο για να επεξεργαστείτε τα σήματα και τις ομάδες."
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Edit a Plugin"
-msgstr "Επεγεργασία πολυγώνου"
+msgstr "Επεγεργασία προσθέτου"
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Create a Plugin"
-msgstr "Δημιουργία λύσης C#"
+msgstr "Δημιουργία προσθέτου"
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Plugin Name:"
-msgstr "Πρόσθετα"
+msgstr "Όνομα προσθέτου:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr ""
+msgstr "Υποφάκελος:"
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Language:"
-msgstr "Γλώσσα"
+msgstr "Γλώσσα:"
 
 #: editor/plugin_config_dialog.cpp
-#, fuzzy
 msgid "Script Name:"
-msgstr "Έγκυρη δεσμή ενεργειών"
+msgstr "Όνομα δεσμής ενεργειών:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
-msgstr ""
+msgstr "Ενεργοποίηση τώρα;"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create Poly"
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon"
 msgstr "Δημιουγία πολυγώνου"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly"
+#, fuzzy
+msgid "Edit Polygon"
 msgstr "Επεγεργασία πολυγώνου"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
@@ -3440,25 +3477,27 @@ msgid "Insert Point"
 msgstr "Εισαγωγή σημείου"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#: editor/plugins/collision_polygon_editor_plugin.cpp
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit Poly (Remove Point)"
+#, fuzzy
+msgid "Edit Polygon (Remove Point)"
 msgstr "Επεγεργασία πολυγώνου (Αφαίρεση σημείου)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Poly And Point"
+#, fuzzy
+msgid "Remove Polygon And Point"
 msgstr "Αφαίρεση πολυγώνου και σημείου"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Create a new polygon from scratch"
-msgstr "Δημιουργία νέου πολυγώνου από την αρχή"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Create points."
+msgstr "Δημιουργία σημείων."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
+#, fuzzy
 msgid ""
-"Edit existing polygon:\n"
-"LMB: Move Point.\n"
-"Ctrl+LMB: Split Segment.\n"
-"RMB: Erase Point."
+"Edit points.\n"
+"LMB: Move Point\n"
+"RMB: Erase Point"
 msgstr ""
 "Επεξεργασία υπαρκτού πολυγόνου:\n"
 "Αριστερό κλικ: Μετακίνηση σημείου.\n"
@@ -3466,8 +3505,9 @@ msgstr ""
 "Δεξί κλικ: Διαγραφή σημείου."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Delete points"
-msgstr "Διαγραφή σημείων"
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Erase points."
+msgstr "Διαγραφή σημείων."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3481,15 +3521,14 @@ msgstr "Προσθήκη κίνησης"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load.."
-msgstr "Φόρτωσε"
+msgstr "Φόρτωσε.."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
-msgstr ""
+msgstr "Άκυρος τύπος κόμβου. Επιτρέπονται μόνο ριζικοί κόμβοι."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3499,73 +3538,66 @@ msgid ""
 "AnimationTree is inactive.\n"
 "Activate to enable playback, check node warnings if activation fails."
 msgstr ""
+"Το AnimationTree είναι ανενεργό.\n"
+"Ενεργοποίηση για αναπραγωγή, έλεγχος προειδοπιήσεων κόμβου σε περίπτωση "
+"αποτυχίας."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Set the blending position within the space"
-msgstr ""
+msgstr "Ορισμός θέσης μίξης εντός του χώρου"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
-msgstr ""
+msgstr "Επιλογή και μετακίνηση σημείων, δημιουργία σημείων με δεξί κλικ."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
-msgid "Create points."
-msgstr "Διαγραφή σημείων"
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
-msgid "Erase points."
-msgstr "Δεξί κλικ: Διαγραφή σημείου."
-
-#: editor/plugins/animation_blend_space_1d_editor.cpp
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Point"
-msgstr "Μετακίνηση σημείου"
+msgstr "Σημείο"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Open Animation Node"
-msgstr "Κόμβος κίνησης"
+msgstr "Άνοιγμα κόμβου κίνησης"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Triangle already exists"
-msgstr "Η ενέργεια '%s' υπάρχει ήδη!"
+msgstr "Το τρίγωνο υπάρχει ήδη"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr ""
+msgstr "Το BlendSpace2D δεν ανήκει σε κόμβο AnimationTree."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
-msgstr ""
+msgstr "Δεν υπάρχουν τρίγωνα, οπότε είναι αδύνατη η μίξη."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
-msgstr ""
+msgstr "Δημιουργία τριγώνων με την ένωση σημείων."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Erase points and triangles."
-msgstr "Ανάλυση %d Τριγώνων:"
+msgstr "Διαγραφή σημείων και τριγώνων."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr ""
+msgstr "Δημιουργία τριγώνων μίξης αυτόματα (αντι για χειροκινητα)"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr "Κούμπωμα"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#: editor/plugins/animation_tree_player_editor_plugin.cpp
+msgid "Blend:"
+msgstr "Ανάμειξη:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3574,20 +3606,26 @@ msgstr "Επεξεργασία φίλτρων"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr ""
+msgstr "Ο κόμβος εξόδου δεν μπορεί να προστεθεί στο δέντρο μίξης."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
+"Αδύνατη η σύνδεση, η θύρα μπορεί να χρησιμοποιείται ή η σύνδεση να είναι "
+"άκυρη."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
 msgstr ""
+"Δεν ορίστηκε AnimationPlayer, άρα αδύνατη η ανάκτηση των ονομάτων των "
+"κομματιών."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
 msgstr ""
+"Η διαδρομή AnimationPlayer είναι άκυρη, άρα αδύνατη η ανάκτηση των ονομάτων "
+"των κομματιών."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -3595,23 +3633,21 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+"Το AnimationPlayer δεν έχει έγκυρη διαδρομή ριζικού κόμβου, άρα αδύνατη η "
+"ανάκτηση των ονομάτων των κομματιών."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node.."
-msgstr "Προσθήκη κόμβου"
+msgstr "Προσθήκη κόμβου.."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filtered Tracks:"
-msgstr "Επεξεργασία φίλτρων"
+msgstr "Επεξεργασία φιλτραρισμένων κομματιών:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Enable filtering"
-msgstr "Επεξεργάσιμα παιδιά"
+msgstr "Ενεργοποίηση φιλτραρίσματος"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
@@ -3639,14 +3675,12 @@ msgid "Remove Animation"
 msgstr "Κατάργηση κίνησης"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid animation name!"
-msgstr "ΣΦΑΛΜΑ: Μη έγκυρο όνομα κίνησης!"
+msgstr "Άκυρο όνομα κίνησης!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Animation name already exists!"
-msgstr "ΣΦΑΛΜΑ: Αυτό το όνομα κίνησης υπάρχει ήδη!"
+msgstr "Ήδη υπαρκτό όνομα κίνησης!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -3670,14 +3704,12 @@ msgid "Duplicate Animation"
 msgstr "Αναπαραγωγή κίνησης"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "No animation to copy!"
-msgstr "ΣΦΑΛΜΑ: Δεν υπάρχει κίνηση για αντριγραφή!"
+msgstr "Καμία κίνηση για αντριγραφή!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "No animation resource on clipboard!"
-msgstr "ΣΦΑΛΜΑ: Δεν υπάρχει πόρος κίνησης στο πρόχειρο!"
+msgstr "Δεν υπάρχει πόρος κίνησης στο πρόχειρο!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pasted Animation"
@@ -3688,9 +3720,8 @@ msgid "Paste Animation"
 msgstr "Επικόλληση κίνησης"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "No animation to edit!"
-msgstr "ΣΦΑΛΜΑ: Δεν υπάρχει κίνηση για επεξεργασία!"
+msgstr "Καμία κίνηση για επεξεργασία!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation backwards from current pos. (A)"
@@ -3734,14 +3765,12 @@ msgid "New"
 msgstr "Νέο"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Transitions..."
-msgstr "Μεταβάσεις"
+msgstr "Επεξεργασία μεταβάσεων..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Open in Inspector"
-msgstr "Άνοιγμα στον επεξεργαστή"
+msgstr "Άνοιγμα για επιθεώρηση"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3800,9 +3829,8 @@ msgid "Include Gizmos (3D)"
 msgstr "Συμπεριέλαβε τα μαραφέτια (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Pin AnimationPlayer"
-msgstr "Επικόλληση κίνησης"
+msgstr "Καρφίτσωμα AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -3833,34 +3861,32 @@ msgid "Cross-Animation Blend Times"
 msgstr "Χρόνοι ανάμειξης κινήσεων"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "End"
 msgstr "Τέλος"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
-msgstr ""
+msgstr "Άμεση"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "Συγχρωνισμένη"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "Στο τέλος"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "Ταξίδι"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr ""
+msgstr "Οι αρχικοί και τελικοί κόμβοι είναι αναγκαίοι για υπο-μετασχηματισμό."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "No playback resource set at path: %s."
-msgstr "Δεν υπάρχει στην διαδρομή πόρων."
+msgstr "Κανένας πόρος αναπαραγωγής στη διαδρομή: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -3868,34 +3894,35 @@ msgid ""
 "RMB to add new nodes.\n"
 "Shift+LMB to create connections."
 msgstr ""
+"Επιλογή και μετακίνηση κόμβων.\n"
+"Δεξί κλικ για προσθήκη κόμβων.\n"
+"Shift+Αριστερό κλικ για την δημιουργία συνδέσεων."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Create new nodes."
-msgstr "Δημιουργία νέου %s"
+msgstr "Δημιουργία νέων κόμβων."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Connect nodes."
-msgstr "Σύνδεση κόμβων"
+msgstr "Σύνδεση κόμβων."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition"
-msgstr "Αφαίρεση επιλεγμένου κομματιού."
+msgstr "Αφαίρεση επιλεγμένου κόμβου ή μετάβασης"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
+"Εναλλαγή αυτόματης αναπαραγωγής της κίνησης στην εκκίνηση, επανεκκίνηση και "
+"επιστροφή στην αρχή."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
-msgstr ""
+msgstr "Ορισμός τελικής κίνησης. Χρήσιμο για υπο-μεταβάσεις."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition: "
-msgstr "Μετάβαση"
+msgstr "Μετάβαση: "
 
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3947,10 +3974,6 @@ msgstr "Εκκινιση!"
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Amount:"
 msgstr "Ποσότητα:"
-
-#: editor/plugins/animation_tree_player_editor_plugin.cpp
-msgid "Blend:"
-msgstr "Ανάμειξη:"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend 0:"
@@ -4094,14 +4117,12 @@ msgid "Asset Download Error:"
 msgstr "Σφάλμα λήψης:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading (%s / %s)..."
-msgstr "Λήψη"
+msgstr "Λήψη (%s / %s)..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Downloading..."
-msgstr "Λήψη"
+msgstr "Λήψη..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Resolving..."
@@ -4128,14 +4149,12 @@ msgid "Download for this asset is already in progress!"
 msgstr "Η λήψη είναι ήδη σε εξέλιξη!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "First"
 msgstr "Πρώτο"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Previous"
-msgstr "Προηγούμενη καρτέλα"
+msgstr "Προηγούμενο"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
@@ -4143,7 +4162,7 @@ msgstr "Επόμενο"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "Τελευταίο"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -4155,7 +4174,7 @@ msgstr "Όλα"
 msgid "Plugins"
 msgstr "Πρόσθετα"
 
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Sort:"
 msgstr "Ταξινόμηση:"
 
@@ -4271,29 +4290,29 @@ msgid "Create new horizontal and vertical guides"
 msgstr "Δημιουργία νέων οριζοντίων και κάθετων οδηγών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move pivot"
 msgstr "Μετακίνηση πηγαίου σημείου"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem"
-msgstr "Επεξεργασία στοιχείου κανβά"
+msgstr "Περιστροφή CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move anchor"
-msgstr "Ενέργεια μετακίνησης"
+msgstr "Μετακίνηση άγκυρας"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Resize CanvasItem"
-msgstr "Επεξεργασία στοιχείου κανβά"
+msgstr "Αλλαγή μεγέθους CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Scale CanvasItem"
+msgstr "Περιστροφή CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem"
-msgstr "Επεξεργασία στοιχείου κανβά"
+msgstr "Μετακίνηση CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4312,19 +4331,17 @@ msgid "Paste Pose"
 msgstr "Επικόληση στάσης"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom out"
-msgstr "Σμύκρινση"
+msgid ""
+"Warning: Children of a container get their position and size determined only "
+"by their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/texture_region_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 #, fuzzy
-msgid "Zoom reset"
+msgid "Zoom Reset"
 msgstr "Επαναφορά μεγέθυνσης"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
-msgid "Zoom in"
-msgstr "Μεγέθυνση"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4356,6 +4373,11 @@ msgid "Rotate Mode"
 msgstr "Λειτουργία περιστροφής"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Scale Mode"
+msgstr "Λειτουργία κλιμάκωσης (R)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Show a list of all objects at the position clicked\n"
@@ -4374,16 +4396,14 @@ msgid "Pan Mode"
 msgstr "Λειτουργία Μετακίνησης κάμερας"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle snapping."
-msgstr "Εναλλαγή κουμπώματος"
+msgstr "Εναλλαγή κουμπώματος."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "Χρήση κουμπώματος"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snapping Options"
 msgstr "Επιλογές κουμπώματος"
 
@@ -4425,9 +4445,8 @@ msgid "Snap to node sides"
 msgstr "Κούμπωμα στις πλευρές του κόμβου"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to node center"
-msgstr "Κούμπωμα στην άγκυρα του κόμβου"
+msgstr "Κούμπωμα στο κέντρο του κόμβου"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap to other nodes"
@@ -4456,6 +4475,11 @@ msgid "Restores the object's children's ability to be selected."
 msgstr "Επαναφέρει την δυνατότητα των παιδιών του αντικειμένου να επιλεγούν."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Skeleton Options"
+msgstr "Σκελετός..."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
 msgstr "Εμφάνιση οστών"
 
@@ -4469,12 +4493,11 @@ msgstr "Εκκαθάριση αλυσίδας IK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Custom Bone(s) from Node(s)"
-msgstr ""
+msgstr "Δημιουργία προσαρμοσμένων οστών απο κόμβους"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Custom Bones"
-msgstr "Εκκαθάριση οστών"
+msgstr "Εκκαθάριση προσαρμοσμένων οστών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4507,6 +4530,10 @@ msgid "Show Viewport"
 msgstr "Προβολή οπτικής γωνίας"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Show Group And Lock Icons"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
 msgstr "Κεντράρισμα επιλογής"
 
@@ -4519,9 +4546,8 @@ msgid "Layout"
 msgstr "Διάταξη"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Insert keys."
-msgstr "Εισαγωγή κλειδιών"
+msgstr "Εισαγωγή κλειδιών."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4578,17 +4604,25 @@ msgstr ""
 "Σύρσιμο & απόθεση + Alt: Αλλαγή του τύπου του κόμβου"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-msgid "Create Poly3D"
-msgstr "Δημιουργία πολυγώνου 3D"
+#, fuzzy
+msgid "Create Polygon3D"
+msgstr "Δημιουγία πολυγώνου"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly"
+msgstr "Επεγεργασία πολυγώνου"
+
+#: editor/plugins/collision_polygon_editor_plugin.cpp
+msgid "Edit Poly (Remove Point)"
+msgstr "Επεγεργασία πολυγώνου (Αφαίρεση σημείου)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Ορισμός λαβής"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
-#, fuzzy
 msgid "CPUParticles"
-msgstr "Σωματίδια"
+msgstr "Σωματίδια CPU"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -4681,36 +4715,8 @@ msgid "Item List Editor"
 msgstr "Επεξεργαστής λίστας στοιχείων"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid ""
-"No OccluderPolygon2D resource on this node.\n"
-"Create and assign one?"
-msgstr ""
-"Δεν υπάρχει πόρος OccluderPolygon2D σε αυτόν τον κόμβο.\n"
-"Να δημιουργία και να ορισθεί ένας;"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
 msgstr "Δημιουργία πολυγώνου εμποδίου"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Create a new polygon from scratch."
-msgstr "Δημιουργία νέου πολυγώνου από την αρχή."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Edit existing polygon:"
-msgstr "Επεξεργασία υπαρκτού πολυγώνου:"
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "LMB: Move Point."
-msgstr "Αριστερό κλίκ: ΜΕτακίνηση σημείου."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "Ctrl+LMB: Split Segment."
-msgstr "Ctrl+Αριστερό κλικ: Διαχωρσμός τμήματος."
-
-#: editor/plugins/light_occluder_2d_editor_plugin.cpp
-msgid "RMB: Erase Point."
-msgstr "Δεξί κλικ: Διαγραφή σημείου."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -4949,9 +4955,9 @@ msgid "Create Navigation Polygon"
 msgstr "Δημιουργία πολυγώνου πλοήγησης"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Generating AABB"
-msgstr "Δημιουρία AABB"
+#, fuzzy
+msgid "Generating Visibility Rect"
+msgstr "Δημιουργία ορθογωνίου ορατότητας"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
@@ -4978,6 +4984,11 @@ msgstr "Φόρτωση μάσκας εκπομπής"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
 msgstr "Εκκαθάριση μάσκας εκπομπής"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Convert to CPUParticles"
+msgstr "Μετατροπή σε σωματίδια CPU"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5050,13 +5061,12 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr "Απαιτείται ένα υλικό επεξεργασίας τύπου 'ParticlesMaterial'."
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
+msgid "Generating AABB"
 msgstr "Δημιουρία AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Convert to CPUParticles"
-msgstr "Μετατροπή σε κεφαλαία"
+msgid "Generate AABB"
+msgstr "Δημιουρία AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
@@ -5078,6 +5088,11 @@ msgstr "Αφαίρεση στοιχείου ελέγχου εισόδου από
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point to Curve"
 msgstr "Προσθήκη σημείου στην καμπύλη"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Split Curve"
+msgstr "κλείσιμο καμπύλης"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
@@ -5107,6 +5122,11 @@ msgid "Click: Add Point"
 msgstr "Κλικ: Προσθήκη σημείου"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Left Click: Split Segment (in curve)"
+msgstr "Διαχωρισμός τμήματος (στην καμπύλη)"
+
+#: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
 msgstr "Δεξί κλικ: Διαγραφή σημείου"
@@ -5119,11 +5139,6 @@ msgstr "Επλογή σημείων ελέγχου (Shift + Σύρσιμο)"
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Add Point (in empty space)"
 msgstr "Προσθήκη σημείου (σε άδειο χώρο)"
-
-#: editor/plugins/path_2d_editor_plugin.cpp
-#: editor/plugins/path_editor_plugin.cpp
-msgid "Split Segment (in curve)"
-msgstr "Διαχωρισμός τμήματος (στην καμπύλη)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5183,6 +5198,10 @@ msgstr "Αφαίρεση σημείου ελέγχου εξόδου"
 msgid "Remove In-Control Point"
 msgstr "Αφαίρεση σημείου ελέγχου εισόδου"
 
+#: editor/plugins/path_editor_plugin.cpp
+msgid "Split Segment (in curve)"
+msgstr "Διαχωρισμός τμήματος (στην καμπύλη)"
+
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
 msgid "Move joint"
@@ -5195,8 +5214,14 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Sync bones"
+msgid "Sync Bones"
 msgstr "Εμφάνιση οστών"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"No texture in this polygon.\n"
+"Set a texture to be able to edit UV."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5240,8 +5265,18 @@ msgid "Transform UV Map"
 msgstr "Μετασχηματισμός χάρτη UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint bone weights"
+#, fuzzy
+msgid "Transform Polygon"
+msgstr "Είδος μετασχηματισμού"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Paint Bone Weights"
 msgstr ""
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Open Polygon 2D UV editor."
+msgstr "Επεξεργαστής δισδιάστατου πολυγώνου"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5268,11 +5303,7 @@ msgstr "Δημιουργία οστών"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Create Polygon"
-msgstr "Δημιουγία πολυγώνου"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Move Point"
+msgid "Move Points"
 msgstr "Μετακίνηση σημείου"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5300,20 +5331,20 @@ msgid "Scale Polygon"
 msgstr "Κλιμάκωση πολυγώνου"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split"
+msgid "Connect two points to make a split."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Select a split to erase it"
+msgid "Select a split to erase it."
 msgstr "Επιλέξτε ένα αντικείμενο ρύθμισης πρώτα!"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Paint weights with specified intensity"
+msgid "Paint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "UnPaint weights with specified intensity"
+msgid "Unpaint weights with specified intensity."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5401,20 +5432,20 @@ msgid "Paste Resource"
 msgstr "Επικόλληση πόρου"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Open in Editor"
-msgstr "Άνοιγμα στον επεξεργαστή"
-
-#: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_editor.cpp
 msgid "Instance:"
 msgstr "Στιγμιότυπο:"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Type:"
 msgstr "Τύπος:"
+
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+msgid "Open in Editor"
+msgstr "Άνοιγμα στον επεξεργαστή"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -5449,6 +5480,11 @@ msgstr "Σφάλμα κατά την μετακίνηση αρχείου:\n"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
+msgid "Error: could not load file."
+msgstr "Δεν ήταν δυνατή η φόρτωση εικόνας"
+
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Error could not load file."
 msgstr "Δεν ήταν δυνατή η φόρτωση εικόνας"
 
@@ -5458,19 +5494,23 @@ msgid "Error saving file!"
 msgstr "Σφάλμα κατά την αποθήκευση TileSet!"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error while saving theme"
+#, fuzzy
+msgid "Error while saving theme."
 msgstr "Σφάλμα κατά την αποθήκευση θέματος"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error saving"
+#, fuzzy
+msgid "Error Saving"
 msgstr "Σφάλμα κατά την αποθήκευση"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing theme"
+#, fuzzy
+msgid "Error importing theme."
 msgstr "Σφάλμα κατά την εισαγωγή θέματος"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error importing"
+#, fuzzy
+msgid "Error Importing"
 msgstr "Σφάλμα κατά την εισαγωγή"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5491,6 +5531,14 @@ msgstr "Αποθήκευση ως..."
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
 msgstr "Εισαγωγή θέματος"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error while saving theme"
+msgstr "Σφάλμα κατά την αποθήκευση θέματος"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Error saving"
+msgstr "Σφάλμα κατά την αποθήκευση"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5534,8 +5582,8 @@ msgstr "Αρχείο"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "New TextFile"
-msgstr "Προβολή αρχείων"
+msgid "Open..."
+msgstr "Άνοιγμα"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5550,11 +5598,8 @@ msgid "Copy Script Path"
 msgstr "Αντιγραφή διαδρομής δεσμής ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Show In File System"
-msgstr "Εμφάνιση στο σύστημα αρχείων"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "History Prev"
+#, fuzzy
+msgid "History Previous"
 msgstr "Ιστορικά προηγούμενο"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -5567,16 +5612,17 @@ msgid "Theme"
 msgstr "Θέμα"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Import Theme..."
+msgstr "Εισαγωγή θέματος"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
 msgstr "Επαναφόρτωση θέματος"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme"
 msgstr "Αποθήκευση θέματος"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save Theme As"
-msgstr "Αποθήκευση θέματος ως"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close Docs"
@@ -5625,16 +5671,13 @@ msgid "Keep Debugger Open"
 msgstr "Διατήρησε τον αποσφαλματωτή ανοιχτό"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Debug with external editor"
+#, fuzzy
+msgid "Debug with External Editor"
 msgstr "Αποσφαλμάτωση με εξωτερικό επεξεργαστή"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
 msgstr "Άνοιγμα ηλεκτρονικής τεκμηρίωσης της Godot"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Search the class hierarchy."
-msgstr "Αναζήτηση στην ιεραρχεία κλάσεων."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -5674,20 +5717,8 @@ msgstr "Αποσφαλματωτής"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "Search results"
+msgid "Search Results"
 msgstr "Αναζήτηση βοήθειας"
-
-#: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
-msgid "Search in files"
-msgstr "Αναζήτηση κλάσεων"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid ""
-"Built-in scripts can only be edited when the scene they belong to is loaded"
-msgstr ""
-"Οι ενσωματομένες δεσμές ενεργειών μπορούν να επεξεργαστούν μόνο όταν η σκηνή "
-"στην οποία ανήκουν είναι φορτωμένη"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -5696,6 +5727,15 @@ msgstr "Γραμμή:"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "(ignore)"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Function"
+msgstr "Πήγαινε σε συνάρτηση..."
+
+#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
+msgid "Standard"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -5729,10 +5769,6 @@ msgstr "Κεφαλαιοποίηση"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
@@ -5786,11 +5822,13 @@ msgid "Trim Trailing Whitespace"
 msgstr "Περικοπή καταληκτικού κενού διαστήματος"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Spaces"
+#, fuzzy
+msgid "Convert Indent to Spaces"
 msgstr "Μετατροπή εσοχής σε κενά"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Convert Indent To Tabs"
+#, fuzzy
+msgid "Convert Indent to Tabs"
 msgstr "Μετατροπή εσοχής σε στηλοθέτες"
 
 #: editor/plugins/script_text_editor.cpp
@@ -5807,20 +5845,14 @@ msgid "Remove All Breakpoints"
 msgstr "Αφαίρεση όλων των σημείων διακοπής"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Next Breakpoint"
+#, fuzzy
+msgid "Go to Next Breakpoint"
 msgstr "Πήγαινε στο επόμενο σημείο διακοπής"
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Previous Breakpoint"
+#, fuzzy
+msgid "Go to Previous Breakpoint"
 msgstr "Πήγαινε στο προηγούμενο σημείο διακοπής"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert To Uppercase"
-msgstr "Μετατροπή σε κεφαλαία"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Convert To Lowercase"
-msgstr "Μετατροπή σε πεζά"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Previous"
@@ -5828,15 +5860,17 @@ msgstr "Έυρεση προηγούμενου"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
-msgid "Find in files..."
+msgid "Find in Files..."
 msgstr "Φιλτράρισμα αρχείων..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Function..."
+#, fuzzy
+msgid "Go to Function..."
 msgstr "Πήγαινε σε συνάρτηση..."
 
 #: editor/plugins/script_text_editor.cpp
-msgid "Goto Line..."
+#, fuzzy
+msgid "Go to Line..."
 msgstr "Πήγαινε σε γραμμή..."
 
 #: editor/plugins/script_text_editor.cpp
@@ -5932,6 +5966,14 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Animation Key Inserted."
 msgstr "Το κλειδί κίνησης έχει εισαχθεί."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Pitch"
+msgstr "Τόνος"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Yaw"
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -6101,6 +6143,11 @@ msgid "Freelook Speed Modifier"
 msgstr "Ταχύτητα ελεύθερου κοιτάγματος"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Rotation Locked"
+msgstr "Εμφάνιση πληροφοριών"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Διάλογος XForm"
 
@@ -6201,11 +6248,6 @@ msgstr "Εργαλείο περιστροφής"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Scale"
 msgstr "Εργαλείο κλιμάκωσης"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Snap To Floor"
-msgstr "κουμπώματος στο πλέγμα"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
@@ -6445,11 +6487,18 @@ msgid "Set Region Rect"
 msgstr "Ορισμός ορθογωνίου περιοχής"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
+#, fuzzy
+msgid "Set Margin"
+msgstr "Ορισμός λαβής"
+
+#: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
 msgstr "Λειτουργία κουμπώματος:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-msgid "<None>"
+#: scene/resources/visual_shader.cpp
+#, fuzzy
+msgid "None"
 msgstr "<Τίποτα>"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -6615,6 +6664,11 @@ msgid "Fix Invalid Tiles"
 msgstr "Μη έγκυρο όνομα."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Cut Selection"
+msgstr "Κεντράρισμα επιλογής"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
 msgstr "Βάψιμο TileMap"
 
@@ -6661,33 +6715,40 @@ msgstr "Επιλογή πλακιδίου"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
-msgid "Move Selection"
+msgid "Copy Selection"
 msgstr "Αφαίρεση επιλογής"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Rotate 0 degrees"
-msgstr "Περιστροφή 0 μοίρες"
+#, fuzzy
+msgid "Rotate left"
+msgstr "Λειτουργία περιστροφής"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Rotate 90 degrees"
-msgstr "Περιστροφή 90 μοίρες"
+#, fuzzy
+msgid "Rotate right"
+msgstr "Μετακίνηση δεξιά"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Rotate 180 degrees"
-msgstr "Περιστροφή 180 μοίρες"
+msgid "Flip horizontally"
+msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Rotate 270 degrees"
-msgstr "Περιστροφή 270 μοίρες"
+msgid "Flip vertically"
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Clear transform"
+msgstr "Μετασχηματισμός"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Add Texture(s) to TileSet"
+msgid "Add Texture(s) to TileSet."
 msgstr "Προσθέστε κόμβο/-ους από δέντρο"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid "Remove current Texture from TileSet"
+msgid "Remove selected Texture from TileSet."
 msgstr "Αφαίρεση τρέχουσας εγγραφής"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6699,19 +6760,38 @@ msgid "Merge from Scene"
 msgstr "Συγχώνευση από σκηνή"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid ""
-"Select sub-tile to use as icon, this will be also used on invalid autotile "
-"bindings."
-msgstr ""
-"Επιλέξτε υπότιτλο για εικονίδιο, o οποίος θα χρησιμοποιείται και σε μη "
-"έγκυρες συνδέσεις αυτόματων πλακιδίων."
-
-#: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Display tile's names (hold Alt Key)"
+msgid "Copy bitmask."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove Selected Textue and ALL TILES wich uses it?"
+#, fuzzy
+msgid "Paste bitmask."
+msgstr "Επικόλληση κίνησης"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Erase bitmask."
+msgstr "Διαγραφή σημείων."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new polygon."
+msgstr "Δημιουργία νέου πολυγώνου από την αρχή."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Keep polygon inside region Rect."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Enable snap and show grid (configurable via the Inspector)."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Display Tile Names (Hold Alt Key)"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Remove selected texture and ALL TILES which use it?"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6727,7 +6807,7 @@ msgid "Merge from scene?"
 msgstr "Συγχώνευση από σκηνή;"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid " file(s) was not added because was already on the list."
+msgid "%s file(s) were not added because was already on the list."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6738,13 +6818,8 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
-msgid ""
-"LMB: set bit on.\n"
-"RMB: set bit off.\n"
-"Click on another Tile to edit it."
-msgstr ""
-"Αριστερό κλικ: ενεργοποίησε το bit.\n"
-"Δεξί κλικ: απενεργοποίησε το bit."
+msgid "Delete selected Rect."
+msgstr "Διαγραφή επιλεγμένων αρχείων;"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6752,6 +6827,21 @@ msgid ""
 "Select current edited sub-tile.\n"
 "Click on another Tile to edit it."
 msgstr "Επέλεξε το τρέχων επεξεργαζόμενο υπο-πλακίδιο."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Delete polygon."
+msgstr "Διαγραφή σημείων"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"LMB: Set bit on.\n"
+"RMB: Set bit off.\n"
+"Click on another Tile to edit it."
+msgstr ""
+"Αριστερό κλικ: ενεργοποίησε το bit.\n"
+"Δεξί κλικ: απενεργοποίησε το bit."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6772,11 +6862,19 @@ msgstr "Επιλέξτε υπο-πλακίδιο για να αλλάξετε τ
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid ""
+"Select sub-tile to change its z index.\n"
+"Click on another Tile to edit it."
+msgstr "Επιλέξτε υπο-πλακίδιο για να αλλάξετε την προτεραιότητα του."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "Αυτή η λειτουργία δεν μπορεί να γίνει χωρίς σκηνή."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Tile Set"
+#, fuzzy
+msgid "TileSet"
 msgstr "Σύνολο πλακιδίων"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -6793,6 +6891,11 @@ msgstr "Παράμετροι:"
 #, fuzzy
 msgid "Light"
 msgstr "Δεξιά"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node..."
+msgstr "Προσθήκη κόμβου.."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -6817,12 +6920,27 @@ msgstr ""
 "Τα πρότυπα εξαγωγής για αυτή την πλατφόρτμα λείπουν ή είναι κατεστραμμένα:"
 
 #: editor/project_export.cpp
+#, fuzzy
+msgid "Release"
+msgstr "μόλις απελευθερώθηκε"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Exporting All"
+msgstr "Εξαγωγή για %s"
+
+#: editor/project_export.cpp
 msgid "Presets"
 msgstr "Διαμορφώσεις"
 
 #: editor/project_export.cpp editor/project_settings_editor.cpp
 msgid "Add..."
 msgstr "Προσθήκη..."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export Path"
+msgstr "Εξαγωγή έργου"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -6885,6 +7003,16 @@ msgstr "Λίστα δυνατοτήτων:"
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
 msgstr "Εξαγωγή PCK/ZIP"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export mode?"
+msgstr "Λειτουργία εξαγωγής:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Export All"
+msgstr "Εξαγωγή"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -7366,10 +7494,6 @@ msgstr "Ρυθμίσεις έργου (project.godot)"
 msgid "General"
 msgstr "Γενικά"
 
-#: editor/project_settings_editor.cpp editor/property_editor.cpp
-msgid "Property:"
-msgstr "Ιδιότητα:"
-
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
 msgstr "Παράκαμψη για..."
@@ -7503,10 +7627,6 @@ msgstr "Επιλέξτε έναν κόμβο"
 msgid "Bit %d, val %d."
 msgstr "Δυαδικό ψηφίο %d, τιμή %d."
 
-#: editor/property_editor.cpp
-msgid "Properties:"
-msgstr "Ιδιότητες:"
-
 #: editor/property_selector.cpp
 msgid "Select Property"
 msgstr "Επιλογή ιδιότητας"
@@ -7599,7 +7719,7 @@ msgid "Step"
 msgstr "Βήμα:"
 
 #: editor/rename_dialog.cpp
-msgid "Ammount by which counter is incremented for each node"
+msgid "Amount by which counter is incremented for each node"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -7608,7 +7728,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid ""
-"Minium number of digits for the counter.\n"
+"Minimum number of digits for the counter.\n"
 "Missing digits are padded with leading zeros."
 msgstr ""
 
@@ -7653,7 +7773,7 @@ msgstr "Κεφαλαία"
 msgid "Reset"
 msgstr "Επαναφορά μεγέθυνσης"
 
-#: editor/rename_dialog.cpp editor/script_editor_debugger.cpp
+#: editor/rename_dialog.cpp
 msgid "Error"
 msgstr "Σφάλμα"
 
@@ -7714,6 +7834,10 @@ msgid "Instance Scene(s)"
 msgstr "Δημιουργία στιγμιοτύπυ σκηνών"
 
 #: editor/scene_tree_dock.cpp
+msgid "Instance Child Scene"
+msgstr "Αρχικοποίηση σκηνής ως παιδί"
+
+#: editor/scene_tree_dock.cpp
 msgid "Clear Script"
 msgstr "Εκκαθάριση δεσμής ενεργειών"
 
@@ -7750,6 +7874,12 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Save New Scene As..."
 msgstr "Αποθήκευση νέας σκηνής ως..."
+
+#: editor/scene_tree_dock.cpp
+msgid ""
+"Disabling \"editable_instance\" will cause all properties of the node to be "
+"reverted to their default."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -7831,6 +7961,11 @@ msgid "Clear Inheritance"
 msgstr "Εκκαθάριση κληρονομικότητας"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Open documentation"
+msgstr "Άνοιγμα ηλεκτρονικής τεκμηρίωσης της Godot"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)"
 msgstr "Διαγραφή Κόμβων"
 
@@ -7839,12 +7974,13 @@ msgid "Add Child Node"
 msgstr "Προσθήκη κόμβου ως παιδί"
 
 #: editor/scene_tree_dock.cpp
-msgid "Instance Child Scene"
-msgstr "Αρχικοποίηση σκηνής ως παιδί"
-
-#: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "Αλλαγή τύπου"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Extend Script"
+msgstr "Άνοιγμα δεσμής ενεργειών"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8013,6 +8149,11 @@ msgid "Path is empty"
 msgstr "Η διαδρομή είναι  άδεια"
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Filename is empty"
+msgstr "Η διαδρομή αποθήκευσης είναι άδεια!"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is not local"
 msgstr "Η διαδρομή δεν είναι τοπική"
 
@@ -8101,20 +8242,9 @@ msgid "Bytes:"
 msgstr "Ψηφιολέξεις:"
 
 #: editor/script_editor_debugger.cpp
-msgid "Warning"
-msgstr "Προειδοποίηση"
-
-#: editor/script_editor_debugger.cpp
-msgid "Error:"
-msgstr "Σφάλμα:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Source:"
-msgstr "Πηγή:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Function:"
-msgstr "Συνάρτηση:"
+#, fuzzy
+msgid "Stack Trace"
+msgstr "Στοίβαξη καρέ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Pick one or more items from the list to display the graph."
@@ -8145,18 +8275,6 @@ msgstr "Επιθεώρηση του επόμενου στιγμιοτύπου"
 #: editor/script_editor_debugger.cpp
 msgid "Stack Frames"
 msgstr "Στοίβαξη καρέ"
-
-#: editor/script_editor_debugger.cpp
-msgid "Variable"
-msgstr "Μεταβλητή"
-
-#: editor/script_editor_debugger.cpp
-msgid "Errors:"
-msgstr "Σφάλματα:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Stack Trace (if applicable):"
-msgstr "Ιχνηλάτηση στοίβας (Εάν υφίσταται):"
 
 #: editor/script_editor_debugger.cpp
 msgid "Profiler"
@@ -8362,7 +8480,8 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-msgid "step argument is zero!"
+#, fuzzy
+msgid "Step argument is zero!"
 msgstr "Η παράμετρος step είναι μηδέν!"
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -8586,12 +8705,8 @@ msgid "End of inner exception stack trace"
 msgstr "Τέλος ιχνηλάτησης στοίβας εσωτερικής εξαίρεσης"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
-msgid "Bake!"
-msgstr "Προετοίμασε!"
-
-#: modules/recast/navigation_mesh_editor_plugin.cpp
-msgid "Bake the navigation mesh."
-msgstr "Προετοιμασία του πλέγματος πλοήγησης."
+msgid "Bake NavMesh"
+msgstr ""
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -8876,6 +8991,10 @@ msgid "Base Type:"
 msgstr "Τύπος βάσης:"
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Members:"
+msgstr "Μέλη:"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
 msgstr "Διαθέσιμοι κόμβοι:"
 
@@ -8979,11 +9098,11 @@ msgid "Search VisualScript"
 msgstr "Αφαίρεση κόμβου VisualScript"
 
 #: modules/visual_script/visual_script_property_selector.cpp
-msgid "Get"
-msgstr "Πάρε"
+msgid "Get %s"
+msgstr ""
 
 #: modules/visual_script/visual_script_property_selector.cpp
-msgid "Set "
+msgid "Set %s"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
@@ -9081,6 +9200,12 @@ msgstr ""
 "Ένα σχήμα πρέπει να δοθεί στο CollisionShape2D για να λειτουργήσει. "
 "Δημιουργήστε ένα πόρο σχήματος για αυτό!"
 
+#: scene/2d/cpu_particles_2d.cpp
+msgid ""
+"CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
+
 #: scene/2d/light_2d.cpp
 msgid ""
 "A texture with the shape of the light must be supplied to the 'texture' "
@@ -9130,6 +9255,12 @@ msgid ""
 msgstr ""
 "Δεν έχει οριστεί υλικό για να επεξεργαστεί τα σωματίδια, οπότε η συμπεριφορά "
 "θα εκτυπώνεται."
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"Particles2D animation requires the usage of a CanvasItemMaterial with "
+"\"Particles Animation\" enabled."
+msgstr ""
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -9274,6 +9405,18 @@ msgstr ""
 "Ένα σχήμα πρέπει να δοθεί στο CollisionShape για να λειτουργήσει. "
 "Δημιουργήστε ένα πόρο σχήματος για αυτό!"
 
+#: scene/3d/cpu_particles.cpp
+#, fuzzy
+msgid "Nothing is visible because no mesh has been assigned."
+msgstr ""
+"Τίποτα δεν είναι ορατό, επειδή δεν έχουν οριστεί περάσματα για τα πλέγματα."
+
+#: scene/3d/cpu_particles.cpp
+msgid ""
+"CPUParticles animation requires the usage of a SpatialMaterial with "
+"\"Billboard Particles\" enabled."
+msgstr ""
+
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Τοποθέτηση πλεγμάτων"
@@ -9297,6 +9440,28 @@ msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Τίποτα δεν είναι ορατό, επειδή δεν έχουν οριστεί περάσματα για τα πλέγματα."
+
+#: scene/3d/particles.cpp
+msgid ""
+"Particles animation requires the usage of a SpatialMaterial with \"Billboard "
+"Particles\" enabled."
+msgstr ""
+
+#: scene/3d/path.cpp
+#, fuzzy
+msgid "PathFollow only works when set as a child of a Path node."
+msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομεί έναν κόμβο Path2D."
+
+#: scene/3d/path.cpp
+#, fuzzy
+msgid "OrientedPathFollow only works when set as a child of a Path node."
+msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομεί έναν κόμβο Path2D."
+
+#: scene/3d/path.cpp
+msgid ""
+"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
+"resource."
+msgstr ""
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9340,7 +9505,7 @@ msgstr ""
 #: scene/3d/soft_body.cpp
 #, fuzzy
 msgid ""
-"Size changes to SoftBody will be overriden by the physics engine when "
+"Size changes to SoftBody will be overridden by the physics engine when "
 "running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
@@ -9407,6 +9572,10 @@ msgstr ""
 msgid "AnimationPlayer root is not a valid node."
 msgstr "Το δέντρο κίνησης δεν είναι έγκυρο."
 
+#: scene/animation/animation_tree_player.cpp
+msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr ""
+
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Ωμή λειτουργία"
@@ -9423,9 +9592,9 @@ msgstr "Ειδοποίηση!"
 msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
 
-#: scene/gui/file_dialog.cpp
-msgid "Select this Folder"
-msgstr "Επιλογή αυτού του φακέλου"
+#: scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -9436,6 +9605,10 @@ msgstr ""
 "Οι κόμβοι τύπου Popup θα είναι κρυμμένοι από προεπιλογή, εκτός κι αν "
 "καλέσετε την popup() ή καμία από τις συναρτήσεις popup*(). Το να τους κάνετε "
 "ορατούς κατά την επεξεργασία, όμως, δεν είναι πρόβλημα."
+
+#: scene/gui/range.cpp
+msgid "If exp_edit is true min_value must be > 0."
+msgstr ""
 
 #: scene/gui/scroll_container.cpp
 msgid ""
@@ -9493,11 +9666,6 @@ msgstr "Μη έγκυρο μέγεθος γραμματοσειράς."
 msgid "Input"
 msgstr "Προσθήκη εισόδου"
 
-#: scene/resources/visual_shader.cpp
-#, fuzzy
-msgid "None"
-msgstr "<Τίποτα>"
-
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for shader."
@@ -9514,6 +9682,175 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Create Poly"
+#~ msgstr "Δημιουγία πολυγώνου"
+
+#~ msgid "Create a new polygon from scratch"
+#~ msgstr "Δημιουργία νέου πολυγώνου από την αρχή"
+
+#~ msgid "Zoom out"
+#~ msgstr "Σμύκρινση"
+
+#~ msgid "Zoom in"
+#~ msgstr "Μεγέθυνση"
+
+#~ msgid "Create Poly3D"
+#~ msgstr "Δημιουργία πολυγώνου 3D"
+
+#~ msgid ""
+#~ "No OccluderPolygon2D resource on this node.\n"
+#~ "Create and assign one?"
+#~ msgstr ""
+#~ "Δεν υπάρχει πόρος OccluderPolygon2D σε αυτόν τον κόμβο.\n"
+#~ "Να δημιουργία και να ορισθεί ένας;"
+
+#~ msgid "Edit existing polygon:"
+#~ msgstr "Επεξεργασία υπαρκτού πολυγώνου:"
+
+#~ msgid "LMB: Move Point."
+#~ msgstr "Αριστερό κλίκ: ΜΕτακίνηση σημείου."
+
+#~ msgid "Ctrl+LMB: Split Segment."
+#~ msgstr "Ctrl+Αριστερό κλικ: Διαχωρσμός τμήματος."
+
+#~ msgid "RMB: Erase Point."
+#~ msgstr "Δεξί κλικ: Διαγραφή σημείου."
+
+#, fuzzy
+#~ msgid "New TextFile"
+#~ msgstr "Προβολή αρχείων"
+
+#~ msgid "Save Theme As"
+#~ msgstr "Αποθήκευση θέματος ως"
+
+#~ msgid "<None>"
+#~ msgstr "<Τίποτα>"
+
+#~ msgid ""
+#~ "Select sub-tile to use as icon, this will be also used on invalid "
+#~ "autotile bindings."
+#~ msgstr ""
+#~ "Επιλέξτε υπότιτλο για εικονίδιο, o οποίος θα χρησιμοποιείται και σε μη "
+#~ "έγκυρες συνδέσεις αυτόματων πλακιδίων."
+
+#~ msgid "Zoom:"
+#~ msgstr "Μεγέθυνση:"
+
+#~ msgid "Are you sure you want to remove all connections from the \""
+#~ msgstr ""
+#~ "Είστε σίγουροι πως θέλετε να αφαιρέσετε όλες τις συνδέσεις απο το \""
+
+#~ msgid "Class List:"
+#~ msgstr "Λίστα κλάσεων:"
+
+#~ msgid "Search Classes"
+#~ msgstr "Αναζήτηση κλάσεων"
+
+#~ msgid "Public Methods"
+#~ msgstr "Δημόσιες συναρτήσεις"
+
+#~ msgid "Public Methods:"
+#~ msgstr "Δημόσιες συναρτήσεις:"
+
+#~ msgid "GUI Theme Items"
+#~ msgstr "Στοιχεία του θέματος GUI"
+
+#~ msgid "GUI Theme Items:"
+#~ msgstr "Στοιχεία του θέματος GUI:"
+
+#~ msgid "Property: "
+#~ msgstr "Ιδιότητα: "
+
+#~ msgid "Toggle folder status as Favorite."
+#~ msgstr "Εναλλαγή φακέλου ως αγαπημένο."
+
+#~ msgid "Show current scene file."
+#~ msgstr "Εμφάνιση του αρχείου της τρέχουσας σκηνής."
+
+#~ msgid "Enter tree-view."
+#~ msgstr "Είσοδος σε προβολή δέντρου."
+
+#~ msgid "Whole words"
+#~ msgstr "Ολόκληρες λέξεις"
+
+#~ msgid "Match case"
+#~ msgstr "Αντιστοίχηση πεζών-κεφαλαίων"
+
+#~ msgid "Filter: "
+#~ msgstr "Φίλτρο: "
+
+#~ msgid "Ok"
+#~ msgstr "Εντάξει"
+
+#~ msgid "Show In File System"
+#~ msgstr "Εμφάνιση στο σύστημα αρχείων"
+
+#~ msgid "Search the class hierarchy."
+#~ msgstr "Αναζήτηση στην ιεραρχεία κλάσεων."
+
+#, fuzzy
+#~ msgid "Search in files"
+#~ msgstr "Αναζήτηση κλάσεων"
+
+#~ msgid ""
+#~ "Built-in scripts can only be edited when the scene they belong to is "
+#~ "loaded"
+#~ msgstr ""
+#~ "Οι ενσωματομένες δεσμές ενεργειών μπορούν να επεξεργαστούν μόνο όταν η "
+#~ "σκηνή στην οποία ανήκουν είναι φορτωμένη"
+
+#~ msgid "Convert To Uppercase"
+#~ msgstr "Μετατροπή σε κεφαλαία"
+
+#~ msgid "Convert To Lowercase"
+#~ msgstr "Μετατροπή σε πεζά"
+
+#, fuzzy
+#~ msgid "Snap To Floor"
+#~ msgstr "κουμπώματος στο πλέγμα"
+
+#~ msgid "Rotate 0 degrees"
+#~ msgstr "Περιστροφή 0 μοίρες"
+
+#~ msgid "Rotate 90 degrees"
+#~ msgstr "Περιστροφή 90 μοίρες"
+
+#~ msgid "Rotate 180 degrees"
+#~ msgstr "Περιστροφή 180 μοίρες"
+
+#~ msgid "Rotate 270 degrees"
+#~ msgstr "Περιστροφή 270 μοίρες"
+
+#~ msgid "Warning"
+#~ msgstr "Προειδοποίηση"
+
+#~ msgid "Error:"
+#~ msgstr "Σφάλμα:"
+
+#~ msgid "Source:"
+#~ msgstr "Πηγή:"
+
+#~ msgid "Function:"
+#~ msgstr "Συνάρτηση:"
+
+#~ msgid "Variable"
+#~ msgstr "Μεταβλητή"
+
+#~ msgid "Errors:"
+#~ msgstr "Σφάλματα:"
+
+#~ msgid "Stack Trace (if applicable):"
+#~ msgstr "Ιχνηλάτηση στοίβας (Εάν υφίσταται):"
+
+#~ msgid "Bake!"
+#~ msgstr "Προετοίμασε!"
+
+#~ msgid "Bake the navigation mesh."
+#~ msgstr "Προετοιμασία του πλέγματος πλοήγησης."
+
+#~ msgid "Get"
+#~ msgstr "Πάρε"
 
 #~ msgid "Change Scalar Constant"
 #~ msgstr "Αλλαγή μονόμετρης σταθεράς"
@@ -10011,9 +10348,6 @@ msgstr ""
 #~ msgid "Could not save atlas subtexture:"
 #~ msgstr "Αδύνατη η αποθήκευση υπό-εικόνας άτλαντα:"
 
-#~ msgid "Exporting for %s"
-#~ msgstr "Εξαγωγή για %s"
-
 #~ msgid "Setting Up..."
 #~ msgstr "Αρχικοποίηση..."
 
@@ -10120,9 +10454,6 @@ msgstr ""
 #~ msgid "Source Font:"
 #~ msgstr "Πηγαία γραμματοσειρά:"
 
-#~ msgid "Source Font Size:"
-#~ msgstr "Μέγεθος πηγαίας γραμματοσειράς:"
-
 #~ msgid "Dest Resource:"
 #~ msgstr "Πόρος προορισμού:"
 
@@ -10198,9 +10529,6 @@ msgstr ""
 
 #~ msgid "Start(s)"
 #~ msgstr "Αρχή"
-
-#~ msgid "Filters"
-#~ msgstr "Φίλτρα"
 
 #~ msgid "Source path is empty."
 #~ msgstr "Η διαδρομή προέλευσης είναι άδεια."
@@ -10480,14 +10808,8 @@ msgstr ""
 #~ msgid "Stereo"
 #~ msgstr "Στερεοφωνικό"
 
-#~ msgid "Pitch"
-#~ msgstr "Τόνος"
-
 #~ msgid "Window"
 #~ msgstr "Παράθυρο"
-
-#~ msgid "Move Right"
-#~ msgstr "Μετακίνηση δεξιά"
 
 #~ msgid "Scaling to %s%%."
 #~ msgstr "Κλιμάκωση to %s%%."
@@ -10561,9 +10883,6 @@ msgstr ""
 
 #~ msgid "just pressed"
 #~ msgstr "μόλις πατήθηκε"
-
-#~ msgid "just released"
-#~ msgstr "μόλις απελευθερώθηκε"
 
 #~ msgid ""
 #~ "Couldn't read the certificate file. Are the path and password both "

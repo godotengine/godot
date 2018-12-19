@@ -33,16 +33,17 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
+#include "core/os/dir_access.h"
+
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "os/dir_access.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
 class DirAccessUnix : public DirAccess {
 
 	DIR *dir_stream;

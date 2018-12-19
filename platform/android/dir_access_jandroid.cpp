@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "dir_access_jandroid.h"
+#include "core/print_string.h"
 #include "file_access_jandroid.h"
-#include "print_string.h"
 #include "thread_jandroid.h"
 
 jobject DirAccessJAndroid::io = NULL;
@@ -245,4 +243,3 @@ DirAccessJAndroid::~DirAccessJAndroid() {
 
 	list_dir_end();
 }
-#endif

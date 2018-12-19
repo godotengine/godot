@@ -30,9 +30,9 @@
 
 #include "logger.h"
 
-#include "os/dir_access.h"
-#include "os/os.h"
-#include "print_string.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 // va_copy was defined in the C99, but not in C++ standards before C++11.
 // When you compile C++ without --std=c++<XX> option, compilers still define
@@ -43,6 +43,10 @@
 #else
 #define va_copy(d, s) ((d) = (s))
 #endif
+#endif
+
+#if defined(MINGW_ENABLED) || defined(_MSC_VER)
+#define sprintf sprintf_s
 #endif
 
 bool Logger::should_log(bool p_err) {
@@ -175,11 +179,10 @@ void RotatedFileLogger::rotate_file() {
 	file = FileAccess::open(base_path, FileAccess::WRITE);
 }
 
-RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) {
-	file = NULL;
-	base_path = p_base_path.simplify_path();
-	max_files = p_max_files > 0 ? p_max_files : 1;
-
+RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
+		base_path(p_base_path.simplify_path()),
+		max_files(p_max_files > 0 ? p_max_files : 1),
+		file(NULL) {
 	rotate_file();
 }
 
@@ -236,8 +239,8 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 
 StdLogger::~StdLogger() {}
 
-CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) {
-	loggers = p_loggers;
+CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
+		loggers(p_loggers) {
 }
 
 void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {

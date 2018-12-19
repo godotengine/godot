@@ -4,7 +4,7 @@
 		A script interface to a scene file's data.
 	</brief_description>
 	<description>
-		Maintains a list of resources, nodes, exported and overridden properties, and built-in scripts associated with a scene.
+		Maintains a list of resources, nodes, exported, and overridden properties, and built-in scripts associated with a scene.
 	</description>
 	<tutorials>
 	</tutorials>

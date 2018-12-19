@@ -30,7 +30,7 @@
 
 #include "audio_player.h"
 
-#include "engine.h"
+#include "core/engine.h"
 
 void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
@@ -219,6 +219,7 @@ void AudioStreamPlayer::seek(float p_seconds) {
 void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
+		stream_playback->stop();
 		active = false;
 		set_process_internal(false);
 	}

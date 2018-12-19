@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__ANDROID__)
 #define GDCALLINGCONV
 #define GDAPI GDCALLINGCONV
 #elif defined(__APPLE__)
@@ -47,7 +47,7 @@ extern "C" {
 #define GDCALLINGCONV __attribute__((sysv_abi))
 #define GDAPI GDCALLINGCONV
 #endif
-#else
+#else // !_WIN32 && !__APPLE__
 #define GDCALLINGCONV __attribute__((sysv_abi))
 #define GDAPI GDCALLINGCONV
 #endif
@@ -281,6 +281,10 @@ void GDAPI godot_free(void *p_ptr);
 void GDAPI godot_print_error(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print_warning(const char *p_description, const char *p_function, const char *p_file, int p_line);
 void GDAPI godot_print(const godot_string *p_message);
+
+// GDNATIVE CORE 1.0.1
+
+bool GDAPI godot_is_instance_valid(const godot_object *p_object);
 
 #ifdef __cplusplus
 }
