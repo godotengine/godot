@@ -381,6 +381,13 @@
 				Returns the epoch time of the operating system in seconds.
 			</description>
 		</method>
+		<method name="get_system_time_msecs" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the epoch time of the operating system in milliseconds.
+			</description>
+		</method>
 		<method name="get_ticks_msec" qualifiers="const">
 			<return type="int">
 			</return>

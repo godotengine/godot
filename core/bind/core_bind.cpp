@@ -827,6 +827,10 @@ uint64_t _OS::get_system_time_secs() const {
 	return OS::get_singleton()->get_system_time_secs();
 }
 
+uint64_t _OS::get_system_time_msecs() const {
+	return OS::get_singleton()->get_system_time_msecs();
+}
+
 void _OS::delay_usec(uint32_t p_usec) const {
 
 	OS::get_singleton()->delay_usec(p_usec);
@@ -1182,6 +1186,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"), &_OS::get_datetime_from_unix_time);
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"), &_OS::get_unix_time_from_datetime);
 	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
+	ClassDB::bind_method(D_METHOD("get_system_time_msecs"), &_OS::get_system_time_msecs);
 
 	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &_OS::set_icon);
 

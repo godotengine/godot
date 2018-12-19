@@ -84,6 +84,7 @@ public:
 
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
+	virtual uint64_t get_system_time_msecs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
