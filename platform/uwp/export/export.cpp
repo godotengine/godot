@@ -187,7 +187,7 @@ class AppxPackager {
 public:
 	void set_progress_task(String p_task) { progress_task = p_task; }
 	void init(FileAccess *p_fa);
-	void add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
+	Error add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
 	void finish();
 
 	AppxPackager();
@@ -468,10 +468,12 @@ void AppxPackager::init(FileAccess *p_fa) {
 	tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
 }
 
-void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
+Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
 
 	if (p_file_no >= 1 && p_total_files >= 1) {
-		EditorNode::progress_task_step(progress_task, "File: " + p_file_name, (p_file_no * 100) / p_total_files);
+		if (EditorNode::progress_task_step(progress_task, "File: " + p_file_name, (p_file_no * 100) / p_total_files)) {
+			return ERR_SKIP;
+		}
 	}
 
 	FileMeta meta;
@@ -584,6 +586,8 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 	package->store_buffer(file_buffer.ptr(), file_buffer.size());
 
 	file_metadata.push_back(meta);
+
+	return OK;
 }
 
 void AppxPackager::finish() {
@@ -1008,9 +1012,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		AppxPackager *packager = (AppxPackager *)p_userdata;
 		String dst_path = p_path.replace_first("res://", "game/");
 
-		packager->add_file(dst_path, p_data.ptr(), p_data.size(), p_file, p_total, _should_compress_asset(p_path, p_data));
-
-		return OK;
+		return packager->add_file(dst_path, p_data.ptr(), p_data.size(), p_file, p_total, _should_compress_asset(p_path, p_data));
 	}
 
 public:
@@ -1230,7 +1232,7 @@ public:
 
 		String src_appx;
 
-		EditorProgress ep("export", "Exporting for Windows Universal", 7);
+		EditorProgress ep("export", "Exporting for Windows Universal", 7, true);
 
 		if (p_debug)
 			src_appx = p_preset->get("custom_template/debug");
@@ -1280,7 +1282,9 @@ public:
 		FileAccess *src_f = NULL;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-		ep.step("Creating package...", 0);
+		if (ep.step("Creating package...", 0)) {
+			return ERR_SKIP;
+		}
 
 		unzFile pkg = unzOpen2(src_appx.utf8().get_data(), &io);
 
@@ -1292,7 +1296,9 @@ public:
 
 		int ret = unzGoToFirstFile(pkg);
 
-		ep.step("Copying template files...", 1);
+		if (ep.step("Copying template files...", 1)) {
+			return ERR_SKIP;
+		}
 
 		EditorNode::progress_add_task("template_files", "Template files", 100);
 		packager.set_progress_task("template_files");
@@ -1341,14 +1347,19 @@ public:
 
 			print_line("ADDING: " + path);
 
-			packager.add_file(path, data.ptr(), data.size(), template_file_no++, template_files_amount, _should_compress_asset(path, data));
+			err = packager.add_file(path, data.ptr(), data.size(), template_file_no++, template_files_amount, _should_compress_asset(path, data));
+			if (err != OK) {
+				return err;
+			}
 
 			ret = unzGoToNextFile(pkg);
 		}
 
 		EditorNode::progress_end_task("template_files");
 
-		ep.step("Creating command line...", 2);
+		if (ep.step("Creating command line...", 2)) {
+			return ERR_SKIP;
+		}
 
 		Vector<String> cl = ((String)p_preset->get("command_line/extra_args")).strip_edges().split(" ");
 		for (int i = 0; i < cl.size(); i++) {
@@ -1382,9 +1393,14 @@ public:
 			print_line(itos(i) + " param: " + cl[i]);
 		}
 
-		packager.add_file("__cl__.cl", clf.ptr(), clf.size(), -1, -1, false);
+		err = packager.add_file("__cl__.cl", clf.ptr(), clf.size(), -1, -1, false);
+		if (err != OK) {
+			return err;
+		}
 
-		ep.step("Adding project files...", 3);
+		if (ep.step("Adding project files...", 3)) {
+			return ERR_SKIP;
+		}
 
 		EditorNode::progress_add_task("project_files", "Project Files", 100);
 		packager.set_progress_task("project_files");
@@ -1393,7 +1409,9 @@ public:
 
 		EditorNode::progress_end_task("project_files");
 
-		ep.step("Closing package...", 7);
+		if (ep.step("Closing package...", 7)) {
+			return ERR_SKIP;
+		}
 
 		unzClose(pkg);
 
