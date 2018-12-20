@@ -379,6 +379,9 @@ if webm_cpu_x86:
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_x86_64asm)
 elif webm_cpu_arm:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm)
+    if env["platform"] == 'android':
+        env_libvpx.Append(CPPPATH=[libvpx_dir + "third_party/android"])
+        env_libvpx.add_source_files(env.modules_sources, [libvpx_dir + "third_party/android/cpu-features.c"])
 
     env_libvpx_neon = env_libvpx.Clone()
     if env["platform"] == 'android' and env["android_arch"] == 'armv6':
