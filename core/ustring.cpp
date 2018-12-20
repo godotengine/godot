@@ -4247,7 +4247,6 @@ String String::check_control_characters() const {
 				s = str_begin + "    " + str_end;
 			}
 		}
-		///printf("slash : %d\n", slash_pos);
 		slash_pos = s.find(slash, slash_pos + 1);
 	}
 
