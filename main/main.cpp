@@ -1029,8 +1029,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	ProjectSettings::get_singleton()->register_global_defaults();
-
 	if (p_second_phase)
 		return setup2();
 
