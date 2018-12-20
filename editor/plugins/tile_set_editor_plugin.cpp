@@ -874,6 +874,9 @@ void TileSetEditor::_on_workspace_draw() {
 			draw_edited_region_subdivision();
 		} else {
 			int t_id = get_current_tile();
+			if (t_id < 0)
+				return;
+
 			Rect2i region;
 			if (draw_edited_region)
 				region = edited_region;
