@@ -42,9 +42,6 @@
 #include "scene/gui/panel.h"
 #include "scene/scene_string_names.h"
 
-//#include <wchar.h>
-//#include <stdlib.h>
-
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
