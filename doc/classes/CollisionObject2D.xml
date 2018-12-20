@@ -53,7 +53,7 @@
 			<argument index="0" name="owner_id" type="int">
 			</argument>
 			<description>
-				If [code]true[/code] the shape owner and its shapes are disabled.
+				If [code]true[/code], the shape owner and its shapes are disabled.
 			</description>
 		</method>
 		<method name="is_shape_owner_one_way_collision_enabled" qualifiers="const">
@@ -171,7 +171,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] disables the given shape owner.
+				If [code]true[/code], disables the given shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_one_way_collision">
@@ -199,7 +199,7 @@
 	</methods>
 	<members>
 		<member name="input_pickable" type="bool" setter="set_pickable" getter="is_pickable">
-			If [code]true[/code] this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events.
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events.
 		</member>
 	</members>
 	<signals>

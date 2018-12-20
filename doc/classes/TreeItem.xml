@@ -352,7 +352,7 @@
 			<argument index="1" name="checked" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the column [code]column[/code] is checked.
+				If [code]true[/code], the column [code]column[/code] is checked.
 			</description>
 		</method>
 		<method name="set_custom_as_button">
@@ -411,7 +411,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] column [code]column[/code] is editable.
+				If [code]true[/code], column [code]column[/code] is editable.
 			</description>
 		</method>
 		<method name="set_expand_right">
@@ -422,7 +422,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] column [code]column[/code] is expanded to the right.
+				If [code]true[/code], column [code]column[/code] is expanded to the right.
 			</description>
 		</method>
 		<method name="set_icon">
@@ -502,7 +502,7 @@
 			<argument index="1" name="selectable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the given column is selectable.
+				If [code]true[/code], the given column is selectable.
 			</description>
 		</method>
 		<method name="set_text">
@@ -540,13 +540,13 @@
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed">
-			If [code]true[/code] the TreeItem is collapsed.
+			If [code]true[/code], the TreeItem is collapsed.
 		</member>
 		<member name="custom_minimum_height" type="int" setter="set_custom_minimum_height" getter="get_custom_minimum_height">
 			The custom minimum height.
 		</member>
 		<member name="disable_folding" type="bool" setter="set_disable_folding" getter="is_folding_disabled">
-			If [code]true[/code] folding is disabled for this TreeItem.
+			If [code]true[/code], folding is disabled for this TreeItem.
 		</member>
 	</members>
 	<constants>

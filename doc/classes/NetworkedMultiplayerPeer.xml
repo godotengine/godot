@@ -53,7 +53,7 @@
 	</methods>
 	<members>
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections">
-			If [code]true[/code] this [code]NetworkedMultiplayerPeer[/code] refuses new connections. Default value: [code]false[/code].
+			If [code]true[/code], this [code]NetworkedMultiplayerPeer[/code] refuses new connections. Default value: [code]false[/code].
 		</member>
 		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" enum="NetworkedMultiplayerPeer.TransferMode">
 			The manner in which to send packets to the [code]target_peer[/code]. See [enum TransferMode].

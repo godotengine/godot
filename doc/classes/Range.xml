@@ -30,13 +30,13 @@
 	</methods>
 	<members>
 		<member name="allow_greater" type="bool" setter="set_allow_greater" getter="is_greater_allowed">
-			If [code]true[/code] [member value] may be greater than [member max_value]. Default value: [code]false[/code].
+			If [code]true[/code], [member value] may be greater than [member max_value]. Default value: [code]false[/code].
 		</member>
 		<member name="allow_lesser" type="bool" setter="set_allow_lesser" getter="is_lesser_allowed">
-			If [code]true[/code] [member value] may be less than [member min_value]. Default value: [code]false[/code].
+			If [code]true[/code], [member value] may be less than [member min_value]. Default value: [code]false[/code].
 		</member>
 		<member name="exp_edit" type="bool" setter="set_exp_ratio" getter="is_ratio_exp">
-			If [code]true[/code] and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
+			If [code]true[/code], and [code]min_value[/code] is greater than 0, [code]value[/code] will be represented exponentially rather than linearly.
 		</member>
 		<member name="max_value" type="float" setter="set_max" getter="get_max">
 			Maximum value. Range is clamped if [code]value[/code] is greater than [code]max_value[/code]. Default value: [code]100[/code].
@@ -51,7 +51,7 @@
 			The value mapped between 0 and 1.
 		</member>
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values">
-			If [code]true[/code] [code]value[/code] will always be rounded to the nearest integer. Default value: [code]false[/code].
+			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer. Default value: [code]false[/code].
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step">
 			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.

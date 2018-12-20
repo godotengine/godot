@@ -14,7 +14,7 @@
 	</methods>
 	<members>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled">
-			If [code]true[/code] the viewport will be scaled to the control's size. Default value:[code]false[/code].
+			If [code]true[/code], the viewport will be scaled to the control's size. Default value:[code]false[/code].
 		</member>
 		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink">
 		</member>

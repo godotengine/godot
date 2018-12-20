@@ -49,7 +49,7 @@
 			<argument index="0" name="area" type="Node">
 			</argument>
 			<description>
-				If [code]true[/code] the given area overlaps the Area2D. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				If [code]true[/code], the given area overlaps the Area2D. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="overlaps_body" qualifiers="const">
@@ -58,7 +58,7 @@
 			<argument index="0" name="body" type="Node">
 			</argument>
 			<description>
-				If [code]true[/code] the given body overlaps the Area2D. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
+				If [code]true[/code], the given body overlaps the Area2D. Note that the result of this test is not immediate after moving objects. For performance, list of overlaps is updated once per frame and before the physics step. Consider using signals instead.
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
@@ -92,7 +92,7 @@
 			The name of the area's audio bus.
 		</member>
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus">
-			If [code]true[/code] the area's audio bus overrides the default audio bus. Default value: [code]false[/code].
+			If [code]true[/code], the area's audio bus overrides the default audio bus. Default value: [code]false[/code].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
 			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [code]collision_mask[/code].
@@ -107,7 +107,7 @@
 			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
 		</member>
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point">
-			If [code]true[/code] gravity is calculated from a point (set via [code]gravity_vec[/code]). Also see [code]space_override[/code]. Default value: [code]false[/code].
+			If [code]true[/code], gravity is calculated from a point (set via [code]gravity_vec[/code]). Also see [code]space_override[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="gravity_vec" type="Vector2" setter="set_gravity_vector" getter="get_gravity_vector">
 			The area's gravity vector (not normalized). If gravity is a point (see [method is_gravity_a_point]), this will be the point of attraction.
@@ -116,10 +116,10 @@
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
 		</member>
 		<member name="monitorable" type="bool" setter="set_monitorable" getter="is_monitorable">
-			If [code]true[/code] other monitoring areas can detect this area. Default value: [code]true[/code].
+			If [code]true[/code], other monitoring areas can detect this area. Default value: [code]true[/code].
 		</member>
 		<member name="monitoring" type="bool" setter="set_monitoring" getter="is_monitoring">
-			If [code]true[/code] the area detects bodies or areas entering and exiting it. Default value: [code]true[/code].
+			If [code]true[/code], the area detects bodies or areas entering and exiting it. Default value: [code]true[/code].
 		</member>
 		<member name="priority" type="float" setter="set_priority" getter="get_priority">
 			The area's priority. Higher priority areas are processed first. Default value: 0.

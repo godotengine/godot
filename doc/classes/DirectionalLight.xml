@@ -18,7 +18,7 @@
 			Amount of extra bias for shadow splits that are far away. If self shadowing occurs only on the splits far away, this value can fix them.
 		</member>
 		<member name="directional_shadow_blend_splits" type="bool" setter="set_blend_splits" getter="is_blend_splits_enabled">
-			If [code]true[/code] shadow detail is sacrificed in exchange for smoother transitions between splits. Default value:[code]false[/code].
+			If [code]true[/code], shadow detail is sacrificed in exchange for smoother transitions between splits. Default value:[code]false[/code].
 		</member>
 		<member name="directional_shadow_depth_range" type="int" setter="set_shadow_depth_range" getter="get_shadow_depth_range" enum="DirectionalLight.ShadowDepthRange">
 			Optimizes shadow rendering for detail versus movement. See [enum ShadowDepthRange].

@@ -52,7 +52,7 @@
 			The embedded audio track to play.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="has_autoplay">
-			If [code]true[/code] playback starts when the scene loads. Default value: [code]false[/code].
+			If [code]true[/code], playback starts when the scene loads. Default value: [code]false[/code].
 		</member>
 		<member name="buffering_msec" type="int" setter="set_buffering_msec" getter="get_buffering_msec">
 			Amount of time in milliseconds to store in buffer while playing.
@@ -61,10 +61,10 @@
 			Audio bus to use for sound playback.
 		</member>
 		<member name="expand" type="bool" setter="set_expand" getter="has_expand">
-			If [code]true[/code] the video scales to the control size. Default value: [code]true[/code].
+			If [code]true[/code], the video scales to the control size. Default value: [code]true[/code].
 		</member>
 		<member name="paused" type="bool" setter="set_paused" getter="is_paused">
-			If [code]true[/code] the video is paused.
+			If [code]true[/code], the video is paused.
 		</member>
 		<member name="stream" type="VideoStream" setter="set_stream" getter="get_stream">
 		</member>

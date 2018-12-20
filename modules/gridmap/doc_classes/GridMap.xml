@@ -192,13 +192,13 @@
 	</methods>
 	<members>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x">
-			If [code]true[/code] grid items are centered on the X axis.
+			If [code]true[/code], grid items are centered on the X axis.
 		</member>
 		<member name="cell_center_y" type="bool" setter="set_center_y" getter="get_center_y">
-			If [code]true[/code] grid items are centered on the Y axis.
+			If [code]true[/code], grid items are centered on the Y axis.
 		</member>
 		<member name="cell_center_z" type="bool" setter="set_center_z" getter="get_center_z">
-			If [code]true[/code] grid items are centered on the Z axis.
+			If [code]true[/code], grid items are centered on the Z axis.
 		</member>
 		<member name="cell_octant_size" type="int" setter="set_octant_size" getter="get_octant_size">
 			The size of each octant measured in number of cells. This applies to all three axis.

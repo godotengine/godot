@@ -80,7 +80,7 @@
 	</methods>
 	<members>
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased">
-			If [code]true[/code] polygon edges will be anti-aliased. Default value: [code]false[/code].
+			If [code]true[/code], polygon edges will be anti-aliased. Default value: [code]false[/code].
 		</member>
 		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones">
 		</member>
@@ -91,7 +91,7 @@
 			Added padding applied to the bounding box when using [code]invert[/code]. Setting this value too small may result in a "Bad Polygon" error. Default value: [code]100[/code].
 		</member>
 		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert">
-			If [code]true[/code] polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code]. Default value: [code]false[/code].
+			If [code]true[/code], polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code]. Default value: [code]false[/code].
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset">
 			The offset applied to each vertex.

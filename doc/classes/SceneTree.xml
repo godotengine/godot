@@ -192,7 +192,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the application automatically accepts quitting.
+				If [code]true[/code], the application automatically accepts quitting.
 			</description>
 		</method>
 		<method name="set_group">
@@ -236,7 +236,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the application quits automatically on going back (e.g. on Android).
+				If [code]true[/code], the application quits automatically on going back (e.g. on Android).
 			</description>
 		</method>
 		<method name="set_screen_stretch">
@@ -270,27 +270,27 @@
 			The default [MultiplayerAPI] instance for this SceneTree.
 		</member>
 		<member name="multiplayer_poll" type="bool" setter="set_multiplayer_poll_enabled" getter="is_multiplayer_poll_enabled">
-			If [code]true[/code] (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
+			If [code]true[/code], (default) enable the automatic polling of the [MultiplayerAPI] for this SceneTree during [signal idle_frame].
 			When [code]false[/code] you need to manually call [method MultiplayerAPI.poll] for processing network packets and delivering RPCs/RSETs. This allows to run RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
 			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the SceneTree will become a network server (check with [method is_network_server()]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to SceneTree's signals.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused">
-			If [code]true[/code] the SceneTree is paused.
+			If [code]true[/code], the SceneTree is paused.
 			Doing so will have the following behavior:
 			* 2D and 3D physics will be stopped.
 			* _process and _physics_process will not be called anymore in nodes.
 			* _input and _input_event will not be called anymore either.
 		</member>
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
-			If [code]true[/code] the SceneTree's [member network_peer] refuses new incoming connections.
+			If [code]true[/code], the SceneTree's [member network_peer] refuses new incoming connections.
 		</member>
 		<member name="root" type="Viewport" setter="" getter="get_root">
 			The SceneTree's [Viewport].
 		</member>
 		<member name="use_font_oversampling" type="bool" setter="set_use_font_oversampling" getter="is_using_font_oversampling">
-			If [code]true[/code] font oversampling is used.
+			If [code]true[/code], font oversampling is used.
 		</member>
 	</members>
 	<signals>

@@ -86,7 +86,7 @@
 		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag">
 		</member>
 		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code] particles will not move on the z axis. Default value: [code]true[/code] for [Particles2D], [code]false[/code] for [Particles].
+			If [code]true[/code], particles will not move on the z axis. Default value: [code]true[/code] for [Particles2D], [code]false[/code] for [Particles].
 		</member>
 		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag">
 		</member>

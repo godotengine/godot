@@ -522,16 +522,16 @@
 			The color applied to textures on this [code]CanvasItem[/code]. This is not inherited by children [code]CanvasItem[/code]s. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white")..
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled">
-			If [code]true[/code] the object draws behind its parent. Default value: [code]false[/code].
+			If [code]true[/code], the object draws behind its parent. Default value: [code]false[/code].
 		</member>
 		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
-			If [code]true[/code] the object draws on top of its parent. Default value: [code]true[/code].
+			If [code]true[/code], the object draws on top of its parent. Default value: [code]true[/code].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material">
-			If [code]true[/code] the parent [code]CanvasItem[/code]'s [member material] property is used as this one's material. Default value: [code]false[/code].
+			If [code]true[/code], the parent [code]CanvasItem[/code]'s [member material] property is used as this one's material. Default value: [code]false[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
-			If [code]true[/code] this [code]CanvasItem[/code] is drawn. Default value: [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple popup*() functions instead.
+			If [code]true[/code], this [code]CanvasItem[/code] is drawn. Default value: [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple popup*() functions instead.
 		</member>
 	</members>
 	<signals>

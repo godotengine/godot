@@ -20,7 +20,7 @@
 			Base motion scale of all [ParallaxLayer] children.
 		</member>
 		<member name="scroll_ignore_camera_zoom" type="bool" setter="set_ignore_camera_zoom" getter="is_ignore_camera_zoom">
-			If [code]true[/code] elements in [ParallaxLayer] child aren't affected by the zoom level of the camera.
+			If [code]true[/code], elements in [ParallaxLayer] child aren't affected by the zoom level of the camera.
 		</member>
 		<member name="scroll_limit_begin" type="Vector2" setter="set_limit_begin" getter="get_limit_begin">
 			Top left limits for scrolling to begin. If the camera is outside of this limit the background will stop scrolling. Must be lower than [member scroll_limit_end] to work.

@@ -187,7 +187,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is bypassing effects.
+				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="is_bus_effect_enabled" qualifiers="const">
@@ -198,7 +198,7 @@
 			<argument index="1" name="effect_idx" type="int">
 			</argument>
 			<description>
-				If [code]true[/code] the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
+				If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="is_bus_mute" qualifiers="const">
@@ -207,7 +207,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is muted.
+				If [code]true[/code], the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="is_bus_solo" qualifiers="const">
@@ -216,7 +216,7 @@
 			<argument index="0" name="bus_idx" type="int">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is in solo mode.
+				If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="lock">
@@ -265,7 +265,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is bypassing effects.
+				If [code]true[/code], the bus at index [code]bus_idx[/code] is bypassing effects.
 			</description>
 		</method>
 		<method name="set_bus_count">
@@ -287,7 +287,7 @@
 			<argument index="2" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
+				If [code]true[/code], the effect at index [code]effect_idx[/code] on the bus at index [code]bus_idx[/code] is enabled.
 			</description>
 		</method>
 		<method name="set_bus_layout">
@@ -307,7 +307,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is muted.
+				If [code]true[/code], the bus at index [code]bus_idx[/code] is muted.
 			</description>
 		</method>
 		<method name="set_bus_name">
@@ -340,7 +340,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the bus at index [code]bus_idx[/code] is in solo mode.
+				If [code]true[/code], the bus at index [code]bus_idx[/code] is in solo mode.
 			</description>
 		</method>
 		<method name="set_bus_volume_db">

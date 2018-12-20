@@ -18,7 +18,7 @@
 			Button identifier. One of the [code]JOY_BUTTON_*[/code] constants from [@GlobalScope].
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			If [code]true[/code] the button's state is pressed. If [code]false[/code] the button's state is released.
+			If [code]true[/code], the button's state is pressed. If [code]false[/code], the button's state is released.
 		</member>
 		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure">
 			Represents the pressure the user puts on the button with his finger, if the controller supports it. Ranges from [code]0[/code] to [code]1[/code].

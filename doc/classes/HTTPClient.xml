@@ -82,14 +82,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] this [code]HTTPClient[/code] has a response available.
+				If [code]true[/code], this [code]HTTPClient[/code] has a response available.
 			</description>
 		</method>
 		<method name="is_response_chunked" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] this [code]HTTPClient[/code] has a response that is chunked.
+				If [code]true[/code], this [code]HTTPClient[/code] has a response that is chunked.
 			</description>
 		</method>
 		<method name="poll">

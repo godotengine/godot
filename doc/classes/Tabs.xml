@@ -126,7 +126,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] enables selecting a tab with right mouse button.
+				If [code]true[/code], enables selecting a tab with right mouse button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">

@@ -46,7 +46,7 @@
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
-			If [code]true[/code] the [member animation] is currently playing.
+			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 	</members>
 	<signals>

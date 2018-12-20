@@ -20,7 +20,7 @@
 			<argument index="0" name="state" type="Physics2DDirectBodyState">
 			</argument>
 			<description>
-				Allows you to read and safely modify the simulation state for the object. Use this instead of [Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
+				Allows you to read and safely modify the simulation state for the object. Use this instead of [Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_central_force">
@@ -130,10 +130,10 @@
 			The body's bounciness. Default value: [code]0[/code].
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
-			If [code]true[/code] the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force]. Default value: [code]true[/code].
+			If [code]true[/code], the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force]. Default value: [code]true[/code].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
-			If [code]true[/code] the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported]. Default value: [code]false[/code].
+			If [code]true[/code], the body will emit signals when it collides with another RigidBody2D. See also [member contacts_reported]. Default value: [code]false[/code].
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
 			The maximum number of contacts to report. Default value: [code]0[/code].
@@ -143,7 +143,7 @@
 			Continuous collision detection tries to predict where a moving body will collide instead of moving it and correcting its movement after collision. Continuous collision detection is slower, but more precise and misses fewer collisions with small, fast-moving objects. Raycasting and shapecasting methods are available. See [code]CCD_MODE_[/code] constants for details.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
-			If [code]true[/code] internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
+			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction). Default value: [code]1[/code].
@@ -169,7 +169,7 @@
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
-			If [code]true[/code] the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
+			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
 			The body's weight based on its mass and the "Default Gravity" value in "Project &gt; Project Settings &gt; Physics &gt; 2d".

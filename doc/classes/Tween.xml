@@ -346,7 +346,7 @@
 			The tween's speed multiplier. For example, set it to [code]1.0[/code] for normal speed, [code]2.0[/code] for two times normal speed, or [code]0.5[/code] for half of the normal speed. A value of [code]0[/code] pauses the animation, but see also [method set_active] or [method stop_all] for this.
 		</member>
 		<member name="repeat" type="bool" setter="set_repeat" getter="is_repeat">
-			If [code]true[/code] the tween loops.
+			If [code]true[/code], the tween loops.
 		</member>
 	</members>
 	<signals>

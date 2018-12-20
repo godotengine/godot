@@ -607,7 +607,7 @@
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active">
-			If [code]true[/code] the [code]AnimationTreePlayer[/code] is able to play animations. Default value: [code]false[/code].
+			If [code]true[/code], the [code]AnimationTreePlayer[/code] is able to play animations. Default value: [code]false[/code].
 		</member>
 		<member name="base_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 			The node from which to relatively access other nodes. Default value: [code]".."[/code].

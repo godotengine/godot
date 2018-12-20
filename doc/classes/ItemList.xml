@@ -388,10 +388,10 @@
 	</methods>
 	<members>
 		<member name="allow_reselect" type="bool" setter="set_allow_reselect" getter="get_allow_reselect">
-			If [code]true[/code] the currently selected item may be selected again.
+			If [code]true[/code], the currently selected item may be selected again.
 		</member>
 		<member name="allow_rmb_select" type="bool" setter="set_allow_rmb_select" getter="get_allow_rmb_select">
-			If [code]true[/code] a right mouse button click can select items.
+			If [code]true[/code], a right mouse button click can select items.
 		</member>
 		<member name="auto_height" type="bool" setter="set_auto_height" getter="has_auto_height">
 		</member>

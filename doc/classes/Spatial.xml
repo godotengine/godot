@@ -318,7 +318,7 @@
 			Local translation of this node.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
-			If [code]true[/code] this node is drawn. Default value: [code]true[/code].
+			If [code]true[/code], this node is drawn. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>

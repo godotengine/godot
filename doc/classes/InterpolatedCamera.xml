@@ -24,7 +24,7 @@
 	</methods>
 	<members>
 		<member name="enabled" type="bool" setter="set_interpolation_enabled" getter="is_interpolation_enabled">
-			If [code]true[/code] and a target is set, the camera will move automatically.
+			If [code]true[/code], and a target is set, the camera will move automatically.
 		</member>
 		<member name="speed" type="float" setter="set_speed" getter="get_speed">
 			How quickly the camera moves toward its target. Higher values will result in tighter camera motion.

@@ -225,7 +225,7 @@
 	</methods>
 	<members>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode">
-			If [code]true[/code] the label uses BBCode formatting. Default value: [code]false[/code].
+			If [code]true[/code], the label uses BBCode formatting. Default value: [code]false[/code].
 		</member>
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
@@ -234,7 +234,7 @@
 			If [code]true[/code], the label underlines meta tags such as [url]{text}[/url]. Default value: [code]true[/code].
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
-			If [code]true[/code] the label uses the custom font color. Default value: [code]false[/code].
+			If [code]true[/code], the label uses the custom font color. Default value: [code]false[/code].
 		</member>
 		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
 			The text's visibility, as a [float] between 0.0 and 1.0.
