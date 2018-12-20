@@ -35,6 +35,7 @@
 #include "core/message_queue.h"
 #include "core/print_string.h"
 #include "instance_placeholder.h"
+#include "modules/gdscript/gdscript.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"
@@ -1381,6 +1382,88 @@ Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) cons
 	return NULL;
 }
 
+Node *Node::find_node_by_type(Object *p_type, bool p_recursive, bool p_owned) const {
+	Node *const *cptr = data.children.ptr();
+	int ccount = data.children.size();
+
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner)
+			continue;
+
+		GDScript *scr = Object::cast_to<GDScript>(p_type);
+
+		if (scr) {
+			if (cptr[i]->get_script_instance() && cptr[i]->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
+				GDScript *cmp = static_cast<GDScript *>(cptr[i]->get_script_instance()->get_script().ptr());
+
+				if (cmp == scr) {
+					return cptr[i];
+				}
+			}
+		} else {
+			GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(p_type);
+
+			ERR_EXPLAIN(vformat("First parameter is not a class (type: '%s').", p_type->get_class()));
+			ERR_FAIL_COND_V(!nc, NULL);
+
+			if (cptr[i]->get_class_name() == nc->get_name())
+				return cptr[i];
+		}
+
+		if (!p_recursive)
+			continue;
+
+		Node *ret = cptr[i]->find_node_by_type(p_type, true, p_owned);
+		if (ret)
+			return ret;
+	}
+
+	return NULL;
+}
+
+Array Node::find_nodes_by_type(Object *p_type, bool p_recursive, bool p_owned) const {
+
+	Array arr;
+	Node *const *cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for (int i = 0; i < ccount; i++) {
+		if (p_owned && !cptr[i]->data.owner)
+			continue;
+
+		GDScript *scr = Object::cast_to<GDScript>(p_type);
+
+		if (scr) {
+			if (cptr[i]->get_script_instance() && cptr[i]->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
+				GDScript *cmp = static_cast<GDScript *>(cptr[i]->get_script_instance()->get_script().ptr());
+
+				if (cmp == scr) {
+					arr.push_back(cptr[i]);
+				}
+			}
+		} else {
+			GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(p_type);
+
+			ERR_EXPLAIN(vformat("First parameter is not a class (type: '%s').", p_type->get_class()));
+			ERR_FAIL_COND_V(!nc, arr);
+
+			if (cptr[i]->get_class_name() == nc->get_name())
+				arr.push_back(cptr[i]);
+		}
+
+		if (!p_recursive)
+			continue;
+
+		Array ret = cptr[i]->find_nodes_by_type(p_type, true, p_owned);
+		int retcount = ret.size();
+
+		for (int j = 0; j < retcount; j++) {
+			arr.push_back(ret[j]);
+		}
+	}
+
+	return arr;
+}
+
 Node *Node::get_parent() const {
 
 	return data.parent;
@@ -2683,6 +2766,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_node_by_type", "type", "recursive", "owned"), &Node::find_node_by_type, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("find_nodes_by_type", "type", "recursive", "owned"), &Node::find_nodes_by_type, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
 	ClassDB::bind_method(D_METHOD("has_node_and_resource", "path"), &Node::has_node_and_resource);
 	ClassDB::bind_method(D_METHOD("get_node_and_resource", "path"), &Node::_get_node_and_resource);

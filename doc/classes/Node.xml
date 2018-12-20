@@ -179,6 +179,34 @@
 				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through script, because those scenes don't have an owner.
 			</description>
 		</method>
+		<method name="find_node_by_type" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="type" type="Object">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
+			</argument>
+			<argument index="2" name="owned" type="bool" default="true">
+			</argument>
+			<description>
+				Finds a descendant of this node whose type matches [code]type[/code].
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through script, because those scenes don't have an owner.
+			</description>
+		</method>
+		<method name="find_nodes_by_type" qualifiers="const">
+			<return type="Array">
+			</return>
+			<argument index="0" name="type" type="Object">
+			</argument>
+			<argument index="1" name="recursive" type="bool" default="true">
+			</argument>
+			<argument index="2" name="owned" type="bool" default="true">
+			</argument>
+			<description>
+				Finds all descendants of this node whose type matches [code]type[/code].
+				If [code]owned[/code] is [code]true[/code], this method only finds nodes whose owner is this node. This is especially important for scenes instantiated through script, because those scenes don't have an owner.
+			</description>
+		</method>
 		<method name="find_parent" qualifiers="const">
 			<return type="Node">
 			</return>
