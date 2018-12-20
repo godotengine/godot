@@ -1138,6 +1138,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 		case VS::SHADER_CANVAS_ITEM: {
 
+			p_shader->canvas_item.light_mode = Shader::CanvasItem::LIGHT_MODE_NORMAL;
 			p_shader->canvas_item.blend_mode = Shader::CanvasItem::BLEND_MODE_MIX;
 
 			p_shader->canvas_item.uses_screen_texture = false;
@@ -1150,8 +1151,8 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.render_mode_values["blend_mul"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MUL);
 			shaders.actions_canvas.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_PMALPHA);
 
-			// shaders.actions_canvas.render_mode_values["unshaded"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_UNSHADED);
-			// shaders.actions_canvas.render_mode_values["light_only"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY);
+			shaders.actions_canvas.render_mode_values["unshaded"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_UNSHADED);
+			shaders.actions_canvas.render_mode_values["light_only"] = Pair<int *, int>(&p_shader->canvas_item.light_mode, Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY);
 
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_UV"] = &p_shader->canvas_item.uses_screen_uv;
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_PIXEL_SIZE"] = &p_shader->canvas_item.uses_screen_uv;
@@ -4193,16 +4194,161 @@ void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, VS::Vie
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
-	return RID();
+
+	CanvasLightShadow *cls = memnew(CanvasLightShadow);
+	if (p_width > config.max_texture_size)
+		p_width = config.max_texture_size;
+
+	cls->size = p_width;
+	cls->height = 16;
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glGenFramebuffers(1, &cls->fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, cls->fbo);
+
+	glGenRenderbuffers(1, &cls->depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, cls->size, cls->height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glGenTextures(1, &cls->distance);
+	glBindTexture(GL_TEXTURE_2D, cls->distance);
+	if (config.use_rgba_2d_shadows) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	} else {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, GL_RED, GL_FLOAT, NULL);
+	}
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cls->distance, 0);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	//printf("errnum: %x\n",status);
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		memdelete(cls);
+		ERR_FAIL_COND_V(status != GL_FRAMEBUFFER_COMPLETE, RID());
+	}
+
+	return canvas_light_shadow_owner.make_rid(cls);
 }
 
 /* LIGHT SHADOW MAPPING */
 
 RID RasterizerStorageGLES2::canvas_light_occluder_create() {
-	return RID();
+
+	CanvasOccluder *co = memnew(CanvasOccluder);
+	co->index_id = 0;
+	co->vertex_id = 0;
+	co->len = 0;
+	glGenVertexArrays(1, &co->array_id);
+
+	return canvas_occluder_owner.make_rid(co);
 }
 
 void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines) {
+
+	CanvasOccluder *co = canvas_occluder_owner.get(p_occluder);
+	ERR_FAIL_COND(!co);
+
+	co->lines = p_lines;
+
+	if (p_lines.size() != co->len) {
+
+		if (co->index_id)
+			glDeleteBuffers(1, &co->index_id);
+		if (co->vertex_id)
+			glDeleteBuffers(1, &co->vertex_id);
+
+		co->index_id = 0;
+		co->vertex_id = 0;
+		co->len = 0;
+	}
+
+	if (p_lines.size()) {
+
+		PoolVector<float> geometry;
+		PoolVector<uint16_t> indices;
+		int lc = p_lines.size();
+
+		geometry.resize(lc * 6);
+		indices.resize(lc * 3);
+
+		PoolVector<float>::Write vw = geometry.write();
+		PoolVector<uint16_t>::Write iw = indices.write();
+
+		PoolVector<Vector2>::Read lr = p_lines.read();
+
+		const int POLY_HEIGHT = 16384;
+
+		for (int i = 0; i < lc / 2; i++) {
+
+			vw[i * 12 + 0] = lr[i * 2 + 0].x;
+			vw[i * 12 + 1] = lr[i * 2 + 0].y;
+			vw[i * 12 + 2] = POLY_HEIGHT;
+
+			vw[i * 12 + 3] = lr[i * 2 + 1].x;
+			vw[i * 12 + 4] = lr[i * 2 + 1].y;
+			vw[i * 12 + 5] = POLY_HEIGHT;
+
+			vw[i * 12 + 6] = lr[i * 2 + 1].x;
+			vw[i * 12 + 7] = lr[i * 2 + 1].y;
+			vw[i * 12 + 8] = -POLY_HEIGHT;
+
+			vw[i * 12 + 9] = lr[i * 2 + 0].x;
+			vw[i * 12 + 10] = lr[i * 2 + 0].y;
+			vw[i * 12 + 11] = -POLY_HEIGHT;
+
+			iw[i * 6 + 0] = i * 4 + 0;
+			iw[i * 6 + 1] = i * 4 + 1;
+			iw[i * 6 + 2] = i * 4 + 2;
+
+			iw[i * 6 + 3] = i * 4 + 2;
+			iw[i * 6 + 4] = i * 4 + 3;
+			iw[i * 6 + 5] = i * 4 + 0;
+		}
+
+		//if same buffer len is being set, just use BufferSubData to avoid a pipeline flush
+
+		if (!co->vertex_id) {
+			glGenBuffers(1, &co->vertex_id);
+			glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
+			glBufferData(GL_ARRAY_BUFFER, lc * 6 * sizeof(real_t), vw.ptr(), GL_STATIC_DRAW);
+		} else {
+
+			glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
+			glBufferSubData(GL_ARRAY_BUFFER, 0, lc * 6 * sizeof(real_t), vw.ptr());
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+
+		if (!co->index_id) {
+
+			glGenBuffers(1, &co->index_id);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, lc * 3 * sizeof(uint16_t), iw.ptr(), GL_DYNAMIC_DRAW);
+		} else {
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, lc * 3 * sizeof(uint16_t), iw.ptr());
+		}
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
+
+		co->len = lc;
+		glBindVertexArray(co->array_id);
+		glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
+		glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+		glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, false, 0, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
+		glBindVertexArray(0);
+	}
 }
 
 VS::InstanceType RasterizerStorageGLES2::get_base_type(RID p_rid) const {
@@ -4415,6 +4561,32 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		lightmap_capture_data_owner.free(p_rid);
 		memdelete(lightmap_capture);
 		return true;
+
+	} else if (canvas_occluder_owner.owns(p_rid)) {
+
+		CanvasOccluder *co = canvas_occluder_owner.get(p_rid);
+		if (co->index_id)
+			glDeleteBuffers(1, &co->index_id);
+		if (co->vertex_id)
+			glDeleteBuffers(1, &co->vertex_id);
+
+		glDeleteVertexArrays(1, &co->array_id);
+
+		canvas_occluder_owner.free(p_rid);
+		memdelete(co);
+
+		return true;
+
+	} else if (canvas_light_shadow_owner.owns(p_rid)) {
+
+		CanvasLightShadow *cls = canvas_light_shadow_owner.get(p_rid);
+		glDeleteFramebuffers(1, &cls->fbo);
+		glDeleteRenderbuffers(1, &cls->depth);
+		glDeleteTextures(1, &cls->distance);
+		canvas_light_shadow_owner.free(p_rid);
+		memdelete(cls);
+
+		return true;
 	} else {
 		return false;
 	}
@@ -4471,6 +4643,7 @@ void RasterizerStorageGLES2::initialize() {
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
+	config.use_rgba_2d_shadows = false;
 
 	frame.count = 0;
 	frame.delta = 0;
