@@ -1368,14 +1368,19 @@ void RasterizerCanvasGLES2::canvas_light_shadow_buffer_update(RID p_buffer, cons
 				}
 			}
 
-			glBindVertexArray(cc->array_id);
+			glBindBuffer(GL_ARRAY_BUFFER, cc->vertex_id);
+			glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+			glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, false, 0, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cc->index_id);
+
 			glDrawElements(GL_TRIANGLES, cc->len * 3, GL_UNSIGNED_SHORT, 0);
 
 			instance = instance->next;
 		}
 	}
 
-	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 void RasterizerCanvasGLES2::reset_canvas() {
 
