@@ -76,6 +76,8 @@ public:
 		bool keep_original_textures;
 
 		bool force_vertex_shading;
+
+		bool use_rgba_2d_shadows;
 	} config;
 
 	struct Resources {
@@ -86,6 +88,7 @@ public:
 		GLuint aniso_tex;
 
 		GLuint radical_inverse_vdc_cache_tex;
+		bool use_rgba_2d_shadows;
 
 		GLuint quadie;
 
@@ -400,7 +403,6 @@ public:
 
 			int blend_mode;
 
-			/*
 			enum LightMode {
 				LIGHT_MODE_NORMAL,
 				LIGHT_MODE_UNSHADED,
@@ -408,7 +410,6 @@ public:
 			};
 
 			int light_mode;
-			*/
 
 			bool uses_screen_texture;
 			bool uses_screen_uv;
@@ -1161,9 +1162,31 @@ public:
 
 	/* CANVAS SHADOW */
 
+	struct CanvasLightShadow : public RID_Data {
+
+		int size;
+		int height;
+		GLuint fbo;
+		GLuint depth;
+		GLuint distance; //for older devices
+	};
+
+	RID_Owner<CanvasLightShadow> canvas_light_shadow_owner;
+
 	virtual RID canvas_light_shadow_buffer_create(int p_width);
 
 	/* LIGHT SHADOW MAPPING */
+
+	struct CanvasOccluder : public RID_Data {
+
+		GLuint array_id; // 0 means, unconfigured
+		GLuint vertex_id; // 0 means, unconfigured
+		GLuint index_id; // 0 means, unconfigured
+		PoolVector<Vector2> lines;
+		int len;
+	};
+
+	RID_Owner<CanvasOccluder> canvas_occluder_owner;
 
 	virtual RID canvas_light_occluder_create();
 	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2> &p_lines);
