@@ -21,7 +21,6 @@ active_platforms = []
 active_platform_ids = []
 platform_exporters = []
 platform_apis = []
-global_defaults = []
 
 for x in sorted(glob.glob("platform/*")):
     if (not os.path.isdir(x) or not os.path.exists(x + "/detect.py")):
@@ -35,8 +34,6 @@ for x in sorted(glob.glob("platform/*")):
         platform_exporters.append(x[9:])
     if (os.path.exists(x + "/api/api.cpp")):
         platform_apis.append(x[9:])
-    if (os.path.exists(x + "/globals/global_defaults.cpp")):
-        global_defaults.append(x[9:])
     if (detect.is_active()):
         active_platforms.append(detect.get_name())
         active_platform_ids.append(x)
@@ -68,7 +65,6 @@ if 'TERM' in os.environ:
     env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
-env_base.global_defaults = global_defaults
 env_base.android_maven_repos = []
 env_base.android_flat_dirs = []
 env_base.android_dependencies = []

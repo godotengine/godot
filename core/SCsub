@@ -8,22 +8,6 @@ from platform_methods import run_in_subprocess
 
 env.core_sources = []
 
-# Generate global defaults
-gd_call = ""
-gd_inc = ""
-
-for x in env.global_defaults:
-    env.core_sources.append("#platform/" + x + "/globals/global_defaults.cpp")
-    gd_inc += '#include "platform/' + x + '/globals/global_defaults.h"\n'
-    gd_call += "\tregister_" + x + "_global_defaults();\n"
-
-gd_cpp = '#include "core/project_settings.h"\n'
-gd_cpp += gd_inc
-gd_cpp += "void ProjectSettings::register_global_defaults() {\n" + gd_call + "\n}\n"
-
-with open("global_defaults.gen.cpp", "w") as f:
-    f.write(gd_cpp)
-
 
 # Generate AES256 script encryption key
 import os

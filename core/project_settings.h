@@ -152,8 +152,6 @@ public:
 
 	void set_disable_feature_overrides(bool p_disable);
 
-	void register_global_defaults();
-
 	bool is_using_datapack() const;
 
 	void set_registering_order(bool p_enable);
