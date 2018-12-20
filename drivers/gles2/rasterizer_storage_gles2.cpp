@@ -4247,7 +4247,6 @@ RID RasterizerStorageGLES2::canvas_light_occluder_create() {
 	co->index_id = 0;
 	co->vertex_id = 0;
 	co->len = 0;
-	glGenVertexArrays(1, &co->array_id);
 
 	return canvas_occluder_owner.make_rid(co);
 }
@@ -4342,12 +4341,6 @@ void RasterizerStorageGLES2::canvas_light_occluder_set_polylines(RID p_occluder,
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); //unbind
 
 		co->len = lc;
-		glBindVertexArray(co->array_id);
-		glBindBuffer(GL_ARRAY_BUFFER, co->vertex_id);
-		glEnableVertexAttribArray(VS::ARRAY_VERTEX);
-		glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, false, 0, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, co->index_id);
-		glBindVertexArray(0);
 	}
 }
 
@@ -4569,8 +4562,6 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 			glDeleteBuffers(1, &co->index_id);
 		if (co->vertex_id)
 			glDeleteBuffers(1, &co->vertex_id);
-
-		glDeleteVertexArrays(1, &co->array_id);
 
 		canvas_occluder_owner.free(p_rid);
 		memdelete(co);
