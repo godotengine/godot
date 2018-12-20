@@ -73,8 +73,6 @@ void main() {
 	vec4 outvec = vec4(vertex.xy, 0.0, 1.0);
 
 	uv_interp = uv_attrib;
-
-
 #endif
 
 	{

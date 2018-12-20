@@ -1091,7 +1091,6 @@ void light_compute(
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
 
-
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
 
