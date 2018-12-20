@@ -80,7 +80,7 @@
 			Text alignment as defined in the ALIGN_* enum.
 		</member>
 		<member name="caret_blink" type="bool" setter="cursor_set_blink_enabled" getter="cursor_get_blink_enabled">
-			If [code]true[/code] the caret (visual cursor) blinks.
+			If [code]true[/code], the caret (visual cursor) blinks.
 		</member>
 		<member name="caret_blink_speed" type="float" setter="cursor_set_blink_speed" getter="cursor_get_blink_speed">
 			Duration (in seconds) of a caret's blinking cycle.
@@ -89,16 +89,16 @@
 			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled">
-			If [code]true[/code] the [code]LineEdit[/code] will show a clear button if [code]text[/code] is not empty.
+			If [code]true[/code], the [code]LineEdit[/code] will show a clear button if [code]text[/code] is not empty.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
-			If [code]true[/code] the context menu will appear when right clicked.
+			If [code]true[/code], the context menu will appear when right clicked.
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable">
-			If [code]false[/code] existing text cannot be modified and new text cannot be added.
+			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
-			If [code]true[/code] the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
+			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
 			Defines how the [LineEdit] can grab focus (Keyboard and mouse, only keyboard, or none). See [code]enum FocusMode[/code] in [Control] for details.

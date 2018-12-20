@@ -36,7 +36,7 @@
 			If there is a material in material_override, it will be used instead of any material set in any material slot of the mesh.
 		</member>
 		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code] this GeometryInstance will be used when baking lights using a [GIProbe] and/or any other form of baked lighting.
+			If [code]true[/code], this GeometryInstance will be used when baking lights using a [GIProbe] and/or any other form of baked lighting.
 		</member>
 	</members>
 	<constants>

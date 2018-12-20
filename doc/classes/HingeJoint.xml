@@ -17,7 +17,7 @@
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</member>
 		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag">
-			If [code]true[/code] the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
+			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</member>
 		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit">
 			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
@@ -71,7 +71,7 @@
 			End flag of PARAM_* constants, used internally.
 		</constant>
 		<constant name="FLAG_USE_LIMIT" value="0" enum="Flag">
-			If [code]true[/code] the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
+			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</constant>
 		<constant name="FLAG_ENABLE_MOTOR" value="1" enum="Flag">
 			When activated, a motor turns the hinge.

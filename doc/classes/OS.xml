@@ -770,28 +770,28 @@
 			The exit code passed to the OS when the main loop exits.
 		</member>
 		<member name="keep_screen_on" type="bool" setter="set_keep_screen_on" getter="is_keep_screen_on">
-			If [code]true[/code] the engine tries to keep the screen on while the game is running. Useful on mobile.
+			If [code]true[/code], the engine tries to keep the screen on while the game is running. Useful on mobile.
 		</member>
 		<member name="low_processor_usage_mode" type="bool" setter="set_low_processor_usage_mode" getter="is_in_low_processor_usage_mode">
-			If [code]true[/code] the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
+			If [code]true[/code], the engine optimizes for low processor usage by only refreshing the screen if needed. Can improve battery consumption on mobile.
 		</member>
 		<member name="screen_orientation" type="int" setter="set_screen_orientation" getter="get_screen_orientation" enum="_OS.ScreenOrientation">
 			The current screen orientation.
 		</member>
 		<member name="vsync_enabled" type="bool" setter="set_use_vsync" getter="is_vsync_enabled">
-			If [code]true[/code] vertical synchronization (Vsync) is enabled.
+			If [code]true[/code], vertical synchronization (Vsync) is enabled.
 		</member>
 		<member name="window_borderless" type="bool" setter="set_borderless_window" getter="get_borderless_window">
-			If [code]true[/code] removes the window frame.
+			If [code]true[/code], removes the window frame.
 		</member>
 		<member name="window_fullscreen" type="bool" setter="set_window_fullscreen" getter="is_window_fullscreen">
-			If [code]true[/code] the window is fullscreen.
+			If [code]true[/code], the window is fullscreen.
 		</member>
 		<member name="window_maximized" type="bool" setter="set_window_maximized" getter="is_window_maximized">
-			If [code]true[/code] the window is maximized.
+			If [code]true[/code], the window is maximized.
 		</member>
 		<member name="window_minimized" type="bool" setter="set_window_minimized" getter="is_window_minimized">
-			If [code]true[/code] the window is minimized.
+			If [code]true[/code], the window is minimized.
 		</member>
 		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled">
 		</member>

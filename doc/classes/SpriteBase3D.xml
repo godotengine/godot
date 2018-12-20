@@ -31,16 +31,16 @@
 			The direction in which the front of the texture faces.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
-			If [code]true[/code] texture will be centered. Default value: [code]true[/code].
+			If [code]true[/code], texture will be centered. Default value: [code]true[/code].
 		</member>
 		<member name="double_sided" type="bool" setter="set_draw_flag" getter="get_draw_flag">
-			If [code]true[/code] texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind. Default value: [code]true[/code].
+			If [code]true[/code], texture can be seen from the back as well, if [code]false[/code], it is invisible when looking at it from behind. Default value: [code]true[/code].
 		</member>
 		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
-			If [code]true[/code] texture is flipped horizontally. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
 		</member>
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
-			If [code]true[/code] texture is flipped vertically. Default value: [code]false[/code].
+			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
 			A color value that gets multiplied on, could be used for mood-coloring or to simulate the color of light.
@@ -55,10 +55,10 @@
 			The size of one pixel's width on the Sprite to scale it in 3D.
 		</member>
 		<member name="shaded" type="bool" setter="set_draw_flag" getter="get_draw_flag">
-			If [code]true[/code] the [Light] in the [Environment] has effects on the Sprite. Default value: [code]false[/code].
+			If [code]true[/code], the [Light] in the [Environment] has effects on the Sprite. Default value: [code]false[/code].
 		</member>
 		<member name="transparent" type="bool" setter="set_draw_flag" getter="get_draw_flag">
-			If [code]true[/code] the texture's transparency and the opacity are used to make those parts of the Sprite invisible. Default value: [code]true[/code].
+			If [code]true[/code], the texture's transparency and the opacity are used to make those parts of the Sprite invisible. Default value: [code]true[/code].
 		</member>
 	</members>
 	<constants>

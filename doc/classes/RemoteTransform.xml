@@ -18,16 +18,16 @@
 			The [NodePath] to the remote node, relative to the RemoteTransform's position in the scene.
 		</member>
 		<member name="update_position" type="bool" setter="set_update_position" getter="get_update_position">
-			If [code]true[/code] the remote node's position is updated. Default value: [code]true[/code].
+			If [code]true[/code], the remote node's position is updated. Default value: [code]true[/code].
 		</member>
 		<member name="update_rotation" type="bool" setter="set_update_rotation" getter="get_update_rotation">
-			If [code]true[/code] the remote node's rotation is updated. Default value: [code]true[/code].
+			If [code]true[/code], the remote node's rotation is updated. Default value: [code]true[/code].
 		</member>
 		<member name="update_scale" type="bool" setter="set_update_scale" getter="get_update_scale">
-			If [code]true[/code] the remote node's scale is updated. Default value: [code]true[/code].
+			If [code]true[/code], the remote node's scale is updated. Default value: [code]true[/code].
 		</member>
 		<member name="use_global_coordinates" type="bool" setter="set_use_global_coordinates" getter="get_use_global_coordinates">
-			If [code]true[/code] global coordinates are used. If [code]false[/code] local coordinates are used. Default value: [code]true[/code].
+			If [code]true[/code], global coordinates are used. If [code]false[/code], local coordinates are used. Default value: [code]true[/code].
 		</member>
 	</members>
 	<constants>

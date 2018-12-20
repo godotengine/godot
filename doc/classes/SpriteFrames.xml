@@ -55,7 +55,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				If [code]true[/code] the given animation will loop.
+				If [code]true[/code], the given animation will loop.
 			</description>
 		</method>
 		<method name="get_animation_names" qualifiers="const">
@@ -100,7 +100,7 @@
 			<argument index="0" name="anim" type="String">
 			</argument>
 			<description>
-				If [code]true[/code] the named animation exists.
+				If [code]true[/code], the named animation exists.
 			</description>
 		</method>
 		<method name="remove_animation">
@@ -142,7 +142,7 @@
 			<argument index="1" name="loop" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the animation will loop.
+				If [code]true[/code], the animation will loop.
 			</description>
 		</method>
 		<method name="set_animation_speed">

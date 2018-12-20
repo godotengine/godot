@@ -148,7 +148,7 @@
 			The alignment of all tabs in the tab container. See the [code]ALIGN_*[/code] constants for details.
 		</member>
 		<member name="tabs_visible" type="bool" setter="set_tabs_visible" getter="are_tabs_visible">
-			If [code]true[/code] tabs are visible. If [code]false[/code] tabs' content and titles are hidden. Default value: [code]true[/code].
+			If [code]true[/code], tabs are visible. If [code]false[/code], tabs' content and titles are hidden. Default value: [code]true[/code].
 		</member>
 	</members>
 	<signals>

@@ -17,7 +17,7 @@
 			The ray's length.
 		</member>
 		<member name="slips_on_slope" type="bool" setter="set_slips_on_slope" getter="get_slips_on_slope">
-			If [code]true[/code] allow the shape to return the correct normal. Default value: [code]false[/code].
+			If [code]true[/code], allow the shape to return the correct normal. Default value: [code]false[/code].
 		</member>
 	</members>
 	<constants>

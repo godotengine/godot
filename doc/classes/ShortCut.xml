@@ -32,7 +32,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] this shortcut is valid.
+				If [code]true[/code], this shortcut is valid.
 			</description>
 		</method>
 	</methods>

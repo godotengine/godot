@@ -14,7 +14,7 @@
 	</methods>
 	<members>
 		<member name="collision/exclude_nodes" type="bool" setter="set_exclude_nodes_from_collision" getter="get_exclude_nodes_from_collision">
-			If [code]true[/code] the two bodies of the nodes are not able to collide with each other.
+			If [code]true[/code], the two bodies of the nodes are not able to collide with each other.
 		</member>
 		<member name="nodes/node_a" type="NodePath" setter="set_node_a" getter="get_node_a">
 			The [Node], the first side of the Joint attaches to.

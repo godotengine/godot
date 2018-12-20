@@ -135,7 +135,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				If [code]true[/code] area collides with rays.
+				If [code]true[/code], area collides with rays.
 			</description>
 		</method>
 		<method name="area_remove_shape">
@@ -556,7 +556,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				If [code]true[/code] the continuous collision detection mode is enabled.
+				If [code]true[/code], the continuous collision detection mode is enabled.
 			</description>
 		</method>
 		<method name="body_is_omitting_force_integration" qualifiers="const">
@@ -574,7 +574,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				If [code]true[/code] the body can be detected by rays
+				If [code]true[/code], the body can be detected by rays
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -653,7 +653,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the continuous collision detection mode is enabled.
+				If [code]true[/code], the continuous collision detection mode is enabled.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -1286,10 +1286,10 @@
 			Maximum acceleration for the motor.
 		</constant>
 		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0" enum="HingeJointFlag">
-			If [code]true[/code] the Hinge has a maximum and a minimum rotation.
+			If [code]true[/code], the Hinge has a maximum and a minimum rotation.
 		</constant>
 		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1" enum="HingeJointFlag">
-			If [code]true[/code] a motor turns the Hinge
+			If [code]true[/code], a motor turns the Hinge
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0" enum="SliderJointParam">
 			The maximum difference between the pivot points on their x-axis before damping happens.
