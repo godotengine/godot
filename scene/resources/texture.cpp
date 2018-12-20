@@ -2067,7 +2067,7 @@ void TextureLayered::create(uint32_t p_width, uint32_t p_height, uint32_t p_dept
 	width = p_width;
 	height = p_height;
 	depth = p_depth;
-
+	format = p_format;
 	flags = p_flags;
 }
 
