@@ -31,7 +31,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://apps.fedoraproject.org/packages/ca-certificates
-- Version: 2018.2.22
+- Version: 2018.2.26
 - License: MPL 2.0
 
 File extracted from a recent Fedora install:
