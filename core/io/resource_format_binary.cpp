@@ -1813,8 +1813,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 					Property p;
 					p.name_idx = get_string_index(F->get().name);
 					p.value = E->get()->get(F->get().name);
-					if (((F->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && p.value.is_zero()) || ((F->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && p.value.is_one()))
+
+					Variant default_value = ClassDB::class_get_default_property_value(E->get()->get_class(), F->get().name);
+
+					if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, p.value, default_value))) {
 						continue;
+					}
+
 					p.pi = F->get();
 
 					rd.properties.push_back(p);

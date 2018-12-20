@@ -117,7 +117,7 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 
 		GDMonoAssembly *scripts_assembly = NULL;
 		bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name,
-				project_dll_src_dir, &scripts_assembly, /* refonly: */ true);
+				project_dll_src_path, &scripts_assembly, /* refonly: */ true);
 
 		ERR_EXPLAIN("Cannot load refonly assembly: " + project_dll_name);
 		ERR_FAIL_COND(!load_success);

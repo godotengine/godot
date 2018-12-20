@@ -71,7 +71,7 @@ discuss the implementation in the bug report first if you are not 100% about
 what would be the best fix.
 
 In addition to the following tips, also take a look at the
-[Engine development guide](http://docs.godotengine.org/en/latest/development/cpp/)
+[Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
 for an introduction to developing on Godot.
 
 #### Be nice to the git history

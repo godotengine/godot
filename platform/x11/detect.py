@@ -149,6 +149,18 @@ def configure(env):
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
 
+    # Check for gcc version > 4 before adding -no-pie
+    import re
+    import subprocess
+    proc = subprocess.Popen([env['CXX'], '--version'], stdout=subprocess.PIPE)
+    (stdout, _) = proc.communicate()
+    match = re.search('[0-9][0-9.]*', stdout)
+    if match is not None:
+        version = match.group().split('.')
+        if (version[0] > '4'):
+            env.Append(CCFLAGS=['-fpie'])
+            env.Append(LINKFLAGS=['-no-pie'])
+
     ## Dependencies
 
     env.ParseConfig('pkg-config x11 --cflags --libs')

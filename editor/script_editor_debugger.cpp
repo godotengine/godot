@@ -1272,7 +1272,7 @@ void ScriptEditorDebugger::stop() {
 	breaked = false;
 
 	server->stop();
-
+	_clear_remote_objects();
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
 	if (connection.is_valid()) {

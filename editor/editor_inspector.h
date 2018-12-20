@@ -37,20 +37,6 @@
 
 class UndoRedo;
 
-class EditorDefaultClassValueCache : public Object {
-	GDCLASS(EditorDefaultClassValueCache, Object)
-
-	Map<StringName, Map<StringName, Variant> > default_values;
-
-	static EditorDefaultClassValueCache *singleton;
-
-public:
-	static EditorDefaultClassValueCache *get_singleton();
-
-	Variant get_default_value(const StringName &p_class, const StringName &p_property);
-	EditorDefaultClassValueCache();
-};
-
 class EditorProperty : public Container {
 
 	GDCLASS(EditorProperty, Container)
@@ -85,8 +71,7 @@ private:
 	bool draw_top_bg;
 
 	bool _might_be_in_instance();
-	bool _is_property_different(const Variant &p_current, const Variant &p_orig, int p_usage);
-	bool _is_instanced_node_with_original_property_different();
+	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
 
@@ -310,8 +295,8 @@ class EditorInspector : public ScrollContainer {
 	void _property_changed(const String &p_path, const Variant &p_value, bool changing = false);
 	void _property_changed_update_all(const String &p_path, const Variant &p_value);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
-	void _property_keyed(const String &p_path);
-	void _property_keyed_with_value(const String &p_path, const Variant &p_value);
+	void _property_keyed(const String &p_path, bool p_advance);
+	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
 
 	void _property_checked(const String &p_path, bool p_checked);
 

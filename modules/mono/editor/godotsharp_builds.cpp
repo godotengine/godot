@@ -227,20 +227,24 @@ void GodotSharpBuilds::show_build_error_dialog(const String &p_message) {
 	MonoBottomPanel::get_singleton()->show_build_tab();
 }
 
-bool GodotSharpBuilds::build_api_sln(const String &p_name, const String &p_api_sln_dir, const String &p_config) {
+bool GodotSharpBuilds::build_api_sln(const String &p_api_sln_dir, const String &p_config) {
 
-	String api_sln_file = p_api_sln_dir.plus_file(p_name + ".sln");
-	String api_assembly_dir = p_api_sln_dir.plus_file("bin").plus_file(p_config);
-	String api_assembly_file = api_assembly_dir.plus_file(p_name + ".dll");
+	String api_sln_file = p_api_sln_dir.plus_file(API_SOLUTION_NAME ".sln");
 
-	if (!FileAccess::exists(api_assembly_file)) {
+	String core_api_assembly_dir = p_api_sln_dir.plus_file(CORE_API_ASSEMBLY_NAME).plus_file("bin").plus_file(p_config);
+	String core_api_assembly_file = core_api_assembly_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
+
+	String editor_api_assembly_dir = p_api_sln_dir.plus_file(EDITOR_API_ASSEMBLY_NAME).plus_file("bin").plus_file(p_config);
+	String editor_api_assembly_file = editor_api_assembly_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+
+	if (!FileAccess::exists(core_api_assembly_file) || !FileAccess::exists(editor_api_assembly_file)) {
 		MonoBuildInfo api_build_info(api_sln_file, p_config);
 		// TODO Replace this global NoWarn with '#pragma warning' directives on generated files,
 		// once we start to actively document manually maintained C# classes
 		api_build_info.custom_props.push_back("NoWarn=1591"); // Ignore missing documentation warnings
 
 		if (!GodotSharpBuilds::get_singleton()->build(api_build_info)) {
-			show_build_error_dialog("Failed to build " + p_name + " solution.");
+			show_build_error_dialog("Failed to build " API_SOLUTION_NAME " solution.");
 			return false;
 		}
 	}
@@ -302,9 +306,9 @@ String GodotSharpBuilds::_api_folder_name(APIAssembly::Type p_api_type) {
 		   "_" + String::num_uint64(CS_GLUE_VERSION);
 }
 
-bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
+bool GodotSharpBuilds::make_api_assembly(APIAssembly::Type p_api_type) {
 
-	String api_name = p_api_type == APIAssembly::API_CORE ? API_ASSEMBLY_NAME : EDITOR_API_ASSEMBLY_NAME;
+	String api_name = p_api_type == APIAssembly::API_CORE ? CORE_API_ASSEMBLY_NAME : EDITOR_API_ASSEMBLY_NAME;
 
 	String editor_prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir();
 	String res_assemblies_dir = GodotSharpDirs::get_res_assemblies_dir();
@@ -317,55 +321,35 @@ bool GodotSharpBuilds::make_api_sln(APIAssembly::Type p_api_type) {
 
 	String api_build_config = "Release";
 
-	EditorProgress pr("mono_build_release_" + api_name, "Building " + api_name + " solution...", 3);
+	EditorProgress pr("mono_build_release_" API_SOLUTION_NAME, "Building " API_SOLUTION_NAME " solution...", 3);
 
-	pr.step("Generating " + api_name + " solution", 0);
+	pr.step("Generating " API_SOLUTION_NAME " solution", 0);
 
-	String core_api_sln_dir = GodotSharpDirs::get_mono_solutions_dir()
-									  .plus_file(_api_folder_name(APIAssembly::API_CORE))
-									  .plus_file(API_ASSEMBLY_NAME);
-	String editor_api_sln_dir = GodotSharpDirs::get_mono_solutions_dir()
-										.plus_file(_api_folder_name(APIAssembly::API_EDITOR))
-										.plus_file(EDITOR_API_ASSEMBLY_NAME);
+	String api_sln_dir = GodotSharpDirs::get_mono_solutions_dir()
+								 .plus_file(_api_folder_name(APIAssembly::API_CORE));
 
-	String api_sln_dir = p_api_type == APIAssembly::API_CORE ? core_api_sln_dir : editor_api_sln_dir;
-	String api_sln_file = api_sln_dir.plus_file(api_name + ".sln");
+	String api_sln_file = api_sln_dir.plus_file(API_SOLUTION_NAME ".sln");
 
 	if (!DirAccess::exists(api_sln_dir) || !FileAccess::exists(api_sln_file)) {
-		String core_api_assembly;
-
-		if (p_api_type == APIAssembly::API_EDITOR) {
-			core_api_assembly = core_api_sln_dir.plus_file("bin")
-										.plus_file(api_build_config)
-										.plus_file(API_ASSEMBLY_NAME ".dll");
-		}
-
-#ifndef DEBUG_METHODS_ENABLED
-#error "How am I supposed to generate the bindings?"
-#endif
-
 		BindingsGenerator *gen = BindingsGenerator::get_singleton();
 		bool gen_verbose = OS::get_singleton()->is_stdout_verbose();
 
-		Error err = p_api_type == APIAssembly::API_CORE ?
-							gen->generate_cs_core_project(api_sln_dir, gen_verbose) :
-							gen->generate_cs_editor_project(api_sln_dir, core_api_assembly, gen_verbose);
-
+		Error err = gen->generate_cs_api(api_sln_dir, gen_verbose);
 		if (err != OK) {
-			show_build_error_dialog("Failed to generate " + api_name + " solution. Error: " + itos(err));
+			show_build_error_dialog("Failed to generate " API_SOLUTION_NAME " solution. Error: " + itos(err));
 			return false;
 		}
 	}
 
-	pr.step("Building " + api_name + " solution", 1);
+	pr.step("Building " API_SOLUTION_NAME " solution", 1);
 
-	if (!GodotSharpBuilds::build_api_sln(api_name, api_sln_dir, api_build_config))
+	if (!GodotSharpBuilds::build_api_sln(api_sln_dir, api_build_config))
 		return false;
 
 	pr.step("Copying " + api_name + " assembly", 2);
 
 	// Copy the built assembly to the assemblies directory
-	String api_assembly_dir = api_sln_dir.plus_file("bin").plus_file(api_build_config);
+	String api_assembly_dir = api_sln_dir.plus_file(api_name).plus_file("bin").plus_file(api_build_config);
 	if (!GodotSharpBuilds::copy_api_assembly(api_assembly_dir, res_assemblies_dir, api_name, p_api_type))
 		return false;
 
@@ -377,10 +361,10 @@ bool GodotSharpBuilds::build_project_blocking(const String &p_config) {
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return true; // No solution to build
 
-	if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_CORE))
+	if (!GodotSharpBuilds::make_api_assembly(APIAssembly::API_CORE))
 		return false;
 
-	if (!GodotSharpBuilds::make_api_sln(APIAssembly::API_EDITOR))
+	if (!GodotSharpBuilds::make_api_assembly(APIAssembly::API_EDITOR))
 		return false;
 
 	EditorProgress pr("mono_project_debug_build", "Building project solution...", 1);
@@ -403,11 +387,13 @@ bool GodotSharpBuilds::editor_build_callback() {
 	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path_editor);
 	ERR_FAIL_COND_V(metadata_err != OK, false);
 
-	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	Error copy_err = da->copy(scripts_metadata_path_editor, scripts_metadata_path_player);
+	if (FileAccess::exists(scripts_metadata_path_editor)) {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Error copy_err = da->copy(scripts_metadata_path_editor, scripts_metadata_path_player);
 
-	ERR_EXPLAIN("Failed to copy scripts metadata file");
-	ERR_FAIL_COND_V(copy_err != OK, false);
+		ERR_EXPLAIN("Failed to copy scripts metadata file");
+		ERR_FAIL_COND_V(copy_err != OK, false);
+	}
 
 	return build_project_blocking("Tools");
 }

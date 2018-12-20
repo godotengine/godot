@@ -205,6 +205,7 @@ struct jpargs {
 	unsigned int enable_client_ssl:1;
 	unsigned int fresh_mount:1;
 	unsigned int any_vhosts:1;
+	unsigned int chunk:1;
 };
 
 static void *
@@ -212,6 +213,8 @@ lwsws_align(struct jpargs *a)
 {
 	if ((lws_intptr_t)(a->p) & 15)
 		a->p += 16 - ((lws_intptr_t)(a->p) & 15);
+
+	a->chunk = 0;
 
 	return a->p;
 }
@@ -225,7 +228,7 @@ arg_to_bool(const char *s)
 	if (n)
 		return 1;
 
-	for (n = 0; n < (int)ARRAY_SIZE(on); n++)
+	for (n = 0; n < (int)LWS_ARRAY_SIZE(on); n++)
 		if (!strcasecmp(s, on[n]))
 			return 1;
 
@@ -413,25 +416,30 @@ lejp_vhosts_cb(struct lejp_ctx *ctx, char reason)
 	}
 
 	/* this catches, eg, vhosts[].headers[].xxx */
-	if (reason == LEJPCB_VAL_STR_END &&
+	if ((reason == LEJPCB_VAL_STR_END || reason == LEJPCB_VAL_STR_CHUNK) &&
 	    ctx->path_match == LEJPVP_HEADERS_NAME + 1) {
-		headers = lwsws_align(a);
-		a->p += sizeof(*headers);
+		if (!a->chunk) {
+			headers = lwsws_align(a);
+			a->p += sizeof(*headers);
 
-		n = lejp_get_wildcard(ctx, 0, a->p, a->end - a->p);
-		/* ie, enable this protocol, no options yet */
-		headers->next = a->info->headers;
-		a->info->headers = headers;
-		headers->name = a->p;
-		// lwsl_notice("  adding header %s=%s\n", a->p, ctx->buf);
-		a->p += n - 1;
-		*(a->p++) = ':';
-		if (a->p < a->end)
-			*(a->p++) = '\0';
-		else
-			*(a->p - 1) = '\0';
-		headers->value = a->p;
-		headers->options = NULL;
+			n = lejp_get_wildcard(ctx, 0, a->p,
+					lws_ptr_diff(a->end, a->p));
+			/* ie, add this header */
+			headers->next = a->info->headers;
+			a->info->headers = headers;
+			headers->name = a->p;
+
+			lwsl_notice("  adding header %s=%s\n", a->p, ctx->buf);
+			a->p += n - 1;
+			*(a->p++) = ':';
+			if (a->p < a->end)
+				*(a->p++) = '\0';
+			else
+				*(a->p - 1) = '\0';
+			headers->value = a->p;
+			headers->options = NULL;
+		}
+		a->chunk = reason == LEJPCB_VAL_STR_CHUNK;
 		goto dostring;
 	}
 
@@ -502,7 +510,7 @@ lejp_vhosts_cb(struct lejp_ctx *ctx, char reason)
 		if (a->last)
 			a->last->mount_next = m;
 
-		for (n = 0; n < (int)ARRAY_SIZE(mount_protocols); n++)
+		for (n = 0; n < (int)LWS_ARRAY_SIZE(mount_protocols); n++)
 			if (!strncmp(a->m.origin, mount_protocols[n],
 			     strlen(mount_protocols[n]))) {
 				lwsl_info("----%s\n", a->m.origin);
@@ -512,7 +520,7 @@ lejp_vhosts_cb(struct lejp_ctx *ctx, char reason)
 				break;
 			}
 
-		if (n == (int)ARRAY_SIZE(mount_protocols)) {
+		if (n == (int)LWS_ARRAY_SIZE(mount_protocols)) {
 			lwsl_err("unsupported protocol:// %s\n", a->m.origin);
 			return 1;
 		}
@@ -750,6 +758,7 @@ lejp_vhosts_cb(struct lejp_ctx *ctx, char reason)
 
 dostring:
 	p = ctx->buf;
+	p[LEJP_STRING_CHUNK] = '\0';
 	p1 = strstr(p, ESC_INSTALL_DATADIR);
 	if (p1) {
 		n = p1 - p;
@@ -762,7 +771,8 @@ dostring:
 	}
 
 	a->p += lws_snprintf(a->p, a->end - a->p, "%s", p);
-	*(a->p)++ = '\0';
+	if (reason == LEJPCB_VAL_STR_END)
+		*(a->p)++ = '\0';
 
 	return 0;
 }
@@ -779,7 +789,7 @@ lwsws_get_config(void *user, const char *f, const char * const *paths,
 	struct lejp_ctx ctx;
 	int n, m, fd;
 
-	fd = open(f, O_RDONLY);
+	fd = lws_open(f, O_RDONLY);
 	if (fd < 0) {
 		lwsl_err("Cannot open %s\n", f);
 		return 2;
@@ -927,11 +937,11 @@ lwsws_get_config_globals(struct lws_context_creation_info *info, const char *d,
 
 	lws_snprintf(dd, sizeof(dd) - 1, "%s/conf", d);
 	if (lwsws_get_config(&a, dd, paths_global,
-			     ARRAY_SIZE(paths_global), lejp_globals_cb) > 1)
+			     LWS_ARRAY_SIZE(paths_global), lejp_globals_cb) > 1)
 		return 1;
 	lws_snprintf(dd, sizeof(dd) - 1, "%s/conf.d", d);
 	if (lwsws_get_config_d(&a, dd, paths_global,
-			       ARRAY_SIZE(paths_global), lejp_globals_cb) > 1)
+			       LWS_ARRAY_SIZE(paths_global), lejp_globals_cb) > 1)
 		return 1;
 
 	a.plugin_dirs[a.count_plugin_dirs] = NULL;
@@ -962,11 +972,11 @@ lwsws_get_config_vhosts(struct lws_context *context,
 
 	lws_snprintf(dd, sizeof(dd) - 1, "%s/conf", d);
 	if (lwsws_get_config(&a, dd, paths_vhosts,
-			     ARRAY_SIZE(paths_vhosts), lejp_vhosts_cb) > 1)
+			     LWS_ARRAY_SIZE(paths_vhosts), lejp_vhosts_cb) > 1)
 		return 1;
 	lws_snprintf(dd, sizeof(dd) - 1, "%s/conf.d", d);
 	if (lwsws_get_config_d(&a, dd, paths_vhosts,
-			       ARRAY_SIZE(paths_vhosts), lejp_vhosts_cb) > 1)
+			       LWS_ARRAY_SIZE(paths_vhosts), lejp_vhosts_cb) > 1)
 		return 1;
 
 	*cs = a.p;

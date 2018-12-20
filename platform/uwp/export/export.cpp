@@ -1021,8 +1021,10 @@ public:
 		return "UWP";
 	}
 
-	virtual String get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
-		return "appx";
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+		List<String> list;
+		list.push_back("appx");
+		return list;
 	}
 
 	virtual Ref<Texture> get_logo() const {

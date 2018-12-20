@@ -73,7 +73,6 @@ private:
 
 	enum DisplayMode {
 		DISPLAY_MODE_TREE_ONLY,
-		DISPLAY_MODE_FILE_LIST_ONLY,
 		DISPLAY_MODE_SPLIT,
 	};
 
@@ -109,7 +108,6 @@ private:
 
 	Button *button_toggle_display_mode;
 	Button *button_reload;
-	Button *button_tree;
 	Button *button_file_list_display_mode;
 	Button *button_hist_next;
 	Button *button_hist_prev;
@@ -127,7 +125,6 @@ private:
 	DisplayMode display_mode;
 	DisplayModeSetting display_mode_setting;
 	DisplayModeSetting old_display_mode_setting;
-	bool file_list_view;
 
 	PopupMenu *file_list_popup;
 	PopupMenu *tree_popup;
@@ -193,8 +190,7 @@ private:
 	void _change_file_display();
 	void _fs_changed();
 
-	void _go_to_tree();
-	void _go_to_file_list();
+	void _tree_toggle_collapsed();
 
 	void _select_file(const String p_path);
 	void _tree_activate_file();
@@ -237,7 +233,7 @@ private:
 
 	void _search_changed(const String &p_text, const Control *p_from);
 
-	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths);
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options = true);
 	void _tree_rmb_select(const Vector2 &p_pos);
 	void _file_list_rmb_select(int p_item, const Vector2 &p_pos);
 	void _file_list_rmb_pressed(const Vector2 &p_pos);

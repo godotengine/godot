@@ -59,8 +59,6 @@ private:
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
-	int v_frames;
-	int h_frames;
 
 	Ref<Material> process_material;
 
@@ -117,12 +115,6 @@ public:
 	Ref<Texture> get_normal_map() const;
 
 	virtual String get_configuration_warning() const;
-
-	void set_v_frames(int p_count);
-	int get_v_frames() const;
-
-	void set_h_frames(int p_count);
-	int get_h_frames() const;
 
 	void restart();
 	Rect2 capture_rect() const;

@@ -556,6 +556,13 @@
 				Note that this method can also be used to kill processes that were not spawned by the game.
 			</description>
 		</method>
+		<method name="move_window_to_foreground">
+			<return type="void">
+			</return>
+			<description>
+				Moves the window to the front.
+			</description>
+		</method>
 		<method name="native_video_is_playing">
 			<return type="bool">
 			</return>

@@ -20,6 +20,13 @@
 				Adds a body to the list of bodies that this body can't collide with.
 			</description>
 		</method>
+		<method name="get_collision_exceptions">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of nodes that were added as collision exceptions for this body.
+			</description>
+		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
 			<return type="bool">
 			</return>

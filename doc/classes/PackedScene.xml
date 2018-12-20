@@ -13,7 +13,7 @@
 		var rigid = RigidBody2D.new()
 		var collision = CollisionShape2D.new()
 
-		# create the object hierachy
+		# create the object hierarchy
 		rigid.add_child(collision)
 		node.add_child(rigid)
 

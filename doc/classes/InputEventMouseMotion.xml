@@ -7,7 +7,7 @@
 		Contains mouse motion information. Supports relative, absolute positions and speed. See [method Node._input].
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/inputs/mouse_and_input_coordinates.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/mouse_and_input_coordinates.html</link>
 	</tutorials>
 	<demos>
 	</demos>

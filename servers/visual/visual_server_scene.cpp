@@ -601,8 +601,9 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->update_item.in_list()) {
-		_update_dirty_instance(instance);
+	if (instance->base_type == VS::INSTANCE_MESH) {
+		//may not have been updated yet
+		instance->materials.resize(VSG::storage->mesh_get_surface_count(instance->base));
 	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());

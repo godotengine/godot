@@ -70,7 +70,6 @@ public:
 		FLAG_ALIGN_Y_TO_VELOCITY,
 		FLAG_ROTATE_Y,
 		FLAG_DISABLE_Z,
-		FLAG_ANIM_LOOP,
 		FLAG_MAX
 	};
 
@@ -170,7 +169,6 @@ private:
 	PoolVector<Color> emission_colors;
 	int emission_point_count;
 
-	bool anim_loop;
 	Vector3 gravity;
 
 	void _particles_process(float p_delta);

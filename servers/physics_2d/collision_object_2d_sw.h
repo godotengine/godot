@@ -49,6 +49,7 @@ private:
 	Type type;
 	RID self;
 	ObjectID instance_id;
+	ObjectID canvas_instance_id;
 	bool pickable;
 
 	struct Shape {
@@ -101,6 +102,9 @@ public:
 
 	_FORCE_INLINE_ void set_instance_id(const ObjectID &p_instance_id) { instance_id = p_instance_id; }
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return instance_id; }
+
+	_FORCE_INLINE_ void set_canvas_instance_id(const ObjectID &p_canvas_instance_id) { canvas_instance_id = p_canvas_instance_id; }
+	_FORCE_INLINE_ ObjectID get_canvas_instance_id() const { return canvas_instance_id; }
 
 	void _shape_changed();
 

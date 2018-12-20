@@ -305,16 +305,6 @@ public:
 		return b;
 	}
 
-#if defined(__GNUC__)
-
-	static _ALWAYS_INLINE_ int64_t dtoll(double p_double) { return (int64_t)p_double; } ///@TODO OPTIMIZE
-	static _ALWAYS_INLINE_ int64_t dtoll(float p_float) { return (int64_t)p_float; } ///@TODO OPTIMIZE and rename
-#else
-
-	static _ALWAYS_INLINE_ int64_t dtoll(double p_double) { return (int64_t)p_double; } ///@TODO OPTIMIZE
-	static _ALWAYS_INLINE_ int64_t dtoll(float p_float) { return (int64_t)p_float; } ///@TODO OPTIMIZE and rename
-#endif
-
 	static _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t h) {
 		uint16_t h_exp, h_sig;
 		uint32_t f_sgn, f_exp, f_sig;

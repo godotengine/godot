@@ -2120,6 +2120,10 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 }
 
 Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
+	if (error_set) {
+		ERR_EXPLAIN("There was previously a parse error: " + error_str);
+		ERR_FAIL_V(Variant());
+	}
 
 	execution_error = false;
 	Variant output;

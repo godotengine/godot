@@ -511,8 +511,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 		if (continuous_cd_mode != Physics2DServer::CCD_MODE_DISABLED) {
 
-			motion = new_transform.get_origin() - get_transform().get_origin();
-			//linear_velocity*p_step;
+			motion = linear_velocity * p_step;
 			do_motion = true;
 		}
 	}

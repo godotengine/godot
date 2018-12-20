@@ -31,6 +31,8 @@
 #include "csharp_project.h"
 
 #include "core/io/json.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
@@ -62,16 +64,16 @@ String generate_core_api_project(const String &p_dir, const Vector<String> &p_fi
 	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
 }
 
-String generate_editor_api_project(const String &p_dir, const String &p_core_dll_path, const Vector<String> &p_files) {
+String generate_editor_api_project(const String &p_dir, const String &p_core_proj_path, const Vector<String> &p_files) {
 
 	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
 
 	Variant dir = p_dir;
-	Variant core_dll_path = p_core_dll_path;
+	Variant core_proj_path = p_core_proj_path;
 	Variant compile_items = p_files;
-	const Variant *args[3] = { &dir, &core_dll_path, &compile_items };
+	const Variant *args[3] = { &dir, &core_proj_path, &compile_items };
 	MonoException *exc = NULL;
 	MonoObject *ret = klass->get_method("GenEditorApiProject", 3)->invoke(NULL, args, &exc);
 
@@ -106,6 +108,9 @@ String generate_game_project(const String &p_dir, const String &p_name, const Ve
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {
 
+	if (!GLOBAL_DEF("mono/project/auto_update_project", true))
+		return;
+
 	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
@@ -126,6 +131,14 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 Error generate_scripts_metadata(const String &p_project_path, const String &p_output_path) {
 
 	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+
+	if (FileAccess::exists(p_output_path)) {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Error rm_err = da->remove(p_output_path);
+
+		ERR_EXPLAIN("Failed to remove old scripts metadata file");
+		ERR_FAIL_COND_V(rm_err != OK, rm_err);
+	}
 
 	GDMonoClass *project_utils = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
 

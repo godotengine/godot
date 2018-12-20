@@ -203,7 +203,7 @@ public:
 	void move_lines_up();
 	void move_lines_down();
 	void delete_lines();
-	void code_lines_down();
+	void clone_lines_down();
 
 	void goto_line(int p_line);
 	void goto_line_selection(int p_line, int p_begin, int p_end);

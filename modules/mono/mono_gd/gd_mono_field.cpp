@@ -223,6 +223,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 						ERR_FAIL();
 					}
 				}
+
+				break;
 			}
 
 			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + tclass->get_name());

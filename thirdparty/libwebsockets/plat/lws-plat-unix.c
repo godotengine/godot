@@ -30,6 +30,12 @@
 #endif
 #include <dirent.h>
 
+void lws_plat_apply_FD_CLOEXEC(int n)
+{
+	if (n != -1)
+		fcntl(n, F_SETFD, FD_CLOEXEC );
+}
+
 int
 lws_plat_socket_offset(void)
 {
@@ -329,6 +335,8 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, int fd)
     defined(__HAIKU__)
 	struct protoent *tcp_proto;
 #endif
+
+	fcntl(fd, F_SETFD, FD_CLOEXEC);
 
 	if (vhost->ka_time) {
 		/* enable keepalive on this socket */
@@ -952,7 +960,7 @@ lws_plat_write_file(const char *filename, void *buf, int len)
 LWS_VISIBLE int
 lws_plat_read_file(const char *filename, void *buf, int len)
 {
-	int n, fd = open(filename, O_RDONLY);
+	int n, fd = lws_open(filename, O_RDONLY);
 	if (fd == -1)
 		return -1;
 

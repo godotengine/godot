@@ -2770,7 +2770,8 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 					"Compile",
 					ProjectSettings::get_singleton()->globalize_path(p_path));
 		} else {
-			ERR_PRINTS("Cannot add " + p_path + " to the C# project because it could not be created.");
+			ERR_PRINTS("Failed to create C# project");
+			ERR_PRINTS("Cannot add " + p_path + " to the C# project");
 		}
 	}
 #endif

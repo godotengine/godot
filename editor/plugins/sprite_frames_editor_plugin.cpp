@@ -548,7 +548,6 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	} else {
 
 		hide();
-		//set_physics_process(false);
 	}
 }
 
@@ -816,16 +815,26 @@ SpriteFramesEditor::SpriteFramesEditor() {
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
 
 	frames_editor->set_undo_redo(&get_undo_redo());
-	SpriteFrames *s = Object::cast_to<SpriteFrames>(p_object);
-	if (!s)
-		return;
+
+	SpriteFrames *s;
+	AnimatedSprite *animated_sprite = Object::cast_to<AnimatedSprite>(p_object);
+	if (animated_sprite) {
+		s = *animated_sprite->get_sprite_frames();
+	} else {
+		s = Object::cast_to<SpriteFrames>(p_object);
+	}
 
 	frames_editor->edit(s);
 }
 
 bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("SpriteFrames");
+	AnimatedSprite *animated_sprite = Object::cast_to<AnimatedSprite>(p_object);
+	if (animated_sprite && *animated_sprite->get_sprite_frames()) {
+		return true;
+	} else {
+		return p_object->is_class("SpriteFrames");
+	}
 }
 
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
@@ -833,14 +842,11 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
 		editor->make_bottom_panel_item_visible(frames_editor);
-		//frames_editor->set_process(true);
 	} else {
 
 		button->hide();
 		if (frames_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
-
-		//frames_editor->set_process(false);
 	}
 }
 

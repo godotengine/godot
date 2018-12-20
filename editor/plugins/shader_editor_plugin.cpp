@@ -263,7 +263,7 @@ void ShaderEditor::_menu_option(int p_option) {
 			shader_editor->delete_lines();
 		} break;
 		case EDIT_CLONE_DOWN: {
-			shader_editor->code_lines_down();
+			shader_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 

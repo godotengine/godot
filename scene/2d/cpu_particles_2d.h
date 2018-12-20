@@ -68,7 +68,6 @@ public:
 
 	enum Flags {
 		FLAG_ALIGN_Y_TO_VELOCITY,
-		FLAG_ANIM_LOOP,
 		FLAG_MAX
 	};
 
@@ -87,6 +86,7 @@ private:
 		Transform2D transform;
 		Color color;
 		float custom[4];
+		float rotation;
 		Vector2 velocity;
 		bool active;
 		float angle_rand;
@@ -168,7 +168,6 @@ private:
 	PoolVector<Color> emission_colors;
 	int emission_point_count;
 
-	bool anim_loop;
 	Vector2 gravity;
 
 	void _particles_process(float p_delta);
@@ -178,7 +177,7 @@ private:
 
 	void _update_render_thread();
 
-	void _update_mesh_texture();
+	void _generate_mesh_texture();
 
 protected:
 	static void _bind_methods();
@@ -222,6 +221,15 @@ public:
 
 	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
+
+	void set_h_frames(int p_frames);
+	int get_h_frames();
+
+	void set_v_frames(int p_frames);
+	int get_v_frames();
+
+	void set_loop_animation(bool p_loop);
+	bool get_loop_animation() const;
 
 	void set_normalmap(const Ref<Texture> &p_normalmap);
 	Ref<Texture> get_normalmap() const;

@@ -455,7 +455,7 @@ String DirAccessPack::get_current_dir() {
 
 	while (pd->parent) {
 		pd = pd->parent;
-		p = pd->name + "/" + p;
+		p = pd->name.plus_file(p);
 	}
 
 	return "res://" + p;

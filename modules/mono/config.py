@@ -265,11 +265,7 @@ def make_template_dir(env, mono_root):
 
     template_dir_name = ''
 
-    if platform == 'windows':
-        template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
-    elif platform == 'osx':
-        template_dir_name = 'data.mono.%s.%s' % (platform, target)
-    elif platform == 'x11':
+    if platform in ['windows', 'osx', 'x11']:
         template_dir_name = 'data.mono.%s.%s.%s' % (platform, env['bits'], target)
     else:
         assert False

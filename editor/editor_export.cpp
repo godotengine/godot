@@ -1351,18 +1351,21 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	return valid;
 }
 
-String EditorExportPlatformPC::get_binary_extension(const Ref<EditorExportPreset> &p_preset) const {
+List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	List<String> list;
 	for (Map<String, String>::Element *E = extensions.front(); E; E = E->next()) {
 		if (p_preset->get(E->key())) {
-			return extensions[E->key()];
+			list.push_back(extensions[E->key()]);
+			return list;
 		}
 	}
 
 	if (extensions.has("default")) {
-		return extensions["default"];
+		list.push_back(extensions["default"]);
+		return list;
 	}
 
-	return "";
+	return list;
 }
 
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {

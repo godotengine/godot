@@ -36,7 +36,7 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 
-#define CONTRIBUTE_URL "http://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
+#define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
 #define CONTRIBUTE2_URL "https://github.com/godotengine/godot-docs"
 #define REQUEST_URL "https://github.com/godotengine/godot-docs/issues/new"
 
@@ -252,6 +252,8 @@ void EditorHelpSearch::_notification(int p_what) {
 
 		connect("confirmed", this, "_confirmed");
 		_update_search();
+	} else if (p_what == NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this, "_confirmed");
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		if (is_visible_in_tree()) {

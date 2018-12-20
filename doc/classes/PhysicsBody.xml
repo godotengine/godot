@@ -7,7 +7,7 @@
 		PhysicsBody is an abstract base class for implementing a physics body. All *Body types inherit from it.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/physics/physics_introduction.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -19,6 +19,13 @@
 			</argument>
 			<description>
 				Adds a body to the list of bodies that this body can't collide with.
+			</description>
+		</method>
+		<method name="get_collision_exceptions">
+			<return type="Array">
+			</return>
+			<description>
+				Returns an array of nodes that were added as collision exceptions for this body.
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">

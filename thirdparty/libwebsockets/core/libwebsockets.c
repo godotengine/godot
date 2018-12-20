@@ -28,7 +28,7 @@
 #ifdef LWS_WITH_IPV6
 #if defined(WIN32) || defined(_WIN32)
 #include <wincrypt.h>
-#include <Iphlpapi.h>
+#include <iphlpapi.h>
 #else
 #include <net/if.h>
 #endif
@@ -57,6 +57,28 @@ static const char * const log_level_names[] = {
 	"?"
 };
 #endif
+
+int lws_open(const char *__file, int __oflag, ...)
+{
+	va_list ap;
+	int n;
+
+	va_start(ap, __oflag);
+	if (((__oflag & O_CREAT) == O_CREAT)
+#if defined(O_TMPFILE)
+		|| ((__oflag & O_TMPFILE) == O_TMPFILE)
+#endif
+	)
+		/* last arg is really a mode_t.  But windows... */
+		n = open(__file, __oflag, va_arg(ap, uint32_t));
+	else
+		n = open(__file, __oflag);
+	va_end(ap);
+
+	lws_plat_apply_FD_CLOEXEC(n);
+
+	return n;
+}
 
 #if defined (_DEBUG)
 void lwsi_set_role(struct lws *wsi, lws_wsi_state_t role)
@@ -826,7 +848,15 @@ just_kill_connection:
 		if (!wsi->protocol)
 			pro = &wsi->vhost->protocols[0];
 
-		pro->callback(wsi,
+		if (!wsi->upgraded_to_http2 || !lwsi_role_client(wsi))
+			/*
+			 * The network wsi for a client h2 connection shouldn't
+			 * call back for its role: the child stream connections
+			 * own the role.  Otherwise h2 will call back closed
+			 * one too many times as the children do it and then
+			 * the closing network stream.
+			 */
+			pro->callback(wsi,
 			      wsi->role_ops->close_cb[lwsi_role_server(wsi)],
 			      wsi->user_space, NULL, 0);
 		wsi->told_user_closed = 1;
@@ -1453,7 +1483,7 @@ lws_vfs_select_fops(const struct lws_plat_file_ops *fops, const char *vfs_path,
 		pf = fops->next;
 		while (pf) {
 			n = 0;
-			while (n < (int)ARRAY_SIZE(pf->fi) && pf->fi[n].sig) {
+			while (n < (int)LWS_ARRAY_SIZE(pf->fi) && pf->fi[n].sig) {
 				if (p >= vfs_path + pf->fi[n].len)
 					if (!strncmp(p - (pf->fi[n].len - 1),
 						    pf->fi[n].sig,
@@ -1935,9 +1965,9 @@ static const char * const colours[] = {
 	"[32;1m", /* LLL_INFO */
 	"[34;1m", /* LLL_DEBUG */
 	"[33;1m", /* LLL_PARSER */
-	"[33;1m", /* LLL_HEADER */
-	"[33;1m", /* LLL_EXT */
-	"[33;1m", /* LLL_CLIENT */
+	"[33m", /* LLL_HEADER */
+	"[33m", /* LLL_EXT */
+	"[33m", /* LLL_CLIENT */
 	"[33;1m", /* LLL_LATENCY */
 	"[30;1m", /* LLL_USER */
 };
@@ -1946,14 +1976,14 @@ LWS_VISIBLE void lwsl_emit_stderr(int level, const char *line)
 {
 	char buf[50];
 	static char tty = 3;
-	int n, m = ARRAY_SIZE(colours) - 1;
+	int n, m = LWS_ARRAY_SIZE(colours) - 1;
 
 	if (!tty)
 		tty = isatty(2) | 2;
 	lwsl_timestamp(level, buf, sizeof(buf));
 
 	if (tty == 3) {
-		n = 1 << (ARRAY_SIZE(colours) - 1);
+		n = 1 << (LWS_ARRAY_SIZE(colours) - 1);
 		while (n) {
 			if (level & n)
 				break;
@@ -2060,7 +2090,9 @@ lwsl_hexdump_level(int hexdump_level, const void *vbuf, size_t len)
 LWS_VISIBLE void
 lwsl_hexdump(const void *vbuf, size_t len)
 {
+#if defined(_DEBUG)
 	lwsl_hexdump_level(LLL_DEBUG, vbuf, len);
+#endif
 }
 
 LWS_VISIBLE int
@@ -2091,6 +2123,8 @@ lws_partial_buffered(struct lws *wsi)
 LWS_VISIBLE lws_fileofs_t
 lws_get_peer_write_allowance(struct lws *wsi)
 {
+	if (!wsi->role_ops->tx_credit)
+		return -1;
 	return wsi->role_ops->tx_credit(wsi);
 }
 
@@ -3364,7 +3398,7 @@ lws_stats_log_dump(struct lws_context *context)
 		wl = pt->http.ah_wait_list;
 		while (wl) {
 			m++;
-			wl = wl->ah_wait_list;
+			wl = wl->http.ah_wait_list;
 		}
 
 		lwsl_notice("  AH wait list count / actual:      %d / %d\n",
@@ -3401,7 +3435,8 @@ lws_stats_log_dump(struct lws_context *context)
 					strcpy(buf, "unknown");
 #if defined(LWS_ROLE_H1) || defined(LWS_ROLE_H2)
 				lwsl_notice("  peer %s: count wsi: %d, count ah: %d\n",
-					    buf, df->count_wsi, df->count_ah);
+					    buf, df->count_wsi,
+					    df->http.count_ah);
 #else
 				lwsl_notice("  peer %s: count wsi: %d\n",
 					    buf, df->count_wsi);

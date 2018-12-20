@@ -692,7 +692,9 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 						Ref<Animation> anim = player->get_animation(an->get_animation());
 						if (anim.is_valid()) {
 							E->get()->set_max(anim->get_length());
-							E->get()->set_value(an->get_playback_time());
+							//StringName path = AnimationTreeEditor::get_singleton()->get_base_path() + E->get().input_node;
+							StringName time_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E->key()) + "/time";
+							E->get()->set_value(AnimationTreeEditor::get_singleton()->get_tree()->get(time_path));
 						}
 					}
 				}
@@ -833,8 +835,6 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 
 	if (p_node.is_valid()) {
 		blend_tree = p_node;
-	} else {
-		blend_tree.unref();
 	}
 
 	if (blend_tree.is_null()) {

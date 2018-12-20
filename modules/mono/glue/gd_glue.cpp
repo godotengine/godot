@@ -157,11 +157,11 @@ bool godot_icall_GD_type_exists(MonoString *p_type) {
 	return ClassDB::class_exists(GDMonoMarshal::mono_string_to_godot(p_type));
 }
 
-void godot_icall_GD_logerror(MonoString *p_str) {
+void godot_icall_GD_pusherror(MonoString *p_str) {
 	ERR_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
-void godot_icall_GD_logwarning(MonoString *p_str) {
+void godot_icall_GD_pushwarning(MonoString *p_str) {
 	WARN_PRINTS(GDMonoMarshal::mono_string_to_godot(p_str));
 }
 
@@ -194,8 +194,8 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_convert", (void *)godot_icall_GD_convert);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_hash", (void *)godot_icall_GD_hash);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_instance_from_id", (void *)godot_icall_GD_instance_from_id);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_logerror", (void *)godot_icall_GD_logerror);
-	mono_add_internal_call("Godot.GD::godot_icall_GD_logwarning", (void *)godot_icall_GD_logwarning);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_pusherror", (void *)godot_icall_GD_pusherror);
+	mono_add_internal_call("Godot.GD::godot_icall_GD_pushwarning", (void *)godot_icall_GD_pushwarning);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_print", (void *)godot_icall_GD_print);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_printerr", (void *)godot_icall_GD_printerr);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_printraw", (void *)godot_icall_GD_printraw);

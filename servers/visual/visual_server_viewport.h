@@ -78,17 +78,21 @@ public:
 
 		struct CanvasKey {
 
-			int layer;
+			int64_t stacking;
 			RID canvas;
 			bool operator<(const CanvasKey &p_canvas) const {
-				if (layer == p_canvas.layer) return canvas < p_canvas.canvas;
-				return layer < p_canvas.layer;
+				if (stacking == p_canvas.stacking)
+					return canvas < p_canvas.canvas;
+				return stacking < p_canvas.stacking;
 			}
-			CanvasKey() { layer = 0; }
-			CanvasKey(const RID &p_canvas, int p_layer) {
+			CanvasKey() {
+				stacking = 0;
+			}
+			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
-				layer = p_layer;
+				stacking = ((int64_t)p_layer << 32) + p_sublayer;
 			}
+			int get_layer() const { return stacking >> 32; }
 		};
 
 		struct CanvasData {
@@ -96,6 +100,7 @@ public:
 			CanvasBase *canvas;
 			Transform2D transform;
 			int layer;
+			int sublayer;
 		};
 
 		Transform2D global_transform;
@@ -176,7 +181,7 @@ public:
 	void viewport_set_transparent_background(RID p_viewport, bool p_enabled);
 
 	void viewport_set_global_canvas_transform(RID p_viewport, const Transform2D &p_transform);
-	void viewport_set_canvas_layer(RID p_viewport, RID p_canvas, int p_layer);
+	void viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer);
 
 	void viewport_set_shadow_atlas_size(RID p_viewport, int p_size);
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);

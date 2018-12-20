@@ -220,6 +220,11 @@ private:
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
 
+	Map<Control *, Timer *> popup_temporarily_timers;
+
+	Label *warning_child_of_container;
+	VBoxContainer *info_overlay;
+
 	Transform2D transform;
 	bool show_grid;
 	bool show_rulers;
@@ -369,9 +374,10 @@ private:
 	Ref<ShortCut> multiply_grid_step_shortcut;
 	Ref<ShortCut> divide_grid_step_shortcut;
 
-	bool _is_node_editable(const Node *p_node);
-	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, int p_limit = 0, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, int p_limit = 0);
+	bool _is_node_locked(const Node *p_node);
+	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
+	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
@@ -477,6 +483,9 @@ private:
 	void _update_bone_list();
 	void _tree_changed(Node *);
 
+	void _popup_warning_temporarily(Control *p_control, const float p_duration);
+	void _popup_warning_depop(Control *p_control);
+
 	friend class CanvasItemEditorPlugin;
 
 protected:
@@ -541,6 +550,9 @@ public:
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
+
+	void add_control_to_info_overlay(Control *p_control);
+	void remove_control_from_info_overlay(Control *p_control);
 
 	HSplitContainer *get_palette_split();
 	VSplitContainer *get_bottom_split();

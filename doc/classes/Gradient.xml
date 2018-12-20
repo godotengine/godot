@@ -4,7 +4,7 @@
 		Color interpolator node.
 	</brief_description>
 	<description>
-		Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset offset 0 and the other (white) at the ramp higher offset 1.
+		Given a set of colors, this node will interpolate them in order, meaning, that if you have color 1, color 2 and color 3, the ramp will interpolate (generate the colors between two colors) from color 1 to color 2 and from color 2 to color 3. Initially the ramp will have 2 colors (black and white), one (black) at ramp lower offset 0 and the other (white) at the ramp higher offset 1.
 	</description>
 	<tutorials>
 	</tutorials>
