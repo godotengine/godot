@@ -1920,7 +1920,7 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
-		splane.xyz /= splane.w;
+		//splane.xyz /= splane.w;
 
 		float shadow = sample_shadow(light_shadow_atlas, splane);
 		light_att *= shadow;
