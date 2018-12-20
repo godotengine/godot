@@ -229,6 +229,9 @@ TODO.
 Important: File `libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c` has
 Godot-made change marked with `// -- GODOT --` comments.
 
+The files `libvpx/third_party/android/cpu-features.{c,h}` were copied
+from the Android NDK r18.
+
 
 ## libwebp
 
@@ -337,6 +340,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://www.efgh.com/software/md5.htm
   * Version: TBD, might not be latest from above URL
   * License: RSA Message-Digest License
+- `open-simplex-noise.{c,h}`
+  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
+  * Version: git (0d555e7, 2015)
+  * License: Unlicense
 - `pcg.{cpp,h}`
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
@@ -354,11 +361,6 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
   * License: MIT
-- `open-simplex-noise.{c,h}`
-  * Upstream: https://github.com/smcameron/open-simplex-noise-in-c
-  * Version: git (0d555e7, 2015)
-  * License: Unlicense
-
 
 ### modules
 
@@ -370,6 +372,13 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?
   * License: BSD
+
+### platform
+
+- `ifaddrs-android.{cc,h}`
+  * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
+  * Version: 5976650 (2013)
+  * License: BSD-3-Clause
 
 ### scene
 

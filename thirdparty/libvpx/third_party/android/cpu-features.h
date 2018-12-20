@@ -33,6 +33,9 @@
 
 __BEGIN_DECLS
 
+/* A list of valid values returned by android_getCpuFamily().
+ * They describe the CPU Architecture of the current process.
+ */
 typedef enum {
     ANDROID_CPU_FAMILY_UNKNOWN = 0,
     ANDROID_CPU_FAMILY_ARM,
@@ -46,11 +49,24 @@ typedef enum {
 
 } AndroidCpuFamily;
 
-/* Return family of the device's CPU */
-extern AndroidCpuFamily   android_getCpuFamily(void);
+/* Return the CPU family of the current process.
+ *
+ * Note that this matches the bitness of the current process. I.e. when
+ * running a 32-bit binary on a 64-bit capable CPU, this will return the
+ * 32-bit CPU family value.
+ */
+extern AndroidCpuFamily android_getCpuFamily(void);
 
-/* The list of feature flags for ARM CPUs that can be recognized by the
- * library. Value details are:
+/* Return a bitmap describing a set of optional CPU features that are
+ * supported by the current device's CPU. The exact bit-flags returned
+ * depend on the value returned by android_getCpuFamily(). See the
+ * documentation for the ANDROID_CPU_*_FEATURE_* flags below for details.
+ */
+extern uint64_t android_getCpuFeatures(void);
+
+/* The list of feature flags for ANDROID_CPU_FAMILY_ARM that can be
+ * recognized by the library (see note below for 64-bit ARM). Value details
+ * are:
  *
  *   VFPv2:
  *     CPU supports the VFPv2 instruction set. Many, but not all, ARMv6 CPUs
@@ -106,6 +122,27 @@ extern AndroidCpuFamily   android_getCpuFamily(void);
  *     ARM CPU. This is only available on a few XScale-based CPU designs
  *     sold by Marvell. Pretty rare in practice.
  *
+ *   AES:
+ *     CPU supports AES instructions. These instructions are only
+ *     available for 32-bit applications running on ARMv8 CPU.
+ *
+ *   CRC32:
+ *     CPU supports CRC32 instructions. These instructions are only
+ *     available for 32-bit applications running on ARMv8 CPU.
+ *
+ *   SHA2:
+ *     CPU supports SHA2 instructions. These instructions are only
+ *     available for 32-bit applications running on ARMv8 CPU.
+ *
+ *   SHA1:
+ *     CPU supports SHA1 instructions. These instructions are only
+ *     available for 32-bit applications running on ARMv8 CPU.
+ *
+ *   PMULL:
+ *     CPU supports 64-bit PMULL and PMULL2 instructions. These
+ *     instructions are only available for 32-bit applications
+ *     running on ARMv8 CPU.
+ *
  * If you want to tell the compiler to generate code that targets one of
  * the feature set above, you should probably use one of the following
  * flags (for more details, see technical note at the end of this file):
@@ -153,6 +190,13 @@ extern AndroidCpuFamily   android_getCpuFamily(void);
  *
  *   -mcpu=iwmmxt
  *     Allows the use of iWMMXt instrinsics with GCC.
+ *
+ * IMPORTANT NOTE: These flags should only be tested when
+ * android_getCpuFamily() returns ANDROID_CPU_FAMILY_ARM, i.e. this is a
+ * 32-bit process.
+ *
+ * When running a 64-bit ARM process on an ARMv8 CPU,
+ * android_getCpuFeatures() will return a different set of bitflags
  */
 enum {
     ANDROID_CPU_ARM_FEATURE_ARMv7       = (1 << 0),
@@ -167,19 +211,84 @@ enum {
     ANDROID_CPU_ARM_FEATURE_IDIV_ARM    = (1 << 9),
     ANDROID_CPU_ARM_FEATURE_IDIV_THUMB2 = (1 << 10),
     ANDROID_CPU_ARM_FEATURE_iWMMXt      = (1 << 11),
+    ANDROID_CPU_ARM_FEATURE_AES         = (1 << 12),
+    ANDROID_CPU_ARM_FEATURE_PMULL       = (1 << 13),
+    ANDROID_CPU_ARM_FEATURE_SHA1        = (1 << 14),
+    ANDROID_CPU_ARM_FEATURE_SHA2        = (1 << 15),
+    ANDROID_CPU_ARM_FEATURE_CRC32       = (1 << 16),
 };
 
+/* The bit flags corresponding to the output of android_getCpuFeatures()
+ * when android_getCpuFamily() returns ANDROID_CPU_FAMILY_ARM64. Value details
+ * are:
+ *
+ *   FP:
+ *     CPU has Floating-point unit.
+ *
+ *   ASIMD:
+ *     CPU has Advanced SIMD unit.
+ *
+ *   AES:
+ *     CPU supports AES instructions.
+ *
+ *   CRC32:
+ *     CPU supports CRC32 instructions.
+ *
+ *   SHA2:
+ *     CPU supports SHA2 instructions.
+ *
+ *   SHA1:
+ *     CPU supports SHA1 instructions.
+ *
+ *   PMULL:
+ *     CPU supports 64-bit PMULL and PMULL2 instructions.
+ */
+enum {
+    ANDROID_CPU_ARM64_FEATURE_FP      = (1 << 0),
+    ANDROID_CPU_ARM64_FEATURE_ASIMD   = (1 << 1),
+    ANDROID_CPU_ARM64_FEATURE_AES     = (1 << 2),
+    ANDROID_CPU_ARM64_FEATURE_PMULL   = (1 << 3),
+    ANDROID_CPU_ARM64_FEATURE_SHA1    = (1 << 4),
+    ANDROID_CPU_ARM64_FEATURE_SHA2    = (1 << 5),
+    ANDROID_CPU_ARM64_FEATURE_CRC32   = (1 << 6),
+};
+
+/* The bit flags corresponding to the output of android_getCpuFeatures()
+ * when android_getCpuFamily() returns ANDROID_CPU_FAMILY_X86 or
+ * ANDROID_CPU_FAMILY_X86_64.
+ */
 enum {
     ANDROID_CPU_X86_FEATURE_SSSE3  = (1 << 0),
     ANDROID_CPU_X86_FEATURE_POPCNT = (1 << 1),
     ANDROID_CPU_X86_FEATURE_MOVBE  = (1 << 2),
+    ANDROID_CPU_X86_FEATURE_SSE4_1 = (1 << 3),
+    ANDROID_CPU_X86_FEATURE_SSE4_2 = (1 << 4),
+    ANDROID_CPU_X86_FEATURE_AES_NI = (1 << 5),
+    ANDROID_CPU_X86_FEATURE_AVX =    (1 << 6),
+    ANDROID_CPU_X86_FEATURE_RDRAND = (1 << 7),
+    ANDROID_CPU_X86_FEATURE_AVX2 =   (1 << 8),
+    ANDROID_CPU_X86_FEATURE_SHA_NI = (1 << 9),
 };
 
-extern uint64_t    android_getCpuFeatures(void);
-#define android_getCpuFeaturesExt android_getCpuFeatures
+/* The bit flags corresponding to the output of android_getCpuFeatures()
+ * when android_getCpuFamily() returns ANDROID_CPU_FAMILY_MIPS
+ * or ANDROID_CPU_FAMILY_MIPS64.  Values are:
+ *
+ *   R6:
+ *     CPU executes MIPS Release 6 instructions natively, and
+ *     supports obsoleted R1..R5 instructions only via kernel traps.
+ *
+ *   MSA:
+ *     CPU supports Mips SIMD Architecture instructions.
+ */
+enum {
+    ANDROID_CPU_MIPS_FEATURE_R6    = (1 << 0),
+    ANDROID_CPU_MIPS_FEATURE_MSA   = (1 << 1),
+};
+
 
 /* Return the number of CPU cores detected on this device. */
-extern int         android_getCpuCount(void);
+extern int android_getCpuCount(void);
 
 /* The following is used to force the CPU count and features
  * mask in sandboxed processes. Under 4.1 and higher, these processes

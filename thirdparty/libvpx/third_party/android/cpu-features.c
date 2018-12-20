@@ -28,6 +28,10 @@
 
 /* ChangeLog for this library:
  *
+ * NDK r10e?: Add MIPS MSA feature.
+ *
+ * NDK r10: Support for 64-bit CPUs (Intel, ARM & MIPS).
+ *
  * NDK r8d: Add android_setCpu().
  *
  * NDK r8c: Add new ARM CPU features: VFPv2, VFP_D32, VFP_FP16,
@@ -57,20 +61,17 @@
  * NDK r4: Initial release
  */
 
-#if defined(__le32__)
-
-// When users enter this, we should only provide interface and
-// libportable will give the implementations.
-
-#else // !__le32__
-
-#include <sys/system_properties.h>
-#include <pthread.h>
 #include "cpu-features.h"
+
+#include <dlfcn.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <errno.h>
+#include <string.h>
+#include <sys/system_properties.h>
+#include <unistd.h>
 
 static  pthread_once_t     g_once;
 static  int                g_inited;
@@ -82,15 +83,7 @@ static  int                g_cpuCount;
 static  uint32_t           g_cpuIdArm;
 #endif
 
-static const int  android_cpufeatures_debug = 0;
-
-#ifdef __arm__
-#  define DEFAULT_CPU_FAMILY  ANDROID_CPU_FAMILY_ARM
-#elif defined __i386__
-#  define DEFAULT_CPU_FAMILY  ANDROID_CPU_FAMILY_X86
-#else
-#  define DEFAULT_CPU_FAMILY  ANDROID_CPU_FAMILY_UNKNOWN
-#endif
+static const int android_cpufeatures_debug = 0;
 
 #define  D(...) \
     do { \
@@ -118,6 +111,25 @@ static __inline__ void x86_cpuid(int func, int values[4])
     values[2] = c;
     values[3] = d;
 }
+#elif defined(__x86_64__)
+static __inline__ void x86_cpuid(int func, int values[4])
+{
+    int64_t a, b, c, d;
+    /* We need to preserve ebx since we're compiling PIC code */
+    /* this means we can't use "=b" for the second output register */
+    __asm__ __volatile__ ( \
+      "push %%rbx\n"
+      "cpuid\n" \
+      "mov %%rbx, %1\n"
+      "pop %%rbx\n"
+      : "=a" (a), "=r" (b), "=c" (c), "=d" (d) \
+      : "a" (func) \
+    );
+    values[0] = a;
+    values[1] = b;
+    values[2] = c;
+    values[3] = d;
+}
 #endif
 
 /* Get the size of a file by reading it until the end. This is needed
@@ -127,7 +139,8 @@ static __inline__ void x86_cpuid(int func, int values[4])
 static int
 get_file_size(const char* pathname)
 {
-    int fd, result = 0;
+
+   int fd, result = 0;
     char buffer[256];
 
     fd = open(pathname, O_RDONLY);
@@ -187,6 +200,7 @@ read_file(const char*  pathname, char*  buffer, size_t  buffsize)
     return count;
 }
 
+#ifdef __arm__
 /* Extract the content of a the first occurence of a given field in
  * the content of /proc/cpuinfo and return it as a heap-allocated
  * string that must be freed by the caller.
@@ -199,7 +213,7 @@ extract_cpuinfo_field(const char* buffer, int buflen, const char* field)
     int  fieldlen = strlen(field);
     const char* bufend = buffer + buflen;
     char* result = NULL;
-    int len, ignore;
+    int len;
     const char *p, *q;
 
     /* Look for first field occurence, and ensures it starts the line. */
@@ -272,6 +286,7 @@ has_list_item(const char* list, const char* item)
     }
     return 0;
 }
+#endif /* __arm__ */
 
 /* Parse a number starting from 'input', but not going further
  * than 'limit'. Return the value into '*result'.
@@ -316,11 +331,13 @@ parse_decimal(const char* input, const char* limit, int* result)
     return parse_number(input, limit, 10, result);
 }
 
+#ifdef __arm__
 static const char*
 parse_hexadecimal(const char* input, const char* limit, int* result)
 {
     return parse_number(input, limit, 16, result);
 }
+#endif /* __arm__ */
 
 /* This small data type is used to represent a CPU list / mask, as read
  * from sysfs on Linux. See http://www.kernel.org/doc/Documentation/cputopology.txt
@@ -432,6 +449,18 @@ cpulist_read_from(CpuList* list, const char* filename)
 
     cpulist_parse(list, file, filelen);
 }
+#if defined(__aarch64__)
+// see <uapi/asm/hwcap.h> kernel header
+#define HWCAP_FP                (1 << 0)
+#define HWCAP_ASIMD             (1 << 1)
+#define HWCAP_AES               (1 << 3)
+#define HWCAP_PMULL             (1 << 4)
+#define HWCAP_SHA1              (1 << 5)
+#define HWCAP_SHA2              (1 << 6)
+#define HWCAP_CRC32             (1 << 7)
+#endif
+
+#if defined(__arm__)
 
 // See <asm/hwcap.h> kernel header.
 #define HWCAP_VFP       (1 << 6)
@@ -443,27 +472,84 @@ cpulist_read_from(CpuList* list, const char* filename)
 #define HWCAP_IDIVA     (1 << 17)
 #define HWCAP_IDIVT     (1 << 18)
 
+// see <uapi/asm/hwcap.h> kernel header
+#define HWCAP2_AES     (1 << 0)
+#define HWCAP2_PMULL   (1 << 1)
+#define HWCAP2_SHA1    (1 << 2)
+#define HWCAP2_SHA2    (1 << 3)
+#define HWCAP2_CRC32   (1 << 4)
+
+// This is the list of 32-bit ARMv7 optional features that are _always_
+// supported by ARMv8 CPUs, as mandated by the ARM Architecture Reference
+// Manual.
+#define HWCAP_SET_FOR_ARMV8  \
+  ( HWCAP_VFP | \
+    HWCAP_NEON | \
+    HWCAP_VFPv3 | \
+    HWCAP_VFPv4 | \
+    HWCAP_IDIVA | \
+    HWCAP_IDIVT )
+#endif
+
+#if defined(__mips__)
+// see <uapi/asm/hwcap.h> kernel header
+#define HWCAP_MIPS_R6           (1 << 0)
+#define HWCAP_MIPS_MSA          (1 << 1)
+#endif
+
+#if defined(__arm__) || defined(__aarch64__) || defined(__mips__)
+
 #define AT_HWCAP 16
+#define AT_HWCAP2 26
+
+// Probe the system's C library for a 'getauxval' function and call it if
+// it exits, or return 0 for failure. This function is available since API
+// level 20.
+//
+// This code does *NOT* check for '__ANDROID_API__ >= 20' to support the
+// edge case where some NDK developers use headers for a platform that is
+// newer than the one really targetted by their application.
+// This is typically done to use newer native APIs only when running on more
+// recent Android versions, and requires careful symbol management.
+//
+// Note that getauxval() can't really be re-implemented here, because
+// its implementation does not parse /proc/self/auxv. Instead it depends
+// on values  that are passed by the kernel at process-init time to the
+// C runtime initialization layer.
+static uint32_t
+get_elf_hwcap_from_getauxval(int hwcap_type) {
+    typedef unsigned long getauxval_func_t(unsigned long);
+
+    dlerror();
+    void* libc_handle = dlopen("libc.so", RTLD_NOW);
+    if (!libc_handle) {
+        D("Could not dlopen() C library: %s\n", dlerror());
+        return 0;
+    }
+
+    uint32_t ret = 0;
+    getauxval_func_t* func = (getauxval_func_t*)
+            dlsym(libc_handle, "getauxval");
+    if (!func) {
+        D("Could not find getauxval() in C library\n");
+    } else {
+        // Note: getauxval() returns 0 on failure. Doesn't touch errno.
+        ret = (uint32_t)(*func)(hwcap_type);
+    }
+    dlclose(libc_handle);
+    return ret;
+}
+#endif
 
 #if defined(__arm__)
-/* Compute the ELF HWCAP flags.
- */
+// Parse /proc/self/auxv to extract the ELF HW capabilities bitmap for the
+// current CPU. Note that this file is not accessible from regular
+// application processes on some Android platform releases.
+// On success, return new ELF hwcaps, or 0 on failure.
 static uint32_t
-get_elf_hwcap(const char* cpuinfo, int cpuinfo_len)
-{
-  /* IMPORTANT:
-   *   Accessing /proc/self/auxv doesn't work anymore on all
-   *   platform versions. More specifically, when running inside
-   *   a regular application process, most of /proc/self/ will be
-   *   non-readable, including /proc/self/auxv. This doesn't
-   *   happen however if the application is debuggable, or when
-   *   running under the "shell" UID, which is why this was not
-   *   detected appropriately.
-   */
-#if 0
-    uint32_t result = 0;
+get_elf_hwcap_from_proc_self_auxv(void) {
     const char filepath[] = "/proc/self/auxv";
-    int fd = open(filepath, O_RDONLY);
+    int fd = TEMP_FAILURE_RETRY(open(filepath, O_RDONLY));
     if (fd < 0) {
         D("Could not open %s: %s\n", filepath, strerror(errno));
         return 0;
@@ -471,11 +557,10 @@ get_elf_hwcap(const char* cpuinfo, int cpuinfo_len)
 
     struct { uint32_t tag; uint32_t value; } entry;
 
+    uint32_t result = 0;
     for (;;) {
-        int ret = read(fd, (char*)&entry, sizeof entry);
+        int ret = TEMP_FAILURE_RETRY(read(fd, (char*)&entry, sizeof entry));
         if (ret < 0) {
-            if (errno == EINTR)
-                continue;
             D("Error while reading %s: %s\n", filepath, strerror(errno));
             break;
         }
@@ -489,12 +574,33 @@ get_elf_hwcap(const char* cpuinfo, int cpuinfo_len)
     }
     close(fd);
     return result;
-#else
-    // Recreate ELF hwcaps by parsing /proc/cpuinfo Features tag.
+}
+
+/* Compute the ELF HWCAP flags from the content of /proc/cpuinfo.
+ * This works by parsing the 'Features' line, which lists which optional
+ * features the device's CPU supports, on top of its reference
+ * architecture.
+ */
+static uint32_t
+get_elf_hwcap_from_proc_cpuinfo(const char* cpuinfo, int cpuinfo_len) {
     uint32_t hwcaps = 0;
+    long architecture = 0;
+    char* cpuArch = extract_cpuinfo_field(cpuinfo, cpuinfo_len, "CPU architecture");
+    if (cpuArch) {
+        architecture = strtol(cpuArch, NULL, 10);
+        free(cpuArch);
+
+        if (architecture >= 8L) {
+            // This is a 32-bit ARM binary running on a 64-bit ARM64 kernel.
+            // The 'Features' line only lists the optional features that the
+            // device's CPU supports, compared to its reference architecture
+            // which are of no use for this process.
+            D("Faking 32-bit ARM HWCaps on ARMv%ld CPU\n", architecture);
+            return HWCAP_SET_FOR_ARMV8;
+        }
+    }
 
     char* cpuFeatures = extract_cpuinfo_field(cpuinfo, cpuinfo_len, "Features");
-
     if (cpuFeatures != NULL) {
         D("Found cpuFeatures = '%s'\n", cpuFeatures);
 
@@ -520,7 +626,6 @@ get_elf_hwcap(const char* cpuinfo, int cpuinfo_len)
         free(cpuFeatures);
     }
     return hwcaps;
-#endif
 }
 #endif  /* __arm__ */
 
@@ -609,9 +714,6 @@ android_cpuInit(void)
 
 #ifdef __arm__
     {
-        char*  features = NULL;
-        char*  architecture = NULL;
-
         /* Extract architecture from the "CPU Architecture" field.
          * The list is well-known, unlike the the output of
          * the 'Processor' field which can vary greatly.
@@ -632,10 +734,7 @@ android_cpuInit(void)
             /* read the initial decimal number, ignore the rest */
             archNumber = strtol(cpuArch, &end, 10);
 
-            /* Here we assume that ARMv8 will be upwards compatible with v7
-             * in the future. Unfortunately, there is no 'Features' field to
-             * indicate that Thumb-2 is supported.
-             */
+            /* Note that ARMv8 is upwards compatible with ARMv7. */
             if (end > cpuArch && archNumber >= 7) {
                 hasARMv7 = 1;
             }
@@ -676,7 +775,19 @@ android_cpuInit(void)
         }
 
         /* Extract the list of CPU features from ELF hwcaps */
-        uint32_t hwcaps = get_elf_hwcap(cpuinfo, cpuinfo_len);
+        uint32_t hwcaps = 0;
+        hwcaps = get_elf_hwcap_from_getauxval(AT_HWCAP);
+        if (!hwcaps) {
+            D("Parsing /proc/self/auxv to extract ELF hwcaps!\n");
+            hwcaps = get_elf_hwcap_from_proc_self_auxv();
+        }
+        if (!hwcaps) {
+            // Parsing /proc/self/auxv will fail from regular application
+            // processes on some Android platform versions, when this happens
+            // parse proc/cpuinfo instead.
+            D("Parsing /proc/cpuinfo to extract ELF hwcaps!\n");
+            hwcaps = get_elf_hwcap_from_proc_cpuinfo(cpuinfo, cpuinfo_len);
+        }
 
         if (hwcaps != 0) {
             int has_vfp = (hwcaps & HWCAP_VFP);
@@ -737,6 +848,27 @@ android_cpuInit(void)
                 g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_iWMMXt;
         }
 
+        /* Extract the list of CPU features from ELF hwcaps2 */
+        uint32_t hwcaps2 = 0;
+        hwcaps2 = get_elf_hwcap_from_getauxval(AT_HWCAP2);
+        if (hwcaps2 != 0) {
+            int has_aes     = (hwcaps2 & HWCAP2_AES);
+            int has_pmull   = (hwcaps2 & HWCAP2_PMULL);
+            int has_sha1    = (hwcaps2 & HWCAP2_SHA1);
+            int has_sha2    = (hwcaps2 & HWCAP2_SHA2);
+            int has_crc32   = (hwcaps2 & HWCAP2_CRC32);
+
+            if (has_aes)
+                g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_AES;
+            if (has_pmull)
+                g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_PMULL;
+            if (has_sha1)
+                g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_SHA1;
+            if (has_sha2)
+                g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_SHA2;
+            if (has_crc32)
+                g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_CRC32;
+        }
         /* Extract the cpuid value from various fields */
         // The CPUID value is broken up in several entries in /proc/cpuinfo.
         // This table is used to rebuild it from the entries.
@@ -806,10 +938,64 @@ android_cpuInit(void)
                 g_cpuFeatures |= entry->or_flags;
         }
 
+        // Special case: The emulator-specific Android 4.2 kernel fails
+        // to report support for the 32-bit ARM IDIV instruction.
+        // Technically, this is a feature of the virtual CPU implemented
+        // by the emulator. Note that it could also support Thumb IDIV
+        // in the future, and this will have to be slightly updated.
+        char* hardware = extract_cpuinfo_field(cpuinfo,
+                                               cpuinfo_len,
+                                               "Hardware");
+        if (hardware) {
+            if (!strcmp(hardware, "Goldfish") &&
+                g_cpuIdArm == 0x4100c080 &&
+                (g_cpuFamily & ANDROID_CPU_ARM_FEATURE_ARMv7) != 0) {
+                g_cpuFeatures |= ANDROID_CPU_ARM_FEATURE_IDIV_ARM;
+            }
+            free(hardware);
+        }
     }
 #endif /* __arm__ */
+#ifdef __aarch64__
+    {
+        /* Extract the list of CPU features from ELF hwcaps */
+        uint32_t hwcaps = 0;
+        hwcaps = get_elf_hwcap_from_getauxval(AT_HWCAP);
+        if (hwcaps != 0) {
+            int has_fp      = (hwcaps & HWCAP_FP);
+            int has_asimd   = (hwcaps & HWCAP_ASIMD);
+            int has_aes     = (hwcaps & HWCAP_AES);
+            int has_pmull   = (hwcaps & HWCAP_PMULL);
+            int has_sha1    = (hwcaps & HWCAP_SHA1);
+            int has_sha2    = (hwcaps & HWCAP_SHA2);
+            int has_crc32   = (hwcaps & HWCAP_CRC32);
 
-#ifdef __i386__
+            if(has_fp == 0) {
+                D("ERROR: Floating-point unit missing, but is required by Android on AArch64 CPUs\n");
+            }
+            if(has_asimd == 0) {
+                D("ERROR: ASIMD unit missing, but is required by Android on AArch64 CPUs\n");
+            }
+
+            if (has_fp)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_FP;
+            if (has_asimd)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_ASIMD;
+            if (has_aes)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_AES;
+            if (has_pmull)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_PMULL;
+            if (has_sha1)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_SHA1;
+            if (has_sha2)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_SHA2;
+            if (has_crc32)
+                g_cpuFeatures |= ANDROID_CPU_ARM64_FEATURE_CRC32;
+        }
+    }
+#endif /* __aarch64__ */
+
+#if defined(__i386__) || defined(__x86_64__)
     int regs[4];
 
 /* According to http://en.wikipedia.org/wiki/CPUID */
@@ -829,10 +1015,50 @@ android_cpuInit(void)
     if ((regs[2] & (1 << 23)) != 0) {
         g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_POPCNT;
     }
+    if ((regs[2] & (1 << 19)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_SSE4_1;
+    }
+    if ((regs[2] & (1 << 20)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_SSE4_2;
+    }
     if (vendorIsIntel && (regs[2] & (1 << 22)) != 0) {
         g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_MOVBE;
     }
+    if ((regs[2] & (1 << 25)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_AES_NI;
+    }
+    if ((regs[2] & (1 << 28)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_AVX;
+    }
+    if ((regs[2] & (1 << 30)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_RDRAND;
+    }
+
+    x86_cpuid(7, regs);
+    if ((regs[1] & (1 << 5)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_AVX2;
+    }
+    if ((regs[1] & (1 << 29)) != 0) {
+        g_cpuFeatures |= ANDROID_CPU_X86_FEATURE_SHA_NI;
+    }
+
+
 #endif
+#if defined( __mips__)
+    {   /* MIPS and MIPS64 */
+        /* Extract the list of CPU features from ELF hwcaps */
+        uint32_t hwcaps = 0;
+        hwcaps = get_elf_hwcap_from_getauxval(AT_HWCAP);
+        if (hwcaps != 0) {
+            int has_r6      = (hwcaps & HWCAP_MIPS_R6);
+            int has_msa     = (hwcaps & HWCAP_MIPS_MSA);
+            if (has_r6)
+                g_cpuFeatures |= ANDROID_CPU_MIPS_FEATURE_R6;
+            if (has_msa)
+                g_cpuFeatures |= ANDROID_CPU_MIPS_FEATURE_MSA;
+        }
+    }
+#endif /* __mips__ */
 
     free(cpuinfo);
 }
@@ -1085,5 +1311,3 @@ android_setCpuArm(int cpu_count, uint64_t cpu_features, uint32_t cpu_id)
  * ARCH_NEON_FP16 (+EXT_FP16)
  *
  */
-
-#endif // defined(__le32__)
