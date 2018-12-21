@@ -2,6 +2,7 @@
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
@@ -30,8 +31,6 @@ uniform vec4 src_rect;
 #endif
 
 uniform highp float time;
-
-
 
 #ifdef USE_LIGHTING
 
@@ -62,7 +61,6 @@ const bool at_light_pass = true;
 const bool at_light_pass = false;
 #endif
 
-
 /* clang-format off */
 
 VERTEX_SHADER_GLOBALS
@@ -79,7 +77,6 @@ vec2 select(vec2 a, vec2 b, bvec2 c) {
 }
 
 void main() {
-
 
 	vec4 color = color_attrib;
 
@@ -159,13 +156,13 @@ VERTEX_SHADER_CODE
 #endif
 
 #endif
-
 }
 
 /* clang-format off */
 [fragment]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
@@ -230,7 +227,6 @@ const bool at_light_pass = false;
 #endif
 
 uniform bool use_default_normal;
-
 
 /* clang-format off */
 

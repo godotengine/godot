@@ -2,6 +2,7 @@
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
@@ -29,6 +30,7 @@ void main() {
 [fragment]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
@@ -38,7 +40,6 @@ precision mediump int;
 
 varying highp vec4 position_interp;
 /* clang-format on */
-
 
 void main() {
 
