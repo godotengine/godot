@@ -71,7 +71,7 @@
 			Maximum number of allowed redirects.
 		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads">
-			If [code]true[/code] multithreading is used to improve performance.
+			If [code]true[/code], multithreading is used to improve performance.
 		</member>
 	</members>
 	<signals>

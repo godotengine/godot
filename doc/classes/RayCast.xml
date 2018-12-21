@@ -136,10 +136,10 @@
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
-			If [code]true[/code] collisions will be reported. Default value: [code]false[/code].
+			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].
 		</member>
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body">
-			If [code]true[/code] collisions will be ignored for this RayCast's immediate parent. Default value: [code]true[/code].
+			If [code]true[/code], collisions will be ignored for this RayCast's immediate parent. Default value: [code]true[/code].
 		</member>
 	</members>
 	<constants>

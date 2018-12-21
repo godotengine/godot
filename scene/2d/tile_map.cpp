@@ -327,7 +327,8 @@ void TileMap::update_dirty_quadrants() {
 			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
 			int z_index = tile_set->tile_get_z_index(c.id);
 
-			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE) {
+			if (tile_set->tile_get_tile_mode(c.id) == TileSet::AUTO_TILE ||
+					tile_set->tile_get_tile_mode(c.id) == TileSet::ATLAS_TILE) {
 				z_index += tile_set->autotile_get_z_index(c.id, Vector2(c.autotile_coord_x, c.autotile_coord_y));
 			}
 
@@ -839,7 +840,7 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 	Map<PosKey, Cell>::Element *E = tile_map.find(p);
 	if (E != NULL) {
 		int id = get_cell(p_x, p_y);
-		if (tile_set->tile_get_tile_mode(id) == TileSet::AUTO_TILE || tile_set->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
+		if (tile_set->tile_get_tile_mode(id) == TileSet::AUTO_TILE) {
 			uint16_t mask = 0;
 			if (tile_set->autotile_get_bitmask_mode(id) == TileSet::BITMASK_2X2) {
 				if (tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x, p_y - 1)) && tile_set->is_tile_bound(id, get_cell(p_x - 1, p_y))) {
@@ -903,7 +904,8 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 			PosKey qk(p_x / _get_quadrant_size(), p_y / _get_quadrant_size());
 			Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 			_make_quadrant_dirty(Q);
-		} else {
+
+		} else if (tile_set->tile_get_tile_mode(id) == TileSet::SINGLE_TILE) {
 			E->get().autotile_coord_x = 0;
 			E->get().autotile_coord_y = 0;
 		}
@@ -1628,6 +1630,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
+
+	ClassDB::bind_method(D_METHOD("get_cell_autotile_coord", "x", "y"), &TileMap::get_cell_autotile_coord);
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);

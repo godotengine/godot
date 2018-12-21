@@ -9,6 +9,13 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="new" qualifiers="vararg">
+			<return type="Object">
+			</return>
+			<description>
+				Returns a new instance of the script.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>

@@ -874,6 +874,9 @@ void TileSetEditor::_on_workspace_draw() {
 			draw_edited_region_subdivision();
 		} else {
 			int t_id = get_current_tile();
+			if (t_id < 0)
+				return;
+
 			Rect2i region;
 			if (draw_edited_region)
 				region = edited_region;
@@ -2260,7 +2263,7 @@ void TileSetEditor::update_workspace_tile_mode() {
 		tool_editmode[EDITMODE_BITMASK]->hide();
 		tool_editmode[EDITMODE_PRIORITY]->hide();
 		tool_editmode[EDITMODE_Z_INDEX]->hide();
-	} else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
+	} else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE) {
 		if (edit_mode == EDITMODE_ICON)
 			select_coord(tileset->autotile_get_icon_coordinate(get_current_tile()));
 		else

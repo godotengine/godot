@@ -405,7 +405,6 @@ InputEventMouse::InputEventMouse() {
 
 	button_mask = 0;
 	set_device(2);
-	//set_dev(MOUSE);
 }
 
 ///////////////////////////////////////

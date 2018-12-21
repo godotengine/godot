@@ -1064,6 +1064,7 @@ void AnimationNodeStateMachineEditor::_open_editor(const String &p_name) {
 }
 
 void AnimationNodeStateMachineEditor::_removed_from_graph() {
+
 	EditorNode::get_singleton()->edit_item(NULL);
 }
 
@@ -1073,7 +1074,9 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 
 	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1)
 
-	ERR_FAIL_COND(new_name == prev_name);
+	if (new_name == prev_name) {
+		return; // Nothing to do.
+	}
 
 	String base_name = new_name;
 	int base = 1;
@@ -1097,7 +1100,13 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 	name_edit->hide();
 }
 
+void AnimationNodeStateMachineEditor::_name_edited_focus_out() {
+
+	_name_edited(name_edit->get_text());
+}
+
 void AnimationNodeStateMachineEditor::_scroll_changed(double) {
+
 	if (updating)
 		return;
 
@@ -1215,6 +1224,7 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_add_animation_type", &AnimationNodeStateMachineEditor::_add_animation_type);
 
 	ClassDB::bind_method("_name_edited", &AnimationNodeStateMachineEditor::_name_edited);
+	ClassDB::bind_method("_name_edited_focus_out", &AnimationNodeStateMachineEditor::_name_edited_focus_out);
 
 	ClassDB::bind_method("_removed_from_graph", &AnimationNodeStateMachineEditor::_removed_from_graph);
 
@@ -1354,6 +1364,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_draw->add_child(name_edit);
 	name_edit->hide();
 	name_edit->connect("text_entered", this, "_name_edited");
+	name_edit->connect("focus_exited", this, "_name_edited_focus_out");
 	name_edit->set_as_toplevel(true);
 
 	open_file = memnew(EditorFileDialog);

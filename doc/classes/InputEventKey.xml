@@ -22,10 +22,10 @@
 	</methods>
 	<members>
 		<member name="echo" type="bool" setter="set_echo" getter="is_echo">
-			If [code]true[/code] the key was already pressed before this event. It means the user is holding the key down.
+			If [code]true[/code], the key was already pressed before this event. It means the user is holding the key down.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			If [code]true[/code] the key's state is pressed. If [code]false[/code] the key's state is released.
+			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
 			Key scancode, one of the [code]KEY_*[/code] constants in [@GlobalScope].

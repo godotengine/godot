@@ -180,7 +180,6 @@ public:
 	//void set_dev(DeviceId p_dev);
 	//DeviceId get_dev() const;
 
-
 	bool is_action(const StringName &p_action) const;
 	bool is_action_pressed(const StringName &p_action) const;
 	bool is_action_released(const StringName &p_action) const;

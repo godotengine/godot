@@ -81,10 +81,10 @@
 			The font size.
 		</member>
 		<member name="use_filter" type="bool" setter="set_use_filter" getter="get_use_filter">
-			If [code]true[/code] filtering is used.
+			If [code]true[/code], filtering is used.
 		</member>
 		<member name="use_mipmaps" type="bool" setter="set_use_mipmaps" getter="get_use_mipmaps">
-			If [code]true[/code] mipmapping is used.
+			If [code]true[/code], mipmapping is used.
 		</member>
 	</members>
 	<constants>

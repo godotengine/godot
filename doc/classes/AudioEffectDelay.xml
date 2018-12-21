@@ -18,7 +18,7 @@
 			Output percent of original sound. At 0, only delayed sounds are output. Value can range from 0 to 1. Default value: [code]1[/code].
 		</member>
 		<member name="feedback/active" type="bool" setter="set_feedback_active" getter="is_feedback_active">
-			If [code]true[/code] feedback is enabled. Default value: [code]false[/code].
+			If [code]true[/code], feedback is enabled. Default value: [code]false[/code].
 		</member>
 		<member name="feedback/delay_ms" type="float" setter="set_feedback_delay_ms" getter="get_feedback_delay_ms">
 			Feedback delay time in milliseconds. Default value: [code]340[/code].

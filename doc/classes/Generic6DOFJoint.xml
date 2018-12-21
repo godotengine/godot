@@ -18,7 +18,7 @@
 			The lower, the longer an impulse from one side takes to travel to the other side.
 		</member>
 		<member name="angular_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] rotation across the x-axis is limited.
+			If [code]true[/code], rotation across the x-axis is limited.
 		</member>
 		<member name="angular_limit_x/erp" type="float" setter="set_param_x" getter="get_param_x">
 			When rotating across x-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -42,7 +42,7 @@
 			The amount of rotational damping across the y-axis. The lower, the more dampening occurs.
 		</member>
 		<member name="angular_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] rotation across the y-axis is limited.
+			If [code]true[/code], rotation across the y-axis is limited.
 		</member>
 		<member name="angular_limit_y/erp" type="float" setter="set_param_y" getter="get_param_y">
 			When rotating across y-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -66,7 +66,7 @@
 			The amount of rotational damping across the z-axis. The lower, the more dampening occurs.
 		</member>
 		<member name="angular_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] rotation across the z-axis is limited.
+			If [code]true[/code], rotation across the z-axis is limited.
 		</member>
 		<member name="angular_limit_z/erp" type="float" setter="set_param_z" getter="get_param_z">
 			When rotating across z-axis, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
@@ -87,7 +87,7 @@
 			The minimum rotation in positive direction to break loose and rotate around the z-axis.
 		</member>
 		<member name="angular_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] a rotating motor at the x-axis is enabled.
+			If [code]true[/code], a rotating motor at the x-axis is enabled.
 		</member>
 		<member name="angular_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
 			Maximum acceleration for the motor at the x-axis.
@@ -96,7 +96,7 @@
 			Target speed for the motor at the x-axis.
 		</member>
 		<member name="angular_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] a rotating motor at the y-axis is enabled.
+			If [code]true[/code], a rotating motor at the y-axis is enabled.
 		</member>
 		<member name="angular_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
 			Maximum acceleration for the motor at the y-axis.
@@ -105,7 +105,7 @@
 			Target speed for the motor at the y-axis.
 		</member>
 		<member name="angular_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] a rotating motor at the z-axis is enabled.
+			If [code]true[/code], a rotating motor at the z-axis is enabled.
 		</member>
 		<member name="angular_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
 			Maximum acceleration for the motor at the z-axis.
@@ -141,7 +141,7 @@
 			The amount of damping that happens at the x-motion.
 		</member>
 		<member name="linear_limit_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] the linear motion across the x-axis is limited.
+			If [code]true[/code], the linear motion across the x-axis is limited.
 		</member>
 		<member name="linear_limit_x/lower_distance" type="float" setter="set_param_x" getter="get_param_x">
 			The minimum difference between the pivot points' x-axis.
@@ -159,7 +159,7 @@
 			The amount of damping that happens at the y-motion.
 		</member>
 		<member name="linear_limit_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] the linear motion across the y-axis is limited.
+			If [code]true[/code], the linear motion across the y-axis is limited.
 		</member>
 		<member name="linear_limit_y/lower_distance" type="float" setter="set_param_y" getter="get_param_y">
 			The minimum difference between the pivot points' y-axis.
@@ -177,7 +177,7 @@
 			The amount of damping that happens at the z-motion.
 		</member>
 		<member name="linear_limit_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] the linear motion across the z-axis is limited.
+			If [code]true[/code], the linear motion across the z-axis is limited.
 		</member>
 		<member name="linear_limit_z/lower_distance" type="float" setter="set_param_z" getter="get_param_z">
 			The minimum difference between the pivot points' z-axis.
@@ -192,7 +192,7 @@
 			The maximum difference between the pivot points' z-axis.
 		</member>
 		<member name="linear_motor_x/enabled" type="bool" setter="set_flag_x" getter="get_flag_x">
-			If [code]true[/code] then there is a linear motor on the x-axis. It will attempt to reach the target velocity while staying within the force limits.
+			If [code]true[/code], then there is a linear motor on the x-axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
 		<member name="linear_motor_x/force_limit" type="float" setter="set_param_x" getter="get_param_x">
 			The maximum force the linear motor can apply on the x-axis while trying to reach the target velocity.
@@ -201,7 +201,7 @@
 			The speed that the linear motor will attempt to reach on the x-axis.
 		</member>
 		<member name="linear_motor_y/enabled" type="bool" setter="set_flag_y" getter="get_flag_y">
-			If [code]true[/code] then there is a linear motor on the y-axis. It will attempt to reach the target velocity while staying within the force limits.
+			If [code]true[/code], then there is a linear motor on the y-axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
 		<member name="linear_motor_y/force_limit" type="float" setter="set_param_y" getter="get_param_y">
 			The maximum force the linear motor can apply on the y-axis while trying to reach the target velocity.
@@ -210,7 +210,7 @@
 			The speed that the linear motor will attempt to reach on the y-axis.
 		</member>
 		<member name="linear_motor_z/enabled" type="bool" setter="set_flag_z" getter="get_flag_z">
-			If [code]true[/code] then there is a linear motor on the z-axis. It will attempt to reach the target velocity while staying within the force limits.
+			If [code]true[/code], then there is a linear motor on the z-axis. It will attempt to reach the target velocity while staying within the force limits.
 		</member>
 		<member name="linear_motor_z/force_limit" type="float" setter="set_param_z" getter="get_param_z">
 			The maximum force the linear motor can apply on the z-axis while trying to reach the target velocity.

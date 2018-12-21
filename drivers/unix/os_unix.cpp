@@ -202,6 +202,12 @@ uint64_t OS_Unix::get_system_time_secs() const {
 	return uint64_t(tv_now.tv_sec);
 }
 
+uint64_t OS_Unix::get_system_time_msecs() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	return uint64_t(tv_now.tv_sec * 1000 + tv_now.tv_usec / 1000);
+}
+
 OS::Date OS_Unix::get_date(bool utc) const {
 
 	time_t t = time(NULL);

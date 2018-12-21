@@ -20,7 +20,7 @@
 			The number of columns in the sprite sheet.
 		</member>
 		<member name="region_enabled" type="bool" setter="set_region" getter="is_region">
-			If [code]true[/code] texture will be cut from a larger atlas texture. See [member region_rect]. Default value: [code]false[/code].
+			If [code]true[/code], texture will be cut from a larger atlas texture. See [member region_rect]. Default value: [code]false[/code].
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].

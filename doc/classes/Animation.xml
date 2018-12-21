@@ -513,7 +513,7 @@
 			<argument index="1" name="interpolation" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the track at [code]idx[/code] wraps the interpolation loop.
+				If [code]true[/code], the track at [code]idx[/code] wraps the interpolation loop.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
