@@ -1129,8 +1129,11 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 void CodeTextEditor::set_error(const String &p_error) {
 
 	error->set_text(p_error);
-	error->set_tooltip(p_error);
-	error->set_visible(p_error != "");
+	if (p_error != "") {
+		error->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	} else {
+		error->set_default_cursor_shape(CURSOR_ARROW);
+	}
 }
 
 void CodeTextEditor::set_error_pos(int p_line, int p_column) {
@@ -1138,10 +1141,12 @@ void CodeTextEditor::set_error_pos(int p_line, int p_column) {
 	error_column = p_column;
 }
 
-void CodeTextEditor::_error_pressed() {
-	text_editor->cursor_set_line(error_line);
-	text_editor->cursor_set_column(error_column);
-	text_editor->center_viewport_to_cursor();
+void CodeTextEditor::goto_error() {
+	if (error->get_text() != "") {
+		text_editor->cursor_set_line(error_line);
+		text_editor->cursor_set_column(error_column);
+		text_editor->center_viewport_to_cursor();
+	}
 }
 
 void CodeTextEditor::_update_font() {
@@ -1204,7 +1209,6 @@ void CodeTextEditor::_bind_methods() {
 	ClassDB::bind_method("_code_complete_timer_timeout", &CodeTextEditor::_code_complete_timer_timeout);
 	ClassDB::bind_method("_complete_request", &CodeTextEditor::_complete_request);
 	ClassDB::bind_method("_font_resize_timeout", &CodeTextEditor::_font_resize_timeout);
-	ClassDB::bind_method("_error_pressed", &CodeTextEditor::_error_pressed);
 
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
@@ -1254,19 +1258,14 @@ CodeTextEditor::CodeTextEditor() {
 	error_line = 0;
 	error_column = 0;
 
-	Control *error_box = memnew(Control);
-	status_bar->add_child(error_box);
-	error_box->set_v_size_flags(SIZE_EXPAND_FILL);
-	error_box->set_h_size_flags(SIZE_EXPAND_FILL);
-	error_box->set_clip_contents(true);
-
-	error = memnew(LinkButton);
-	error_box->add_child(error);
-	error->set_anchors_and_margins_preset(Control::PRESET_CENTER_LEFT);
-	error->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+	error = memnew(Label);
+	status_bar->add_child(error);
+	error->set_autowrap(true);
+	error->set_valign(Label::VALIGN_CENTER);
+	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
 	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 	error->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-	error->connect("pressed", this, "_error_pressed");
+	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	find_replace_bar->connect("error", error, "set_text");
 
 	status_bar->add_child(memnew(Label)); //to keep the height if the other labels are not visible
