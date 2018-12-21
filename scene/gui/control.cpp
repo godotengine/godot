@@ -2198,10 +2198,9 @@ void Control::set_tooltip(const String &p_tooltip) {
 }
 
 String Control::get_tooltip(const Point2 &p_pos) const {
-	
+
 	return data.tooltip.check_control_characters();
 }
-
 
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	if (get_script_instance()) {
