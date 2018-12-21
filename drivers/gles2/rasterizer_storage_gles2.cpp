@@ -4216,9 +4216,13 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	glGenTextures(1, &cls->distance);
 	glBindTexture(GL_TEXTURE_2D, cls->distance);
 	if (config.use_rgba_2d_shadows) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	} else {
+#ifdef GLES_OVER_GL
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, GL_RED, GL_FLOAT, NULL);
+#else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_FLOAT, cls->size, cls->height, 0, GL_RED, GL_FLOAT, NULL);
+#endif
 	}
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -4634,8 +4638,12 @@ void RasterizerStorageGLES2::initialize() {
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
-	config.use_rgba_2d_shadows = false;
 
+#ifdef GLES_OVER_GL
+	config.use_rgba_2d_shadows = false;
+#else
+	config.use_rgba_2d_shadows = config.extensions.has("GL_OES_texture_float");
+#endif
 	frame.count = 0;
 	frame.delta = 0;
 	frame.current_rt = NULL;
