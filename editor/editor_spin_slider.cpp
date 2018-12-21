@@ -320,6 +320,9 @@ String EditorSpinSlider::get_label() const {
 
 void EditorSpinSlider::_evaluate_input_text() {
 	String text = value_input->get_text();
+	// Replace comma with dot to support it as decimal separator (GH-6028)
+	text = text.replace(",", ".");
+
 	Ref<Expression> expr;
 	expr.instance();
 	Error err = expr->parse(text);
