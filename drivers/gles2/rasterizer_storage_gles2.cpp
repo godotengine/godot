@@ -56,6 +56,8 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 #define _DEPTH_COMPONENT24_OES 0x81A6
 
+#define _RED_OES 0x1903
+
 void RasterizerStorageGLES2::bind_quad_array() const {
 	glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
@@ -4209,7 +4211,7 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 
 	glGenRenderbuffers(1, &cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, cls->size, cls->height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, cls->size, cls->height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
@@ -4219,9 +4221,9 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cls->size, cls->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	} else {
 #ifdef GLES_OVER_GL
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
 #else
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_FLOAT, cls->size, cls->height, 0, GL_RED, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_FLOAT, cls->size, cls->height, 0, _RED_OES, GL_FLOAT, NULL);
 #endif
 	}
 
@@ -4642,7 +4644,7 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef GLES_OVER_GL
 	config.use_rgba_2d_shadows = false;
 #else
-	config.use_rgba_2d_shadows = config.extensions.has("GL_OES_texture_float");
+	config.use_rgba_2d_shadows = config.float_texture_supported && config.extensions.has("GL_EXT_texture_rg");
 #endif
 	frame.count = 0;
 	frame.delta = 0;
