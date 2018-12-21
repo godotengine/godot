@@ -4644,7 +4644,7 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef GLES_OVER_GL
 	config.use_rgba_2d_shadows = false;
 #else
-	config.use_rgba_2d_shadows = config.float_texture_supported && config.extensions.has("GL_EXT_texture_rg");
+	config.use_rgba_2d_shadows = !(config.float_texture_supported && config.extensions.has("GL_EXT_texture_rg"));
 #endif
 	frame.count = 0;
 	frame.delta = 0;
