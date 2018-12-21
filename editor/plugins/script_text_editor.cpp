@@ -280,6 +280,13 @@ void ScriptTextEditor::_toggle_warning_pannel(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void ScriptTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		code_editor->goto_error();
+	}
+}
+
 void ScriptTextEditor::_warning_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		code_editor->get_text_edit()->cursor_set_line(p_line.operator int64_t());
@@ -1101,6 +1108,7 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_lookup_symbol", &ScriptTextEditor::_lookup_symbol);
 	ClassDB::bind_method("_text_edit_gui_input", &ScriptTextEditor::_text_edit_gui_input);
 	ClassDB::bind_method("_toggle_warning_pannel", &ScriptTextEditor::_toggle_warning_pannel);
+	ClassDB::bind_method("_error_pressed", &ScriptTextEditor::_error_pressed);
 	ClassDB::bind_method("_warning_clicked", &ScriptTextEditor::_warning_clicked);
 	ClassDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
 
@@ -1437,6 +1445,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
+	code_editor->get_error_label()->connect("gui_input", this, "_error_pressed");
 	code_editor->get_warning_label()->connect("gui_input", this, "_toggle_warning_pannel");
 	code_editor->get_warning_count_label()->connect("gui_input", this, "_toggle_warning_pannel");
 	warnings_panel->connect("meta_clicked", this, "_warning_clicked");
