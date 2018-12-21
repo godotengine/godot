@@ -516,6 +516,12 @@ void TileMapEditor::_update_palette() {
 		manual_palette->set_current(selected);
 		manual_palette->show();
 	}
+
+	if (tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
+		manual_button->show();
+	} else {
+		manual_button->hide();
+	}
 }
 
 void TileMapEditor::_pick_tile(const Point2 &p_pos) {

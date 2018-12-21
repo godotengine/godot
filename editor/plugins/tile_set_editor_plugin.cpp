@@ -2260,7 +2260,7 @@ void TileSetEditor::update_workspace_tile_mode() {
 		tool_editmode[EDITMODE_BITMASK]->hide();
 		tool_editmode[EDITMODE_PRIORITY]->hide();
 		tool_editmode[EDITMODE_Z_INDEX]->hide();
-	} else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
+	} else if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE) {
 		if (edit_mode == EDITMODE_ICON)
 			select_coord(tileset->autotile_get_icon_coordinate(get_current_tile()));
 		else
