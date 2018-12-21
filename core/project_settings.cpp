@@ -43,8 +43,6 @@
 
 #include <zlib.h>
 
-#define FORMAT_VERSION 4
-
 ProjectSettings *ProjectSettings::singleton = NULL;
 
 ProjectSettings *ProjectSettings::get_singleton() {
@@ -271,9 +269,9 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack) {
 	return true;
 }
 
-void ProjectSettings::_convert_to_last_version() {
-	if (!has_setting("config_version") || (int)get_setting("config_version") <= 3) {
+void ProjectSettings::_convert_to_last_version(int p_from_version) {
 
+	if (p_from_version <= 3) {
 		// Converts the actions from array to dictionary (array of events to dictionary with deadzone + events)
 		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
 			Variant value = E->get().variant;
@@ -396,7 +394,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// Optional, we don't mind if it fails
 			_load_settings_text("res://override.cfg");
 		}
-
 		return err;
 	}
 
@@ -442,10 +439,6 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	if (resource_path.length() && resource_path[resource_path.length() - 1] == '/')
 		resource_path = resource_path.substr(0, resource_path.length() - 1); // chop end
-
-	// If we're loading a project.godot from source code, we can operate some
-	// ProjectSettings conversions if need be.
-	_convert_to_last_version();
 
 	return OK;
 }
@@ -537,8 +530,8 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 
 	int lines = 0;
 	String error_text;
-
 	String section;
+	int config_version = 0;
 
 	while (true) {
 
@@ -549,6 +542,9 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
+			// If we're loading a project.godot from source code, we can operate some
+			// ProjectSettings conversions if need be.
+			_convert_to_last_version(config_version);
 			return OK;
 		} else if (err != OK) {
 			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
@@ -558,13 +554,13 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 
 		if (assign != String()) {
 			if (section == String() && assign == "config_version") {
-				int config_version = value;
-				if (config_version > FORMAT_VERSION) {
+				config_version = value;
+				if (config_version > CONFIG_VERSION) {
 					memdelete(f);
-					ERR_FAIL_COND_V(config_version > FORMAT_VERSION, ERR_FILE_CANT_OPEN);
+					ERR_EXPLAIN(vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
+					ERR_FAIL_COND_V(config_version > CONFIG_VERSION, ERR_FILE_CANT_OPEN);
 				}
 			} else {
-				// config_version is checked and dropped
 				if (section == String()) {
 					set(assign, value);
 				} else {
@@ -740,7 +736,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	file->store_line(";   param=value ; assign values to parameters");
 	file->store_line("");
 
-	file->store_string("config_version=" + itos(FORMAT_VERSION) + "\n");
+	file->store_string("config_version=" + itos(CONFIG_VERSION) + "\n");
 	if (p_custom_features != String())
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
 	file->store_string("\n");
