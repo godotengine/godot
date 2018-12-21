@@ -106,7 +106,7 @@ protected:
 
 	Error _save_custom_bnd(const String &p_file);
 
-	void _convert_to_last_version();
+	void _convert_to_last_version(int p_from_version);
 
 	bool _load_resource_pack(const String &p_pack);
 
@@ -118,6 +118,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static const int CONFIG_VERSION = 4;
+
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
 
