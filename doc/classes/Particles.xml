@@ -49,7 +49,7 @@
 			The number of draw passes when rendering particles.
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
-			If [code]true[/code] particles are being emitted. Default value: [code]true[/code].
+			If [code]true[/code], particles are being emitted. Default value: [code]true[/code].
 		</member>
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio">
 			Time ratio between each emission. If [code]0[/code] particles are emitted continuously. If [code]1[/code] all particles are emitted simultaneously. Default value: [code]0[/code].
@@ -62,10 +62,10 @@
 			Amount of time each particle will exist. Default value: [code]1[/code].
 		</member>
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates">
-			If [code]true[/code] particles use the parent node's coordinate space. If [code]false[/code] they use global coordinates. Default value: [code]true[/code].
+			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates. Default value: [code]true[/code].
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot">
-			If [code]true[/code] only [code]amount[/code] particles will be emitted. Default value: [code]false[/code].
+			If [code]true[/code], only [code]amount[/code] particles will be emitted. Default value: [code]false[/code].
 		</member>
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time">
 			Amount of time to preprocess the particles before animation starts. Lets you start the animation some time after particles have started emitting.

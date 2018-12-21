@@ -17,10 +17,10 @@
 			Collision build mode. Use one of the [code]BUILD_*[/code] constants. Default value: [code]BUILD_SOLIDS[/code].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
-			If [code]true[/code] no collisions will be detected.
+			If [code]true[/code], no collisions will be detected.
 		</member>
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled">
-			If [code]true[/code] only edges that face up, relative to CollisionPolygon2D's rotation, will collide with other objects.
+			If [code]true[/code], only edges that face up, relative to CollisionPolygon2D's rotation, will collide with other objects.
 		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 			The polygon's list of vertices. The final point will be connected to the first.

@@ -1180,7 +1180,7 @@ void FileSystemDock::_make_dir_confirm() {
 	String dir_name = make_dir_dialog_text->get_text().strip_edges();
 
 	if (dir_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided"));
+		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
 		return;
 	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.find("*") != -1 ||
 			   dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {

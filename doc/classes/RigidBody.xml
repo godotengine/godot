@@ -21,7 +21,7 @@
 			<argument index="0" name="state" type="PhysicsDirectBodyState">
 			</argument>
 			<description>
-				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
+				Called during physics processing, allowing you to read and safely modify the simulation state for the object. By default, it works in addition to the usual physics behavior, but [method set_use_custom_integrator] allows you to disable the default behavior and do fully custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_central_force">
@@ -130,20 +130,20 @@
 			RigidBody's bounciness.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep">
-			If [code]true[/code] the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
+			If [code]true[/code], the RigidBody will not calculate forces and will act as a static body while there is no movement. It will wake up when forces are applied through other collisions or when the [code]apply_impulse[/code] method is used.
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled">
-			If [code]true[/code] the RigidBody will emit signals when it collides with another RigidBody.
+			If [code]true[/code], the RigidBody will emit signals when it collides with another RigidBody.
 		</member>
 		<member name="contacts_reported" type="int" setter="set_max_contacts_reported" getter="get_max_contacts_reported">
 			The maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection">
-			If [code]true[/code] continuous collision detection is used.
+			If [code]true[/code], continuous collision detection is used.
 			Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided. Continuous collision detection is more precise, and misses less impacts by small, fast-moving objects. Not using continuous collision detection is faster to compute, but can miss small, fast-moving objects.
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator">
-			If [code]true[/code] internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
+			If [code]true[/code], internal force integration will be disabled (like gravity or air friction) for this body. Other than collision response, the body will only move as determined by the [method _integrate_forces] function, if defined.
 		</member>
 		<member name="friction" type="float" setter="set_friction" getter="get_friction">
 			The body's friction, from 0 (frictionless) to 1 (max friction).
@@ -166,7 +166,7 @@
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping">
-			If [code]true[/code] the body is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
+			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or the [code]apply_impulse[/code] method.
 		</member>
 		<member name="weight" type="float" setter="set_weight" getter="get_weight">
 			The body's weight based on its mass and the global 3D gravity. Global values are set in "Project &gt; Project Settings &gt; Physics &gt; 3d".

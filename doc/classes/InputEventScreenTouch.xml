@@ -22,7 +22,7 @@
 			Touch position.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
-			If [code]true[/code] the touch's state is pressed. If [code]false[/code] the touch's state is released.
+			If [code]true[/code], the touch's state is pressed. If [code]false[/code], the touch's state is released.
 		</member>
 	</members>
 	<constants>

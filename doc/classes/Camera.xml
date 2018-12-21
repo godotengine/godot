@@ -138,7 +138,7 @@
 			The culling mask that describes which 3D render layers are rendered by this camera.
 		</member>
 		<member name="current" type="bool" setter="set_current" getter="is_current">
-			If [code]true[/code] the ancestor [Viewport] is currently using this Camera. Default value: [code]false[/code].
+			If [code]true[/code], the ancestor [Viewport] is currently using this Camera. Default value: [code]false[/code].
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking">
 			If not [code]DOPPLER_TRACKING_DISABLED[/code] this Camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. Default value: [code]DOPPLER_TRACKING_DISABLED[/code].

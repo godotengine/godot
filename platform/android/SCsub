@@ -21,11 +21,6 @@ android_files = [
 #    'power_android.cpp'
 ]
 
-thirdparty_files = [
-    'ifaddrs_android.cpp',
-    'cpu-features.c',
-]
-
 env_android = env.Clone()
 if env['target'] == "profile":
     env_android.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
@@ -36,13 +31,9 @@ for x in android_files:
 
 env_thirdparty = env_android.Clone()
 env_thirdparty.disable_warnings()
-for x in thirdparty_files:
-    android_objects.append(env_thirdparty.SharedObject(x))
-
-prog = None
+android_objects.append(env_thirdparty.SharedObject('#thirdparty/misc/ifaddrs-android.cc'))
 
 abspath = env.Dir(".").abspath
-
 
 with open_utf8(abspath + "/build.gradle.template", "r") as gradle_basein:
 	gradle_text = gradle_basein.read()
@@ -108,7 +99,7 @@ for x in env.android_asset_dirs:
 gradle_default_config_text = ""
 
 minSdk = 18
-targetSdk = 27
+targetSdk = 28
 
 for x in env.android_default_config:
     if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk:

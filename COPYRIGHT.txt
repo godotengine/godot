@@ -55,30 +55,15 @@ Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-3.0
 
-Files: ./platform/android/android_native_app_glue.c
- ./platform/android/android_native_app_glue.h
- ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
+Files: ./platform/android/java/aidl/com/android/vending/billing/IInAppBillingService.aidl
  ./platform/android/java/res/layout/status_bar_ongoing_event_progress_bar.xml
- ./platform/android/java/src/com/android/vending/licensing/*
  ./platform/android/java/src/com/google/android/vending/expansion/downloader/*
+ ./platform/android/java/src/com/google/android/vending/licensing/*
  ./platform/android/java/src/org/godotengine/godot/input/InputManagerCompat.java
  ./platform/android/java/src/org/godotengine/godot/input/InputManagerV16.java
- ./platform/android/java/src/org/godotengine/godot/input/InputManagerV9.java
 Comment: The Android Open Source Project
 Copyright: 2008-2013, The Android Open Source Project
 License: Apache-2.0
-
-Files: ./platform/android/cpu-features.c
- ./platform/android/cpu-features.h
-Comment: The Android Open Source Project
-Copyright: 2010, The Android Open Source Project
-License: BSD-2-clause
-
-Files: ./platform/android/ifaddrs_android.cpp
- ./platform/android/ifaddrs_android.h
-Comment: The Android Open Source Project
-Copyright: 2012-2013, Google Inc.
-License: BSD-3-clause
 
 Files: ./platform/android/java/src/com/android/vending/licensing/util/Base64.java
  ./platform/android/java/src/com/android/vending/licensing/util/Base64DecoderException.java
@@ -225,6 +210,12 @@ Comment: The WebM Project
 Copyright: 2010, The WebM Project authors.
 License: BSD-3-clause
 
+Files: ./thirdparty/libvpx/third_party/android/cpu-features.c
+ ./thirdparty/libvpx/third_party/android/cpu-features.h
+Comment: The Android Open Source Project
+Copyright: 2010, The Android Open Source Project
+License: BSD-2-clause
+
 Files: ./thirdparty/libwebp/
 Comment: WebP codec
 Copyright: 2010, Google Inc.
@@ -294,6 +285,12 @@ Files: ./thirdparty/misc/hq2x.cpp
 Comment: hq2x implementation
 Copyright: 2016, Bruno Ribeiro
 License: Apache-2.0
+
+Files: ./thirdparty/misc/ifaddrs-android.cc
+ ./thirdparty/misc/ifaddrs-android.h
+Comment: libjingle
+Copyright: 2012-2013, Google Inc.
+License: BSD-3-clause
 
 Files: ./thirdparty/misc/md5.cpp
  ./thirdparty/misc/md5.h

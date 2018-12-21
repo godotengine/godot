@@ -26,7 +26,7 @@
 			<argument index="0" name="size" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen, at the current size, or at a size determined by "size".
+				Popup (show the control in modal form) in the center of the screen relative to its current canvas transform, at the current size, or at a size determined by "size".
 			</description>
 		</method>
 		<method name="popup_centered_minsize">
@@ -35,7 +35,7 @@
 			<argument index="0" name="minsize" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen, ensuring the size is never smaller than [code]minsize[/code].
+				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, ensuring the size is never smaller than [code]minsize[/code].
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
@@ -44,13 +44,13 @@
 			<argument index="0" name="ratio" type="float" default="0.75">
 			</argument>
 			<description>
-				Popup (show the control in modal form) in the center of the screen, scaled at a ratio of size of the screen.
+				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, scaled at a ratio of size of the screen.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive">
-			If [code]true[/code] the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
+			If [code]true[/code], the popup will not be hidden when a click event occurs outside of it, or when it receives the [code]ui_cancel[/code] action event.
 		</member>
 	</members>
 	<signals>

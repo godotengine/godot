@@ -17,10 +17,10 @@
 			The Light2D's [Color].
 		</member>
 		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only">
-			If [code]true[/code] Light2D will only appear when editing the scene. Default value: [code]false[/code].
+			If [code]true[/code], Light2D will only appear when editing the scene. Default value: [code]false[/code].
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
-			If [code]true[/code] Light2D will emit light. Default value: [code]true[/code].
+			If [code]true[/code], Light2D will emit light. Default value: [code]true[/code].
 		</member>
 		<member name="energy" type="float" setter="set_energy" getter="get_energy">
 			The Light2D's energy value. The larger the value, the stronger the light.
@@ -56,7 +56,7 @@
 			[Color] of shadows cast by the Light2D.
 		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow_enabled" getter="is_shadow_enabled">
-			If [code]true[/code] the Light2D will cast shadows. Default value: [code]false[/code].
+			If [code]true[/code], the Light2D will cast shadows. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter">
 			Shadow filter type. Use SHADOW_FILTER_* constants to set [code]shadow_filter[/code]. Default value: [code]None[/code].

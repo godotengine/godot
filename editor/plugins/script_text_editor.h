@@ -126,6 +126,7 @@ protected:
 	void _load_theme_settings();
 	void _set_theme_for_script();
 	void _toggle_warning_pannel(const Ref<InputEvent> &p_event);
+	void _error_pressed(const Ref<InputEvent> &p_event);
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);

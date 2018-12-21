@@ -25,7 +25,7 @@
 			</argument>
 			<description>
 				Connect to the given URL requesting one of the given [code]protocols[/code] as sub-protocol.
-				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI]. Note: connections to non Godot servers will not work, and [signal data_received] will not be emitted when this option is true.
+				If [code]true[/code], is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI]. Note: connections to non Godot servers will not work, and [signal data_received] will not be emitted when this option is true.
 			</description>
 		</method>
 		<method name="disconnect_from_host">

@@ -15,7 +15,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				If [code]true[/code] the bounding rectangle is on the screen.
+				If [code]true[/code], the bounding rectangle is on the screen.
 			</description>
 		</method>
 	</methods>

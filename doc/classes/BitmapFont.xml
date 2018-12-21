@@ -110,7 +110,7 @@
 			Ascent (number of pixels above the baseline).
 		</member>
 		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint">
-			If [code]true[/code] distance field hint is enabled.
+			If [code]true[/code], distance field hint is enabled.
 		</member>
 		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback">
 			The fallback font.

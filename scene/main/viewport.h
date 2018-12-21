@@ -209,6 +209,7 @@ private:
 	Transform physics_last_object_transform;
 	Transform physics_last_camera_transform;
 	ObjectID physics_last_id;
+	bool physics_has_last_mousepos;
 	Vector2 physics_last_mousepos;
 	struct {
 

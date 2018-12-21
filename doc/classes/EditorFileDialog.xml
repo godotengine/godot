@@ -55,7 +55,7 @@
 			The file system path in the address bar.
 		</member>
 		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled">
-			If [code]true[/code] the [code]EditorFileDialog[/code] will not warn the user before overwriting files.
+			If [code]true[/code], the [code]EditorFileDialog[/code] will not warn the user before overwriting files.
 		</member>
 		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode">
 			The view format in which the [code]EditorFileDialog[/code] displays resources to the user.
@@ -64,7 +64,7 @@
 			The purpose of the [code]EditorFileDialog[/code]. Changes allowed behaviors.
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
-			If [code]true[/code] hidden files and directories will be visible in the [code]EditorFileDialog[/code].
+			If [code]true[/code], hidden files and directories will be visible in the [code]EditorFileDialog[/code].
 		</member>
 	</members>
 	<signals>

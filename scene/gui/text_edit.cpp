@@ -846,9 +846,9 @@ void TextEdit::_notification(int p_what) {
 
 				bool underlined = false;
 
+				Vector<String> wrap_rows = get_wrap_rows_text(line);
 				int line_wrap_amount = times_line_wraps(line);
 				int last_wrap_column = 0;
-				Vector<String> wrap_rows = get_wrap_rows_text(line);
 
 				for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
 					if (line_wrap_index != 0) {
@@ -3816,6 +3816,10 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 	// line ends before hit wrap_at; add this word to the substring
 	wrap_substring += word_str;
 	lines.push_back(wrap_substring);
+
+	// update cache
+	text.set_line_wrap_amount(p_line, lines.size() - 1);
+
 	return lines;
 }
 

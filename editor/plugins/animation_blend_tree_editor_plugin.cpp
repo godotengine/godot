@@ -356,7 +356,7 @@ void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int
 
 	undo_redo->create_action("Nodes Connected");
 	undo_redo->add_do_method(blend_tree.ptr(), "connect_node", p_to, p_to_index, p_from);
-	undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index, p_from);
+	undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index);
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
@@ -395,7 +395,7 @@ void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 
 	undo_redo->create_action("Delete Node");
 	undo_redo->add_do_method(blend_tree.ptr(), "remove_node", p_which);
-	undo_redo->add_undo_method(blend_tree.ptr(), "add_node", p_which, blend_tree->get_node(p_which));
+	undo_redo->add_undo_method(blend_tree.ptr(), "add_node", p_which, blend_tree->get_node(p_which), blend_tree.ptr()->get_node_position(p_which));
 
 	List<AnimationNodeBlendTree::NodeConnection> conns;
 	blend_tree->get_node_connections(&conns);
@@ -813,6 +813,8 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 			break;
 		}
 	}
+
+	_update_graph(); // Needed to update the signal connections with the new name.
 }
 
 void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
