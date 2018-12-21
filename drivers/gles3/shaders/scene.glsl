@@ -2028,7 +2028,7 @@ FRAGMENT_SHADER_CODE
 		//apply fog
 
 		if (fog_depth_enabled) {
-			float fog_far = fog_depth_end > 0 ? fog_depth_end : z_far;
+			float fog_far = fog_depth_end > 0.0 ? fog_depth_end : z_far;
 
 			float fog_z = smoothstep(fog_depth_begin, fog_far, length(vertex));
 
