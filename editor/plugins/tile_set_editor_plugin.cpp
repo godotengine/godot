@@ -1478,7 +1478,11 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				} break;
 				case EDITMODE_NAVIGATION: {
 					if (!edited_navigation_shape.is_null()) {
-						tileset->autotile_set_navigation_polygon(get_current_tile(), Ref<NavigationPolygon>(), edited_shape_coord);
+						if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
+							tileset->tile_set_navigation_polygon(get_current_tile(), Ref<NavigationPolygon>());
+						} else {
+							tileset->autotile_set_navigation_polygon(get_current_tile(), Ref<NavigationPolygon>(), edited_shape_coord);
+						}
 						edited_navigation_shape = Ref<NavigationPolygon>();
 						current_shape.resize(0);
 						workspace->update();
@@ -1486,7 +1490,11 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 				} break;
 				case EDITMODE_OCCLUSION: {
 					if (!edited_occlusion_shape.is_null()) {
-						tileset->autotile_set_light_occluder(get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
+						if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
+							tileset->tile_set_light_occluder(get_current_tile(), Ref<OccluderPolygon2D>());
+						} else {
+							tileset->autotile_set_light_occluder(get_current_tile(), Ref<OccluderPolygon2D>(), edited_shape_coord);
+						}
 						edited_occlusion_shape = Ref<OccluderPolygon2D>();
 						current_shape.resize(0);
 						workspace->update();
