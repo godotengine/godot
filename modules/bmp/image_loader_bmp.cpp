@@ -46,11 +46,11 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		size_t height = (size_t)p_header.bmp_info_header.bmp_height;
 		size_t bits_per_pixel = (size_t)p_header.bmp_info_header.bmp_bit_count;
 
-		if (p_header.bmp_info_header.bmp_compression != 0) {
+		if (p_header.bmp_info_header.bmp_compression != BI_RGB) {
 			err = FAILED;
 		}
 
-		if (!(bits_per_pixel == 24 || bits_per_pixel == 32)) {
+		if (!(bits_per_pixel == 8 || bits_per_pixel == 24 || bits_per_pixel == 32)) {
 			err = FAILED;
 		}
 
@@ -67,11 +67,26 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			PoolVector<uint8_t>::Write image_data_w = image_data.write();
 			uint8_t *write_buffer = image_data_w.ptr();
 
+			const uint32_t color_index_max = p_header.bmp_info_header.bmp_colors_used - 1;
 			const uint8_t *line = p_buffer + (line_width * (height - 1));
 			for (unsigned int i = 0; i < height; i++) {
 				const uint8_t *line_ptr = line;
 				for (unsigned int j = 0; j < width; j++) {
 					switch (bits_per_pixel) {
+						case 8: {
+							uint8_t color_index = CLAMP(*line_ptr, 0, color_index_max);
+							uint32_t color = 0x000000;
+
+							if (p_color_buffer != NULL)
+								color = ((uint32_t *)p_color_buffer)[color_index];
+
+							write_buffer[index + 2] = color & 0xff;
+							write_buffer[index + 1] = (color >> 8) & 0xff;
+							write_buffer[index + 0] = (color >> 16) & 0xff;
+							write_buffer[index + 3] = 0xff;
+							index += 4;
+							line_ptr += 1;
+						} break;
 						case 24: {
 							uint32_t color = *((uint32_t *)line_ptr);
 
@@ -108,7 +123,12 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 
-	if (f->get_len() > sizeof(bmp_header)) {
+	static const size_t FILE_HEADER_SIZE = 14;
+	static const size_t INFO_HEADER_SIZE = 40;
+
+	// A valid bmp file should always at least have a
+	// file header and a minimal info header
+	if (f->get_len() > FILE_HEADER_SIZE + INFO_HEADER_SIZE) {
 		// File Header
 		bmp_header.bmp_file_header.bmp_signature = f->get_16();
 		if (bmp_header.bmp_file_header.bmp_signature == BITMAP_SIGNATURE) {
@@ -129,35 +149,27 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			bmp_header.bmp_info_header.bmp_colors_used = f->get_32();
 			bmp_header.bmp_info_header.bmp_important_colors = f->get_32();
 
-			bmp_header.bmp_info_header.bmp_red_mask = f->get_32();
-			bmp_header.bmp_info_header.bmp_green_mask = f->get_32();
-			bmp_header.bmp_info_header.bmp_blue_mask = f->get_32();
-			bmp_header.bmp_info_header.bmp_alpha_mask = f->get_32();
-			bmp_header.bmp_info_header.bmp_cs_type = f->get_32();
-			for (int i = 0; i < 9; i++)
-				bmp_header.bmp_info_header.bmp_endpoints[i] = f->get_32();
+			// Compressed bitmaps not supported, stop parsing
+			if (bmp_header.bmp_info_header.bmp_compression != BI_RGB) {
+				ERR_EXPLAIN("Unsupported bmp file: " + f->get_path());
+				f->close();
+				ERR_FAIL_V(err)
+			}
 
-			bmp_header.bmp_info_header.bmp_gamma_red = f->get_32();
-			bmp_header.bmp_info_header.bmp_gamma_green = f->get_32();
-			bmp_header.bmp_info_header.bmp_gamma_blue = f->get_32();
-
-			f->seek(sizeof(bmp_header.bmp_file_header) +
+			f->seek(FILE_HEADER_SIZE +
 					bmp_header.bmp_info_header.bmp_header_size);
 
-			uint32_t color_table_size = 0;
-			if (bmp_header.bmp_info_header.bmp_bit_count == 1)
-				color_table_size = 2;
-			else if (bmp_header.bmp_info_header.bmp_bit_count == 4)
-				color_table_size = 16;
-			else if (bmp_header.bmp_info_header.bmp_bit_count == 8)
-				color_table_size = 256;
+			if (bmp_header.bmp_info_header.bmp_bit_count < 16 && bmp_header.bmp_info_header.bmp_colors_used == 0)
+				bmp_header.bmp_info_header.bmp_colors_used = 1 << bmp_header.bmp_info_header.bmp_bit_count;
+
+			// Color table is usually 4 bytes per color -> [B][G][R][0]
+			uint32_t color_table_size = bmp_header.bmp_info_header.bmp_colors_used * 4;
 
 			PoolVector<uint8_t> bmp_color_table;
 			if (color_table_size > 0) {
-				err = bmp_color_table.resize(color_table_size * 4);
+				err = bmp_color_table.resize(color_table_size);
 				PoolVector<uint8_t>::Write bmp_color_table_w = bmp_color_table.write();
-				f->get_buffer(bmp_color_table_w.ptr(),
-						bmp_header.bmp_info_header.bmp_colors_used * 4);
+				f->get_buffer(bmp_color_table_w.ptr(), color_table_size);
 			}
 
 			f->seek(bmp_header.bmp_file_header.bmp_file_offset);
