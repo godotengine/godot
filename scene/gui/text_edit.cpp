@@ -1108,9 +1108,10 @@ void TextEdit::_notification(int p_what) {
 						if (cursor.column == last_wrap_column + j && cursor.line == line && cursor_wrap_index == line_wrap_index) {
 
 							cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
+							cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
 
 							if (insert_mode) {
-								cursor_pos.y += (get_row_height() - 3);
+								cursor_pos.y += (cache.font->get_height() - 3);
 							}
 
 							int caret_w = (str[j] == '\t') ? cache.font->get_char_size(' ').width : char_w;
@@ -1155,7 +1156,8 @@ void TextEdit::_notification(int p_what) {
 #else
 										caret_w = (block_caret) ? caret_w : 2;
 #endif
-										VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(caret_w, get_row_height())), cache.caret_color);
+
+										VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(caret_w, cache.font->get_height())), cache.caret_color);
 									}
 								}
 							}
@@ -1198,9 +1200,10 @@ void TextEdit::_notification(int p_what) {
 					if (cursor.column == last_wrap_column + str.length() && cursor.line == line && cursor_wrap_index == line_wrap_index && (char_ofs + char_margin) >= xmargin_beg) {
 
 						cursor_pos = Point2i(char_ofs + char_margin + ofs_x, ofs_y);
+						cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
 
 						if (insert_mode) {
-							cursor_pos.y += (get_row_height() - 3);
+							cursor_pos.y += (cache.font->get_height() - 3);
 						}
 						if (ime_text.length() > 0) {
 							int ofs = 0;
@@ -1245,7 +1248,8 @@ void TextEdit::_notification(int p_what) {
 #else
 									int caret_w = (block_caret) ? char_w : 2;
 #endif
-									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(caret_w, get_row_height())), cache.caret_color);
+
+									VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor_pos, Size2i(caret_w, cache.font->get_height())), cache.caret_color);
 								}
 							}
 						}
@@ -1289,7 +1293,7 @@ void TextEdit::_notification(int p_what) {
 				if (cursor_pos.y + get_row_height() + th > get_size().height) {
 					completion_rect.position.y = cursor_pos.y - th;
 				} else {
-					completion_rect.position.y = cursor_pos.y + get_row_height() + csb->get_offset().y;
+					completion_rect.position.y = cursor_pos.y + get_row_height() + csb->get_offset().y - cache.font->get_height();
 					completion_below = true;
 				}
 
