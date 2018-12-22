@@ -76,6 +76,10 @@ def configure(env):
 
     ## Compiler configuration
 
+    # Save this in environment for use by other modules
+    if "OSXCROSS_IOS" in os.environ:
+        env["osxcross"] = True
+
     env['ENV']['PATH'] = env['IPHONEPATH'] + "/Developer/usr/bin/:" + env['ENV']['PATH']
 
     compiler_path = '$IPHONEPATH/usr/bin/${ios_triple}'

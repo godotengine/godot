@@ -72,7 +72,11 @@ def configure(env):
 
     ## Compiler configuration
 
-    if "OSXCROSS_ROOT" not in os.environ: # regular native build
+    # Save this in environment for use by other modules
+    if "OSXCROSS_ROOT" in os.environ:
+        env["osxcross"] = True
+
+    if not "osxcross" in env: # regular native build
         env.Append(CCFLAGS=['-arch', 'x86_64'])
         env.Append(LINKFLAGS=['-arch', 'x86_64'])
         if (env["macports_clang"] != 'no'):
