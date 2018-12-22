@@ -134,6 +134,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		node->set_offset(blend_tree->get_node_position(E->get()) * EDSCALE);
 
 		node->set_title(agnode->get_caption());
+		node->set_human_readable_collision_renaming(false);
 		node->set_name(E->get());
 
 		int base = 0;
