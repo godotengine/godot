@@ -80,7 +80,7 @@ void ProjectExportDialog::popup_export() {
 
 	_update_presets();
 	if (presets->get_current() >= 0) {
-		_edit_preset(presets->get_current()); // triggers rescan for templates if newly installed
+		_update_current_preset(); // triggers rescan for templates if newly installed
 	}
 
 	// Restore valid window bounds or pop up at default size.
@@ -137,13 +137,18 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	_edit_preset(EditorExport::get_singleton()->get_export_preset_count() - 1);
 }
 
+void ProjectExportDialog::_update_current_preset() {
+
+	_edit_preset(presets->get_current());
+}
+
 void ProjectExportDialog::_update_presets() {
 
 	updating = true;
 
 	Ref<EditorExportPreset> current;
 	if (presets->get_current() >= 0 && presets->get_current() < presets->get_item_count())
-		current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+		current = get_current_preset();
 
 	int current_idx = -1;
 	presets->clear();
@@ -300,12 +305,33 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	_update_export_all();
 	minimum_size_changed();
 
+	int script_export_mode = current->get_script_export_mode();
+	script_mode->select(script_export_mode);
+
+	String key = current->get_script_encryption_key();
+	if (!updating_script_key) {
+		script_key->set_text(key);
+	}
+	if (script_export_mode == EditorExportPreset::MODE_SCRIPT_ENCRYPTED) {
+		script_key->set_editable(true);
+
+		bool key_valid = _validate_script_encryption_key(key);
+		if (key_valid) {
+			script_key_error->hide();
+		} else {
+			script_key_error->show();
+		}
+	} else {
+		script_key->set_editable(false);
+		script_key_error->hide();
+	}
+
 	updating = false;
 }
 
 void ProjectExportDialog::_update_feature_list() {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	Set<String> fset;
@@ -342,7 +368,7 @@ void ProjectExportDialog::_custom_features_changed(const String &p_text) {
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_custom_features(p_text);
@@ -359,7 +385,7 @@ void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, in
 
 	patch_index = ti->get_metadata(0);
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	if (p_id == 0) {
@@ -379,7 +405,7 @@ void ProjectExportDialog::_patch_edited() {
 		return;
 	int index = item->get_metadata(0);
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	Vector<String> patches = current->get_patches();
@@ -397,7 +423,7 @@ void ProjectExportDialog::_patch_edited() {
 
 void ProjectExportDialog::_patch_selected(const String &p_path) {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	Vector<String> patches = current->get_patches();
@@ -410,25 +436,25 @@ void ProjectExportDialog::_patch_selected(const String &p_path) {
 		current->set_patch(patch_index, ProjectSettings::get_singleton()->get_resource_path().path_to(p_path) + enabled);
 	}
 
-	_edit_preset(presets->get_current());
+	_update_current_preset();
 }
 
 void ProjectExportDialog::_patch_deleted() {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	Vector<String> patches = current->get_patches();
 	if (patch_index < patches.size()) {
 
 		current->remove_patch(patch_index);
-		_edit_preset(presets->get_current());
+		_update_current_preset();
 	}
 }
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
 
-	_edit_preset(presets->get_current());
+	_update_current_preset();
 }
 
 void ProjectExportDialog::_runnable_pressed() {
@@ -436,7 +462,7 @@ void ProjectExportDialog::_runnable_pressed() {
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	if (runnable->is_pressed()) {
@@ -460,7 +486,7 @@ void ProjectExportDialog::_name_changed(const String &p_string) {
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_name(p_string);
@@ -468,17 +494,22 @@ void ProjectExportDialog::_name_changed(const String &p_string) {
 }
 
 void ProjectExportDialog::set_export_path(const String &p_value) {
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_export_path(p_value);
 }
 
 String ProjectExportDialog::get_export_path() {
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND_V(current.is_null(), String(""));
 
 	return current->get_export_path();
+}
+
+Ref<EditorExportPreset> ProjectExportDialog::get_current_preset() const {
+
+	return EditorExport::get_singleton()->get_export_preset(presets->get_current());
 }
 
 void ProjectExportDialog::_export_path_changed(const StringName &p_property, const Variant &p_value) {
@@ -486,16 +517,54 @@ void ProjectExportDialog::_export_path_changed(const StringName &p_property, con
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_export_path(p_value);
 	_update_presets();
 }
 
+void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
+
+	if (updating)
+		return;
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_script_export_mode(p_mode);
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_script_encryption_key_changed(const String &p_key) {
+
+	if (updating)
+		return;
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	current->set_script_encryption_key(p_key);
+
+	updating_script_key = true;
+	_update_current_preset();
+	updating_script_key = false;
+}
+
+bool ProjectExportDialog::_validate_script_encryption_key(const String &p_key) {
+
+	bool is_valid = false;
+
+	if (!p_key.empty() && p_key.is_valid_hex_number(false) && p_key.length() == 64) {
+		is_valid = true;
+	}
+	return is_valid;
+}
+
 void ProjectExportDialog::_duplicate_preset() {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null())
 		return;
 
@@ -550,7 +619,7 @@ void ProjectExportDialog::_duplicate_preset() {
 
 void ProjectExportDialog::_delete_preset() {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null())
 		return;
 
@@ -688,12 +757,12 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 			to_pos--;
 		}
 
-		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+		Ref<EditorExportPreset> preset = get_current_preset();
 		String patch = preset->get_patch(from_pos);
 		preset->remove_patch(from_pos);
 		preset->add_patch(patch, to_pos);
 
-		_edit_preset(presets->get_current());
+		_update_current_preset();
 	}
 }
 
@@ -702,7 +771,7 @@ void ProjectExportDialog::_export_type_changed(int p_which) {
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null())
 		return;
 
@@ -717,7 +786,7 @@ void ProjectExportDialog::_filter_changed(const String &p_filter) {
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null())
 		return;
 
@@ -731,7 +800,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 	include_label->hide();
 	include_margin->hide();
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null())
 		return;
 
@@ -793,7 +862,7 @@ void ProjectExportDialog::_tree_changed() {
 	if (updating)
 		return;
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	if (current.is_null())
 		return;
 
@@ -818,7 +887,7 @@ void ProjectExportDialog::_export_pck_zip() {
 
 void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
@@ -857,7 +926,7 @@ void ProjectExportDialog::_validate_export_path(const String &p_path) {
 
 void ProjectExportDialog::_export_project() {
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
@@ -895,7 +964,7 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 	default_filename = p_path.get_file().get_basename();
 	EditorSettings::get_singleton()->set_project_metadata("export_options", "default_filename", default_filename);
 
-	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
@@ -971,6 +1040,8 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_open_export_template_manager", &ProjectExportDialog::_open_export_template_manager);
 	ClassDB::bind_method("_validate_export_path", &ProjectExportDialog::_validate_export_path);
 	ClassDB::bind_method("_export_path_changed", &ProjectExportDialog::_export_path_changed);
+	ClassDB::bind_method("_script_export_mode_changed", &ProjectExportDialog::_script_export_mode_changed);
+	ClassDB::bind_method("_script_encryption_key_changed", &ProjectExportDialog::_script_encryption_key_changed);
 	ClassDB::bind_method("_export_project", &ProjectExportDialog::_export_project);
 	ClassDB::bind_method("_export_project_to_path", &ProjectExportDialog::_export_project_to_path);
 	ClassDB::bind_method("_export_all", &ProjectExportDialog::_export_all);
@@ -980,6 +1051,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_tab_changed", &ProjectExportDialog::_tab_changed);
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
+	ClassDB::bind_method("get_current_preset", &ProjectExportDialog::get_current_preset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "export_path"), "set_export_path", "get_export_path");
 }
@@ -1127,6 +1199,25 @@ ProjectExportDialog::ProjectExportDialog() {
 	feature_vb->add_margin_child(TTR("Feature List:"), features_panel, true);
 	sections->add_child(feature_vb);
 
+	updating_script_key = false;
+
+	VBoxContainer *script_vb = memnew(VBoxContainer);
+	script_vb->set_name(TTR("Script"));
+	script_mode = memnew(OptionButton);
+	script_vb->add_margin_child(TTR("Script Export Mode:"), script_mode);
+	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
+	script_mode->add_item(TTR("Compiled"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
+	script_mode->add_item(TTR("Encrypted (Provide Key Below)"), (int)EditorExportPreset::MODE_SCRIPT_ENCRYPTED);
+	script_mode->connect("item_selected", this, "_script_export_mode_changed");
+	script_key = memnew(LineEdit);
+	script_key->connect("text_changed", this, "_script_encryption_key_changed");
+	script_key_error = memnew(Label);
+	script_key_error->set_text("- " + TTR("Invalid Encryption Key (must be 64 characters long)"));
+	script_key_error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	script_vb->add_margin_child(TTR("Script Encryption Key (256-bits as hex):"), script_key);
+	script_vb->add_child(script_key_error);
+	sections->add_child(script_vb);
+
 	sections->connect("tab_changed", this, "_tab_changed");
 
 	//disable by default
@@ -1135,6 +1226,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	runnable->set_disabled(true);
 	duplicate_preset->set_disabled(true);
 	delete_preset->set_disabled(true);
+	script_key_error->hide();
 	sections->hide();
 	parameters->edit(NULL);
 

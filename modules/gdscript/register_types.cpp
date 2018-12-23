@@ -54,20 +54,74 @@ class EditorExportGDScript : public EditorExportPlugin {
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
 
-		if (!p_path.ends_with(".gd"))
+		int script_mode = EditorExportPreset::MODE_SCRIPT_COMPILED;
+		String script_key;
+
+		const Ref<EditorExportPreset> &preset = get_export_preset();
+
+		if (preset.is_valid()) {
+			script_mode = preset->get_script_export_mode();
+			script_key = preset->get_script_encryption_key().to_lower();
+		}
+
+		if (!p_path.ends_with(".gd") || script_mode == EditorExportPreset::MODE_SCRIPT_TEXT)
 			return;
 
 		Vector<uint8_t> file = FileAccess::get_file_as_array(p_path);
 		if (file.empty())
 			return;
+
 		String txt;
 		txt.parse_utf8((const char *)file.ptr(), file.size());
 		file = GDScriptTokenizerBuffer::parse_code_string(txt);
 
-		if (file.empty())
-			return;
+		if (!file.empty()) {
 
-		add_file(p_path.get_basename() + ".gdc", file, true);
+			if (script_mode == EditorExportPreset::MODE_SCRIPT_ENCRYPTED) {
+
+				String tmp_path = EditorSettings::get_singleton()->get_settings_dir().plus_file("tmp/script.gde");
+				FileAccess *fa = FileAccess::open(tmp_path, FileAccess::WRITE);
+
+				Vector<uint8_t> key;
+				key.resize(32);
+				for (int i = 0; i < 32; i++) {
+					int v = 0;
+					if (i * 2 < script_key.length()) {
+						CharType ct = script_key[i * 2];
+						if (ct >= '0' && ct <= '9')
+							ct = ct - '0';
+						else if (ct >= 'a' && ct <= 'f')
+							ct = 10 + ct - 'a';
+						v |= ct << 4;
+					}
+
+					if (i * 2 + 1 < script_key.length()) {
+						CharType ct = script_key[i * 2 + 1];
+						if (ct >= '0' && ct <= '9')
+							ct = ct - '0';
+						else if (ct >= 'a' && ct <= 'f')
+							ct = 10 + ct - 'a';
+						v |= ct;
+					}
+					key.write[i] = v;
+				}
+				FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+				Error err = fae->open_and_parse(fa, key, FileAccessEncrypted::MODE_WRITE_AES256);
+
+				if (err == OK) {
+					fae->store_buffer(file.ptr(), file.size());
+				}
+
+				memdelete(fae);
+
+				file = FileAccess::get_file_as_array(tmp_path);
+				add_file(p_path.get_basename() + ".gde", file, true);
+
+			} else {
+
+				add_file(p_path.get_basename() + ".gdc", file, true);
+			}
+		}
 	}
 };
 
