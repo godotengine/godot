@@ -1323,7 +1323,8 @@ void TextEdit::_notification(int p_what) {
 							text_color = color_regions[j].color;
 						}
 					}
-					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent()), completion_options[l], text_color, completion_rect.size.width);
+					int yofs = (get_row_height() - cache.font->get_height()) / 2;
+					draw_string(cache.font, Point2(completion_rect.position.x, completion_rect.position.y + i * get_row_height() + cache.font->get_ascent() + yofs), completion_options[l], text_color, completion_rect.size.width);
 				}
 
 				if (scrollw) {
