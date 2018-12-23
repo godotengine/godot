@@ -325,6 +325,12 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 	if (manual_autotile || (p_value != -1 && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
 		if (current != -1) {
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
+
+		} else if (tool != TOOL_PASTING && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE && priority_atlastile) {
+
+			// BIND_CENTER is used to indicate that bitmask should not update for this tile cell
+			node->get_tileset()->autotile_set_bitmask(p_value, Vector2(p_pos.x, p_pos.y), TileSet::BIND_CENTER);
+			node->update_cell_bitmask(p_pos.x, p_pos.y);
 		}
 	} else {
 		// manually placing tiles should not update bitmasks
@@ -336,6 +342,11 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 
 void TileMapEditor::_manual_toggled(bool p_enabled) {
 	manual_autotile = p_enabled;
+	_update_palette();
+}
+
+void TileMapEditor::_priority_toggled(bool p_enabled) {
+	priority_atlastile = p_enabled;
 	_update_palette();
 }
 
@@ -497,7 +508,8 @@ void TileMapEditor::_update_palette() {
 	}
 
 	if (sel_tile != TileMap::INVALID_CELL) {
-		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE) {
+		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) ||
+				(!priority_atlastile && tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE)) {
 
 			const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
@@ -541,8 +553,10 @@ void TileMapEditor::_update_palette() {
 
 	if (sel_tile != TileMap::INVALID_CELL && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) {
 		manual_button->show();
+		priority_button->hide();
 	} else {
 		manual_button->hide();
+		priority_button->show();
 	}
 }
 
@@ -686,7 +700,8 @@ void TileMapEditor::_fill_points(const PoolVector<Vector2> p_points, const Dicti
 		_set_cell(pr[i], ids, xf, yf, tr);
 		node->make_bitmask_area_dirty(pr[i]);
 	}
-	node->update_dirty_bitmask();
+	if (!manual_autotile)
+		node->update_dirty_bitmask();
 }
 
 void TileMapEditor::_erase_points(const PoolVector<Vector2> p_points) {
@@ -745,7 +760,7 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 	if (node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::AUTO_TILE || node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::ATLAS_TILE) {
 		Vector2 offset;
 		int selected = manual_palette->get_current();
-		if ((manual_autotile || node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::ATLAS_TILE) && selected != -1) {
+		if ((manual_autotile || (node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::ATLAS_TILE && !priority_atlastile)) && selected != -1) {
 			offset = manual_palette->get_item_metadata(selected);
 		} else {
 			if (tool != TOOL_PASTING) {
@@ -1713,6 +1728,7 @@ void TileMapEditor::_icon_size_changed(float p_value) {
 void TileMapEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_manual_toggled"), &TileMapEditor::_manual_toggled);
+	ClassDB::bind_method(D_METHOD("_priority_toggled"), &TileMapEditor::_priority_toggled);
 	ClassDB::bind_method(D_METHOD("_text_entered"), &TileMapEditor::_text_entered);
 	ClassDB::bind_method(D_METHOD("_text_changed"), &TileMapEditor::_text_changed);
 	ClassDB::bind_method(D_METHOD("_sbox_input"), &TileMapEditor::_sbox_input);
@@ -1816,6 +1832,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	node = NULL;
 	manual_autotile = false;
+	priority_atlastile = false;
 	manual_position = Vector2(0, 0);
 	canvas_item_editor_viewport = NULL;
 	editor = p_editor;
@@ -1846,9 +1863,14 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	add_child(tool_hb);
 
 	manual_button = memnew(CheckBox);
-	manual_button->set_text("Disable Autotile");
+	manual_button->set_text(TTR("Disable Autotile"));
 	manual_button->connect("toggled", this, "_manual_toggled");
 	add_child(manual_button);
+
+	priority_button = memnew(CheckBox);
+	priority_button->set_text(TTR("Enable Priority"));
+	priority_button->connect("toggled", this, "_priority_toggled");
+	add_child(priority_button);
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);

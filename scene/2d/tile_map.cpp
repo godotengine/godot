@@ -868,8 +868,17 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 			_make_quadrant_dirty(Q);
 
 		} else if (tile_set->tile_get_tile_mode(id) == TileSet::SINGLE_TILE) {
+
 			E->get().autotile_coord_x = 0;
 			E->get().autotile_coord_y = 0;
+		} else if (tile_set->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
+
+			if (tile_set->autotile_get_bitmask(id, Vector2(p_x, p_y)) == TileSet::BIND_CENTER) {
+				Vector2 coord = tile_set->atlastile_get_subtile_by_priority(id, this, Vector2(p_x, p_y));
+
+				E->get().autotile_coord_x = (int)coord.x;
+				E->get().autotile_coord_y = (int)coord.y;
+			}
 		}
 	}
 }
