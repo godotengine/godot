@@ -3055,13 +3055,23 @@ String String::strip_escapes() const {
 
 String String::lstrip(const String &p_chars) const {
 
-	int len = length();
+	const int len = length();
+	const int test_char_count = p_chars.length();
 	int beg;
 
 	for (beg = 0; beg < len; beg++) {
-
-		if (p_chars.find(&ptr()[beg]) == -1)
+		const CharType c = get(beg);
+		int test = 0;
+		while (test < test_char_count) {
+			if (p_chars[test] == c) {
+				break;
+			}
+			test++;
+		}
+		if (test == test_char_count) {
+			// reached end of char list, no match found
 			break;
+		}
 	}
 
 	if (beg == 0)
@@ -3072,13 +3082,23 @@ String String::lstrip(const String &p_chars) const {
 
 String String::rstrip(const String &p_chars) const {
 
-	int len = length();
+	const int len = length();
+	const int test_char_count = p_chars.length();
 	int end;
 
 	for (end = len - 1; end >= 0; end--) {
-
-		if (p_chars.find(&ptr()[end]) == -1)
+		const CharType c = get(end);
+		int test = 0;
+		while (test < test_char_count) {
+			if (p_chars[test] == c) {
+				break;
+			}
+			test++;
+		}
+		if (test == test_char_count) {
+			// reached end of char list, no match found
 			break;
+		}
 	}
 
 	if (end == len - 1)
