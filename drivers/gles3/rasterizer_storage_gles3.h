@@ -133,6 +133,7 @@ public:
 		GLuint aniso_tex;
 
 		GLuint white_tex_3d;
+		GLuint white_tex_array;
 
 		GLuint quadie;
 		GLuint quadie_array;

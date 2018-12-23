@@ -7776,6 +7776,14 @@ void RasterizerStorageGLES3::initialize() {
 
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
+
+		glGenTextures(1, &resources.white_tex_array);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, resources.white_tex_array);
+		glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB, 8, 8, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, 8, 8, 1, GL_RGB, GL_UNSIGNED_BYTE, whitetexdata);
+		glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
