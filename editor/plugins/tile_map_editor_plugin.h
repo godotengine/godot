@@ -78,6 +78,7 @@ class TileMapEditor : public VBoxContainer {
 
 	TileMap *node;
 	bool manual_autotile;
+	bool priority_atlastile;
 	Vector2 manual_position;
 
 	EditorNode *editor;
@@ -101,6 +102,7 @@ class TileMapEditor : public VBoxContainer {
 	ToolButton *clear_transform_button;
 
 	CheckBox *manual_button;
+	CheckBox *priority_button;
 
 	Tool tool;
 
@@ -180,6 +182,7 @@ class TileMapEditor : public VBoxContainer {
 	void set_selected_tiles(Vector<int> p_tile);
 
 	void _manual_toggled(bool p_enabled);
+	void _priority_toggled(bool p_enabled);
 	void _text_entered(const String &p_text);
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);

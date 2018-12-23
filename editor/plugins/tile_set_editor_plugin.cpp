@@ -2279,7 +2279,6 @@ void TileSetEditor::update_workspace_tile_mode() {
 			select_coord(edited_shape_coord);
 
 		tool_editmode[EDITMODE_BITMASK]->hide();
-		tool_editmode[EDITMODE_PRIORITY]->hide();
 	}
 	_on_edit_mode_changed(edit_mode);
 }
