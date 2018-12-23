@@ -52,6 +52,12 @@ public:
 		EXPORT_SELECTED_RESOURCES,
 	};
 
+	enum ScriptExportMode {
+		MODE_SCRIPT_TEXT,
+		MODE_SCRIPT_COMPILED,
+		MODE_SCRIPT_ENCRYPTED,
+	};
+
 private:
 	Ref<EditorExportPlatform> platform;
 	ExportFilter export_filter;
@@ -74,6 +80,9 @@ private:
 	String name;
 
 	String custom_features;
+
+	int script_mode;
+	String script_key;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -117,6 +126,12 @@ public:
 
 	void set_export_path(const String &p_path);
 	String get_export_path() const;
+
+	void set_script_export_mode(int p_mode);
+	int get_script_export_mode() const;
+
+	void set_script_encryption_key(const String &p_key);
+	String get_script_encryption_key() const;
 
 	const List<PropertyInfo> &get_properties() const { return properties; }
 
@@ -260,6 +275,8 @@ class EditorExportPlugin : public Reference {
 
 	friend class EditorExportPlatform;
 
+	Ref<EditorExportPreset> export_preset;
+
 	Vector<SharedObject> shared_objects;
 	struct ExtraFile {
 		String path;
@@ -294,6 +311,9 @@ class EditorExportPlugin : public Reference {
 	void _export_end_script();
 
 protected:
+	void set_export_preset(const Ref<EditorExportPreset> &p_preset);
+	Ref<EditorExportPreset> get_export_preset() const;
+
 	void add_file(const String &p_path, const Vector<uint8_t> &p_file, bool p_remap);
 	void add_shared_object(const String &p_path, const Vector<String> &tags);
 
