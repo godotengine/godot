@@ -439,6 +439,15 @@
 				Returns [code]true[/code] if this string contains a valid float.
 			</description>
 		</method>
+		<method name="is_valid_hex_number">
+			<return type="bool">
+			</return>
+			<argument index="0" name="with_prefix" type="bool" default="False">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
+			</description>
+		</method>
 		<method name="is_valid_html_color">
 			<return type="bool">
 			</return>
