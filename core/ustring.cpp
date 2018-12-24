@@ -3578,9 +3578,12 @@ bool String::is_valid_integer() const {
 
 bool String::is_valid_hex_number(bool p_with_prefix) const {
 
-	int from = 0;
 	int len = length();
 
+	if (len == 0)
+		return false;
+
+	int from = 0;
 	if (len != 1 && (operator[](0) == '+' || operator[](0) == '-'))
 		from++;
 
