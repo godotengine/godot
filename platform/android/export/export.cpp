@@ -1121,9 +1121,10 @@ public:
 			r_features->push_back("etc");
 		else*/
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-		if (driver == "GLES2") {
+		if (driver == "GLES2" || driver == "GLES3") {
 			r_features->push_back("etc");
-		} else {
+		}
+		if (driver == "GLES3") {
 			r_features->push_back("etc2");
 		}
 
