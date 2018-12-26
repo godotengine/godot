@@ -617,65 +617,74 @@
 	</methods>
 	<members>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor">
-			Anchors the bottom edge of the node to the origin, the center, or the end of its parent container. It changes how the bottom margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
+			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom margin updates when the node moves or changes size. You can use one of the [code]ANCHOR_*[/code] constants for convenience. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="anchor_left" type="float" setter="_set_anchor" getter="get_anchor">
-			Anchors the left edge of the node to the origin, the center or the end of its parent container. It changes how the left margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
+			Anchors the left edge of the node to the origin, the center or the end of its parent control. It changes how the left margin updates when the node moves or changes size. You can use one of the [code]ANCHOR_*[/code] constants for convenience.Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="anchor_right" type="float" setter="_set_anchor" getter="get_anchor">
-			Anchors the right edge of the node to the origin, the center or the end of its parent container. It changes how the right margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
+			Anchors the right edge of the node to the origin, the center or the end of its parent control. It changes how the right margin updates when the node moves or changes size. You can use one of the [code]ANCHOR_*[/code] constants for convenience. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor">
-			Anchors the top edge of the node to the origin, the center or the end of its parent container. It changes how the top margin updates when the node moves or changes size. Use one of the [code]ANCHOR_*[/code] constants. Default value: [code]ANCHOR_BEGIN[/code].
+			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top margin updates when the node moves or changes size. You can use  one of the [code]ANCHOR_*[/code] constants for convenience. Default value: [code]ANCHOR_BEGIN[/code].
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
 			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard signals.
 		</member>
 		<member name="focus_neighbour_bottom" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
-			Tells Godot which node it should give keyboard focus to if the user presses Tab, the down arrow on the keyboard, or down on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
-			If the user presses Tab, Godot will give focus to the closest node to the right first, then to the bottom. If the user presses Shift+Tab, Godot will look to the left of the node, then above it.
+			Tells Godot which node it should give keyboard focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [code]ui_down[/code] input action. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
 		</member>
 		<member name="focus_neighbour_left" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
-			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab, the left arrow on the keyboard or left on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the left of this one.
+			Tells Godot which node it should give keyboard focus to if the user presses the left arrow on the keyboard or left on a gamepad by default. You can change the key by editing the [code]ui_left[/code] input action. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the left of this one.
 		</member>
 		<member name="focus_neighbour_right" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
-			Tells Godot which node it should give keyboard focus to if the user presses Tab, the right arrow on the keyboard or right on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
+			Tells Godot which node it should give keyboard focus to if the user presses the right arrow on the keyboard or right on a gamepad  by default. You can change the key by editing the [code]ui_right[/code] input action. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
 		</member>
 		<member name="focus_neighbour_top" type="NodePath" setter="set_focus_neighbour" getter="get_focus_neighbour">
-			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab, the top arrow on the keyboard or top on a gamepad. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
+			Tells Godot which node it should give keyboard focus to if the user presses the top arrow on the keyboard or top on a gamepad by default. You can change the key by editing the [code]ui_top[/code] input action. The node must be a [code]Control[/code]. If this property is not set, Godot will give focus to the closest [code]Control[/code] to the bottom of this one.
 		</member>
 		<member name="focus_next" type="NodePath" setter="set_focus_next" getter="get_focus_next">
+			Tells Godot which node it should give keyboard focus to if the user presses Tab on a keyboard by default. You can change the key by editing the [code]ui_focus_next[/code] input action.
+			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="focus_previous" type="NodePath" setter="set_focus_previous" getter="get_focus_previous">
+			Tells Godot which node it should give keyboard focus to if the user presses Shift+Tab on a keyboard by default. You can change the key by editing the [code]ui_focus_prev[/code] input action.
+			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection">
+			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
 		</member>
 		<member name="grow_vertical" type="int" setter="set_v_grow_direction" getter="get_v_grow_direction" enum="Control.GrowDirection">
+			Controls the direction on the vertical axis in which the control should grow if its vertical minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
 		</member>
 		<member name="hint_tooltip" type="String" setter="set_tooltip" getter="_get_tooltip">
 			Changes the tooltip text. The tooltip appears when the user's mouse cursor stays idle over this control for a few moments.
 		</member>
 		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin">
-			Distance between the node's bottom edge and its parent container, based on [member anchor_bottom].
-			Margins are often controlled by one or multiple parent [Container] nodes. Margins update automatically when you move or resize the node.
+			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
+			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
 		<member name="margin_left" type="float" setter="set_margin" getter="get_margin">
-			Distance between the node's left edge and its parent container, based on [member anchor_left].
+			Distance between the node's left edge and its parent control, based on [member anchor_left].
+			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
 		<member name="margin_right" type="float" setter="set_margin" getter="get_margin">
-			Distance between the node's right edge and its parent container, based on [member anchor_right].
+			Distance between the node's right edge and its parent control, based on [member anchor_right].
+			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
 		<member name="margin_top" type="float" setter="set_margin" getter="get_margin">
-			Distance between the node's top edge and its parent container, based on [member anchor_top].
+			Distance between the node's top edge and its parent control, based on [member anchor_top].
+			Margins are often controlled by one or multiple parent [Container] nodes, so you should not modify them manually if your node is a direct child of a [Container]. Margins update automatically when you move or resize the node.
 		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
 			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter">
-			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Use one of the [code]MOUSE_FILTER_*[/code] constants. See the constants to learn what each does.
+			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. See the constants to learn what each does.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
+			Enables whether rendering of children should be clipped to this control's rectangle. If true, parts of a child which would be visibly outside of this control's rectangle will not be rendered.
 		</member>
 		<member name="rect_global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
@@ -792,8 +801,10 @@
 			Sent when an open modal dialog closes. See [member show_modal].
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
+			Sent when this node is inside a [ScrollContainer] which has begun being scrolled.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
+			Sent when this node is inside a [ScrollContainer] which has stopped being scrolled.
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].
@@ -847,52 +858,52 @@
 			Show the system's help mouse cursor when the user hovers the node, a question mark.
 		</constant>
 		<constant name="PRESET_TOP_LEFT" value="0" enum="LayoutPreset">
-			Snap all 4 anchors to the top-left of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the top-left of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_TOP_RIGHT" value="1" enum="LayoutPreset">
-			Snap all 4 anchors to the top-right of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the top-right of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_LEFT" value="2" enum="LayoutPreset">
-			Snap all 4 anchors to the bottom-left of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the bottom-left of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_RIGHT" value="3" enum="LayoutPreset">
-			Snap all 4 anchors to the bottom-right of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the bottom-right of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_LEFT" value="4" enum="LayoutPreset">
-			Snap all 4 anchors to the center of the left edge of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the center of the left edge of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_TOP" value="5" enum="LayoutPreset">
-			Snap all 4 anchors to the center of the top edge of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the center of the top edge of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_RIGHT" value="6" enum="LayoutPreset">
-			Snap all 4 anchors to the center of the right edge of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the center of the right edge of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER_BOTTOM" value="7" enum="LayoutPreset">
-			Snap all 4 anchors to the center of the bottom edge of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the center of the bottom edge of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_CENTER" value="8" enum="LayoutPreset">
-			Snap all 4 anchors to the center of the parent container's bounds. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the center of the parent control's bounds. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_LEFT_WIDE" value="9" enum="LayoutPreset">
-			Snap all 4 anchors to the left edge of the parent container. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the left edge of the parent control. The left margin becomes relative to the left edge and the top margin relative to the top left corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_TOP_WIDE" value="10" enum="LayoutPreset">
-			Snap all 4 anchors to the top edge of the parent container. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the top edge of the parent control. The left margin becomes relative to the top left corner, the top margin relative to the top edge, and the right margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_RIGHT_WIDE" value="11" enum="LayoutPreset">
-			Snap all 4 anchors to the right edge of the parent container. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the right edge of the parent control. The right margin becomes relative to the right edge and the top margin relative to the top right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_BOTTOM_WIDE" value="12" enum="LayoutPreset">
-			Snap all 4 anchors to the bottom edge of the parent container. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the bottom edge of the parent control. The left margin becomes relative to the bottom left corner, the bottom margin relative to the bottom edge, and the right margin relative to the bottom right corner of the node's parent. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_VCENTER_WIDE" value="13" enum="LayoutPreset">
-			Snap all 4 anchors to a vertical line that cuts the parent container in half. Use with [method set_anchors_preset].
+			Snap all 4 anchors to a vertical line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_HCENTER_WIDE" value="14" enum="LayoutPreset">
-			Snap all 4 anchors to a horizontal line that cuts the parent container in half. Use with [method set_anchors_preset].
+			Snap all 4 anchors to a horizontal line that cuts the parent control in half. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_WIDE" value="15" enum="LayoutPreset">
-			Snap all 4 anchors to the respective corners of the parent container. Set all 4 margins to 0 after you applied this preset and the [code]Control[/code] will fit its parent container. Use with [method set_anchors_preset].
+			Snap all 4 anchors to the respective corners of the parent control. Set all 4 margins to 0 after you applied this preset and the [code]Control[/code] will fit its parent control. This is equivalent to to the "Full Rect" layout option in the editor. Use with [method set_anchors_preset].
 		</constant>
 		<constant name="PRESET_MODE_MINSIZE" value="0" enum="LayoutPresetMode">
 		</constant>
@@ -921,16 +932,19 @@
 			The control will receive mouse button input events through [method _gui_input] if clicked on. These events are automatically marked as handled and they will not propagate further to other controls.
 		</constant>
 		<constant name="MOUSE_FILTER_PASS" value="1" enum="MouseFilter">
-			The control will receive mouse button input events through [method _gui_input] if clicked on. If this control does not handle the event, the parent control (if any) will be considered for a mouse click, and so on until there is no more parent control to potentially handle it. Even if no control handled it at all, the event will still be handled automatically.
+			The control will receive mouse button input events through [method _gui_input] if clicked on. If this control does not handle the event, the parent control (if any) will be considered for a mouse click, and so on until there is no more parent control to potentially handle it. Even if no control handled it at all, the event will still be handled automatically, so unhandled input will not be fired.
 		</constant>
 		<constant name="MOUSE_FILTER_IGNORE" value="2" enum="MouseFilter">
 			The control will not receive mouse button input events through [method _gui_input] and will not block other controls from receiving these events. These events will also not be handled automatically.
 		</constant>
 		<constant name="GROW_DIRECTION_BEGIN" value="0" enum="GrowDirection">
+			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.
 		</constant>
 		<constant name="GROW_DIRECTION_END" value="1" enum="GrowDirection">
+			The control wil grow to the right or bottom to make up if its minimum size is changed to be greater than its current size on the respective axis.
 		</constant>
 		<constant name="GROW_DIRECTION_BOTH" value="2" enum="GrowDirection">
+			The control wil grow in both directions equally to make up if its minimum size is changed to be greater than its current size.
 		</constant>
 		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].
