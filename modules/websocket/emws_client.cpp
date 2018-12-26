@@ -205,8 +205,8 @@ int EMWSClient::get_max_packet_size() const {
 }
 
 EMWSClient::EMWSClient() {
-	_in_buf_size = GLOBAL_GET(WSC_IN_BUF);
-	_in_pkt_size = GLOBAL_GET(WSC_IN_PKT);
+	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
+	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
 	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
 	/* clang-format off */
