@@ -30,7 +30,7 @@ def get_opts():
         BoolVariable('icloud', 'Support for iCloud', True),
         BoolVariable('ios_exceptions', 'Enable exceptions', False),
         ('ios_triple', 'Triple for ios toolchain', ''),
-        BoolVariable('ios_sim', 'Build simulator binary', False),
+        BoolVariable('ios_sim', 'Build simulator binary (deprecated, use arch=x86 or arch=x86_64)', False),
     ]
 
 
