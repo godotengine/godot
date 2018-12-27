@@ -46,7 +46,7 @@
 			</argument>
 			<description>
 				Applies a single directional impulse without affecting rotation.
-				This is equivalent to ``apply_impulse(Vector3(0,0,0), impulse)``.
+				This is equivalent to [code]apply_impulse(Vector3(0, 0, 0), impulse)[/code].
 			</description>
 		</method>
 		<method name="apply_impulse">

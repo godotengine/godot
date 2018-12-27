@@ -61,7 +61,7 @@
 			</argument>
 			<argument index="1" name="type_hint" type="String" default="&quot;&quot;">
 			</argument>
-			<argument index="2" name="p_no_cache" type="bool" default="false">
+			<argument index="2" name="no_cache" type="bool" default="false">
 			</argument>
 			<description>
 			</description>

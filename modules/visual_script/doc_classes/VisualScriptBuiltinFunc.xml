@@ -154,7 +154,7 @@
 			Return the lesser of the two numbers, also known as their minimum.
 		</constant>
 		<constant name="LOGIC_CLAMP" value="46" enum="BuiltinFunc">
-			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to `min(max(input, range_low), range_high)`
+			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to [code]min(max(input, range_low), range_high)[/code].
 		</constant>
 		<constant name="LOGIC_NEAREST_PO2" value="47" enum="BuiltinFunc">
 			Return the nearest power of 2 to the input.

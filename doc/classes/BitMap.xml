@@ -88,7 +88,7 @@
 		<method name="set_bit_rect">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_rect" type="Rect2">
+			<argument index="0" name="rect" type="Rect2">
 			</argument>
 			<argument index="1" name="bit" type="bool">
 			</argument>
