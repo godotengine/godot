@@ -1,73 +1,107 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
-import codecs
 import sys
 import os
 import re
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 
-input_list = []
-cur_file = ""
+# Uncomment to do type checks. I have it commented out so it works below Python 3.5
+#from typing import List, Dict, TextIO, Tuple, Iterable, Optional, DefaultDict
+
+input_list = []  # type: List[str]
+current_reading_class = ""
+class_names = []  # type: List[str]
+classes = {}  # type: Dict[str, ET.Element]
 
 # http(s)://docs.godotengine.org/<langcode>/<tag>/path/to/page.html(#fragment-tag)
-godot_docs_pattern = re.compile('^http(?:s)?:\/\/docs\.godotengine\.org\/(?:[a-zA-Z0-9\.\-_]*)\/(?:[a-zA-Z0-9\.\-_]*)\/(.*)\.html(#.*)?$')
-
-for arg in sys.argv[1:]:
-    if arg.endswith(os.sep):
-        arg = arg[:-1]
-    input_list.append(arg)
-
-if len(input_list) < 1:
-    print('usage: makerst.py <path to folders> and/or <path to .xml files> (order of arguments irrelevant)')
-    print('example: makerst.py "../../modules/" "../classes" path_to/some_class.xml')
-    sys.exit(0)
+GODOT_DOCS_PATTERN = re.compile(r'^http(?:s)?://docs\.godotengine\.org/(?:[a-zA-Z0-9.\-_]*)/(?:[a-zA-Z0-9.\-_]*)/(.*)\.html(#.*)?$')
 
 
-def validate_tag(elem, tag):
-    if elem.tag != tag:
-        print("Tag mismatch, expected '" + tag + "', got " + elem.tag)
-        sys.exit(255)
+def main():  # type: () -> None
+    global current_reading_class
+    for arg in sys.argv[1:]:
+        if arg.endswith(os.sep):
+            arg = arg[:-1]
+        input_list.append(arg)
+
+    if len(input_list) < 1:
+        print('usage: makerst.py <path to folders> and/or <path to .xml files> (order of arguments irrelevant)')
+        print('example: makerst.py "../../modules/" "../classes" path_to/some_class.xml')
+        sys.exit(1)
+
+    file_list = []  # type: List[str]
+
+    for path in input_list:
+        if os.path.basename(path) == 'modules':
+            for subdir, dirs, _ in os.walk(path):
+                if 'doc_classes' in dirs:
+                    doc_dir = os.path.join(subdir, 'doc_classes')
+                    class_file_names = [f for f in os.listdir(doc_dir) if f.endswith('.xml')]
+                    file_list += [os.path.join(doc_dir, f) for f in class_file_names]
+
+        elif os.path.isdir(path):
+            file_list += [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.xml')]
+
+        elif os.path.isfile(path):
+            if not path.endswith(".xml"):
+                print("Got non-.xml file '{}' in input, skipping.".format(path))
+                continue
+
+            file_list.append(path)
 
 
-class_names = []
-classes = {}
+    for cur_file in file_list:
+        try:
+            tree = ET.parse(cur_file)
+        except ET.ParseError as e:
+            print("Parse error reading file '{}': {}".format(cur_file, e))
+            sys.exit(1)
+        doc = tree.getroot()
+
+        if 'version' not in doc.attrib:
+            print("Version missing from 'doc'")
+            sys.exit(255)
+
+        name = doc.attrib["name"]
+        if name in classes:
+            continue
+
+        class_names.append(name)
+        classes[name] = doc
+
+    class_names.sort()
+
+    # Don't make class list for Sphinx, :toctree: handles it
+    # make_class_list(class_names, 2)
+
+    for c in class_names:
+        current_reading_class = c
+        make_rst_class(classes[c])
 
 
-def ul_string(str, ul):
-    str += "\n"
-    for i in range(len(str) - 1):
-        str += ul
-    str += "\n"
-    return str
-
-
-def make_class_list(class_list, columns):
-    f = codecs.open('class_list.rst', 'wb', 'utf-8')
-    prev = 0
-    col_max = len(class_list) / columns + 1
+def make_class_list(class_list, columns):  # type: (List[str], int) -> None
+    # This function is no longer used.
+    f = open('class_list.rst', 'w', encoding='utf-8')
+    col_max = len(class_list) // columns + 1
     print(('col max is ', col_max))
-    col_count = 0
-    row_count = 0
-    last_initial = ''
-    fit_columns = []
+    fit_columns = []  # type: List[List[str]]
 
-    for n in range(0, columns):
-        fit_columns += [[]]
+    for _ in range(0, columns):
+        fit_columns.append([])
 
-    indexers = []
+    indexers = []  # type List[str]
     last_initial = ''
 
-    idx = 0
-    for n in class_list:
-        col = idx / col_max
+    for (idx, name) in enumerate(class_list):
+        col = idx // col_max
         if col >= columns:
             col = columns - 1
-        fit_columns[col] += [n]
+        fit_columns[col].append(name)
         idx += 1
-        if n[:1] != last_initial:
-            indexers += [n]
-        last_initial = n[:1]
+        if name[:1] != last_initial:
+            indexers.append(name)
+        last_initial = name[:1]
 
     row_max = 0
     f.write("\n")
@@ -111,7 +145,7 @@ def make_class_list(class_list, columns):
     f.close()
 
 
-def rstize_text(text, cclass):
+def rstize_text(text, cclass):  # type: (str, str) -> str
     # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
     pos = 0
     while True:
@@ -209,7 +243,7 @@ def rstize_text(text, cclass):
 
         escape_post = False
 
-        if tag_text in class_names:
+        if tag_text in classes:
             tag_text = make_type(tag_text)
             escape_post = True
         else:  # command
@@ -228,17 +262,15 @@ def rstize_text(text, cclass):
             elif inside_code:
                 tag_text = '[' + tag_text + ']'
             elif cmd.find('html') == 0:
-                cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
                 tag_text = param
             elif cmd.find('method') == 0 or cmd.find('member') == 0 or cmd.find('signal') == 0:
-                cmd = tag_text[:space_pos]
                 param = tag_text[space_pos + 1:]
 
                 if param.find('.') != -1:
                     ss = param.split('.')
                     if len(ss) > 2:
-                        sys.exit("Bad reference: '" + param + "' in file: " + cur_file)
+                        sys.exit("Bad reference: '" + param + "' in class: " + current_reading_class)
                     (class_param, method_param) = ss
                     tag_text = ':ref:`' + class_param + '.' + method_param + '<class_' + class_param + '_' + method_param + '>`'
                 else:
@@ -309,15 +341,15 @@ def rstize_text(text, cclass):
     return text
 
 
-def format_table(f, pp):
+def format_table(f, pp):  # type: (TextIO, Iterable[Tuple[str, ...]]) -> None
     longest_t = 0
     longest_s = 0
     for s in pp:
         sl = len(s[0])
-        if (sl > longest_s):
+        if sl > longest_s:
             longest_s = sl
         tl = len(s[1])
-        if (tl > longest_t):
+        if tl > longest_t:
             longest_t = tl
 
     sep = "+"
@@ -330,25 +362,24 @@ def format_table(f, pp):
     f.write(sep)
     for s in pp:
         rt = s[0]
-        while (len(rt) < longest_s):
+        while len(rt) < longest_s:
             rt += " "
         st = s[1]
-        while (len(st) < longest_t):
+        while len(st) < longest_t:
             st += " "
         f.write("| " + rt + " | " + st + " |\n")
         f.write(sep)
     f.write('\n')
 
 
-def make_type(t):
-    global class_names
-    if t in class_names:
+def make_type(t):  # type: (str) -> str
+    if t in classes:
         return ':ref:`' + t + '<class_' + t + '>`'
+    print("Warning: unresolved type reference '{}' in class '{}'".format(t, current_reading_class))
     return t
 
 
-def make_enum(t):
-    global class_names
+def make_enum(t):  # type: (str) -> str
     p = t.find(".")
     # Global enums such as Error are relative to @GlobalScope.
     if p >= 0:
@@ -368,39 +399,41 @@ def make_enum(t):
 
 
 def make_method(
-        f,
-        cname,
-        method_data,
-        declare,
-        event=False,
-        pp=None
-):
-    if (declare or pp is None):
+        f,  # type: TextIO
+        cname,  # type: str
+        method_data,  # type: ET.Element
+        declare,  # type: bool
+        event=False,  # type: bool
+        pp=None  # type: Optional[List[Tuple[str, str]]]
+):  # type: (...) -> None
+    if declare or pp is None:
         t = '- '
     else:
         t = ""
 
-    ret_type = 'void'
+    argidx = []  # type: List[int]
     args = list(method_data)
-    mdata = {}
-    mdata['argidx'] = []
-    for a in args:
-        if a.tag == 'return':
+    mdata = {}  # type: Dict[int, ET.Element]
+    for arg in args:
+        if arg.tag == 'return':
             idx = -1
-        elif a.tag == 'argument':
-            idx = int(a.attrib['index'])
+        elif arg.tag == 'argument':
+            idx = int(arg.attrib['index'])
         else:
             continue
 
-        mdata['argidx'].append(idx)
-        mdata[idx] = a
+        argidx.append(idx)
+        mdata[idx] = arg
 
     if not event:
-        if -1 in mdata['argidx']:
+        if -1 in argidx:
             if 'enum' in mdata[-1].attrib:
                 t += make_enum(mdata[-1].attrib['enum'])
             else:
-                t += make_type(mdata[-1].attrib['type'])
+                if mdata[-1].attrib['type'] == 'void':
+                    t += 'void'
+                else:
+                    t += make_type(mdata[-1].attrib['type'])
         else:
             t += 'void'
         t += ' '
@@ -412,8 +445,7 @@ def make_method(
         s = ':ref:`' + method_data.attrib['name'] + '<class_' + cname + "_" + method_data.attrib['name'] + '>` '
 
     s += '**(**'
-    argfound = False
-    for a in mdata['argidx']:
+    for a in argidx:
         arg = mdata[a]
         if a < 0:
             continue
@@ -439,8 +471,8 @@ def make_method(
     if 'qualifiers' in method_data.attrib:
         s += ' ' + method_data.attrib['qualifiers']
 
-    if (not declare):
-        if (pp != None):
+    if not declare:
+        if pp is not None:
             pp.append((t, s))
         else:
             f.write("- " + t + " " + s + "\n")
@@ -449,12 +481,12 @@ def make_method(
 
 
 def make_properties(
-        f,
-        cname,
-        prop_data,
-        description=False,
-        pp=None
-):
+        f,  # type: TextIO
+        cname,  # type: str
+        prop_data,  # type:  ET.Element
+        description=False,  # type: bool
+        pp=None  # type: Optional[List[Tuple[str, str]]]
+):  # type: (...) -> None
     t = ""
     if 'enum' in prop_data.attrib:
         t += make_enum(prop_data.attrib['enum'])
@@ -471,7 +503,7 @@ def make_properties(
     else:
         s = ':ref:`' + prop_data.attrib['name'] + '<class_' + cname + "_" + prop_data.attrib['name'] + '>`'
 
-    if (pp != None):
+    if pp is not None:
         pp.append((t, s))
     elif description:
         f.write('- ' + t + ' ' + s + '\n\n')
@@ -479,14 +511,14 @@ def make_properties(
             format_table(f, setget)
 
 
-def make_heading(title, underline):
-    return title + '\n' + underline * len(title) + "\n\n"
+def make_heading(title, underline):  # type: (str, str) -> str
+    return title + '\n' + (underline * len(title)) + "\n\n"
 
 
-def make_rst_class(node):
+def make_rst_class(node):  # type: (ET.Element) -> None
     name = node.attrib['name']
 
-    f = codecs.open("class_" + name.lower() + '.rst', 'wb', 'utf-8')
+    f = open("class_" + name.lower() + '.rst', 'w', encoding='utf-8')
 
     # Warn contributors not to edit this file directly
     f.write(".. Generated automatically by doc/tools/makerst.py in Godot's source tree.\n")
@@ -502,31 +534,31 @@ def make_rst_class(node):
         inh = node.attrib['inherits'].strip()
         f.write('**Inherits:** ')
         first = True
-        while (inh in classes):
-            if (not first):
+        while inh in classes:
+            if not first:
                 f.write(" **<** ")
             else:
                 first = False
 
             f.write(make_type(inh))
             inode = classes[inh]
-            if ('inherits' in inode.attrib):
+            if 'inherits' in inode.attrib:
                 inh = inode.attrib['inherits'].strip()
             else:
-                inh = None
+                break
         f.write("\n\n")
 
     # Descendents
     inherited = []
-    for cn in classes:
+    for cn in class_names:
         c = classes[cn]
         if 'inherits' in c.attrib:
-            if (c.attrib['inherits'].strip() == name):
+            if c.attrib['inherits'].strip() == name:
                 inherited.append(c.attrib['name'])
-    if (len(inherited)):
+    if len(inherited):
         f.write('**Inherited By:** ')
         for i in range(len(inherited)):
-            if (i > 0):
+            if i > 0:
                 f.write(", ")
             f.write(make_type(inherited[i]))
         f.write("\n\n")
@@ -538,46 +570,46 @@ def make_rst_class(node):
     # Brief description
     f.write(make_heading('Brief Description', '-'))
     briefd = node.find('brief_description')
-    if briefd != None:
+    if briefd is not None and briefd.text is not None:
         f.write(rstize_text(briefd.text.strip(), name) + "\n\n")
 
     # Properties overview
     members = node.find('members')
-    if members != None and len(list(members)) > 0:
+    if members is not None and len(list(members)) > 0:
         f.write(make_heading('Properties', '-'))
-        ml = []
-        for m in list(members):
+        ml = []  # type: List[Tuple[str, str]]
+        for m in members:
             make_properties(f, name, m, False, ml)
         format_table(f, ml)
 
     # Methods overview
     methods = node.find('methods')
-    if methods != None and len(list(methods)) > 0:
+    if methods is not None and len(list(methods)) > 0:
         f.write(make_heading('Methods', '-'))
         ml = []
-        for m in list(methods):
+        for m in methods:
             make_method(f, name, m, False, False, ml)
         format_table(f, ml)
 
     # Theme properties
     theme_items = node.find('theme_items')
-    if theme_items != None and len(list(theme_items)) > 0:
+    if theme_items is not None and len(list(theme_items)) > 0:
         f.write(make_heading('Theme Properties', '-'))
         ml = []
-        for m in list(theme_items):
+        for m in theme_items:
             make_properties(f, name, m, False, ml)
         format_table(f, ml)
 
     # Signals
     events = node.find('signals')
-    if events != None and len(list(events)) > 0:
+    if events is not None and len(list(events)) > 0:
         f.write(make_heading('Signals', '-'))
-        for m in list(events):
+        for m in events:
             f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_method(f, name, m, True, True)
             f.write('\n')
             d = m.find('description')
-            if d is None or d.text.strip() == '':
+            if d is None or d.text is None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
@@ -585,13 +617,15 @@ def make_rst_class(node):
     # Constants and enums
     constants = node.find('constants')
     consts = []
-    enum_names = set()
-    enums = []
-    if constants != None and len(list(constants)) > 0:
-        for c in list(constants):
+    enum_names = []
+    enums = defaultdict(list)  # type: DefaultDict[str, List[ET.Element]]
+    if constants is not None and len(list(constants)) > 0:
+        for c in constants:
             if 'enum' in c.attrib:
-                enum_names.add(c.attrib['enum'])
-                enums.append(c)
+                ename = c.attrib['enum']
+                if ename not in enums:
+                    enum_names.append(ename)
+                enums[ename].append(c)
             else:
                 consts.append(c)
 
@@ -601,43 +635,42 @@ def make_rst_class(node):
         for e in enum_names:
             f.write(".. _enum_" + name + "_" + e + ":\n\n")
             f.write("enum **" + e + "**:\n\n")
-            for c in enums:
-                if c.attrib['enum'] != e:
-                    continue
+            for c in enums[e]:
                 s = '- '
                 s += '**' + c.attrib['name'] + '**'
                 if 'value' in c.attrib:
                     s += ' = **' + c.attrib['value'] + '**'
-                if c.text.strip() != '':
+                if c.text is not None and c.text.strip() != '':
                     s += ' --- ' + rstize_text(c.text.strip(), name)
                 f.write(s + '\n\n')
 
     # Constants
     if len(consts) > 0:
         f.write(make_heading('Constants', '-'))
-        for c in list(consts):
+        for c in consts:
             s = '- '
             s += '**' + c.attrib['name'] + '**'
             if 'value' in c.attrib:
                 s += ' = **' + c.attrib['value'] + '**'
-            if c.text.strip() != '':
+            if c.text is not None and c.text.strip() != '':
                 s += ' --- ' + rstize_text(c.text.strip(), name)
             f.write(s + '\n\n')
 
     # Class description
     descr = node.find('description')
-    if descr != None and descr.text.strip() != '':
+    if descr is not None and descr.text is not None and descr.text.strip() != '':
         f.write(make_heading('Description', '-'))
         f.write(rstize_text(descr.text.strip(), name) + "\n\n")
 
     # Online tutorials
-    global godot_docs_pattern
     tutorials = node.find('tutorials')
-    if tutorials != None and len(tutorials) > 0:
+    if tutorials is not None and len(tutorials) > 0:
         f.write(make_heading('Tutorials', '-'))
         for t in tutorials:
+            if t.text is None:
+                continue
             link = t.text.strip()
-            match = godot_docs_pattern.search(link);
+            match = GODOT_DOCS_PATTERN.search(link)
             if match:
                 groups = match.groups()
                 if match.lastindex == 2:
@@ -658,63 +691,28 @@ def make_rst_class(node):
 
     # Property descriptions
     members = node.find('members')
-    if members != None and len(list(members)) > 0:
+    if members is not None and len(list(members)) > 0:
         f.write(make_heading('Property Descriptions', '-'))
-        for m in list(members):
+        for m in members:
             f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_properties(f, name, m, True)
-            if m.text.strip() != '':
+            if m.text is not None and m.text.strip() != '':
                 f.write(rstize_text(m.text.strip(), name))
                 f.write('\n\n')
 
     # Method descriptions
     methods = node.find('methods')
-    if methods != None and len(list(methods)) > 0:
+    if methods is not None and len(list(methods)) > 0:
         f.write(make_heading('Method Descriptions', '-'))
-        for m in list(methods):
+        for m in methods:
             f.write(".. _class_" + name + "_" + m.attrib['name'] + ":\n\n")
             make_method(f, name, m, True)
             f.write('\n')
             d = m.find('description')
-            if d is None or d.text.strip() == '':
+            if d is None or d.text is None or d.text.strip() == '':
                 continue
             f.write(rstize_text(d.text.strip(), name))
             f.write("\n\n")
 
-
-file_list = []
-
-for path in input_list:
-    if os.path.basename(path) == 'modules':
-        for subdir, dirs, _ in os.walk(path):
-            if 'doc_classes' in dirs:
-                doc_dir = os.path.join(subdir, 'doc_classes')
-                class_file_names = [f for f in os.listdir(doc_dir) if f.endswith('.xml')]
-                file_list += [os.path.join(doc_dir, f) for f in class_file_names]
-    elif not os.path.isfile(path):
-        file_list += [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.xml')]
-    elif os.path.isfile(path) and path.endswith('.xml'):
-        file_list.append(path)
-
-for cur_file in file_list:
-    tree = ET.parse(cur_file)
-    doc = tree.getroot()
-
-    if 'version' not in doc.attrib:
-        print("Version missing from 'doc'")
-        sys.exit(255)
-
-    version = doc.attrib['version']
-    if doc.attrib['name'] in class_names:
-        continue
-    class_names.append(doc.attrib['name'])
-    classes[doc.attrib['name']] = doc
-
-class_names.sort()
-
-# Don't make class list for Sphinx, :toctree: handles it
-# make_class_list(class_names, 2)
-
-for cn in class_names:
-    c = classes[cn]
-    make_rst_class(c)
+if __name__ == '__main__':
+    main()
