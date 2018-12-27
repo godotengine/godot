@@ -138,10 +138,13 @@
 			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the x-axis.
 		</member>
 		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the y-axis.
 		</member>
 		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock">
+			Lock the body's movement in the z-axis.
 		</member>
 	</members>
 	<constants>
