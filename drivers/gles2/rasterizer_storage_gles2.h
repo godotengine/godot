@@ -838,6 +838,8 @@ public:
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances;
 
+		Transform2D base_transform_2d;
+
 		Skeleton() :
 				use_2d(false),
 				size(0),

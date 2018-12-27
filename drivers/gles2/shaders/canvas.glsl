@@ -12,11 +12,39 @@ precision mediump int;
 
 uniform highp mat4 projection_matrix;
 /* clang-format on */
+
+#include "stdlib.glsl"
+
 uniform highp mat4 modelview_matrix;
 uniform highp mat4 extra_matrix;
 attribute highp vec2 vertex; // attrib:0
 attribute vec4 color_attrib; // attrib:3
 attribute vec2 uv_attrib; // attrib:4
+
+#ifdef USE_SKELETON
+attribute highp vec4 bone_indices; // attrib:6
+attribute highp vec4 bone_weights; // attrib:7
+#endif
+
+#ifdef USE_INSTANCING
+
+attribute highp vec4 instance_xform0; //attrib:8
+attribute highp vec4 instance_xform1; //attrib:9
+attribute highp vec4 instance_xform2; //attrib:10
+attribute highp vec4 instance_color; //attrib:11
+
+#ifdef USE_INSTANCE_CUSTOM
+attribute highp vec4 instance_custom_data; //attrib:12
+#endif
+
+#endif
+
+#ifdef USE_SKELETON
+uniform highp sampler2D skeleton_texture; // texunit:-3
+uniform highp ivec2 skeleton_texture_size;
+uniform highp mat4 skeleton_transform;
+uniform highp mat4 skeleton_transform_inverse;
+#endif
 
 varying vec2 uv_interp;
 varying vec4 color_interp;
@@ -125,7 +153,7 @@ VERTEX_SHADER_CODE
 	}
 
 #if !defined(SKIP_TRANSFORM_USED)
-	outvec = extra_matrix * outvec;
+	outvec = extra_matrix_instance * outvec;
 	outvec = modelview_matrix * outvec;
 #endif
 
@@ -134,6 +162,35 @@ VERTEX_SHADER_CODE
 #ifdef USE_PIXEL_SNAP
 	outvec.xy = floor(outvec + 0.5).xy;
 #endif
+
+#ifdef USE_SKELETON
+
+	// look up transform from the "pose texture"
+	if (bone_weights != vec4(0.0)) {
+
+		highp mat4 bone_transform = mat4(0.0);
+
+		for (int i = 0; i < 4; i++) {
+			ivec2 tex_ofs = ivec2(int(bone_indices[i]) * 2, 0);
+
+			highp mat4 b = mat4(
+					texel2DFetch(skeleton_texture, skeleton_texture_size, tex_ofs + ivec2(0, 0)),
+					texel2DFetch(skeleton_texture, skeleton_texture_size, tex_ofs + ivec2(1, 0)),
+					vec4(0.0, 0.0, 1.0, 0.0),
+					vec4(0.0, 0.0, 0.0, 1.0));
+
+			bone_transform += b * bone_weights[i];
+		}
+
+		mat4 bone_matrix = skeleton_transform * transpose(bone_transform) * skeleton_transform_inverse;
+
+		outvec = bone_matrix * outvec;
+
+	}
+
+
+#endif
+
 
 	gl_Position = projection_matrix * outvec;
 
@@ -184,7 +241,7 @@ uniform vec4 final_modulate;
 
 #ifdef SCREEN_TEXTURE_USED
 
-uniform sampler2D screen_texture; // texunit:-3
+uniform sampler2D screen_texture; // texunit:-4
 
 #endif
 
@@ -208,7 +265,7 @@ uniform highp float light_height;
 uniform highp float light_outside_alpha;
 uniform highp float shadow_distance_mult;
 
-uniform lowp sampler2D light_texture; // texunit:-3
+uniform lowp sampler2D light_texture; // texunit:-4
 varying vec4 light_uv_interp;
 varying vec2 transformed_light_uv;
 
@@ -216,7 +273,7 @@ varying vec4 local_rot;
 
 #ifdef USE_SHADOWS
 
-uniform highp sampler2D shadow_texture; // texunit:-4
+uniform highp sampler2D shadow_texture; // texunit:-5
 varying highp vec2 pos;
 
 #endif
