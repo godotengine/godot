@@ -42,6 +42,10 @@ class RasterizerSceneGLES2;
 
 class RasterizerCanvasGLES2 : public RasterizerCanvas {
 public:
+	enum {
+		INSTANCE_ATTRIB_BASE = 8,
+	};
+
 	struct Uniforms {
 		Transform projection_matrix;
 
@@ -75,6 +79,11 @@ public:
 
 		bool using_texture_rect;
 		bool using_ninepatch;
+		bool using_skeleton;
+
+		Transform2D skeleton_transform;
+		Transform2D skeleton_transform_inverse;
+		Vector2i skeleton_texture_size;
 
 		RID current_tex;
 		RID current_normal;
@@ -99,10 +108,8 @@ public:
 	virtual void canvas_begin();
 	virtual void canvas_end();
 
-	_FORCE_INLINE_ void _set_texture_rect_mode(bool p_enable, bool p_ninepatch = false);
-
 	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs);
-	_FORCE_INLINE_ void _draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
+	_FORCE_INLINE_ void _draw_polygon(const int *p_indices, int p_index_count, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor, const float *p_weights = NULL, const int *p_bones = NULL);
 	_FORCE_INLINE_ void _draw_generic(GLuint p_primitive, int p_vertex_count, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, bool p_singlecolor);
 
 	_FORCE_INLINE_ void _canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip, RasterizerStorageGLES2::Material *p_material);
