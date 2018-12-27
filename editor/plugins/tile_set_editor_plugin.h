@@ -107,7 +107,7 @@ class TileSetEditor : public HSplitContainer {
 
 	bool creating_shape;
 	int dragging_point;
-	float tile_names_opacity;
+	bool tile_names_visible;
 	Vector2 region_from;
 	Rect2 edited_region;
 	bool draw_edited_region;
