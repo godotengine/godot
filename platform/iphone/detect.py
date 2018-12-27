@@ -29,7 +29,6 @@ def get_opts():
         BoolVariable('icloud', 'Support for iCloud', True),
         BoolVariable('ios_exceptions', 'Enable exceptions', False),
         ('ios_triple', 'Triple for ios toolchain', ''),
-        BoolVariable('ios_sim', 'Build simulator binary', False),
     ]
 
 
@@ -64,10 +63,7 @@ def configure(env):
         env.Append(LINKFLAGS=['-flto'])
 
     ## Architecture
-    if env["ios_sim"] and not ("arch" in env):
-      env["arch"] = "x86"
-
-    if env["arch"] == "x86":  # i386, simulator
+    if env["arch"] == "x86":  # i386
         env["bits"] = "32"
     elif env["arch"] == "x86_64":
         env["bits"] = "64"
