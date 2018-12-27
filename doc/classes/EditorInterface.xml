@@ -159,7 +159,7 @@
 		<method name="select_file">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_file" type="String">
+			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
 			</description>

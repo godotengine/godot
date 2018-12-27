@@ -37,6 +37,16 @@
 				Returns the tile index of the given cell.
 			</description>
 		</method>
+		<method name="get_cell_autotile_coord" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_cellv" qualifiers="const">
 			<return type="int">
 			</return>

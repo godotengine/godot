@@ -254,7 +254,7 @@
 			</description>
 		</signal>
 		<signal name="popup_request">
-			<argument index="0" name="p_position" type="Vector2">
+			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
 				Signal sent when a popup is requested. Happens on right-clicking in the GraphEdit. 'p_position' is the position of the mouse pointer when the signal is sent.

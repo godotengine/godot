@@ -157,6 +157,12 @@
 				Clear all the state and reset the object being edited to zero. This ensures your plugin does not keep editing a currently existing node, or a node from the wrong scene.
 			</description>
 		</method>
+		<method name="disable_plugin" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="edit" qualifiers="virtual">
 			<return type="void">
 			</return>
@@ -164,6 +170,12 @@
 			</argument>
 			<description>
 				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
+			</description>
+		</method>
+		<method name="enable_plugin" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="forward_canvas_draw_over_viewport" qualifiers="virtual">
