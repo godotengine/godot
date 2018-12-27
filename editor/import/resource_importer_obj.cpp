@@ -45,6 +45,7 @@ uint32_t EditorOBJImporter::get_import_flags() const {
 static Error _parse_material_library(const String &p_path, Map<String, Ref<SpatialMaterial> > &material_map, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_EXPLAIN(vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 	Ref<SpatialMaterial> current;
@@ -206,7 +207,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
-
+	ERR_EXPLAIN(vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 	Ref<ArrayMesh> mesh;
@@ -216,11 +217,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 	Vector3 scale_mesh = p_scale_mesh;
 	bool flip_faces = false;
 	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
-
-	//bool flip_faces = p_options["force/flip_faces"];
-	//bool force_smooth = p_options["force/smooth_shading"];
-	//bool weld_vertices = p_options["force/weld_vertices"];
-	//float weld_tolerance = p_options["force/weld_tolerance"];
 
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
