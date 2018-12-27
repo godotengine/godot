@@ -8,7 +8,7 @@ namespace Godot
         // Color names and values are derived from core/color_names.inc
         internal static readonly Dictionary<string, Color> namedColors = new Dictionary<string, Color> {
             {"aliceblue", new Color(0.94f, 0.97f, 1.00f)},
-            {"antiqueWhite", new Color(0.98f, 0.92f, 0.84f)},
+            {"antiquewhite", new Color(0.98f, 0.92f, 0.84f)},
             {"aqua", new Color(0.00f, 1.00f, 1.00f)},
             {"aquamarine", new Color(0.50f, 1.00f, 0.83f)},
             {"azure", new Color(0.94f, 1.00f, 1.00f)},
