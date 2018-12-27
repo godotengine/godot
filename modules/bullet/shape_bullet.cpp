@@ -487,7 +487,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 		PoolByteArray im_data = l_image->get_data();
 
-		l_heights.resize(l_image->get_width() * l_image->get_width());
+		l_heights.resize(l_image->get_width() * l_image->get_height());
 
 		PoolRealArray::Write w = l_heights.write();
 		PoolByteArray::Read r = im_data.read();
