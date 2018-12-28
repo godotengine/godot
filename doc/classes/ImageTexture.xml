@@ -23,9 +23,8 @@
 			<argument index="3" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [code]ImageTexture[/code] with "width" and "height".
-				"format" one of [Image].FORMAT_*.
-				"flags" one or more of [Texture].FLAG_*.
+				Create a new [code]ImageTexture[/code] with [code]width[/code] and [code]height[/code].
+				[code]format[/code] is a value from [enum Image.Format], [code]flags[/code] is any combination of [enum Texture.Flags].
 			</description>
 		</method>
 		<method name="create_from_image">
@@ -36,14 +35,14 @@
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [code]ImageTexture[/code] from an [Image] with "flags" from [Texture].FLAG_*. An sRGB to linear color space conversion can take place, according to [Image].FORMAT_*.
+				Create a new [code]ImageTexture[/code] from an [Image] with [code]flags[/code] from [enum Texture.Flags]. An sRGB to linear color space conversion can take place, according to [enum Image.Format].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [code]ImageTexture[/code], one of [Image].FORMAT_*.
+				Return the format of the [code]ImageTexture[/code], one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="load">
@@ -76,7 +75,7 @@
 	</methods>
 	<members>
 		<member name="lossy_quality" type="float" setter="set_lossy_storage_quality" getter="get_lossy_storage_quality">
-			The storage quality for [code]ImageTexture[/code].STORAGE_COMPRESS_LOSSY.
+			The storage quality for [code]STORAGE_COMPRESS_LOSSY[/code].
 		</member>
 		<member name="storage" type="int" setter="set_storage" getter="get_storage" enum="ImageTexture.Storage">
 			The storage type (raw, lossy, or compressed).
@@ -87,7 +86,7 @@
 			[Image] data is stored raw and unaltered.
 		</constant>
 		<constant name="STORAGE_COMPRESS_LOSSY" value="1" enum="Storage">
-			[Image] data is compressed with a lossy algorithm. You can set the storage quality with [method set_lossy_storage_quality].
+			[Image] data is compressed with a lossy algorithm. You can set the storage quality with [member lossy_quality].
 		</constant>
 		<constant name="STORAGE_COMPRESS_LOSSLESS" value="2" enum="Storage">
 			[Image] data is compressed with a lossless algorithm.

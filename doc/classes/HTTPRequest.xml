@@ -102,16 +102,16 @@
 			Request failed while resolving.
 		</constant>
 		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
-			Request failed due to connection(read/write) error.
+			Request failed due to connection (read/write) error.
 		</constant>
 		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5" enum="Result">
 			Request failed on SSL handshake.
 		</constant>
 		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
-			Request does not have a response(yet).
+			Request does not have a response (yet).
 		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
-			Request exceeded its maximum size limit, see [method set_body_size_limit].
+			Request exceeded its maximum size limit, see [member body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8" enum="Result">
 			Request failed. (Unused)
@@ -123,7 +123,7 @@
 			HTTPRequest couldn't write to the download file.
 		</constant>
 		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11" enum="Result">
-			Request reached its maximum redirect limit, see [method set_max_redirects].
+			Request reached its maximum redirect limit, see [member max_redirects].
 		</constant>
 	</constants>
 </class>

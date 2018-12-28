@@ -340,7 +340,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Steal the focus from another control and become the focused control (see [method set_focus_mode]).
+				Steal the focus from another control and become the focused control (see [member focus_mode]).
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
@@ -786,7 +786,7 @@
 			Sent when the node loses focus.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
-			Sent when the node's [member theme] changes, right before Godot redraws the control. Happens when you call one of the [code]add_*_override[/code]
+			Sent when the node's [member theme] changes, right before Godot redraws the control. Happens when you call one of the [code]add_*_override[/code] methods.
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
 			Sent when an open modal dialog closes. See [member show_modal].
@@ -796,7 +796,7 @@
 		<constant name="NOTIFICATION_SCROLL_END" value="48">
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
-			Show the system's arrow mouse cursor when the user hovers the node. Use with [method set_default_cursor_shape].
+			Show the system's arrow mouse cursor when the user hovers the node. Use with [member mouse_default_cursor_shape].
 		</constant>
 		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
 			Show the system's I-beam mouse cursor when the user hovers the node. The I-beam pointer has a shape similar to "I". It tells the user they can highlight or insert text.
