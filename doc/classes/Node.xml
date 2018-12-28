@@ -11,7 +11,7 @@
 		This means that when adding a node to the scene tree, the following order will be used for the callbacks: [method _enter_tree] of the parent, [method _enter_tree] of the children, [method _ready] of the children and finally [method _ready] of the parent (recursively for the entire scene tree).
 		[b]Processing:[/b] Nodes can override the "process" state, so that they receive a callback on each frame requesting them to process (do something). Normal processing (callback [method _process], toggled with [method set_process]) happens as fast as possible and is dependent on the frame rate, so the processing time [i]delta[/i] is passed as an argument. Physics processing (callback [method _physics_process], toggled with [method set_physics_process]) happens a fixed number of times per second (60 by default) and is useful for code related to the physics engine.
 		Nodes can also process input events. When present, the [method _input] function will be called for each input that the program receives. In many cases, this can be overkill (unless used for simple projects), and the [method _unhandled_input] function might be preferred; it is called when the input event was not handled by anyone else (typically, GUI [Control] nodes), ensuring that the node only receives the events that were meant for it.
-		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with [method set_owner]. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
+		To keep track of the scene hierarchy (especially when instancing scenes into other scenes), an "owner" can be set for the node with the [member owner] property. This keeps track of who instanced what. This is mostly useful when writing editors and tools, though.
 		Finally, when a node is freed with [method Object.free] or [method queue_free], it will also free all its children.
 		[b]Groups:[/b] Nodes can be added to as many groups as you want to be easy to manage, you could create groups like "enemies" or "collectables" for example, depending on your game. See [method add_to_group], [method is_in_group] and [method remove_from_group]. You can then retrieve all nodes in these groups, iterate them and even call methods on groups via the methods on [SceneTree].
 		[b]Networking with nodes:[/b] After connecting to a server (or making one, see [NetworkedMultiplayerENet]) it is possible to use the built-in RPC (remote procedure call) system to communicate over the network. By calling [method rpc] with a method name, it will be called locally and in all connected peers (peers = clients and the server that accepts connections). To identify which node receives the RPC call Godot will use its [NodePath] (make sure node names are the same on all peers). Also take a look at the high-level networking tutorial and corresponding demos.
@@ -152,7 +152,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node can process while the scene tree is paused (see [method set_pause_mode]). Always returns [code]true[/code] if the scene tree is not paused, and [code]false[/code] if the node is not in the tree. FIXME: Why FAIL_COND?
+				Returns [code]true[/code] if the node can process while the scene tree is paused (see [member pause_mode]). Always returns [code]true[/code] if the scene tree is not paused, and [code]false[/code] if the node is not in the tree.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const">
@@ -162,7 +162,7 @@
 			</argument>
 			<description>
 				Duplicates the node, returning a new node.
-				You can fine-tune the behavior using the [code]flags[/code]. See DUPLICATE_* constants.
+				You can fine-tune the behavior using the [code]flags[/code] (see [enum Node.DuplicateFlags]).
 			</description>
 		</method>
 		<method name="find_node" qualifiers="const">

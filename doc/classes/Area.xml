@@ -95,7 +95,7 @@
 			If [code]true[/code], the area's audio bus overrides the default audio bus. Default value: [code]false[/code].
 		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer">
-			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [code]collision_mask[/code].
+			The area's physics layer(s). Collidable objects can exist in any of 32 different layers. A contact is detected if object A is in any of the layers that object B scans, or object B is in any layers that object A scans. See also [member collision_mask].
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
 			The physics layers this area scans to determine collision detection.
@@ -107,10 +107,10 @@
 			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
 		</member>
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point">
-			If [code]true[/code], gravity is calculated from a point (set via [code]gravity_vec[/code]). Also see [code]space_override[/code]. Default value: [code]false[/code].
+			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). Also see [member space_override]. Default value: [code]false[/code].
 		</member>
 		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector">
-			The area's gravity vector (not normalized). If gravity is a point (see [method is_gravity_a_point]), this will be the point of attraction.
+			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp">
 			The rate at which objects stop moving in this area. Represents the linear velocity lost per second. Values range from [code]0[/code] (no damping) to [code]1[/code] (full damping).
@@ -137,7 +137,7 @@
 			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area.SpaceOverride">
-			Override mode for gravity and damping calculations within this area. See the SPACE_OVERRIDE_* constants for values.
+			Override mode for gravity and damping calculations within this area. See [enum Area.SpaceOverride] for possible values.
 		</member>
 	</members>
 	<signals>
@@ -227,16 +227,16 @@
 			This area does not affect gravity/damping.
 		</constant>
 		<constant name="SPACE_OVERRIDE_COMBINE" value="1" enum="SpaceOverride">
-			This area adds its gravity/damping values to whatever has been calculated so far (in [code]priority[/code] order).
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order).
 		</constant>
 		<constant name="SPACE_OVERRIDE_COMBINE_REPLACE" value="2" enum="SpaceOverride">
-			This area adds its gravity/damping values to whatever has been calculated so far (in [code]priority[/code] order), ignoring any lower priority areas.
+			This area adds its gravity/damping values to whatever has been calculated so far (in [member priority] order), ignoring any lower priority areas.
 		</constant>
 		<constant name="SPACE_OVERRIDE_REPLACE" value="3" enum="SpaceOverride">
 			This area replaces any gravity/damping, even the defaults, ignoring any lower priority areas.
 		</constant>
 		<constant name="SPACE_OVERRIDE_REPLACE_COMBINE" value="4" enum="SpaceOverride">
-			This area replaces any gravity/damping calculated so far (in [code]priority[/code] order), but keeps calculating the rest of the areas.
+			This area replaces any gravity/damping calculated so far (in [member priority] order), but keeps calculating the rest of the areas.
 		</constant>
 	</constants>
 </class>

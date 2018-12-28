@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		EditorImportPlugins provide a way to extend the editor's resource import functionality. Use them to import resources from custom files or to provide alternatives to the editor's existing importers. Register your [EditorPlugin] with [method EditorPlugin.add_import_plugin].
-		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method get_recognized_extension] and [method get_resource_type]). They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].import[/code] directory.
+		EditorImportPlugins work by associating with specific file extensions and a resource type. See [method get_recognized_extensions] and [method get_resource_type]). They may optionally specify some import presets that affect the import process. EditorImportPlugins are responsible for creating the resources and saving them in the [code].import[/code] directory.
 		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
 		[codeblock]
 		tool
@@ -60,7 +60,7 @@
 			<argument index="0" name="preset" type="int">
 			</argument>
 			<description>
-				Get the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: "name", "default_value", "property_hint" (optional), "hint_string" (optional), "usage" (optional).
+				Get the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
 			</description>
 		</method>
 		<method name="get_import_order" qualifiers="virtual">
@@ -114,14 +114,14 @@
 			<return type="Array">
 			</return>
 			<description>
-				Get the list of file extensions to associate with this loader (case insensitive). e.g. ["obj"].
+				Get the list of file extensions to associate with this loader (case insensitive). e.g. [code]["obj"][/code].
 			</description>
 		</method>
 		<method name="get_resource_type" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
-				Get the Godot resource type associated with this loader. e.g. "Mesh" or "Animation".
+				Get the Godot resource type associated with this loader. e.g. [code]"Mesh"[/code] or [code]"Animation"[/code].
 			</description>
 		</method>
 		<method name="get_save_extension" qualifiers="virtual">
