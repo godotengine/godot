@@ -871,6 +871,31 @@ bool EditorInspectorPlugin::can_handle(Object *p_object) {
 	}
 	return false;
 }
+
+bool EditorInspectorPlugin::filter_property_list(Object *p_object, List<PropertyInfo> *p_list) {
+
+	if (get_script_instance()) {
+
+		Array va;
+		for (const List<PropertyInfo>::Element *E = p_list->front(); E; E = E->next()) {
+			va.push_back(Dictionary(E->get()));
+		}
+
+		bool result = get_script_instance()->call("filter_property_list", p_object, va);
+
+		p_list->clear();
+
+		for (int i = 0; i < va.size(); i++) {
+			Dictionary d = va[i];
+			PropertyInfo info = PropertyInfo::from_dict(d);
+			p_list->push_back(info);
+		}
+
+		return result;
+	}
+	return false;
+}
+
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
 
 	if (get_script_instance()) {
@@ -918,6 +943,11 @@ void EditorInspectorPlugin::_bind_methods() {
 	vm.return_val.type = Variant::BOOL;
 	vm.arguments.push_back(PropertyInfo(Variant::OBJECT, "object"));
 	BIND_VMETHOD(vm);
+	vm.name = "filter_property_list";
+	vm.return_val.type = Variant::BOOL;
+	vm.arguments.push_back(PropertyInfo(Variant::ARRAY, "list"));
+	BIND_VMETHOD(vm);
+	vm.arguments.pop_back();
 	vm.name = "parse_begin";
 	vm.return_val.type = Variant::NIL;
 	BIND_VMETHOD(vm);
@@ -1391,9 +1421,14 @@ void EditorInspector::update_tree() {
 	String group_base;
 	VBoxContainer *category_vbox = NULL;
 
-	List<PropertyInfo>
-			plist;
+	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
+
+	for (List<Ref<EditorInspectorPlugin> >::Element *E = valid_plugins.front(); E; E = E->next()) {
+		// Exclusive if "true" is returned
+		if (E->get()->filter_property_list(object, &plist))
+			break;
+	}
 
 	HashMap<String, VBoxContainer *> item_path;
 	Map<VBoxContainer *, EditorInspectorSection *> section_map;

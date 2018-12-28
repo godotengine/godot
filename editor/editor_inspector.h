@@ -185,6 +185,7 @@ public:
 	void add_property_editor_for_multiple_properties(const String &p_label, const Vector<String> &p_properties, Control *p_prop);
 
 	virtual bool can_handle(Object *p_object);
+	virtual bool filter_property_list(Object *p_object, List<PropertyInfo> *p_list);
 	virtual void parse_begin(Object *p_object);
 	virtual void parse_category(Object *p_object, const String &p_parse_category);
 	virtual bool parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage);
