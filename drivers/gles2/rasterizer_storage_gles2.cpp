@@ -4104,6 +4104,7 @@ RID RasterizerStorageGLES2::render_target_create() {
 
 	Texture *t = memnew(Texture);
 
+	t->type = VS::TEXTURE_TYPE_2D;
 	t->flags = 0;
 	t->width = 0;
 	t->height = 0;
