@@ -999,6 +999,10 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				print_verbose("glTF: Mesh has targets");
 				Array targets = p["targets"];
 
+				//ideally BLEND_SHAPE_MODE_RELATIVE since gltf2 stores in displacement
+				//but it could require a larger refactor?
+				mesh.mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+
 				if (j == 0) {
 					Array target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
 					for (int k = 0; k < targets.size(); k++) {
@@ -1021,10 +1025,34 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					array_copy[Mesh::ARRAY_INDEX] = Variant();
 
 					if (t.has("POSITION")) {
-						array_copy[Mesh::ARRAY_VERTEX] = _decode_accessor_as_vec3(state, t["POSITION"], true);
+						PoolVector<Vector3> varr = _decode_accessor_as_vec3(state, t["POSITION"], true);
+						PoolVector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
+						int size = src_varr.size();
+						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
+						{
+							PoolVector<Vector3>::Write w_varr = varr.write();
+							PoolVector<Vector3>::Read r_varr = varr.read();
+							PoolVector<Vector3>::Read r_src_varr = src_varr.read();
+							for (int l = 0; l < size; l++) {
+								w_varr[l] = r_varr[l] + r_src_varr[l];
+							}
+						}
+						array_copy[Mesh::ARRAY_VERTEX] = varr;
 					}
 					if (t.has("NORMAL")) {
-						array_copy[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, t["NORMAL"], true);
+						PoolVector<Vector3> narr = _decode_accessor_as_vec3(state, t["NORMAL"], true);
+						PoolVector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
+						int size = src_narr.size();
+						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
+						{
+							PoolVector<Vector3>::Write w_narr = narr.write();
+							PoolVector<Vector3>::Read r_narr = narr.read();
+							PoolVector<Vector3>::Read r_src_narr = src_narr.read();
+							for (int l = 0; l < size; l++) {
+								w_narr[l] = r_narr[l] + r_src_narr[l];
+							}
+						}
+						array_copy[Mesh::ARRAY_NORMAL] = narr;
 					}
 					if (t.has("TANGENT")) {
 						PoolVector<Vector3> tangents_v3 = _decode_accessor_as_vec3(state, t["TANGENT"], true);
@@ -1043,9 +1071,9 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 							for (int l = 0; l < size4 / 4; l++) {
 
-								w4[l * 4 + 0] = r3[l].x;
-								w4[l * 4 + 1] = r3[l].y;
-								w4[l * 4 + 2] = r3[l].z;
+								w4[l * 4 + 0] = r3[l].x + r4[l * 4 + 0];
+								w4[l * 4 + 1] = r3[l].y + r4[l * 4 + 1];
+								w4[l * 4 + 2] = r3[l].z + r4[l * 4 + 2];
 								w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
 							}
 						}
