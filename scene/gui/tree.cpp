@@ -2850,7 +2850,7 @@ void Tree::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAG_BEGIN) {
 
 		single_select_defer = NULL;
-		if (cache.scroll_speed > 0 && get_rect().has_point(get_viewport()->get_mouse_position() - get_global_position())) {
+		if (cache.scroll_speed > 0) {
 			scrolling = true;
 			set_physics_process_internal(true);
 		}
@@ -2897,22 +2897,22 @@ void Tree::_notification(int p_what) {
 			}
 		}
 
-		if (scrolling) {
-			Point2 point = get_viewport()->get_mouse_position() - get_global_position();
-			if (point.x < cache.scroll_border) {
-				point.x -= cache.scroll_border;
-			} else if (point.x > get_size().width - cache.scroll_border) {
-				point.x -= get_size().width - cache.scroll_border;
-			} else {
-				point.x = 0;
+		Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
+		if (scrolling && get_rect().grow(cache.scroll_border).has_point(mouse_position)) {
+			Point2 point;
+
+			if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < cache.scroll_border)) {
+				point.x = mouse_position.x - cache.scroll_border;
+			} else if (ABS(mouse_position.x - get_size().width) < cache.scroll_border) {
+				point.x = mouse_position.x - (get_size().width - cache.scroll_border);
 			}
-			if (point.y < cache.scroll_border) {
-				point.y -= cache.scroll_border;
-			} else if (point.y > get_size().height - cache.scroll_border) {
-				point.y -= get_size().height - cache.scroll_border;
-			} else {
-				point.y = 0;
+
+			if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < cache.scroll_border)) {
+				point.y = mouse_position.y - cache.scroll_border;
+			} else if (ABS(mouse_position.y - get_size().height) < cache.scroll_border) {
+				point.y = mouse_position.y - (get_size().height - cache.scroll_border);
 			}
+
 			point *= cache.scroll_speed * get_physics_process_delta_time();
 			point += get_scroll();
 			h_scroll->set_value(point.x);
