@@ -291,6 +291,7 @@ public:
 				width(0),
 				height(0),
 				format(Image::FORMAT_L8),
+				type(VS::TEXTURE_TYPE_2D),
 				target(GL_TEXTURE_2D),
 				data_size(0),
 				compressed(false),
