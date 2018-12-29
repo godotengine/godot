@@ -3164,10 +3164,14 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				ERR_CONTINUE(!mesh);
 
 				int ssize = mesh->surfaces.size();
+				int msize = inst->materials.size();
 
 				for (int i = 0; i < ssize; i++) {
 
-					int mat_idx = inst->materials[i].is_valid() ? i : -1;
+					int mat_idx = -1;
+					if (i < msize) { // possible for a few frames that our materials array hasn't been updated yet, not sure why
+						mat_idx = inst->materials[i].is_valid() ? i : -1;
+					}
 					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
 					_add_geometry(s, inst, NULL, mat_idx, p_depth_pass, p_shadow_pass);
 				}

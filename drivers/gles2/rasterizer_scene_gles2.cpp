@@ -1108,9 +1108,13 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 				ERR_CONTINUE(!mesh);
 
 				int num_surfaces = mesh->surfaces.size();
+				int num_materials = instance->materials.size();
 
 				for (int i = 0; i < num_surfaces; i++) {
-					int material_index = instance->materials[i].is_valid() ? i : -1;
+					int material_index = -1;
+					if (i < num_materials) { // possible for a few frames that our materials array hasn't been updated yet, not sure why
+						material_index = instance->materials[i].is_valid() ? i : -1;
+					}
 
 					RasterizerStorageGLES2::Surface *surface = mesh->surfaces[i];
 
