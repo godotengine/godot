@@ -1995,7 +1995,8 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			actions = &shaders.actions_particles;
 			actions->uniforms = &p_shader->uniforms;
 		} break;
-		case VS::SHADER_MAX: break; // Can't happen, but silences warning
+		case VS::SHADER_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	Error err = shaders.compiler.compile(p_shader->mode, p_shader->code, actions, p_shader->path, gen_code);
@@ -7019,6 +7020,7 @@ RID RasterizerStorageGLES3::render_target_create() {
 
 	Texture *t = memnew(Texture);
 
+	t->type = VS::TEXTURE_TYPE_2D;
 	t->flags = 0;
 	t->width = 0;
 	t->height = 0;

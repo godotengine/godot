@@ -264,6 +264,7 @@ public:
 				alloc_width(0),
 				alloc_height(0),
 				format(Image::FORMAT_L8),
+				type(VS::TEXTURE_TYPE_2D),
 				target(0),
 				data_size(0),
 				total_data_size(0),
