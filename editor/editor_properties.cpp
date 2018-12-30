@@ -1959,16 +1959,26 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 
 	List<PropertyInfo> prop_list;
 	get_edited_object()->get_property_list(&prop_list);
-	String type;
+	String property_types;
 
 	for (List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
 		if (E->get().name == get_edited_property() && (E->get().hint & PROPERTY_HINT_RESOURCE_TYPE)) {
-			type = E->get().hint_string;
+			property_types = E->get().hint_string;
 		}
 	}
+	if (!property_types.empty()) {
+		bool any_type_matches = false;
+		const Vector<String> split_property_types = property_types.split(",");
+		for (int i = 0; i < split_property_types.size(); ++i) {
+			if (res->is_class(split_property_types[i])) {
+				any_type_matches = true;
+				break;
+			}
+		}
 
-	if (!type.empty() && !res->is_class(type))
-		EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match the type expected for this property (%s)."), res->get_class(), type));
+		if (!any_type_matches)
+			EditorNode::get_singleton()->show_warning(vformat(TTR("The selected resource (%s) does not match any type expected for this property (%s)."), res->get_class(), property_types));
+	}
 
 	emit_signal("property_changed", get_edited_property(), res);
 	update_property();
