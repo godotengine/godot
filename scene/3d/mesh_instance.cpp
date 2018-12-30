@@ -138,6 +138,8 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		set_base(RID());
 	}
 
+	update_gizmo();
+
 	_change_notify();
 }
 Ref<Mesh> MeshInstance::get_mesh() const {
