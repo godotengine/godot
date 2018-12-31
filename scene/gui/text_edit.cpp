@@ -802,6 +802,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			Point2 cursor_pos;
+			int cursor_insert_offset_y = 0;
 
 			// get the highlighted words
 			String highlighted_text = get_selection_text();
@@ -1111,7 +1112,8 @@ void TextEdit::_notification(int p_what) {
 							cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
 
 							if (insert_mode) {
-								cursor_pos.y += (cache.font->get_height() - 3);
+								cursor_insert_offset_y = (cache.font->get_height() - 3);
+								cursor_pos.y += cursor_insert_offset_y;
 							}
 
 							int caret_w = (str[j] == '\t') ? cache.font->get_char_size(' ').width : char_w;
@@ -1203,7 +1205,8 @@ void TextEdit::_notification(int p_what) {
 						cursor_pos.y += (get_row_height() - cache.font->get_height()) / 2;
 
 						if (insert_mode) {
-							cursor_pos.y += (cache.font->get_height() - 3);
+							cursor_insert_offset_y = cache.font->get_height() - 3;
+							cursor_pos.y += cursor_insert_offset_y;
 						}
 						if (ime_text.length() > 0) {
 							int ofs = 0;
@@ -1291,9 +1294,9 @@ void TextEdit::_notification(int p_what) {
 				int th = h + csb->get_minimum_size().y;
 
 				if (cursor_pos.y + get_row_height() + th > get_size().height) {
-					completion_rect.position.y = cursor_pos.y - th;
+					completion_rect.position.y = cursor_pos.y - th - (cache.line_spacing / 2.0f) - cursor_insert_offset_y;
 				} else {
-					completion_rect.position.y = cursor_pos.y + get_row_height() + csb->get_offset().y - cache.font->get_height();
+					completion_rect.position.y = cursor_pos.y + cache.font->get_height() + (cache.line_spacing / 2.0f) + csb->get_offset().y - cursor_insert_offset_y;
 					completion_below = true;
 				}
 
