@@ -248,16 +248,19 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 			static String vscode_path;
 
 			if (vscode_path.empty() || !FileAccess::exists(vscode_path)) {
+				static List<String> vscode_name;
+				vscode_name.push_back("code");
+				vscode_name.push_back("code-oss");
+				vscode_name.push_back("vscode");
+				vscode_name.push_back("vscode-oss");
+				vscode_name.push_back("visual-studio-code");
+				vscode_name.push_back("visual-studio-code-oss");
 				// Try to search it again if it wasn't found last time or if it was removed from its location
-				vscode_path = path_which("code");
-			}
-			if (vscode_path.empty() || !FileAccess::exists(vscode_path)) {
-				// On some Linux distro the executable has the name vscode
-				vscode_path = path_which("vscode");
-			}
-			if (vscode_path.empty() || !FileAccess::exists(vscode_path)) {
-				// Executable name when installing VSCode directly from MS on Linux
-				vscode_path = path_which("visual-studio-code");
+				for (int i = 0; i < vscode_name.size(); i++) {
+					vscode_path = path_which(vscode_name[i]);
+					if (!vscode_path.empty() || FileAccess::exists(vscode_path))
+						break;
+				}
 			}
 
 			List<String> args;
