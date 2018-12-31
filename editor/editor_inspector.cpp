@@ -1941,7 +1941,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		Resource *r = Object::cast_to<Resource>(object);
 		if (r) {
-			if (!r->is_edited() && String(p_name) != "resource/edited") {
+			if (!r->is_edited() && r->has_method("set_edited") && String(p_name) != "resource/edited") {
 				undo_redo->add_do_method(r, "set_edited", true);
 				undo_redo->add_undo_method(r, "set_edited", false);
 			}
