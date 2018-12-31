@@ -496,6 +496,10 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						src_rect.position + Vector2(0.0, src_rect.size.y),
 					};
 
+					if (r->flags & CANVAS_RECT_TRANSPOSE) {
+						SWAP(uvs[1], uvs[3]);
+					}
+
 					if (r->flags & CANVAS_RECT_FLIP_H) {
 						SWAP(uvs[0], uvs[1]);
 						SWAP(uvs[2], uvs[3]);
@@ -503,10 +507,6 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					if (r->flags & CANVAS_RECT_FLIP_V) {
 						SWAP(uvs[0], uvs[3]);
 						SWAP(uvs[1], uvs[2]);
-					}
-
-					if (r->flags & CANVAS_RECT_TRANSPOSE) {
-						SWAP(uvs[1], uvs[3]);
 					}
 
 					state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, texpixel_size);
