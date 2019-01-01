@@ -2389,20 +2389,6 @@
 #define MBEDTLS_OID_C
 
 /**
- * \def MBEDTLS_PADLOCK_C
- *
- * Enable VIA Padlock support on x86.
- *
- * Module:  library/padlock.c
- * Caller:  library/aes.c
- *
- * Requires: MBEDTLS_HAVE_ASM
- *
- * This modules adds support for the VIA PadLock on x86.
- */
-#define MBEDTLS_PADLOCK_C
-
-/**
  * \def MBEDTLS_PEM_PARSE_C
  *
  * Enable PEM decoding / parsing.
