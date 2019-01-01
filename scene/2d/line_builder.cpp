@@ -279,6 +279,10 @@ void LineBuilder::build() {
 			}
 		} else {
 			// No intersection: fallback
+			if (current_joint_mode == Line2D::LINE_JOINT_SHARP) {
+				// There is no fallback implementation for LINE_JOINT_SHARP so switch to the LINE_JOINT_BEVEL
+				current_joint_mode = Line2D::LINE_JOINT_BEVEL;
+			}
 			pos_up1 = corner_pos_up;
 			pos_down1 = corner_pos_down;
 		}
