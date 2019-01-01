@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  animation_tree_editor_plugin.cpp                                     */
+/*  animation_tree_player_editor_plugin.cpp                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
