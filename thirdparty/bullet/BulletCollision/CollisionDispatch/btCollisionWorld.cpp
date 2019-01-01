@@ -19,9 +19,10 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "BulletCollision/CollisionShapes/btConvexShape.h"
 #include "BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h"
-#include "BulletCollision/CollisionShapes/btSphereShape.h"                 //for raycasting
-#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"        //for raycasting
-#include "BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h"  //for raycasting
+#include "BulletCollision/CollisionShapes/btSphereShape.h" //for raycasting
+#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h" //for raycasting
+#include "BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.h" //for raycasting
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h" //for raycasting
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #include "BulletCollision/CollisionShapes/btCompoundShape.h"
 #include "BulletCollision/NarrowPhaseCollision/btSubSimplexConvexCast.h"
@@ -412,6 +413,18 @@ void btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans, co
 				BridgeTriangleRaycastCallback rcb(rayFromLocalScaled, rayToLocalScaled, &resultCallback, collisionObjectWrap->getCollisionObject(), triangleMesh, colObjWorldTransform);
 				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
 				triangleMesh->performRaycast(&rcb, rayFromLocalScaled, rayToLocalScaled);
+			}
+			else if (collisionShape->getShapeType()==TERRAIN_SHAPE_PROXYTYPE)
+			{
+				///optimized version for btHeightfieldTerrainShape
+				btHeightfieldTerrainShape* heightField = (btHeightfieldTerrainShape*)collisionShape;
+				btTransform worldTocollisionObject = colObjWorldTransform.inverse();
+				btVector3 rayFromLocal = worldTocollisionObject * rayFromTrans.getOrigin();
+				btVector3 rayToLocal = worldTocollisionObject * rayToTrans.getOrigin();
+
+				BridgeTriangleRaycastCallback rcb(rayFromLocal,rayToLocal,&resultCallback,collisionObjectWrap->getCollisionObject(),heightField,colObjWorldTransform);
+				rcb.m_hitFraction = resultCallback.m_closestHitFraction;
+				heightField->performRaycast(&rcb, rayFromLocal, rayToLocal);
 			}
 			else
 			{
