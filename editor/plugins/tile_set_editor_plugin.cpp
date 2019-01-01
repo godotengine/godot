@@ -2487,14 +2487,14 @@ void TileSetEditor::update_edited_region(const Vector2 &end_point) {
 		grid_coord *= (snap_step + snap_separation);
 		grid_coord += snap_offset;
 		edited_region.expand_to(grid_coord);
-		grid_coord += snap_step + snap_separation;
+		grid_coord += snap_step;
 		edited_region.expand_to(grid_coord);
 
 		grid_coord = ((end_point - snap_offset) / (snap_step + snap_separation)).floor();
 		grid_coord *= (snap_step + snap_separation);
 		grid_coord += snap_offset;
 		edited_region.expand_to(grid_coord);
-		grid_coord += snap_step + snap_separation;
+		grid_coord += snap_step;
 		edited_region.expand_to(grid_coord);
 	} else {
 		edited_region.expand_to(end_point);
