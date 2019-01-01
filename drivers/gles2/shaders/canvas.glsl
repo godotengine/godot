@@ -185,12 +185,9 @@ VERTEX_SHADER_CODE
 		mat4 bone_matrix = skeleton_transform * transpose(bone_transform) * skeleton_transform_inverse;
 
 		outvec = bone_matrix * outvec;
-
 	}
 
-
 #endif
-
 
 	gl_Position = projection_matrix * outvec;
 
