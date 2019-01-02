@@ -141,7 +141,8 @@ class CodeTextEditor : public VBoxContainer {
 
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
-	HBoxContainer *status_bar;
+	VBoxContainer *status_bar;
+	HBoxContainer *warning_line;
 	Label *warning_label;
 	Label *warning_count_label;
 

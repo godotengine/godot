@@ -1241,7 +1241,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_brace_matching(true);
 	text_editor->set_auto_indent(true);
 
-	status_bar = memnew(HBoxContainer);
+	status_bar = memnew(VBoxContainer);
 	add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 
@@ -1268,10 +1268,14 @@ CodeTextEditor::CodeTextEditor() {
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
 	find_replace_bar->connect("error", error, "set_text");
 
+	warning_line = memnew(HBoxContainer);
+	status_bar->add_child(warning_line);
+	warning_line->set_h_size_flags(SIZE_EXPAND_FILL);
+
 	status_bar->add_child(memnew(Label)); //to keep the height if the other labels are not visible
 
 	warning_label = memnew(Label);
-	status_bar->add_child(warning_label);
+	warning_line->add_child(warning_label);
 	warning_label->set_align(Label::ALIGN_RIGHT);
 	warning_label->set_valign(Label::VALIGN_CENTER);
 	warning_label->set_v_size_flags(SIZE_FILL);
@@ -1281,7 +1285,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	warning_count_label = memnew(Label);
-	status_bar->add_child(warning_count_label);
+	warning_line->add_child(warning_count_label);
 	warning_count_label->set_valign(Label::VALIGN_CENTER);
 	warning_count_label->set_v_size_flags(SIZE_FILL);
 	warning_count_label->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
@@ -1294,7 +1298,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_count_label->set_text("0");
 
 	Label *font_size_txt = memnew(Label);
-	status_bar->add_child(font_size_txt);
+	warning_line->add_child(font_size_txt);
 	font_size_txt->set_align(Label::ALIGN_RIGHT);
 	font_size_txt->set_valign(Label::VALIGN_CENTER);
 	font_size_txt->set_v_size_flags(SIZE_FILL);
@@ -1302,7 +1306,7 @@ CodeTextEditor::CodeTextEditor() {
 	font_size_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	font_size_nb = memnew(Label);
-	status_bar->add_child(font_size_nb);
+	warning_line->add_child(font_size_nb);
 	font_size_nb->set_valign(Label::VALIGN_CENTER);
 	font_size_nb->set_v_size_flags(SIZE_FILL);
 	font_size_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
@@ -1312,7 +1316,7 @@ CodeTextEditor::CodeTextEditor() {
 	font_size_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	Label *line_txt = memnew(Label);
-	status_bar->add_child(line_txt);
+	warning_line->add_child(line_txt);
 	line_txt->set_align(Label::ALIGN_RIGHT);
 	line_txt->set_valign(Label::VALIGN_CENTER);
 	line_txt->set_v_size_flags(SIZE_FILL);
@@ -1320,7 +1324,7 @@ CodeTextEditor::CodeTextEditor() {
 	line_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	line_nb = memnew(Label);
-	status_bar->add_child(line_nb);
+	warning_line->add_child(line_nb);
 	line_nb->set_valign(Label::VALIGN_CENTER);
 	line_nb->set_v_size_flags(SIZE_FILL);
 	line_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
@@ -1330,7 +1334,7 @@ CodeTextEditor::CodeTextEditor() {
 	line_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	Label *col_txt = memnew(Label);
-	status_bar->add_child(col_txt);
+	warning_line->add_child(col_txt);
 	col_txt->set_align(Label::ALIGN_RIGHT);
 	col_txt->set_valign(Label::VALIGN_CENTER);
 	col_txt->set_v_size_flags(SIZE_FILL);
@@ -1338,7 +1342,7 @@ CodeTextEditor::CodeTextEditor() {
 	col_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 
 	col_nb = memnew(Label);
-	status_bar->add_child(col_nb);
+	warning_line->add_child(col_nb);
 	col_nb->set_valign(Label::VALIGN_CENTER);
 	col_nb->set_v_size_flags(SIZE_FILL);
 	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
