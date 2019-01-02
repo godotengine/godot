@@ -34,6 +34,10 @@
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_scale.h"
+#endif
+
 #define ZOOM_SCALE 1.2
 
 #define MIN_ZOOM (((1 / ZOOM_SCALE) / ZOOM_SCALE) / ZOOM_SCALE)
@@ -665,11 +669,15 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	Vector<Color> colors;
 	points.push_back(p_from);
 	colors.push_back(p_color);
-	_bake_segment2d(points, colors, 0, 1, p_from, c1, p_to, c2, 0, 3, 9, 8, p_color, p_to_color, lines);
+	_bake_segment2d(points, colors, 0, 1, p_from, c1, p_to, c2, 0, 3, 9, 3, p_color, p_to_color, lines);
 	points.push_back(p_to);
 	colors.push_back(p_to_color);
 
+#ifdef TOOLS_ENABLED
+	p_where->draw_polyline_colors(points, colors, Math::floor(2 * EDSCALE), true);
+#else
 	p_where->draw_polyline_colors(points, colors, 2, true);
+#endif
 }
 
 void GraphEdit::_connections_layer_draw() {
