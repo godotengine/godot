@@ -98,6 +98,7 @@ class GDScript : public Script {
 	Set<ObjectID> inheriters_cache;
 	bool source_changed_cache;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
+	void _update_placeholders();
 
 #endif
 	Map<StringName, PropertyInfo> member_info;

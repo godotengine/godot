@@ -386,6 +386,20 @@ void GDScript::_update_exports_values(Map<StringName, Variant> &values, List<Pro
 		propnames.push_back(E->get());
 	}
 }
+
+void GDScript::_update_placeholders() {
+	if (placeholders.size()) { //hm :(
+
+		// update placeholders if any
+		Map<StringName, Variant> values;
+		List<PropertyInfo> propnames;
+		_update_exports_values(values, propnames);
+
+		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
+			E->get()->update(propnames, values);
+		}
+	}
+}
 #endif
 
 bool GDScript::_update_exports() {
@@ -478,6 +492,7 @@ bool GDScript::_update_exports() {
 			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
 				E->get()->set_build_failed(true);
 			}
+			_update_placeholders();
 			return false;
 		}
 	} else {
@@ -485,6 +500,7 @@ bool GDScript::_update_exports() {
 			for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
 				E->get()->set_build_failed(true);
 			}
+			_update_placeholders();
 			return false;
 		}
 	}
@@ -495,19 +511,7 @@ bool GDScript::_update_exports() {
 		}
 	}
 
-	if (placeholders.size()) { //hm :(
-
-		// update placeholders if any
-		Map<StringName, Variant> values;
-		List<PropertyInfo> propnames;
-		_update_exports_values(values, propnames);
-
-		for (Set<PlaceHolderScriptInstance *>::Element *E = placeholders.front(); E; E = E->next()) {
-			E->get()->set_build_failed(false);
-			E->get()->update(propnames, values);
-		}
-	}
-
+	_update_placeholders();
 	return changed;
 
 #else
