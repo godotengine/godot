@@ -472,6 +472,22 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				r_gen_code.fragment_global += interp_mode + "in " + vcode;
 			}
 
+			for (Map<StringName, SL::ShaderNode::Global>::Element *E = pnode->globals.front(); E; E = E->next()) {
+				String gcode;
+				if (E->get().constant)
+					gcode += "const ";
+				gcode += _prestr(E->get().precision);
+				gcode += _typestr(E->get().type);
+				gcode += " " + _mkid(E->key());
+				if (E->get().initializer != NULL) {
+					gcode += "=";
+					gcode += _dump_node_code(E->get().initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				}
+				gcode += ";\n";
+				r_gen_code.vertex_global += gcode;
+				r_gen_code.fragment_global += gcode;
+			}
+
 			Map<StringName, String> function_code;
 
 			//code for functions
