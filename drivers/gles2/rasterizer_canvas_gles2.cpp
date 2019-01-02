@@ -465,12 +465,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					state.canvas_shader.use_material((void *)p_material);
 				}
 
-				Size2 abs_size = r->rect.size.abs();
 				Vector2 points[4] = {
 					r->rect.position,
-					r->rect.position + Vector2(abs_size.x, 0.0),
-					r->rect.position + abs_size,
-					r->rect.position + Vector2(0.0, abs_size.y),
+					r->rect.position + Vector2(r->rect.size.x, 0.0),
+					r->rect.position + r->rect.size,
+					r->rect.position + Vector2(0.0, r->rect.size.y),
 				};
 
 				if (r->rect.size.x < 0) {
