@@ -27,63 +27,58 @@ class btConstraintSolver;
 class btSimpleDynamicsWorld : public btDynamicsWorld
 {
 protected:
+	btConstraintSolver* m_constraintSolver;
 
-	btConstraintSolver*	m_constraintSolver;
+	bool m_ownsConstraintSolver;
 
-	bool	m_ownsConstraintSolver;
+	void predictUnconstraintMotion(btScalar timeStep);
 
-	void	predictUnconstraintMotion(btScalar timeStep);
-	
-	void	integrateTransforms(btScalar timeStep);
-		
-	btVector3	m_gravity;
-	
+	void integrateTransforms(btScalar timeStep);
+
+	btVector3 m_gravity;
+
 public:
-
-
-
 	///this btSimpleDynamicsWorld constructor creates dispatcher, broadphase pairCache and constraintSolver
-	btSimpleDynamicsWorld(btDispatcher* dispatcher,btBroadphaseInterface* pairCache,btConstraintSolver* constraintSolver,btCollisionConfiguration* collisionConfiguration);
+	btSimpleDynamicsWorld(btDispatcher* dispatcher, btBroadphaseInterface* pairCache, btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration);
 
 	virtual ~btSimpleDynamicsWorld();
-		
+
 	///maxSubSteps/fixedTimeStep for interpolation is currently ignored for btSimpleDynamicsWorld, use btDiscreteDynamicsWorld instead
-	virtual int	stepSimulation( btScalar timeStep,int maxSubSteps=1, btScalar fixedTimeStep=btScalar(1.)/btScalar(60.));
+	virtual int stepSimulation(btScalar timeStep, int maxSubSteps = 1, btScalar fixedTimeStep = btScalar(1.) / btScalar(60.));
 
-	virtual void	setGravity(const btVector3& gravity);
+	virtual void setGravity(const btVector3& gravity);
 
-	virtual btVector3 getGravity () const;
+	virtual btVector3 getGravity() const;
 
-	virtual void	addRigidBody(btRigidBody* body);
+	virtual void addRigidBody(btRigidBody* body);
 
-	virtual void	addRigidBody(btRigidBody* body, int group, int mask);
+	virtual void addRigidBody(btRigidBody* body, int group, int mask);
 
-	virtual void	removeRigidBody(btRigidBody* body);
+	virtual void removeRigidBody(btRigidBody* body);
 
-	virtual void	debugDrawWorld();
-				
-	virtual void	addAction(btActionInterface* action);
+	virtual void debugDrawWorld();
 
-	virtual void	removeAction(btActionInterface* action);
+	virtual void addAction(btActionInterface* action);
+
+	virtual void removeAction(btActionInterface* action);
 
 	///removeCollisionObject will first check if it is a rigid body, if so call removeRigidBody otherwise call btCollisionWorld::removeCollisionObject
-	virtual void	removeCollisionObject(btCollisionObject* collisionObject);
-	
-	virtual void	updateAabbs();
+	virtual void removeCollisionObject(btCollisionObject* collisionObject);
 
-	virtual void	synchronizeMotionStates();
+	virtual void updateAabbs();
 
-	virtual void	setConstraintSolver(btConstraintSolver* solver);
+	virtual void synchronizeMotionStates();
+
+	virtual void setConstraintSolver(btConstraintSolver* solver);
 
 	virtual btConstraintSolver* getConstraintSolver();
 
-	virtual btDynamicsWorldType	getWorldType() const
+	virtual btDynamicsWorldType getWorldType() const
 	{
 		return BT_SIMPLE_DYNAMICS_WORLD;
 	}
 
-	virtual void	clearForces();
-
+	virtual void clearForces();
 };
 
-#endif //BT_SIMPLE_DYNAMICS_WORLD_H
+#endif  //BT_SIMPLE_DYNAMICS_WORLD_H

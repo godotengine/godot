@@ -4,10 +4,11 @@
 #include "IDConfig.hpp"
 #include "IDMath.hpp"
 
-namespace btInverseDynamics {
-
+namespace btInverseDynamics
+{
 /// Enumeration of supported joint types
-enum JointType {
+enum JointType
+{
 	/// no degree of freedom, moves with parent
 	FIXED = 0,
 	/// one rotational degree of freedom relative to parent
@@ -15,7 +16,9 @@ enum JointType {
 	/// one translational degree of freedom relative to parent
 	PRISMATIC,
 	/// six degrees of freedom relative to parent
-	FLOATING
+	FLOATING,
+	/// three degrees of freedom, relative to parent
+	SPHERICAL
 };
 
 /// Interface class for calculating inverse dynamics for tree structured
@@ -30,12 +33,14 @@ enum JointType {
 ///	- PRISMATIC: displacement [m]
 ///	- FLOATING:  Euler x-y-z angles [rad] and displacement in body-fixed frame of parent [m]
 ///				 (in that order)
+/// - SPHERICAL: Euler x-y-z angles [rad]
 /// The u vector contains the generalized speeds, which are
 ///	- FIXED:	 none
 ///	- REVOLUTE:  time derivative of angle of rotation [rad/s]
 ///	- PRISMATIC: time derivative of displacement [m/s]
 ///	- FLOATING:  angular velocity [rad/s] (*not* time derivative of rpy angles)
 ///				 and time derivative of displacement in parent frame [m/s]
+//	- SPHERICAL:  angular velocity [rad/s]
 ///
 /// The q and u vectors are obtained by stacking contributions of all bodies in one
 /// vector in the order of body indices.
@@ -46,12 +51,13 @@ enum JointType {
 ///	 - PRISMATIC: force  [N], along joint axis
 ///	 - FLOATING:  moment vector [Nm] and force vector [N], both in body-fixed frame
 ///				  (in that order)
-///
+///  - SPHERICAL: moment vector [Nm] 
 /// TODO - force element interface (friction, springs, dampers, etc)
 ///	  - gears and motor inertia
-class MultiBodyTree {
+class MultiBodyTree
+{
 public:
-        ID_DECLARE_ALIGNED_ALLOCATOR();
+	ID_DECLARE_ALIGNED_ALLOCATOR();
 	/// The contructor.
 	/// Initialization & allocation is via addBody and buildSystem calls.
 	MultiBodyTree();
@@ -119,9 +125,9 @@ public:
 	/// print tree data to stdout
 	void printTreeData();
 	/// Calculate joint forces for given generalized state & derivatives.
-        /// This also updates kinematic terms computed in calculateKinematics.
-        /// If gravity is not set to zero, acceleration terms will contain
-        /// gravitational acceleration.
+	/// This also updates kinematic terms computed in calculateKinematics.
+	/// If gravity is not set to zero, acceleration terms will contain
+	/// gravitational acceleration.
 	/// @param q generalized coordinates
 	/// @param u generalized velocities. In the general case, u=T(q)*dot(q) and dim(q)>=dim(u)
 	/// @param dot_u time derivative of u
@@ -152,30 +158,28 @@ public:
 	/// @return -1 on error, 0 on success
 	int calculateMassMatrix(const vecx& q, matxx* mass_matrix);
 
-
-        /// Calculates kinematics also calculated in calculateInverseDynamics,
-        /// but not dynamics.
-        /// This function ensures that correct accelerations are computed that do not
-        /// contain gravitational acceleration terms.
-        /// Does not calculate Jacobians, but only vector quantities (positions, velocities & accelerations)
-        int calculateKinematics(const vecx& q, const vecx& u, const vecx& dot_u);
-        /// Calculate position kinematics
-        int calculatePositionKinematics(const vecx& q);
-         /// Calculate position and velocity kinematics
-        int calculatePositionAndVelocityKinematics(const vecx& q, const vecx& u);
+	/// Calculates kinematics also calculated in calculateInverseDynamics,
+	/// but not dynamics.
+	/// This function ensures that correct accelerations are computed that do not
+	/// contain gravitational acceleration terms.
+	/// Does not calculate Jacobians, but only vector quantities (positions, velocities & accelerations)
+	int calculateKinematics(const vecx& q, const vecx& u, const vecx& dot_u);
+	/// Calculate position kinematics
+	int calculatePositionKinematics(const vecx& q);
+	/// Calculate position and velocity kinematics
+	int calculatePositionAndVelocityKinematics(const vecx& q, const vecx& u);
 
 #if (defined BT_ID_HAVE_MAT3X) && (defined BT_ID_WITH_JACOBIANS)
-        /// Calculate Jacobians (dvel/du), as well as velocity-dependent accelearation components
-        /// d(Jacobian)/dt*u
-        /// This function assumes that calculateInverseDynamics was called, or calculateKinematics,
-        /// or calculatePositionAndVelocityKinematics
-        int calculateJacobians(const vecx& q, const vecx& u);
-        /// Calculate Jacobians (dvel/du)
-        /// This function assumes that calculateInverseDynamics was called, or
-        /// one of the calculateKineamtics functions
-        int calculateJacobians(const vecx& q);
-#endif // BT_ID_HAVE_MAT3X
-
+	/// Calculate Jacobians (dvel/du), as well as velocity-dependent accelearation components
+	/// d(Jacobian)/dt*u
+	/// This function assumes that calculateInverseDynamics was called, or calculateKinematics,
+	/// or calculatePositionAndVelocityKinematics
+	int calculateJacobians(const vecx& q, const vecx& u);
+	/// Calculate Jacobians (dvel/du)
+	/// This function assumes that calculateInverseDynamics was called, or
+	/// one of the calculateKineamtics functions
+	int calculateJacobians(const vecx& q);
+#endif  // BT_ID_HAVE_MAT3X
 
 	/// set gravitational acceleration
 	/// the default is [0;0;-9.8] in the world frame
@@ -231,15 +235,15 @@ public:
 	int getBodyLinearAcceleration(const int body_index, vec3* world_acceleration) const;
 
 #if (defined BT_ID_HAVE_MAT3X) && (defined BT_ID_WITH_JACOBIANS)
-        // get translational jacobian, in world frame (dworld_velocity/du)
-        int getBodyJacobianTrans(const int body_index, mat3x* world_jac_trans) const;
-        // get rotational jacobian, in world frame (dworld_omega/du)
-        int getBodyJacobianRot(const int body_index, mat3x* world_jac_rot) const;
-        // get product of translational jacobian derivative * generatlized velocities
-        int getBodyDotJacobianTransU(const int body_index, vec3* world_dot_jac_trans_u) const;
-        // get product of rotational jacobian derivative * generatlized velocities
-        int getBodyDotJacobianRotU(const int body_index, vec3* world_dot_jac_rot_u) const;
-#endif // BT_ID_HAVE_MAT3X
+	// get translational jacobian, in world frame (dworld_velocity/du)
+	int getBodyJacobianTrans(const int body_index, mat3x* world_jac_trans) const;
+	// get rotational jacobian, in world frame (dworld_omega/du)
+	int getBodyJacobianRot(const int body_index, mat3x* world_jac_rot) const;
+	// get product of translational jacobian derivative * generatlized velocities
+	int getBodyDotJacobianTransU(const int body_index, vec3* world_dot_jac_trans_u) const;
+	// get product of rotational jacobian derivative * generatlized velocities
+	int getBodyDotJacobianRotU(const int body_index, vec3* world_dot_jac_rot_u) const;
+#endif  // BT_ID_HAVE_MAT3X
 
 	/// returns the (internal) index of body
 	/// @param body_index is the index of a body
@@ -256,21 +260,21 @@ public:
 	/// @param joint_type string naming the corresponding joint type
 	/// @return 0 on success, -1 on failure
 	int getJointTypeStr(const int body_index, const char** joint_type) const;
-    	/// get offset translation to parent body (see addBody)
+	/// get offset translation to parent body (see addBody)
 	/// @param body_index index of the body
 	/// @param r the offset translation (see above)
 	/// @return 0 on success, -1 on failure
-        int getParentRParentBodyRef(const int body_index, vec3* r) const;
+	int getParentRParentBodyRef(const int body_index, vec3* r) const;
 	/// get offset rotation to parent body (see addBody)
 	/// @param body_index index of the body
 	/// @param T the transform (see above)
 	/// @return 0 on success, -1 on failure
-        int getBodyTParentRef(const int body_index, mat33* T) const;
+	int getBodyTParentRef(const int body_index, mat33* T) const;
 	/// get axis of motion (see addBody)
 	/// @param body_index index of the body
 	/// @param axis the axis (see above)
 	/// @return 0 on success, -1 on failure
-        int getBodyAxisOfMotion(const int body_index, vec3* axis) const;
+	int getBodyAxisOfMotion(const int body_index, vec3* axis) const;
 	/// get offset for degrees of freedom of this body into the q-vector
 	/// @param body_index index of the body
 	/// @param q_offset offset the q vector

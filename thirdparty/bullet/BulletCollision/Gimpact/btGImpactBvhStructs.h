@@ -24,7 +24,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #include "LinearMath/btAlignedObjectArray.h"
 
 #include "btBoxCollision.h"
@@ -33,21 +32,22 @@ subject to the following restrictions:
 //! Overlapping pair
 struct GIM_PAIR
 {
-    int m_index1;
-    int m_index2;
-    GIM_PAIR()
-    {}
+	int m_index1;
+	int m_index2;
+	GIM_PAIR()
+	{
+	}
 
-    GIM_PAIR(const GIM_PAIR & p)
-    {
-    	m_index1 = p.m_index1;
-    	m_index2 = p.m_index2;
+	GIM_PAIR(const GIM_PAIR& p)
+	{
+		m_index1 = p.m_index1;
+		m_index2 = p.m_index2;
 	}
 
 	GIM_PAIR(int index1, int index2)
-    {
-    	m_index1 = index1;
-    	m_index2 = index2;
+	{
+		m_index1 = index1;
+		m_index2 = index2;
 	}
 };
 
@@ -63,8 +63,10 @@ class GIM_BVH_TREE_NODE
 {
 public:
 	btAABB m_bound;
+
 protected:
-	int	m_escapeIndexOrDataIndex;
+	int m_escapeIndexOrDataIndex;
+
 public:
 	GIM_BVH_TREE_NODE()
 	{
@@ -74,7 +76,7 @@ public:
 	SIMD_FORCE_INLINE bool isLeafNode() const
 	{
 		//skipindex is negative (internal node), triangleindex >=0 (leafnode)
-		return (m_escapeIndexOrDataIndex>=0);
+		return (m_escapeIndexOrDataIndex >= 0);
 	}
 
 	SIMD_FORCE_INLINE int getEscapeIndex() const
@@ -99,7 +101,6 @@ public:
 	{
 		m_escapeIndexOrDataIndex = index;
 	}
-
 };
 
-#endif // GIM_BOXPRUNING_H_INCLUDED
+#endif  // GIM_BOXPRUNING_H_INCLUDED

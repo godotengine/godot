@@ -1,3 +1,4 @@
+// clang-format off
 char sBulletDNAstr[]= {
 char(83),char(68),char(78),char(65),char(78),char(65),char(77),char(69),char(-76),char(1),char(0),char(0),char(109),char(95),char(115),char(105),char(122),char(101),char(0),char(109),
 char(95),char(99),char(97),char(112),char(97),char(99),char(105),char(116),char(121),char(0),char(42),char(109),char(95),char(100),char(97),char(116),char(97),char(0),char(109),char(95),
@@ -687,3 +688,5 @@ char(97),char(0),char(4),char(0),char(50),char(0),char(-79),char(1),char(96),cha
 char(98),char(0),char(4),char(0),char(48),char(0),char(-79),char(1),char(95),char(0),char(-78),char(1),char(4),char(0),char(-77),char(1),char(0),char(0),char(37),char(0),
 };
 int sBulletDNAlen= sizeof(sBulletDNAstr);
+
+// clang-format on

@@ -41,14 +41,12 @@ to be implemented. the first `nub' variables are assumed to have findex < 0.
 
 */
 
-
 #ifndef _BT_LCP_H_
 #define _BT_LCP_H_
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-
 
 #include "LinearMath/btScalar.h"
 #include "LinearMath/btAlignedObjectArray.h"
@@ -62,16 +60,14 @@ struct btDantzigScratchMemory
 	btAlignedObjectArray<btScalar> delta_x;
 	btAlignedObjectArray<btScalar> Dell;
 	btAlignedObjectArray<btScalar> ell;
-	btAlignedObjectArray<btScalar*> Arows;
+	btAlignedObjectArray<btScalar *> Arows;
 	btAlignedObjectArray<int> p;
 	btAlignedObjectArray<int> C;
 	btAlignedObjectArray<bool> state;
 };
 
 //return false if solving failed
-bool btSolveDantzigLCP (int n, btScalar *A, btScalar *x, btScalar *b, btScalar *w,
-	int nub, btScalar *lo, btScalar *hi, int *findex,btDantzigScratchMemory& scratch);
+bool btSolveDantzigLCP(int n, btScalar *A, btScalar *x, btScalar *b, btScalar *w,
+					   int nub, btScalar *lo, btScalar *hi, int *findex, btDantzigScratchMemory &scratch);
 
-
-
-#endif //_BT_LCP_H_
+#endif  //_BT_LCP_H_
