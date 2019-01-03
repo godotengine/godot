@@ -55,6 +55,10 @@ void Popup::_notification(int p_what) {
 			set_as_toplevel(false);
 		}
 #endif
+
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			set_visible(false);
+		}
 	}
 }
 
