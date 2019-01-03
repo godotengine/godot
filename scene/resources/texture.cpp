@@ -1205,6 +1205,17 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, pieces.size(), Ref<Texture>());
 	return pieces[p_idx].texture;
 }
+Ref<Image> LargeTexture::to_image() const {
+
+	Ref<Image> img = memnew(Image(this->get_width(), this->get_height(), false, Image::FORMAT_RGBA8));
+	for (int i = 0; i < pieces.size(); i++) {
+
+		Ref<Image> src_img = pieces[i].texture->get_data();
+		img->blit_rect(src_img, Rect2(0, 0, src_img->get_width(), src_img->get_height()), pieces[i].offset);
+	}
+
+	return img;
+}
 
 void LargeTexture::_bind_methods() {
 
