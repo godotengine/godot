@@ -95,6 +95,7 @@ void Container::_sort_children() {
 
 void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 
+	ERR_FAIL_COND(!p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
 	Size2 minsize = p_child->get_combined_minimum_size();
