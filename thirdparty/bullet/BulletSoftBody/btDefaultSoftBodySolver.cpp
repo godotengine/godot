@@ -21,11 +21,10 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btCapsuleShape.h"
 #include "BulletSoftBody/btSoftBody.h"
 
-
 btDefaultSoftBodySolver::btDefaultSoftBodySolver()
 {
 	// Initial we will clearly need to update solver constants
-	// For now this is global for the cloths linked with this solver - we should probably make this body specific 
+	// For now this is global for the cloths linked with this solver - we should probably make this body specific
 	// for performance in future once we understand more clearly when constants need to be updated
 	m_updateSolverConstants = true;
 }
@@ -37,67 +36,65 @@ btDefaultSoftBodySolver::~btDefaultSoftBodySolver()
 // In this case the data is already in the soft bodies so there is no need for us to do anything
 void btDefaultSoftBodySolver::copyBackToSoftBodies(bool bMove)
 {
-
 }
 
-void btDefaultSoftBodySolver::optimize( btAlignedObjectArray< btSoftBody * > &softBodies , bool forceUpdate)
+void btDefaultSoftBodySolver::optimize(btAlignedObjectArray<btSoftBody *> &softBodies, bool forceUpdate)
 {
-	m_softBodySet.copyFromArray( softBodies );
+	m_softBodySet.copyFromArray(softBodies);
 }
 
-void btDefaultSoftBodySolver::updateSoftBodies( )
+void btDefaultSoftBodySolver::updateSoftBodies()
 {
-	for ( int i=0; i < m_softBodySet.size(); i++)
+	for (int i = 0; i < m_softBodySet.size(); i++)
 	{
-		btSoftBody*	psb=(btSoftBody*)m_softBodySet[i];
+		btSoftBody *psb = (btSoftBody *)m_softBodySet[i];
 		if (psb->isActive())
 		{
-			psb->integrateMotion();	
+			psb->integrateMotion();
 		}
 	}
-} // updateSoftBodies
+}  // updateSoftBodies
 
 bool btDefaultSoftBodySolver::checkInitialized()
 {
 	return true;
 }
 
-void btDefaultSoftBodySolver::solveConstraints( float solverdt )
+void btDefaultSoftBodySolver::solveConstraints(float solverdt)
 {
 	// Solve constraints for non-solver softbodies
-	for(int i=0; i < m_softBodySet.size(); ++i)
+	for (int i = 0; i < m_softBodySet.size(); ++i)
 	{
-		btSoftBody*	psb = static_cast<btSoftBody*>(m_softBodySet[i]);
+		btSoftBody *psb = static_cast<btSoftBody *>(m_softBodySet[i]);
 		if (psb->isActive())
 		{
 			psb->solveConstraints();
 		}
-	}	
-} // btDefaultSoftBodySolver::solveConstraints
+	}
+}  // btDefaultSoftBodySolver::solveConstraints
 
-
-void btDefaultSoftBodySolver::copySoftBodyToVertexBuffer( const btSoftBody *const softBody, btVertexBufferDescriptor *vertexBuffer )
+void btDefaultSoftBodySolver::copySoftBodyToVertexBuffer(const btSoftBody *const softBody, btVertexBufferDescriptor *vertexBuffer)
 {
 	// Currently only support CPU output buffers
 	// TODO: check for DX11 buffers. Take all offsets into the same DX11 buffer
 	// and use them together on a single kernel call if possible by setting up a
 	// per-cloth target buffer array for the copy kernel.
 
-	if( vertexBuffer->getBufferType() == btVertexBufferDescriptor::CPU_BUFFER )
+	if (vertexBuffer->getBufferType() == btVertexBufferDescriptor::CPU_BUFFER)
 	{
-		const btAlignedObjectArray<btSoftBody::Node> &clothVertices( softBody->m_nodes );
+		const btAlignedObjectArray<btSoftBody::Node> &clothVertices(softBody->m_nodes);
 		int numVertices = clothVertices.size();
 
-		const btCPUVertexBufferDescriptor *cpuVertexBuffer = static_cast< btCPUVertexBufferDescriptor* >(vertexBuffer);						
-		float *basePointer = cpuVertexBuffer->getBasePointer();						
+		const btCPUVertexBufferDescriptor *cpuVertexBuffer = static_cast<btCPUVertexBufferDescriptor *>(vertexBuffer);
+		float *basePointer = cpuVertexBuffer->getBasePointer();
 
-		if( vertexBuffer->hasVertexPositions() )
+		if (vertexBuffer->hasVertexPositions())
 		{
 			const int vertexOffset = cpuVertexBuffer->getVertexOffset();
 			const int vertexStride = cpuVertexBuffer->getVertexStride();
 			float *vertexPointer = basePointer + vertexOffset;
 
-			for( int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex )
+			for (int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
 			{
 				btVector3 position = clothVertices[vertexIndex].m_x;
 				*(vertexPointer + 0) = (float)position.getX();
@@ -106,13 +103,13 @@ void btDefaultSoftBodySolver::copySoftBodyToVertexBuffer( const btSoftBody *cons
 				vertexPointer += vertexStride;
 			}
 		}
-		if( vertexBuffer->hasNormals() )
+		if (vertexBuffer->hasNormals())
 		{
 			const int normalOffset = cpuVertexBuffer->getNormalOffset();
 			const int normalStride = cpuVertexBuffer->getNormalStride();
 			float *normalPointer = basePointer + normalOffset;
 
-			for( int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex )
+			for (int vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
 			{
 				btVector3 normal = clothVertices[vertexIndex].m_n;
 				*(normalPointer + 0) = (float)normal.getX();
@@ -122,30 +119,28 @@ void btDefaultSoftBodySolver::copySoftBodyToVertexBuffer( const btSoftBody *cons
 			}
 		}
 	}
-} // btDefaultSoftBodySolver::copySoftBodyToVertexBuffer
+}  // btDefaultSoftBodySolver::copySoftBodyToVertexBuffer
 
-void btDefaultSoftBodySolver::processCollision( btSoftBody* softBody, btSoftBody* otherSoftBody)
+void btDefaultSoftBodySolver::processCollision(btSoftBody *softBody, btSoftBody *otherSoftBody)
 {
-	softBody->defaultCollisionHandler( otherSoftBody);
+	softBody->defaultCollisionHandler(otherSoftBody);
 }
 
 // For the default solver just leave the soft body to do its collision processing
-void btDefaultSoftBodySolver::processCollision( btSoftBody *softBody, const btCollisionObjectWrapper* collisionObjectWrap )
+void btDefaultSoftBodySolver::processCollision(btSoftBody *softBody, const btCollisionObjectWrapper *collisionObjectWrap)
 {
-	softBody->defaultCollisionHandler( collisionObjectWrap );
-} // btDefaultSoftBodySolver::processCollision
+	softBody->defaultCollisionHandler(collisionObjectWrap);
+}  // btDefaultSoftBodySolver::processCollision
 
-
-void btDefaultSoftBodySolver::predictMotion( float timeStep )
+void btDefaultSoftBodySolver::predictMotion(float timeStep)
 {
-	for ( int i=0; i < m_softBodySet.size(); ++i)
+	for (int i = 0; i < m_softBodySet.size(); ++i)
 	{
-		btSoftBody*	psb = m_softBodySet[i];
+		btSoftBody *psb = m_softBodySet[i];
 
 		if (psb->isActive())
 		{
-			psb->predictMotion(timeStep);		
+			psb->predictMotion(timeStep);
 		}
 	}
 }
-

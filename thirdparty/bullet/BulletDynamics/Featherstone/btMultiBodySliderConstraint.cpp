@@ -25,29 +25,29 @@ subject to the following restrictions:
 #define EPSILON 0.000001
 
 btMultiBodySliderConstraint::btMultiBodySliderConstraint(btMultiBody* body, int link, btRigidBody* bodyB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB, const btVector3& jointAxis)
-	:btMultiBodyConstraint(body,0,link,-1,BTMBSLIDERCONSTRAINT_DIM,false),
-	m_rigidBodyA(0),
-	m_rigidBodyB(bodyB),
-	m_pivotInA(pivotInA),
-	m_pivotInB(pivotInB),
-    m_frameInA(frameInA),
-    m_frameInB(frameInB),
-    m_jointAxis(jointAxis)
+	: btMultiBodyConstraint(body, 0, link, -1, BTMBSLIDERCONSTRAINT_DIM, false),
+	  m_rigidBodyA(0),
+	  m_rigidBodyB(bodyB),
+	  m_pivotInA(pivotInA),
+	  m_pivotInB(pivotInB),
+	  m_frameInA(frameInA),
+	  m_frameInB(frameInB),
+	  m_jointAxis(jointAxis)
 {
-    m_data.resize(BTMBSLIDERCONSTRAINT_DIM);//at least store the applied impulses
+	m_data.resize(BTMBSLIDERCONSTRAINT_DIM);  //at least store the applied impulses
 }
 
 btMultiBodySliderConstraint::btMultiBodySliderConstraint(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB, const btVector3& jointAxis)
-	:btMultiBodyConstraint(bodyA,bodyB,linkA,linkB,BTMBSLIDERCONSTRAINT_DIM,false),
-	m_rigidBodyA(0),
-	m_rigidBodyB(0),
-	m_pivotInA(pivotInA),
-	m_pivotInB(pivotInB),
-    m_frameInA(frameInA),
-    m_frameInB(frameInB),
-    m_jointAxis(jointAxis)
+	: btMultiBodyConstraint(bodyA, bodyB, linkA, linkB, BTMBSLIDERCONSTRAINT_DIM, false),
+	  m_rigidBodyA(0),
+	  m_rigidBodyB(0),
+	  m_pivotInA(pivotInA),
+	  m_pivotInB(pivotInB),
+	  m_frameInA(frameInA),
+	  m_frameInB(frameInB),
+	  m_jointAxis(jointAxis)
 {
-    m_data.resize(BTMBSLIDERCONSTRAINT_DIM);//at least store the applied impulses
+	m_data.resize(BTMBSLIDERCONSTRAINT_DIM);  //at least store the applied impulses
 }
 
 void btMultiBodySliderConstraint::finalizeMultiDof()
@@ -59,7 +59,6 @@ void btMultiBodySliderConstraint::finalizeMultiDof()
 btMultiBodySliderConstraint::~btMultiBodySliderConstraint()
 {
 }
-
 
 int btMultiBodySliderConstraint::getIslandIdA() const
 {
@@ -105,98 +104,100 @@ int btMultiBodySliderConstraint::getIslandIdB() const
 }
 void btMultiBodySliderConstraint::createConstraintRows(btMultiBodyConstraintArray& constraintRows, btMultiBodyJacobianData& data, const btContactSolverInfo& infoGlobal)
 {
-    // Convert local points back to world
-    btVector3 pivotAworld = m_pivotInA;
-    btMatrix3x3 frameAworld = m_frameInA;
-    btVector3 jointAxis = m_jointAxis;
-    if (m_rigidBodyA)
-    {
-        pivotAworld = m_rigidBodyA->getCenterOfMassTransform()*m_pivotInA;
-        frameAworld = m_frameInA.transpose()*btMatrix3x3(m_rigidBodyA->getOrientation());
-        jointAxis = quatRotate(m_rigidBodyA->getOrientation(),m_jointAxis);
-        
-    } else if (m_bodyA) {
-        pivotAworld = m_bodyA->localPosToWorld(m_linkA, m_pivotInA);
-        frameAworld = m_bodyA->localFrameToWorld(m_linkA, m_frameInA);
-        jointAxis = m_bodyA->localDirToWorld(m_linkA, m_jointAxis);
-    }
-    btVector3 pivotBworld = m_pivotInB;
-    btMatrix3x3 frameBworld = m_frameInB;
-    if (m_rigidBodyB)
-    {
-        pivotBworld = m_rigidBodyB->getCenterOfMassTransform()*m_pivotInB;
-        frameBworld = m_frameInB.transpose()*btMatrix3x3(m_rigidBodyB->getOrientation());
-        
-    } else if (m_bodyB) {
-        pivotBworld = m_bodyB->localPosToWorld(m_linkB, m_pivotInB);
-        frameBworld = m_bodyB->localFrameToWorld(m_linkB, m_frameInB);
-    }
-    
-    btVector3 constraintAxis[2];
-    for (int i = 0; i < 3; ++i)
-    {
-        constraintAxis[0] = frameAworld.getColumn(i).cross(jointAxis);
-        if (constraintAxis[0].safeNorm() > EPSILON)
-        {
-            constraintAxis[0] = constraintAxis[0].normalized();
-            constraintAxis[1] = jointAxis.cross(constraintAxis[0]);
-            constraintAxis[1] = constraintAxis[1].normalized();
-            break;
-        }
-    }
-    
-    btMatrix3x3 relRot = frameAworld.inverse()*frameBworld;
-    btVector3 angleDiff;
-    btGeneric6DofSpring2Constraint::matrixToEulerXYZ(relRot,angleDiff);
-    
-    int numDim = BTMBSLIDERCONSTRAINT_DIM;
-    for (int i=0;i<numDim;i++)
+	// Convert local points back to world
+	btVector3 pivotAworld = m_pivotInA;
+	btMatrix3x3 frameAworld = m_frameInA;
+	btVector3 jointAxis = m_jointAxis;
+	if (m_rigidBodyA)
 	{
-        btMultiBodySolverConstraint& constraintRow = constraintRows.expandNonInitializing();
-        constraintRow.m_orgConstraint = this;
-        constraintRow.m_orgDofIndex = i;
-        constraintRow.m_relpos1CrossNormal.setValue(0,0,0);
-        constraintRow.m_contactNormal1.setValue(0,0,0);
-        constraintRow.m_relpos2CrossNormal.setValue(0,0,0);
-        constraintRow.m_contactNormal2.setValue(0,0,0);
-        constraintRow.m_angularComponentA.setValue(0,0,0);
-        constraintRow.m_angularComponentB.setValue(0,0,0);
-        
-        constraintRow.m_solverBodyIdA = data.m_fixedBodyId;
-        constraintRow.m_solverBodyIdB = data.m_fixedBodyId;
-        
-        if (m_rigidBodyA)
-        {
-            constraintRow.m_solverBodyIdA = m_rigidBodyA->getCompanionId();
-        }
-        if (m_rigidBodyB)
-        {
-            constraintRow.m_solverBodyIdB = m_rigidBodyB->getCompanionId();
-        }
-        
-        btVector3 constraintNormalLin(0,0,0);
-        btVector3 constraintNormalAng(0,0,0);
-        btScalar posError = 0.0;
-        if (i < 2) {
-            constraintNormalLin = constraintAxis[i];
-            posError = (pivotAworld-pivotBworld).dot(constraintNormalLin);
-            fillMultiBodyConstraint(constraintRow, data, 0, 0, constraintNormalAng,
-                                    constraintNormalLin, pivotAworld, pivotBworld,
-                                    posError,
-                                    infoGlobal,
-                                    -m_maxAppliedImpulse, m_maxAppliedImpulse
-                                    );
-        }
-        else { //i>=2
-            constraintNormalAng = frameAworld.getColumn(i%3);
-            posError = angleDiff[i%3];
-            fillMultiBodyConstraint(constraintRow, data, 0, 0, constraintNormalAng,
-                                    constraintNormalLin, pivotAworld, pivotBworld,
-                                    posError,
-                                    infoGlobal,
-                                    -m_maxAppliedImpulse, m_maxAppliedImpulse, true
-                                    );
-        }
+		pivotAworld = m_rigidBodyA->getCenterOfMassTransform() * m_pivotInA;
+		frameAworld = m_frameInA.transpose() * btMatrix3x3(m_rigidBodyA->getOrientation());
+		jointAxis = quatRotate(m_rigidBodyA->getOrientation(), m_jointAxis);
+	}
+	else if (m_bodyA)
+	{
+		pivotAworld = m_bodyA->localPosToWorld(m_linkA, m_pivotInA);
+		frameAworld = m_bodyA->localFrameToWorld(m_linkA, m_frameInA);
+		jointAxis = m_bodyA->localDirToWorld(m_linkA, m_jointAxis);
+	}
+	btVector3 pivotBworld = m_pivotInB;
+	btMatrix3x3 frameBworld = m_frameInB;
+	if (m_rigidBodyB)
+	{
+		pivotBworld = m_rigidBodyB->getCenterOfMassTransform() * m_pivotInB;
+		frameBworld = m_frameInB.transpose() * btMatrix3x3(m_rigidBodyB->getOrientation());
+	}
+	else if (m_bodyB)
+	{
+		pivotBworld = m_bodyB->localPosToWorld(m_linkB, m_pivotInB);
+		frameBworld = m_bodyB->localFrameToWorld(m_linkB, m_frameInB);
+	}
+
+	btVector3 constraintAxis[2];
+	for (int i = 0; i < 3; ++i)
+	{
+		constraintAxis[0] = frameAworld.getColumn(i).cross(jointAxis);
+		if (constraintAxis[0].safeNorm() > EPSILON)
+		{
+			constraintAxis[0] = constraintAxis[0].normalized();
+			constraintAxis[1] = jointAxis.cross(constraintAxis[0]);
+			constraintAxis[1] = constraintAxis[1].normalized();
+			break;
+		}
+	}
+
+	btMatrix3x3 relRot = frameAworld.inverse() * frameBworld;
+	btVector3 angleDiff;
+	btGeneric6DofSpring2Constraint::matrixToEulerXYZ(relRot, angleDiff);
+
+	int numDim = BTMBSLIDERCONSTRAINT_DIM;
+	for (int i = 0; i < numDim; i++)
+	{
+		btMultiBodySolverConstraint& constraintRow = constraintRows.expandNonInitializing();
+		constraintRow.m_orgConstraint = this;
+		constraintRow.m_orgDofIndex = i;
+		constraintRow.m_relpos1CrossNormal.setValue(0, 0, 0);
+		constraintRow.m_contactNormal1.setValue(0, 0, 0);
+		constraintRow.m_relpos2CrossNormal.setValue(0, 0, 0);
+		constraintRow.m_contactNormal2.setValue(0, 0, 0);
+		constraintRow.m_angularComponentA.setValue(0, 0, 0);
+		constraintRow.m_angularComponentB.setValue(0, 0, 0);
+
+		constraintRow.m_solverBodyIdA = data.m_fixedBodyId;
+		constraintRow.m_solverBodyIdB = data.m_fixedBodyId;
+
+		if (m_rigidBodyA)
+		{
+			constraintRow.m_solverBodyIdA = m_rigidBodyA->getCompanionId();
+		}
+		if (m_rigidBodyB)
+		{
+			constraintRow.m_solverBodyIdB = m_rigidBodyB->getCompanionId();
+		}
+
+		btVector3 constraintNormalLin(0, 0, 0);
+		btVector3 constraintNormalAng(0, 0, 0);
+		btScalar posError = 0.0;
+		if (i < 2)
+		{
+			constraintNormalLin = constraintAxis[i];
+			posError = (pivotAworld - pivotBworld).dot(constraintNormalLin);
+			fillMultiBodyConstraint(constraintRow, data, 0, 0, constraintNormalAng,
+									constraintNormalLin, pivotAworld, pivotBworld,
+									posError,
+									infoGlobal,
+									-m_maxAppliedImpulse, m_maxAppliedImpulse);
+		}
+		else
+		{  //i>=2
+			constraintNormalAng = frameAworld.getColumn(i % 3);
+			posError = angleDiff[i % 3];
+			fillMultiBodyConstraint(constraintRow, data, 0, 0, constraintNormalAng,
+									constraintNormalLin, pivotAworld, pivotBworld,
+									posError,
+									infoGlobal,
+									-m_maxAppliedImpulse, m_maxAppliedImpulse, true);
+		}
 	}
 }
 

@@ -29,13 +29,14 @@ subject to the following restrictions:
 
 ///btQuantizedBvhNode is a compressed aabb node, 16 bytes.
 ///Node can be used for leafnode or internal node. Leafnodes can point to 32-bit triangle index (non-negative range).
-ATTRIBUTE_ALIGNED16	(struct) BT_QUANTIZED_BVH_NODE
+ATTRIBUTE_ALIGNED16(struct)
+BT_QUANTIZED_BVH_NODE
 {
 	//12 bytes
-	unsigned short int	m_quantizedAabbMin[3];
-	unsigned short int	m_quantizedAabbMax[3];
+	unsigned short int m_quantizedAabbMin[3];
+	unsigned short int m_quantizedAabbMax[3];
 	//4 bytes
-	int	m_escapeIndexOrDataIndex;
+	int m_escapeIndexOrDataIndex;
 
 	BT_QUANTIZED_BVH_NODE()
 	{
@@ -45,7 +46,7 @@ ATTRIBUTE_ALIGNED16	(struct) BT_QUANTIZED_BVH_NODE
 	SIMD_FORCE_INLINE bool isLeafNode() const
 	{
 		//skipindex is negative (internal node), triangleindex >=0 (leafnode)
-		return (m_escapeIndexOrDataIndex>=0);
+		return (m_escapeIndexOrDataIndex >= 0);
 	}
 
 	SIMD_FORCE_INLINE int getEscapeIndex() const
@@ -72,20 +73,19 @@ ATTRIBUTE_ALIGNED16	(struct) BT_QUANTIZED_BVH_NODE
 	}
 
 	SIMD_FORCE_INLINE bool testQuantizedBoxOverlapp(
-		unsigned short * quantizedMin,unsigned short * quantizedMax) const
+		unsigned short* quantizedMin, unsigned short* quantizedMax) const
 	{
-		if(m_quantizedAabbMin[0] > quantizedMax[0] ||
-		   m_quantizedAabbMax[0] < quantizedMin[0] ||
-		   m_quantizedAabbMin[1] > quantizedMax[1] ||
-		   m_quantizedAabbMax[1] < quantizedMin[1] ||
-		   m_quantizedAabbMin[2] > quantizedMax[2] ||
-		   m_quantizedAabbMax[2] < quantizedMin[2])
+		if (m_quantizedAabbMin[0] > quantizedMax[0] ||
+			m_quantizedAabbMax[0] < quantizedMin[0] ||
+			m_quantizedAabbMin[1] > quantizedMax[1] ||
+			m_quantizedAabbMax[1] < quantizedMin[1] ||
+			m_quantizedAabbMin[2] > quantizedMax[2] ||
+			m_quantizedAabbMax[2] < quantizedMin[2])
 		{
 			return false;
 		}
 		return true;
 	}
-
 };
 
-#endif // GIM_QUANTIZED_SET_STRUCTS_H_INCLUDED
+#endif  // GIM_QUANTIZED_SET_STRUCTS_H_INCLUDED

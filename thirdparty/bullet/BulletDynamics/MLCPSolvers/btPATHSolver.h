@@ -14,30 +14,28 @@ subject to the following restrictions:
 */
 ///original version written by Erwin Coumans, October 2013
 
-
 #ifndef BT_PATH_SOLVER_H
 #define BT_PATH_SOLVER_H
 
 //#define BT_USE_PATH
 #ifdef BT_USE_PATH
 
-extern "C" {
+extern "C"
+{
 #include "PATH/SimpleLCP.h"
 #include "PATH/License.h"
 #include "PATH/Error_Interface.h"
 };
-  void __stdcall MyError(Void *data, Char *msg)
+void __stdcall MyError(Void *data, Char *msg)
 {
-	printf("Path Error: %s\n",msg);
+	printf("Path Error: %s\n", msg);
 }
-  void __stdcall MyWarning(Void *data, Char *msg)
+void __stdcall MyWarning(Void *data, Char *msg)
 {
-	printf("Path Warning: %s\n",msg);
+	printf("Path Warning: %s\n", msg);
 }
 
 Error_Interface e;
-
-
 
 #include "btMLCPSolverInterface.h"
 #include "Dantzig/lcp.h"
@@ -45,7 +43,6 @@ Error_Interface e;
 class btPathSolver : public btMLCPSolverInterface
 {
 public:
-
 	btPathSolver()
 	{
 		License_SetString("2069810742&Courtesy_License&&&USR&2013&14_12_2011&1000&PATH&GEN&31_12_2013&0_0_0&0&0_0");
@@ -55,17 +52,15 @@ public:
 		Error_SetInterface(&e);
 	}
 
-
-	virtual bool solveMLCP(const btMatrixXu & A, const btVectorXu & b, btVectorXu& x, const btVectorXu & lo,const btVectorXu & hi,const btAlignedObjectArray<int>& limitDependency, int numIterations, bool useSparsity = true)
+	virtual bool solveMLCP(const btMatrixXu &A, const btVectorXu &b, btVectorXu &x, const btVectorXu &lo, const btVectorXu &hi, const btAlignedObjectArray<int> &limitDependency, int numIterations, bool useSparsity = true)
 	{
 		MCP_Termination status;
-		
 
 		int numVariables = b.rows();
-		if (0==numVariables)
+		if (0 == numVariables)
 			return true;
 
-			/*	 - variables - the number of variables in the problem
+		/*	 - variables - the number of variables in the problem
 			- m_nnz - the number of nonzeros in the M matrix
 			- m_i - a vector of size m_nnz containing the row indices for M
 			- m_j - a vector of size m_nnz containing the column indices for M
@@ -78,16 +73,16 @@ public:
 		btAlignedObjectArray<int> rowIndices;
 		btAlignedObjectArray<int> colIndices;
 
-		for (int i=0;i<A.rows();i++)
+		for (int i = 0; i < A.rows(); i++)
 		{
-			for (int j=0;j<A.cols();j++)
+			for (int j = 0; j < A.cols(); j++)
 			{
-				if (A(i,j)!=0.f)
+				if (A(i, j) != 0.f)
 				{
 					//add 1, because Path starts at 1, instead of 0
-					rowIndices.push_back(i+1);
-					colIndices.push_back(j+1);
-					values.push_back(A(i,j));
+					rowIndices.push_back(i + 1);
+					colIndices.push_back(j + 1);
+					values.push_back(A(i, j));
 				}
 			}
 		}
@@ -97,19 +92,18 @@ public:
 		btAlignedObjectArray<double> rhs;
 		btAlignedObjectArray<double> upperBounds;
 		btAlignedObjectArray<double> lowerBounds;
-		for (int i=0;i<numVariables;i++)
+		for (int i = 0; i < numVariables; i++)
 		{
 			upperBounds.push_back(hi[i]);
 			lowerBounds.push_back(lo[i]);
 			rhs.push_back(-b[i]);
 		}
 
-
-		SimpleLCP(numVariables,numNonZero,&rowIndices[0],&colIndices[0],&values[0],&rhs[0],&lowerBounds[0],&upperBounds[0], &status, &zResult[0]);
+		SimpleLCP(numVariables, numNonZero, &rowIndices[0], &colIndices[0], &values[0], &rhs[0], &lowerBounds[0], &upperBounds[0], &status, &zResult[0]);
 
 		if (status != MCP_Solved)
 		{
-			static const char* gReturnMsgs[] = {
+			static const char *gReturnMsgs[] = {
 				"Invalid return",
 				"MCP_Solved: The problem was solved",
 				"MCP_NoProgress: A stationary point was found",
@@ -122,16 +116,16 @@ public:
 				"MCP_Infeasible: Problem has no solution",
 				"MCP_Error: An error occurred within the code",
 				"MCP_LicenseError: License could not be found",
-				"MCP_OK"
-			};
+				"MCP_OK"};
 
-			printf("ERROR: The PATH MCP solver failed: %s\n", gReturnMsgs[(unsigned int)status]);// << std::endl;
+			printf("ERROR: The PATH MCP solver failed: %s\n", gReturnMsgs[(unsigned int)status]);  // << std::endl;
 			printf("using Projected Gauss Seidel fallback\n");
-			
+
 			return false;
-		} else
+		}
+		else
 		{
-			for (int i=0;i<numVariables;i++)
+			for (int i = 0; i < numVariables; i++)
 			{
 				x[i] = zResult[i];
 				//check for #NAN
@@ -139,13 +133,10 @@ public:
 					return false;
 			}
 			return true;
-
 		}
-
 	}
 };
 
-#endif //BT_USE_PATH
+#endif  //BT_USE_PATH
 
-
-#endif //BT_PATH_SOLVER_H
+#endif  //BT_PATH_SOLVER_H

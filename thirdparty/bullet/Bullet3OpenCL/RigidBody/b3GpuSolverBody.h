@@ -13,10 +13,8 @@ subject to the following restrictions:
 */
 //Originally written by Erwin Coumans
 
-
 #ifndef B3_GPU_SOLVER_BODY_H
 #define B3_GPU_SOLVER_BODY_H
-
 
 #include "Bullet3Common/b3Vector3.h"
 #include "Bullet3Common/b3Matrix3x3.h"
@@ -27,29 +25,27 @@ subject to the following restrictions:
 ///Until we get other contributions, only use SIMD on Windows, when using Visual Studio 2008 or later, and not double precision
 #ifdef B3_USE_SSE
 #define USE_SIMD 1
-#endif //
-
-
+#endif  //
 
 ///The b3SolverBody is an internal datastructure for the constraint solver. Only necessary data is packed to increase cache coherence/performance.
-B3_ATTRIBUTE_ALIGNED16 (struct)	b3GpuSolverBody
+B3_ATTRIBUTE_ALIGNED16(struct)
+b3GpuSolverBody
 {
 	B3_DECLARE_ALIGNED_ALLOCATOR();
-//	b3Transform		m_worldTransformUnused;
-	b3Vector3		m_deltaLinearVelocity;
-	b3Vector3		m_deltaAngularVelocity;
-	b3Vector3		m_angularFactor;
-	b3Vector3		m_linearFactor;
-	b3Vector3		m_invMass;
-	b3Vector3		m_pushVelocity;
-	b3Vector3		m_turnVelocity;
-	b3Vector3		m_linearVelocity;
-	b3Vector3		m_angularVelocity;
+	//	b3Transform		m_worldTransformUnused;
+	b3Vector3 m_deltaLinearVelocity;
+	b3Vector3 m_deltaAngularVelocity;
+	b3Vector3 m_angularFactor;
+	b3Vector3 m_linearFactor;
+	b3Vector3 m_invMass;
+	b3Vector3 m_pushVelocity;
+	b3Vector3 m_turnVelocity;
+	b3Vector3 m_linearVelocity;
+	b3Vector3 m_angularVelocity;
 
-	union 
-	{
-		void*	m_originalBody;
-		int		m_originalBodyIndex;
+	union {
+		void* m_originalBody;
+		int m_originalBodyIndex;
 	};
 
 	int padding[3];
@@ -65,43 +61,40 @@ B3_ATTRIBUTE_ALIGNED16 (struct)	b3GpuSolverBody
 		return m_worldTransform;
 	}
 	*/
-	B3_FORCE_INLINE void	getVelocityInLocalPointObsolete(const b3Vector3& rel_pos, b3Vector3& velocity ) const
+	B3_FORCE_INLINE void getVelocityInLocalPointObsolete(const b3Vector3& rel_pos, b3Vector3& velocity) const
 	{
 		if (m_originalBody)
-			velocity = m_linearVelocity+m_deltaLinearVelocity + (m_angularVelocity+m_deltaAngularVelocity).cross(rel_pos);
+			velocity = m_linearVelocity + m_deltaLinearVelocity + (m_angularVelocity + m_deltaAngularVelocity).cross(rel_pos);
 		else
-			velocity.setValue(0,0,0);
+			velocity.setValue(0, 0, 0);
 	}
 
-	B3_FORCE_INLINE void	getAngularVelocity(b3Vector3& angVel) const
+	B3_FORCE_INLINE void getAngularVelocity(b3Vector3 & angVel) const
 	{
 		if (m_originalBody)
-			angVel =m_angularVelocity+m_deltaAngularVelocity;
+			angVel = m_angularVelocity + m_deltaAngularVelocity;
 		else
-			angVel.setValue(0,0,0);
+			angVel.setValue(0, 0, 0);
 	}
-
 
 	//Optimization for the iterative solver: avoid calculating constant terms involving inertia, normal, relative position
-	B3_FORCE_INLINE void applyImpulse(const b3Vector3& linearComponent, const b3Vector3& angularComponent,const b3Scalar impulseMagnitude)
+	B3_FORCE_INLINE void applyImpulse(const b3Vector3& linearComponent, const b3Vector3& angularComponent, const b3Scalar impulseMagnitude)
 	{
 		if (m_originalBody)
 		{
-			m_deltaLinearVelocity += linearComponent*impulseMagnitude*m_linearFactor;
-			m_deltaAngularVelocity += angularComponent*(impulseMagnitude*m_angularFactor);
+			m_deltaLinearVelocity += linearComponent * impulseMagnitude * m_linearFactor;
+			m_deltaAngularVelocity += angularComponent * (impulseMagnitude * m_angularFactor);
 		}
 	}
 
-	B3_FORCE_INLINE void internalApplyPushImpulse(const b3Vector3& linearComponent, const b3Vector3& angularComponent,b3Scalar impulseMagnitude)
+	B3_FORCE_INLINE void internalApplyPushImpulse(const b3Vector3& linearComponent, const b3Vector3& angularComponent, b3Scalar impulseMagnitude)
 	{
 		if (m_originalBody)
 		{
-			m_pushVelocity += linearComponent*impulseMagnitude*m_linearFactor;
-			m_turnVelocity += angularComponent*(impulseMagnitude*m_angularFactor);
+			m_pushVelocity += linearComponent * impulseMagnitude * m_linearFactor;
+			m_turnVelocity += angularComponent * (impulseMagnitude * m_angularFactor);
 		}
 	}
-
-
 
 	const b3Vector3& getDeltaLinearVelocity() const
 	{
@@ -113,20 +106,19 @@ B3_ATTRIBUTE_ALIGNED16 (struct)	b3GpuSolverBody
 		return m_deltaAngularVelocity;
 	}
 
-	const b3Vector3& getPushVelocity() const 
+	const b3Vector3& getPushVelocity() const
 	{
 		return m_pushVelocity;
 	}
 
-	const b3Vector3& getTurnVelocity() const 
+	const b3Vector3& getTurnVelocity() const
 	{
 		return m_turnVelocity;
 	}
 
-
 	////////////////////////////////////////////////
 	///some internal methods, don't use them
-		
+
 	b3Vector3& internalGetDeltaLinearVelocity()
 	{
 		return m_deltaLinearVelocity;
@@ -151,7 +143,7 @@ B3_ATTRIBUTE_ALIGNED16 (struct)	b3GpuSolverBody
 	{
 		m_invMass = invMass;
 	}
-	
+
 	b3Vector3& internalGetPushVelocity()
 	{
 		return m_pushVelocity;
@@ -162,67 +154,57 @@ B3_ATTRIBUTE_ALIGNED16 (struct)	b3GpuSolverBody
 		return m_turnVelocity;
 	}
 
-	B3_FORCE_INLINE void	internalGetVelocityInLocalPointObsolete(const b3Vector3& rel_pos, b3Vector3& velocity ) const
+	B3_FORCE_INLINE void internalGetVelocityInLocalPointObsolete(const b3Vector3& rel_pos, b3Vector3& velocity) const
 	{
-		velocity = m_linearVelocity+m_deltaLinearVelocity + (m_angularVelocity+m_deltaAngularVelocity).cross(rel_pos);
+		velocity = m_linearVelocity + m_deltaLinearVelocity + (m_angularVelocity + m_deltaAngularVelocity).cross(rel_pos);
 	}
 
-	B3_FORCE_INLINE void	internalGetAngularVelocity(b3Vector3& angVel) const
+	B3_FORCE_INLINE void internalGetAngularVelocity(b3Vector3 & angVel) const
 	{
-		angVel = m_angularVelocity+m_deltaAngularVelocity;
+		angVel = m_angularVelocity + m_deltaAngularVelocity;
 	}
-
 
 	//Optimization for the iterative solver: avoid calculating constant terms involving inertia, normal, relative position
-	B3_FORCE_INLINE void internalApplyImpulse(const b3Vector3& linearComponent, const b3Vector3& angularComponent,const b3Scalar impulseMagnitude)
+	B3_FORCE_INLINE void internalApplyImpulse(const b3Vector3& linearComponent, const b3Vector3& angularComponent, const b3Scalar impulseMagnitude)
 	{
 		//if (m_originalBody)
 		{
-			m_deltaLinearVelocity += linearComponent*impulseMagnitude*m_linearFactor;
-			m_deltaAngularVelocity += angularComponent*(impulseMagnitude*m_angularFactor);
+			m_deltaLinearVelocity += linearComponent * impulseMagnitude * m_linearFactor;
+			m_deltaAngularVelocity += angularComponent * (impulseMagnitude * m_angularFactor);
 		}
 	}
-		
-	
-	
 
-	void	writebackVelocity()
+	void writebackVelocity()
 	{
 		//if (m_originalBody>=0)
 		{
-			m_linearVelocity +=m_deltaLinearVelocity;
+			m_linearVelocity += m_deltaLinearVelocity;
 			m_angularVelocity += m_deltaAngularVelocity;
-			
+
 			//m_originalBody->setCompanionId(-1);
 		}
 	}
 
-
-	void	writebackVelocityAndTransform(b3Scalar timeStep, b3Scalar splitImpulseTurnErp)
+	void writebackVelocityAndTransform(b3Scalar timeStep, b3Scalar splitImpulseTurnErp)
 	{
-        (void) timeStep;
+		(void)timeStep;
 		if (m_originalBody)
 		{
 			m_linearVelocity += m_deltaLinearVelocity;
 			m_angularVelocity += m_deltaAngularVelocity;
-			
+
 			//correct the position/orientation based on push/turn recovery
 			b3Transform newTransform;
-			if (m_pushVelocity[0]!=0.f || m_pushVelocity[1]!=0 || m_pushVelocity[2]!=0 || m_turnVelocity[0]!=0.f || m_turnVelocity[1]!=0 || m_turnVelocity[2]!=0)
+			if (m_pushVelocity[0] != 0.f || m_pushVelocity[1] != 0 || m_pushVelocity[2] != 0 || m_turnVelocity[0] != 0.f || m_turnVelocity[1] != 0 || m_turnVelocity[2] != 0)
 			{
-			//	b3Quaternion orn = m_worldTransform.getRotation();
-//				b3TransformUtil::integrateTransform(m_worldTransform,m_pushVelocity,m_turnVelocity*splitImpulseTurnErp,timeStep,newTransform);
-//				m_worldTransform = newTransform;
+				//	b3Quaternion orn = m_worldTransform.getRotation();
+				//				b3TransformUtil::integrateTransform(m_worldTransform,m_pushVelocity,m_turnVelocity*splitImpulseTurnErp,timeStep,newTransform);
+				//				m_worldTransform = newTransform;
 			}
 			//m_worldTransform.setRotation(orn);
 			//m_originalBody->setCompanionId(-1);
 		}
 	}
-	
-
-
 };
 
-#endif //B3_SOLVER_BODY_H
-
-
+#endif  //B3_SOLVER_BODY_H

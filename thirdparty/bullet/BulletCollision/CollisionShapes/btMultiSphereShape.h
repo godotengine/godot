@@ -17,68 +17,64 @@ subject to the following restrictions:
 #define BT_MULTI_SPHERE_MINKOWSKI_H
 
 #include "btConvexInternalShape.h"
-#include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h" // for the types
+#include "BulletCollision/BroadphaseCollision/btBroadphaseProxy.h"  // for the types
 #include "LinearMath/btAlignedObjectArray.h"
 #include "LinearMath/btAabbUtil2.h"
 
-
-
 ///The btMultiSphereShape represents the convex hull of a collection of spheres. You can create special capsules or other smooth volumes.
 ///It is possible to animate the spheres for deformation, but call 'recalcLocalAabb' after changing any sphere position/radius
-ATTRIBUTE_ALIGNED16(class) btMultiSphereShape : public btConvexInternalAabbCachingShape
+ATTRIBUTE_ALIGNED16(class)
+btMultiSphereShape : public btConvexInternalAabbCachingShape
 {
-	
 	btAlignedObjectArray<btVector3> m_localPositionArray;
-	btAlignedObjectArray<btScalar>  m_radiArray;
-	
+	btAlignedObjectArray<btScalar> m_radiArray;
+
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	
-	btMultiSphereShape (const btVector3* positions,const btScalar* radi,int numSpheres);
+
+	btMultiSphereShape(const btVector3* positions, const btScalar* radi, int numSpheres);
 
 	///CollisionShape Interface
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+	virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
 
 	/// btConvexShape Interface
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
+	virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const;
 
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
-	
-	int	getSphereCount() const
+	virtual void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const;
+
+	int getSphereCount() const
 	{
 		return m_localPositionArray.size();
 	}
 
-	const btVector3&	getSpherePosition(int index) const
+	const btVector3& getSpherePosition(int index) const
 	{
 		return m_localPositionArray[index];
 	}
 
-	btScalar	getSphereRadius(int index) const
+	btScalar getSphereRadius(int index) const
 	{
 		return m_radiArray[index];
 	}
 
-
-	virtual const char*	getName()const 
+	virtual const char* getName() const
 	{
 		return "MultiSphere";
 	}
 
-	virtual	int	calculateSerializeBufferSize() const;
+	virtual int calculateSerializeBufferSize() const;
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
-	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
-
-
+	virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 };
 
-
-struct	btPositionAndRadius
+struct btPositionAndRadius
 {
-	btVector3FloatData	m_pos;
-	float		m_radius;
+	btVector3FloatData m_pos;
+	float m_radius;
 };
+
+// clang-format off
 
 struct	btMultiSphereShapeData
 {
@@ -89,13 +85,11 @@ struct	btMultiSphereShapeData
 	char	m_padding[4];
 };
 
+// clang-format on
 
-
-SIMD_FORCE_INLINE	int	btMultiSphereShape::calculateSerializeBufferSize() const
+SIMD_FORCE_INLINE int btMultiSphereShape::calculateSerializeBufferSize() const
 {
 	return sizeof(btMultiSphereShapeData);
 }
 
-
-
-#endif //BT_MULTI_SPHERE_MINKOWSKI_H
+#endif  //BT_MULTI_SPHERE_MINKOWSKI_H
