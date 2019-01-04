@@ -1268,7 +1268,14 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 				case ShaderLanguage::TYPE_SAMPLER2DARRAY: {
+
+					target = GL_TEXTURE_2D_ARRAY;
+					tex = storage->resources.white_tex_array;
+
+					//switch (texture_hints[i]) {
 					// TODO
+					//}
+
 				} break;
 
 				default: {}
