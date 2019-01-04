@@ -47,6 +47,7 @@ class CharProxy {
 
 	const int _index;
 	CowData<T> &_cowdata;
+	static const T _null = 0;
 
 	_FORCE_INLINE_ CharProxy(const int &p_index, CowData<T> &cowdata) :
 			_index(p_index),
@@ -54,6 +55,9 @@ class CharProxy {
 
 public:
 	_FORCE_INLINE_ operator T() const {
+		if (unlikely(_index == _cowdata.size()))
+			return _null;
+
 		return _cowdata.get(_index);
 	}
 
@@ -73,6 +77,7 @@ public:
 class CharString {
 
 	CowData<char> _cowdata;
+	static const char _null;
 
 public:
 	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
@@ -83,7 +88,12 @@ public:
 	_FORCE_INLINE_ char get(int p_index) { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ const char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ const char &operator[](int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const char &operator[](int p_index) const {
+		if (unlikely(p_index == _cowdata.size()))
+			return _null;
+
+		return _cowdata.get(p_index);
+	}
 	_FORCE_INLINE_ CharProxy<char> operator[](int p_index) { return CharProxy<char>(p_index, _cowdata); }
 
 	_FORCE_INLINE_ CharString() {}
@@ -112,6 +122,7 @@ struct StrRange {
 class String {
 
 	CowData<CharType> _cowdata;
+	static const CharType _null;
 
 	void copy_from(const char *p_cstr);
 	void copy_from(const CharType *p_cstr, const int p_clip_to = -1);
@@ -138,7 +149,12 @@ public:
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ const CharType &operator[](int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const CharType &operator[](int p_index) const {
+		if (unlikely(p_index == _cowdata.size()))
+			return _null;
+
+		return _cowdata.get(p_index);
+	}
 	_FORCE_INLINE_ CharProxy<CharType> operator[](int p_index) { return CharProxy<CharType>(p_index, _cowdata); }
 
 	bool operator==(const String &p_str) const;
