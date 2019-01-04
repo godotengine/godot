@@ -219,6 +219,7 @@ public:
 
 	void goto_line(int p_line);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void goto_line_centered(int p_line);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 

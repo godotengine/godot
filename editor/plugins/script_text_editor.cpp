@@ -487,6 +487,11 @@ void ScriptTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
+void ScriptTextEditor::goto_line_centered(int p_line) {
+
+	code_editor->goto_line_centered(p_line);
+}
+
 void ScriptTextEditor::set_executing_line(int p_line) {
 	code_editor->set_executing_line(p_line);
 }
