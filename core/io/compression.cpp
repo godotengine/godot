@@ -81,10 +81,10 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		} break;
 		case MODE_ZSTD: {
 			ZSTD_CCtx *cctx = ZSTD_createCCtx();
-			ZSTD_CCtx_setParameter(cctx, ZSTD_p_compressionLevel, zstd_level);
+			ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, zstd_level);
 			if (zstd_long_distance_matching) {
-				ZSTD_CCtx_setParameter(cctx, ZSTD_p_enableLongDistanceMatching, 1);
-				ZSTD_CCtx_setParameter(cctx, ZSTD_p_windowLog, zstd_window_log_size);
+				ZSTD_CCtx_setParameter(cctx, ZSTD_c_enableLongDistanceMatching, 1);
+				ZSTD_CCtx_setParameter(cctx, ZSTD_c_windowLog, zstd_window_log_size);
 			}
 			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
 			int ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, zstd_level);

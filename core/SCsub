@@ -103,6 +103,7 @@ env_thirdparty.add_source_files(env.core_sources, thirdparty_minizip_sources)
 if env['builtin_zstd']:
     thirdparty_zstd_dir = "#thirdparty/zstd/"
     thirdparty_zstd_sources = [
+        "common/debug.c",
         "common/entropy_common.c",
         "common/error_private.c",
         "common/fse_decompress.c",
@@ -111,15 +112,18 @@ if env['builtin_zstd']:
         "common/xxhash.c",
         "common/zstd_common.c",
         "compress/fse_compress.c",
+        "compress/hist.c",
         "compress/huf_compress.c",
         "compress/zstd_compress.c",
         "compress/zstd_double_fast.c",
         "compress/zstd_fast.c",
         "compress/zstd_lazy.c",
         "compress/zstd_ldm.c",
-        "compress/zstdmt_compress.c",
         "compress/zstd_opt.c",
+        "compress/zstdmt_compress.c",
         "decompress/huf_decompress.c",
+        "decompress/zstd_ddict.c",
+        "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
