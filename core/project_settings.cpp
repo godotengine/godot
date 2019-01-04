@@ -79,6 +79,13 @@ String ProjectSettings::localize_path(const String &p_path) const {
 			return p_path;
 		};
 
+		// check if last directory name is same.
+		// for example, it should not replace resource path "/mnt/project/my_a" for p_path "/mnt/project/my_a_dev"
+		// it will be res://_dev if replaced which is not correct path
+		if (!cwd.begins_with(resource_path.plus_file(""))) {
+			return p_path;
+		}
+
 		return cwd.replace_first(resource_path, "res:/");
 	} else {
 
