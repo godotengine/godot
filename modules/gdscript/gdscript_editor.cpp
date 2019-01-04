@@ -2442,9 +2442,13 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 	context._class = parser.get_completion_class();
 	context.block = parser.get_completion_block();
 	context.function = parser.get_completion_function();
-	context.base = p_owner;
-	context.base_path = p_base_path;
 	context.line = parser.get_completion_line();
+
+	if (!context._class) {
+		context.base = p_owner;
+		context.base_path = p_base_path;
+	}
+
 	bool is_function = false;
 
 	switch (parser.get_completion_type()) {
