@@ -410,6 +410,7 @@ void Camera2D::make_current() {
 	} else {
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_make_current", this);
 	}
+	_update_scroll();
 }
 
 void Camera2D::clear_current() {
