@@ -87,6 +87,8 @@ public:
 
 		bool srgb_decode_supported;
 
+		bool texture_float_linear_supported;
+
 		bool use_rgba_2d_shadows;
 
 		float anisotropic_level;
