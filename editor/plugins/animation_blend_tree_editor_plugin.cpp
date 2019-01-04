@@ -124,6 +124,8 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 	List<StringName> nodes;
 	blend_tree->get_node_list(&nodes);
 
+	bool previous_hrcr = Node::get_human_readable_collision_renaming();
+	Node::set_human_readable_collision_renaming(false);
 	for (List<StringName>::Element *E = nodes.front(); E; E = E->next()) {
 
 		GraphNode *node = memnew(GraphNode);
@@ -132,9 +134,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 		Ref<AnimationNode> agnode = blend_tree->get_node(E->get());
 
 		node->set_offset(blend_tree->get_node_position(E->get()) * EDSCALE);
-
 		node->set_title(agnode->get_caption());
-		node->set_human_readable_collision_renaming(false);
 		node->set_name(E->get());
 
 		int base = 0;
@@ -250,6 +250,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_color_override("close_color", c);
 		}
 	}
+	Node::set_human_readable_collision_renaming(previous_hrcr);
 
 	List<AnimationNodeBlendTree::NodeConnection> connections;
 	blend_tree->get_node_connections(&connections);

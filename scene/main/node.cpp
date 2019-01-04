@@ -951,6 +951,11 @@ void Node::init_node_hrcr() {
 	node_hrcr_count.init(1);
 }
 
+bool Node::get_human_readable_collision_renaming() {
+
+	return node_hrcr;
+}
+
 void Node::set_human_readable_collision_renaming(bool p_enabled) {
 
 	node_hrcr = p_enabled;

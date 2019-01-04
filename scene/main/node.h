@@ -379,6 +379,7 @@ public:
 	void queue_delete();
 
 	//hacks for speed
+	static bool get_human_readable_collision_renaming();
 	static void set_human_readable_collision_renaming(bool p_enabled);
 	static void init_node_hrcr();
 
