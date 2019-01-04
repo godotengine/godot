@@ -1,3 +1,4 @@
+
 /*************************************************************************/
 /*  code_editor.h                                                        */
 /*************************************************************************/
@@ -141,13 +142,14 @@ class CodeTextEditor : public VBoxContainer {
 
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
-	VBoxContainer *status_bar;
+	GridContainer *status_bar;
 	HBoxContainer *warning_line;
-	Label *warning_label;
+	TextureRect *warning_icon;
 	Label *warning_count_label;
 
 	Label *line_nb;
 	Label *col_nb;
+	TextureRect *font_size_icon;
 	Label *font_size_nb;
 	Label *info;
 	Timer *idle;
@@ -168,6 +170,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _font_resize_timeout();
 	bool _add_font_size(int p_delta);
 
+	void _status_bar_resized();
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();
@@ -220,7 +223,7 @@ public:
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	Label *get_error_label() const { return error; }
-	Label *get_warning_label() const { return warning_label; }
+	TextureRect *get_warning_icon() const { return warning_icon; }
 	Label *get_warning_count_label() const { return warning_count_label; }
 	virtual void apply_code() {}
 	void goto_error();

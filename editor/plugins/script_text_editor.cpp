@@ -1446,7 +1446,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->hide();
 
 	code_editor->get_error_label()->connect("gui_input", this, "_error_pressed");
-	code_editor->get_warning_label()->connect("gui_input", this, "_toggle_warning_pannel");
+	code_editor->get_warning_icon()->connect("gui_input", this, "_toggle_warning_pannel");
 	code_editor->get_warning_count_label()->connect("gui_input", this, "_toggle_warning_pannel");
 	warnings_panel->connect("meta_clicked", this, "_warning_clicked");
 
