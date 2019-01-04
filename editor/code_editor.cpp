@@ -1217,6 +1217,11 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->select(p_line, p_begin, p_line, p_end);
 }
 
+void CodeTextEditor::goto_line_centered(int p_line) {
+	goto_line(p_line);
+	text_editor->call_deferred("center_viewport_to_cursor");
+}
+
 void CodeTextEditor::set_executing_line(int p_line) {
 	text_editor->set_executing_line(p_line);
 }
