@@ -98,6 +98,7 @@
 /* Modify the local functions below should you wish to use some other memory routines */
 /* for malloc(), free() */
 #include <stdlib.h>
+#include <stddef.h>     /* size_t */
 static void* XXH_malloc(size_t s) { return malloc(s); }
 static void  XXH_free  (void* p)  { free(p); }
 /* for memcpy() */

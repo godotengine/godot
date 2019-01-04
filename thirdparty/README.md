@@ -534,12 +534,10 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.4
+- Version: 1.3.8
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - lib/{common/,compress/,decompress/,zstd.h}
 - LICENSE
-
-- Applied the patch in `thirdparty/zstd/1314.diff` (PR 1314 upstream, already merged). Needed to build on UWP ARM. Can be removed when a new version is released with the patch.

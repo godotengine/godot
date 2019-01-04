@@ -49,7 +49,7 @@
 *  Error Management
 ****************************************************************/
 #define FSE_isError ERR_isError
-#define FSE_STATIC_ASSERT(c) { enum { FSE_static_assert = 1/(int)(!!(c)) }; }   /* use only *after* variable declarations */
+#define FSE_STATIC_ASSERT(c) DEBUG_STATIC_ASSERT(c)   /* use only *after* variable declarations */
 
 /* check and forward error code */
 #define CHECK_F(f) { size_t const e = f; if (FSE_isError(e)) return e; }

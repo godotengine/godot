@@ -72,6 +72,7 @@ extern "C" {
 #define FSE_VERSION_NUMBER  (FSE_VERSION_MAJOR *100*100 + FSE_VERSION_MINOR *100 + FSE_VERSION_RELEASE)
 FSE_PUBLIC_API unsigned FSE_versionNumber(void);   /**< library version number; to be used when checking dll version */
 
+
 /*-****************************************
 *  FSE simple functions
 ******************************************/
@@ -129,7 +130,7 @@ FSE_PUBLIC_API size_t FSE_compress2 (void* dst, size_t dstSize, const void* src,
 ******************************************/
 /*!
 FSE_compress() does the following:
-1. count symbol occurrence from source[] into table count[]
+1. count symbol occurrence from source[] into table count[] (see hist.h)
 2. normalize counters so that sum(count[]) == Power_of_2 (2^tableLog)
 3. save normalized counters to memory buffer using writeNCount()
 4. build encoding table 'CTable' from normalized counters
@@ -147,15 +148,6 @@ or to save and provide normalized distribution using external method.
 
 /* *** COMPRESSION *** */
 
-/*! FSE_count():
-    Provides the precise count of each byte within a table 'count'.
-    'count' is a table of unsigned int, of minimum size (*maxSymbolValuePtr+1).
-    *maxSymbolValuePtr will be updated if detected smaller than initial value.
-    @return : the count of the most frequent symbol (which is not identified).
-              if return == srcSize, there is only one symbol.
-              Can also return an error code, which can be tested with FSE_isError(). */
-FSE_PUBLIC_API size_t FSE_count(unsigned* count, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize);
-
 /*! FSE_optimalTableLog():
     dynamically downsize 'tableLog' when conditions are met.
     It saves CPU time, by using smaller tables, while preserving or even improving compression ratio.
@@ -167,7 +159,8 @@ FSE_PUBLIC_API unsigned FSE_optimalTableLog(unsigned maxTableLog, size_t srcSize
     'normalizedCounter' is a table of short, of minimum size (maxSymbolValue+1).
     @return : tableLog,
               or an errorCode, which can be tested using FSE_isError() */
-FSE_PUBLIC_API size_t FSE_normalizeCount(short* normalizedCounter, unsigned tableLog, const unsigned* count, size_t srcSize, unsigned maxSymbolValue);
+FSE_PUBLIC_API size_t FSE_normalizeCount(short* normalizedCounter, unsigned tableLog,
+                    const unsigned* count, size_t srcSize, unsigned maxSymbolValue);
 
 /*! FSE_NCountWriteBound():
     Provides the maximum possible size of an FSE normalized table, given 'maxSymbolValue' and 'tableLog'.
@@ -178,8 +171,9 @@ FSE_PUBLIC_API size_t FSE_NCountWriteBound(unsigned maxSymbolValue, unsigned tab
     Compactly save 'normalizedCounter' into 'buffer'.
     @return : size of the compressed table,
               or an errorCode, which can be tested using FSE_isError(). */
-FSE_PUBLIC_API size_t FSE_writeNCount (void* buffer, size_t bufferSize, const short* normalizedCounter, unsigned maxSymbolValue, unsigned tableLog);
-
+FSE_PUBLIC_API size_t FSE_writeNCount (void* buffer, size_t bufferSize,
+                                 const short* normalizedCounter,
+                                 unsigned maxSymbolValue, unsigned tableLog);
 
 /*! Constructor and Destructor of FSE_CTable.
     Note that FSE_CTable size depends on 'tableLog' and 'maxSymbolValue' */
@@ -250,7 +244,9 @@ If there is an error, the function will return an ErrorCode (which can be tested
     @return : size read from 'rBuffer',
               or an errorCode, which can be tested using FSE_isError().
               maxSymbolValuePtr[0] and tableLogPtr[0] will also be updated with their respective values */
-FSE_PUBLIC_API size_t FSE_readNCount (short* normalizedCounter, unsigned* maxSymbolValuePtr, unsigned* tableLogPtr, const void* rBuffer, size_t rBuffSize);
+FSE_PUBLIC_API size_t FSE_readNCount (short* normalizedCounter,
+                           unsigned* maxSymbolValuePtr, unsigned* tableLogPtr,
+                           const void* rBuffer, size_t rBuffSize);
 
 /*! Constructor and Destructor of FSE_DTable.
     Note that its size depends on 'tableLog' */
@@ -325,33 +321,8 @@ If there is an error, the function will return an error code, which can be teste
 
 
 /* *****************************************
-*  FSE advanced API
-*******************************************/
-/* FSE_count_wksp() :
- * Same as FSE_count(), but using an externally provided scratch buffer.
- * `workSpace` size must be table of >= `1024` unsigned
- */
-size_t FSE_count_wksp(unsigned* count, unsigned* maxSymbolValuePtr,
-                 const void* source, size_t sourceSize, unsigned* workSpace);
-
-/** FSE_countFast() :
- *  same as FSE_count(), but blindly trusts that all byte values within src are <= *maxSymbolValuePtr
- */
-size_t FSE_countFast(unsigned* count, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize);
-
-/* FSE_countFast_wksp() :
- * Same as FSE_countFast(), but using an externally provided scratch buffer.
- * `workSpace` must be a table of minimum `1024` unsigned
- */
-size_t FSE_countFast_wksp(unsigned* count, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize, unsigned* workSpace);
-
-/*! FSE_count_simple() :
- * Same as FSE_countFast(), but does not use any additional memory (not even on stack).
- * This function is unsafe, and will segfault if any value within `src` is `> *maxSymbolValuePtr` (presuming it's also the size of `count`).
-*/
-size_t FSE_count_simple(unsigned* count, unsigned* maxSymbolValuePtr, const void* src, size_t srcSize);
-
-
+ *  FSE advanced API
+ ***************************************** */
 
 unsigned FSE_optimalTableLog_internal(unsigned maxTableLog, size_t srcSize, unsigned maxSymbolValue, unsigned minus);
 /**< same as FSE_optimalTableLog(), which used `minus==2` */
@@ -541,7 +512,7 @@ MEM_STATIC void FSE_initCState(FSE_CState_t* statePtr, const FSE_CTable* ct)
     const U32 tableLog = MEM_read16(ptr);
     statePtr->value = (ptrdiff_t)1<<tableLog;
     statePtr->stateTable = u16ptr+2;
-    statePtr->symbolTT = ((const U32*)ct + 1 + (tableLog ? (1<<(tableLog-1)) : 1));
+    statePtr->symbolTT = ct + 1 + (tableLog ? (1<<(tableLog-1)) : 1);
     statePtr->stateLog = tableLog;
 }
 
@@ -560,7 +531,7 @@ MEM_STATIC void FSE_initCState2(FSE_CState_t* statePtr, const FSE_CTable* ct, U3
     }
 }
 
-MEM_STATIC void FSE_encodeSymbol(BIT_CStream_t* bitC, FSE_CState_t* statePtr, U32 symbol)
+MEM_STATIC void FSE_encodeSymbol(BIT_CStream_t* bitC, FSE_CState_t* statePtr, unsigned symbol)
 {
     FSE_symbolCompressionTransform const symbolTT = ((const FSE_symbolCompressionTransform*)(statePtr->symbolTT))[symbol];
     const U16* const stateTable = (const U16*)(statePtr->stateTable);
@@ -573,6 +544,39 @@ MEM_STATIC void FSE_flushCState(BIT_CStream_t* bitC, const FSE_CState_t* statePt
 {
     BIT_addBits(bitC, statePtr->value, statePtr->stateLog);
     BIT_flushBits(bitC);
+}
+
+
+/* FSE_getMaxNbBits() :
+ * Approximate maximum cost of a symbol, in bits.
+ * Fractional get rounded up (i.e : a symbol with a normalized frequency of 3 gives the same result as a frequency of 2)
+ * note 1 : assume symbolValue is valid (<= maxSymbolValue)
+ * note 2 : if freq[symbolValue]==0, @return a fake cost of tableLog+1 bits */
+MEM_STATIC U32 FSE_getMaxNbBits(const void* symbolTTPtr, U32 symbolValue)
+{
+    const FSE_symbolCompressionTransform* symbolTT = (const FSE_symbolCompressionTransform*) symbolTTPtr;
+    return (symbolTT[symbolValue].deltaNbBits + ((1<<16)-1)) >> 16;
+}
+
+/* FSE_bitCost() :
+ * Approximate symbol cost, as fractional value, using fixed-point format (accuracyLog fractional bits)
+ * note 1 : assume symbolValue is valid (<= maxSymbolValue)
+ * note 2 : if freq[symbolValue]==0, @return a fake cost of tableLog+1 bits */
+MEM_STATIC U32 FSE_bitCost(const void* symbolTTPtr, U32 tableLog, U32 symbolValue, U32 accuracyLog)
+{
+    const FSE_symbolCompressionTransform* symbolTT = (const FSE_symbolCompressionTransform*) symbolTTPtr;
+    U32 const minNbBits = symbolTT[symbolValue].deltaNbBits >> 16;
+    U32 const threshold = (minNbBits+1) << 16;
+    assert(tableLog < 16);
+    assert(accuracyLog < 31-tableLog);  /* ensure enough room for renormalization double shift */
+    {   U32 const tableSize = 1 << tableLog;
+        U32 const deltaFromThreshold = threshold - (symbolTT[symbolValue].deltaNbBits + tableSize);
+        U32 const normalizedDeltaFromThreshold = (deltaFromThreshold << accuracyLog) >> tableLog;   /* linear interpolation (very approximate) */
+        U32 const bitMultiplier = 1 << accuracyLog;
+        assert(symbolTT[symbolValue].deltaNbBits + tableSize <= threshold);
+        assert(normalizedDeltaFromThreshold <= bitMultiplier);
+        return (minNbBits+1)*bitMultiplier - normalizedDeltaFromThreshold;
+    }
 }
 
 

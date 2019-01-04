@@ -21,6 +21,7 @@
 ***************************************/
 #include "compiler.h"
 #include "mem.h"
+#include "debug.h"                 /* assert, DEBUGLOG, RAWLOG, g_debuglevel */
 #include "error_private.h"
 #define ZSTD_STATIC_LINKING_ONLY
 #include "zstd.h"
@@ -38,43 +39,11 @@
 extern "C" {
 #endif
 
-
-/*-*************************************
-*  Debug
-***************************************/
-#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=1)
-#  include <assert.h>
-#else
-#  ifndef assert
-#    define assert(condition) ((void)0)
-#  endif
-#endif
-
-#define ZSTD_STATIC_ASSERT(c) { enum { ZSTD_static_assert = 1/(int)(!!(c)) }; }
-
-#if defined(ZSTD_DEBUG) && (ZSTD_DEBUG>=2)
-#  include <stdio.h>
-extern int g_debuglog_enable;
-/* recommended values for ZSTD_DEBUG display levels :
- * 1 : no display, enables assert() only
- * 2 : reserved for currently active debug path
- * 3 : events once per object lifetime (CCtx, CDict, etc.)
- * 4 : events once per frame
- * 5 : events once per block
- * 6 : events once per sequence (*very* verbose) */
-#  define RAWLOG(l, ...) {                                      \
-                if ((g_debuglog_enable) & (l<=ZSTD_DEBUG)) {    \
-                    fprintf(stderr, __VA_ARGS__);               \
-            }   }
-#  define DEBUGLOG(l, ...) {                                    \
-                if ((g_debuglog_enable) & (l<=ZSTD_DEBUG)) {    \
-                    fprintf(stderr, __FILE__ ": " __VA_ARGS__); \
-                    fprintf(stderr, " \n");                     \
-            }   }
-#else
-#  define RAWLOG(l, ...)      {}    /* disabled */
-#  define DEBUGLOG(l, ...)    {}    /* disabled */
-#endif
+/* ---- static assert (debug) --- */
+#define ZSTD_STATIC_ASSERT(c) DEBUG_STATIC_ASSERT(c)
+#define ZSTD_isError ERR_isError   /* for inlining */
+#define FSE_isError  ERR_isError
+#define HUF_isError  ERR_isError
 
 
 /*-*************************************
@@ -109,12 +78,10 @@ static const U32 repStartValue[ZSTD_REP_NUM] = { 1, 4, 8 };
 #define BIT0   1
 
 #define ZSTD_WINDOWLOG_ABSOLUTEMIN 10
-#define ZSTD_WINDOWLOG_DEFAULTMAX 27 /* Default maximum allowed window log */
 static const size_t ZSTD_fcs_fieldSize[4] = { 0, 2, 4, 8 };
 static const size_t ZSTD_did_fieldSize[4] = { 0, 1, 2, 4 };
 
-#define ZSTD_FRAMEIDSIZE 4
-static const size_t ZSTD_frameIdSize = ZSTD_FRAMEIDSIZE;  /* magic number size */
+#define ZSTD_FRAMEIDSIZE 4   /* magic number size */
 
 #define ZSTD_BLOCKHEADERSIZE 3   /* C standard doesn't allow `static const` variable to be init using another `static const` variable */
 static const size_t ZSTD_blockHeaderSize = ZSTD_BLOCKHEADERSIZE;
@@ -227,6 +194,8 @@ typedef struct {
     BYTE* llCode;
     BYTE* mlCode;
     BYTE* ofCode;
+    size_t maxNbSeq;
+    size_t maxNbLit;
     U32   longLengthID;   /* 0 == no longLength; 1 == Lit.longLength; 2 == Match.longLength; */
     U32   longLengthPos;
 } seqStore_t;
@@ -275,13 +244,20 @@ typedef struct {
     blockType_e blockType;
     U32 lastBlock;
     U32 origSize;
-} blockProperties_t;
+} blockProperties_t;   /* declared here for decompress and fullbench */
 
 /*! ZSTD_getcBlockSize() :
  *  Provides the size of compressed block from block header `src` */
 /* Used by: decompress, fullbench (does not get its definition from here) */
 size_t ZSTD_getcBlockSize(const void* src, size_t srcSize,
                           blockProperties_t* bpPtr);
+
+/*! ZSTD_decodeSeqHeaders() :
+ *  decode sequence header from src */
+/* Used by: decompress, fullbench (does not get its definition from here) */
+size_t ZSTD_decodeSeqHeaders(ZSTD_DCtx* dctx, int* nbSeqPtr,
+                       const void* src, size_t srcSize);
+
 
 #if defined (__cplusplus)
 }
