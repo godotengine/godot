@@ -160,6 +160,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
 	float last_play_pos;
+	float play_pos;
 
 	float error_time;
 	String error_text;
