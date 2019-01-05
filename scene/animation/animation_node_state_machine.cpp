@@ -485,6 +485,11 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *sm, 
 		rem = sm->blend_node(sm->end_node, sm->states[sm->end_node].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 	}
 
+	// When sub state machine stops, update playing to false
+	if (sm->parent != NULL && rem == 0) {
+		playing = false;
+	}
+
 	return rem;
 }
 
