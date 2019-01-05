@@ -1084,7 +1084,7 @@ Array InputDefault::get_connected_joypads() {
 	return ret;
 }
 
-static const char *_buttons[] = {
+static const char *_buttons[JOY_BUTTON_MAX] = {
 	"Face Button Bottom",
 	"Face Button Right",
 	"Face Button Left",
@@ -1103,7 +1103,7 @@ static const char *_buttons[] = {
 	"DPAD Right"
 };
 
-static const char *_axes[] = {
+static const char *_axes[JOY_AXIS_MAX] = {
 	"Left Stick X",
 	"Left Stick Y",
 	"Right Stick X",
@@ -1111,7 +1111,9 @@ static const char *_axes[] = {
 	"",
 	"",
 	"L2",
-	"R2"
+	"R2",
+	"",
+	""
 };
 
 String InputDefault::get_joy_button_string(int p_button) {
