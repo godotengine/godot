@@ -2444,7 +2444,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 	context.function = parser.get_completion_function();
 	context.line = parser.get_completion_line();
 
-	if (!context._class) {
+	if (!context._class || context._class->owner == NULL) {
 		context.base = p_owner;
 		context.base_path = p_base_path;
 	}
