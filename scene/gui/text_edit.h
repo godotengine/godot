@@ -336,7 +336,7 @@ private:
 	int get_total_visible_rows() const;
 
 	void update_cursor_wrap_offset();
-	void update_wrap_at();
+	void _update_wrap_at();
 	bool line_wraps(int line) const;
 	int times_line_wraps(int line) const;
 	Vector<String> get_wrap_rows_text(int p_line) const;
