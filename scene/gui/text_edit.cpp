@@ -3259,7 +3259,6 @@ void TextEdit::_scroll_down(real_t p_delta) {
 		int max_v_scroll = round(v_scroll->get_max() - v_scroll->get_page());
 		if (target_v_scroll > max_v_scroll) {
 			target_v_scroll = max_v_scroll;
-			v_scroll->set_value(target_v_scroll);
 		}
 		if (Math::abs(target_v_scroll - v_scroll->get_value()) < 1.0) {
 			v_scroll->set_value(target_v_scroll);
