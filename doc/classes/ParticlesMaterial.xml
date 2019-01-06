@@ -6,6 +6,7 @@
 	<description>
 		ParticlesMaterial defines particle properties and behavior. It is used in the [code]process_material[/code] of [Particles] and [Particles2D] emitter nodes.
 		Some of this material's properties are applied to each particle when emitted, while others can have a [CurveTexture] applied to vary values over the lifetime of the particle.
+		When a randomness ratio is applied to a property it is used to scale that property by a random amount. The random ratio is used to interpolate between [code]1.0[/code] and a random number less than one, the result is multiplied by the property to obtain the randomized property. For example a random ratio of [code]0.4[/code] would scale the original property between [code]0.4-1.0[/code] of its original value.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +16,8 @@
 	</methods>
 	<members>
 		<member name="angle" type="float" setter="set_param" getter="get_param">
-			Initial rotation applied to each particle.
+			Initial rotation applied to each particle, in degrees.
+			Only applied when [member flag_disable_z] or [member flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to draw the particle is using [code]BillboardMode.BILLBOARD_PARTICLES[/code].
 		</member>
 		<member name="angle_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's rotation will be animated along this [CurveTexture].
@@ -24,7 +26,8 @@
 			Rotation randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="angular_velocity" type="float" setter="set_param" getter="get_param">
-			Initial angular velocity applied to each particle.
+			Initial angular velocity applied to each particle. Sets the speed of rotation of the particle.
+			Only applied when [member flag_disable_z] or [member flag_rotate_y] are [code]true[/code] or the [SpatialMaterial] being used to draw the particle is using [code]BillboardMode.BILLBOARD_PARTICLES[/code].
 		</member>
 		<member name="angular_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's angular velocity will vary along this [CurveTexture].
@@ -51,7 +54,7 @@
 			Animation speed randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color">
-			Each particle's initial color. If the [Particles2D]'s [code]texture[/code] is defined, it will be multiplied by this color.
+			Each particle's initial color. If the [Particles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [SpatialMaterial] make sure to set [member SpatialMaterial.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
 		<member name="color_ramp" type="Texture" setter="set_color_ramp" getter="get_color_ramp">
 			Each particle's color will vary along this [GradientTexture].
@@ -69,13 +72,16 @@
 			The box's extents if [code]emission_shape[/code] is set to [code]EMISSION_SHAPE_BOX[/code].
 		</member>
 		<member name="emission_color_texture" type="Texture" setter="set_emission_color_texture" getter="get_emission_color_texture">
+			Particle color will be modulated by color determined by sampling this texture at the same point as the [member emission_point_texture].
 		</member>
 		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture">
+			Particle velocity and rotation will be set by sampling this texture at the same point as the [member emission_point_texture]. Used only in [code]EMISSION_SHAPE_DIRECTED[/code]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
 		</member>
 		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count">
 			The number of emission points if [code]emission_shape[/code] is set to [code]EMISSION_SHAPE_POINTS[/code] or [code]EMISSION_SHAPE_DIRECTED_POINTS[/code].
 		</member>
 		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture">
+			Particles will be emitted at positions determined by sampling this texture at a random position. Used with [code]EMISSION_SHAPE_POINTS[/code] and [code]EMISSION_SHAPE_DIRECTED_POINTS[/code]. Can be created automatically from mesh or node by selecting "Create Emission Points from Mesh/Node" under the "Particles" tool in the toolbar.
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="ParticlesMaterial.EmissionShape">
 			Particles will be emitted inside this region. Use [code]EMISSION_SHAPE_*[/code] constants for values. Default value: [code]EMISSION_SHAPE_POINT[/code].
@@ -84,13 +90,16 @@
 			The sphere's radius if [code]emission_shape[/code] is set to [code]EMISSION_SHAPE_SPHERE[/code].
 		</member>
 		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag">
+			Align y-axis of particle with the direction of its velocity.
 		</member>
 		<member name="flag_disable_z" type="bool" setter="set_flag" getter="get_flag">
 			If [code]true[/code], particles will not move on the z axis. Default value: [code]true[/code] for [Particles2D], [code]false[/code] for [Particles].
 		</member>
 		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code], particles rotate around y-axis by [member angle].
 		</member>
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness">
+			Amount of [member spread] in Y/Z plane. A value of [code]1[/code] restricts particles to X/Z plane. Default [code]0[/code].
 		</member>
 		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity">
 			Gravity applied to every particle. Default value: [code](0, 98, 0)[/code].
@@ -105,13 +114,13 @@
 			Hue variation randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="initial_velocity" type="float" setter="set_param" getter="get_param">
-			Initial velocity for each particle.
+			Initial velocity magnitude for each particle. Direction comes from [member spread].
 		</member>
 		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness">
 			Initial velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="linear_accel" type="float" setter="set_param" getter="get_param">
-			Linear acceleration applied to each particle.
+			Linear acceleration applied to each particle. Acceleration increases velocity magnitude each frame without affecting direction.
 		</member>
 		<member name="linear_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's linear acceleration will vary along this [CurveTexture].
@@ -120,7 +129,8 @@
 			Linear acceleration randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param">
-			Orbital velocity applied to each particle.
+			Orbital velocity applied to each particle. Makes the particles circle around origin. Specified in number of full rotations around origin per second.
+			Only available when [member flag_disable_z] is [code]true[/code].
 		</member>
 		<member name="orbit_velocity_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's orbital velocity will vary along this [CurveTexture].
@@ -129,7 +139,7 @@
 			Orbital velocity randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="radial_accel" type="float" setter="set_param" getter="get_param">
-			Radial acceleration applied to each particle.
+			Radial acceleration applied to each particle. Makes particle accelerate away from origin.
 		</member>
 		<member name="radial_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's radial acceleration will vary along this [CurveTexture].
@@ -147,10 +157,10 @@
 			Scale randomness ratio. Default value: [code]0[/code].
 		</member>
 		<member name="spread" type="float" setter="set_spread" getter="get_spread">
-			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Default value: [code]45[/code].
+			Each particle's initial direction range from [code]+spread[/code] to [code]-spread[/code] degrees. Default value: [code]45[/code]. Applied to X/Z plane and Y/Z planes.
 		</member>
 		<member name="tangential_accel" type="float" setter="set_param" getter="get_param">
-			Tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity.
+			Tangential acceleration applied to each particle. Tangential acceleration is perpendicular to the particle's velocity giving the particles a swirling motion.
 		</member>
 		<member name="tangential_accel_curve" type="Texture" setter="set_param_texture" getter="get_param_texture">
 			Each particle's tangential acceleration will vary along this [CurveTexture].
@@ -225,8 +235,10 @@
 			Particles will be emitted in the volume of a box.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
+			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle color will be modulated by [member emission_color_texture].
 		</constant>
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
+			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle velocity and rotation will be set based on [member emission_normal_texture]. Particle color will be modulated by [member emission_color_texture].
 		</constant>
 	</constants>
 </class>
