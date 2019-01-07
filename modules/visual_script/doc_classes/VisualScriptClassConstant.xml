@@ -4,7 +4,7 @@
 		Gets a constant from a given class.
 	</brief_description>
 	<description>
-		This node returns a constant from a given class, such as [@GlobalScope.TYPE_INT]. See the given class' documentation for available constants.
+		This node returns a constant from a given class, such as [constant @GlobalScope.TYPE_INT]. See the given class' documentation for available constants.
 		[b]Input Ports:[/b]
 		none
 		[b]Output Ports:[/b]

@@ -20,7 +20,7 @@
 			<argument index="0" name="state" type="Physics2DDirectBodyState">
 			</argument>
 			<description>
-				Allows you to read and safely modify the simulation state for the object. Use this instead of [Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
+				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
 			</description>
 		</method>
 		<method name="add_central_force">

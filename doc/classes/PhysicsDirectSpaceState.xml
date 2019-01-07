@@ -20,8 +20,8 @@
 			<argument index="1" name="motion" type="Vector3">
 			</argument>
 			<description>
-				Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [1, 1].
-				If the shape can not move, the returned array will be [0, 0].
+				Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [code][1, 1][/code].
+				If the shape can not move, the returned array will be [code][0, 0][/code].
 			</description>
 		</method>
 		<method name="collide_shape">

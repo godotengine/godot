@@ -21,7 +21,7 @@
 			Controls the texture's behavior when you resize the node's bounding rectangle, [b]only if[/b] [member expand] is [code]true[/code]. Set it to one of the [code]STRETCH_*[/code] constants. See the constants to learn more.
 		</member>
 		<member name="texture_click_mask" type="BitMap" setter="set_click_mask" getter="get_click_mask">
-			Pure black and white [Bitmap] image to use for click detection. On the mask, white pixels represent the button's clickable area. Use it to create buttons with curved shapes.
+			Pure black and white [BitMap] image to use for click detection. On the mask, white pixels represent the button's clickable area. Use it to create buttons with curved shapes.
 		</member>
 		<member name="texture_disabled" type="Texture" setter="set_disabled_texture" getter="get_disabled_texture">
 			Texture to display when the node is disabled. See [member BaseButton.disabled].

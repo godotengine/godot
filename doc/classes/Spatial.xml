@@ -4,8 +4,8 @@
 		Most basic 3D game object, parent of all 3D related nodes.
 	</brief_description>
 	<description>
-		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Spatial. Use Spatial as a parent node to move, scale, rotate and show/hide children in a 3D project.
-		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the Spatial object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the Spatial's transform. The word local below refers to this coordinate system. The coordinate system that is attached to the Spatial object itself is referred to as object-local coordinate system.
+		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Spatial. Use [code]Spatial[/code] as a parent node to move, scale, rotate and show/hide children in a 3D project.
+		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [code]Spatial[/code] object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the [code]Spatial[/code]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [code]Spatial[/code] object itself is referred to as object-local coordinate system.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
@@ -30,7 +30,7 @@
 			<return type="World">
 			</return>
 			<description>
-				Returns the current [World] resource this Spatial node is registered to.
+				Returns the current [World] resource this [code]Spatial[/code] node is registered to.
 			</description>
 		</method>
 		<method name="global_rotate">
@@ -65,14 +65,14 @@
 			<return type="void">
 			</return>
 			<description>
-				Disables rendering of this node. Change Spatial Visible property to false.
+				Disables rendering of this node. Changes [member visible] to [code]false[/code].
 			</description>
 		</method>
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether node notifies about its local transformation changes. Spatial will not propagate this by default.
+				Returns whether node notifies about its local transformation changes. [code]Spatial[/code] will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_scale_disabled" qualifiers="const">
@@ -92,7 +92,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the node notifies about its global and local transformation changes. Spatial will not propagate this by default.
+				Returns whether the node notifies about its global and local transformation changes. [code]Spatial[/code] will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
@@ -132,7 +132,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform3D].
+				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform].
 			</description>
 		</method>
 		<method name="rotate">
@@ -214,7 +214,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Reset all transformations for this node. Set its [Transform3D] to identity matrix.
+				Reset all transformations for this node. Set its [Transform] to identity matrix.
 			</description>
 		</method>
 		<method name="set_ignore_transform_notification">
@@ -232,7 +232,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether the node notifies about its local transformation changes. Spatial will not propagate this by default.
+				Set whether the node notifies about its local transformation changes. [code]Spatial[/code] will not propagate this by default.
 			</description>
 		</method>
 		<method name="set_notify_transform">
@@ -241,14 +241,14 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether the node notifies about its global and local transformation changes. Spatial will not propagate this by default.
+				Set whether the node notifies about its global and local transformation changes. [code]Spatial[/code] will not propagate this by default.
 			</description>
 		</method>
 		<method name="show">
 			<return type="void">
 			</return>
 			<description>
-				Enables rendering of this node. Change Spatial Visible property to "True".
+				Enables rendering of this node. Changes [member visible] to [code]true[/code].
 			</description>
 		</method>
 		<method name="to_global" qualifiers="const">
@@ -296,7 +296,7 @@
 	</methods>
 	<members>
 		<member name="gizmo" type="SpatialGizmo" setter="set_gizmo" getter="get_gizmo">
-			The SpatialGizmo for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
+			The [SpatialGizmo] for this node. Used for example in [EditorSpatialGizmo] as custom visualization and editing handles in Editor.
 		</member>
 		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform">
 			World space (global) [Transform] of this node.
@@ -331,7 +331,7 @@
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
-			In order for NOTIFICATION_TRANSFORM_CHANGED to work user first needs to ask for it, with set_notify_transform(true).
+			In order for [code]NOTIFICATION_TRANSFORM_CHANGED[/code] to work, users first need to ask for it, with [method set_notify_transform].
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Spatial nodes receives this notification when they are registered to new [World] resource.

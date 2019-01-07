@@ -884,7 +884,7 @@
 			<argument index="0" name="process_info" type="int" enum="PhysicsServer.ProcessInfo">
 			</argument>
 			<description>
-				Returns an Info defined by the [ProcessInfo] input given.
+				Returns an Info defined by the [enum PhysicsServer.ProcessInfo] input given.
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">

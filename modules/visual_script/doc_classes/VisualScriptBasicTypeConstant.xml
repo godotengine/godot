@@ -4,7 +4,7 @@
 		A Visual Script node representing a constant from the base types.
 	</brief_description>
 	<description>
-		A Visual Script node representing a constant from base types, such as [Vector3.AXIS_X].
+		A Visual Script node representing a constant from base types, such as [constant Vector3.AXIS_X].
 	</description>
 	<tutorials>
 	</tutorials>

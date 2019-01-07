@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PoolStringArray" category="Built-In Types" version="3.1">
 	<brief_description>
-		String Array.
+		A pooled [Array] of [String].
 	</brief_description>
 	<description>
-		String Array. Array of strings. Can only contain strings. Optimized for memory usage, can't fragment the memory. Note that this type is passed by value and not by reference.
+		An [Array] specifically designed to hold [String]. Optimized for memory usage, does not fragment the memory. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Create from a generic array.
+				Construct a new [code]PoolStringArray[/code]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolStringArray">
 			</argument>
 			<description>
-				Append an [StringArray] at the end of this array.
+				Append a [code]PoolStringArray[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">
@@ -42,7 +42,7 @@
 			<argument index="1" name="string" type="String">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
@@ -56,7 +56,7 @@
 			<argument index="0" name="delimiter" type="String">
 			</argument>
 			<description>
-				Returns a [String] with each element of the array joined with the delimiter.
+				Returns a [String] with each element of the array joined with the given [code]delimiter[/code].
 			</description>
 		</method>
 		<method name="push_back">

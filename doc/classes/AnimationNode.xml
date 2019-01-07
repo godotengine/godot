@@ -54,7 +54,7 @@
 			<argument index="5" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
-				Blend an input. This is only useful for nodes created for an AnimationBlendTree. Time is a delta, unless "seek" is true, in which case it is absolute. A filter mode may be optionally passed.
+				Blend an input. This is only useful for nodes created for an [AnimationNodeBlendTree]. Time is a delta, unless "seek" is true, in which case it is absolute. A filter mode may be optionally passed.
 			</description>
 		</method>
 		<method name="blend_node">
@@ -105,7 +105,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Amount of inputs in this node, only useful for nodes that go into [AnimationBlendTree].
+				Amount of inputs in this node, only useful for nodes that go into [AnimationNodeBlendTree].
 			</description>
 		</method>
 		<method name="get_input_name">
@@ -139,8 +139,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Get the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
-			Format is similar to [Object.get_property_list]
+				Get the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">

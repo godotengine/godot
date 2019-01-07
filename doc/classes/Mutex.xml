@@ -22,7 +22,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Try locking this [code]Mutex[/code], does not block. Returns [OK] on success, [ERR_BUSY] otherwise.
+				Try locking this [code]Mutex[/code], does not block. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
 			</description>
 		</method>
 		<method name="unlock">

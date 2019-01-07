@@ -3660,7 +3660,7 @@
 			<argument index="1" name="clear_mode" type="int" enum="VisualServer.ViewportClearMode">
 			</argument>
 			<description>
-				Sets the clear mode of a viewport. See VIEWPORT_CLEAR_MODE_* constants for options.
+				Sets the clear mode of a viewport. See [enum VisualServer.ViewportClearMode] for options.
 			</description>
 		</method>
 		<method name="viewport_set_debug_draw">
@@ -3671,7 +3671,7 @@
 			<argument index="1" name="draw" type="int" enum="VisualServer.ViewportDebugDraw">
 			</argument>
 			<description>
-				Sets the debug draw mode of a viewport. See VIEWPORT_DEBUG_DRAW_* constants for options.
+				Sets the debug draw mode of a viewport. See [enum VisualServer.ViewportDebugDraw] for options.
 			</description>
 		</method>
 		<method name="viewport_set_disable_3d">
@@ -4160,7 +4160,7 @@
 			The viewport is never cleared before drawing.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
-			The viewport is cleared once, then the clear mode is set to [VIEWPORT_CLEAR_NEVER].
+			The viewport is cleared once, then the clear mode is set to [code]VIEWPORT_CLEAR_NEVER[/code].
 		</constant>
 		<constant name="VIEWPORT_MSAA_DISABLED" value="0" enum="ViewportMSAA">
 			Multisample antialiasing is disabled.
