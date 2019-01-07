@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:35+0100\n"
+"PO-Revision-Date: 2018-12-18 20:43+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2582,6 +2582,7 @@ msgid ""
 "The selected resource (%s) does not match the type expected for this "
 "property (%s)."
 msgstr ""
+"Valittu resurssi (%s) ei vastaa odotettua tyyppiä tälle ominaisuudelle (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3157,9 +3158,8 @@ msgid "Group name already exists."
 msgstr "Ryhmän nimi on jo olemassa."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Invalid group name."
-msgstr "virheellinen ryhmän nimi."
+msgstr "Virheellinen ryhmän nimi."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
@@ -3410,7 +3410,6 @@ msgid "Create Polygon"
 msgstr "Luo polygoni"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon"
 msgstr "Muokkaa polygonia"
 
@@ -3419,12 +3418,10 @@ msgid "Insert Point"
 msgstr "Lisää piste"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon (Remove Point)"
 msgstr "Muokkaa polygonia (poista piste)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Remove Polygon And Point"
 msgstr "Poista polygoni ja piste"
 
@@ -3435,16 +3432,14 @@ msgid "Create points."
 msgstr "Luo pisteitä."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
 "RMB: Erase Point"
 msgstr ""
-"Muokkaa polygonia:\n"
-"Vasen hiirenkorva: Siirrä pistettä.\n"
-"Ctrl+Vasen hiirenkorva: Puolita segmentti.\n"
-"Oikea hiirenkorva: Poista piste."
+"Muokkaa pisteitä.\n"
+"Vasen hiirenkorva: Siirrä pistettä\n"
+"Oikea hiirenkorva: Poista piste"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -4273,13 +4268,14 @@ msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
 msgstr ""
+"Varoitus: Säilön alisolmujen sijainti ja koko määrittyy vain niiden "
+"isäntäsolmun perusteella."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Zoom Reset"
-msgstr "Palauta lähennys"
+msgstr "Palauta oletuslähennystaso"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -4540,9 +4536,8 @@ msgstr ""
 "Vedä & pudota + Alt: Muuta solmun tyyppiä"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon3D"
-msgstr "Luo polygoni"
+msgstr "Luo Polygon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
@@ -4604,7 +4599,7 @@ msgstr "Lataa käyrän esiasetus"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Add point"
-msgstr "Lisää pistä"
+msgstr "Lisää piste"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove point"
@@ -4741,7 +4736,7 @@ msgstr "Luo konveksi törmäysmuoto sisareksi"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
-msgstr "Luo reunoista Mesh..."
+msgstr "Luo ääriviivoista Mesh..."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -4757,7 +4752,7 @@ msgstr "Aukaise UV2 Lightmapille tai AO:lle"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh"
-msgstr "Luo reunoista Mesh"
+msgstr "Luo ääriviivoista Mesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Outline Size:"
@@ -4980,11 +4975,11 @@ msgstr "Pinnan pisteet"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Surface Points+Normal (Directed)"
-msgstr "Pinnan pisteet+normaali"
+msgstr "Pinnan pisteet+normaali (suunnattu)"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
-msgstr "Äänenvoimakkuus"
+msgstr "Tilavuus"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
@@ -5024,9 +5019,8 @@ msgid "Add Point to Curve"
 msgstr "Lisää käyrään piste"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Split Curve"
-msgstr "Sulje käyrä"
+msgstr "Puolita käyrä"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
@@ -5048,26 +5042,25 @@ msgstr "Valitse pisteet"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Shift+Drag: Select Control Points"
-msgstr "Shift+vedä: Valitse kontrollipisteitä"
+msgstr "Shift+vedä: Valitse ohjauspisteitä"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Click: Add Point"
-msgstr "Klikkaa: lisää piste"
+msgstr "Napsauta: lisää piste"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Left Click: Split Segment (in curve)"
-msgstr "Puolita osa (käyrässä)"
+msgstr "Vasen painallus: Puolita osa (käyrässä)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Right Click: Delete Point"
-msgstr "Oikea klikkaus: Poista piste"
+msgstr "Oikea painallus: poista piste"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Select Control Points (Shift+Drag)"
-msgstr "Valitse kontrollipisteitä (Shift+vedä)"
+msgstr "Valitse ohjauspisteitä (Shift+vedä)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5146,7 +5139,6 @@ msgid ""
 msgstr "Polygon2D solmun luuominaisuus ei osoita Skeleton2D solmuun"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Sync Bones"
 msgstr "Synkkaa luut"
 
@@ -5155,6 +5147,8 @@ msgid ""
 "No texture in this polygon.\n"
 "Set a texture to be able to edit UV."
 msgstr ""
+"Tällä polygonilla ei ole tekstuuria.\n"
+"Aseta tekstuuri mahdollistaaksesi UV-editoinnin."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5193,19 +5187,16 @@ msgid "Transform UV Map"
 msgstr "Muunna UV kartta"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Transform Polygon"
-msgstr "Muunnoksen tyyppi"
+msgstr "Muunna polygonia"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Paint Bone Weights"
 msgstr "Maalaa luiden painot"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Open Polygon 2D UV editor."
-msgstr "Polygon 2D UV-editori"
+msgstr "Avaa Polygon 2D UV-editori."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5228,9 +5219,8 @@ msgid "Bones"
 msgstr "Luut"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Move Points"
-msgstr "Siirrä pistettä"
+msgstr "Siirrä pisteitä"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Ctrl: Rotate"
@@ -5257,24 +5247,20 @@ msgid "Scale Polygon"
 msgstr "Skaalaa polygonia"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Connect two points to make a split."
-msgstr "Yhdistä kaksi pistettä luodaksesi jaon"
+msgstr "Yhdistä kaksi pistettä luodaksesi jaon."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Select a split to erase it."
-msgstr "Valitse jako poistaaksesi sen"
+msgstr "Valitse jako poistaaksesi sen."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Paint weights with specified intensity."
-msgstr "Maalaa painot tietyllä voimakkuudella"
+msgstr "Maalaa painot tietyllä voimakkuudella."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Unpaint weights with specified intensity."
-msgstr "Poista painojen maalaus tietyllä voimakkuudella"
+msgstr "Poista painojen maalaus tietyllä voimakkuudella."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
@@ -5411,22 +5397,18 @@ msgid "Error saving file!"
 msgstr "Virhe tallennettaessa tiedostoa!"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error while saving theme."
-msgstr "Virhe tallennettaessa teemaa"
+msgstr "Virhe tallennettaessa teemaa."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error Saving"
 msgstr "Virhe tallennettaessa"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error importing theme."
-msgstr "Virhe tuotaessa teemaa"
+msgstr "Virhe tuotaessa teemaa."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error Importing"
 msgstr "Virhe tuonnissa"
 
@@ -5464,7 +5446,7 @@ msgstr " Luokan referenssi"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
-msgstr "Kytke metodilistan aakkosellinen järjestys."
+msgstr "Käytä metodilistalla aakkosellista järjestystä."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -5495,9 +5477,8 @@ msgid "File"
 msgstr "Tiedosto"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open..."
-msgstr "Avaa"
+msgstr "Avaa..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5525,9 +5506,8 @@ msgid "Theme"
 msgstr "Teema"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Import Theme..."
-msgstr "Tuo teema"
+msgstr "Tuo teema..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -5612,8 +5592,8 @@ msgid ""
 "The following files are newer on disk.\n"
 "What action should be taken?:"
 msgstr ""
-"Seuraavat tiedostot ovat uudempia.\n"
-"MItä toimenpiteitä tulisi suorittaa?:"
+"Seuraavat tiedostot ovat uudempia levyllä.\n"
+"Mikä toimenpide tulisi suorittaa?:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload"
@@ -5723,7 +5703,7 @@ msgstr "Kloonaa alas"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Complete Symbol"
-msgstr "Täydennä symbooli"
+msgstr "Täydennä symboli"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -6370,9 +6350,8 @@ msgid "Set Region Rect"
 msgstr "Aseta alueen suorakulmio"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Set Margin"
-msgstr "Aseta kahva"
+msgstr "Aseta marginaali"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
@@ -6616,14 +6595,12 @@ msgid "Clear transform"
 msgstr "Tyhjennä muunnos"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Add Texture(s) to TileSet."
-msgstr "Lisää tekstuurit ruutuvalikoimaan"
+msgstr "Lisää tekstuurit ruutuvalikoimaan."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected Texture from TileSet."
-msgstr "Poista nykyinen tekstuuri ruutuvalikoimasta"
+msgstr "Poista valittu tekstuuri ruutuvalikoimasta."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6635,33 +6612,29 @@ msgstr "Yhdistä skenestä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
-msgstr ""
+msgstr "Kopioi bittimaski."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste bitmask."
-msgstr "Liitä animaatio"
+msgstr "Liitä bittimaski."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Erase bitmask."
-msgstr "Pyyhi pisteitä."
+msgstr "Pyyhi bittimaski."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create a new polygon."
-msgstr "Luo uusi piste tyhjästä."
+msgstr "Luo uusi polygoni."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
-msgstr ""
+msgstr "Pidä polygoni alueen suorakulmion sisällä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
-msgstr ""
+msgstr "Aseta tarttuminen ja näytä ruudukko (muokattavissa Tarkastelussa)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Näytä ruutujen nimet (pidä Alt-näppäin pohjassa)"
 
@@ -6694,9 +6667,8 @@ msgstr ""
 "Napsauta toista ruutua muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete selected Rect."
-msgstr "Poista valitut tiedostot?"
+msgstr "Poista valittu suorakulmio."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6707,12 +6679,10 @@ msgstr ""
 "Napsauta toista ruutua muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete polygon."
-msgstr "Poista pisteitä"
+msgstr "Poista polygoni."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "LMB: Set bit on.\n"
 "RMB: Set bit off.\n"
@@ -6741,12 +6711,11 @@ msgstr ""
 "Napsauta toista ruutua muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Select sub-tile to change its z index.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Valitse aliruutu muuttaaksesi sen tärkeyttä.\n"
+"Valitse aliruutu muuttaaksesi sen z-järjestystä.\n"
 "Napsauta toista ruutua muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6754,7 +6723,6 @@ msgid "This property can't be changed."
 msgstr "Tätä ominaisuutta ei voi muuttaa."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "TileSet"
 msgstr "Ruutuvalikoima"
 
@@ -6771,7 +6739,6 @@ msgid "Light"
 msgstr "Valo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node..."
 msgstr "Lisää solmu..."
 
@@ -6812,9 +6779,8 @@ msgid "Add..."
 msgstr "Lisää..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Path"
-msgstr "Vientipolku:"
+msgstr "Vie polku"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -8302,9 +8268,8 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-#, fuzzy
 msgid "Step argument is zero!"
-msgstr "askeleen argumentti on nolla!"
+msgstr "Askeleen argumentti on nolla!"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not a script with an instance"
@@ -9276,13 +9241,12 @@ msgstr ""
 "OrientedPathFollow toimii ainoastaan ollessaan asetettuna Path solmun alle."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
 "resource."
 msgstr ""
-"OrientedPathFollow edellyttää, että sen Path isäntäsolmulle on asetettu ylös-"
-"vektorit."
+"OrientedPathFollow edellyttää, että sen Path isäntäsolmun Curve resurssin "
+"\"Up Vector\" on asetettu päälle."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9387,6 +9351,7 @@ msgstr "AnimationPlayer juuri ei ole kelvollinen solmu."
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
+"Tämä solmu on poistettu käytöstä. Käytä sen sijaan AnimationTree solmua."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9406,7 +9371,7 @@ msgstr "Ole hyvä ja vahvista..."
 
 #: scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "Aseta tarttuminen ja näytä ruudukko."
 
 #: scene/gui/popup.cpp
 msgid ""

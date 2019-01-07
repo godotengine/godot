@@ -7,12 +7,13 @@
 # Sandor Domokos <sandor.domokos@gmail.com>, 2017-2018.
 # Varga Dániel <danikah.danikah@gmail.com>, 2016-2018.
 # Gabor Csordas <gaborcsordas@yahoo.com>, 2018.
+# Tusa Gamer <tusagamer@mailinator.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:40+0100\n"
-"Last-Translator: Varga Dániel <danikah.danikah@gmail.com>\n"
+"PO-Revision-Date: 2018-12-29 12:09+0000\n"
+"Last-Translator: Tusa Gamer <tusagamer@mailinator.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -20,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -36,7 +37,7 @@ msgstr "Nincs elég bájt a bájtok dekódolására, vagy hibás formátum."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Érvénytelen bemenet %1 (nem átadott) a kifejezésben."
+msgstr "Érvénytelen bemenet %i (nem átadott) a kifejezésben."
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
