@@ -1307,17 +1307,13 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	play_mode = memnew(OptionButton);
 	top_hb->add_child(play_mode);
 
-	GridContainer *main_grid = memnew(GridContainer);
-	main_grid->set_columns(2);
-	add_child(main_grid);
-	main_grid->set_v_size_flags(SIZE_EXPAND_FILL);
-
 	panel = memnew(PanelContainer);
 	panel->set_clip_contents(true);
-	main_grid->add_child(panel);
-	panel->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(panel);
+	panel->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	state_machine_draw = memnew(Control);
+	panel->add_child(state_machine_draw);
 	state_machine_draw->connect("gui_input", this, "_state_machine_gui_input");
 	state_machine_draw->connect("draw", this, "_state_machine_draw");
 	state_machine_draw->set_focus_mode(FOCUS_ALL);
@@ -1328,24 +1324,21 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	state_machine_play_pos->set_anchors_and_margins_preset(PRESET_WIDE);
 	state_machine_play_pos->connect("draw", this, "_state_machine_pos_draw");
 
-	panel->add_child(state_machine_draw);
-	panel->set_v_size_flags(SIZE_EXPAND_FILL);
-
 	v_scroll = memnew(VScrollBar);
-	main_grid->add_child(v_scroll);
+	state_machine_draw->add_child(v_scroll);
+	v_scroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 	v_scroll->connect("value_changed", this, "_scroll_changed");
 
 	h_scroll = memnew(HScrollBar);
-	main_grid->add_child(h_scroll);
+	state_machine_draw->add_child(h_scroll);
+	h_scroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
+	h_scroll->set_margin(MARGIN_RIGHT, -v_scroll->get_size().x * EDSCALE);
 	h_scroll->connect("value_changed", this, "_scroll_changed");
-
-	main_grid->add_child(memnew(Control)); //empty bottom right
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
-	error_label->set_text("eh");
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
