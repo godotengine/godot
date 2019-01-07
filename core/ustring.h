@@ -196,7 +196,8 @@ public:
 	/* complex helpers */
 	String substr(int p_from, int p_chars) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
-	int find(const char *p_str, int p_from) const; ///< return <0 if failed
+	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
+	int find_char(CharType p_char, int p_from = 0) const; ///< return <0 if failed
 	int find_last(const String &p_str) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
