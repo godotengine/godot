@@ -606,7 +606,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	state_machine->get_node_list(&nodes);
 
 	node_rects.clear();
-	Rect2 scroll_range(Point2(), state_machine_draw->get_size());
+	Rect2 scroll_range;
 
 	//snap lines
 	if (dragging_selected) {
@@ -823,7 +823,8 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		}
 	}
 
-	scroll_range = scroll_range.grow(200 * EDSCALE);
+	scroll_range.position -= state_machine_draw->get_size();
+	scroll_range.size += state_machine_draw->get_size() * 2.0;
 
 	//adjust scrollbars
 	updating = true;
