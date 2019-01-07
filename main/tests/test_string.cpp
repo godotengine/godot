@@ -971,6 +971,81 @@ bool test_31() {
 	return state;
 };
 
+bool test_32() {
+
+#define STRIP_TEST(x)                                            \
+	{                                                            \
+		bool success = x;                                        \
+		state = state && success;                                \
+		if (!success) {                                          \
+			OS::get_singleton()->print("\tfailed at: %s\n", #x); \
+		}                                                        \
+	}
+
+	OS::get_singleton()->print("\n\nTest 32: lstrip and rstrip\n");
+	bool state = true;
+
+	// strip none
+	STRIP_TEST(String("abc").lstrip("") == "abc");
+	STRIP_TEST(String("abc").rstrip("") == "abc");
+	// strip one
+	STRIP_TEST(String("abc").lstrip("a") == "bc");
+	STRIP_TEST(String("abc").rstrip("c") == "ab");
+	// strip lots
+	STRIP_TEST(String("bababbababccc").lstrip("ab") == "ccc");
+	STRIP_TEST(String("aaabcbcbcbbcbbc").rstrip("cb") == "aaa");
+	// strip empty string
+	STRIP_TEST(String("").lstrip("") == "");
+	STRIP_TEST(String("").rstrip("") == "");
+	// strip to empty string
+	STRIP_TEST(String("abcabcabc").lstrip("bca") == "");
+	STRIP_TEST(String("abcabcabc").rstrip("bca") == "");
+	// don't strip wrong end
+	STRIP_TEST(String("abc").lstrip("c") == "abc");
+	STRIP_TEST(String("abca").lstrip("a") == "bca");
+	STRIP_TEST(String("abc").rstrip("a") == "abc");
+	STRIP_TEST(String("abca").rstrip("a") == "abc");
+	// in utf-8 "¿" has the same first byte as "µ"
+	// and the same second as "ÿ"
+	STRIP_TEST(String::utf8("¿").lstrip(String::utf8("µÿ")) == String::utf8("¿"));
+	STRIP_TEST(String::utf8("¿").rstrip(String::utf8("µÿ")) == String::utf8("¿"));
+	STRIP_TEST(String::utf8("µ¿ÿ").lstrip(String::utf8("µÿ")) == String::utf8("¿ÿ"));
+	STRIP_TEST(String::utf8("µ¿ÿ").rstrip(String::utf8("µÿ")) == String::utf8("µ¿"));
+
+	// the above tests repeated with additional superfluous strip chars
+
+	// strip none
+	STRIP_TEST(String("abc").lstrip("qwjkl") == "abc");
+	STRIP_TEST(String("abc").rstrip("qwjkl") == "abc");
+	// strip one
+	STRIP_TEST(String("abc").lstrip("qwajkl") == "bc");
+	STRIP_TEST(String("abc").rstrip("qwcjkl") == "ab");
+	// strip lots
+	STRIP_TEST(String("bababbababccc").lstrip("qwabjkl") == "ccc");
+	STRIP_TEST(String("aaabcbcbcbbcbbc").rstrip("qwcbjkl") == "aaa");
+	// strip empty string
+	STRIP_TEST(String("").lstrip("qwjkl") == "");
+	STRIP_TEST(String("").rstrip("qwjkl") == "");
+	// strip to empty string
+	STRIP_TEST(String("abcabcabc").lstrip("qwbcajkl") == "");
+	STRIP_TEST(String("abcabcabc").rstrip("qwbcajkl") == "");
+	// don't strip wrong end
+	STRIP_TEST(String("abc").lstrip("qwcjkl") == "abc");
+	STRIP_TEST(String("abca").lstrip("qwajkl") == "bca");
+	STRIP_TEST(String("abc").rstrip("qwajkl") == "abc");
+	STRIP_TEST(String("abca").rstrip("qwajkl") == "abc");
+	// in utf-8 "¿" has the same first byte as "µ"
+	// and the same second as "ÿ"
+	STRIP_TEST(String::utf8("¿").lstrip(String::utf8("qwaµÿjkl")) == String::utf8("¿"));
+	STRIP_TEST(String::utf8("¿").rstrip(String::utf8("qwaµÿjkl")) == String::utf8("¿"));
+	STRIP_TEST(String::utf8("µ¿ÿ").lstrip(String::utf8("qwaµÿjkl")) == String::utf8("¿ÿ"));
+	STRIP_TEST(String::utf8("µ¿ÿ").rstrip(String::utf8("qwaµÿjkl")) == String::utf8("µ¿"));
+
+	return state;
+
+#undef STRIP_TEST
+}
+
 typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
@@ -1006,6 +1081,7 @@ TestFunc test_funcs[] = {
 	test_29,
 	test_30,
 	test_31,
+	test_32,
 	0
 
 };

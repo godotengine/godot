@@ -179,6 +179,8 @@ public:
 		return OK;
 	};
 
+	int find(const T &p_val, int p_from = 0) const;
+
 	_FORCE_INLINE_ CowData();
 	_FORCE_INLINE_ ~CowData();
 	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); };
@@ -313,6 +315,24 @@ Error CowData<T>::resize(int p_size) {
 	}
 
 	return OK;
+}
+
+template <class T>
+int CowData<T>::find(const T &p_val, int p_from) const {
+	int ret = -1;
+
+	if (p_from < 0 || size() == 0) {
+		return ret;
+	}
+
+	for (int i = p_from; i < size(); i++) {
+		if (get(i) == p_val) {
+			ret = i;
+			break;
+		}
+	}
+
+	return ret;
 }
 
 template <class T>
