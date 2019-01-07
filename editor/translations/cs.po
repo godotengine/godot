@@ -979,7 +979,8 @@ msgid "Uncompressing Assets"
 msgstr "Dekomprese uživatelského obsahu"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "Balíček byl úspěšně nainstalován!"
 
 #: editor/editor_asset_installer.cpp
@@ -1222,7 +1223,7 @@ msgid "Add AutoLoad"
 msgstr "Přidat AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Cesta:"
 
@@ -2574,12 +2575,13 @@ msgid "[Empty]"
 msgstr "[Prázdné]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+#, fuzzy
+msgid "Assign..."
 msgstr "Přiřadit.."
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -2954,16 +2956,12 @@ msgid "Unable to update dependencies:"
 msgstr "Nepodařilo se aktualizovat závislosti:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "Nebylo poskytnuto žádné jméno"
+msgid "No name provided."
+msgstr "Nebylo poskytnuto žádné jméno."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "Poskytnuté jméno obsahuje neplatné znaky"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "Nebylo poskytnuto žádné jméno."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3339,6 +3337,11 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Nahrát existující zdroj z disku a editovat ho."
 
 #: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Save the currently edited resource."
+msgstr "Uložit vybranou animaci"
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "Jít na předešlý editovaný objekt v historii."
 
@@ -3457,7 +3460,8 @@ msgstr "Přidat animaci"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Load.."
+#, fuzzy
+msgid "Load..."
 msgstr "Načíst.."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3484,6 +3488,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr "Zvolte a přesuňte body. Nové uzly vytvořte pomocí RMB."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3522,12 +3531,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Přichytit"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "Prolínání:"
@@ -3562,7 +3565,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Add Node.."
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node..."
 msgstr "Přidat uzel.."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3833,7 +3838,7 @@ msgstr "Připojit uzly."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "Odstranit vybranou stopu."
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4866,6 +4871,7 @@ msgid "Populate"
 msgstr "Naplnit"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Vytvořit navigační polygon"
 
@@ -5279,6 +5285,11 @@ msgstr "Vymazat UV"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Settings"
 msgstr "Nastavení mřížky"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Přichytit"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6249,6 +6260,10 @@ msgstr "Před"
 msgid "Post"
 msgstr "Po"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Sprite je prázdný!"
@@ -6662,20 +6677,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "Odstranit aktuální texturu z TileSetu"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "Vytvořit ze scény?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Sloučit ze scény?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "Odstranit šablonu"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6733,6 +6754,88 @@ msgid ""
 msgstr "Vytvořit složku"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Set Tile Region"
+msgstr "Oblast textury"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "Vytvořit složku"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "Editovat filtry"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "Upravit existující polygon:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Editovat polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Vytvořit navigační polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "Vložit animaci"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "Odstranit šablonu"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "Odstranit polygon a bod"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "Vytvořit Occluder Polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Vytvořit navigační polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "Editovat filtry"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Vytvořit navigační polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "Vytvořit Occluder Polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "Tato vlastnost nemůže být změněna."
 
@@ -6752,11 +6855,6 @@ msgstr "Fragment"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "Světlo"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "Přidat uzel.."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6854,6 +6952,36 @@ msgstr ""
 #: editor/project_export.cpp
 msgid "Feature List:"
 msgstr "Seznam funkcí:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "Nový skript"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "Expertní režim:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -6998,12 +7126,31 @@ msgid "Unnamed Project"
 msgstr "Nepojmenovaný projekt"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "Nelze otevřít projekt"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Jste si jisti, že chcete otevřit více než jeden projekt?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9365,10 +9512,6 @@ msgstr "Pozor!"
 msgid "Please Confirm..."
 msgstr "Potvrďte prosím..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9451,6 +9594,15 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "Nebylo poskytnuto žádné jméno"
+
+#~ msgid "Add Node.."
+#~ msgstr "Přidat uzel.."
+
+#~ msgid "Create from scene?"
+#~ msgstr "Vytvořit ze scény?"
+
 #~ msgid "Create Poly"
 #~ msgstr "Vytvořit polygon"
 
@@ -9471,9 +9623,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Na tomto uzlu není žádný OccluderPolygon2D.\n"
 #~ "Vytvořit a přiřadit k tomuto uzlu?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "Upravit existující polygon:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "LMB: Přesunout bod."
@@ -9736,9 +9885,6 @@ msgstr ""
 
 #~ msgid "Load an animation from disk."
 #~ msgstr "Načíst animaci z disku."
-
-#~ msgid "Save the current animation"
-#~ msgstr "Uložit vybranou animaci"
 
 #~ msgid "Copy Animation"
 #~ msgstr "Kopírovat animaci"

@@ -991,7 +991,7 @@ msgid "Uncompressing Assets"
 msgstr "عست های غیر فشرده"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+msgid "Package installed successfully!"
 msgstr ""
 
 #: editor/editor_asset_installer.cpp
@@ -1237,7 +1237,7 @@ msgid "Add AutoLoad"
 msgstr "بارگذاری خودکار (AutoLoad) را اضافه کن"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "مسیر:"
 
@@ -2573,12 +2573,12 @@ msgid "[Empty]"
 msgstr ""
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -2954,15 +2954,11 @@ msgid "Unable to update dependencies:"
 msgstr "خطا در بارگذاری صحنه به دلیل بستگی‌های مفقود:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
+msgid "No name provided."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
-msgstr ""
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -3360,6 +3356,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr ""
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr ""
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr ""
 
@@ -3479,7 +3479,7 @@ msgstr ""
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "بارگیری"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3505,6 +3505,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3546,12 +3551,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr ""
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr ""
@@ -3586,8 +3585,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "افزودن گره"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3870,7 +3870,7 @@ msgstr "اتصال گره‌ها"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "ترک انتخاب شده را حذف کن."
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4912,6 +4912,7 @@ msgid "Populate"
 msgstr ""
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr ""
 
@@ -5324,6 +5325,11 @@ msgstr ""
 #, fuzzy
 msgid "Grid Settings"
 msgstr "ترجیحات"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6321,6 +6327,10 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6744,20 +6754,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "حذف نقطهٔ منحنی"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
+msgid "Create from scene? This will overwrite all current tiles."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "حذف قالب"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6815,6 +6831,87 @@ msgid ""
 msgstr "ساختن پوشه"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Region"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "ساختن پوشه"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "ویرایش صافی ها"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "ویرایش سیگنال"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "ویرایش سیگنال"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "ویرایش سیگنال"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "مسیر به سمت گره:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "حذف قالب"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "برداشتن نقش"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "برداشتن نقش"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "حذف ترجمه"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "ویرایش صافی ها"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "انتخاب شده را تغییر مقیاس بده"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "انتخاب شده را تغییر مقیاس بده"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr ""
 
@@ -6835,11 +6932,6 @@ msgstr "نشانوندها:"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "افزودن گره"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6940,6 +7032,36 @@ msgstr ""
 #, fuzzy
 msgid "Feature List:"
 msgstr "فهرست متدها:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "صحنه جدید"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "حالت صدور:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7089,11 +7211,30 @@ msgid "Unnamed Project"
 msgstr "پروژه بی نام"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "ناتوان در گشودن پروژه"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9490,10 +9631,6 @@ msgstr "هشدار!"
 msgid "Please Confirm..."
 msgstr "لطفاً تأیید کنید…"
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9573,6 +9710,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "افزودن گره"
 
 #, fuzzy
 #~ msgid "Zoom out"

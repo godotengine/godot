@@ -1016,7 +1016,7 @@ msgid "Uncompressing Assets"
 msgstr "導入中:"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+msgid "Package installed successfully!"
 msgstr ""
 
 #: editor/editor_asset_installer.cpp
@@ -1283,7 +1283,7 @@ msgid "Add AutoLoad"
 msgstr "新增AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "路徑:"
 
@@ -2670,12 +2670,12 @@ msgid "[Empty]"
 msgstr ""
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -3066,15 +3066,11 @@ msgid "Unable to update dependencies:"
 msgstr ""
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
+msgid "No name provided."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
-msgstr ""
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
 msgstr ""
 
 #: editor/filesystem_dock.cpp
@@ -3483,6 +3479,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr ""
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr ""
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr ""
 
@@ -3606,7 +3606,7 @@ msgstr "新增動畫"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "載入"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3632,6 +3632,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3673,12 +3678,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr ""
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr ""
@@ -3714,8 +3713,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "新增節點"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3999,7 +3999,7 @@ msgstr "連到："
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "移除被選取的軌迹。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5048,6 +5048,7 @@ msgid "Populate"
 msgstr ""
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr ""
 
@@ -5459,6 +5460,11 @@ msgstr ""
 #, fuzzy
 msgid "Grid Settings"
 msgstr "設定"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6462,6 +6468,10 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6884,20 +6894,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "只限選中"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
+msgid "Create from scene? This will overwrite all current tiles."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "移除選項"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6955,6 +6971,87 @@ msgid ""
 msgstr "新增資料夾"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Region"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "新增資料夾"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "檔案"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "插件"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "插件"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "插件"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "貼上動畫"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "移除選項"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "只限選中"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "只限選中"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "移除動畫"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "檔案"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "縮放selection"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "縮放selection"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "This property can't be changed."
 msgstr "不能執行這個動作，因為沒有tree root."
@@ -6975,11 +7072,6 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "新增節點"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -7080,6 +7172,36 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Feature List:"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "下一個腳本"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "匯出"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr "文字"
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -7233,11 +7355,29 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Can't open project"
+msgid "Can't open project at '%s'."
 msgstr "不能連接。"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9576,10 +9716,6 @@ msgstr "警告!"
 msgid "Please Confirm..."
 msgstr "請確認..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9652,6 +9788,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "新增節點"
 
 #, fuzzy
 #~ msgid "Zoom out"
@@ -9948,9 +10088,6 @@ msgstr ""
 
 #~ msgid "Images:"
 #~ msgstr "圖片:"
-
-#~ msgid "Text"
-#~ msgstr "文字"
 
 #~ msgid "File exists"
 #~ msgstr "檔案已存在"

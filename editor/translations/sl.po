@@ -993,7 +993,8 @@ msgid "Uncompressing Assets"
 msgstr "Razširjenje Dodatkov"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "Paket je Uspešno Nameščen!"
 
 #: editor/editor_asset_installer.cpp
@@ -1236,7 +1237,7 @@ msgid "Add AutoLoad"
 msgstr "Dodaj SamodejnoNalaganje"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Pot:"
 
@@ -2625,12 +2626,12 @@ msgid "[Empty]"
 msgstr "[Prazen]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -3011,16 +3012,12 @@ msgid "Unable to update dependencies:"
 msgstr "Odvisnosti ni mogoče posodobiti:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "Ime ni na voljo"
+msgid "No name provided."
+msgstr "Ime ni določeno."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "Vnešeno ime vsebuje neveljavne znake"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "Ime ni določeno."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3420,6 +3417,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Naloži obstoječi vir iz spomina in ga uredi."
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "Shrani trenutno urejani vir."
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "Pojdi na prejšnji urejani objekt v zgodovini."
 
@@ -3547,7 +3548,7 @@ msgstr "Dodaj Animacijo"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "Naloži"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3573,6 +3574,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3614,12 +3620,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr ""
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "Zmešaj:"
@@ -3654,8 +3654,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "Dodaj vozlišče"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3935,7 +3936,7 @@ msgstr "Poveži se z Gradnikom:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "Odstrani izbrano sled."
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4986,6 +4987,7 @@ msgid "Populate"
 msgstr ""
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr ""
 
@@ -5395,6 +5397,11 @@ msgstr ""
 #, fuzzy
 msgid "Grid Settings"
 msgstr "Nastavitve Urejevalnika"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6382,6 +6389,10 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6800,20 +6811,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "Odstrani trenutni vnos"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
+msgid "Create from scene? This will overwrite all current tiles."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "Odstrani Predlogo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6871,6 +6888,87 @@ msgid ""
 msgstr "Izberi trenutno pod-ploščo v urejanju."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Region"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "Ustvarite Mapo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "Uredi Filtre"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "Uredi Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Uredi Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Uredi Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "Prilepi animacijo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "Odstrani Predlogo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "Odstrani Poligon in Točko"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "Odstrani Točko Izven Nadzora"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Odstrani Animacijo"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "Uredi Filtre"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "This property can't be changed."
 msgstr "Ta operacija ni mogoča brez scene."
@@ -6891,11 +6989,6 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "Dodaj vozlišče"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6991,6 +7084,36 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "Feature List:"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "Zaženi Skripto"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "Izvozi Projekt"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -7136,11 +7259,30 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
-msgstr ""
+#, fuzzy
+msgid "Can't open project at '%s'."
+msgstr "Ni mogoče odpreti '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9440,10 +9582,6 @@ msgstr "Opozorilo!"
 msgid "Please Confirm..."
 msgstr "Prosimo Potrdite..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9519,6 +9657,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "No name provided"
+#~ msgstr "Ime ni na voljo"
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "Dodaj vozlišče"
 
 #~ msgid "Create Poly"
 #~ msgstr "Ustvarite Poligon"
@@ -9672,14 +9817,8 @@ msgstr ""
 #~ msgid "I see..."
 #~ msgstr "Vidim..."
 
-#~ msgid "Can't open '%s'."
-#~ msgstr "Ni mogoče odpreti '%s'."
-
 #~ msgid "Ugh"
 #~ msgstr "Uh"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "Shrani trenutno urejani vir."
 
 #~ msgid "Stop Profiling"
 #~ msgstr "Ustavi Modeliranje"

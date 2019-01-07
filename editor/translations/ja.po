@@ -983,7 +983,8 @@ msgid "Uncompressing Assets"
 msgstr "アセットを展開"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "パッケージのインストールに成功しました！"
 
 #: editor/editor_asset_installer.cpp
@@ -1224,7 +1225,7 @@ msgid "Add AutoLoad"
 msgstr "自動読込みを追加"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "パス:"
 
@@ -2586,12 +2587,13 @@ msgid "[Empty]"
 msgstr "[空]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+#, fuzzy
+msgid "Assign..."
 msgstr "アサイン.."
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -2969,16 +2971,12 @@ msgid "Unable to update dependencies:"
 msgstr "依存関係を更新できません:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "名前が付いていません"
+msgid "No name provided."
+msgstr "名前が付いていません。"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "名前に使用できない文字が含まれています"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "名前が付いていません。"
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3351,6 +3349,11 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "既存のリソースをディスクから読込み編集する。"
 
 #: editor/inspector_dock.cpp
+#, fuzzy
+msgid "Save the currently edited resource."
+msgstr "現在編集中のリソースを保存する"
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "履歴内の編集済オブジェクトを前へ。"
 
@@ -3464,7 +3467,8 @@ msgstr "アニメーションを追加"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Load.."
+#, fuzzy
+msgid "Load..."
 msgstr "読込む.."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3494,6 +3498,11 @@ msgstr "スペース内のブレンド位置を設定"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr "点を選択して移動し、右クリックで点を作成します。"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr "スナップとグリッドの表示を有効にする。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3530,12 +3539,6 @@ msgstr "点と三角形を消す。"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "自動的にブレンド三角形を生成"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "スナップ"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3575,8 +3578,9 @@ msgstr ""
 "得できません。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Add Node.."
-msgstr "ノードを追加.."
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
+msgstr "ノードを追加..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -3845,7 +3849,8 @@ msgid "Connect nodes."
 msgstr "ノードを接続。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Remove selected node or transition"
+#, fuzzy
+msgid "Remove selected node or transition."
 msgstr "選択したノードまたはトランジションを除去"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4921,6 +4926,7 @@ msgid "Populate"
 msgstr "初期値を設定"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "ナビゲーションポリゴンを生成"
 
@@ -5357,6 +5363,11 @@ msgstr "UVをクリア"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Settings"
 msgstr "スナップの設定"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "スナップ"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6357,6 +6368,10 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6792,22 +6807,27 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "タイル名を表示 (Altキーを長押し)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "パスのポイントを除去"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr "除去するテクスチャが選択されていません。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
-msgid "Create from scene?"
-msgstr "シーンから生成しますか？"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Merge from scene?"
 msgstr "シーンからマージしますか？"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "テンプレートを除去"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6865,6 +6885,88 @@ msgstr "現在編集中のリソースを保存する"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Set Tile Region"
+msgstr "テクスチャ　リージョン"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "フォルダーを作成"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "フィルタの編集"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "既存のポリゴンを編集:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "ポリゴンを編集"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "ナビゲーションポリゴンを生成"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "ビットマスクを貼り付け。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "テンプレートを除去"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "ポリゴンと点を除去"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "オクルージョンを生じるポリゴンを生成"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "ナビゲーションポリゴンを生成"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "フィルタの編集"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "ナビゲーションポリゴンを生成"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "オクルージョンを生じるポリゴンを生成"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "この処理にはシーンが必要です."
 
@@ -6886,10 +6988,6 @@ msgstr "引数:"
 #, fuzzy
 msgid "Light"
 msgstr "右側面"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add Node..."
-msgstr "ノードを追加..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -6994,6 +7092,38 @@ msgstr "カスタム (コンマ区切り):"
 #, fuzzy
 msgid "Feature List:"
 msgstr "メソッド一覧:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "新規スクリプト"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "エクスポートのモード:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Text"
+msgstr "テクスチャ"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Compiled"
+msgstr "圧縮"
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7141,12 +7271,31 @@ msgid "Unnamed Project"
 msgstr "名無しのプロジェクト"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "プロジェクトを開けません"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "複数のプロジェクトを開いてもよろしいですか?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -9642,10 +9791,6 @@ msgstr "警告!"
 msgid "Please Confirm..."
 msgstr "確認..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr "スナップとグリッドの表示を有効にする。"
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9731,6 +9876,16 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "名前が付いていません"
+
+#~ msgid "Add Node.."
+#~ msgstr "ノードを追加.."
+
+#, fuzzy
+#~ msgid "Create from scene?"
+#~ msgstr "シーンから生成しますか？"
+
 #~ msgid "Create Poly"
 #~ msgstr "ポリゴンを作成"
 
@@ -9754,9 +9909,6 @@ msgstr ""
 #~ msgstr ""
 #~ "このノードにOccluderPolygon2Dリソースがありません。\n"
 #~ "作成して、割り当てますか ?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "既存のポリゴンを編集:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "LMB: 点を移動する。"
@@ -10122,10 +10274,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Run Script"
 #~ msgstr "スクリプトの実行"
-
-#, fuzzy
-#~ msgid "Save the currently edited resource."
-#~ msgstr "現在編集中のリソースを保存する"
 
 #~ msgid "Stop Profiling"
 #~ msgstr "プロファイリング停止"
@@ -10826,9 +10974,6 @@ msgstr ""
 #~ msgid "Crop empty space."
 #~ msgstr "空白を刈り込む"
 
-#~ msgid "Texture"
-#~ msgstr "テクスチャ"
-
 #, fuzzy
 #~ msgid "Import Large Texture"
 #~ msgstr "大きなテクスチャをインポート"
@@ -10908,9 +11053,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Ignore First Row"
 #~ msgstr "最初の行を無視"
-
-#~ msgid "Compress"
-#~ msgstr "圧縮"
 
 #, fuzzy
 #~ msgid "Add to Project (project.godot)"

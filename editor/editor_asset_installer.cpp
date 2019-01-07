@@ -304,7 +304,7 @@ void EditorAssetInstaller::ok_pressed() {
 			EditorNode::get_singleton()->show_warning(msg);
 	} else {
 		if (EditorNode::get_singleton() != NULL)
-			EditorNode::get_singleton()->show_warning(TTR("Package Installed Successfully!"), TTR("Success!"));
+			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }

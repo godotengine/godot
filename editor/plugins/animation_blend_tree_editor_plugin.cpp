@@ -79,7 +79,7 @@ void AnimationNodeBlendTreeEditor::_update_options_menu() {
 		add_node->get_popup()->add_item(TTR("Paste"), MENU_PASTE);
 	}
 	add_node->get_popup()->add_separator();
-	add_node->get_popup()->add_item(TTR("Load.."), MENU_LOAD_FILE);
+	add_node->get_popup()->add_item(TTR("Load..."), MENU_LOAD_FILE);
 }
 
 Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
@@ -866,7 +866,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 
 	add_node = memnew(MenuButton);
 	graph->get_zoom_hbox()->add_child(add_node);
-	add_node->set_text(TTR("Add Node.."));
+	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->get_popup()->connect("id_pressed", this, "_add_node");
 	add_node->connect("about_to_show", this, "_update_options_menu");

@@ -1015,7 +1015,8 @@ msgid "Uncompressing Assets"
 msgstr "Varlıklar Çıkartılıyor"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "Paket Başarı ile Kuruldu!"
 
 #: editor/editor_asset_installer.cpp
@@ -1256,7 +1257,7 @@ msgid "Add AutoLoad"
 msgstr "KendindenYüklenme Ekle"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Dosya yolu:"
 
@@ -2652,12 +2653,12 @@ msgstr "[Boş]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 #, fuzzy
-msgid "Assign.."
+msgid "Assign..."
 msgstr "Ata"
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -3038,16 +3039,12 @@ msgid "Unable to update dependencies:"
 msgstr "Bağımlılıklar güncellenemedi:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "İsim sağlanmadı"
+msgid "No name provided."
+msgstr "Sağlanan isim yok."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "Sağlanan isim geçersiz karakterler içeriyor"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "Sağlanan isim yok."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3448,6 +3445,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Var olan bir kaynağı diskten yükleyin ve düzenleyin."
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "Düzenlenen kaynağı kaydedin."
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "Geçmişte bir önceki düzenlenmiş nesneye gidin."
 
@@ -3576,7 +3577,7 @@ msgstr "Animasyon Ekle"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "Yükle"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3602,6 +3603,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3645,12 +3651,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Yapış"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "Karışma:"
@@ -3685,8 +3685,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "Düğüm Ekle"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3968,7 +3969,7 @@ msgstr "Düğümleri Bağla"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "Seçilen izleri sil."
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5022,6 +5023,7 @@ msgid "Populate"
 msgstr "Doldur"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Yönlendirici Çokgeni Oluştur"
 
@@ -5437,6 +5439,11 @@ msgstr "UV yi Temizle"
 #, fuzzy
 msgid "Grid Settings"
 msgstr "IzgaraHaritası Ayarları"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Yapış"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6435,6 +6442,10 @@ msgstr "Öncesi"
 msgid "Post"
 msgstr "Sonrası"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6859,20 +6870,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "Mevcut giriyi kaldır"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "Sahneden mi oluşturulsun?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Sahneden birleştirilsin mi?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "Şablonu Kaldır"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6937,6 +6954,88 @@ msgstr "Önceliğini değiştirmek için alt-karo seçin."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Set Tile Region"
+msgstr "Dikdörtgen Bölgesini Ayarla"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "Klasör Oluştur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "Süzgeçleri Düzenle"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "Var olan çokgeni düzenleyin:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Çokluyu Düzenleyin"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Yönlendirici Çokgeni Oluştur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "Animasyonu Yapıştır"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "Şablonu Kaldır"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "Çokluyu ve Noktayı Kaldır"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "Engelleyici Çokgeni Oluştur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Yönlendirici Çokgeni Oluştur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "Süzgeçleri Düzenle"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Yönlendirici Çokgeni Oluştur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "Engelleyici Çokgeni Oluştur"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "Bu işlem bir sahne olmadan yapılamaz."
 
@@ -6958,11 +7057,6 @@ msgstr "Bölümlenme"
 #, fuzzy
 msgid "Light"
 msgstr "Sağ"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "Düğüm Ekle"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7065,6 +7159,35 @@ msgstr "Özel (virgülle-ayrılmış):"
 #: editor/project_export.cpp
 msgid "Feature List:"
 msgstr "Özellik Listesi:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "Yeni Betik"
+
+#: editor/project_export.cpp
+msgid "Script Export Mode:"
+msgstr "Betik Dışa Aktarım Biçimi:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr "Yazı"
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr "Derlenmiş"
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr "Şifreli (Açarı Aşağıda Belirtin)"
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr "Betik Şifreleme Açarı (Hex olarak 256-bit):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7211,12 +7334,31 @@ msgid "Unnamed Project"
 msgstr "Adsız Proje"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "Proje Açılamadı"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Birden fazla proje açmakta kararlı mısınız?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9631,10 +9773,6 @@ msgstr "Uyarı!"
 msgid "Please Confirm..."
 msgstr "Lütfen Doğrulayın..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9721,6 +9859,16 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "İsim sağlanmadı"
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "Düğüm Ekle"
+
+#~ msgid "Create from scene?"
+#~ msgstr "Sahneden mi oluşturulsun?"
+
 #~ msgid "Create Poly"
 #~ msgstr "Çoklu Oluşturun"
 
@@ -9744,9 +9892,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Bu düğümde OccluderPolygon2D kaynağı yok.\n"
 #~ "Oluştur ve bir tane ata?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "Var olan çokgeni düzenleyin:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "LMB: Taşıma Noktası."
@@ -10092,9 +10237,6 @@ msgstr ""
 
 #~ msgid "Run Script"
 #~ msgstr "Betiği Çalıştır"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "Düzenlenen kaynağı kaydedin."
 
 #~ msgid "Stop Profiling"
 #~ msgstr "Kesitlemeyi Durdur"
@@ -11199,21 +11341,6 @@ msgstr ""
 
 #~ msgid "Trailing Silence:"
 #~ msgstr "Sessizliği İzliyor:"
-
-#~ msgid "Script Export Mode:"
-#~ msgstr "Betik Dışa Aktarım Biçimi:"
-
-#~ msgid "Text"
-#~ msgstr "Yazı"
-
-#~ msgid "Compiled"
-#~ msgstr "Derlenmiş"
-
-#~ msgid "Encrypted (Provide Key Below)"
-#~ msgstr "Şifreli (Açarı Aşağıda Belirtin)"
-
-#~ msgid "Script Encryption Key (256-bits as hex):"
-#~ msgstr "Betik Şifreleme Açarı (Hex olarak 256-bit):"
 
 #~ msgid "Export Project PCK"
 #~ msgstr "Tasarı PCK Dışa Aktar"

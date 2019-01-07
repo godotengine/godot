@@ -1020,7 +1020,8 @@ msgid "Uncompressing Assets"
 msgstr "Decompressione Assets"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "Pacchetto Installato Con Successo!"
 
 #: editor/editor_asset_installer.cpp
@@ -1267,7 +1268,7 @@ msgid "Add AutoLoad"
 msgstr "Aggiungi AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Percorso:"
 
@@ -2675,12 +2676,12 @@ msgstr "Aggiungi vuoto"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 #, fuzzy
-msgid "Assign.."
+msgid "Assign..."
 msgstr "Assegna"
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -3066,16 +3067,12 @@ msgid "Unable to update dependencies:"
 msgstr "Impossibile aggiornare le dipendenze:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "Nessun nome fornito"
+msgid "No name provided."
+msgstr "Nessun nome fornito."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "Il nome fornito contiene caratteri non validi"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "Nessun nome fornito."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3475,6 +3472,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Carica una risorsa esistente dal disco e modificala."
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "Salva la risorsa in modifica."
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "Vai all'ultimo oggetto modificato nella cronologia."
 
@@ -3603,7 +3604,7 @@ msgstr "Aggiungi Animazione"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "Carica"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3629,6 +3630,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3672,12 +3678,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Snap"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "Blend:"
@@ -3712,8 +3712,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "Aggiungi Nodo"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3996,7 +3997,7 @@ msgstr "Connetti A Nodo:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "Rimuovi traccia selezionata."
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5061,6 +5062,7 @@ msgid "Populate"
 msgstr "Popola"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Crea Poligono di Navigazione"
 
@@ -5481,6 +5483,11 @@ msgstr "Cancella UV"
 #, fuzzy
 msgid "Grid Settings"
 msgstr "Impostazioni Snap"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Snap"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6482,6 +6489,10 @@ msgstr "Pre"
 msgid "Post"
 msgstr "Post"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6909,20 +6920,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "Rimuovi Punto Percorso"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "Crea da scena?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Unisci da scena?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "Rimuovi Template"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6981,6 +6998,88 @@ msgstr "Salva la risorsa in modifica."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Set Tile Region"
+msgstr "Imposta Region Rect"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "Crea Cartella"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "Modifica Filtri"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "Modifica poligono esistente:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Modifica Poly"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Crea Poligono di Navigazione"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "Incolla Animazione"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "Rimuovi Template"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "Rimuovi Poligono e Punto"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "Crea Poligono di occlusione"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Crea Poligono di Navigazione"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "Modifica Filtri"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Crea Poligono di Navigazione"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "Crea Poligono di occlusione"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "Questa operazione non può essere eseguita senza una scena."
 
@@ -7002,11 +7101,6 @@ msgstr "Frammento"
 #, fuzzy
 msgid "Light"
 msgstr "Destra"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "Aggiungi Nodo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7113,6 +7207,35 @@ msgstr "Personalizzato (separati da virgola):"
 #, fuzzy
 msgid "Feature List:"
 msgstr "Lista Metodi:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "Nuovo Script"
+
+#: editor/project_export.cpp
+msgid "Script Export Mode:"
+msgstr "Modalità Esportazione Script:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr "Testo"
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr "Compilato"
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr "Criptato (Fornisci la Chiave Sotto)"
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr "Chiave di Crittografia Script (256-bits come esadecimali):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7271,12 +7394,30 @@ msgstr "Progetto Senza Nome"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Can't open project"
+msgid "Can't open project at '%s'."
 msgstr "Impossibile connettersi."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Sei sicuro di voler aprire più di un progetto?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -9785,10 +9926,6 @@ msgstr "Attenzione!"
 msgid "Please Confirm..."
 msgstr "Per Favore Conferma..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9876,6 +10013,16 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "Nessun nome fornito"
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "Aggiungi Nodo"
+
+#~ msgid "Create from scene?"
+#~ msgstr "Crea da scena?"
+
 #~ msgid "Create Poly"
 #~ msgstr "Crea Poly"
 
@@ -9900,9 +10047,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Nessuna risorsa OccluderPolygon2D su questo nodo.\n"
 #~ "Crearne una ed assegnarla?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "Modifica poligono esistente:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "LMB: Sposta punto."
@@ -10246,9 +10390,6 @@ msgstr ""
 
 #~ msgid "Run Script"
 #~ msgstr "Esegui Script"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "Salva la risorsa in modifica."
 
 #~ msgid "Stop Profiling"
 #~ msgstr "Interrrompi Profiling"
@@ -11392,21 +11533,6 @@ msgstr ""
 
 #~ msgid "Trailing Silence:"
 #~ msgstr "Silenzio di coda:"
-
-#~ msgid "Script Export Mode:"
-#~ msgstr "Modalità Esportazione Script:"
-
-#~ msgid "Text"
-#~ msgstr "Testo"
-
-#~ msgid "Compiled"
-#~ msgstr "Compilato"
-
-#~ msgid "Encrypted (Provide Key Below)"
-#~ msgstr "Criptato (Fornisci la Chiave Sotto)"
-
-#~ msgid "Script Encryption Key (256-bits as hex):"
-#~ msgstr "Chiave di Crittografia Script (256-bits come esadecimali):"
 
 #~ msgid "Export Project PCK"
 #~ msgstr "Esporta Progetto PCK"
