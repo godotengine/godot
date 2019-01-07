@@ -13,7 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #ifndef BT_SUBSIMPLEX_CONVEX_CAST_H
 #define BT_SUBSIMPLEX_CONVEX_CAST_H
 
@@ -28,23 +27,21 @@ class btConvexShape;
 class btSubsimplexConvexCast : public btConvexCast
 {
 	btSimplexSolverInterface* m_simplexSolver;
-	const btConvexShape*	m_convexA;
-	const btConvexShape*	m_convexB;
+	const btConvexShape* m_convexA;
+	const btConvexShape* m_convexB;
 
 public:
-
-	btSubsimplexConvexCast (const btConvexShape*	shapeA,const btConvexShape*	shapeB,btSimplexSolverInterface* simplexSolver);
+	btSubsimplexConvexCast(const btConvexShape* shapeA, const btConvexShape* shapeB, btSimplexSolverInterface* simplexSolver);
 
 	//virtual ~btSubsimplexConvexCast();
 	///SimsimplexConvexCast calculateTimeOfImpact calculates the time of impact+normal for the linear cast (sweep) between two moving objects.
 	///Precondition is that objects should not penetration/overlap at the start from the interval. Overlap can be tested using btGjkPairDetector.
-	virtual bool	calcTimeOfImpact(
-			const btTransform& fromA,
-			const btTransform& toA,
-			const btTransform& fromB,
-			const btTransform& toB,
-			CastResult& result);
-
+	virtual bool calcTimeOfImpact(
+		const btTransform& fromA,
+		const btTransform& toA,
+		const btTransform& fromB,
+		const btTransform& toB,
+		CastResult& result);
 };
 
-#endif //BT_SUBSIMPLEX_CONVEX_CAST_H
+#endif  //BT_SUBSIMPLEX_CONVEX_CAST_H

@@ -17,7 +17,7 @@ subject to the following restrictions:
 #define B3_OPENCL_INCLUDE_H
 
 #ifdef B3_USE_CLEW
-	#include "clew/clew.h"
+#include "clew/clew.h"
 #else
 
 #ifdef __APPLE__
@@ -25,7 +25,7 @@ subject to the following restrictions:
 #include <MiniCL/cl.h>
 #else
 #include <OpenCL/cl.h>
-#include <OpenCL/cl_ext.h> //clLogMessagesToStderrAPPLE
+#include <OpenCL/cl_ext.h>  //clLogMessagesToStderrAPPLE
 #endif
 #else
 #ifdef USE_MINICL
@@ -34,15 +34,18 @@ subject to the following restrictions:
 #include <CL/cl.h>
 #ifdef _WIN32
 #include "CL/cl_gl.h"
-#endif //_WIN32
+#endif  //_WIN32
 #endif
-#endif //__APPLE__
-#endif //B3_USE_CLEW
+#endif  //__APPLE__
+#endif  //B3_USE_CLEW
 
 #include <assert.h>
 #include <stdio.h>
-#define oclCHECKERROR(a, b) if((a)!=(b)) { printf("OCL Error : %d\n", (a)); assert((a) == (b)); }
+#define oclCHECKERROR(a, b)              \
+	if ((a) != (b))                      \
+	{                                    \
+		printf("OCL Error : %d\n", (a)); \
+		assert((a) == (b));              \
+	}
 
-
-#endif //B3_OPENCL_INCLUDE_H
-
+#endif  //B3_OPENCL_INCLUDE_H

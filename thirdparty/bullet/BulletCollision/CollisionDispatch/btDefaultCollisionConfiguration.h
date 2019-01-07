@@ -20,76 +20,68 @@ subject to the following restrictions:
 class btVoronoiSimplexSolver;
 class btConvexPenetrationDepthSolver;
 
-struct	btDefaultCollisionConstructionInfo
+struct btDefaultCollisionConstructionInfo
 {
-	btPoolAllocator*	m_persistentManifoldPool;
-	btPoolAllocator*	m_collisionAlgorithmPool;
-	int					m_defaultMaxPersistentManifoldPoolSize;
-	int					m_defaultMaxCollisionAlgorithmPoolSize;
-	int					m_customCollisionAlgorithmMaxElementSize;
-	int					m_useEpaPenetrationAlgorithm;
+	btPoolAllocator* m_persistentManifoldPool;
+	btPoolAllocator* m_collisionAlgorithmPool;
+	int m_defaultMaxPersistentManifoldPoolSize;
+	int m_defaultMaxCollisionAlgorithmPoolSize;
+	int m_customCollisionAlgorithmMaxElementSize;
+	int m_useEpaPenetrationAlgorithm;
 
 	btDefaultCollisionConstructionInfo()
-		:m_persistentManifoldPool(0),
-		m_collisionAlgorithmPool(0),
-		m_defaultMaxPersistentManifoldPoolSize(4096),
-		m_defaultMaxCollisionAlgorithmPoolSize(4096),
-		m_customCollisionAlgorithmMaxElementSize(0),
-		m_useEpaPenetrationAlgorithm(true)
+		: m_persistentManifoldPool(0),
+		  m_collisionAlgorithmPool(0),
+		  m_defaultMaxPersistentManifoldPoolSize(4096),
+		  m_defaultMaxCollisionAlgorithmPoolSize(4096),
+		  m_customCollisionAlgorithmMaxElementSize(0),
+		  m_useEpaPenetrationAlgorithm(true)
 	{
 	}
 };
 
-
-
 ///btCollisionConfiguration allows to configure Bullet collision detection
 ///stack allocator, pool memory allocators
 ///@todo: describe the meaning
-class	btDefaultCollisionConfiguration : public btCollisionConfiguration
+class btDefaultCollisionConfiguration : public btCollisionConfiguration
 {
-
 protected:
+	int m_persistentManifoldPoolSize;
 
-	int	m_persistentManifoldPoolSize;
-	
+	btPoolAllocator* m_persistentManifoldPool;
+	bool m_ownsPersistentManifoldPool;
 
-	btPoolAllocator*	m_persistentManifoldPool;
-	bool	m_ownsPersistentManifoldPool;
-
-
-	btPoolAllocator*	m_collisionAlgorithmPool;
-	bool	m_ownsCollisionAlgorithmPool;
+	btPoolAllocator* m_collisionAlgorithmPool;
+	bool m_ownsCollisionAlgorithmPool;
 
 	//default penetration depth solver
-	btConvexPenetrationDepthSolver*	m_pdSolver;
-	
+	btConvexPenetrationDepthSolver* m_pdSolver;
+
 	//default CreationFunctions, filling the m_doubleDispatch table
-	btCollisionAlgorithmCreateFunc*	m_convexConvexCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_convexConcaveCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_swappedConvexConcaveCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_compoundCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_compoundCompoundCreateFunc;
-	
-	btCollisionAlgorithmCreateFunc*	m_swappedCompoundCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_convexConvexCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_convexConcaveCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_swappedConvexConcaveCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_compoundCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_compoundCompoundCreateFunc;
+
+	btCollisionAlgorithmCreateFunc* m_swappedCompoundCreateFunc;
 	btCollisionAlgorithmCreateFunc* m_emptyCreateFunc;
 	btCollisionAlgorithmCreateFunc* m_sphereSphereCF;
 	btCollisionAlgorithmCreateFunc* m_sphereBoxCF;
 	btCollisionAlgorithmCreateFunc* m_boxSphereCF;
 
 	btCollisionAlgorithmCreateFunc* m_boxBoxCF;
-	btCollisionAlgorithmCreateFunc*	m_sphereTriangleCF;
-	btCollisionAlgorithmCreateFunc*	m_triangleSphereCF;
-	btCollisionAlgorithmCreateFunc*	m_planeConvexCF;
-	btCollisionAlgorithmCreateFunc*	m_convexPlaneCF;
-	
+	btCollisionAlgorithmCreateFunc* m_sphereTriangleCF;
+	btCollisionAlgorithmCreateFunc* m_triangleSphereCF;
+	btCollisionAlgorithmCreateFunc* m_planeConvexCF;
+	btCollisionAlgorithmCreateFunc* m_convexPlaneCF;
+
 public:
-
-
 	btDefaultCollisionConfiguration(const btDefaultCollisionConstructionInfo& constructionInfo = btDefaultCollisionConstructionInfo());
 
 	virtual ~btDefaultCollisionConfiguration();
 
-		///memory pools
+	///memory pools
 	virtual btPoolAllocator* getPersistentManifoldPool()
 	{
 		return m_persistentManifoldPool;
@@ -100,8 +92,7 @@ public:
 		return m_collisionAlgorithmPool;
 	}
 
-
-	virtual btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0,int proxyType1);
+	virtual btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1);
 
 	virtual btCollisionAlgorithmCreateFunc* getClosestPointsAlgorithmCreateFunc(int proxyType0, int proxyType1);
 
@@ -112,11 +103,9 @@ public:
 	///3 is a good value for both params, if you want to enable the feature. This is because the default contact cache contains a maximum of 4 points, and one collision query at the unperturbed orientation is performed first.
 	///See Bullet/Demos/CollisionDemo for an example how this feature gathers multiple points.
 	///@todo we could add a per-object setting of those parameters, for level-of-detail collision detection.
-	void	setConvexConvexMultipointIterations(int numPerturbationIterations=3, int minimumPointsPerturbationThreshold = 3);
+	void setConvexConvexMultipointIterations(int numPerturbationIterations = 3, int minimumPointsPerturbationThreshold = 3);
 
-	void	setPlaneConvexMultipointIterations(int numPerturbationIterations=3, int minimumPointsPerturbationThreshold = 3);
-
+	void setPlaneConvexMultipointIterations(int numPerturbationIterations = 3, int minimumPointsPerturbationThreshold = 3);
 };
 
-#endif //BT_DEFAULT_COLLISION_CONFIGURATION
-
+#endif  //BT_DEFAULT_COLLISION_CONFIGURATION

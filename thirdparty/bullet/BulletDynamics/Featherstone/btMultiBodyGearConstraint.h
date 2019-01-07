@@ -23,20 +23,18 @@ subject to the following restrictions:
 class btMultiBodyGearConstraint : public btMultiBodyConstraint
 {
 protected:
+	btRigidBody* m_rigidBodyA;
+	btRigidBody* m_rigidBodyB;
+	btVector3 m_pivotInA;
+	btVector3 m_pivotInB;
+	btMatrix3x3 m_frameInA;
+	btMatrix3x3 m_frameInB;
+	btScalar m_gearRatio;
+	int m_gearAuxLink;
+	btScalar m_erp;
+	btScalar m_relativePositionTarget;
 
-	btRigidBody*	m_rigidBodyA;
-	btRigidBody*	m_rigidBodyB;
-	btVector3		m_pivotInA;
-	btVector3		m_pivotInB;
-	btMatrix3x3     m_frameInA;
-	btMatrix3x3     m_frameInB;
-	btScalar			m_gearRatio;
-	int			m_gearAuxLink;
-	btScalar	m_erp;
-	btScalar	m_relativePositionTarget;
-	
 public:
-
 	//btMultiBodyGearConstraint(btMultiBody* body, int link, btRigidBody* bodyB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB);
 	btMultiBodyGearConstraint(btMultiBody* bodyA, int linkA, btMultiBody* bodyB, int linkB, const btVector3& pivotInA, const btVector3& pivotInB, const btMatrix3x3& frameInA, const btMatrix3x3& frameInB);
 
@@ -48,18 +46,18 @@ public:
 	virtual int getIslandIdB() const;
 
 	virtual void createConstraintRows(btMultiBodyConstraintArray& constraintRows,
-		btMultiBodyJacobianData& data,
-		const btContactSolverInfo& infoGlobal);
+									  btMultiBodyJacobianData& data,
+									  const btContactSolverInfo& infoGlobal);
 
-    const btVector3& getPivotInA() const
-    {
-        return m_pivotInA;
-    }
-    
-    void setPivotInA(const btVector3& pivotInA)
-    {
-        m_pivotInA = pivotInA;
-    }
+	const btVector3& getPivotInA() const
+	{
+		return m_pivotInA;
+	}
+
+	void setPivotInA(const btVector3& pivotInA)
+	{
+		m_pivotInA = pivotInA;
+	}
 
 	const btVector3& getPivotInB() const
 	{
@@ -70,32 +68,32 @@ public:
 	{
 		m_pivotInB = pivotInB;
 	}
-    
-    const btMatrix3x3& getFrameInA() const
-    {
-        return m_frameInA;
-    }
-    
-    void setFrameInA(const btMatrix3x3& frameInA)
-    {
-        m_frameInA = frameInA;
-    }
-    
-    const btMatrix3x3& getFrameInB() const
-    {
-        return m_frameInB;
-    }
-    
-    virtual void setFrameInB(const btMatrix3x3& frameInB)
-    {
-        m_frameInB = frameInB;
-    }
+
+	const btMatrix3x3& getFrameInA() const
+	{
+		return m_frameInA;
+	}
+
+	void setFrameInA(const btMatrix3x3& frameInA)
+	{
+		m_frameInA = frameInA;
+	}
+
+	const btMatrix3x3& getFrameInB() const
+	{
+		return m_frameInB;
+	}
+
+	virtual void setFrameInB(const btMatrix3x3& frameInB)
+	{
+		m_frameInB = frameInB;
+	}
 
 	virtual void debugDraw(class btIDebugDraw* drawer)
 	{
 		//todo(erwincoumans)
 	}
-	
+
 	virtual void setGearRatio(btScalar gearRatio)
 	{
 		m_gearRatio = gearRatio;
@@ -114,4 +112,4 @@ public:
 	}
 };
 
-#endif //BT_MULTIBODY_GEAR_CONSTRAINT_H
+#endif  //BT_MULTIBODY_GEAR_CONSTRAINT_H

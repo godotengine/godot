@@ -17,14 +17,12 @@ subject to the following restrictions:
 #include "b3Defines.h"
 #include "b3File.h"
 
-#if !defined( __CELLOS_LV2__) && !defined(__MWERKS__)
+#if !defined(__CELLOS_LV2__) && !defined(__MWERKS__)
 #include <memory.h>
 #endif
 #include <string.h>
 
-
 using namespace bParse;
-
 
 // ----------------------------------------------------- //
 short ChunkUtils::swapShort(short sht)
@@ -57,19 +55,15 @@ int ChunkUtils::getOffset(int flags)
 
 	if (VOID_IS_8)
 	{
-		if (flags &FD_BITS_VARIES)
+		if (flags & FD_BITS_VARIES)
 			res = sizeof(bChunkPtr4);
 	}
 	else
 	{
-		if (flags &FD_BITS_VARIES)
+		if (flags & FD_BITS_VARIES)
 			res = sizeof(bChunkPtr8);
 	}
 	return res;
 }
-
-
-
-
 
 //eof

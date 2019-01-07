@@ -19,63 +19,60 @@ subject to the following restrictions:
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
 #include "btSoftBody.h"
 
-typedef	btAlignedObjectArray<btSoftBody*> btSoftBodyArray;
+typedef btAlignedObjectArray<btSoftBody*> btSoftBodyArray;
 
 class btSoftBodySolver;
 
 class btSoftRigidDynamicsWorld : public btDiscreteDynamicsWorld
 {
-
-	btSoftBodyArray	m_softBodies;
-	int				m_drawFlags;
-	bool			m_drawNodeTree;
-	bool			m_drawFaceTree;
-	bool			m_drawClusterTree;
+	btSoftBodyArray m_softBodies;
+	int m_drawFlags;
+	bool m_drawNodeTree;
+	bool m_drawFaceTree;
+	bool m_drawClusterTree;
 	btSoftBodyWorldInfo m_sbi;
 	///Solver classes that encapsulate multiple soft bodies for solving
-	btSoftBodySolver *m_softBodySolver;
-	bool			m_ownsSolver;
+	btSoftBodySolver* m_softBodySolver;
+	bool m_ownsSolver;
 
 protected:
+	virtual void predictUnconstraintMotion(btScalar timeStep);
 
-	virtual void	predictUnconstraintMotion(btScalar timeStep);
+	virtual void internalSingleStepSimulation(btScalar timeStep);
 
-	virtual void	internalSingleStepSimulation( btScalar timeStep);
+	void solveSoftBodiesConstraints(btScalar timeStep);
 
-	void	solveSoftBodiesConstraints( btScalar timeStep );
-
-	void	serializeSoftBodies(btSerializer* serializer);
+	void serializeSoftBodies(btSerializer* serializer);
 
 public:
-
-	btSoftRigidDynamicsWorld(btDispatcher* dispatcher,btBroadphaseInterface* pairCache,btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration, btSoftBodySolver *softBodySolver = 0 );
+	btSoftRigidDynamicsWorld(btDispatcher* dispatcher, btBroadphaseInterface* pairCache, btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration, btSoftBodySolver* softBodySolver = 0);
 
 	virtual ~btSoftRigidDynamicsWorld();
 
-	virtual void	debugDrawWorld();
+	virtual void debugDrawWorld();
 
-	void	addSoftBody(btSoftBody* body, int collisionFilterGroup=btBroadphaseProxy::DefaultFilter, int collisionFilterMask=btBroadphaseProxy::AllFilter);
+	void addSoftBody(btSoftBody* body, int collisionFilterGroup = btBroadphaseProxy::DefaultFilter, int collisionFilterMask = btBroadphaseProxy::AllFilter);
 
-	void	removeSoftBody(btSoftBody* body);
+	void removeSoftBody(btSoftBody* body);
 
 	///removeCollisionObject will first check if it is a rigid body, if so call removeRigidBody otherwise call btDiscreteDynamicsWorld::removeCollisionObject
-	virtual void	removeCollisionObject(btCollisionObject* collisionObject);
+	virtual void removeCollisionObject(btCollisionObject* collisionObject);
 
-	int		getDrawFlags() const { return(m_drawFlags); }
-	void	setDrawFlags(int f)	{ m_drawFlags=f; }
+	int getDrawFlags() const { return (m_drawFlags); }
+	void setDrawFlags(int f) { m_drawFlags = f; }
 
-	btSoftBodyWorldInfo&	getWorldInfo()
+	btSoftBodyWorldInfo& getWorldInfo()
 	{
 		return m_sbi;
 	}
-	const btSoftBodyWorldInfo&	getWorldInfo() const
+	const btSoftBodyWorldInfo& getWorldInfo() const
 	{
 		return m_sbi;
 	}
 
-	virtual btDynamicsWorldType	getWorldType() const
+	virtual btDynamicsWorldType getWorldType() const
 	{
-		return	BT_SOFT_RIGID_DYNAMICS_WORLD;
+		return BT_SOFT_RIGID_DYNAMICS_WORLD;
 	}
 
 	btSoftBodyArray& getSoftBodyArray()
@@ -88,20 +85,18 @@ public:
 		return m_softBodies;
 	}
 
-
-	virtual void rayTest(const btVector3& rayFromWorld, const btVector3& rayToWorld, RayResultCallback& resultCallback) const; 
+	virtual void rayTest(const btVector3& rayFromWorld, const btVector3& rayToWorld, RayResultCallback& resultCallback) const;
 
 	/// rayTestSingle performs a raycast call and calls the resultCallback. It is used internally by rayTest.
 	/// In a future implementation, we consider moving the ray test as a virtual method in btCollisionShape.
 	/// This allows more customization.
-	static void	rayTestSingle(const btTransform& rayFromTrans,const btTransform& rayToTrans,
-					  btCollisionObject* collisionObject,
-					  const btCollisionShape* collisionShape,
-					  const btTransform& colObjWorldTransform,
-					  RayResultCallback& resultCallback);
+	static void rayTestSingle(const btTransform& rayFromTrans, const btTransform& rayToTrans,
+							  btCollisionObject* collisionObject,
+							  const btCollisionShape* collisionShape,
+							  const btTransform& colObjWorldTransform,
+							  RayResultCallback& resultCallback);
 
-	virtual	void	serialize(btSerializer* serializer);
-
+	virtual void serialize(btSerializer* serializer);
 };
 
-#endif //BT_SOFT_RIGID_DYNAMICS_WORLD_H
+#endif  //BT_SOFT_RIGID_DYNAMICS_WORLD_H
