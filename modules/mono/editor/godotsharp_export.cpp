@@ -87,7 +87,7 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 
 	String build_config = p_debug ? "Debug" : "Release";
 
-	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata." + String(p_debug ? "debug" : "release"));
+	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata." + String(p_debug ? "release_debug" : "release"));
 	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
 	ERR_FAIL_COND(metadata_err != OK);
 
