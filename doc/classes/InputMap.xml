@@ -93,7 +93,7 @@
 			<argument index="1" name="action" type="String">
 			</argument>
 			<description>
-				Returns [true] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
+				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
 			</description>
 		</method>
 		<method name="get_action_list">

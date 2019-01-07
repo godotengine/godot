@@ -63,7 +63,7 @@
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if toggle_mode is active).
 		</member>
 		<member name="shortcut" type="ShortCut" setter="set_shortcut" getter="get_shortcut">
-			[Shortcut] associated to the button.
+			[ShortCut] associated to the button.
 		</member>
 		<member name="shortcut_in_tooltip" type="bool" setter="set_shortcut_in_tooltip" getter="is_shortcut_in_tooltip_enabled">
 			If [code]true[/code], the button will add information about its shortcut in the tooltip.

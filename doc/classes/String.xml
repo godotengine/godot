@@ -459,7 +459,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores (_) and the first character may not be a digit.
+				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 			</description>
 		</method>
 		<method name="is_valid_integer">
@@ -514,7 +514,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
+				Does a simple expression match, where [code]*[/code] matches zero or more arbitrary characters and [code]?[/code] matches any single character except '.'.
 			</description>
 		</method>
 		<method name="matchn">
@@ -523,7 +523,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple case insensitive expression match, using ? and * wildcards (see [method match]).
+				Does a simple case insensitive expression match, using [code]?[/code] and [code]*[/code] wildcards (see [method match]).
 			</description>
 		</method>
 		<method name="md5_buffer">
@@ -663,7 +663,7 @@
 			</argument>
 			<description>
 				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right.
-				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				[b]Example:[/b] [code]"One,Two,Three"[/code] will return [code]["One","Two","Three"][/code] if split by [code]","[/code].
 				If [code]maxsplit[/code] is specified, then it is number of splits to do, default is 0 which splits all the items.
 			</description>
 		</method>
@@ -710,7 +710,7 @@
 			</argument>
 			<description>
 				Splits the string by a divisor string and returns an array of the substrings.
-				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
+				[b]Example:[/b] [code]"One,Two,Three"[/code] will return [code]["One","Two","Three"][/code] if split by [code]","[/code].
 				If [code]maxsplit[/code] is given, at most maxsplit number of splits occur, and the remainder of the string is returned as the final element of the list (thus, the list will have at most maxsplit+1 elements)
 			</description>
 		</method>
@@ -723,7 +723,7 @@
 			</argument>
 			<description>
 				Splits the string in floats by using a divisor string and returns an array of the substrings.
-				[b]Example:[/b] "1,2.5,3" will return [1,2.5,3] if split by ",".
+				[b]Example:[/b] [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
 			</description>
 		</method>
 		<method name="strip_edges">
@@ -752,7 +752,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is sped up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
+				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is sped up in comparison to [method to_utf8] with the assumption that all the characters the String contains are only ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -787,7 +787,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="trim_prefix">

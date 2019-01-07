@@ -35,7 +35,7 @@
 			<argument index="0" name="to_point" type="Vector3">
 			</argument>
 			<description>
-				Returns the owner of the [NavigationMesh] which contains the navigation point closest to the point given. This is usually a [NavigtionMeshInstance]. For meshes added via [method navmesh_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
+				Returns the owner of the [NavigationMesh] which contains the navigation point closest to the point given. This is usually a [NavigationMeshInstance]. For meshes added via [method navmesh_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
 			</description>
 		</method>
 		<method name="get_closest_point_to_segment">

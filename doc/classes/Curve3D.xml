@@ -53,7 +53,7 @@
 			<return type="PoolRealArray">
 			</return>
 			<description>
-				Returns the cache of tilts as a [RealArray].
+				Returns the cache of tilts as a [PoolRealArray].
 			</description>
 		</method>
 		<method name="get_baked_up_vectors" qualifiers="const">

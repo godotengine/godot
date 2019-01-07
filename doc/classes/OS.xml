@@ -371,7 +371,7 @@
 			<argument index="0" name="dir" type="int" enum="OS.SystemDir">
 			</argument>
 			<description>
-				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [OS.SystemDir].
+				Returns the actual path to commonly used folders across different platforms. Available locations are specified in [enum OS.SystemDir].
 			</description>
 		</method>
 		<method name="get_system_time_msecs" qualifiers="const">

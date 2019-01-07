@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PoolVector3Array" category="Built-In Types" version="3.1">
 	<brief_description>
-		An Array of Vector3.
+		A pooled [Array] of [Vector3].
 	</brief_description>
 	<description>
-		An Array specifically designed to hold Vector3. Note that this type is passed by value and not by reference.
+		An [Array] specifically designed to hold [Vector3]. Optimized for memory usage, does not fragment the memory. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new PoolVector3Array. Optionally, you can pass in an Array that will be converted.
+				Construct a new [code]PoolVector3Array[/code]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolVector3Array">
 			</argument>
 			<description>
-				Append an [code]PoolVector3Array[/code] at the end of this array.
+				Append a [code]PoolVector3Array[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">
@@ -42,7 +42,7 @@
 			<argument index="1" name="vector3" type="Vector3">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">

@@ -120,7 +120,7 @@
 			<argument index="1" name="stylebox" type="StyleBox">
 			</argument>
 			<description>
-				Overrides the [code]name[/code] [Stylebox] in the [member theme] resource the node uses. If [code]stylebox[/code] is empty, Godot clears the override.
+				Overrides the [code]name[/code] [StyleBox] in the [member theme] resource the node uses. If [code]stylebox[/code] is empty, Godot clears the override.
 			</description>
 		</method>
 		<method name="can_drop_data" qualifiers="virtual">

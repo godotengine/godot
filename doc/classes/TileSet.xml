@@ -46,7 +46,7 @@
 			</description>
 		</method>
 		<method name="autotile_get_bitmask">
-			<return type="int" enum="TileSet.AutotileBindings">
+			<return type="int">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -146,7 +146,7 @@
 			</argument>
 			<argument index="1" name="bitmask" type="Vector2">
 			</argument>
-			<argument index="2" name="flag" type="int" enum="TileSet.AutotileBindings">
+			<argument index="2" name="flag" type="int">
 			</argument>
 			<description>
 				Sets the bitmask of the subtile from an autotile given its coordinates.

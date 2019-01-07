@@ -111,7 +111,7 @@
 			<argument index="1" name="by" type="float">
 			</argument>
 			<description>
-				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards the [Margin] direction.
+				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards the [enum Margin] direction.
 			</description>
 		</method>
 		<method name="has_no_area">

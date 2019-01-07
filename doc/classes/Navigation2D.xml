@@ -26,7 +26,7 @@
 			<argument index="0" name="to_point" type="Vector2">
 			</argument>
 			<description>
-				Returns the owner of the [NavigationPolygon] which contains the navigation point closest to the point given. This is usually a [NavigtionPolygonInstance]. For polygons added via [method navpoly_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
+				Returns the owner of the [NavigationPolygon] which contains the navigation point closest to the point given. This is usually a [NavigationPolygonInstance]. For polygons added via [method navpoly_add], returns the owner that was given (or [code]null[/code] if the [code]owner[/code] parameter was omitted).
 			</description>
 		</method>
 		<method name="get_simple_path">

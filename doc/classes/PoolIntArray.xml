@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PoolIntArray" category="Built-In Types" version="3.1">
 	<brief_description>
-		Integer Array.
+		A pooled [Array] of integers ([int]).
 	</brief_description>
 	<description>
-		Integer Array. Contains integers. Optimized for memory usage, can't fragment the memory. Note that this type is passed by value and not by reference.
+		An [Array] specifically designed to hold integer values ([int]). Optimized for memory usage, does not fragment the memory. Note that this type is passed by value and not by reference.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Create from a generic array.
+				Construct a new [code]PoolIntArray[/code]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolIntArray">
 			</argument>
 			<description>
-				Append an [code]PoolIntArray[/code] at the end of this array.
+				Append a [code]PoolIntArray[/code] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">
@@ -42,7 +42,7 @@
 			<argument index="1" name="integer" type="int">
 			</argument>
 			<description>
-				Insert a new int at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Insert a new int at a given position in the array. The position must be valid, or at the end of the array ([code]idx == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">

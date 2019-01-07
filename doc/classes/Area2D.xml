@@ -125,7 +125,7 @@
 			The area's priority. Higher priority areas are processed first. Default value: 0.
 		</member>
 		<member name="space_override" type="int" setter="set_space_override_mode" getter="get_space_override_mode" enum="Area2D.SpaceOverride">
-			Override mode for gravity and damping calculations within this area. See [Area2D.SpaceOverride] for possible values.
+			Override mode for gravity and damping calculations within this area. See [enum Area2D.SpaceOverride] for possible values.
 		</member>
 	</members>
 	<signals>

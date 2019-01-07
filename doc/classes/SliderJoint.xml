@@ -4,7 +4,7 @@
 		Piston kind of slider between two bodies in 3D.
 	</brief_description>
 	<description>
-		Slides across the x-axis of the [Pivot] object.
+		Slides across the x-axis of the pivot object.
 	</description>
 	<tutorials>
 	</tutorials>

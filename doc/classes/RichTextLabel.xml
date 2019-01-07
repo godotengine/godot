@@ -118,7 +118,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Adds a [code][cell][/code] tag to the tag stack. Must be inside a [table] tag. See [method push_table] for details.
+				Adds a [code][cell][/code] tag to the tag stack. Must be inside a [code][table][/code] tag. See [method push_table] for details.
 			</description>
 		</method>
 		<method name="push_color">
@@ -231,7 +231,7 @@
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined">
-			If [code]true[/code], the label underlines meta tags such as [url]{text}[/url]. Default value: [code]true[/code].
+			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code]. Default value: [code]true[/code].
 		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
 			If [code]true[/code], the label uses the custom font color. Default value: [code]false[/code].
@@ -264,7 +264,7 @@
 			<argument index="0" name="meta" type="Nil">
 			</argument>
 			<description>
-				Triggered when the user clicks on content between [url] tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
+				Triggered when the user clicks on content between [code][url][/code] tags. If the meta is defined in text, e.g. [code][url={"data"="hi"}]hi[/url][/code], then the parameter for this signal will be a [String] type. If a particular type or an object is desired, the [method push_meta] method must be used to manually insert the data into the tag stack.
 			</description>
 		</signal>
 		<signal name="meta_hover_ended">

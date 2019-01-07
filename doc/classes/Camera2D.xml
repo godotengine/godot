@@ -124,6 +124,8 @@
 		<member name="offset_v" type="float" setter="set_v_offset" getter="get_v_offset">
 			The vertical offset of the camera, relative to the drag margins. Default value: [code]0[/code]
 		</member>
+		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Camera2D.Camera2DProcessMode">
+		</member>
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating">
 			If [code]true[/code], the camera rotates with the target. Default value: [code]false[/code]
 		</member>
@@ -143,6 +145,10 @@
 		</constant>
 		<constant name="ANCHOR_MODE_DRAG_CENTER" value="1" enum="AnchorMode">
 			The camera's position takes into account vertical/horizontal offsets and the screen size.
+		</constant>
+		<constant name="CAMERA2D_PROCESS_PHYSICS" value="0" enum="Camera2DProcessMode">
+		</constant>
+		<constant name="CAMERA2D_PROCESS_IDLE" value="1" enum="Camera2DProcessMode">
 		</constant>
 	</constants>
 </class>
