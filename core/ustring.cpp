@@ -2393,6 +2393,10 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
+int String::find_char(CharType p_char, int p_from) const {
+	return _cowdata.find(p_char, p_from);
+}
+
 int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 
 	if (p_from < 0)
@@ -3063,7 +3067,7 @@ String String::lstrip(const String &p_chars) const {
 
 	for (beg = 0; beg < len; beg++) {
 
-		if (p_chars.find(&ptr()[beg]) == -1)
+		if (p_chars.find_char(get(beg)) == -1)
 			break;
 	}
 
@@ -3080,7 +3084,7 @@ String String::rstrip(const String &p_chars) const {
 
 	for (end = len - 1; end >= 0; end--) {
 
-		if (p_chars.find(&ptr()[end]) == -1)
+		if (p_chars.find_char(get(end)) == -1)
 			break;
 	}
 

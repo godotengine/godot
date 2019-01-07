@@ -84,6 +84,7 @@ public:
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
 	Error insert(int p_pos, const T &p_val) { return _cowdata.insert(p_pos, p_val); }
+	int find(const T &p_val, int p_from = 0) const { return _cowdata.find(p_val, p_from); }
 
 	void append_array(const Vector<T> &p_other);
 
@@ -113,22 +114,6 @@ public:
 			};
 		};
 		insert(i, p_val);
-	}
-
-	int find(const T &p_val, int p_from = 0) const {
-		int ret = -1;
-		if (p_from < 0 || size() == 0)
-			return ret;
-
-		for (int i = p_from; i < size(); i++) {
-
-			if (ptr()[i] == p_val) {
-				ret = i;
-				break;
-			};
-		};
-
-		return ret;
 	}
 
 	_FORCE_INLINE_ Vector() {}
