@@ -69,7 +69,7 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the layer mask. This simplifies editing this [code]Area[code]'s layers.
+				Set/clear individual bits on the layer mask. This simplifies editing this [code]Area[/code]'s layers.
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">

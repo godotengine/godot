@@ -7,7 +7,6 @@
 		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/learning/features/audio/index.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<demos>

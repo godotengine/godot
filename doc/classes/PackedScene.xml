@@ -18,7 +18,7 @@
 		node.add_child(rigid)
 
 		# change owner of rigid, but not of collision
-		rigid.set_owner(node)
+		rigid.owner = node
 
 		var scene = PackedScene.new()
 		# only node and rigid are now packed
@@ -61,7 +61,7 @@
 			<argument index="0" name="path" type="Node">
 			</argument>
 			<description>
-				Pack will ignore any sub-nodes not owned by given node. See [method Node.set_owner].
+				Pack will ignore any sub-nodes not owned by given node. See [member Node.owner].
 			</description>
 		</method>
 	</methods>

@@ -4,7 +4,7 @@
 		The Editor's popup dialog for creating new [Script] files.
 	</brief_description>
 	<description>
-		The ScriptCreateDialog creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling a [method popup]() method.
+		The [code]ScriptCreateDialog[/code] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Popup.popup] methods.
 		[codeblock]
 		func _ready():
 		    dialog.config("Node", "res://new_node.gd") # for in-engine types

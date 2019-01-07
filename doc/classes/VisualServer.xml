@@ -4353,6 +4353,12 @@
 		</constant>
 		<constant name="MULTIMESH_COLOR_FLOAT" value="2" enum="MultimeshColorFormat">
 		</constant>
+		<constant name="MULTIMESH_CUSTOM_DATA_NONE" value="0" enum="MultimeshCustomDataFormat">
+		</constant>
+		<constant name="MULTIMESH_CUSTOM_DATA_8BIT" value="1" enum="MultimeshCustomDataFormat">
+		</constant>
+		<constant name="MULTIMESH_CUSTOM_DATA_FLOAT" value="2" enum="MultimeshCustomDataFormat">
+		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">

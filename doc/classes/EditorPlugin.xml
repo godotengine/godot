@@ -7,7 +7,7 @@
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins. Also see [EditorScript] to add functions to the editor.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/latest/development/plugins/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
 	</tutorials>
 	<demos>
 	</demos>

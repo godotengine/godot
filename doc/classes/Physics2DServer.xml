@@ -1128,7 +1128,7 @@
 			This is the constant for creating capsule shapes. A capsule shape is defined by a radius and a length. It can be used for intersections and inside/outside checks.
 		</constant>
 		<constant name="SHAPE_CONVEX_POLYGON" value="6" enum="ShapeType">
-			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the method [method CollisionPolygon2D.set_polygon], polygons modified with [method shape_set_data] do not verify that the points supplied form is a convex polygon.
+			This is the constant for creating convex polygon shapes. A polygon is defined by a list of points. It can be used for intersections and inside/outside checks. Unlike the [member CollisionPolygon2D.polygon] property, polygons modified with [method shape_set_data] do not verify that the points supplied form is a convex polygon.
 		</constant>
 		<constant name="SHAPE_CONCAVE_POLYGON" value="7" enum="ShapeType">
 			This is the constant for creating concave polygon shapes. A polygon is defined by a list of points. It can be used for intersections checks, but not for inside/outside checks.

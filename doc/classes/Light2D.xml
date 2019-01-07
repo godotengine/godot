@@ -59,7 +59,7 @@
 			If [code]true[/code], the Light2D will cast shadows. Default value: [code]false[/code].
 		</member>
 		<member name="shadow_filter" type="int" setter="set_shadow_filter" getter="get_shadow_filter" enum="Light2D.ShadowFilter">
-			Shadow filter type. Use SHADOW_FILTER_* constants to set [code]shadow_filter[/code]. Default value: [code]None[/code].
+			Shadow filter type. Use [enum Light2D.ShadowFilter] constants as values. Default value: [code]SHADOW_FILTER_NONE[/code].
 		</member>
 		<member name="shadow_filter_smooth" type="float" setter="set_shadow_smooth" getter="get_shadow_smooth">
 			Smoothing value for shadows.
@@ -91,22 +91,22 @@
 			The light texture of the Light2D is used as a mask, hiding or revealing parts of the screen underneath depending on the value of each pixel of the light (mask) texture.
 		</constant>
 		<constant name="SHADOW_FILTER_NONE" value="0" enum="ShadowFilter">
-			No filter applies to the shadow map. See [method shadow_filter].
+			No filter applies to the shadow map. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF3" value="1" enum="ShadowFilter">
-			Percentage closer filtering (3 samples) applies to the shadow map. See [method shadow_filter].
+			Percentage closer filtering (3 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF5" value="2" enum="ShadowFilter">
-			Percentage closer filtering (5 samples) applies to the shadow map. See [method shadow_filter].
+			Percentage closer filtering (5 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF7" value="3" enum="ShadowFilter">
-			Percentage closer filtering (7 samples) applies to the shadow map. See [method shadow_filter].
+			Percentage closer filtering (7 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF9" value="4" enum="ShadowFilter">
-			Percentage closer filtering (9 samples) applies to the shadow map. See [method shadow_filter].
+			Percentage closer filtering (9 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF13" value="5" enum="ShadowFilter">
-			Percentage closer filtering (13 samples) applies to the shadow map. See [method shadow_filter].
+			Percentage closer filtering (13 samples) applies to the shadow map. See [member shadow_filter].
 		</constant>
 	</constants>
 </class>
