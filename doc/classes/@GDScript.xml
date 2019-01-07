@@ -415,6 +415,21 @@
 			<return type="Array">
 			</return>
 			<description>
+				Returns an array of dictionaries representing the current call stack.
+				[codeblock]
+				func _ready():
+				    foo()
+
+				func foo():
+				    bar()
+
+				func bar():
+				    print(get_stack())
+				[/codeblock]
+				would print
+				[codeblock]
+				[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="hash">
@@ -488,7 +503,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns True/False whether [code]s[/code] is an infinity value (either positive infinity or negative infinity).
+				Returns whether [code]s[/code] is an infinity value (either positive infinity or negative infinity).
 			</description>
 		</method>
 		<method name="is_instance_valid">
@@ -497,6 +512,7 @@
 			<argument index="0" name="instance" type="Object">
 			</argument>
 			<description>
+				Returns whether [code]instance[/code] is a valid object (e.g. has not been deleted from memory).
 			</description>
 		</method>
 		<method name="is_nan">
@@ -505,7 +521,7 @@
 			<argument index="0" name="s" type="float">
 			</argument>
 			<description>
-				Returns True/False whether [code]s[/code] is a NaN (Not-A-Number) value.
+				Returns whether [code]s[/code] is a NaN (Not-A-Number) value.
 			</description>
 		</method>
 		<method name="len">
@@ -690,6 +706,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Like [method print], but prints only when used in debug mode.
 			</description>
 		</method>
 		<method name="print_stack">
