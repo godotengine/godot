@@ -4,7 +4,7 @@
 		Custom gizmo for editing Spatial objects.
 	</brief_description>
 	<description>
-		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. These are created by [method EditorPlugin.create_spatial_gizmo].
+		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. These are created by [method EditorSpatialGizmoPlugin.create_gizmo].
 	</description>
 	<tutorials>
 	</tutorials>

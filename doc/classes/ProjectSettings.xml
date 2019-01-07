@@ -173,7 +173,7 @@
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="">
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). By default (no custom name defined), [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
-			The [member use_custom_user_dir] setting must be enabled for this to take effect.
+			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="">
 			Icon used for the project, set when project loads. Exporters will use this icon when possible to.
@@ -185,7 +185,7 @@
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
-			Allow the project to save to its own custom user dir (see [member custom_user_dir_name]). This setting only works for desktop platforms. A name must be set in the [member custom_user_dir_name] setting for this to take effect.
+			Allow the project to save to its own custom user dir (see [member application/config/custom_user_dir_name]). This setting only works for desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect.
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
 			Disable printing to stderr on exported build.

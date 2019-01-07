@@ -798,7 +798,7 @@
 			Sent when the node's [member theme] changes, right before Godot redraws the control. Happens when you call one of the [code]add_*_override[/code] methods.
 		</constant>
 		<constant name="NOTIFICATION_MODAL_CLOSE" value="46">
-			Sent when an open modal dialog closes. See [member show_modal].
+			Sent when an open modal dialog closes. See [method show_modal].
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
 			Sent when this node is inside a [ScrollContainer] which has begun being scrolled.

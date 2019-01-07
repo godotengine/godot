@@ -164,7 +164,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the vector's length squared. Prefer this function over [member length] if you need to sort vectors or need the squared length for some formula.
+				Returns the vector's length squared. Prefer this method over [method length] if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
