@@ -2620,11 +2620,11 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		storage->frame.clear_request = false;
 	} else if (!env || env->bg_mode == VS::ENV_BG_CLEAR_COLOR || env->bg_mode == VS::ENV_BG_SKY) {
 		if (storage->frame.clear_request) {
-			clear_color = storage->frame.clear_request_color.to_linear();
+			clear_color = storage->frame.clear_request_color;
 			storage->frame.clear_request = false;
 		}
 	} else if (env->bg_mode == VS::ENV_BG_CANVAS || env->bg_mode == VS::ENV_BG_COLOR || env->bg_mode == VS::ENV_BG_COLOR_SKY) {
-		clear_color = env->bg_color.to_linear();
+		clear_color = env->bg_color;
 		storage->frame.clear_request = false;
 	} else {
 		storage->frame.clear_request = false;
