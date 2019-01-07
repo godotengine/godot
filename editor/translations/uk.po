@@ -978,7 +978,8 @@ msgid "Uncompressing Assets"
 msgstr "Розпаковування активів"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "Пакет встановлений успішно!"
 
 #: editor/editor_asset_installer.cpp
@@ -1223,7 +1224,7 @@ msgid "Add AutoLoad"
 msgstr "Додати автозавантаження"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Шлях:"
 
@@ -2591,12 +2592,14 @@ msgid "[Empty]"
 msgstr "[Порожньо]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+#, fuzzy
+msgid "Assign..."
 msgstr "Призначити…"
 
 #: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 "Тип вибраного ресурсу (%s) не відповідає типу, який є очікуваним для цієї "
@@ -2980,16 +2983,12 @@ msgid "Unable to update dependencies:"
 msgstr "Неможливо оновити залежності:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "Ім'я не вказано"
+msgid "No name provided."
+msgstr "Ім'я не вказано."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "Надане ім'я містить некоректні символи"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "Ім'я не вказано."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3362,6 +3361,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Завантажити наявний ресурс із диска та відредагувати його."
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "Зберегти поточний редагований ресурс."
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "Перейти до попереднього редагованого об'єкта в історії."
 
@@ -3475,7 +3478,8 @@ msgstr "Додавання анімації"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Load.."
+#, fuzzy
+msgid "Load..."
 msgstr "Завантажити…"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3509,6 +3513,11 @@ msgid "Select and move points, create points with RMB."
 msgstr ""
 "Виберіть і пересуньте точки. Створити точки можна за допомогою клацання "
 "правою кнопкою миші."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr "Увімкнути прилипання і показати сітку."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3545,12 +3554,6 @@ msgstr "Вилучити точки і трикутники."
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Створити трикутники злиття автоматично (а не вручну)"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Прилипання"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3594,7 +3597,8 @@ msgstr ""
 "неможливо отримати назви доріжок."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Add Node.."
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
 msgstr "Додати вузол…"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3865,7 +3869,8 @@ msgid "Connect nodes."
 msgstr "З'єднати вузли."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Remove selected node or transition"
+#, fuzzy
+msgid "Remove selected node or transition."
 msgstr "Вилучити позначений вузол або перехід"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4903,6 +4908,7 @@ msgid "Populate"
 msgstr "Заповнити"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Створення навігаційного полігону"
 
@@ -5302,6 +5308,11 @@ msgstr "Очистити UV"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Settings"
 msgstr "Параметри сітки"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Прилипання"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6258,6 +6269,10 @@ msgstr "До"
 msgid "Post"
 msgstr "Після"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Спрайт порожній!"
@@ -6664,7 +6679,8 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Показати назви плиток (якщо затиснути клавішу Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr "Вилучити позначену текстуру і усі плитки, у яких її використано?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6672,12 +6688,17 @@ msgid "You haven't selected a texture to remove."
 msgstr "Вами не позначено текстури для вилучення."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "Створити зі сцени?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Об'єднати зі сцени?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "Вилучити шаблон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6744,6 +6765,88 @@ msgstr ""
 "Клацніть на іншій плитці, щоб редагувати її."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Set Tile Region"
+msgstr "Встановити прямокутник області"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "Створити Теку"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "Редагувати фільтри"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "Редагування існуючого полігону:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Редагувати полігон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Створення навігаційного полігону"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "Вставити бітову маску."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "Вилучити шаблон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "Вилучити полігон та точку"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "Створено затінювальний полігон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Створення навігаційного полігону"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "Редагувати фільтри"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Створення навігаційного полігону"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "Створено затінювальний полігон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "Значення цієї властивості не можна змінювати."
 
@@ -6762,10 +6865,6 @@ msgstr "Фрагмент"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "Світло"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add Node..."
-msgstr "Додати вузол…"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6865,6 +6964,36 @@ msgstr "Нетипове (з відокремленням комами):"
 #: editor/project_export.cpp
 msgid "Feature List:"
 msgstr "Список можливостей:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "Новий скрипт"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "Режим експортування:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7007,12 +7136,31 @@ msgid "Unnamed Project"
 msgstr "Проект без назви"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "Не вдалося відкрити проект"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Ви справді хочете відкрити декілька проектів одразу?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9392,10 +9540,6 @@ msgstr "Увага!"
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr "Увімкнути прилипання і показати сітку."
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9481,6 +9625,15 @@ msgstr "Призначення однорідного."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
 
+#~ msgid "No name provided"
+#~ msgstr "Ім'я не вказано"
+
+#~ msgid "Add Node.."
+#~ msgstr "Додати вузол…"
+
+#~ msgid "Create from scene?"
+#~ msgstr "Створити зі сцени?"
+
 #~ msgid "Create Poly"
 #~ msgstr "Створити полігон"
 
@@ -9502,9 +9655,6 @@ msgstr "Змінні величини можна пов'язувати лише 
 #~ msgstr ""
 #~ "Цей вузол не має ресурсу OccluderPolygon2D.\n"
 #~ "Створити і призначити?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "Редагування існуючого полігону:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "ЛКМ: Перемістити точку."
@@ -9840,9 +9990,6 @@ msgstr "Змінні величини можна пов'язувати лише 
 
 #~ msgid "Run Script"
 #~ msgstr "Запустити скрипт"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "Зберегти поточний редагований ресурс."
 
 #~ msgid "Stop Profiling"
 #~ msgstr "Зупинити профілювання"

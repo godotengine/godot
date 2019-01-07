@@ -985,7 +985,8 @@ msgid "Uncompressing Assets"
 msgstr "无压缩资源"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "软件包安装成功！"
 
 #: editor/editor_asset_installer.cpp
@@ -1226,7 +1227,7 @@ msgid "Add AutoLoad"
 msgstr "添加Autoload"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "路径:"
 
@@ -2558,12 +2559,14 @@ msgid "[Empty]"
 msgstr "[空]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+#, fuzzy
+msgid "Assign..."
 msgstr "分配…。"
 
 #: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr "被选择的资源（%s）并不能匹配此属性（%s）应有的类型。"
 
@@ -2933,16 +2936,12 @@ msgid "Unable to update dependencies:"
 msgstr "无法更新依赖:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "未提供名称"
+msgid "No name provided."
+msgstr "没有提供任何名称。"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "提供的名称包含无效字符"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "没有提供任何名称。"
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3315,6 +3314,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "从磁盘中加载资源并编辑。"
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "保存当前编辑的资源。"
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "前往上一个编辑对象。"
 
@@ -3428,7 +3431,8 @@ msgstr "添加动画"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Load.."
+#, fuzzy
+msgid "Load..."
 msgstr "加载..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3457,6 +3461,11 @@ msgstr "在此空间下设置位置混合状态"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
 msgstr "选择并移动点，使用 RMB 创建点。"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
+msgstr "启用吸附并显示网格。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3495,12 +3504,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "自动创建混合三角形（非手动）"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "吸附"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "混合:"
@@ -3535,7 +3538,8 @@ msgid ""
 msgstr "动画播放器没有合法的根节点路径，因此无法获取轨道名称。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Add Node.."
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
 msgstr "添加节点.."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3805,7 +3809,8 @@ msgid "Connect nodes."
 msgstr "连接节点。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-msgid "Remove selected node or transition"
+#, fuzzy
+msgid "Remove selected node or transition."
 msgstr "移除选中的节点或过渡动画"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4831,6 +4836,7 @@ msgid "Populate"
 msgstr "填充"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "创建导航多边形"
 
@@ -5228,6 +5234,11 @@ msgstr "清除UV"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Settings"
 msgstr "网格设置"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "吸附"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6184,6 +6195,10 @@ msgstr "前（per）"
 msgid "Post"
 msgstr "发布(Post)"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Sprite 是空的！"
@@ -6591,7 +6606,8 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "显示磁贴的名字（按住 Alt 键）"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr "确定移除选中的纹理以及【所有】使用它的【磁贴集】吗？"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6599,12 +6615,17 @@ msgid "You haven't selected a texture to remove."
 msgstr "请先选择要移除的纹理。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "从场景中创建？"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "确定要合并场景？"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "移除模板"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6670,6 +6691,88 @@ msgstr ""
 "点击选择另一个磁贴进行编辑。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Set Tile Region"
+msgstr "设置纹理区域"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "新建目录"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "编辑筛选器"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "编辑已存在的多边形:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "编辑多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "创建导航多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "粘贴位掩码。"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "移除模板"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "移除多边形及顶点"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "添加遮光多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "创建导航多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "编辑筛选器"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "创建导航多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "添加遮光多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "不能修改该属性。"
 
@@ -6689,10 +6792,6 @@ msgstr "片段"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr "灯光"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add Node..."
-msgstr "添加节点.."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -6787,6 +6886,35 @@ msgstr "自定义 （以逗号分隔）："
 #: editor/project_export.cpp
 msgid "Feature List:"
 msgstr "功能列表："
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "新建脚本"
+
+#: editor/project_export.cpp
+msgid "Script Export Mode:"
+msgstr "脚本导出方式:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr "文本"
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr "编译"
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr "使用下列密码加密"
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr "脚本密匙（256位16进制码）:"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -6928,12 +7056,31 @@ msgid "Unnamed Project"
 msgstr "未命名项目"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "无法打开项目"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "您确定要打开多个项目吗？"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9236,10 +9383,6 @@ msgstr "提示！"
 msgid "Please Confirm..."
 msgstr "请确认..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr "启用吸附并显示网格。"
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9319,6 +9462,15 @@ msgstr "对uniform的赋值。"
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
 
+#~ msgid "No name provided"
+#~ msgstr "未提供名称"
+
+#~ msgid "Add Node.."
+#~ msgstr "添加节点.."
+
+#~ msgid "Create from scene?"
+#~ msgstr "从场景中创建？"
+
 #~ msgid "Create Poly"
 #~ msgstr "创建多边形"
 
@@ -9340,9 +9492,6 @@ msgstr "变量只能在顶点函数中指定。"
 #~ msgstr ""
 #~ "在这个节点上没有 OccluderPolygon2D 资源。\n"
 #~ "创建和分配一个吗？"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "编辑已存在的多边形:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "鼠标左键:移动点。"
@@ -9685,9 +9834,6 @@ msgstr "变量只能在顶点函数中指定。"
 
 #~ msgid "Run Script"
 #~ msgstr "运行脚本"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "保存当前编辑的资源。"
 
 #~ msgid "Stop Profiling"
 #~ msgstr "停止"
@@ -10812,21 +10958,6 @@ msgstr "变量只能在顶点函数中指定。"
 
 #~ msgid "Trailing Silence:"
 #~ msgstr "尾随沉默(Trailing Silence)："
-
-#~ msgid "Script Export Mode:"
-#~ msgstr "脚本导出方式:"
-
-#~ msgid "Text"
-#~ msgstr "文本"
-
-#~ msgid "Compiled"
-#~ msgstr "编译"
-
-#~ msgid "Encrypted (Provide Key Below)"
-#~ msgstr "使用下列密码加密"
-
-#~ msgid "Script Encryption Key (256-bits as hex):"
-#~ msgstr "脚本密匙（256位16进制码）:"
 
 #~ msgid "Export Project PCK"
 #~ msgstr "导出项目PCK文件"

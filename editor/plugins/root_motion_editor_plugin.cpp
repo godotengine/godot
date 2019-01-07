@@ -206,7 +206,7 @@ void EditorPropertyRootMotion::update_property() {
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture>());
-		assign->set_text(TTR("Assign.."));
+		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
 		return;
 	}

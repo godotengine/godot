@@ -999,7 +999,8 @@ msgid "Uncompressing Assets"
 msgstr "Декомпресија средства"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "Пакет је инсталиран успешно!"
 
 #: editor/editor_asset_installer.cpp
@@ -1241,7 +1242,7 @@ msgid "Add AutoLoad"
 msgstr "Додај аутоматско учитавање"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "Пут:"
 
@@ -2641,12 +2642,12 @@ msgid "[Empty]"
 msgstr "Додај празан"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-msgid "Assign.."
+msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -3035,16 +3036,12 @@ msgid "Unable to update dependencies:"
 msgstr "Није могуће ажурирати зависности:\n"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "Име није дато"
+msgid "No name provided."
+msgstr "Име није дато."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "Дато име садржи неважећа слова"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "Име није дато."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3449,6 +3446,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Учитај постојећи ресурс са диска и измени га."
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "Сачувај тренутно измењени ресурс."
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "Иди на претходно измењен објекат у историјату."
 
@@ -3575,7 +3576,7 @@ msgstr "Додај анимацију"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "Учитај"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3601,6 +3602,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3643,12 +3649,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "Залепи"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "Мешавина:"
@@ -3683,7 +3683,8 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Add Node.."
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node..."
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3963,7 +3964,7 @@ msgstr "Повежи са чвором:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "Обриши одабрану траку."
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5014,6 +5015,7 @@ msgid "Populate"
 msgstr "Попуни"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Направи навигациони полигон"
 
@@ -5428,6 +5430,11 @@ msgstr "Очисти UV"
 #, fuzzy
 msgid "Grid Settings"
 msgstr "Поставке"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "Залепи"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6436,6 +6443,10 @@ msgstr "Пре"
 msgid "Post"
 msgstr "После"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6869,21 +6880,27 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "Обриши тачку криве"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "Направи од сцене?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Merge from scene?"
 msgstr "Споји из сцене?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "Обриши шаблон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6942,6 +6959,88 @@ msgstr "Сачувај тренутно измењени ресурс."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Set Tile Region"
+msgstr "Постави правоугаони регион"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "Направи директоријум"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "Уреди филтере"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "Измени постојећи полигон:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Измени полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Направи навигациони полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "Налепи анимацију"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "Обриши шаблон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "Обриши полигон и тачку"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "Направи осенчен полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Направи навигациони полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "Уреди филтере"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Направи навигациони полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "Направи осенчен полигон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "Ова операција се не може обавити без сцене."
 
@@ -6963,10 +7062,6 @@ msgstr ""
 #, fuzzy
 msgid "Light"
 msgstr "десно"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Add Node..."
-msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7071,6 +7166,36 @@ msgstr ""
 #: editor/project_export.cpp
 msgid "Feature List:"
 msgstr "Листа карактеристика:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "Покрени скриптицу"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script Export Mode:"
+msgstr "Режим извоза:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7218,11 +7343,30 @@ msgid "Unnamed Project"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
-msgstr ""
+#, fuzzy
+msgid "Can't open project at '%s'."
+msgstr "Не могу отворити '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9518,10 +9662,6 @@ msgstr ""
 msgid "Please Confirm..."
 msgstr ""
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9596,6 +9736,12 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "Име није дато"
+
+#~ msgid "Create from scene?"
+#~ msgstr "Направи од сцене?"
+
 #~ msgid "Create Poly"
 #~ msgstr "Направи полигон"
 
@@ -9619,9 +9765,6 @@ msgstr ""
 #~ msgstr ""
 #~ "OccluderPolygon2D не постоји на овом чвору.\n"
 #~ "Направи и додели један?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "Измени постојећи полигон:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "Леви тастер миша: помери тачку."
@@ -9916,14 +10059,8 @@ msgstr ""
 #~ msgid "I see..."
 #~ msgstr "Разумем..."
 
-#~ msgid "Can't open '%s'."
-#~ msgstr "Не могу отворити '%s'."
-
 #~ msgid "Ugh"
 #~ msgstr "Уф"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "Сачувај тренутно измењени ресурс."
 
 #~ msgid "Stop Profiling"
 #~ msgstr "Заустави профилирање"

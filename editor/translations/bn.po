@@ -1010,7 +1010,8 @@ msgid "Uncompressing Assets"
 msgstr "আনকম্প্রেস্ড অ্যাসেটস"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "প্যাকেজ ইন্সটল সম্পন্ন হয়েছে!"
 
 #: editor/editor_asset_installer.cpp
@@ -1258,7 +1259,7 @@ msgid "Add AutoLoad"
 msgstr "AutoLoad সংযুক্ত করুন"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "পথ:"
 
@@ -2704,12 +2705,12 @@ msgstr "খালি বস্তু যোগ করুন"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 #, fuzzy
-msgid "Assign.."
+msgid "Assign..."
 msgstr "নিযুক্ত"
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -3129,17 +3130,13 @@ msgid "Unable to update dependencies:"
 msgstr "'%s' দৃশ্যটির অসংলগ্ন নির্ভরতা রয়েছে:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
-msgstr "কোন নাম ব্যাবহার করা হয়নি"
+#, fuzzy
+msgid "No name provided."
+msgstr "পুনঃনামকরণ করুন অথবা সরান..."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "ব্যবহৃত নামে অগ্রহণযোগ্য অক্ষর বিদ্যমান"
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "No name provided."
-msgstr "পুনঃনামকরণ করুন অথবা সরান..."
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3556,6 +3553,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "ডিস্ক হতে একটি বিদ্যমান রিসোর্স লোড করুন এবং সম্পাদন করুন।"
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "স্মৃতিতে অবস্থিত পূর্বে সম্পাদিত বস্তুতে যান।"
 
@@ -3686,7 +3687,7 @@ msgstr "অ্যানিমেশন যুক্ত করুন"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "লোড"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3712,6 +3713,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3755,12 +3761,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "স্ন্যাপ"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "ব্লেন্ড/মিশ্রণ:"
@@ -3796,8 +3796,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "নোড সংযোজন করুন"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -4083,7 +4084,7 @@ msgstr "নোডের সাথে সংযুক্ত করুন:"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "নির্বাচিত ট্র্যাক/পথ অপসারণ করুন।"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -5169,6 +5170,7 @@ msgid "Populate"
 msgstr "পপুলেট"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "Navigation Polygon তৈরি করুন"
 
@@ -5601,6 +5603,11 @@ msgstr "UV পরিস্কার করুন"
 #, fuzzy
 msgid "Grid Settings"
 msgstr "স্ন্যাপ সেটিংস"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "স্ন্যাপ"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6633,6 +6640,10 @@ msgstr "পূর্ব (Pre)"
 msgid "Post"
 msgstr "পরবর্তী (Post)"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -7071,20 +7082,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "পথের বিন্দু অপসারণ করুন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "দৃশ্য হতে তৈরি করবেন?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "দৃশ্য হতে একত্রিত করবেন?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "বস্তু অপসারণ করুন"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -7143,6 +7160,88 @@ msgstr "এই-মুহূর্তে সম্পাদিত রিসোর
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Set Tile Region"
+msgstr "গঠনবিন্যাসের এলাকা"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "ফোল্ডার তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "নোড ফিল্টারসমূহ সম্পাদন করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "বিদ্যমান পলিগন সম্পাদন করুন:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "Poly সম্পাদন করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "Navigation Polygon তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "অ্যানিমেশন প্রতিলেপন করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "বস্তু অপসারণ করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "পলি এবং বিন্দু অপসারণ করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "অকলুডার (occluder) পলিগন তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "Navigation Polygon তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "নোড ফিল্টারসমূহ সম্পাদন করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "Navigation Polygon তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "অকলুডার (occluder) পলিগন তৈরি করুন"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "দৃশ্য ছাড়া এটি করা সম্ভব হবে না।"
 
@@ -7164,11 +7263,6 @@ msgstr "ফ্রাগমেন্ট"
 #, fuzzy
 msgid "Light"
 msgstr "ডান"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "নোড সংযোজন করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7286,6 +7380,35 @@ msgstr "কাস্টম (কমা দ্বারা পৃথক করা)
 #, fuzzy
 msgid "Feature List:"
 msgstr "মেথডের তালিকা:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "নতুন স্ক্রিপ্ট"
+
+#: editor/project_export.cpp
+msgid "Script Export Mode:"
+msgstr "স্ক্রিপ্ট এক্সপোর্ট মোড:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr "টেক্সট"
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr "কম্পাইল্ড"
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr "এনক্রিপ্ট করুন (নীচে কী/চাবি দিন)"
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr "স্ক্রিপ্ট এনক্রিপশন কী/চাবি (২৫৬-বিটস হেক্স):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7445,12 +7568,30 @@ msgstr "নামহীন প্রকল্প"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Can't open project"
+msgid "Can't open project at '%s'."
 msgstr "সংযোগ..."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "একধিক প্রকল্প খোলায় আপনি সুনিশ্চিত?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -9930,10 +10071,6 @@ msgstr "সতর্কতা!"
 msgid "Please Confirm..."
 msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -10015,6 +10152,16 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "কোন নাম ব্যাবহার করা হয়নি"
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "নোড সংযোজন করুন"
+
+#~ msgid "Create from scene?"
+#~ msgstr "দৃশ্য হতে তৈরি করবেন?"
+
 #~ msgid "Create Poly"
 #~ msgstr "Poly তৈরি করুন"
 
@@ -10039,9 +10186,6 @@ msgstr ""
 #~ msgstr ""
 #~ "এই নোডের মধ্যে  কোন অক্লুডার পলিগন টুডি রিসোর্স বিদ্যমান নেই।\n"
 #~ " নতুন পলিগন তৈরি করবেন?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "বিদ্যমান পলিগন সম্পাদন করুন:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "মাউসের বাম বোতাম: বিন্দু সরান।"
@@ -10386,9 +10530,6 @@ msgstr ""
 
 #~ msgid "Run Script"
 #~ msgstr "স্ক্রিপ্ট চালান"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "এই-মুহূর্তে সম্পাদিত রিসোর্সটি সংরক্ষণ করুন।"
 
 #~ msgid "Stop Profiling"
 #~ msgstr "প্রোফাইলিং বন্ধ করুন"
@@ -11504,21 +11645,6 @@ msgstr ""
 
 #~ msgid "Trailing Silence:"
 #~ msgstr "পরিশিষ্ট নীরবতা:"
-
-#~ msgid "Script Export Mode:"
-#~ msgstr "স্ক্রিপ্ট এক্সপোর্ট মোড:"
-
-#~ msgid "Text"
-#~ msgstr "টেক্সট"
-
-#~ msgid "Compiled"
-#~ msgstr "কম্পাইল্ড"
-
-#~ msgid "Encrypted (Provide Key Below)"
-#~ msgstr "এনক্রিপ্ট করুন (নীচে কী/চাবি দিন)"
-
-#~ msgid "Script Encryption Key (256-bits as hex):"
-#~ msgstr "স্ক্রিপ্ট এনক্রিপশন কী/চাবি (২৫৬-বিটস হেক্স):"
 
 #~ msgid "Export Project PCK"
 #~ msgstr "প্রকল্পের PCK এক্সপোর্ট করুন"

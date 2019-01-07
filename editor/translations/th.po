@@ -999,7 +999,8 @@ msgid "Uncompressing Assets"
 msgstr "กำลังคลายบีบอัด"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Package Installed Successfully!"
+#, fuzzy
+msgid "Package installed successfully!"
 msgstr "ติดตั้งแพคเกจเสร็จสมบูรณ์!"
 
 #: editor/editor_asset_installer.cpp
@@ -1240,7 +1241,7 @@ msgid "Add AutoLoad"
 msgstr "เพิ่มออโต้โหลด"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
-#: scene/gui/file_dialog.cpp
+#: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "ตำแหน่ง:"
 
@@ -2601,12 +2602,12 @@ msgstr "[ว่างเปล่า]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 #, fuzzy
-msgid "Assign.."
+msgid "Assign..."
 msgstr "ระบุ"
 
 #: editor/editor_properties.cpp
 msgid ""
-"The selected resource (%s) does not match the type expected for this "
+"The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
 
@@ -2981,16 +2982,12 @@ msgid "Unable to update dependencies:"
 msgstr "ไม่สามารถอัพเดทการอ้างอิง:"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
-msgid "No name provided"
+msgid "No name provided."
 msgstr "ไม่ได้ระบุชื่อ"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
 msgstr "ไม่สามารถใช้อักษรบางตัวในชื่อได้"
-
-#: editor/filesystem_dock.cpp
-msgid "No name provided."
-msgstr "ไม่ได้ระบุชื่อ"
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
@@ -3389,6 +3386,10 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "โหลดรีซอร์สที่มีอยู่แล้วในดิสก์และทำการปรับแต่ง"
 
 #: editor/inspector_dock.cpp
+msgid "Save the currently edited resource."
+msgstr "บันทึกรีซอร์สที่กำลังปรับแต่ง"
+
+#: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
 msgstr "ไปยังวัตถุที่ปรับแต่งก่อนหน้า"
 
@@ -3517,7 +3518,7 @@ msgstr "เพิ่มแอนิเมชัน"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Load.."
+msgid "Load..."
 msgstr "โหลด"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3543,6 +3544,11 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
+msgid "Enable snap and show grid."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3586,12 +3592,6 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap"
-msgstr "จำกัดการเคลื่อนย้าย"
-
-#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
 msgstr "ผสม:"
@@ -3626,8 +3626,9 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Add Node.."
+msgid "Add Node..."
 msgstr "เพิ่มโหนด"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3909,7 +3910,7 @@ msgstr "เชื่อมโหนด"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
-msgid "Remove selected node or transition"
+msgid "Remove selected node or transition."
 msgstr "ลบแทร็กที่เลือก"
 
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4959,6 +4960,7 @@ msgid "Populate"
 msgstr "สร้าง"
 
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Navigation Polygon"
 msgstr "สร้างรูปทรงนำทาง"
 
@@ -5374,6 +5376,11 @@ msgstr "ลบ UV"
 #, fuzzy
 msgid "Grid Settings"
 msgstr "การตั้งค่า GridMap"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Snap"
+msgstr "จำกัดการเคลื่อนย้าย"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -6372,6 +6379,10 @@ msgstr "ก่อน"
 msgid "Post"
 msgstr "หลัง"
 
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Name-less gizmo"
+msgstr ""
+
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite is empty!"
@@ -6799,20 +6810,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Remove selected texture and ALL TILES which use it?"
-msgstr ""
+#, fuzzy
+msgid "Remove selected texture? This will remove all tiles which use it."
+msgstr "ลบรายการ"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-msgid "Create from scene?"
-msgstr "สร้างจากฉาก?"
+msgid "Create from scene? This will overwrite all current tiles."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "รวมจากฉาก?"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Texture"
+msgstr "ลบแม่แบบ"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6875,6 +6892,88 @@ msgstr "เลือกไทล์ย่อยเพื่อจัดลำด
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Set Tile Region"
+msgstr "กำหนดขอบเขต Texture"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Tile"
+msgstr "สร้างโฟลเดอร์"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Set Tile Icon"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Bitmask"
+msgstr "แก้ไขตัวกรอง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Collision Polygon"
+msgstr "แก้ไขรูปหลายเหลี่ยมเดิม:"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Occlusion Polygon"
+msgstr "แก้ไขรูปหลายเหลี่ยม"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Navigation Polygon"
+msgstr "สร้างรูปทรงนำทาง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Paste Tile Bitmask"
+msgstr "วางแอนิเมชัน"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Clear Tile Bitmask"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Tile"
+msgstr "ลบแม่แบบ"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Collision Polygon"
+msgstr "ลบรูปหลายเหลี่ยมและจุด"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Occlusion Polygon"
+msgstr "สร้างรูปหลายเหลี่ยมกั้นแสง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Navigation Polygon"
+msgstr "สร้างรูปทรงนำทาง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Tile Priority"
+msgstr "แก้ไขตัวกรอง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Edit Tile Z Index"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Collision Polygon"
+msgstr "สร้างรูปทรงนำทาง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create Occlusion Polygon"
+msgstr "สร้างรูปหลายเหลี่ยมกั้นแสง"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "This property can't be changed."
 msgstr "ทำไม่ได้ถ้าไม่มีฉาก"
 
@@ -6897,11 +6996,6 @@ msgstr "ตัวแปร:"
 #, fuzzy
 msgid "Light"
 msgstr "ขวา"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
-msgid "Add Node..."
-msgstr "เพิ่มโหนด"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7000,6 +7094,35 @@ msgstr "กำหนดเอง (คั่นด้วยจุลภาค):"
 #: editor/project_export.cpp
 msgid "Feature List:"
 msgstr "รายชื่อฟีเจอร์:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Script"
+msgstr "สคริปต์ใหม่"
+
+#: editor/project_export.cpp
+msgid "Script Export Mode:"
+msgstr "โหมดส่งออกสคริปต์:"
+
+#: editor/project_export.cpp
+msgid "Text"
+msgstr "ตัวอักษร"
+
+#: editor/project_export.cpp
+msgid "Compiled"
+msgstr "คอมไพล์แล้ว"
+
+#: editor/project_export.cpp
+msgid "Encrypted (Provide Key Below)"
+msgstr "เข้ารหัส (ใส่คีย์ด้านล่าง)"
+
+#: editor/project_export.cpp
+msgid "Invalid Encryption Key (must be 64 characters long)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Script Encryption Key (256-bits as hex):"
+msgstr "คีย์เข้ารหัสสคริปต์ (256 บิต ฐาน 16):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7147,12 +7270,31 @@ msgid "Unnamed Project"
 msgstr "โปรเจกต์ไม่มีชื่อ"
 
 #: editor/project_manager.cpp
-msgid "Can't open project"
+#, fuzzy
+msgid "Can't open project at '%s'."
 msgstr "ไม่สามารถเปิดโปรเจกต์"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "ยืนยันการเปิดโปรเจกต์มากกว่า 1 โปรเจกต์?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file was generated by an older engine "
+"version, and needs to be converted for this version:\n"
+"\n"
+"%s\n"
+"\n"
+"Do you want to convert it?\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9497,10 +9639,6 @@ msgstr "แจ้งเตือน!"
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
 
-#: scene/gui/graph_edit.cpp
-msgid "Enable snap and show grid."
-msgstr ""
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
@@ -9585,6 +9723,16 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#~ msgid "No name provided"
+#~ msgstr "ไม่ได้ระบุชื่อ"
+
+#, fuzzy
+#~ msgid "Add Node.."
+#~ msgstr "เพิ่มโหนด"
+
+#~ msgid "Create from scene?"
+#~ msgstr "สร้างจากฉาก?"
+
 #~ msgid "Create Poly"
 #~ msgstr "สร้างรูปหลายเหลี่ยม"
 
@@ -9608,9 +9756,6 @@ msgstr ""
 #~ msgstr ""
 #~ "ไม่มี OccluderPolygon2D ในโหนดนี้\n"
 #~ "สร้างและกำหนด?"
-
-#~ msgid "Edit existing polygon:"
-#~ msgstr "แก้ไขรูปหลายเหลี่ยมเดิม:"
 
 #~ msgid "LMB: Move Point."
 #~ msgstr "คลิกซ้าย: ย้ายจุด"
@@ -9952,9 +10097,6 @@ msgstr ""
 
 #~ msgid "Run Script"
 #~ msgstr "รันสคริปต์"
-
-#~ msgid "Save the currently edited resource."
-#~ msgstr "บันทึกรีซอร์สที่กำลังปรับแต่ง"
 
 #~ msgid "Stop Profiling"
 #~ msgstr "หยุดบันทึก"
@@ -11007,21 +11149,6 @@ msgstr ""
 
 #~ msgid "Trailing Silence:"
 #~ msgstr "ส่วนที่เงียบตรงปลาย:"
-
-#~ msgid "Script Export Mode:"
-#~ msgstr "โหมดส่งออกสคริปต์:"
-
-#~ msgid "Text"
-#~ msgstr "ตัวอักษร"
-
-#~ msgid "Compiled"
-#~ msgstr "คอมไพล์แล้ว"
-
-#~ msgid "Encrypted (Provide Key Below)"
-#~ msgstr "เข้ารหัส (ใส่คีย์ด้านล่าง)"
-
-#~ msgid "Script Encryption Key (256-bits as hex):"
-#~ msgstr "คีย์เข้ารหัสสคริปต์ (256 บิต ฐาน 16):"
 
 #~ msgid "Export Project PCK"
 #~ msgstr "ส่งออก PCK โปรเจกต์"
