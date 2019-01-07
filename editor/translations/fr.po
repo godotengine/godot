@@ -56,8 +56,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:31+0100\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2018-12-29 12:09+0000\n"
+"Last-Translator: Rémi Bintein <reminus5@hotmail.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -65,7 +65,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -621,7 +621,7 @@ msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
-"La méthode cible n'a pas été trouvée! Spécifiez une méthode valide ou "
+"La méthode cible n'a pas été trouvée ! Spécifiez une méthode valide ou "
 "attachez un script au nœud cible."
 
 #: editor/connections_dialog.cpp
@@ -1758,7 +1758,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr "Impossible de ré-écrire une scène encore ouverte !"
+msgstr "Impossible de ré-écrire une scène tant que celle-ci est ouverte !"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -3905,7 +3905,7 @@ msgstr "À la fin"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr "Déplacement"
+msgstr "Se déplacer"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
@@ -4552,7 +4552,7 @@ msgstr "Afficher l'origine"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr "Montrer La fenêtre d'affichage"
+msgstr "Montrer la fenêtre d'affichage"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"

@@ -23,12 +23,13 @@
 # xxssmaoxx <simon.dottor@gmail.com>, 2018.
 # Nicola Gramola <nicola.gramola@gmail.com>, 2018.
 # Davide Wayan Mores <moresdavidewayan@gmail.com>, 2018.
+# Alessandro Zoppi <alessandro.zoppi@live.it>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:40+0100\n"
-"Last-Translator: Davide Wayan Mores <moresdavidewayan@gmail.com>\n"
+"PO-Revision-Date: 2019-01-04 04:09+0000\n"
+"Last-Translator: Alessandro Zoppi <alessandro.zoppi@live.it>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7503,7 +7504,7 @@ msgstr "Aggiungi Evento"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Pulsante"
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."

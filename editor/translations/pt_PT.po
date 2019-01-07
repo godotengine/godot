@@ -13,12 +13,13 @@
 # Rueben Stevens <supercell03@gmail.com>, 2017.
 # SARDON <fabio3_Santos@hotmail.com>, 2017.
 # Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
+# ssantos <ssantos@web.de>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:42+0100\n"
-"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
+"PO-Revision-Date: 2018-12-22 11:09+0000\n"
+"Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2601,6 +2602,8 @@ msgid ""
 "The selected resource (%s) does not match the type expected for this "
 "property (%s)."
 msgstr ""
+"O recurso selecionado (%s) não corresponde ao tipo esperado para essa "
+"propriedade (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3174,9 +3177,8 @@ msgid "Group name already exists."
 msgstr "Já existe o nome de grupo ."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Invalid group name."
-msgstr "Nome de Grupo inválido."
+msgstr "Nome de grupo inválido."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
@@ -3426,7 +3428,6 @@ msgid "Create Polygon"
 msgstr "Criar Polígono"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon"
 msgstr "Editar Polígono"
 
@@ -3435,14 +3436,12 @@ msgid "Insert Point"
 msgstr "Inserir Ponto"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon (Remove Point)"
-msgstr "Editar Poly (Remover Ponto)"
+msgstr "Editar Polígono (Remover Ponto)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Remove Polygon And Point"
-msgstr "Remover Poly e Ponto"
+msgstr "Remover Polígono e Ponto"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3451,16 +3450,14 @@ msgid "Create points."
 msgstr "Criar pontos."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
 "RMB: Erase Point"
 msgstr ""
-"Editar Polígono existente:\n"
-"LMB: Mover Ponto.\n"
-"Ctrl+LMB: Separar segmento.\n"
-"RMB: Apagar Ponto."
+"Editar Polígono:\n"
+"LMB: Mover Ponto\n"
+"RMB: Apagar Ponto"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -4286,11 +4283,12 @@ msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
 msgstr ""
+"Atenção: as crianças de um contentor obtêm a sua posição e tamanho "
+"determinados apenas pelos seus pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Zoom Reset"
 msgstr "Repor zoom"
 
@@ -4552,9 +4550,8 @@ msgstr ""
 "Arrastar & largar + Alt : Altera o tipo de Nó"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon3D"
-msgstr "Criar Polígono"
+msgstr "Criar Polygon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
@@ -5033,9 +5030,8 @@ msgid "Add Point to Curve"
 msgstr "Adicionar Ponto à curva"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Split Curve"
-msgstr "Fechar curva"
+msgstr "Dividir Curva"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
@@ -5065,9 +5061,8 @@ msgid "Click: Add Point"
 msgstr "Clique: Adicionar Ponto"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Left Click: Split Segment (in curve)"
-msgstr "Separar segmento (na curva)"
+msgstr "Clique esquerdo: Dividir o Segmento (em curva)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5155,15 +5150,16 @@ msgid ""
 msgstr "A propriedade esqueleto do Polygon2D não aponta para um nó Skeleton2D"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Sync Bones"
-msgstr "Sinc ossos"
+msgstr "Sincronizar ossos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "No texture in this polygon.\n"
 "Set a texture to be able to edit UV."
 msgstr ""
+"Sem textura neste polígono.\n"
+"Defina uma textura para poder editar UV."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
@@ -5202,19 +5198,16 @@ msgid "Transform UV Map"
 msgstr "Transformar mapa UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Transform Polygon"
-msgstr "Tipo de transformação"
+msgstr "Transformar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Paint Bone Weights"
 msgstr "Pintar pesos dos ossos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Open Polygon 2D UV editor."
-msgstr "Editor UV de Polígono 2D"
+msgstr "Abrir editor UV de Polygon2D."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5237,7 +5230,6 @@ msgid "Bones"
 msgstr "Ossos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Move Points"
 msgstr "Mover Ponto"
 
@@ -5266,24 +5258,20 @@ msgid "Scale Polygon"
 msgstr "Escalar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Connect two points to make a split."
-msgstr "Conectar dois pontos para fazer uma divisão"
+msgstr "Conectar dois pontos para fazer uma divisão."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Select a split to erase it."
-msgstr "Selecione uma separação para a apagar"
+msgstr "Selecionar uma separação para a apagar."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Paint weights with specified intensity."
-msgstr "Pintar pesos com intensidade específica"
+msgstr "Pintar pesos com determinada intensidade."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Unpaint weights with specified intensity."
-msgstr "Não pintar pesos com intensidade específica"
+msgstr "Despintar pesos com intensidade específica."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
@@ -5420,22 +5408,18 @@ msgid "Error saving file!"
 msgstr "Erro ao guardar ficheiro!"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error while saving theme."
-msgstr "Erro ao guardar tema"
+msgstr "Erro ao gravar tema."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error Saving"
-msgstr "Erro ao guardar"
+msgstr "Erro Ao Gravar"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error importing theme."
-msgstr "Erro ao importar tema"
+msgstr "Erro ao importar tema."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error Importing"
 msgstr "Erro ao importar"
 
@@ -5504,9 +5488,8 @@ msgid "File"
 msgstr "Ficheiro"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open..."
-msgstr "Abrir"
+msgstr "Abrir..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
@@ -5534,9 +5517,8 @@ msgid "Theme"
 msgstr "Tema"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Import Theme..."
-msgstr "Importar tema"
+msgstr "Importar tema..."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Reload Theme"
@@ -6379,9 +6361,8 @@ msgid "Set Region Rect"
 msgstr "Definir região Rect"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Set Margin"
-msgstr "Definir Manipulador"
+msgstr "Definir Margem"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
@@ -6625,14 +6606,12 @@ msgid "Clear transform"
 msgstr "Limpar Transformação"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Add Texture(s) to TileSet."
-msgstr "Adicionar Textura(s) ao TIleSet"
+msgstr "Adicionar Textura(s) ao TileSet."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected Texture from TileSet."
-msgstr "Remover Textura atual do TileSet"
+msgstr "Remover Textura selecionado do TileSet."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6644,33 +6623,29 @@ msgstr "Fundir a partir da Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
-msgstr ""
+msgstr "Copiar bitmask."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste bitmask."
-msgstr "Colar Animação"
+msgstr "Colar bitmask."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Erase bitmask."
-msgstr "Apagar pontos."
+msgstr "Apagar bitmask."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create a new polygon."
-msgstr "Criar um novo Polígono a partir do zero."
+msgstr "Criar um novo polígono."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Keep polygon inside region Rect."
-msgstr ""
+msgstr "Manter polígono dentro da região Rect."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Enable snap and show grid (configurable via the Inspector)."
-msgstr ""
+msgstr "Ativar o snap and show grid (configurável através do Inspector)."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Exibir nome dos tiles (segure tecla Alt)"
 
@@ -6703,9 +6678,8 @@ msgstr ""
 "Clique em outro Tile para o editar."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete selected Rect."
-msgstr "Apagar arquivos selecionados?"
+msgstr "Eliminar Rect seleccionado."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -6716,19 +6690,17 @@ msgstr ""
 "Clique em outro Tile para o editar."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Delete polygon."
-msgstr "Apagar Pontos"
+msgstr "Apagar polígono."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "LMB: Set bit on.\n"
 "RMB: Set bit off.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"LMB: definir bit on.\n"
-"RMB: definir bit off.\n"
+"LMB: Ligar bit.\n"
+"RMB: Desligar bit.\n"
 "Clique em outro Tile para o editar."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6750,12 +6722,11 @@ msgstr ""
 "Clique em outro Tile para o editar."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Select sub-tile to change its z index.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"Selecionar sub-tile para alterar a sua prioridade.\n"
+"Selecionar sub-tile para alterar o seu índice.\n"
 "Clique em outro Tile para o editar."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -6763,9 +6734,8 @@ msgid "This property can't be changed."
 msgstr "Esta propriedade não pode ser alterada."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "TileSet"
-msgstr "Conjunto de tiles"
+msgstr "TileSet"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -6780,7 +6750,6 @@ msgid "Light"
 msgstr "Luz"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node..."
 msgstr "Adicionar Nó.."
 
@@ -6822,9 +6791,8 @@ msgid "Add..."
 msgstr "Adicionar..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Path"
-msgstr "Caminho da Exportação:"
+msgstr "Exportar Caminho"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -8312,9 +8280,8 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-#, fuzzy
 msgid "Step argument is zero!"
-msgstr "o argumento \"step\" é zero!"
+msgstr "O argumento \"step\" é zero!"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Not a script with an instance"
@@ -9279,11 +9246,11 @@ msgstr ""
 "OrientedPathFollow apenas funciona quando definido como filho de um Nó Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
 "resource."
-msgstr "OrientedPathFollow requer vetores cima ativados no Caminho do parente."
+msgstr ""
+"OrientedPathFollow requer \"Up Vector\" ativado no recurso Curve do pai dele."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9390,7 +9357,7 @@ msgstr "A raiz de AnimationPlayer não é um nó válido."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr ""
+msgstr "Este nó foi depreciado. Use AnimationTree em vez disso."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9410,7 +9377,7 @@ msgstr "Confirme por favor..."
 
 #: scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "Habilita a grelha snap and show."
 
 #: scene/gui/popup.cpp
 msgid ""

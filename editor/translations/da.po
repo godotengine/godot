@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:38+0100\n"
-"Last-Translator: GhostReven <GhostReven@gmail.com>\n"
+"PO-Revision-Date: 2018-12-22 11:08+0000\n"
+"Last-Translator: Jonathan B. Jørgensen <pizzaernam@gmail.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -300,11 +300,12 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "Animation spor kan kun pege på AnimationSpiller noder."
+msgstr "Animationsspor kan kun pege på AnimationPlayer noder."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr "En animation spiller kan ikke animerer sig selv, kun andre spillerer."
+msgstr ""
+"En animationsafspiller kan ikke animerer sig selv, kun andre afspillere."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
@@ -312,15 +313,15 @@ msgstr "Det er ikke muligt at tilføje et nyt spor uden en rod"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "Sporvej er ugyldig, så kan ikke tilføje en nøgle."
+msgstr "Sporstien er ugyldig, så kan ikke tilføje en nøgle."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr "Spor er ikke af typen rumlig, kan ikke indsætte nøgle"
+msgstr "Spor er ikke af typen Spatial, kan ikke indsætte nøgle"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "Sporvej er ugyldig, så kan ikke tilføje en metode nøgle."
+msgstr "Sporstien er ugyldig, så kan ikke tilføje en metode nøgle."
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
