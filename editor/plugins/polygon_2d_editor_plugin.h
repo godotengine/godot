@@ -50,12 +50,14 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	enum UVMode {
 		UV_MODE_CREATE,
+		UV_MODE_CREATE_INTERNAL,
+		UV_MODE_REMOVE_INTERNAL,
 		UV_MODE_EDIT_POINT,
 		UV_MODE_MOVE,
 		UV_MODE_ROTATE,
 		UV_MODE_SCALE,
-		UV_MODE_ADD_SPLIT,
-		UV_MODE_REMOVE_SPLIT,
+		UV_MODE_ADD_POLYGON,
+		UV_MODE_REMOVE_POLYGON,
 		UV_MODE_PAINT_WEIGHT,
 		UV_MODE_CLEAR_WEIGHT,
 		UV_MODE_MAX
@@ -100,14 +102,16 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	PoolVector<Vector2> points_prev;
 	PoolVector<Vector2> uv_create_uv_prev;
 	PoolVector<Vector2> uv_create_poly_prev;
+	PoolVector<Color> uv_create_colors_prev;
+	int uv_create_prev_internal_vertices;
 	Array uv_create_bones_prev;
-	PoolVector<int> splits_prev;
+	Array polygons_prev;
 
 	Vector2 uv_create_to;
 	int point_drag_index;
 	bool uv_drag;
 	bool uv_create;
-	bool split_create;
+	Vector<int> polygon_create;
 	UVMode uv_move_current;
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
@@ -140,6 +144,8 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _uv_edit_mode_select(int p_mode);
 	void _uv_edit_popup_hide();
 	void _bone_paint_selected(int p_index);
+
+	int _get_polygon_count() const;
 
 protected:
 	virtual Node2D *_get_node() const;
