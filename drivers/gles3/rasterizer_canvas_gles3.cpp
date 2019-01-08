@@ -1160,7 +1160,11 @@ void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_COPY_SECTION, true);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
+	if (storage->frame.current_rt->effects.mip_maps[0].sizes.size() > 0) {
+		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->effects.mip_maps[0].sizes[0].fbo);
+	} else {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
 
