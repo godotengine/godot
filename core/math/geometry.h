@@ -514,7 +514,7 @@ public:
 		return (cn.cross(an) > 0) == orientation;
 	}
 
-	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
+	//static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
 
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
 
@@ -813,6 +813,36 @@ public:
 		}
 
 		return sum > 0.0f;
+	}
+
+	/* alternate implementation that should be faster */
+	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3)
+			return false;
+		const Vector2 *p = p_polygon.ptr();
+		Vector2 further_away(-1e20, -1e20);
+		Vector2 further_away_opposite(1e20, 1e20);
+
+		for (int i = 0; i < c; i++) {
+			further_away.x = MAX(p[i].x, further_away.x);
+			further_away.y = MAX(p[i].y, further_away.y);
+			further_away_opposite.x = MIN(p[i].x, further_away_opposite.x);
+			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
+		}
+
+		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312); // make point outside that wont intersect with points in segment from p_point
+
+		int intersections = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			if (segment_intersects_segment_2d(v1, v2, p_point, further_away, NULL)) {
+				intersections++;
+			}
+		}
+
+		return (intersections & 1);
 	}
 
 	static PoolVector<PoolVector<Face3> > separate_objects(PoolVector<Face3> p_array);

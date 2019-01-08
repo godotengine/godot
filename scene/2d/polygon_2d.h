@@ -40,7 +40,8 @@ class Polygon2D : public Node2D {
 	PoolVector<Vector2> polygon;
 	PoolVector<Vector2> uv;
 	PoolVector<Color> vertex_colors;
-	PoolVector<int> splits;
+	Array polygons;
+	int internal_vertices;
 
 	struct Bone {
 		NodePath path;
@@ -87,11 +88,14 @@ public:
 	void set_polygon(const PoolVector<Vector2> &p_polygon);
 	PoolVector<Vector2> get_polygon() const;
 
+	void set_internal_vertex_count(int p_count);
+	int get_internal_vertex_count() const;
+
 	void set_uv(const PoolVector<Vector2> &p_uv);
 	PoolVector<Vector2> get_uv() const;
 
-	void set_splits(const PoolVector<int> &p_uv);
-	PoolVector<int> get_splits() const;
+	void set_polygons(const Array &p_polygons);
+	Array get_polygons() const;
 
 	void set_color(const Color &p_color);
 	Color get_color() const;

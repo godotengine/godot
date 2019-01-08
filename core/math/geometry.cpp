@@ -32,6 +32,7 @@
 
 #include "core/print_string.h"
 
+/* this implementation is very inefficient, commenting unless bugs happen. See the other one.
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 
 	Vector<int> indices = Geometry::triangulate_polygon(p_polygon);
@@ -42,6 +43,7 @@ bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2>
 	}
 	return false;
 }
+*/
 
 void Geometry::MeshData::optimize_vertices() {
 
