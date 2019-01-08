@@ -87,7 +87,9 @@ install:
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      misc/travis/scons-local-osx.sh;
+      pip install --user scons;
+      export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
+      echo $PATH;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
       misc/travis/android-tools-osx.sh;
@@ -103,5 +105,6 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
+      echo $PATH;
       scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $EXTRA_ARGS $OPTIONS;
     fi
