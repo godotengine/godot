@@ -1070,7 +1070,7 @@ String Node::_generate_serial_child_name(Node *p_child) {
 
 	// Assign the base name + separator to name if we have numbers preceded by a separator
 	if (nums.length() > 0 && name.substr(name_last_index, nnsep.length()) == nnsep) {
-		name = name.substr(0, name_last_index + nnsep.length()).strip_edges();
+		name = name.substr(0, name_last_index + nnsep.length());
 	} else {
 		nums = "";
 	}
