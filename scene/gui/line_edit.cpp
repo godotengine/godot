@@ -248,7 +248,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					set_cursor_position(text.length());
 				} break;
 #endif
-				default: { handled = false; }
+				default: {
+					handled = false;
+				}
 			}
 
 			if (handled) {
@@ -860,9 +862,11 @@ void LineEdit::_notification(int p_what) {
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 
-			ime_text = OS::get_singleton()->get_ime_text();
-			ime_selection = OS::get_singleton()->get_ime_selection();
-			update();
+			if (has_focus()) {
+				ime_text = OS::get_singleton()->get_ime_text();
+				ime_selection = OS::get_singleton()->get_ime_selection();
+				update();
+			}
 		} break;
 	}
 }

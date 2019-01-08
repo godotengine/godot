@@ -1449,9 +1449,11 @@ void TextEdit::_notification(int p_what) {
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 
-			ime_text = OS::get_singleton()->get_ime_text();
-			ime_selection = OS::get_singleton()->get_ime_selection();
-			update();
+			if (has_focus()) {
+				ime_text = OS::get_singleton()->get_ime_text();
+				ime_selection = OS::get_singleton()->get_ime_selection();
+				update();
+			}
 		} break;
 	}
 }
