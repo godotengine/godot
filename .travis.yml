@@ -87,7 +87,8 @@ install:
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      misc/travis/scons-local-osx.sh;
+      pip install --user scons;
+      export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
       misc/travis/android-tools-osx.sh;
