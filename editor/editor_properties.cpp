@@ -2421,6 +2421,7 @@ void EditorPropertyResource::update_property() {
 			if (!sub_inspector) {
 				sub_inspector = memnew(EditorInspector);
 				sub_inspector->set_enable_v_scroll(false);
+				sub_inspector->set_use_doc_hints(true);
 
 				sub_inspector->set_use_sub_inspector_bg(true);
 				sub_inspector->set_enable_capitalize_paths(true);
