@@ -30,7 +30,7 @@ namespace GodotSharpTools.Editor
                     throw new NotSupportedException("Target platform not supported");
                 }
 
-                templateDirName += debug ? ".debug" : ".release";
+                templateDirName += debug ? ".release_debug" : ".release";
 
                 string templateDirPath = Path.Combine(GetTemplatesDir(), templateDirName);
 
