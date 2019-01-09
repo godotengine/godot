@@ -376,7 +376,7 @@ ScriptDebugger::ScriptDebugger() {
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
-	if (build_failed)
+	if (script->is_placeholder_fallback_enabled())
 		return false;
 
 	if (values.has(p_name)) {
@@ -407,7 +407,7 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 		return true;
 	}
 
-	if (!build_failed) {
+	if (!script->is_placeholder_fallback_enabled()) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
 			r_ret = defval;
@@ -420,7 +420,7 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 
 void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
-	if (build_failed) {
+	if (script->is_placeholder_fallback_enabled()) {
 		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 			p_properties->push_back(E->get());
 		}
@@ -450,7 +450,7 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 
 void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 
-	if (build_failed)
+	if (script->is_placeholder_fallback_enabled())
 		return;
 
 	if (script.is_valid()) {
@@ -459,7 +459,7 @@ void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const 
 }
 bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 
-	if (build_failed)
+	if (script->is_placeholder_fallback_enabled())
 		return false;
 
 	if (script.is_valid()) {
@@ -469,8 +469,6 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
-
-	build_failed = false;
 
 	Set<StringName> new_values;
 	for (const List<PropertyInfo>::Element *E = p_properties.front(); E; E = E->next()) {
@@ -517,7 +515,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 
-	if (build_failed) {
+	if (script->is_placeholder_fallback_enabled()) {
 		Map<StringName, Variant>::Element *E = values.find(p_name);
 
 		if (E) {
@@ -544,7 +542,7 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 
 Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) {
 
-	if (build_failed) {
+	if (script->is_placeholder_fallback_enabled()) {
 		const Map<StringName, Variant>::Element *E = values.find(p_name);
 
 		if (E) {
@@ -563,8 +561,7 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :
 		owner(p_owner),
 		language(p_language),
-		script(p_script),
-		build_failed(false) {
+		script(p_script) {
 }
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {
