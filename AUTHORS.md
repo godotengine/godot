@@ -33,6 +33,7 @@ name is available.
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
+    Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
     Anton Yabchinskiy (a12n)
     Aren Villanueva (kurikaesu)
@@ -46,8 +47,10 @@ name is available.
     bruvzg
     Carl Olsson (not-surt)
     Chris Bradfield (cbscribe)
+    Clay John (clayjohn)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
+    Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     DualMatrix
     Emmanuel Leblond (touilleMan)
@@ -120,9 +123,11 @@ name is available.
     Saniko (sanikoyes)
     SaracenOne
     sersoong
+    supagu
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo (toger5)
+    Timo Schwarzer (timoschwarzer)
     Vinzenz Feenstra (vinzenz)
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)
