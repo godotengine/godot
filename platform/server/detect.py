@@ -43,10 +43,10 @@ def configure(env):
     ## Build type
 
     if (env["target"] == "release"):
-        env.Append(CCFLAGS=['-O2', '-ffast-math', '-fomit-frame-pointer'])
+        env.Append(CCFLAGS=['-O2', '-fomit-frame-pointer'])
 
     elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
 
     elif (env["target"] == "debug"):
         env.Append(CCFLAGS=['-g2', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])

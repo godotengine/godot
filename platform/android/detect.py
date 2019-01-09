@@ -141,7 +141,7 @@ def configure(env):
     if (env["target"].startswith("release")):
         if (env["optimize"] == "speed"): #optimize for speed (default)
             env.Append(LINKFLAGS=['-O2'])
-            env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+            env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-fomit-frame-pointer'])
         else: #optimize for size
             env.Append(CPPFLAGS=['-Os', '-DNDEBUG'])
             env.Append(LINKFLAGS=['-Os'])
