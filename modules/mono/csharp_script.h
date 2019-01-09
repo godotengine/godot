@@ -115,6 +115,7 @@ class CSharpScript : public Script {
 	Map<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
 	Set<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache;
+	bool placeholder_fallback_enabled;
 	bool exports_invalidated;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
@@ -179,6 +180,10 @@ public:
 	MethodInfo get_method_info(const StringName &p_method) const;
 
 	virtual int get_member_line(const StringName &p_member) const;
+
+#ifdef TOOLS_ENABLED
+	virtual bool is_placeholder_fallback_enabled() const { return placeholder_fallback_enabled; }
+#endif
 
 	Error load_source_code(const String &p_path);
 
