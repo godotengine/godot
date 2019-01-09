@@ -1340,6 +1340,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	add_child(error_panel);
 	error_label = memnew(Label);
 	error_panel->add_child(error_label);
+	error_panel->hide();
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
