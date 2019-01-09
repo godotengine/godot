@@ -42,7 +42,7 @@ def configure(env):
 
     if (env["target"] == "release"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O3', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+            env.Prepend(CCFLAGS=['-O3', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os','-ftree-vectorize', '-msse2'])
 

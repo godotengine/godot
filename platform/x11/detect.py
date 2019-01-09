@@ -86,10 +86,8 @@ def configure(env):
     ## Build type
 
     if (env["target"] == "release"):
-        # -O3 -ffast-math is identical to -Ofast. We need to split it out so we can selectively disable
-        # -ffast-math in code for which it generates wrong results.
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O3', '-ffast-math'])
+            env.Prepend(CCFLAGS=['-O3'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os'])
 
@@ -100,7 +98,7 @@ def configure(env):
 
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
         else: #optimize for size
             env.Prepend(CCFLAGS=['-Os', '-DDEBUG_ENABLED'])
 
