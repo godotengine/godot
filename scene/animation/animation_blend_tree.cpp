@@ -835,12 +835,11 @@ AnimationNodeTransition::AnimationNodeTransition() {
 	time = "time";
 	current = "current";
 	prev_current = "prev_current";
-	;
 
 	enabled_inputs = 0;
 	for (int i = 0; i < MAX_INPUTS; i++) {
 		inputs[i].auto_advance = false;
-		inputs[i].name = itos(i + 1);
+		inputs[i].name = "state " + itos(i);
 	}
 }
 
