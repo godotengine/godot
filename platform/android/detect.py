@@ -150,7 +150,7 @@ def configure(env):
 
     if (env["target"].startswith("release")):
         env.Append(LINKFLAGS=['-O2'])
-        env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-ffast-math', '-funsafe-math-optimizations', '-fomit-frame-pointer'])
+        env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-fomit-frame-pointer'])
         if (can_vectorize):
             env.Append(CPPFLAGS=['-ftree-vectorize'])
         if (env["target"] == "release_debug"):

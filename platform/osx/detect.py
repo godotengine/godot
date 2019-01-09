@@ -39,7 +39,7 @@ def configure(env):
 	## Build type
 
     if (env["target"] == "release"):
-        env.Prepend(CCFLAGS=['-O3', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+        env.Prepend(CCFLAGS=['-O3', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
