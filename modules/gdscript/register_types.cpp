@@ -79,7 +79,7 @@ public:
 
 			if (script_mode == EditorExportPreset::MODE_SCRIPT_ENCRYPTED) {
 
-				String tmp_path = EditorSettings::get_singleton()->get_settings_dir().plus_file("tmp/script.gde");
+				String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("script.gde");
 				FileAccess *fa = FileAccess::open(tmp_path, FileAccess::WRITE);
 
 				Vector<uint8_t> key;
