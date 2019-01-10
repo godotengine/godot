@@ -45,8 +45,5 @@ void register_theora_types() {
 void unregister_theora_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_theora);
-
-	if (resource_loader_theora.is_valid()) {
-		resource_loader_theora.unref();
-	}
+	resource_loader_theora.unref();
 }
