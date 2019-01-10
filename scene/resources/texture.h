@@ -40,7 +40,6 @@
 #include "scene/resources/color_ramp.h"
 #include "scene/resources/curve.h"
 #include "servers/visual_server.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
