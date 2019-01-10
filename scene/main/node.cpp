@@ -959,7 +959,9 @@ void Node::set_human_readable_collision_renaming(bool p_enabled) {
 #ifdef TOOLS_ENABLED
 String Node::validate_child_name(Node *p_child) {
 
-	return _generate_serial_child_name(p_child);
+	StringName name = p_child->data.name;
+	_generate_serial_child_name(p_child, name);
+	return name;
 }
 #endif
 
@@ -972,7 +974,9 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 		//this approach to autoset node names is human readable but very slow
 		//it's turned on while running in the editor
 
-		p_child->data.name = _generate_serial_child_name(p_child);
+		StringName name = p_child->data.name;
+		_generate_serial_child_name(p_child, name);
+		p_child->data.name = name;
 
 	} else {
 
@@ -1008,74 +1012,120 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	}
 }
 
-String Node::_generate_serial_child_name(Node *p_child) {
+// Return s + 1 as if it were an integer
+String increase_numeric_string(const String &s) {
 
-	String name = p_child->data.name;
+	String res = s;
+	bool carry = res.length() > 0;
 
-	if (name == "") {
+	for (int i = res.length() - 1; i >= 0; i--) {
+		if (!carry) {
+			break;
+		}
+		CharType n = s[i];
+		if (n == '9') { // keep carry as true: 9 + 1
+			res[i] = '0';
+		} else {
+			res[i] = s[i] + 1;
+			carry = false;
+		}
+	}
+
+	if (carry) {
+		res = "1" + res;
+	}
+
+	return res;
+}
+
+void Node::_generate_serial_child_name(const Node *p_child, StringName &name) const {
+
+	if (name == StringName()) {
+		//no name and a new nade is needed, create one.
 
 		name = p_child->get_class();
 		// Adjust casing according to project setting. The current type name is expected to be in PascalCase.
 		switch (ProjectSettings::get_singleton()->get("node/name_casing").operator int()) {
 			case NAME_CASING_PASCAL_CASE:
 				break;
-			case NAME_CASING_CAMEL_CASE:
-				name[0] = name.to_lower()[0];
-				break;
+			case NAME_CASING_CAMEL_CASE: {
+				String n = name;
+				n[0] = n.to_lower()[0];
+				name = n;
+			} break;
 			case NAME_CASING_SNAKE_CASE:
-				name = name.camelcase_to_underscore(true);
+				name = String(name).camelcase_to_underscore(true);
 				break;
 		}
 	}
 
+	//quickly test if proposed name exists
+	int cc = data.children.size(); //children count
+	const Node *const *children_ptr = data.children.ptr();
+
+	{
+
+		bool exists = false;
+
+		for (int i = 0; i < cc; i++) {
+			if (children_ptr[i] == p_child) { //exclude self in renaming if its already a child
+				continue;
+			}
+			if (children_ptr[i]->data.name == name) {
+				exists = true;
+			}
+		}
+
+		if (!exists) {
+			return; //if it does not exist, it does not need validation
+		}
+	}
+
 	// Extract trailing number
+	String name_string = name;
 	String nums;
-	for (int i = name.length() - 1; i >= 0; i--) {
-		CharType n = name[i];
+	for (int i = name_string.length() - 1; i >= 0; i--) {
+		CharType n = name_string[i];
 		if (n >= '0' && n <= '9') {
-			nums = String::chr(name[i]) + nums;
+			nums = String::chr(name_string[i]) + nums;
 		} else {
 			break;
 		}
 	}
 
 	String nnsep = _get_name_num_separator();
-	int num = 0;
-	bool explicit_zero = false;
-	if (nums.length() > 0 && name.substr(name.length() - nnsep.length() - nums.length(), nnsep.length()) == nnsep) {
-		// Base name + Separator + Number
-		num = nums.to_int();
-		name = name.substr(0, name.length() - nnsep.length() - nums.length()); // Keep base name
-		if (num == 0) {
-			explicit_zero = true;
-		}
+	int name_last_index = name_string.length() - nnsep.length() - nums.length();
+
+	// Assign the base name + separator to name if we have numbers preceded by a separator
+	if (nums.length() > 0 && name_string.substr(name_last_index, nnsep.length()) == nnsep) {
+		name_string = name_string.substr(0, name_last_index + nnsep.length()).strip_edges();
+	} else {
+		nums = "";
 	}
 
-	int num_places = nums.length();
 	for (;;) {
-		String attempt = (name + (num > 0 || explicit_zero ? nnsep + itos(num).pad_zeros(num_places) : "")).strip_edges();
-		bool found = false;
-		for (int i = 0; i < data.children.size(); i++) {
-			if (data.children[i] == p_child)
+		StringName attempt = name_string + nums;
+		bool exists = false;
+
+		for (int i = 0; i < cc; i++) {
+			if (children_ptr[i] == p_child) {
 				continue;
-			if (data.children[i]->data.name == attempt) {
-				found = true;
-				break;
+			}
+			if (children_ptr[i]->data.name == attempt) {
+				exists = true;
 			}
 		}
-		if (!found) {
-			return attempt;
+
+		if (!exists) {
+			name = attempt;
+			return;
 		} else {
-			if (num == 0) {
-				if (explicit_zero) {
-					// Name ended in separator + 0; user expects to get to separator + 1
-					num = 1;
-				} else {
-					// Name was undecorated so skip to 2 for a more natural result
-					num = 2;
-				}
+			if (nums.length() == 0) {
+				// Name was undecorated so skip to 2 for a more natural result
+				nums = "2";
+				name_string += nnsep; // Add separator because nums.length() > 0 was false
 			} else {
-				num++;
+				nums = increase_numeric_string(nums);
 			}
 		}
 	}

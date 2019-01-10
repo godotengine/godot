@@ -159,7 +159,7 @@ private:
 	void _replace_connections_target(Node *p_new_target);
 
 	void _validate_child_name(Node *p_child, bool p_force_human_readable = false);
-	String _generate_serial_child_name(Node *p_child);
+	void _generate_serial_child_name(const Node *p_child, StringName &name) const;
 
 	void _propagate_reverse_notification(int p_notification);
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
