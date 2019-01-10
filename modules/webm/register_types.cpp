@@ -45,8 +45,5 @@ void register_webm_types() {
 void unregister_webm_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_webm);
-
-	if (resource_loader_webm.is_valid()) {
-		resource_loader_webm.unref();
-	}
+	resource_loader_webm.unref();
 }

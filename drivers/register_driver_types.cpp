@@ -59,10 +59,8 @@ void unregister_core_driver_types() {
 	if (image_loader_png)
 		memdelete(image_loader_png);
 
-	if (resource_saver_png.is_valid()) {
-		ResourceSaver::remove_resource_format_saver(resource_saver_png);
-		resource_saver_png.unref();
-	}
+	ResourceSaver::remove_resource_format_saver(resource_saver_png);
+	resource_saver_png.unref();
 }
 
 void register_driver_types() {

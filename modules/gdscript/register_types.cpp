@@ -161,13 +161,9 @@ void unregister_gdscript_types() {
 	if (script_language_gd)
 		memdelete(script_language_gd);
 
-	if (resource_loader_gd.is_valid()) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_gd);
-		resource_loader_gd.unref();
-	}
+	ResourceLoader::remove_resource_format_loader(resource_loader_gd);
+	resource_loader_gd.unref();
 
-	if (resource_saver_gd.is_valid()) {
-		ResourceSaver::remove_resource_format_saver(resource_saver_gd);
-		resource_saver_gd.unref();
-	}
+	ResourceSaver::remove_resource_format_saver(resource_saver_gd);
+	resource_saver_gd.unref();
 }

@@ -65,15 +65,11 @@ void unregister_mono_types() {
 	if (script_language_cs)
 		memdelete(script_language_cs);
 
-	if (resource_loader_cs.is_valid()) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_cs);
-		resource_loader_cs.unref();
-	}
+	ResourceLoader::remove_resource_format_loader(resource_loader_cs);
+	resource_loader_cs.unref();
 
-	if (resource_saver_cs.is_valid()) {
-		ResourceSaver::remove_resource_format_saver(resource_saver_cs);
-		resource_saver_cs.unref();
-	}
+	ResourceSaver::remove_resource_format_saver(resource_saver_cs);
+	resource_saver_cs.unref();
 
 	if (_godotsharp)
 		memdelete(_godotsharp);
