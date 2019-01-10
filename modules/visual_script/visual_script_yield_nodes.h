@@ -47,11 +47,8 @@ public:
 
 private:
 	YieldMode yield_mode;
-	float wait_time;
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
-
 	static void _bind_methods();
 
 public:
@@ -72,9 +69,6 @@ public:
 
 	void set_yield_mode(YieldMode p_mode);
 	YieldMode get_yield_mode();
-
-	void set_wait_time(float p_time);
-	float get_wait_time();
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 

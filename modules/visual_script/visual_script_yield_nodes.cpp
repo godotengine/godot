@@ -39,6 +39,15 @@
 ////////////////YIELD///////////
 //////////////////////////////////////////
 
+#define VALIDATE_ARG_NUM(m_arg)                                          \
+	if (!p_inputs[m_arg]->is_num()) {                                    \
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT; \
+		r_error.argument = m_arg;                                        \
+		r_error.expected = Variant::REAL;                                \
+		ret = STEP_EXIT_FUNCTION_BIT;                                    \
+		break;                                                           \
+	}
+
 int VisualScriptYield::get_output_sequence_port_count() const {
 
 	return 1;
@@ -50,7 +59,8 @@ bool VisualScriptYield::has_input_sequence_port() const {
 }
 
 int VisualScriptYield::get_input_value_port_count() const {
-
+	if (yield_mode == YIELD_WAIT)
+		return 1;
 	return 0;
 }
 int VisualScriptYield::get_output_value_port_count() const {
@@ -64,7 +74,8 @@ String VisualScriptYield::get_output_sequence_port_text(int p_port) const {
 }
 
 PropertyInfo VisualScriptYield::get_input_value_port_info(int p_idx) const {
-
+	if (p_idx == 0 && yield_mode == YIELD_WAIT)
+		return PropertyInfo(Variant::REAL, "time");
 	return PropertyInfo();
 }
 
@@ -84,7 +95,7 @@ String VisualScriptYield::get_text() const {
 		case YIELD_RETURN: return ""; break;
 		case YIELD_FRAME: return "Next Frame"; break;
 		case YIELD_PHYSICS_FRAME: return "Next Physics Frame"; break;
-		case YIELD_WAIT: return rtos(wait_time) + " sec(s)"; break;
+		case YIELD_WAIT: return ""; break;
 	}
 
 	return String();
@@ -93,7 +104,6 @@ String VisualScriptYield::get_text() const {
 class VisualScriptNodeInstanceYield : public VisualScriptNodeInstance {
 public:
 	VisualScriptYield::YieldMode mode;
-	float wait_time;
 
 	virtual int get_working_memory_size() const { return 1; } //yield needs at least 1
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
@@ -124,7 +134,10 @@ public:
 					break; //return the yield
 				case VisualScriptYield::YIELD_FRAME: state->connect_to_signal(tree, "idle_frame", Array()); break;
 				case VisualScriptYield::YIELD_PHYSICS_FRAME: state->connect_to_signal(tree, "physics_frame", Array()); break;
-				case VisualScriptYield::YIELD_WAIT: state->connect_to_signal(tree->create_timer(wait_time).ptr(), "timeout", Array()); break;
+				case VisualScriptYield::YIELD_WAIT:
+					VALIDATE_ARG_NUM(0);
+					state->connect_to_signal(tree->create_timer((double)*p_inputs[0]).ptr(), "timeout", Array());
+					break;
 			}
 
 			*p_working_mem = state;
@@ -139,7 +152,6 @@ VisualScriptNodeInstance *VisualScriptYield::instance(VisualScriptInstance *p_in
 	VisualScriptNodeInstanceYield *instance = memnew(VisualScriptNodeInstanceYield);
 	//instance->instance=p_instance;
 	instance->mode = yield_mode;
-	instance->wait_time = wait_time;
 	return instance;
 }
 
@@ -157,38 +169,12 @@ VisualScriptYield::YieldMode VisualScriptYield::get_yield_mode() {
 	return yield_mode;
 }
 
-void VisualScriptYield::set_wait_time(float p_time) {
-
-	if (wait_time == p_time)
-		return;
-	wait_time = p_time;
-	ports_changed_notify();
-}
-
-float VisualScriptYield::get_wait_time() {
-
-	return wait_time;
-}
-
-void VisualScriptYield::_validate_property(PropertyInfo &property) const {
-
-	if (property.name == "wait_time") {
-		if (yield_mode != YIELD_WAIT) {
-			property.usage = 0;
-		}
-	}
-}
-
 void VisualScriptYield::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_yield_mode", "mode"), &VisualScriptYield::set_yield_mode);
 	ClassDB::bind_method(D_METHOD("get_yield_mode"), &VisualScriptYield::get_yield_mode);
 
-	ClassDB::bind_method(D_METHOD("set_wait_time", "sec"), &VisualScriptYield::set_wait_time);
-	ClassDB::bind_method(D_METHOD("get_wait_time"), &VisualScriptYield::get_wait_time);
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,Physics Frame,Time", PROPERTY_USAGE_NOEDITOR), "set_yield_mode", "get_yield_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time"), "set_wait_time", "get_wait_time");
 
 	BIND_ENUM_CONSTANT(YIELD_FRAME);
 	BIND_ENUM_CONSTANT(YIELD_PHYSICS_FRAME);
@@ -198,7 +184,6 @@ void VisualScriptYield::_bind_methods() {
 VisualScriptYield::VisualScriptYield() {
 
 	yield_mode = YIELD_FRAME;
-	wait_time = 1;
 }
 
 template <VisualScriptYield::YieldMode MODE>
