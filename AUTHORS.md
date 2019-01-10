@@ -56,6 +56,7 @@ name is available.
     Emmanuel Leblond (touilleMan)
     Eric Lasota (elasota)
     est31
+    Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
     Ferenc Arn (tagcup)
     Franklin Sobrinho (TheHX)
@@ -123,7 +124,6 @@ name is available.
     Saniko (sanikoyes)
     SaracenOne
     sersoong
-    supagu
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo (toger5)
