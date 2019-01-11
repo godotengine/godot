@@ -225,7 +225,7 @@
 			</argument>
 			<description>
 				Sets the tilt angle in radians for the point [code]idx[/code]. If the index is out of bounds, the function sends an error to the console.
-				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow] or [OrientedPathFollow], this tilt is an offset over the natural tilt the [PathFollow] or [OrientedPathFollow] calculates.
+				The tilt controls the rotation along the look-at axis an object traveling the path would have. In the case of a curve controlling a [PathFollow], this tilt is an offset over the natural tilt the [PathFollow] calculates.
 			</description>
 		</method>
 		<method name="tessellate" qualifiers="const">
@@ -248,7 +248,7 @@
 			The distance in meters between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
 		</member>
 		<member name="up_vector_enabled" type="bool" setter="set_up_vector_enabled" getter="is_up_vector_enabled">
-			If [code]true[/code], the curve will bake up vectors used for orientation. See [OrientedPathFollow]. Changing it forces the cache to be recomputed.
+			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when a [member PathFollow.rotation_mode] is set to [code]ROTATION_ORIENTED[/code], see [PathFollow] for details. Changing it forces the cache to be recomputed.
 		</member>
 	</members>
 	<constants>
