@@ -164,7 +164,7 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 		}
 	}
 
-	while (interface->get_playback_position(data_struct) < time) {
+	while (interface->get_playback_position(data_struct) < time && playing) {
 
 		update_texture();
 	}
