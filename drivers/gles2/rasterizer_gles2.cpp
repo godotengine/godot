@@ -66,8 +66,13 @@
 #endif
 #endif
 
-#if !defined(GLES_OVER_GL) && !defined(IPHONE_ENABLED)
-// Used for debugging on mobile, but not iOS as EGL is not available
+#ifndef IPHONE_ENABLED
+// We include EGL below to get debug callback on GLES2 platforms,
+// but EGL is not available on iOS.
+#define CAN_DEBUG
+#endif
+
+#if !defined(GLES_OVER_GL) && defined(CAN_DEBUG)
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2platform.h>
@@ -80,7 +85,7 @@
 #define strcpy strcpy_s
 #endif
 
-#ifndef IPHONE_ENABLED
+#ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
@@ -128,7 +133,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINTS(output);
 }
-#endif // IPHONE_ENABLED
+#endif // CAN_DEBUG
 
 typedef void (*DEBUGPROCARB)(GLenum source,
 		GLenum type,
@@ -222,6 +227,7 @@ void RasterizerGLES2::initialize() {
 #endif // GLAD_ENABLED
 
 	// For debugging
+#ifdef CAN_DEBUG
 #ifdef GLES_OVER_GL
 	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
 		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
@@ -237,7 +243,6 @@ void RasterizerGLES2::initialize() {
 		*/
 	}
 #else
-#ifndef IPHONE_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
 		if (!callback) {
@@ -252,8 +257,8 @@ void RasterizerGLES2::initialize() {
 			glEnable(_EXT_DEBUG_OUTPUT);
 		}
 	}
-#endif // !IPHONE_ENABLED
 #endif // GLES_OVER_GL
+#endif // CAN_DEBUG
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));
