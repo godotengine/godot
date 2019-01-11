@@ -629,6 +629,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
 	mm->set_global_position(pos);
+	mm->set_speed(OS_OSX::singleton->input->get_last_mouse_speed());
 	Vector2 relativeMotion = Vector2();
 	relativeMotion.x = [event deltaX] * OS_OSX::singleton -> _mouse_scale(backingScaleFactor);
 	relativeMotion.y = [event deltaY] * OS_OSX::singleton -> _mouse_scale(backingScaleFactor);
@@ -1615,7 +1616,8 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 			case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
 			case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
 			case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
-			default: {};
+			default: {
+			};
 		}
 	}
 
