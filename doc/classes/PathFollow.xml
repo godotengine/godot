@@ -51,5 +51,8 @@
 		<constant name="ROTATION_XYZ" value="3" enum="RotationMode">
 			Allows the PathFollow to rotate in any axis.
 		</constant>
+		<constant name="ROTATION_ORIENTED" value="4" enum="RotationMode">
+			Uses the up vector information in a [Curve3D] to enforce orientation. This rotation mode requires the [Path]'s [member Curve3D.up_vector_enabled] property to be set to [code]true[/code].
+		</constant>
 	</constants>
 </class>
