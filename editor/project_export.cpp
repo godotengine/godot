@@ -1063,7 +1063,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	VBoxContainer *main_vb = memnew(VBoxContainer);
 	add_child(main_vb);
-	HBoxContainer *hbox = memnew(HBoxContainer);
+	HSplitContainer *hbox = memnew(HSplitContainer);
 	main_vb->add_child(hbox);
 	hbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
