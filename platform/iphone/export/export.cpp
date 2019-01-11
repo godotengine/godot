@@ -1029,32 +1029,38 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = true;
 	String err;
+	r_missing_templates = find_export_template("iphone.zip") == String();
 
-	if (!exists_export_template("iphone.zip", &err)) {
-		valid = false;
+	if (p_preset->get("custom_package/debug") != "") {
+		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
+			r_missing_templates = false;
+		} else {
+			err += "Custom debug package not found.\n";
+		}
 	}
 
-	if (p_preset->get("custom_package/debug") != "" && !FileAccess::exists(p_preset->get("custom_package/debug"))) {
-		valid = false;
-		err += "Custom debug package not found.\n";
+	if (p_preset->get("custom_package/release") != "") {
+		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
+			r_missing_templates = false;
+		} else {
+			err += "Custom release package not found.\n";
+		}
 	}
 
-	if (p_preset->get("custom_package/release") != "" && !FileAccess::exists(p_preset->get("custom_package/release"))) {
-		valid = false;
-		err += "Custom release package not found.\n";
-	}
+	bool valid = !r_missing_templates;
 
 	String team_id = p_preset->get("application/app_store_team_id");
 	if (team_id.length() == 0) {
 		err += "App Store Team ID not specified - cannot configure the project.\n";
+		valid = false;
 	}
 
 	String identifier = p_preset->get("application/identifier");
 	String pn_err;
 	if (!is_package_name_valid(identifier, &pn_err)) {
 		err += "Invalid Identifier - " + pn_err + "\n";
+		valid = false;
 	}
 
 	for (unsigned int i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
@@ -1063,6 +1069,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		if (icon_path.length() == 0) {
 			if (info.is_required) {
 				err += "Required icon is not specified in the preset.\n";
+				valid = false;
 			}
 			break;
 		}
@@ -1071,8 +1078,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	if (!err.empty())
 		r_error = err;
 
-	r_missing_templates = !valid;
-	return err.empty();
+	return valid;
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
