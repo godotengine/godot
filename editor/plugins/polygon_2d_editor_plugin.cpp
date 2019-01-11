@@ -665,9 +665,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 								//todo, could check whether it already exists?
 								polygons.push_back(polygon_create);
-								undo_redo->create_action(TTR("Add Polygon"));
+								undo_redo->create_action(TTR("Add Custom Polygon"));
 								undo_redo->add_do_method(node, "set_polygons", polygons);
-								undo_redo->add_undo_method(node, "set_polygons", polygons_prev);
+								undo_redo->add_undo_method(node, "set_polygons", node->get_polygons());
 								undo_redo->add_do_method(uv_edit_draw, "update");
 								undo_redo->add_undo_method(uv_edit_draw, "update");
 								undo_redo->commit_action();
@@ -705,9 +705,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (erase_index != -1) {
 						polygons.remove(erase_index);
-						undo_redo->create_action(TTR("Remove Polygon"));
+						undo_redo->create_action(TTR("Remove Custom Polygon"));
 						undo_redo->add_do_method(node, "set_polygons", polygons);
-						undo_redo->add_undo_method(node, "set_polygons", polygons_prev);
+						undo_redo->add_undo_method(node, "set_polygons", node->get_polygons());
 						undo_redo->add_do_method(uv_edit_draw, "update");
 						undo_redo->add_undo_method(uv_edit_draw, "update");
 						undo_redo->commit_action();
@@ -735,18 +735,21 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 			} else if (uv_drag && !uv_create) {
 
-				if (uv_edit_mode[0]->is_pressed()) { //edit uv
+				if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
 					undo_redo->create_action(TTR("Transform UV Map"));
 					undo_redo->add_do_method(node, "set_uv", node->get_uv());
 					undo_redo->add_undo_method(node, "set_uv", points_prev);
-				} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					undo_redo->add_do_method(uv_edit_draw, "update");
+					undo_redo->add_undo_method(uv_edit_draw, "update");
+					undo_redo->commit_action();
+				} else if (uv_edit_mode[1]->is_pressed() && uv_move_current == UV_MODE_EDIT_POINT) { // Edit polygon.
 					undo_redo->create_action(TTR("Transform Polygon"));
 					undo_redo->add_do_method(node, "set_polygon", node->get_polygon());
 					undo_redo->add_undo_method(node, "set_polygon", points_prev);
+					undo_redo->add_do_method(uv_edit_draw, "update");
+					undo_redo->add_undo_method(uv_edit_draw, "update");
+					undo_redo->commit_action();
 				}
-				undo_redo->add_do_method(uv_edit_draw, "update");
-				undo_redo->add_undo_method(uv_edit_draw, "update");
-				undo_redo->commit_action();
 
 				uv_drag = false;
 			} else if (bone_painting) {
