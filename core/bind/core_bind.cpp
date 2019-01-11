@@ -2423,7 +2423,7 @@ void _Thread::_start_func(void *ud) {
 			} break;
 			case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
 
-				reason = "Too Many Arguments";
+				reason = "Too Few Arguments";
 			} break;
 			case Variant::CallError::CALL_ERROR_INVALID_METHOD: {
 
