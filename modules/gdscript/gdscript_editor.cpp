@@ -2727,6 +2727,15 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 					options.insert(Variant::get_type_name((Variant::Type)i));
 				}
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+					String s = E->get().name;
+					if (!s.begins_with("autoload/")) {
+						continue;
+					}
+					options.insert(s.get_slice("/", 1));
+				}
 			}
 
 			List<StringName> native_classes;
