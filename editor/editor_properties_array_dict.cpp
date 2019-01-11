@@ -360,10 +360,14 @@ void EditorPropertyArray::update_property() {
 				vbox->add_child(hb);
 				hb->add_child(prop);
 				prop->set_h_size_flags(SIZE_EXPAND_FILL);
-				Button *edit = memnew(Button);
-				edit->set_icon(get_icon("Edit", "EditorIcons"));
-				hb->add_child(edit);
-				edit->connect("pressed", this, "_change_type", varray(edit, i + offset));
+
+				if (subtype == Variant::NIL) {
+					Button *edit = memnew(Button);
+					edit->set_icon(get_icon("Edit", "EditorIcons"));
+					hb->add_child(edit);
+					edit->connect("pressed", this, "_change_type", varray(edit, i + offset));
+				}
+
 			} else {
 				vbox->add_child(prop);
 			}
