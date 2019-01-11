@@ -47,11 +47,19 @@ bool AnimationNodeBlendSpace2DEditor::can_edit(const Ref<AnimationNode> &p_node)
 	return bs2d.is_valid();
 }
 
+void AnimationNodeBlendSpace2DEditor::_blend_space_changed() {
+	blend_space_draw->update();
+}
+
 void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 
+	if (blend_space.is_valid()) {
+		blend_space->disconnect("triangles_updated", this, "_blend_space_changed");
+	}
 	blend_space = p_node;
 
 	if (!blend_space.is_null()) {
+		blend_space->connect("triangles_updated", this, "_blend_space_changed");
 		_update_space();
 	}
 }
@@ -837,6 +845,7 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpace2DEditor::_removed_from_graph);
 
 	ClassDB::bind_method("_auto_triangles_toggled", &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled);
+	ClassDB::bind_method("_blend_space_changed", &AnimationNodeBlendSpace2DEditor::_blend_space_changed);
 
 	ClassDB::bind_method("_file_opened", &AnimationNodeBlendSpace2DEditor::_file_opened);
 }

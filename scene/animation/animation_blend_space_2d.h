@@ -82,6 +82,7 @@ protected:
 	bool trianges_dirty;
 
 	void _update_triangles();
+	void _queue_auto_triangles();
 
 	void _tree_changed();
 

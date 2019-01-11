@@ -138,6 +138,8 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 		MENU_LOAD_FILE_CONFIRM = 1002
 	};
 
+	void _blend_space_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
