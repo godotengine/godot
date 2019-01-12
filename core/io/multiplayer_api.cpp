@@ -659,8 +659,11 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	}
 
 	if (call_local_native) {
+		int temp_id = rpc_sender_id;
+		rpc_sender_id = get_network_unique_id();
 		Variant::CallError ce;
 		p_node->call(p_method, p_arg, p_argcount, ce);
+		rpc_sender_id = temp_id;
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in local call:  - " + error;
@@ -670,9 +673,12 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	}
 
 	if (call_local_script) {
+		int temp_id = rpc_sender_id;
+		rpc_sender_id = get_network_unique_id();
 		Variant::CallError ce;
 		ce.error = Variant::CallError::CALL_OK;
 		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		rpc_sender_id = temp_id;
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in script local call:  - " + error;
@@ -708,7 +714,11 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 		if (set_local) {
 			bool valid;
+			int temp_id = rpc_sender_id;
+
+			rpc_sender_id = get_network_unique_id();
 			p_node->set(p_property, p_value, &valid);
+			rpc_sender_id = temp_id;
 
 			if (!valid) {
 				String error = "rset() aborted in local set, property not found:  - " + String(p_property);
@@ -722,8 +732,11 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 			set_local = _should_call_local(rpc_mode, is_master, skip_rset);
 
 			if (set_local) {
+				int temp_id = rpc_sender_id;
 
+				rpc_sender_id = get_network_unique_id();
 				bool valid = p_node->get_script_instance()->set(p_property, p_value);
+				rpc_sender_id = temp_id;
 
 				if (!valid) {
 					String error = "rset() aborted in local script set, property not found:  - " + String(p_property);
