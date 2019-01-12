@@ -3632,28 +3632,30 @@ PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_m
 
 	Surface *surface = mesh->surfaces[p_surface];
 
-	ERR_FAIL_COND_V(surface->index_array_len == 0, PoolVector<uint8_t>());
-
 	PoolVector<uint8_t> ret;
 	ret.resize(surface->index_array_byte_size);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
+
+	if (surface->index_array_byte_size > 0) {
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
 
 #if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
-	{
-		PoolVector<uint8_t>::Write w = ret.write();
-		glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, w.ptr());
-	}
+		{
+			PoolVector<uint8_t>::Write w = ret.write();
+			glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, w.ptr());
+		}
 #else
-	void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, GL_MAP_READ_BIT);
-	ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
-	{
-		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(), data, surface->index_array_byte_size);
-	}
-	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+		void *data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, surface->index_array_byte_size, GL_MAP_READ_BIT);
+		ERR_FAIL_NULL_V(data, PoolVector<uint8_t>());
+		{
+			PoolVector<uint8_t>::Write w = ret.write();
+			copymem(w.ptr(), data, surface->index_array_byte_size);
+		}
+		glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 #endif
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
 	return ret;
 }
 
