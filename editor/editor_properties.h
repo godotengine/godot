@@ -36,6 +36,7 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
+#include "editor/quick_open.h"
 #include "editor/scene_tree_editor.h"
 #include "scene/gui/color_picker.h"
 
@@ -529,6 +530,8 @@ class EditorPropertyResource : public EditorProperty {
 		OBJ_MENU_PASTE = 6,
 		OBJ_MENU_NEW_SCRIPT = 7,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM = 8,
+		OBJ_MENU_QUICK_LOAD = 9,
+
 		TYPE_BASE_ID = 100,
 		CONVERT_BASE_ID = 1000
 
@@ -539,6 +542,7 @@ class EditorPropertyResource : public EditorProperty {
 	Button *edit;
 	PopupMenu *menu;
 	EditorFileDialog *file;
+	EditorQuickOpen *quick_load;
 	Vector<String> inheritors_array;
 	EditorInspector *sub_inspector;
 	VBoxContainer *sub_inspector_vbox;
@@ -549,6 +553,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	SceneTreeDialog *scene_tree;
 
+	void _quick_load();
 	void _file_selected(const String &p_path);
 	void _menu_option(int p_which);
 	void _resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj);

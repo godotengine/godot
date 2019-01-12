@@ -1984,6 +1984,16 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 	update_property();
 }
 
+void EditorPropertyResource::_quick_load() {
+
+	String path = quick_load->get_selected();
+
+	RES res = ResourceLoader::load(path);
+
+	emit_signal("property_changed", get_edited_property(), res);
+	update_property();
+}
+
 void EditorPropertyResource::_menu_option(int p_which) {
 
 	//	scene_tree->popup_centered_ratio();
@@ -2111,6 +2121,17 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			// Ensure that the FileSystem dock is visible.
 			TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();
 			tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+		} break;
+		case OBJ_MENU_QUICK_LOAD: {
+
+			if (!quick_load) {
+				quick_load = memnew(EditorQuickOpen);
+				quick_load->connect("quick_open", this, "_quick_load");
+				add_child(quick_load);
+			}
+			quick_load->popup_dialog(base_type);
+			quick_load->set_title(vformat(TTR("Quick Load %s..."), base_type));
+
 		} break;
 		default: {
 
@@ -2294,6 +2315,8 @@ void EditorPropertyResource::_update_menu_items() {
 	}
 
 	menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Load"), OBJ_MENU_LOAD);
+
+	menu->add_icon_item(get_icon("Load", "EditorIcons"), TTR("Quick Load"), OBJ_MENU_QUICK_LOAD);
 
 	if (!res.is_null()) {
 
@@ -2689,6 +2712,7 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorPropertyResource::_button_draw);
 	ClassDB::bind_method(D_METHOD("_open_editor_pressed"), &EditorPropertyResource::_open_editor_pressed);
 	ClassDB::bind_method(D_METHOD("_button_input"), &EditorPropertyResource::_button_input);
+	ClassDB::bind_method(D_METHOD("_quick_load"), &EditorPropertyResource::_quick_load);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
@@ -2727,6 +2751,7 @@ EditorPropertyResource::EditorPropertyResource() {
 	edit->connect("gui_input", this, "_button_input");
 
 	file = NULL;
+	quick_load = NULL;
 	scene_tree = NULL;
 	dropping = false;
 }
@@ -2784,7 +2809,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					case PROPERTY_HINT_LAYERS_3D_PHYSICS:
 						lt = EditorPropertyLayers::LAYER_PHYSICS_3D;
 						break;
-					default: {} //compiler could be smarter here and realize this can't happen
+					default: {
+					} //compiler could be smarter here and realize this can't happen
 				}
 				EditorPropertyLayers *editor = memnew(EditorPropertyLayers);
 				editor->setup(lt);
@@ -2921,7 +2947,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 					case PROPERTY_HINT_PROPERTY_OF_BASE_TYPE: type = EditorPropertyMember::MEMBER_PROPERTY_OF_BASE_TYPE; break;
 					case PROPERTY_HINT_PROPERTY_OF_INSTANCE: type = EditorPropertyMember::MEMBER_PROPERTY_OF_INSTANCE; break;
 					case PROPERTY_HINT_PROPERTY_OF_SCRIPT: type = EditorPropertyMember::MEMBER_PROPERTY_OF_SCRIPT; break;
-					default: {}
+					default: {
+					}
 				}
 				editor->setup(type, p_hint_text);
 				add_property_editor(p_path, editor);
@@ -3184,7 +3211,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			editor->setup(Variant::POOL_COLOR_ARRAY);
 			add_property_editor(p_path, editor);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return false; //can be overridden, although it will most likely be last anyway
