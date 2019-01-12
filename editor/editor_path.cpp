@@ -119,9 +119,10 @@ void EditorPath::_notification(int p_what) {
 
 				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
-				icon->draw(ci, Point2i(ofs, (size.height - icon->get_height()) / 2));
-
-				ofs += icon->get_width();
+				if (icon.is_valid()) {
+					icon->draw(ci, Point2i(ofs, (size.height - icon->get_height()) / 2));
+					ofs += icon->get_width();
+				}
 
 				if (i == history->get_path_size() - 1) {
 					//add name
