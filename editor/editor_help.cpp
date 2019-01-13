@@ -132,7 +132,10 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	}
 }
 
-void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
+void EditorHelp::_class_desc_mouse_enter() {
+
+	if (!class_desc->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
+		class_desc->grab_focus();
 }
 
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
@@ -1408,7 +1411,7 @@ void EditorHelp::_bind_methods() {
 
 	ClassDB::bind_method("_class_list_select", &EditorHelp::_class_list_select);
 	ClassDB::bind_method("_class_desc_select", &EditorHelp::_class_desc_select);
-	ClassDB::bind_method("_class_desc_input", &EditorHelp::_class_desc_input);
+	ClassDB::bind_method("_class_desc_mouse_enter", &EditorHelp::_class_desc_mouse_enter);
 	ClassDB::bind_method("_request_help", &EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input", &EditorHelp::_unhandled_key_input);
 	ClassDB::bind_method("_search", &EditorHelp::_search);
@@ -1428,7 +1431,7 @@ EditorHelp::EditorHelp() {
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 	class_desc->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
-	class_desc->connect("gui_input", this, "_class_desc_input");
+	class_desc->connect("mouse_entered", this, "_class_desc_mouse_enter");
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);

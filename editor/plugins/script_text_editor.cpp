@@ -275,6 +275,13 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 void ScriptTextEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
+	if (p_show)
+		warnings_panel->grab_focus(); // Necessary for '_warnings_panel_mouse_enter()' to work.
+}
+
+void ScriptTextEditor::_warnings_panel_mouse_enter() {
+	if (!warnings_panel->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
+		warnings_panel->grab_focus();
 }
 
 void ScriptTextEditor::_error_pressed() {
@@ -1102,6 +1109,7 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_lookup_symbol", &ScriptTextEditor::_lookup_symbol);
 	ClassDB::bind_method("_text_edit_gui_input", &ScriptTextEditor::_text_edit_gui_input);
 	ClassDB::bind_method("_show_warnings_panel", &ScriptTextEditor::_show_warnings_panel);
+	ClassDB::bind_method("_warnings_panel_mouse_enter", &ScriptTextEditor::_warnings_panel_mouse_enter);
 	ClassDB::bind_method("_error_pressed", &ScriptTextEditor::_error_pressed);
 	ClassDB::bind_method("_warning_clicked", &ScriptTextEditor::_warning_clicked);
 	ClassDB::bind_method("_color_changed", &ScriptTextEditor::_color_changed);
@@ -1439,8 +1447,9 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
-	code_editor->connect("error_pressed", this, "_error_pressed");
 	code_editor->connect("show_warnings_panel", this, "_show_warnings_panel");
+	warnings_panel->connect("mouse_entered", this, "_warnings_panel_mouse_enter");
+	code_editor->connect("error_pressed", this, "_error_pressed");
 	warnings_panel->connect("meta_clicked", this, "_warning_clicked");
 
 	update_settings();
