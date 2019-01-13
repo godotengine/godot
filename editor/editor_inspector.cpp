@@ -662,6 +662,9 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 				Ref<Script> scr = object->get_script();
 				Variant orig_value;
 				if (scr->get_property_default_value(property, orig_value)) {
+					if(orig_value.get_type() == Variant::NIL){
+						orig_value = NULL;
+					}
 					emit_signal("property_changed", property, orig_value);
 					update_property();
 					return;
