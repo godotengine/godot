@@ -115,14 +115,15 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 		return false;
 	}
 
-	real_t dist = (-normal.dot(p_from) - d) / den;
+	real_t dist = (normal.dot(p_from) - d) / den;
 	//printf("dist is %i\n",dist);
 
-	if (dist < -CMP_EPSILON) { //this is a ray, before the emitting pos (p_from) doesn't exist
+	if (dist > CMP_EPSILON) { //this is a ray, before the emitting pos (p_from) doesn't exist
 
 		return false;
 	}
 
+	dist = -dist;
 	*p_intersection = p_from + segment * dist;
 
 	return true;
@@ -139,7 +140,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 		return false;
 	}
 
-	real_t dist = (-normal.dot(p_begin) - d) / den;
+	real_t dist = (normal.dot(p_begin) - d) / den;
 	//printf("dist is %i\n",dist);
 
 	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
@@ -147,6 +148,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 		return false;
 	}
 
+	dist = -dist;
 	*p_intersection = p_begin + segment * dist;
 
 	return true;
