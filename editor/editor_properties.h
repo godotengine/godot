@@ -515,6 +515,15 @@ public:
 	EditorPropertyNodePath();
 };
 
+class EditorPropertyRID : public EditorProperty {
+	GDCLASS(EditorPropertyRID, EditorProperty)
+	Label *label;
+
+public:
+	virtual void update_property();
+	EditorPropertyRID();
+};
+
 class EditorPropertyResource : public EditorProperty {
 	GDCLASS(EditorPropertyResource, EditorProperty)
 
