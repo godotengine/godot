@@ -305,8 +305,6 @@ void ParticlesEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
 
-			UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 			CPUParticles *cpu_particles = memnew(CPUParticles);
 			cpu_particles->convert_from_particles(node);
 			cpu_particles->set_name(node->get_name());
@@ -314,12 +312,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 			cpu_particles->set_visible(node->is_visible());
 			cpu_particles->set_pause_mode(node->get_pause_mode());
 
-			undo_redo->create_action("Replace Particles by CPUParticles");
-			undo_redo->add_do_method(node, "replace_by", cpu_particles);
-			undo_redo->add_undo_method(cpu_particles, "replace_by", node);
-			undo_redo->add_do_reference(cpu_particles);
-			undo_redo->add_undo_reference(node);
-			undo_redo->commit_action();
+			EditorNode::get_singleton()->get_scene_tree_dock()->replace_node(node, cpu_particles, false);
 
 		} break;
 	}
