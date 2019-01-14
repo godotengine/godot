@@ -329,6 +329,8 @@ private:
 	bool range_drag_enabled;
 	Vector2 range_drag_capture_pos;
 
+	bool propagate_mouse_activated;
+
 	//TreeItem *cursor_item;
 	//int cursor_column;
 

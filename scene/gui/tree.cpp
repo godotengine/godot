@@ -1602,6 +1602,7 @@ void Tree::_range_click_timeout() {
 		mb.instance();
 		;
 
+		propagate_mouse_activated = false; //done from outside, so signal handler cant clear the tree in the middle of emit(which is a common case)
 		blocked++;
 		propagate_mouse_event(pos + cache.offset, 0, 0, false, root, BUTTON_LEFT, mb);
 		blocked--;
@@ -1614,6 +1615,11 @@ void Tree::_range_click_timeout() {
 
 		if (!click_handled)
 			range_click_timer->stop();
+
+		if (propagate_mouse_activated) {
+			emit_signal("item_activated");
+			propagate_mouse_activated = false;
+		}
 
 	} else {
 		range_click_timer->stop();
@@ -1723,7 +1729,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 			if (p_doubleclick && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
 
-				emit_signal("item_activated");
+				propagate_mouse_activated = true;
+
 				incr_search.clear();
 				return -1;
 			}
@@ -2591,6 +2598,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				click_handled = false;
 				pressing_for_editor = false;
+				propagate_mouse_activated = false;
 
 				blocked++;
 				propagate_mouse_event(pos + cache.offset, 0, 0, b->is_doubleclick(), root, b->get_button_index(), b);
@@ -2626,6 +2634,11 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 						if (get_item_at_position(b->get_position()) == NULL && !b->get_shift() && !b->get_control() && !b->get_command())
 							emit_signal("nothing_selected");
 					}
+				}
+
+				if (propagate_mouse_activated) {
+					emit_signal("item_activated");
+					propagate_mouse_activated = false;
 				}
 
 			} break;
@@ -3945,6 +3958,7 @@ Tree::Tree() {
 	cache.hover_cell = -1;
 
 	allow_reselect = false;
+	propagate_mouse_activated = false;
 }
 
 Tree::~Tree() {
