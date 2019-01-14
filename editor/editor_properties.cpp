@@ -795,6 +795,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 }
+
 ///////////////////// INT /////////////////////////
 
 void EditorPropertyInteger::_value_changed(double val) {
@@ -1949,6 +1950,23 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	hbc->add_child(clear);
 
 	scene_tree = NULL; //do not allocate unnecessarily
+}
+
+///////////////////// RID /////////////////////////
+
+void EditorPropertyRID::update_property() {
+	RID rid = get_edited_object()->get(get_edited_property());
+	if (rid.is_valid()) {
+		int id = rid.get_id();
+		label->set_text("RID: " + itos(id));
+	} else {
+		label->set_text(TTR("Invalid RID"));
+	}
+}
+
+EditorPropertyRID::EditorPropertyRID() {
+	label = memnew(Label);
+	add_child(label);
 }
 
 ////////////// RESOURCE //////////////////////
@@ -3117,6 +3135,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 		} break; // 15
 		case Variant::_RID: {
+			EditorPropertyRID *editor = memnew(EditorPropertyRID);
+			add_property_editor(p_path, editor);
 		} break;
 		case Variant::OBJECT: {
 			EditorPropertyResource *editor = memnew(EditorPropertyResource);
