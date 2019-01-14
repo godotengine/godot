@@ -1737,24 +1737,28 @@ void SceneTreeDock::_create() {
 	}
 }
 
-void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
+void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties) {
 
 	Node *n = p_node;
 	Node *newnode = p_by_node;
-	Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
-	List<PropertyInfo> pinfo;
-	n->get_property_list(&pinfo);
 
-	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
-			continue;
-		if (E->get().name == "__meta__")
-			continue;
-		if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
-			newnode->set(E->get().name, n->get(E->get().name));
+	if (p_keep_properties) {
+		Node *default_oldnode = Object::cast_to<Node>(ClassDB::instance(n->get_class()));
+		List<PropertyInfo> pinfo;
+		n->get_property_list(&pinfo);
+
+		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+			if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+				continue;
+			if (E->get().name == "__meta__")
+				continue;
+			if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
+				newnode->set(E->get().name, n->get(E->get().name));
+			}
 		}
+
+		memdelete(default_oldnode);
 	}
-	memdelete(default_oldnode);
 
 	editor->push_item(NULL);
 
