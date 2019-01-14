@@ -1931,7 +1931,6 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 
 		//add directional light (do this after blur)
 		{
-			LightMap *lightmap_ptr = lightmap.ptrw();
 			const Cell *cells = bake_cells.ptr();
 			const Light *light = bake_light.ptr();
 #ifdef _OPENMP
