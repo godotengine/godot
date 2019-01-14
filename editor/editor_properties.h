@@ -499,6 +499,7 @@ class EditorPropertyNodePath : public EditorProperty {
 	Button *clear;
 	SceneTreeDialog *scene_tree;
 	NodePath base_hint;
+	bool guess_path_from_editor_history;
 
 	Vector<StringName> valid_types;
 	void _node_selected(const NodePath &p_path);
@@ -511,7 +512,7 @@ protected:
 
 public:
 	virtual void update_property();
-	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types);
+	void setup(const NodePath &p_base_hint, Vector<StringName> p_valid_types, bool p_guess_path_from_editor_history = true);
 	EditorPropertyNodePath();
 };
 
