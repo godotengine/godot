@@ -42,22 +42,22 @@
 # Xananax <xananax@yelostudio.com>, 2017-2018.
 # Perrier Mathis <mathis.perrier73@gmail.com>, 2018.
 # Ewan Lehnebach <ewan.lehnebach@gmail.com>, 2018.
-# Hugo Locurcio <hugo.locurcio@hugo.pro>, 2018.
+# Hugo Locurcio <hugo.locurcio@hugo.pro>, 2018, 2019.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
 # x2f <x.defoy@gmail.com>, 2018.
 # LittleWhite <lw.demoscene@googlemail.com>, 2018.
 # Brice Lobet <tempo.data@gmail.com>, 2018.
 # Florent Wijanto <f_wijanto@hotmail.com>, 2018.
 # Olivier gareau <olivier.gareau@protonmail.com>, 2018.
-# Rémi Verschelde <akien@godotengine.org>, 2018.
+# Rémi Verschelde <akien@godotengine.org>, 2018, 2019.
 # Rémi Bintein <reminus5@hotmail.fr>, 2018.
 # Sylvain Corsini <sylvain.corsini@gmail.com>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-29 12:09+0000\n"
-"Last-Translator: Rémi Bintein <reminus5@hotmail.fr>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: Hugo Locurcio <hugo.locurcio@hugo.pro>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -110,7 +110,7 @@ msgstr "Sur appel à '%s' :"
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr "Libérer"
+msgstr "Libre"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -130,23 +130,23 @@ msgstr "Dupliquer les clé(s) sélectionnée(s)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Supprimer la(es) clé(s) sélectionnée(s)"
+msgstr "Supprimer les clé(s) sélectionnée(s)"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Animation Dupliquer les clés"
+msgstr "Dupliquer les clés d'animation"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim Supprimer Clés"
+msgstr "Supprimer les clés d'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Anim: Change Temps de l'Image Clé"
+msgstr "Modifier le temps d'image-clé"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Anim: Change Transition"
+msgstr "Modifier la transition"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -170,7 +170,7 @@ msgstr "Piste de transformation 3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "Piste de la méthode d'appel"
+msgstr "Piste d'appel de méthode"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -211,11 +211,11 @@ msgstr "Clips d'animation :"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "Activer/Désactiver cette piste."
+msgstr "Activer/désactiver cette piste."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Mode de mise à jour (Comment cette propriété est définie)"
+msgstr "Mode de mise à jour (comment cette propriété est définie)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -227,7 +227,7 @@ msgstr "Mode bouclé (fin interpolée avec début en boucle)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
-msgstr "Supprimer la piste."
+msgstr "Supprime cette piste."
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
@@ -251,7 +251,7 @@ msgstr "Capturer"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr "Plus proche"
+msgstr "Au plus proche"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -268,7 +268,7 @@ msgstr "Limiter l'interpolation de la boucle"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "Enrouler l'interpolation de la boucle"
+msgstr "Envelopper l'interp. de la boucle"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -311,25 +311,24 @@ msgstr "Insérer une animation"
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr ""
-"AnimationPlayer ne peut s'animer lui-même, seulement les autres lecteurs."
+"Un AnimationPlayer ne peut s'animer lui-même, seulement les autres lecteurs."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Animation Créer et insérer"
+msgstr "Créer et insérer une animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Animation Insérer une piste et une clé"
+msgstr "Insérer une piste et clé d'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Animation Inserer une clé"
+msgstr "Insérer une clé d'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
-"Les pistes de transformation ne s'appliquent qu'aux nœuds basés dans "
-"l'espace."
+"Les pistes de transformation ne s'appliquent qu'aux nœuds basés sur Spatial."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -338,7 +337,7 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
-"Les pistes audio ne peuvent pointer que sur les nœuds du type :\n"
+"Les pistes audio ne peuvent pointer que sur les nœuds de type :\n"
 "- AudioStreamPlayer\n"
 "- AudioStreamPlayer2D\n"
 "- AudioStreamPlayer3D"
@@ -346,7 +345,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
 msgstr ""
-"Les pistes d'animation ne peuvent pointer que sur les nœuds AnimationPlayer."
+"Les pistes d'animation ne peuvent pointer que sur des nœuds AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -360,15 +359,17 @@ msgstr "Impossible d'ajouter une nouvelle piste sans racine"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "Chemin de piste invalide, ne peut ajouter une clé."
+msgstr "Le chemin de la piste est invalide, impossible d'ajouter une clé."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr "La piste n'est pas du type Spatial, ne peut insérer de clé"
+msgstr "La piste n'est pas de type Spatial, impossible d'insérer une clé"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "Chemin de la piste invalide, ne peut ajouter une méthode clé."
+msgstr ""
+"Le chemin de la piste est invalide, impossible d'ajouter une clé d'appel de "
+"méthode."
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -376,7 +377,7 @@ msgstr "Méthode introuvable dans l'objet : "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Anim Déplacer Clés"
+msgstr "Déplacer les clés d'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -384,14 +385,14 @@ msgstr "Le presse-papiers est vide"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "Anim Mettre à l’Échelle les Clés"
+msgstr "Mettre à l'échelle les clés d'animation"
 
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
-"Cette option ne fonctionne pas pour l'édition de Bézier, comme il ne s'agit "
-"que d'une seule piste."
+"Cette option ne fonctionne pas pour l'édition de courbes de Bézier car il ne "
+"s'agit que d'une seule piste."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -405,7 +406,7 @@ msgstr "Grouper les pistes par nœuds ou les afficher dans une liste simple."
 
 #: editor/animation_track_editor.cpp
 msgid "Snap (s): "
-msgstr "Alignements (s) : "
+msgstr "Pas (s) : "
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -438,7 +439,7 @@ msgstr "Mettre à l'échelle la sélection"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
-msgstr "Mettre à l’Échelle Avec Curseur"
+msgstr "Mettre à l’échelle depuis le curseur"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
@@ -446,7 +447,7 @@ msgstr "Dupliquer la sélection"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "Dupliquer Transposé"
+msgstr "Dupliquer transposé"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
@@ -478,7 +479,7 @@ msgstr "Utiliser les courbes de Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimiseur d'animation"
+msgstr "Optimiser l'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -502,7 +503,7 @@ msgstr "Supprimer les clés invalides"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "Supprimer les pistes vides et non résulues"
+msgstr "Supprimer les pistes vides et non résolues"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -538,11 +539,11 @@ msgstr "Redimensionner le tableau"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value Type"
-msgstr "Modifier type de valeur du tableau"
+msgstr "Modifier le type de valeurs du tableau"
 
 #: editor/array_property_edit.cpp
 msgid "Change Array Value"
-msgstr "Modifier valeur du tableau"
+msgstr "Modifier la valeur du tableau"
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
@@ -645,7 +646,7 @@ msgstr "Supprimer"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Ajouter des arguments supplémentaires :"
+msgstr "Ajouter un argument supplémentaire :"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -2660,8 +2661,8 @@ msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"La ressource sélectionnée (%s) ne correspond à aucun des types attendus pour cette "
-"propriété (%s)."
+"La ressource sélectionnée (%s) ne correspond à aucun des types attendus pour "
+"cette propriété (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -2727,7 +2728,7 @@ msgstr "Ouvrir l'éditeur"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
-msgstr "Le nœud sélectionné n'est pas une fenêtre d'affichage !"
+msgstr "Le nœud sélectionné n'est pas un Viewport !"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
@@ -3427,7 +3428,7 @@ msgstr "Charger une ressource existante depuis la disque et la modifier."
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
-msgstr ""
+msgstr "Enregistrer la ressource en cours d'édition."
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -4552,7 +4553,7 @@ msgstr "Afficher l'origine"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr "Montrer la fenêtre d'affichage"
+msgstr "Afficher le Viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
@@ -5876,11 +5877,11 @@ msgstr "Squelette 2D"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Make Rest Pose (From Bones)"
-msgstr "Créer une position de repos (d'après les os)"
+msgstr "Créer la position de repos (d'après les os)"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Set Bones to Rest Pose"
-msgstr "Placer les os en position de repos"
+msgstr "Assigner les os à la position de repos"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical bones"
@@ -6345,7 +6346,7 @@ msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Gadget sans nom"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6754,7 +6755,8 @@ msgstr "Afficher les noms des tuiles (maintenez Alt enfoncé)"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected texture? This will remove all tiles which use it."
 msgstr ""
-"Supprimer la texture sélectionnée ? Cela entraînera la suppression de toutes les tuiles qui l'utilisent."
+"Supprimer la texture sélectionnée ? Cela entraînera la suppression de toutes "
+"les tuiles qui l'utilisent."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -6837,86 +6839,72 @@ msgstr ""
 "Cliquer sur une autre tuile pour l'éditer."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Définir région rectangulaire"
+msgstr "Définir la région de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Créer un dossier"
+msgstr "Créer une tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Définir l'icône de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Editer les filtres"
+msgstr "Modifier le masque de bit de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "Modifier le polygone"
+msgstr "Modifier le polygone de collision"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "Modifier le polygone"
+msgstr "Modifier le polygone d'occlusion"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "Créer Polygone de Navigation"
+msgstr "Modifier le polygone de navigation"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Coller le masque de bit."
+msgstr "Coller le masque de bit de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Supprimer le masque de bit de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Supprimer le modèle"
+msgstr "Supprimer la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Supprimer le polygone et le point"
+msgstr "Supprimer le polygone de collision"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Créer un polygone occulteur"
+msgstr "Supprimer le polygone d'occlusion"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Créer Polygone de Navigation"
+msgstr "Supprimer le polygone de navigation"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Editer les filtres"
+msgstr "Modifier la priorité de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Modifier l'index Z de la tuile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Créer Polygone de Navigation"
+msgstr "Créer le polygone de collision"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Créer un polygone occulteur"
+msgstr "Créer le polygone d'occlusion"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -7112,7 +7100,7 @@ msgstr "Projet importé"
 
 #: editor/project_manager.cpp
 msgid "Invalid Project Name."
-msgstr "Nom du Projet Invalide."
+msgstr "Nom du projet invalide."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create folder."
@@ -7208,9 +7196,8 @@ msgid "Unnamed Project"
 msgstr "Projet sans titre"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Impossible d'ouvrir le projet"
+msgstr "Impossible d'ouvrir le projet à \"%s\"."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7227,12 +7214,23 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Le fichier de configuration de projet ci-dessous a été généré par une "
+"précédente version du moteur, et doit être mis à nouveau pour cette "
+"version :\n"
+"\n"
+"%s\n"
+"\n"
+"Souhaitez-vous le convertir ?\n"
+"Attention : Il ne sera plus possible d'ouvrir ce projet avec les précédentes "
+"versions du moteur."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Ce fichier de configuration de projet a été créé par une version ultérieure "
+"du moteur, dont les paramètres ne sont pas compatibles avec cette version."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7950,7 +7948,7 @@ msgstr "Enfants modifiables"
 
 #: editor/scene_tree_dock.cpp
 msgid "Load As Placeholder"
-msgstr "Charger en tant que fictif"
+msgstr "Charger en tant qu'instance temporaire"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
@@ -7978,7 +7976,7 @@ msgstr "Nœud personnalisé"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
-msgstr "Impossible d'opérer sur des nœuds d'une scène étrangère !"
+msgstr "Impossible de modifier les nœuds en provenance d'une autre scène !"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes the current scene inherits from!"
@@ -8058,7 +8056,7 @@ msgstr "Effacer (pas de confirmation)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
-msgstr "Ajouter un nouveau nœud"
+msgstr "Ajouter/Créer un nouveau nœud"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -8102,8 +8100,8 @@ msgid ""
 "Node has connection(s) and group(s).\n"
 "Click to show signals dock."
 msgstr ""
-"Le nœud possède une (des) connection(s) et un (des) groupe(s)\n"
-"Cliquez pour afficher l'onglet des signaux."
+"Le nœud possède des connexions et/ou des groupes.\n"
+"Cliquez pour afficher le panneau de connexion des signaux."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -8111,15 +8109,15 @@ msgid ""
 "Click to show signals dock."
 msgstr ""
 "Le nœud possède des connections.\n"
-"Cliquez pour montrer l'arrimage de signaux."
+"Cliquez pour afficher le panneau de connexion des signaux."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node is in group(s).\n"
 "Click to show groups dock."
 msgstr ""
-"Le nœud fait partie d'un (de) groupe(s).\n"
-"Cliquez pour montrer l'arrimage de goupes."
+"Le nœud fait partie de groupes.\n"
+"Cliquez pour afficher le panneau de gestion des groupes."
 
 #: editor/scene_tree_editor.cpp editor/script_create_dialog.cpp
 msgid "Open Script"
@@ -8279,7 +8277,7 @@ msgstr "Script intégré"
 
 #: editor/script_create_dialog.cpp
 msgid "Attach Node Script"
-msgstr "Attacher script de nœud"
+msgstr "Attacher un script au nœud"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote "
@@ -8684,7 +8682,7 @@ msgstr "Choisissez distance :"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
-msgstr "Le nom de la classe ne peut pas être un mot clé réservé"
+msgstr "Le nom de classe ne peut pas être un mot-clé réservé"
 
 #: modules/mono/editor/godotsharp_editor.cpp
 msgid "Generating solution..."
@@ -8807,8 +8805,8 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
-"Une node utilise yield sans mémoire de travail; veuillez lire la "
-"documentation sur l'utilisation de yield !"
+"Un nœud utilise `yield` sans mémoire de travail ; veuillez consulter la "
+"documentation sur l'utilisation de `yield` !"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -8823,8 +8821,8 @@ msgid ""
 "Return value must be assigned to first element of node working memory! Fix "
 "your node please."
 msgstr ""
-"Une valeur de retour doit être assignée au premier élément de la mémoire de "
-"travail du nœud! Veuillez corriger votre nœud."
+"La valeur de retour doit être assignée au premier élément de la mémoire de "
+"travail du nœud ! Veuillez rectifier votre nœud."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
@@ -9279,8 +9277,8 @@ msgstr ""
 msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
-"Le nœud ParallaxLayer ne fonctionne que lorsqu'il s'agit d'un enfant d'un "
-"nœud de type ParallaxBackground."
+"Le nœud ParallaxLayer ne fonctionne que s'il est défini en tant qu'enfant "
+"d'un nœud de type ParallaxBackground."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9301,8 +9299,8 @@ msgstr ""
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr ""
-"PathFollow2D fonctionne seulement quand défini comme un enfant d'un nœud "
-"Path2D."
+"Le nœud PathFollow2D ne fonctionne que s'il est défini en tant qu'enfant "
+"d'un nœud de type Path2D."
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -9327,15 +9325,15 @@ msgstr "Cette chaîne Bone2D doit se terminer sur un nœud Skeleton2D."
 #: scene/2d/skeleton_2d.cpp
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr ""
-"Un Bone2D ne fonctionne qu'avec un Skeleton2D ou un autre Bone2D en tant que "
-"nœud parent."
+"Un nœud de type Bone2D ne fonctionne qu'avec un Skeleton2D ou un autre "
+"Bone2D en tant que nœud parent."
 
 #: scene/2d/skeleton_2d.cpp
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr ""
-"Cet os ne dispose pas d'une pose REST appropriée. Accédez au nœud Skeleton2D "
-"et définissez-en une."
+"Cet os ne dispose pas d'une position de repos appropriée. Accédez au nœud "
+"Skeleton2D et définissez-en une."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -9490,13 +9488,14 @@ msgstr ""
 #: scene/3d/path.cpp
 msgid "PathFollow only works when set as a child of a Path node."
 msgstr ""
-"PathFollow fonctionne seulement quand défini comme un enfant d'un nœud Path."
+"Le nœud PathFollow ne fonctionne que s'il est défini en tant qu'enfant d'un "
+"nœud de type Path."
 
 #: scene/3d/path.cpp
 msgid "OrientedPathFollow only works when set as a child of a Path node."
 msgstr ""
-"OrientedPathFollow fonctionne seulement quand défini comme un enfant d'un "
-"nœud Path."
+"Le nœud OrientedPathFollow ne fonctionne que s'il est défini en tant qu'un "
+"enfant d'un nœud de type Path."
 
 #: scene/3d/path.cpp
 msgid ""
@@ -9523,7 +9522,7 @@ msgstr ""
 
 #: scene/3d/scenario_fx.cpp
 msgid "WorldEnvironment needs an Environment resource."
-msgstr "L'environnement mondial a besoin d'une ressource environnementale."
+msgstr "WorldEnvironment requiert une ressource de type Environment."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -9537,9 +9536,9 @@ msgid ""
 "This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
 "this environment's Background Mode to Canvas (for 2D scenes)."
 msgstr ""
-"Cet WorldEnvironment est ignoré. Ajoutez une caméra (pour les scènes 3D) ou "
-"définissez le mode Background Mode de cet environnement sur Canvas (pour les "
-"scènes 2D)."
+"Ce WorldEnvironment est ignoré. Ajoutez une caméra (pour les scènes 3D) ou "
+"définissez la propriété \"Background Mode\" de cet environnement sur \"Canvas"
+"\" (pour les scènes 2D)."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh"
@@ -9651,8 +9650,9 @@ msgid ""
 "Use a container as child (VBox,HBox,etc), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer est destiné à fonctionner avec un contrôle enfant unique. "
-"Utilisez un conteneur comme enfant (VBox, HBox, etc.) ou un contrôle et "
+"ScrollContainer est conçu pour fonctionner avec un unique nœud enfant de "
+"type contrôle.\n"
+"Utilisez un conteneur comme enfant (VBox, HBox, etc.) ou un Control et "
 "définissez manuellement la taille minimale personnalisée."
 
 #: scene/gui/tree.cpp

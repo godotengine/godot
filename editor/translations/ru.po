@@ -27,7 +27,7 @@
 # Yan <uvokinuvokines@gmail.com>, 2018.
 # V. <Unit68189@gmail.com>, 2018.
 # Victor Butorin <mrwebsterchannel@gmail.com>, 2018.
-# Александр <ol-vin@mail.ru>, 2018.
+# Александр <ol-vin@mail.ru>, 2018, 2019.
 # Анатолий Горбунов <afgorbunov@gmail.com>, 2018.
 # Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018.
 # Аслан Снупов <aslan170505@gmail.com>, 2018.
@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-02 11:06+0000\n"
-"Last-Translator: Alexandr Eremeev <ae125529@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: Александр <ol-vin@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -6278,8 +6278,9 @@ msgid "Post"
 msgstr "После"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Безымянный штуковина"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6693,8 +6694,9 @@ msgid "You haven't selected a texture to remove."
 msgstr "Вы не выбрали текстуру для удаления."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "Создавать из сцены? Это перезапишет все текущие плитки."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -6781,7 +6783,7 @@ msgstr "Создать папку"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Установить Иконку Плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6810,7 +6812,7 @@ msgstr "Вставить битовую маску."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Очистить Битовую Маску Плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6839,7 +6841,7 @@ msgstr "Редактировать фильтры"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Редактирование Z индекса плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6991,6 +6993,7 @@ msgstr "Зашифрованный (Напишите ключ ниже)"
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
 msgstr ""
+"Недействительный ключ шифрования (длина ключа должна составлять 64 символа)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7157,12 +7160,21 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Файл настроек проекта был сгенерирован старой версией движка и должен быть "
+"преобразован для текущей версии:\n"
+"\n"
+"%s\n"
+"\n"
+"Вы хотите преобразовать его?\n"
+"Внимание: Вы больше не сможете открыть проект предыдущими версиями движка."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Настройки проекта были созданы более новой версией движка, которые "
+"несовместимы с текущей версией."
 
 #: editor/project_manager.cpp
 msgid ""

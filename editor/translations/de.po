@@ -23,7 +23,7 @@
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
 # No need for a name <endoplasmatik@gmx.net>, 2016.
 # Sönke <me@eknoes.de>, 2018.
-# So Wieso <sowieso@dukun.de>, 2016-2018.
+# So Wieso <sowieso@dukun.de>, 2016-2018, 2019.
 # Tim Schellenberg <smwleod@gmail.com>, 2017.
 # Timo Schwarzer <account@timoschwarzer.com>, 2016-2018.
 # viernullvier <hannes.breul+github@gmail.com>, 2016.
@@ -35,12 +35,13 @@
 # Julian Retzlaff <julian.retzlaff@googlemail.com>, 2018.
 # asyncial <mahlburg@posteo.de>, 2018.
 # ssantos <ssantos@web.de>, 2018.
+# Rémi Verschelde <akien@godotengine.org>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-22 11:08+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -1005,9 +1006,8 @@ msgid "Uncompressing Assets"
 msgstr "Inhalte werden entpackt"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "Das Paket wurde erfolgreich installiert!"
+msgstr "Paket erfolgreich installiert!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2263,7 +2263,7 @@ msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
-"Collision-Formen und Raycast Nodes (für 2D und 3D) werden im laufenden Spiel "
+"Collision-Shapes und Raycast-Nodes (für 2D und 3D) werden im laufenden Spiel "
 "angezeigt, falls diese Option aktiviert ist."
 
 #: editor/editor_node.cpp
@@ -2631,17 +2631,15 @@ msgid "[Empty]"
 msgstr "[leer]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
 msgstr "Zuweisen.."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"Die ausgewählte Resource (%s) stimmt nicht mit dem erwarteten Typ dieser "
+"Die ausgewählte Ressource (%s) stimmt mit keinem erwarteten Typ dieser "
 "Eigenschaft (%s) überein."
 
 #: editor/editor_properties.cpp
@@ -3519,9 +3517,8 @@ msgstr "Animation hinzufügen"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
-msgstr "Lade.."
+msgstr "Lade..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3905,9 +3902,8 @@ msgid "Connect nodes."
 msgstr "Nodes verbinden."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Ausgewähltes Node oder Übergang entfernen"
+msgstr "Ausgewähltes Node oder Übergang entfernen."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -4795,7 +4791,7 @@ msgstr "Statischen Konvex-Körper erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
-msgstr "Trimesh Kollisionselement erzeugen"
+msgstr "Trimesh-Kollisionselement erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Collision Sibling"
@@ -6316,7 +6312,7 @@ msgstr "Nachher"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Namenloser Anfasser"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6559,7 +6555,7 @@ msgstr "Viele"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has,Many,Options"
-msgstr "Einstellungen"
+msgstr "Hat,Mehrere,Einstellungen"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6723,9 +6719,9 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Kachelnamen anzeigen (Alt-Taste halten)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "Ausgewählte Textur und ALLE sie nutzenden Kacheln entfernen?"
+msgstr ""
+"Ausgewählte Textur entfernen? Alle Kacheln die sie nutzen werden entfernt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -6733,16 +6729,15 @@ msgstr "Keine Textur zum Entfernen ausgewählt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "Aus Szene erstellen? Alle gegenwärtigen Kacheln werden überschrieben."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Aus Szene vereinen?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "Entferne Vorlage"
+msgstr "Textur entfernen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6811,86 +6806,72 @@ msgstr ""
 "Auf andere Kachel drücken um diese zu bearbeiten."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Bereichsrechteck setzen"
+msgstr "Kachelregion setzen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Ordner erstellen"
+msgstr "Kachel erstellen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Kachel-Icon setzen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Filter bearbeiten"
+msgstr "Kachel-Bitmaske bearbeiten"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "Bestehendes Polygon bearbeiten:"
+msgstr "Kollisionspolygon bearbeiten"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "Polygon bearbeiten"
+msgstr "Occlusion-Polygon bearbeiten"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "Erzeuge Navigationspolygon"
+msgstr "Navigationspolygon bearbeiten"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Bitmaske einfügen."
+msgstr "Kachel-Bitmaske einfügen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Kachel-Bitmaske leeren"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Entferne Vorlage"
+msgstr "Kachel entfernen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Polygon und Punkt entfernen"
+msgstr "Kollisionspolygon entfernen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Occluder-Polygon erzeugen"
+msgstr "Occlusion-Polygon entfernen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Erzeuge Navigationspolygon"
+msgstr "Navigationspolygon entfernen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Filter bearbeiten"
+msgstr "Kachelpriorität bearbeiten"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Kachel-Z-Index bearbeiten"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Erzeuge Navigationspolygon"
+msgstr "Kollisionspolygon erzeugen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Occluder-Polygon erzeugen"
+msgstr "Occlusion-Polygon erzeugen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -7011,9 +6992,8 @@ msgid "Feature List:"
 msgstr "Funktionalitätsliste:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Neues Skript"
+msgstr "Skript"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -7033,7 +7013,7 @@ msgstr "Verschlüsselt (Schlüssel unten angeben)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "Ungültiger Schlüssel (muss 64 Zeichen lang sein)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7181,9 +7161,8 @@ msgid "Unnamed Project"
 msgstr "Unbenanntes Projekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Projekt kann nicht geöffnet werden"
+msgstr "Projekt in ‚%s‘ kann nicht geöffnet werden."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7200,12 +7179,22 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Die folgende Projekteinstellungsdatei wurde mit einer älteren Godot-Version "
+"erzeugt und muss für die gegenwärtige Version angepasst werden:\n"
+"\n"
+"%s\n"
+"\n"
+"Sollen die Anpassungen vorgenommen werden?\n"
+"Achtung: Das Projekt kann nach der Anpassung nicht mehr mit einer älteren "
+"Godot-Version geöffnet werden."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Die Projekteinstellungen wurden mit einer neueren Godot-Version erstellt und "
+"sind nicht kompatibel mit der aktuell genutzten Version."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9288,7 +9277,7 @@ msgid ""
 msgstr ""
 "Größenänderungen von RigidBody2D (in den Character- oder Rigid-Modi) werden "
 "überschrieben wenn die Physikengine läuft.\n"
-"Die Größe der entsprechenden Collisionshape-Unterobjekte sollte stattdessen "
+"Die Größe der entsprechenden Collision-Shape-Unterobjekte sollte stattdessen "
 "geändert werden."
 
 #: scene/2d/remote_transform_2d.cpp
