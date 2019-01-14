@@ -224,15 +224,12 @@ void Polygon2D::_notification(int p_what) {
 				for (int i = 0; i < bone_weights.size(); i++) {
 					if (bone_weights[i].weights.size() != points.size()) {
 						continue; //different number of vertices, sorry not using.
-						print_line("wrong weight size");
 					}
 					if (!skeleton_node->has_node(bone_weights[i].path)) {
-						print_line("no node");
 						continue; //node does not exist
 					}
 					Bone2D *bone = Object::cast_to<Bone2D>(skeleton_node->get_node(bone_weights[i].path));
 					if (!bone) {
-						print_line("no bone");
 						continue;
 					}
 

@@ -3811,7 +3811,6 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 			if (indent_ofs + word_px > wrap_at) {
 				// not enough space; add it anyway
 				wrap_substring += word_str;
-				px += word_px;
 				word_str = "";
 				word_px = 0;
 			}

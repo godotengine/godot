@@ -377,13 +377,12 @@ void TileMap::update_dirty_quadrants() {
 				r.size = tile_set->autotile_get_size(c.id);
 				r.position += (r.size + Vector2(spacing, spacing)) * Vector2(c.autotile_coord_x, c.autotile_coord_y);
 			}
-			Size2 s = tex->get_size();
 
+			Size2 s;
 			if (r == Rect2())
 				s = tex->get_size();
-			else {
+			else
 				s = r.size;
-			}
 
 			Rect2 rect;
 			rect.position = offset.floor();

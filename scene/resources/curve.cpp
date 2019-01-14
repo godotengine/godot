@@ -761,8 +761,8 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve2D");
-		ERR_FAIL_COND_V(pc == 0, Vector2());
+		ERR_EXPLAIN("No points in Curve2D.");
+		ERR_FAIL_V(Vector2());
 	}
 
 	if (pc == 1)
@@ -826,8 +826,8 @@ Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve2D");
-		ERR_FAIL_COND_V(pc == 0, Vector2());
+		ERR_EXPLAIN("No points in Curve2D.");
+		ERR_FAIL_V(Vector2());
 	}
 
 	if (pc == 1)
@@ -865,8 +865,8 @@ float Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve2D");
-		ERR_FAIL_COND_V(pc == 0, 0.0f);
+		ERR_EXPLAIN("No points in Curve2D.");
+		ERR_FAIL_V(0.0f);
 	}
 
 	if (pc == 1)
@@ -1331,8 +1331,8 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve3D");
-		ERR_FAIL_COND_V(pc == 0, Vector3());
+		ERR_EXPLAIN("No points in Curve3D.");
+		ERR_FAIL_V(Vector3());
 	}
 
 	if (pc == 1)
@@ -1375,8 +1375,8 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 	//validate//
 	int pc = baked_tilt_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No tilts in Curve3D");
-		ERR_FAIL_COND_V(pc == 0, 0);
+		ERR_EXPLAIN("No tilts in Curve3D.");
+		ERR_FAIL_V(0);
 	}
 
 	if (pc == 1)
@@ -1413,8 +1413,8 @@ Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) 
 	// curve may not have baked up vectors
 	int count = baked_up_vector_cache.size();
 	if (count == 0) {
-		ERR_EXPLAIN("No up vectors in Curve3D");
-		ERR_FAIL_COND_V(count == 0, Vector3(0, 1, 0));
+		ERR_EXPLAIN("No up vectors in Curve3D.");
+		ERR_FAIL_V(Vector3(0, 1, 0));
 	}
 
 	if (count == 1)
@@ -1484,8 +1484,8 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve3D");
-		ERR_FAIL_COND_V(pc == 0, Vector3());
+		ERR_EXPLAIN("No points in Curve3D.");
+		ERR_FAIL_V(Vector3());
 	}
 
 	if (pc == 1)
@@ -1523,8 +1523,8 @@ float Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 	//validate//
 	int pc = baked_point_cache.size();
 	if (pc == 0) {
-		ERR_EXPLAIN("No points in Curve3D");
-		ERR_FAIL_COND_V(pc == 0, 0.0f);
+		ERR_EXPLAIN("No points in Curve3D.");
+		ERR_FAIL_V(0.0f);
 	}
 
 	if (pc == 1)
