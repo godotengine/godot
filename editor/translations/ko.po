@@ -2578,6 +2578,11 @@ msgid "Assign..."
 msgstr "지정하기..."
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "유효하지 않은 경로"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5141,28 +5146,28 @@ msgid "Create Polygon & UV"
 msgstr "폴리곤 & UV 만들기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "자체적으로 포인트 분할."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "새로운 가로 가이드 만들기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "분할은 존재하는 모서리를 형성할 수 없습니다."
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "인-컨트롤 포인트 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "이미 분할되었습니다."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "분할 추가"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "폴리곤 편집"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "유효하지 않은 분할: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "분할 삭제"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "충돌 폴리곤 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5189,12 +5194,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "폴리"
+#, fuzzy
+msgid "Points"
+msgstr "포인트"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "분할"
+#, fuzzy
+msgid "Polygons"
+msgstr "폴리곤->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5229,12 +5236,14 @@ msgid "Scale Polygon"
 msgstr "폴리곤 크기 조절"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "두 포인트를 연결하여 나누기."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "지우기 위한 분할 위치를 선택하기."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9541,6 +9550,36 @@ msgstr "균일하게 배치함."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
+
+#~ msgid "Split point with itself."
+#~ msgstr "자체적으로 포인트 분할."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "분할은 존재하는 모서리를 형성할 수 없습니다."
+
+#~ msgid "Split already exists."
+#~ msgstr "이미 분할되었습니다."
+
+#~ msgid "Add Split"
+#~ msgstr "분할 추가"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "유효하지 않은 분할: "
+
+#~ msgid "Remove Split"
+#~ msgstr "분할 삭제"
+
+#~ msgid "Poly"
+#~ msgstr "폴리"
+
+#~ msgid "Splits"
+#~ msgstr "분할"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "두 포인트를 연결하여 나누기."
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "지우기 위한 분할 위치를 선택하기."
 
 #~ msgid "No name provided"
 #~ msgstr "이름이 지정되지 않음"

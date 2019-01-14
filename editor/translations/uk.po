@@ -2595,6 +2595,11 @@ msgid "Assign..."
 msgstr "Призначити…"
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Неправильний шлях"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5181,28 +5186,28 @@ msgid "Create Polygon & UV"
 msgstr "Створити полігон і UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "Розділити точку."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Створити нову горизонтальну напрямну"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "Поділ не може створювати наявного ребра."
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Вилучити вхідну керувальну точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "Поділ вже існує."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "Додати поділ"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Редагувати полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "Некоректний поділ: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "Вилучити поділ"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "Вилучити полігон зіткнення"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5229,12 +5234,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "Полігон"
+#, fuzzy
+msgid "Points"
+msgstr "Точка"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "Дроблення"
+#, fuzzy
+msgid "Polygons"
+msgstr "Полігон -> UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5269,12 +5276,14 @@ msgid "Scale Polygon"
 msgstr "Масштабувати полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "З'єднайте дві точки для створення розрізу."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "Виберіть поділ для його витирання."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9613,6 +9622,36 @@ msgstr "Призначення однорідного."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
+
+#~ msgid "Split point with itself."
+#~ msgstr "Розділити точку."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "Поділ не може створювати наявного ребра."
+
+#~ msgid "Split already exists."
+#~ msgstr "Поділ вже існує."
+
+#~ msgid "Add Split"
+#~ msgstr "Додати поділ"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "Некоректний поділ: "
+
+#~ msgid "Remove Split"
+#~ msgstr "Вилучити поділ"
+
+#~ msgid "Poly"
+#~ msgstr "Полігон"
+
+#~ msgid "Splits"
+#~ msgstr "Дроблення"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "З'єднайте дві точки для створення розрізу."
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "Виберіть поділ для його витирання."
 
 #~ msgid "No name provided"
 #~ msgstr "Ім'я не вказано"

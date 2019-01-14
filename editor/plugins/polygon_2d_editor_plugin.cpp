@@ -1297,7 +1297,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 
 	uv_button[UV_MODE_CREATE]->set_tooltip(TTR("Create Polygon"));
 	uv_button[UV_MODE_CREATE_INTERNAL]->set_tooltip(TTR("Create Internal Vertex"));
-	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip(TTR("Erase Internal Vertex"));
+	uv_button[UV_MODE_REMOVE_INTERNAL]->set_tooltip(TTR("Remove Internal Vertex"));
 	uv_button[UV_MODE_EDIT_POINT]->set_tooltip(TTR("Move Points") + "\n" + TTR("Ctrl: Rotate") + "\n" + TTR("Shift: Move All") + "\n" + TTR("Shift+Ctrl: Scale"));
 	uv_button[UV_MODE_MOVE]->set_tooltip(TTR("Move Polygon"));
 	uv_button[UV_MODE_ROTATE]->set_tooltip(TTR("Rotate Polygon"));

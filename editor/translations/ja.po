@@ -2592,6 +2592,11 @@ msgid "Assign..."
 msgstr "アサイン.."
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "無効なパス"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5228,31 +5233,28 @@ msgid "Create Polygon & UV"
 msgstr "ポリゴンとUVを生成"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "水平ガイドを作成"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "曲線のIn-ハンドルを除去"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "ポリゴンを編集"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "アクション'%s'は既にあります!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "分割を追加"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "無効なフォント サイズです。"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "選択しているポイント＝点を削除"
+msgid "Remove Custom Polygon"
+msgstr "ポリゴンと点を除去"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5281,13 +5283,13 @@ msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "ポリゴンを編集"
+msgid "Points"
+msgstr "点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "パスを分割"
+msgid "Polygons"
+msgstr "ポリゴン->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5326,13 +5328,14 @@ msgid "Scale Polygon"
 msgstr "ポリゴンの縮尺を変更"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "設定項目を設定してください!"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9875,6 +9878,33 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "アクション'%s'は既にあります!"
+
+#~ msgid "Add Split"
+#~ msgstr "分割を追加"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "無効なフォント サイズです。"
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "選択しているポイント＝点を削除"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "ポリゴンを編集"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "パスを分割"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "設定項目を設定してください!"
 
 #~ msgid "No name provided"
 #~ msgstr "名前が付いていません"
