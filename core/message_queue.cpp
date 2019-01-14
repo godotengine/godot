@@ -271,6 +271,8 @@ void MessageQueue::flush() {
 	//using reverse locking strategy
 	_THREAD_SAFE_LOCK_
 
+	flushing = true;
+
 	while (read_pos < buffer_end) {
 
 		//lock on each iteration, so a call can re-add itself to the message queue
@@ -327,13 +329,20 @@ void MessageQueue::flush() {
 	}
 
 	buffer_end = 0; // reset buffer
+	flushing = false;
 	_THREAD_SAFE_UNLOCK_
+}
+
+bool MessageQueue::is_flushing() const {
+
+	return flushing;
 }
 
 MessageQueue::MessageQueue() {
 
 	ERR_FAIL_COND(singleton != NULL);
 	singleton = this;
+	flushing = false;
 
 	buffer_end = 0;
 	buffer_max_used = 0;
