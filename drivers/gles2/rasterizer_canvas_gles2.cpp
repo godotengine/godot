@@ -490,7 +490,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				glVertexAttrib4fv(VS::ARRAY_COLOR, r->modulate.components);
 
 //use a more compatible workaround, as this does not fail on nvidia
-#ifdef GLES_OVER_GL
+#if defined(GLES_OVER_GL) && !defined(__arm__) && !defined(__aarch64__)
 				//more compatible
 				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, false);
 
