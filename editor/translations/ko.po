@@ -9,14 +9,14 @@
 # TheRedPlanet <junmo.moon8@gmail.com>, 2018.
 # Xavier Cho <mysticfallband@gmail.com>, 2018.
 # 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2018.
-# 송태섭 <xotjq237@gmail.com>, 2018.
+# 송태섭 <xotjq237@gmail.com>, 2018, 2019.
 # JY <yimjisoo@mailfence.com>, 2018.
 # Ch. <ccwpc@hanmail.net>, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-22 11:08+0000\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -668,7 +668,7 @@ msgstr "연결 편집 "
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "\"%s\" 시그널에서 모든 연결을 제거하시겠습니까?"
+msgstr "\"%s\" 시그널에서 모든 연결을 삭제하시겠습니까?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -676,7 +676,7 @@ msgstr "시그널(Signal)"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr "이 시그널에서 모든 연결을 제거하시겠습니까?"
+msgstr "이 시그널에서 모든 연결을 삭제하시겠습니까?"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
@@ -814,7 +814,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp editor/export_template_manager.cpp
 msgid "Cannot remove:"
-msgstr "제거할 수 없습니다:"
+msgstr "삭제할 수 없습니다:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -972,7 +972,6 @@ msgid "Uncompressing Assets"
 msgstr "에셋 압축해제"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
 msgstr "패키지가 성공적으로 설치되었습니다!"
 
@@ -2575,17 +2574,14 @@ msgid "[Empty]"
 msgstr "[비어있음]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
-msgstr "지정하기.."
+msgstr "지정하기..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
-msgstr ""
-"선택된 리소스 (%s) 가 이 속성 (%s) 에 예상되는 타입과 일치하지 않습니다."
+msgstr "선택된 리소스(%s)가 이 속성(%s)에 알맞은 타입이 아닙니다."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -2756,7 +2752,7 @@ msgstr "미러를 가져오는 중입니다, 잠시만 기다리세요..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr "'%s' 템플릿 버전을 제거하시겠습니까?"
+msgstr "'%s' 템플릿 버전을 삭제하시겠습니까?"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -2896,7 +2892,7 @@ msgstr "파일로부터 설치"
 
 #: editor/export_template_manager.cpp
 msgid "Remove Template"
-msgstr "템플릿 제거"
+msgstr "템플릿 삭제"
 
 #: editor/export_template_manager.cpp
 msgid "Select template file"
@@ -3005,7 +3001,7 @@ msgstr "즐겨찾기로 추가"
 
 #: editor/filesystem_dock.cpp
 msgid "Remove from favorites"
-msgstr "즐겨찾기에서 제거"
+msgstr "즐겨찾기에서 삭제"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
@@ -3177,7 +3173,7 @@ msgstr "그룹에 추가"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr "그룹에서 제거"
+msgstr "그룹에서 삭제"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
@@ -3456,9 +3452,8 @@ msgstr "애니메이션 추가하기"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
-msgstr "불러오기.."
+msgstr "불러오기..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3603,7 +3598,7 @@ msgstr "애니메이션을 삭제하시겠습니까?"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
-msgstr "애니메이션 제거"
+msgstr "애니메이션 삭제"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
@@ -3838,9 +3833,8 @@ msgid "Connect nodes."
 msgstr "노드 연결."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "선택된 노드나 전환 삭제"
+msgstr "선택된 노드나 전환 삭제하기."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -3929,7 +3923,7 @@ msgstr "입력 추가"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Clear Auto-Advance"
-msgstr "자동 진행 제거"
+msgstr "자동 진행 삭제"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Set Auto-Advance"
@@ -4199,7 +4193,7 @@ msgstr "새로운 세로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove vertical guide"
-msgstr "세로 가이드 제거"
+msgstr "세로 가이드 삭제"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move horizontal guide"
@@ -4211,7 +4205,7 @@ msgstr "새로운 가로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Remove horizontal guide"
-msgstr "가로 가이드 제거"
+msgstr "가로 가이드 삭제"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create new horizontal and vertical guides"
@@ -4593,7 +4587,7 @@ msgstr "포인트 추가"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove point"
-msgstr "포인트 제거"
+msgstr "포인트 삭제"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Left linear"
@@ -5168,7 +5162,7 @@ msgstr "유효하지 않은 분할: "
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Remove Split"
-msgstr "분할 제거"
+msgstr "분할 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5700,7 +5694,7 @@ msgstr "자동 완성"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
-msgstr "후행 공백 문자 제거"
+msgstr "후행 공백 문자 삭제"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Spaces"
@@ -6233,7 +6227,7 @@ msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "이름없는 기즈모"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6598,7 +6592,7 @@ msgstr "TileSet에 텍스쳐 추가하기."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove selected Texture from TileSet."
-msgstr "선택된 텍스쳐를 TileSet에서 제거하기."
+msgstr "선택된 텍스쳐를 TileSet에서 삭제하기."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6637,26 +6631,26 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "타일 이름 보이기 (Alt 키를 누르세요)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "선택한 텍스쳐와 그것을 사용하는 모든 타일을 삭제하겠습니까?"
+msgstr ""
+"선택한 텍스쳐를 삭제하시겠습니까? 해당 텍스쳐를 사용하는 모든 타일이 삭제될 "
+"것입니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
-msgstr "제거할 텍스쳐를 선택하지 않았습니다."
+msgstr "삭제할 텍스쳐를 선택하지 않았습니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "씬으로부터 생성하시겠습니까? 현재 타일을 모두 덮어씁니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "씬으로부터 병합하시겠습니까?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "템플릿 제거"
+msgstr "텍스쳐 삭제"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6723,86 +6717,72 @@ msgstr ""
 "다른 타일을 편집하려면 클릭합니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "영역 설정"
+msgstr "타일 영역 설정"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "폴더 만들기"
+msgstr "타일 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "타일 아이콘 설정"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "필터 편집"
+msgstr "타일 비트 마스크 편집"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "기존 폴리곤 편집:"
+msgstr "충돌 폴리곤 편집"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "폴리곤 편집"
+msgstr "어클루전 폴리곤 편집"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "네비게이션 폴리곤 만들기"
+msgstr "내비게이션 폴리곤 편집"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "비트 마스크 붙여넣기."
+msgstr "타일 비트 마스크 붙여넣기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "타일 비트 마스크 지우기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "템플릿 제거"
+msgstr "타일 삭제"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "폴리곤과 포인트 삭제"
+msgstr "충돌 폴리곤 삭제"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Occluder 폴리곤 만들기"
+msgstr "어클루전 폴리곤 삭제"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "네비게이션 폴리곤 만들기"
+msgstr "내비게이션 폴리곤 삭제"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "필터 편집"
+msgstr "필터 우선 순위 편집"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "타일 Z 인덱스 편집"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "네비게이션 폴리곤 만들기"
+msgstr "내비게이션 충돌 폴리곤 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Occluder 폴리곤 만들기"
+msgstr "어클루전 폴리곤 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -6919,9 +6899,8 @@ msgid "Feature List:"
 msgstr "기능 목록:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "새 스크립트"
+msgstr "스크립트"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -6941,7 +6920,7 @@ msgstr "암호화 (아래에 키값 필요)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "올바르지 않은 암호화 키 (64자 길이어야 함)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7089,9 +7068,8 @@ msgid "Unnamed Project"
 msgstr "이름없는 프로젝트"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "프로젝트를 열 수 없음"
+msgstr "'%s'에서 프로젝트를 열 수 없음."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7108,12 +7086,21 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"다음의 프로젝트 설정 파일은 예전 버전에서 생성된 것으로, 이 버전에 맞게 전환"
+"해야 합니다:\n"
+"\n"
+"%s\n"
+"\n"
+"전환하시겠습니까?\n"
+"경고: 더 이상 이 프로젝트를 과거 버전의 것으로 열 수 없게 됩니다."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"새로운 버전의 엔진으로 프로젝트 설정이 생성되었습니다, 이 버전에서는 호환되"
+"지 않습니다."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7140,7 +7127,7 @@ msgstr "두 개 이상의 프로젝트를 실행하려는 것이 확실합니까
 #: editor/project_manager.cpp
 msgid "Remove project from the list? (Folder contents will not be modified)"
 msgstr ""
-"목록에서 프로젝트를 제거하시겠습니까? (폴더의 내용물은 사라지지 않습니다)"
+"목록에서 프로젝트를 삭제하시겠습니까? (폴더의 내용물은 사라지지 않습니다)"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7422,11 +7409,11 @@ msgstr "리소스 리맵핑 언어 변경"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap"
-msgstr "리소스 리맵핑 제거"
+msgstr "리소스 리맵핑 삭제"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap Option"
-msgstr "리소스 리맵핑 옵션 제거"
+msgstr "리소스 리맵핑 옵션 삭제"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter"
@@ -7776,7 +7763,7 @@ msgstr "자식 씬 추가"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
-msgstr "스크립트 제거"
+msgstr "스크립트 삭제"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -7946,7 +7933,7 @@ msgstr "선택된 노드에 새로운 스크립트를 생성하거나 기존 스
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
-msgstr "선택된 노드의 스크립트를 제거합니다."
+msgstr "선택된 노드의 스크립트를 삭제합니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Remote"
@@ -8346,7 +8333,7 @@ msgstr "이 엔트리에 대한 라이브러리의 종속을 선택"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Remove current entry"
-msgstr "현재 엔트리 제거"
+msgstr "현재 엔트리 삭제"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Double click to create a new entry"
@@ -8773,7 +8760,7 @@ msgstr "노드 추가"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
-msgstr "비주얼 스크립트 노드 제거"
+msgstr "비주얼 스크립트 노드 삭제"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Duplicate VisualScript Nodes"
@@ -8833,7 +8820,7 @@ msgstr "노드 이동"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Node"
-msgstr "비주얼 스크립트 노드 제거"
+msgstr "비주얼 스크립트 노드 삭제"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Connect Nodes"
@@ -8869,11 +8856,11 @@ msgstr "비주얼 스크립트 노드 붙여넣기"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
-msgstr "함수 제거"
+msgstr "함수 삭제"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
-msgstr "변수 제거"
+msgstr "변수 삭제"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Variable:"
@@ -8881,7 +8868,7 @@ msgstr "변수 편집:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Signal"
-msgstr "시그널 제거"
+msgstr "시그널 삭제"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Editing Signal:"

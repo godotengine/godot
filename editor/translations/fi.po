@@ -8,12 +8,12 @@
 # Jarmo Riikonen <amatrelan@gmail.com>, 2017.
 # Nuutti Varvikko <nvarvikko@gmail.com>, 2018.
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
-# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018.
+# Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-18 20:43+0000\n"
+"PO-Revision-Date: 2019-01-13 15:06+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -969,7 +969,6 @@ msgid "Uncompressing Assets"
 msgstr "Puretaan assetteja"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
 msgstr "Paketti asennettu onnistuneesti!"
 
@@ -2575,17 +2574,16 @@ msgid "[Empty]"
 msgstr "[Tyhjä]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
 msgstr "Aseta..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"Valittu resurssi (%s) ei vastaa odotettua tyyppiä tälle ominaisuudelle (%s)."
+"Valittu resurssi (%s) ei vastaa mitään odotettua tyyppiä tälle "
+"ominaisuudelle (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3461,7 +3459,6 @@ msgstr "Lisää animaatio"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
 msgstr "Lataa..."
 
@@ -3846,9 +3843,8 @@ msgid "Connect nodes."
 msgstr "Kytke solmut."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Poista valittu solmu tai siirtymä"
+msgstr "Poista valittu solmu tai siirtymä."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -4652,7 +4648,7 @@ msgstr "Sisällön muokkaus"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
-msgstr "Luo peittävä polygoni"
+msgstr "Luo peittopolygoni"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -6250,7 +6246,7 @@ msgstr "Jälki"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Nimetön muokkain"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6654,9 +6650,9 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Näytä ruutujen nimet (pidä Alt-näppäin pohjassa)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "Poista valittu tekstuuri ja KAIKKI RUUDUT, jotka käyttävät sitä?"
+msgstr ""
+"Poista valittu tekstuuri? Tämä poistaa kaikki ruudut, jotka käyttävät sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -6664,16 +6660,15 @@ msgstr "Et ole valinnut poistettavaa tekstuuria."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "Luo skenestä? Tämä ylikirjoittaa kaikki nykyiset ruudut."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Yhdistä skenestä?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "Poista malli"
+msgstr "Poista tekstuuri"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6740,86 +6735,72 @@ msgstr ""
 "Napsauta toista ruutua muokataksesi sitä."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Aseta alueen suorakulmio"
+msgstr "Aseta ruudun alue"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Luo kansio"
+msgstr "Luo ruutu"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Aseta ruudun ikoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Muokkaa suodattimia"
+msgstr "Muokkaa ruudun bittimaskia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "Muokkaa olemassaolevaa polygonia:"
+msgstr "Muokkaa törmäyspolygonia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "Muokkaa polygonia"
+msgstr "Muokkaa peittopolygonia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "Luo navigointipolygoni"
+msgstr "Muokkaa navigointipolygonia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Liitä bittimaski."
+msgstr "Liitä ruudun bittimaski"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Tyhjennä ruudun bittimaski"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Poista malli"
+msgstr "Poista ruutu"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Poista polygoni ja piste"
+msgstr "Poista törmäyspolygoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Luo peittävä polygoni"
+msgstr "Poista peittopolygoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Luo navigointipolygoni"
+msgstr "Poista navigointipolygoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Muokkaa suodattimia"
+msgstr "Muokkaa ruudun prioriteettia"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Muokkaa ruudun Z-indeksiä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Luo navigointipolygoni"
+msgstr "Luo törmäyspolygoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Luo peittävä polygoni"
+msgstr "Luo peittopolygoni"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -6940,36 +6921,32 @@ msgid "Feature List:"
 msgstr "Ominaisuuslista:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Uusi skripti"
+msgstr "Skripti"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script Export Mode:"
-msgstr "Vientitila:"
+msgstr "Skriptin vientitila:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Text"
-msgstr "Tekstuuri"
+msgstr "Teksti"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Compiled"
-msgstr "Tiivistä"
+msgstr "Käännetty"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
-msgstr ""
+msgstr "Salattu (syötä avain alla)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "Virheellinen salausavain (oltava 64 merkkiä pitkä)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
-msgstr ""
+msgstr "Skriptin salausavain (256-bittinen heksana):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7114,9 +7091,8 @@ msgid "Unnamed Project"
 msgstr "Nimetön projekti"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Projektia ei voida avata"
+msgstr "Ei voida avata projektia kohteesta '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7133,12 +7109,21 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Seuraava projektin asetustiedosto on luotu vanhemmalla versiolla ja täytyy "
+"muuntaa tätä versiota varten:\n"
+"\n"
+"%s\n"
+"\n"
+"Haluatko muuntaa sen?\n"
+"Varoitus: et voi avata projektia tämän jälkeen enää vanhemmilla versioilla."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Projektin asetukset on luotu uudemmalla versiolla, jonka asetukset eivät ole "
+"yhteensopivia tämän version kanssa."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9145,14 +9130,12 @@ msgstr ""
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
-"Toimimiseksi tälle peittäjälle on asetettava (tai piirrettävä) peittävä "
-"monikulmio."
+"Jotta tämä peittäjä toimisi, sille on asetettava (tai piirrettävä) "
+"peittopolygoni."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
-"Peittävä monikulmio tälle peittäjälle on tyhjä. Ole hyvä ja piirrä "
-"monikulmio!"
+msgstr "Tämän peittäjän peittopolygoni on tyhjä. Ole hyvä ja piirrä polygoni!"
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""

@@ -26,12 +26,13 @@
 # Tahar Meijs <tntmeijs@gmail.com>, 2018.
 # Laurent Windels <laurentwindels@yahoo.com>, 2018.
 # rxadmin <r.van.eeghem@gmail.com>, 2018.
+# Peter Goelst <muis24@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:41+0100\n"
-"Last-Translator: rxadmin <r.van.eeghem@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:06+0000\n"
+"Last-Translator: Peter Goelst <muis24@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -404,7 +405,7 @@ msgstr "Plak sporen"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
-msgstr "Schaal Selectie"
+msgstr "Schaal selectie"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"

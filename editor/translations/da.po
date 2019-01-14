@@ -11,12 +11,13 @@
 # frederikzt <frederikzt@gmail.com>, 2018.
 # Jonathan B. Jørgensen <pizzaernam@gmail.com>, 2018.
 # Peter G. Laursen <GhostReven@gmail.com>, 2018.
+# Rémi Verschelde <akien@godotengine.org>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-22 11:08+0000\n"
-"Last-Translator: Jonathan B. Jørgensen <pizzaernam@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:06+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -973,9 +974,8 @@ msgid "Uncompressing Assets"
 msgstr "Udpakker Aktiver"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "Pakke Installeret med Succes!"
+msgstr "Pakke installeret med succes!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp

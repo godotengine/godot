@@ -16,12 +16,13 @@
 # Tom My <tom.asadinawan@gmail.com>, 2017.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 # Evan Hyacinth <muhammad.ivan669@gmail.com>, 2018, 2019.
+# Guntur Sarwohadi <gsarwohadi@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-02 11:06+0000\n"
-"Last-Translator: Evan Hyacinth <muhammad.ivan669@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: Guntur Sarwohadi <gsarwohadi@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -1331,9 +1332,8 @@ msgid "Copy Path"
 msgstr "Salin Lokasi"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
-msgstr "Tampilkan di Manajer Berkas"
+msgstr "Tampilkan di Pengelola Berkas"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #: editor/project_manager.cpp
