@@ -271,6 +271,7 @@ void MessageQueue::flush() {
 	//using reverse locking strategy
 	_THREAD_SAFE_LOCK_
 
+	ERR_FAIL_COND(flushing);
 	flushing = true;
 
 	while (read_pos < buffer_end) {
