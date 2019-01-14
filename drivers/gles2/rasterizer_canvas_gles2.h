@@ -102,6 +102,8 @@ public:
 
 	RasterizerStorageGLES2 *storage;
 
+	bool use_nvidia_rect_workaround;
+
 	virtual RID light_internal_create();
 	virtual void light_internal_update(RID p_rid, Light *p_light);
 	virtual void light_internal_free(RID p_rid);
