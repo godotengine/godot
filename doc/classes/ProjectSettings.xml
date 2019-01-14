@@ -670,6 +670,10 @@
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="">
 			Shaders have a time variable that constantly increases. At some point it needs to be rolled back to zero to avoid numerical errors on shader animations. This setting specifies when.
 		</member>
+		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="">
+			Some Nvidia GPU drivers have a bug, which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to https://github.com/godotengine/godot/issues/9913 for details.
+			If [code]true[/code], this option enables a "safe" code path for such Nvidia GPUs, at the cost of performance. This option only impacts the GLES2 rendering backend (so the bug stays if you use GLES3), and only desktop platforms. Default value: [code]false[/code].
+		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="">
 			Force snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
 		</member>
