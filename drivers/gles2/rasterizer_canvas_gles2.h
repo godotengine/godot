@@ -91,6 +91,8 @@ public:
 		RasterizerStorageGLES2::Texture *current_tex_ptr;
 
 		Transform vp;
+		Light *using_light;
+		bool using_shadow;
 
 	} state;
 
