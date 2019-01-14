@@ -2601,6 +2601,11 @@ msgid "Assign..."
 msgstr "Przypisz..."
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Nieprawidłowa ścieżka"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5200,28 +5205,28 @@ msgid "Create Polygon & UV"
 msgstr "Utwórz wielokąt i UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "Podziel punkt ze sobą."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Utwórz nową prowadnicę poziomą"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "Podział nie może uformować istniejącej krawędzi."
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Usuń punkt ścieżki"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "Podział już istnieje."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "Dodaj podział"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Edytuj wielokąt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "Niepoprawny podział: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "Usuń podział"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "Usuń wielokąt i punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5251,12 +5256,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "Wielokąt"
+#, fuzzy
+msgid "Points"
+msgstr "Punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "Podziały"
+#, fuzzy
+msgid "Polygons"
+msgstr "Wielokąt->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5291,14 +5298,14 @@ msgid "Scale Polygon"
 msgstr "Skaluj Wielokąt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Connect two points to make a split."
-msgstr "Połącz dwa punkty, by utworzyć podział."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Wybierz podział, by go usunąć."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -9651,6 +9658,38 @@ msgstr "Przypisanie do uniformu."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
+
+#~ msgid "Split point with itself."
+#~ msgstr "Podziel punkt ze sobą."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "Podział nie może uformować istniejącej krawędzi."
+
+#~ msgid "Split already exists."
+#~ msgstr "Podział już istnieje."
+
+#~ msgid "Add Split"
+#~ msgstr "Dodaj podział"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "Niepoprawny podział: "
+
+#~ msgid "Remove Split"
+#~ msgstr "Usuń podział"
+
+#~ msgid "Poly"
+#~ msgstr "Wielokąt"
+
+#~ msgid "Splits"
+#~ msgstr "Podziały"
+
+#, fuzzy
+#~ msgid "Connect two points to make a split."
+#~ msgstr "Połącz dwa punkty, by utworzyć podział."
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Wybierz podział, by go usunąć."
 
 #~ msgid "No name provided"
 #~ msgstr "Nie podano nazwy"

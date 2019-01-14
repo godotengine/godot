@@ -2556,6 +2556,11 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Đường dẫn sai."
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5135,30 +5140,26 @@ msgid "Create Polygon & UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+msgid "Create Internal Vertex"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
+msgid "Remove Internal Vertex"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr ""
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Invalid Split: "
-msgstr "Kích thước font không hợp lệ."
+msgid "Add Custom Polygon"
+msgstr "Tạo"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Remove Split"
-msgstr "Bỏ lựa chọn"
+msgid "Remove Custom Polygon"
+msgstr "Xóa Animation"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5186,12 +5187,14 @@ msgid "UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr ""
+#, fuzzy
+msgid "Points"
+msgstr "Di chuyển đến..."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr ""
+#, fuzzy
+msgid "Polygons"
+msgstr "Tạo"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5227,13 +5230,14 @@ msgid "Scale Polygon"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Chọn một Folder để Quét"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9445,6 +9449,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Kích thước font không hợp lệ."
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Bỏ lựa chọn"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Chọn một Folder để Quét"
 
 #, fuzzy
 #~ msgid "Zoom out"

@@ -2674,6 +2674,11 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "有效的路徑"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5330,31 +5335,26 @@ msgid "Create Polygon & UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "新增"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Remove Internal Vertex"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "AutoLoad '%s'已存在！"
+msgid "Add Custom Polygon"
+msgstr "插件"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Add Split"
-msgstr "新增訊號"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "有效的路徑"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
+msgid "Remove Custom Polygon"
 msgstr "只限選中"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5384,12 +5384,14 @@ msgid "UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr ""
+#, fuzzy
+msgid "Points"
+msgstr "下移"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr ""
+#, fuzzy
+msgid "Polygons"
+msgstr "插件"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5425,11 +5427,13 @@ msgid "Scale Polygon"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -9788,6 +9792,22 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "AutoLoad '%s'已存在！"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "新增訊號"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "有效的路徑"
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "只限選中"
 
 #, fuzzy
 #~ msgid "Add Node.."

@@ -2637,6 +2637,11 @@ msgstr "Terapkan.."
 
 #: editor/editor_properties.cpp
 #, fuzzy
+msgid "Invalid RID"
+msgstr "Path Tidak Sah."
+
+#: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5320,32 +5325,28 @@ msgid "Create Polygon & UV"
 msgstr "Buat Bidang"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Buat Subskribsi"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Hapus item"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Sunting Bidang"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "Autoload '%s' telah ada!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Tambahkan Sinyal"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "Path Tidak Sah."
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Hapus Sinyal"
+msgid "Remove Custom Polygon"
+msgstr "Hapus Bidang dan Titik"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5376,12 +5377,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Sunting Bidang"
+msgid "Points"
+msgstr "Titik"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr ""
+#, fuzzy
+msgid "Polygons"
+msgstr "Sunting Bidang"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5417,13 +5419,14 @@ msgid "Scale Polygon"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Pilih Berkas untuk Dipindai"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9896,6 +9899,30 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "Autoload '%s' telah ada!"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Tambahkan Sinyal"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Path Tidak Sah."
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Hapus Sinyal"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Sunting Bidang"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Pilih Berkas untuk Dipindai"
 
 #~ msgid "No name provided"
 #~ msgstr "Nama masih kosong"

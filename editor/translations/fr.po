@@ -2657,6 +2657,10 @@ msgid "Assign..."
 msgstr "Assigner..."
 
 #: editor/editor_properties.cpp
+msgid "Invalid RID"
+msgstr "RID invalide"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5259,28 +5263,24 @@ msgid "Create Polygon & UV"
 msgstr "Créer un polygone & UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "Point de séparation avec lui-même."
+msgid "Create Internal Vertex"
+msgstr "Créer un vertex interne"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "Le fractionnement ne peut pas former une arête existante."
+msgid "Remove Internal Vertex"
+msgstr "Supprimer un vertex interne"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "Le fractionnement existe déjà."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr "Polygone invalide (3 vertex différents sont nécessaires)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "Ajouter un fractionnement"
+msgid "Add Custom Polygon"
+msgstr "Ajouter un polygone personnalisé"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "Fractionnement invalide : "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "Supprimer le fractionnement"
+msgid "Remove Custom Polygon"
+msgstr "Supprimer un polygone personnalisé"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5307,12 +5307,12 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "Polygone"
+msgid "Points"
+msgstr "Points"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "Fractionnements"
+msgid "Polygons"
+msgstr "Polygones"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5347,12 +5347,17 @@ msgid "Scale Polygon"
 msgstr "Mettre à l'échelle le polygone"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "Relier deux points pour faire un fractionnement."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
+"Créer un polygon personnalisé. Active le rendu des polygones personnalisés."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "Sélectionnez un fractionnement à effacer."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
+"Supprimer un polygone personnalisé. S'il n'en reste aucun, le rendu des "
+"polygones personnalisés est désactivé."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -6916,7 +6921,7 @@ msgstr "TileSet"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
-msgstr "Sommet"
+msgstr "Vertex"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Fragment"
@@ -9714,3 +9719,33 @@ msgstr "Affectation à l'uniforme."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
+
+#~ msgid "Split point with itself."
+#~ msgstr "Point de séparation avec lui-même."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "Le fractionnement ne peut pas former une arête existante."
+
+#~ msgid "Split already exists."
+#~ msgstr "Le fractionnement existe déjà."
+
+#~ msgid "Add Split"
+#~ msgstr "Ajouter un fractionnement"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "Fractionnement invalide : "
+
+#~ msgid "Remove Split"
+#~ msgstr "Supprimer le fractionnement"
+
+#~ msgid "Poly"
+#~ msgstr "Polygone"
+
+#~ msgid "Splits"
+#~ msgstr "Fractionnements"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "Relier deux points pour faire un fractionnement."
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "Sélectionnez un fractionnement à effacer."

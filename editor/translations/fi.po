@@ -2578,6 +2578,11 @@ msgid "Assign..."
 msgstr "Aseta..."
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Virheellinen polku"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5161,28 +5166,28 @@ msgid "Create Polygon & UV"
 msgstr "Luo polygoni ja UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "Jaa piste itsellään."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Luo uusi vaakasuora apuviiva"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "Jako ei voi muodostaa olemassa olevaa reunaa."
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Poista tulo-ohjaimen piste"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "Jako on jo olemassa."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "Lisää jako"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Muokkaa polygonia"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "Virheellinen jako: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "Poista jako"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "Poista törmäyspolygoni"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5209,12 +5214,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "Polygoni"
+#, fuzzy
+msgid "Points"
+msgstr "Piste"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "Jaot"
+#, fuzzy
+msgid "Polygons"
+msgstr "Polygoni->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5249,12 +5256,14 @@ msgid "Scale Polygon"
 msgstr "Skaalaa polygonia"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "Yhdistä kaksi pistettä luodaksesi jaon."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "Valitse jako poistaaksesi sen."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9585,6 +9594,36 @@ msgstr "Sijoitus uniformille."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
+
+#~ msgid "Split point with itself."
+#~ msgstr "Jaa piste itsellään."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "Jako ei voi muodostaa olemassa olevaa reunaa."
+
+#~ msgid "Split already exists."
+#~ msgstr "Jako on jo olemassa."
+
+#~ msgid "Add Split"
+#~ msgstr "Lisää jako"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "Virheellinen jako: "
+
+#~ msgid "Remove Split"
+#~ msgstr "Poista jako"
+
+#~ msgid "Poly"
+#~ msgstr "Polygoni"
+
+#~ msgid "Splits"
+#~ msgstr "Jaot"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "Yhdistä kaksi pistettä luodaksesi jaon."
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "Valitse jako poistaaksesi sen."
 
 #~ msgid "No name provided"
 #~ msgstr "Nimeä ei annettu"

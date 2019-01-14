@@ -2624,6 +2624,11 @@ msgid "Assign..."
 msgstr "Atribuir..."
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Caminho Inválido"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5231,32 +5236,28 @@ msgid "Create Polygon & UV"
 msgstr "Criar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Criar novo guia horizontal"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Remover Ponto de Controle de Entrada"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Editar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "A ação \"%s\" já existe!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Adicionar ponto"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "Caminho inválido!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Remover ponto"
+msgid "Remove Custom Polygon"
+msgstr "Remover Polígono e Ponto"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5285,13 +5286,13 @@ msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Editar Polígono"
+msgid "Points"
+msgstr "Ponto"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "Dividir Caminho"
+msgid "Polygons"
+msgstr "Polígono->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5327,13 +5328,14 @@ msgid "Scale Polygon"
 msgstr "Escalonar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Selecione um item de configuração primeiro!"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9761,6 +9763,34 @@ msgstr "Atribuição à uniforme."
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Variáveis só podem ser atribuídas na função de vértice."
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "A ação \"%s\" já existe!"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Adicionar ponto"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Caminho inválido!"
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Remover ponto"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Editar Polígono"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "Dividir Caminho"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Selecione um item de configuração primeiro!"
 
 #~ msgid "No name provided"
 #~ msgstr "Nenhum nome fornecido"
