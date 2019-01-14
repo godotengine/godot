@@ -52,9 +52,13 @@ void Popup::_notification(int p_what) {
 //small helper to make editing of these easier in editor
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_a_parent_of(this)) {
+			//edited on editor
 			set_as_toplevel(false);
-		}
+		} else
 #endif
+				if (is_visible()) {
+			hide();
+		}
 	}
 }
 
