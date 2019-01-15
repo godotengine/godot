@@ -8110,6 +8110,7 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	check_types = false;
 #endif
 
+#ifdef DEBUG_ENABLED
 	// Resolve all class-level stuff before getting into function blocks
 	_check_class_level_types(main_class);
 
@@ -8124,7 +8125,6 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 		return ERR_PARSE_ERROR;
 	}
 
-#ifdef DEBUG_ENABLED
 	// Resolve warning ignores
 	Vector<Pair<int, String> > warning_skips = tokenizer->get_warning_skips();
 	bool warning_is_error = GLOBAL_GET("debug/gdscript/warnings/treat_warnings_as_errors").booleanize();
