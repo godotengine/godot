@@ -6224,7 +6224,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					if (check_types && index_type.has_type) {
 						if (base_type.kind == DataType::BUILTIN) {
 							// Check if indexing is valid
-							bool error = index_type.kind != DataType::BUILTIN;
+							bool error = index_type.kind != DataType::BUILTIN && base_type.builtin_type != Variant::DICTIONARY;
 							if (!error) {
 								switch (base_type.builtin_type) {
 									// Expect int or real as index
