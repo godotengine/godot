@@ -132,6 +132,8 @@ void MultiplayerAPI::set_root_node(Node *p_node) {
 
 void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer) {
 
+	if (p_peer == network_peer) return; // Nothing to do
+
 	if (network_peer.is_valid()) {
 		network_peer->disconnect("peer_connected", this, "_add_peer");
 		network_peer->disconnect("peer_disconnected", this, "_del_peer");
