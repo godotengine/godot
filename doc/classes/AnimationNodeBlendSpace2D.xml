@@ -126,6 +126,12 @@
 		<member name="y_label" type="String" setter="set_y_label" getter="get_y_label">
 		</member>
 	</members>
+	<signals>
+		<signal name="triangles_updated">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="BLEND_MODE_INTERPOLATED" value="0" enum="BlendMode">
 		</constant>
