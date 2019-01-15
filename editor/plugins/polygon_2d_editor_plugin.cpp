@@ -482,6 +482,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						polygons_prev = node->get_polygons();
 						node->set_polygon(points_prev);
 						node->set_uv(points_prev);
+						node->set_internal_vertex_count(0);
 
 						uv_edit_draw->update();
 					} else {
