@@ -1181,7 +1181,11 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 				c.line = op->line;
 				c.block = blk;
 				if (_guess_expression_type(p_context, op->arguments[1], r_type)) {
-					r_type.type.is_meta_type = false;
+					r_type.type.is_meta_type = false; // Right-hand of `is` will be a meta type, but the left-hand value is not
+					// Not an assignment, it shouldn't carry any value
+					r_type.value = Variant();
+					r_type.assigned_expression = NULL;
+
 					return true;
 				}
 			}
