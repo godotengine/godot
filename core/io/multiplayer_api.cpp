@@ -122,6 +122,7 @@ void MultiplayerAPI::clear() {
 	connected_peers.clear();
 	path_get_cache.clear();
 	path_send_cache.clear();
+	packet_cache.clear();
 	last_send_cache_id = 1;
 }
 
@@ -857,6 +858,8 @@ void MultiplayerAPI::_bind_methods() {
 }
 
 MultiplayerAPI::MultiplayerAPI() {
+	rpc_sender_id = 0;
+	root_node = NULL;
 	clear();
 }
 
