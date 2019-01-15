@@ -819,15 +819,17 @@ int Animation::_insert(float p_time, T &p_keys, const V &p_value) {
 
 	while (true) {
 
-		if (idx == 0 || p_keys[idx - 1].time < p_time) {
-			//condition for insertion.
-			p_keys.insert(idx, p_value);
-			return idx;
-		} else if (p_keys[idx - 1].time == p_time) {
+		// Condition for replacement.
+		if (idx > 0 && Math::is_equal_approx(p_keys[idx - 1].time, p_time)) {
 
-			// condition for replacing.
 			p_keys.write[idx - 1] = p_value;
 			return idx - 1;
+
+			// Condition for insert.
+		} else if (idx == 0 || p_keys[idx - 1].time < p_time) {
+
+			p_keys.insert(idx, p_value);
+			return idx;
 		}
 
 		idx--;
