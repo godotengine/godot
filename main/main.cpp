@@ -1789,12 +1789,18 @@ uint64_t Main::target_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::frame = 0;
 bool Main::force_redraw_requested = false;
+bool Main::iteration_finished = true;
 
 // For performance metrics
 static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
 
 bool Main::iteration() {
+
+	if (!iteration_finished)
+		return false;
+
+	iteration_finished = false;
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 	Engine::get_singleton()->_frame_ticks = ticks;
@@ -1923,8 +1929,10 @@ bool Main::iteration() {
 		frames = 0;
 	}
 
-	if (fixed_fps != -1)
+	if (fixed_fps != -1) {
+		iteration_finished = true;
 		return exit;
+	}
 
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
 		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time (results in about 60 FPS max)
@@ -1948,11 +1956,13 @@ bool Main::iteration() {
 	if (auto_build_solutions) {
 		auto_build_solutions = false;
 		if (!EditorNode::get_singleton()->call_build()) {
+			iteration_finished = true;
 			ERR_FAIL_V(true);
 		}
 	}
 #endif
 
+	iteration_finished = true;
 	return exit || auto_quit;
 }
 
