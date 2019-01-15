@@ -324,7 +324,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 		int y = p_y * ah / h;
 
 		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, aw);
+		y = CLAMP(y, 0, ah);
 
 		return alpha_cache->get_bit(Point2(x, y));
 	}
@@ -791,7 +791,7 @@ bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
 		int y = p_y * ah / h;
 
 		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, aw);
+		y = CLAMP(y, 0, ah);
 
 		return alpha_cache->get_bit(Point2(x, y));
 	}
