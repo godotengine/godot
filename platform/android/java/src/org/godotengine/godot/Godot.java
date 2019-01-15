@@ -441,8 +441,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 		super.onCreate(icicle);
 		Window window = getWindow();
-		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 
 		//check for apk expansion API
