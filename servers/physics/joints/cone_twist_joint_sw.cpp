@@ -127,10 +127,10 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 		Vector3 relPos = pivotBInW - pivotAInW;
 
 		Vector3 normal[3];
-		if (relPos.length_squared() > CMP_EPSILON) {
-			normal[0] = relPos.normalized();
-		} else {
+		if (Math::is_zero_approx(relPos.length_squared())) {
 			normal[0] = Vector3(real_t(1.0), 0, 0);
+		} else {
+			normal[0] = relPos.normalized();
 		}
 
 		plane_space(normal[0], normal[1], normal[2]);
