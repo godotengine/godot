@@ -1877,7 +1877,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	immersive = true;
 
 	export_arm = true;
-	export_arm64 = false;
+	export_arm64 = true;
 	export_x86 = false;
 	export_x86_64 = false;
 
