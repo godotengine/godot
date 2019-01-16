@@ -4559,6 +4559,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				member.line = tokenizer->get_token_line();
 				member.usages = 0;
 				member.rpc_mode = rpc_mode;
+#ifdef TOOLS_ENABLED
+				Variant::CallError ce;
+				member.default_value = Variant::construct(member._export.type, NULL, 0, ce);
+#endif
 
 				if (current_class->constant_expressions.has(member.identifier)) {
 					_set_error("A constant named '" + String(member.identifier) + "' already exists in this class (at line: " +
