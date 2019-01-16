@@ -295,7 +295,7 @@ def configure(env):
                         '/toolchains/' + target_subpath + '/prebuilt/' + host_subpath + '/' + abi_subpath + '/lib'])
 
     env.Append(CPPPATH=['#platform/android'])
-    env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL', '-DMPC_FIXED_POINT'])
+    env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL'])
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z', 'dl'])
 
     # TODO: Move that to opus module's config
