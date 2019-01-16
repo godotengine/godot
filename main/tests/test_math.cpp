@@ -444,14 +444,11 @@ MainLoop *test() {
 		float bb = (rgbe >> 18) & 0x1ff;
 		float eb = (rgbe >> 27);
 		float mb = Math::pow(2, eb - 15.0 - 9.0);
-		;
 		float rd = rb * mb;
 		float gd = gb * mb;
 		float bd = bb * mb;
 
 		print_line("RGBE: " + Color(rd, gd, bd));
-
-		return NULL;
 	}
 
 	print_line("Dvectors: " + itos(MemoryPool::allocs_used));
@@ -482,8 +479,6 @@ MainLoop *test() {
 	print_line("later Mem used: " + itos(MemoryPool::total_memory));
 	print_line("Mlater Ax mem used: " + itos(MemoryPool::max_memory));
 
-	return NULL;
-
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
@@ -492,6 +487,11 @@ MainLoop *test() {
 	}
 
 	String test = cmdlargs.back()->get();
+	if (test == "math") {
+		// Not a file name but the test name, abort.
+		// FIXME: This test is ugly as heck, needs fixing :)
+		return NULL;
+	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
 
@@ -515,8 +515,6 @@ MainLoop *test() {
 	} else {
 		print_line("Found class: " + getclass.get_class());
 	}
-
-	return NULL;
 
 	{
 
@@ -557,13 +555,10 @@ MainLoop *test() {
 		}
 
 		print_line("DONE");
-
-		return NULL;
 	}
-	{
 
+	{
 		print_line("NUM: " + itos(-128));
-		return NULL;
 	}
 
 	{
@@ -593,7 +588,6 @@ MainLoop *test() {
 		print_line("after v: " + v + " a: " + rtos(a));
 	}
 
-	return NULL;
 	String ret;
 
 	List<String> args;
@@ -602,7 +596,6 @@ MainLoop *test() {
 	print_line("error: " + itos(err));
 	print_line(ret);
 
-	return NULL;
 	Basis m3;
 	m3.rotate(Vector3(1, 0, 0), 0.2);
 	m3.rotate(Vector3(0, 1, 0), 1.77);
@@ -611,17 +604,13 @@ MainLoop *test() {
 	m32.set_euler(m3.get_euler());
 	print_line("ELEULEEEEEEEEEEEEEEEEEER: " + m3.get_euler() + " vs " + m32.get_euler());
 
-	return NULL;
-
 	{
-
 		Dictionary d;
 		d["momo"] = 1;
 		Dictionary b = d;
 		b["44"] = 4;
 	}
 
-	return NULL;
 	print_line("inters: " + rtos(Geometry::segment_intersects_circle(Vector2(-5, 0), Vector2(-2, 0), Vector2(), 1.0)));
 
 	print_line("cross: " + Vector3(1, 2, 3).cross(Vector3(4, 5, 7)));
