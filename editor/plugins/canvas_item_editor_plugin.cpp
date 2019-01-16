@@ -573,10 +573,10 @@ bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *
 	Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().from));
 	Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().to));
 
-	if (!from_node->is_inside_tree())
-		return false; //may have been removed
 	if (!from_node)
 		return false;
+	if (!from_node->is_inside_tree())
+		return false; //may have been removed
 
 	if (!to_node && bone->get().length == 0)
 		return false;
