@@ -26,7 +26,7 @@ def get_opts():
         ('ANDROID_NDK_ROOT', 'the path to Android NDK',
          os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'compile for platform: (android-<api> , example: android-18)', "android-18"),
-        ('android_arch', 'select compiler architecture: (armv7/armv6/arm64v8/x86)', "armv7"),
+        ('android_arch', 'select compiler architecture: (armv7/armv6/arm64v8/x86/x86_64)', "armv7"),
         ('android_neon', 'enable neon (armv7 only)', "yes"),
         ('android_stl', 'enable STL support in android port (for modules)', "no")
     ]
@@ -93,11 +93,8 @@ def configure(env):
 
     ndk_platform = env['ndk_platform']
 
-    if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86']:
+    if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86', 'x86_64']:
         env['android_arch'] = 'armv7'
-
-    if env['android_arch'] == 'x86':
-        env["x86_libtheora_opt_gcc"] = True
 
     if env['PLATFORM'] == 'win32':
         env.Tool('gcc')
@@ -116,6 +113,17 @@ def configure(env):
         target_subpath = "x86-4.9"
         abi_subpath = "i686-linux-android"
         arch_subpath = "x86"
+        env["x86_libtheora_opt_gcc"] = True
+    elif env['android_arch'] == 'x86_64':
+        if get_platform(env["ndk_platform"]) < 21:
+            print("WARNING: android_arch=x86_64 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
+            env["ndk_platform"] = "android-21"
+        env['ARCH'] = 'arch-x86_64'
+        env.extra_suffix = ".x86_64" + env.extra_suffix
+        target_subpath = "x86_64-4.9"
+        abi_subpath = "x86_64-linux-android"
+        arch_subpath = "x86_64"
+        env["x86_libtheora_opt_gcc"] = True
     elif env['android_arch'] == 'armv6':
         env['ARCH'] = 'arch-arm'
         env.extra_suffix = ".armv6" + env.extra_suffix
@@ -209,6 +217,11 @@ def configure(env):
         target_opts = ['-target', 'i686-none-linux-android']
         # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
         env.Append(CPPFLAGS=['-mstackrealign'])
+
+    elif env['android_arch'] == 'x86_64':
+        can_vectorize = True
+        target_opts = ['-target', 'x86_64-none-linux-android']
+
     elif env["android_arch"] == "armv6":
         can_vectorize = False
         target_opts = ['-target', 'armv6-none-linux-androideabi']

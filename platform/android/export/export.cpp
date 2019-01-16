@@ -219,6 +219,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool export_arm;
 	bool export_arm64;
 	bool export_x86;
+	bool export_x86_64;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
 	int orientation;
@@ -319,6 +320,8 @@ bool EditorExportPlatformAndroid::_set(const StringName &p_name, const Variant &
 		export_arm64 = p_value;
 	else if (n == "architecture/x86")
 		export_x86 = p_value;
+	else if (n == "architecture/x86_64")
+		export_x86_64 = p_value;
 	else if (n == "screen/use_32_bits_view")
 		use_32_fb = p_value;
 	else if (n == "screen/immersive_mode")
@@ -394,6 +397,8 @@ bool EditorExportPlatformAndroid::_get(const StringName &p_name, Variant &r_ret)
 		r_ret = export_arm64;
 	else if (n == "architecture/x86")
 		r_ret = export_x86;
+	else if (n == "architecture/x86_64")
+		r_ret = export_x86_64;
 	else if (n == "screen/use_32_bits_view")
 		r_ret = use_32_fb;
 	else if (n == "screen/immersive_mode")
@@ -450,6 +455,7 @@ void EditorExportPlatformAndroid::_get_property_list(List<PropertyInfo> *p_list)
 	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/arm"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/arm64"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/x86"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "architecture/x86_64"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "screen/use_32_bits_view"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "screen/immersive_mode"));
 	p_list->push_back(PropertyInfo(Variant::INT, "screen/orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait"));
@@ -1209,6 +1215,10 @@ Error EditorExportPlatformAndroid::export_project(const String &p_path, bool p_d
 			skip = true;
 		}
 
+		if (file == "lib/x86_64/libgodot_android.so" && !export_x86_64) {
+			skip = true;
+		}
+
 		if (file.match("lib/armeabi*/libgodot_android.so") && !export_arm) {
 			skip = true;
 		}
@@ -1869,6 +1879,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	export_arm = true;
 	export_arm64 = false;
 	export_x86 = false;
+	export_x86_64 = false;
 
 	device_thread = Thread::create(_device_poll_thread, this);
 	devices_changed = true;
