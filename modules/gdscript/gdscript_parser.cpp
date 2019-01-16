@@ -5058,7 +5058,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 			if (ScriptServer::is_global_class(base)) {
 				base_script = ResourceLoader::load(ScriptServer::get_global_class_path(base));
 				if (!base_script.is_valid()) {
-					_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
+					_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic dependency).", p_class->line);
 					return;
 				}
 				p = NULL;
@@ -5387,7 +5387,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 					Ref<GDScript> gds = script;
 					if (gds.is_valid()) {
 						if (!gds->is_valid()) {
-							_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic inheritance).", p_line);
+							_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic dependency).", p_line);
 							return DataType();
 						}
 						result.kind = DataType::GDSCRIPT;
@@ -7179,7 +7179,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				Ref<GDScript> gds = scr;
 				if (gds.is_valid()) {
 					if (!gds->is_valid()) {
-						_set_error("Class '" + p_identifier + "' could not be fully loaded (script error or cyclic inheritance).");
+						_set_error("Class '" + p_identifier + "' could not be fully loaded (script error or cyclic dependency).");
 						return DataType();
 					}
 					result.kind = DataType::GDSCRIPT;
