@@ -27,7 +27,7 @@ def get_opts():
     return [
         ('ANDROID_NDK_ROOT', 'Path to the Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
-        EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86')),
+        EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86', 'x86_64')),
         BoolVariable('android_neon', 'Enable NEON support (armv7 only)', True),
         BoolVariable('android_stl', 'Enable Android STL support (for modules)', True)
     ]
@@ -94,7 +94,7 @@ def configure(env):
 
     ## Architecture
 
-    if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86']:
+    if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86', 'x86_64']:
         env['android_arch'] = 'armv7'
 
     neon_text = ""
@@ -109,6 +109,16 @@ def configure(env):
         target_subpath = "x86-4.9"
         abi_subpath = "i686-linux-android"
         arch_subpath = "x86"
+        env["x86_libtheora_opt_gcc"] = True
+    if env['android_arch'] == 'x86_64':
+        if get_platform(env["ndk_platform"]) < 21:
+            print("WARNING: android_arch=x86_64 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
+            env["ndk_platform"] = "android-21"
+        env['ARCH'] = 'arch-x86_64'
+        env.extra_suffix = ".x86_64" + env.extra_suffix
+        target_subpath = "x86_64-4.9"
+        abi_subpath = "x86_64-linux-android"
+        arch_subpath = "x86_64"
         env["x86_libtheora_opt_gcc"] = True
     elif env['android_arch'] == 'armv6':
         env['ARCH'] = 'arch-arm'
@@ -232,6 +242,9 @@ def configure(env):
         target_opts = ['-target', 'i686-none-linux-android']
         # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
         env.Append(CPPFLAGS=['-mstackrealign'])
+
+    elif env['android_arch'] == 'x86_64':
+        target_opts = ['-target', 'x86_64-none-linux-android']
 
     elif env["android_arch"] == "armv6":
         target_opts = ['-target', 'armv6-none-linux-androideabi']
