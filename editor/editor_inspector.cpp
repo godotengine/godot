@@ -434,7 +434,7 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 		float a = p_current;
 		float b = p_orig;
 
-		return Math::abs(a - b) > CMP_EPSILON; //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		return !Math::is_equal_approx(a, b); //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
 	}
 
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));

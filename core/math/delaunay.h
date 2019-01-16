@@ -80,11 +80,11 @@ public:
 	}
 
 	static bool edge_compare(const Vector<Vector2> &p_vertices, const Edge &p_a, const Edge &p_b) {
-		if (p_vertices[p_a.edge[0]].distance_to(p_vertices[p_b.edge[0]]) < CMP_EPSILON && p_vertices[p_a.edge[1]].distance_to(p_vertices[p_b.edge[1]]) < CMP_EPSILON) {
+		if (Math::is_zero_approx(p_vertices[p_a.edge[0]].distance_to(p_vertices[p_b.edge[0]])) && Math::is_zero_approx(p_vertices[p_a.edge[1]].distance_to(p_vertices[p_b.edge[1]]))) {
 			return true;
 		}
 
-		if (p_vertices[p_a.edge[0]].distance_to(p_vertices[p_b.edge[1]]) < CMP_EPSILON && p_vertices[p_a.edge[1]].distance_to(p_vertices[p_b.edge[0]]) < CMP_EPSILON) {
+		if (Math::is_zero_approx(p_vertices[p_a.edge[0]].distance_to(p_vertices[p_b.edge[1]])) && Math::is_zero_approx(p_vertices[p_a.edge[1]].distance_to(p_vertices[p_b.edge[0]]))) {
 			return true;
 		}
 

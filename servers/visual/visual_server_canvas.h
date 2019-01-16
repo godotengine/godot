@@ -82,7 +82,7 @@ public:
 
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
 
-			if (Math::abs(p_left->ysort_pos.y - p_right->ysort_pos.y) < CMP_EPSILON)
+			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y))
 				return p_left->ysort_pos.x < p_right->ysort_pos.x;
 			else
 				return p_left->ysort_pos.y < p_right->ysort_pos.y;

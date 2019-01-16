@@ -242,7 +242,7 @@ void CSGBrushOperation::BuildPoly::_clip_segment(const CSGBrush *p_brush, int p_
 	//check if edge and poly share a vertex, of so, assign it to segment_idx
 	for (int i = 0; i < points.size(); i++) {
 		for (int j = 0; j < 2; j++) {
-			if (segment[j].distance_to(points[i].point) < CMP_EPSILON) {
+			if (Math::is_zero_approx(segment[j].distance_to(points[i].point))) {
 				segment_idx[j] = i;
 				inserted_points.push_back(i);
 				break;
@@ -310,7 +310,7 @@ void CSGBrushOperation::BuildPoly::_clip_segment(const CSGBrush *p_brush, int p_
 			Vector2 edgeseg[2] = { points[edges[i].points[0]].point, points[edges[i].points[1]].point };
 			Vector2 closest = Geometry::get_closest_point_to_segment_2d(segment[j], edgeseg);
 
-			if (closest.distance_to(segment[j]) < CMP_EPSILON) {
+			if (Math::is_zero_approx(closest.distance_to(segment[j]))) {
 				//point rest of this edge
 				res = closest;
 				found = true;
@@ -439,7 +439,7 @@ void CSGBrushOperation::BuildPoly::clip(const CSGBrush *p_brush, int p_face, Mes
 
 	//transform A points to 2D
 
-	if (segment[0].distance_to(segment[1]) < CMP_EPSILON)
+	if (Math::is_zero_approx(segment[0].distance_to(segment[1])))
 		return; //too small
 
 	_clip_segment(p_brush, p_face, segment, mesh_merge, p_for_B);
@@ -461,10 +461,10 @@ void CSGBrushOperation::_collision_callback(const CSGBrush *A, int p_face_a, Map
 
 	{
 		//check if either is a degenerate
-		if (va[0].distance_to(va[1]) < CMP_EPSILON || va[0].distance_to(va[2]) < CMP_EPSILON || va[1].distance_to(va[2]) < CMP_EPSILON)
+		if (Math::is_zero_approx(va[0].distance_to(va[1])) || Math::is_zero_approx(va[0].distance_to(va[2])) || Math::is_zero_approx(va[1].distance_to(va[2])))
 			return;
 
-		if (vb[0].distance_to(vb[1]) < CMP_EPSILON || vb[0].distance_to(vb[2]) < CMP_EPSILON || vb[1].distance_to(vb[2]) < CMP_EPSILON)
+		if (Math::is_zero_approx(vb[0].distance_to(vb[1])) || Math::is_zero_approx(vb[0].distance_to(vb[2])) || Math::is_zero_approx(vb[1].distance_to(vb[2])))
 			return;
 	}
 

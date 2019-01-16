@@ -237,8 +237,8 @@ public:
 
 		Vector2 axis = p_axis;
 
-		if (Math::abs(axis.x) < CMP_EPSILON &&
-				Math::abs(axis.y) < CMP_EPSILON) {
+		if (Math::is_zero_approx(axis.x) &&
+				Math::is_zero_approx(axis.y)) {
 			// strange case, try an upwards separator
 			axis = Vector2(0.0, 1.0);
 		}

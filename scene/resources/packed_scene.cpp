@@ -535,7 +535,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map
 					float a = value;
 					float b = original;
 
-					if (Math::abs(a - b) < CMP_EPSILON)
+					if (Math::is_equal_approx(a, b))
 						continue;
 				} else if (bool(Variant::evaluate(Variant::OP_EQUAL, value, original))) {
 

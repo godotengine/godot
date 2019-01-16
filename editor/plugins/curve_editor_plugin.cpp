@@ -194,7 +194,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					Vector2 dir = (control_pos - point_pos).normalized();
 
 					real_t tangent;
-					if (Math::abs(dir.x) > CMP_EPSILON)
+					if (!Math::is_zero_approx(dir.x))
 						tangent = dir.y / dir.x;
 					else
 						tangent = 9999 * (dir.y >= 0 ? 1 : -1);

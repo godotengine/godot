@@ -98,7 +98,7 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 	Vector3 c = rel_A.cross(rel_B).cross(rel_B);
 
-	if (Math::abs(rel_A.dot(c)) < CMP_EPSILON) {
+	if (Math::is_zero_approx(rel_A.dot(c))) {
 
 		// should handle somehow..
 		//ERR_PRINT("TODO FIX");
@@ -678,7 +678,7 @@ static void _collision_box_box(const ShapeSW *p_a, const Transform &p_transform_
 
 			Vector3 axis = p_transform_a.basis.get_axis(i).cross(p_transform_b.basis.get_axis(j));
 
-			if (axis.length_squared() < CMP_EPSILON)
+			if (Math::is_zero_approx(axis.length_squared()))
 				continue;
 			axis.normalize();
 
@@ -767,7 +767,7 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 		// cylinder
 		Vector3 box_axis = p_transform_a.basis.get_axis(i);
 		Vector3 axis = box_axis.cross(cyl_axis);
-		if (axis.length_squared() < CMP_EPSILON)
+		if (Math::is_zero_approx(axis.length_squared()))
 			continue;
 
 		if (!separator.test_axis(axis.normalized()))
