@@ -1158,10 +1158,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
-				//r.grow(cache.selected->get_margin(MARGIN_LEFT));
+				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 				if (has_focus()) {
 					cache.selected_focus->draw(ci, r);
-					p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 				} else {
 					cache.selected->draw(ci, r);
 				}
