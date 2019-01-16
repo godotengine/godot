@@ -486,7 +486,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						script = codegen.script;
 					} else {
 						StringName name = cn->cast_type.class_type->name;
-						if (class_map[name] == codegen.script->subclasses[name]) {
+						if (codegen.script->subclasses.has(name) && class_map[name] == codegen.script->subclasses[name]) {
 							idx = codegen.get_name_map_pos(name);
 							idx |= GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS;
 						} else {
@@ -1183,7 +1183,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 										script = codegen.script;
 									} else {
 										StringName name = assign_type.class_type->name;
-										if (class_map[name] == codegen.script->subclasses[name]) {
+										if (codegen.script->subclasses.has(name) && class_map[name] == codegen.script->subclasses[name]) {
 											idx = codegen.get_name_map_pos(name);
 											idx |= GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS;
 										} else {
