@@ -1303,6 +1303,14 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 					t = t->get_ptr();
 
+#ifdef TOOLS_ENABLED
+					if (t->detect_normal && texture_hints[i] == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL) {
+						t->detect_normal(t->detect_normal_ud);
+					}
+#endif
+					if (t->render_target)
+						t->render_target->used_in_frame = true;
+
 					if (t->redraw_if_visible) {
 						VisualServerRaster::redraw_request();
 					}

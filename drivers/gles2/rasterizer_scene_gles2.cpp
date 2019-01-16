@@ -1245,6 +1245,24 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 
 		t = t->get_ptr();
 
+		if (t->redraw_if_visible) { //must check before proxy because this is often used with proxies
+			VisualServerRaster::redraw_request();
+		}
+
+#ifdef TOOLS_ENABLED
+		if (t->detect_3d) {
+			t->detect_3d(t->detect_3d_ud);
+		}
+#endif
+
+#ifdef TOOLS_ENABLED
+		if (t->detect_normal && texture_hints[i] == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL) {
+			t->detect_normal(t->detect_normal_ud);
+		}
+#endif
+		if (t->render_target)
+			t->render_target->used_in_frame = true;
+
 		glBindTexture(t->target, t->tex_id);
 		if (i == 0) {
 			state.current_main_tex = t->tex_id;
