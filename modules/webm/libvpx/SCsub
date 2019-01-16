@@ -272,9 +272,9 @@ else:
     import platform
     is_x11_or_server_arm = ((env["platform"] == 'x11' or env["platform"] == 'server') and (platform.machine().startswith('arm') or platform.machine().startswith('aarch')))
     is_ios_x86 = (env["platform"] == 'iphone' and ("arch" in env and env["arch"].startswith('x86')))
-    is_android_x86 = (env["platform"] == 'android' and env["android_arch"] == 'x86')
+    is_android_x86 = (env["platform"] == 'android' and env["android_arch"].startswith('x86'))
     if is_android_x86:
-        cpu_bits = '32'
+        cpu_bits = '32' if env["android_arch"] == 'x86' else '64'
     webm_cpu_x86 = not is_x11_or_server_arm and (cpu_bits == '32' or cpu_bits == '64') and (env["platform"] == 'windows' or env["platform"] == 'x11' or env["platform"] == 'osx' or env["platform"] == 'haiku' or is_android_x86 or is_ios_x86)
     webm_cpu_arm = is_x11_or_server_arm or (not is_ios_x86 and env["platform"] == 'iphone') or (not is_android_x86 and env["platform"] == 'android')
 
