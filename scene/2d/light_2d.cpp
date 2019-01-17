@@ -450,7 +450,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color"), "set_shadow_color", "get_shadow_color");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_buffer_size", PROPERTY_HINT_RANGE, "32,16384,1"), "set_shadow_buffer_size", "get_shadow_buffer_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_gradient_length", PROPERTY_HINT_RANGE, "0,4096,0.1"), "set_shadow_gradient_length", "get_shadow_gradient_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_filter", PROPERTY_HINT_ENUM, "None,PCF3,PCF5,PCF7,PCF9,PCF13"), "set_shadow_filter", "get_shadow_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_filter", PROPERTY_HINT_ENUM, "None,PCF3,PCF5,PCF7,PCF9,PCF13"), "set_shadow_filter", "get_shadow_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "shadow_filter_smooth", PROPERTY_HINT_RANGE, "0,64,0.1"), "set_shadow_smooth", "get_shadow_smooth");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_item_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_item_shadow_cull_mask", "get_item_shadow_cull_mask");
 

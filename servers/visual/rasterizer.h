@@ -656,7 +656,7 @@ public:
 			next_ptr = NULL;
 			mask_next_ptr = NULL;
 			filter_next_ptr = NULL;
-			shadow_buffer_size = 256;
+			shadow_buffer_size = 2048;
 			shadow_gradient_length = 0;
 			shadow_filter = VS::CANVAS_LIGHT_FILTER_NONE;
 			shadow_smooth = 0.0;

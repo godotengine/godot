@@ -93,6 +93,7 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 			glBindTexture(GL_TEXTURE_2D, cls->distance);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_MATRIX, light->shadow_matrix_cache);
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_SHADOW_COLOR, light->shadow_color);
+
 			state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOWPIXEL_SIZE, (1.0 / light->shadow_buffer_size) * (1.0 + light->shadow_smooth));
 			if (light->radius_cache == 0) {
 				state.canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_GRADIENT, 0.0);
@@ -1446,25 +1447,20 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 					state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_SHADOWS, has_shadow);
 					if (has_shadow) {
 						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_USE_GRADIENT, light->shadow_gradient_length > 0);
-						switch (light->shadow_filter) {
-
-							case VS::CANVAS_LIGHT_FILTER_NONE: state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_NEAREST, true); break;
-							case VS::CANVAS_LIGHT_FILTER_PCF3: state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF3, true); break;
-							case VS::CANVAS_LIGHT_FILTER_PCF5: state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF5, true); break;
-							case VS::CANVAS_LIGHT_FILTER_PCF7: state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF7, true); break;
-							case VS::CANVAS_LIGHT_FILTER_PCF9: state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF9, true); break;
-							case VS::CANVAS_LIGHT_FILTER_PCF13: state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF13, true); break;
-						}
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_NEAREST, light->shadow_filter == VS::CANVAS_LIGHT_FILTER_NONE);
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF3, light->shadow_filter == VS::CANVAS_LIGHT_FILTER_PCF3);
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF5, light->shadow_filter == VS::CANVAS_LIGHT_FILTER_PCF5);
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF7, light->shadow_filter == VS::CANVAS_LIGHT_FILTER_PCF7);
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF9, light->shadow_filter == VS::CANVAS_LIGHT_FILTER_PCF9);
+						state.canvas_shader.set_conditional(CanvasShaderGLES2::SHADOW_FILTER_PCF13, light->shadow_filter == VS::CANVAS_LIGHT_FILTER_PCF13);
 					}
 
-					bool light_rebind = state.canvas_shader.bind();
+					state.canvas_shader.bind();
 					state.using_light = light;
 					state.using_shadow = has_shadow;
 
-					if (light_rebind) {
-
-						_set_uniforms();
-					}
+					//always re-set uniforms, since light parameters changed
+					_set_uniforms();
 
 					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 					RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(light->texture);
