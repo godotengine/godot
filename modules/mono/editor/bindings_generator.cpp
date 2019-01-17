@@ -80,6 +80,7 @@
 #define ICALL_GET_METHODBIND ICALL_PREFIX "Object_ClassDB_get_method"
 
 #define C_LOCAL_RET "ret"
+#define C_LOCAL_VARARG_RET "vararg_ret"
 #define C_LOCAL_PTRCALL_ARGS "call_args"
 #define C_MACRO_OBJECT_CONSTRUCT "GODOTSHARP_INSTANCE_OBJECT"
 
@@ -96,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(5)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(6)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -1501,6 +1502,15 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			String ptrcall_return_type;
 			String initialization;
 
+			if (p_imethod.is_vararg && return_type->cname != name_cache.type_Variant) {
+				// VarArg methods always return Variant, but there are some cases in which MethodInfo provides
+				// a specific return type. We trust this information is valid. We need a temporary local to keep
+				// the Variant alive until the method returns. Otherwise, if the returned Variant holds a RefPtr,
+				// it could be deleted too early. This is the case with GDScript.new() which returns OBJECT.
+				// Alternatively, we could just return Variant, but that would result in a worse API.
+				p_output.push_back("\tVariant " C_LOCAL_VARARG_RET ";\n");
+			}
+
 			if (return_type->is_object_type) {
 				ptrcall_return_type = return_type->is_reference ? "Ref<Reference>" : return_type->c_type;
 				initialization = return_type->is_reference ? "" : " = NULL";
@@ -1558,12 +1568,23 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		if (p_imethod.is_vararg) {
 			p_output.push_back("\tVariant::CallError vcall_error;\n\t");
 
-			if (!ret_void)
-				p_output.push_back(C_LOCAL_RET " = ");
+			if (!ret_void) {
+				// See the comment on the C_LOCAL_VARARG_RET declaration
+				if (return_type->cname != name_cache.type_Variant) {
+					p_output.push_back(C_LOCAL_VARARG_RET " = ");
+				} else {
+					p_output.push_back(C_LOCAL_RET " = ");
+				}
+			}
 
 			p_output.push_back(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
 			p_output.push_back(p_imethod.arguments.size() ? "(const Variant**)" C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
 			p_output.push_back(", total_length, vcall_error);\n");
+
+			// See the comment on the C_LOCAL_VARARG_RET declaration
+			if (return_type->cname != name_cache.type_Variant) {
+				p_output.push_back("\t" C_LOCAL_RET " = " C_LOCAL_VARARG_RET ";\n");
+			}
 		} else {
 			p_output.push_back("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
 			p_output.push_back(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "NULL, ");
