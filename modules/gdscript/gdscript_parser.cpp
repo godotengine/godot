@@ -5438,6 +5438,12 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 			// Inner classes
 			ClassNode *outer_class = p;
 			while (outer_class) {
+				if (outer_class->name == id) {
+					found = true;
+					result.kind = DataType::CLASS;
+					result.class_type = outer_class;
+					break;
+				}
 				for (int i = 0; i < outer_class->subclasses.size(); i++) {
 					if (outer_class->subclasses[i] == p) {
 						continue;
