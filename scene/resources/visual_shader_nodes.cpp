@@ -1364,6 +1364,98 @@ VisualShaderNodeVectorLen::VisualShaderNodeVectorLen() {
 	set_input_port_default_value(0, Vector3());
 }
 
+////////////// Scalar Clamp
+
+String VisualShaderNodeScalarClamp::get_caption() const {
+	return "ScalarClamp";
+}
+
+int VisualShaderNodeScalarClamp::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeScalarClamp::PortType VisualShaderNodeScalarClamp::get_input_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeScalarClamp::get_input_port_name(int p_port) const {
+	if (p_port == 0)
+		return "";
+	else if (p_port == 1)
+		return "min";
+	else if (p_port == 2)
+		return "max";
+	return "";
+}
+
+int VisualShaderNodeScalarClamp::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeScalarClamp::PortType VisualShaderNodeScalarClamp::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeScalarClamp::get_output_port_name(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeScalarClamp::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+	return "\t" + p_output_vars[0] + " = clamp( " + p_input_vars[0] + ", " + p_input_vars[1] + ", " + p_input_vars[2] + " );\n";
+}
+
+VisualShaderNodeScalarClamp::VisualShaderNodeScalarClamp() {
+	set_input_port_default_value(0, 0.0);
+	set_input_port_default_value(1, 0.0);
+	set_input_port_default_value(2, 1.0);
+}
+
+////////////// Vector Clamp
+
+String VisualShaderNodeVectorClamp::get_caption() const {
+	return "VectorClamp";
+}
+
+int VisualShaderNodeVectorClamp::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeVectorClamp::PortType VisualShaderNodeVectorClamp::get_input_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeVectorClamp::get_input_port_name(int p_port) const {
+	if (p_port == 0)
+		return "";
+	else if (p_port == 1)
+		return "min";
+	else if (p_port == 2)
+		return "max";
+	return "";
+}
+
+int VisualShaderNodeVectorClamp::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeVectorClamp::PortType VisualShaderNodeVectorClamp::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeVectorClamp::get_output_port_name(int p_port) const {
+	return "";
+}
+
+String VisualShaderNodeVectorClamp::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+	return "\t" + p_output_vars[0] + " = clamp( " + p_input_vars[0] + ", " + p_input_vars[1] + ", " + p_input_vars[2] + " );\n";
+}
+
+VisualShaderNodeVectorClamp::VisualShaderNodeVectorClamp() {
+	set_input_port_default_value(0, Vector3(0, 0, 0));
+	set_input_port_default_value(1, Vector3(0, 0, 0));
+	set_input_port_default_value(2, Vector3(1, 1, 1));
+}
+
 ////////////// Scalar Interp
 
 String VisualShaderNodeScalarInterp::get_caption() const {
