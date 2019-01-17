@@ -51,7 +51,7 @@ Ref<Texture> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_di
 	return file_icon;
 }
 
-bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths) {
+bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites) {
 
 	bool parent_should_expand = false;
 
@@ -66,7 +66,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	subdirectory_item->set_selectable(0, true);
 	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
-	if (path == lpath || ((display_mode_setting == DISPLAY_MODE_SETTING_SPLIT) && path.get_base_dir() == lpath)) {
+	if (!p_select_in_favorites && (path == lpath || ((display_mode_setting == DISPLAY_MODE_SETTING_SPLIT) && path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
 	}
 
@@ -81,7 +81,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	// Create items for all subdirectories
 	for (int i = 0; i < p_dir->get_subdir_count(); i++)
-		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths) || parent_should_expand);
+		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites) || parent_should_expand);
 
 	// Create all items for the files in the subdirectory
 	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
@@ -103,7 +103,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_item->set_icon(0, _get_tree_item_icon(p_dir, i));
 			String file_metadata = lpath.plus_file(file_name);
 			file_item->set_metadata(0, file_metadata);
-			if (path == file_metadata) {
+			if (!p_select_in_favorites && path == file_metadata) {
 				file_item->select(0);
 				file_item->set_as_cursor(0);
 			}
@@ -156,7 +156,7 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 	return uncollapsed_paths;
 }
 
-void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool p_uncollapse_root) {
+void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites) {
 
 	// Recreate the tree
 	tree->clear();
@@ -205,6 +205,10 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 			ti->set_tooltip(0, fave);
 			ti->set_selectable(0, true);
 			ti->set_metadata(0, fave);
+			if (p_select_in_favorites && fave == path) {
+				ti->select(0);
+				ti->set_as_cursor(0);
+			}
 			if (!fave.ends_with("/")) {
 				Array udata;
 				udata.push_back(tree_update_id);
@@ -220,7 +224,7 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 	}
 
 	// Create the remaining of the tree
-	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths);
+	_create_tree(root, EditorFileSystem::get_singleton()->get_filesystem(), uncollapsed_paths, p_select_in_favorites);
 	tree->ensure_cursor_is_visible();
 	updating_tree = false;
 }
@@ -296,7 +300,7 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_popup->connect("id_pressed", this, "_file_list_rmb_option");
 			tree_popup->connect("id_pressed", this, "_tree_rmb_option");
 
-			current_path->connect("text_entered", this, "navigate_to_path");
+			current_path->connect("text_entered", this, "_navigate_to_path");
 
 			display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
@@ -442,8 +446,7 @@ void FileSystemDock::_set_current_path_text(const String &p_path) {
 	}
 }
 
-void FileSystemDock::navigate_to_path(const String &p_path) {
-
+void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_favorites) {
 	if (p_path == "Favorites") {
 		path = p_path;
 	} else {
@@ -466,7 +469,7 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 	_set_current_path_text(path);
 	_push_to_history();
 
-	_update_tree(_compute_uncollapsed_paths());
+	_update_tree(_compute_uncollapsed_paths(), false, p_select_in_favorites);
 	if (display_mode == DISPLAY_MODE_SPLIT) {
 		_update_file_list(false);
 	}
@@ -481,6 +484,10 @@ void FileSystemDock::navigate_to_path(const String &p_path) {
 			}
 		}
 	}
+}
+
+void FileSystemDock::navigate_to_path(const String &p_path) {
+	_navigate_to_path(p_path);
 }
 
 void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
@@ -790,7 +797,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 }
 
-void FileSystemDock::_select_file(const String p_path) {
+void FileSystemDock::_select_file(const String p_path, bool p_select_in_favorites) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
 		if (fpath != "res://") {
@@ -803,17 +810,21 @@ void FileSystemDock::_select_file(const String p_path) {
 			editor->load_resource(fpath);
 		}
 	}
-	navigate_to_path(fpath);
+	_navigate_to_path(fpath, p_select_in_favorites);
 }
 
 void FileSystemDock::_tree_activate_file() {
 	TreeItem *selected = tree->get_selected();
 	if (selected) {
-		call_deferred("_select_file", selected->get_metadata(0));
+		String path = selected->get_metadata(0);
+		TreeItem *parent = selected->get_parent();
+		bool is_favorite = parent != NULL && parent->get_metadata(0) == "Favorites";
 
-		if (path.ends_with("/") || path == "Favorites") {
+		if ((!is_favorite && path.ends_with("/")) || path == "Favorites") {
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
+		} else {
+			_select_file(path, is_favorite && !path.ends_with("/"));
 		}
 	}
 }
@@ -2141,7 +2152,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 
 void FileSystemDock::select_file(const String &p_file) {
 
-	navigate_to_path(p_file);
+	_navigate_to_path(p_file);
 }
 
 void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
@@ -2292,7 +2303,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_list_activate_file"), &FileSystemDock::_file_list_activate_file);
 	ClassDB::bind_method(D_METHOD("_tree_activate_file"), &FileSystemDock::_tree_activate_file);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
-	ClassDB::bind_method(D_METHOD("navigate_to_path"), &FileSystemDock::navigate_to_path);
+	ClassDB::bind_method(D_METHOD("_navigate_to_path"), &FileSystemDock::_navigate_to_path);
 	ClassDB::bind_method(D_METHOD("_change_file_display"), &FileSystemDock::_change_file_display);
 	ClassDB::bind_method(D_METHOD("_fw_history"), &FileSystemDock::_fw_history);
 	ClassDB::bind_method(D_METHOD("_bw_history"), &FileSystemDock::_bw_history);
@@ -2310,6 +2321,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &FileSystemDock::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &FileSystemDock::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &FileSystemDock::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("navigate_to_path"), &FileSystemDock::navigate_to_path);
 
 	ClassDB::bind_method(D_METHOD("_preview_invalidated"), &FileSystemDock::_preview_invalidated);
 	ClassDB::bind_method(D_METHOD("_file_multi_selected"), &FileSystemDock::_file_multi_selected);
