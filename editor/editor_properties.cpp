@@ -2397,7 +2397,7 @@ void EditorPropertyResource::_update_menu() {
 
 void EditorPropertyResource::_sub_inspector_property_keyed(const String &p_property, const Variant &p_value, bool) {
 
-	emit_signal("property_keyed_with_value", String(get_edited_property()) + ":" + p_property, p_value);
+	emit_signal("property_keyed_with_value", String(get_edited_property()) + ":" + p_property, p_value, false);
 }
 
 void EditorPropertyResource::_sub_inspector_resource_selected(const RES &p_resource, const String &p_property) {
