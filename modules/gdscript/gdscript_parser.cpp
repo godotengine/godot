@@ -5062,7 +5062,7 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class) {
 			if (ScriptServer::is_global_class(base)) {
 				base_script = ResourceLoader::load(ScriptServer::get_global_class_path(base));
 				if (!base_script.is_valid()) {
-					_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic inheritance).", p_class->line);
+					_set_error("Class '" + base + "' could not be fully loaded (script error or cyclic dependency).", p_class->line);
 					return;
 				}
 				p = NULL;
@@ -5391,7 +5391,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 					Ref<GDScript> gds = script;
 					if (gds.is_valid()) {
 						if (!gds->is_valid()) {
-							_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic inheritance).", p_line);
+							_set_error("Class '" + id + "' could not be fully loaded (script error or cyclic dependency).", p_line);
 							return DataType();
 						}
 						result.kind = DataType::GDSCRIPT;
@@ -5936,7 +5936,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 				int idx = current_function->arguments.find(id->name);
 				node_type = current_function->argument_types[idx];
 			} else {
-				node_type = _reduce_identifier_type(NULL, id->name, id->line);
+				node_type = _reduce_identifier_type(NULL, id->name, id->line, false);
 			}
 		} break;
 		case Node::TYPE_CAST: {
@@ -6186,7 +6186,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							result.is_constant = false;
 							node_type = result;
 						} else {
-							node_type = _reduce_identifier_type(&base_type, member_id->name, op->line);
+							node_type = _reduce_identifier_type(&base_type, member_id->name, op->line, true);
 #ifdef DEBUG_ENABLED
 							if (!node_type.has_type) {
 								_add_warning(GDScriptWarning::UNSAFE_PROPERTY_ACCESS, op->line, member_id->name.operator String(), base_type.to_string());
@@ -6902,9 +6902,9 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 
 		if (!base_type.is_meta_type) {
 			for (int i = 0; i < base->variables.size(); i++) {
-				ClassNode::Member m = base->variables[i];
-				if (m.identifier == p_member) {
-					r_member_type = m.data_type;
+				if (base->variables[i].identifier == p_member) {
+					r_member_type = base->variables[i].data_type;
+					base->variables.write[i].usages += 1;
 					return true;
 				}
 			}
@@ -7099,41 +7099,31 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 	return false;
 }
 
-GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line) {
+GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line, bool p_is_indexing) {
 
 	if (p_base_type && !p_base_type->has_type) {
 		return DataType();
 	}
 
 	DataType base_type;
+	DataType member_type;
 
-	// Check classes in current file
-	ClassNode *base = NULL;
 	if (!p_base_type) {
-		base = current_class;
 		base_type.has_type = true;
 		base_type.is_constant = true;
 		base_type.kind = DataType::CLASS;
-		base_type.class_type = base;
+		base_type.class_type = current_class;
 	} else {
 		base_type = DataType(*p_base_type);
-		if (base_type.kind == DataType::CLASS) {
-			base = base_type.class_type;
-		}
-	}
-
-	DataType member_type;
-
-	for (int i = 0; i < current_class->variables.size(); i++) {
-		if (current_class->variables[i].identifier == p_identifier) {
-			member_type = current_class->variables[i].data_type;
-			current_class->variables.write[i].usages += 1;
-			return member_type;
-		}
 	}
 
 	if (_get_member_type(base_type, p_identifier, member_type)) {
 		return member_type;
+	}
+
+	if (p_is_indexing) {
+		// Don't look for globals since this is an indexed identifier
+		return DataType();
 	}
 
 	if (!p_base_type) {
@@ -7193,7 +7183,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				Ref<GDScript> gds = scr;
 				if (gds.is_valid()) {
 					if (!gds->is_valid()) {
-						_set_error("Class '" + p_identifier + "' could not be fully loaded (script error or cyclic inheritance).");
+						_set_error("Class '" + p_identifier + "' could not be fully loaded (script error or cyclic dependency).");
 						return DataType();
 					}
 					result.kind = DataType::GDSCRIPT;
