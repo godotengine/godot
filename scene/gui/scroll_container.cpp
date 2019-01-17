@@ -271,7 +271,6 @@ void ScrollContainer::_notification(int p_what) {
 			}
 			if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
 				r.position.y = 0;
-				r.size.height = size.height;
 				if (c->get_v_size_flags() & SIZE_EXPAND)
 					r.size.height = MAX(size.height, minsize.height);
 				else
