@@ -642,7 +642,8 @@ Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p
 		if (E) {
 
 			if (!E->get()->is_static()) {
-				WARN_PRINT(String("Can't call non-static function: '" + String(p_method) + "' in script.").utf8().get_data());
+				ERR_EXPLAIN("Can't call non-static function: '" + String(p_method) + "' in script.");
+				ERR_FAIL_V(Variant());
 			}
 
 			return E->get()->call(NULL, p_args, p_argcount, r_error);
