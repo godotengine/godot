@@ -1702,7 +1702,7 @@ void EditorInspector::update_tree() {
 					ep->update_property();
 					ep->update_reload_status();
 
-					if (current_selected && ep->property == current_selected) {
+					if (current_selected && ep->property == current_selected && has_focus()) {
 						ep->select(current_focusable);
 					}
 				}
