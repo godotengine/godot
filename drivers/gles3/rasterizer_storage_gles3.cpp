@@ -634,14 +634,14 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 
 #ifndef GLES_OVER_GL
 	switch (p_format) {
-		case Image::Format::FORMAT_RF:
-		case Image::Format::FORMAT_RGF:
-		case Image::Format::FORMAT_RGBF:
-		case Image::Format::FORMAT_RGBAF:
-		case Image::Format::FORMAT_RH:
-		case Image::Format::FORMAT_RGH:
-		case Image::Format::FORMAT_RGBH:
-		case Image::Format::FORMAT_RGBAH: {
+		case Image::FORMAT_RF:
+		case Image::FORMAT_RGF:
+		case Image::FORMAT_RGBF:
+		case Image::FORMAT_RGBAF:
+		case Image::FORMAT_RH:
+		case Image::FORMAT_RGH:
+		case Image::FORMAT_RGBH:
+		case Image::FORMAT_RGBAH: {
 			if (!config.texture_float_linear_supported) {
 				// disable linear texture filtering when not supported for float format on some devices (issue #24295)
 				p_flags &= ~VS::TEXTURE_FLAG_FILTER;
