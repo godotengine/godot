@@ -563,6 +563,20 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (node == root)
 				return;
 
+			//check that from node to root, all owners are right
+
+			if (node->get_owner() != root) {
+				accept->set_text(TTR("Node must belong to the edited scene to become root."));
+				accept->popup_centered_minsize();
+				return;
+			}
+
+			if (node->get_filename() != String()) {
+				accept->set_text(TTR("Instantiated scenes can't become root"));
+				accept->popup_centered_minsize();
+				return;
+			}
+
 			editor_data->get_undo_redo().create_action("Make node as Root");
 			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
 			editor_data->get_undo_redo().add_do_method(root->get_parent(), "remove_child", root);
