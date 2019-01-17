@@ -416,6 +416,16 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 	}
 }
 
+void EditorResourcePreview::stop() {
+	if (thread) {
+		exit = true;
+		preview_sem->post();
+		Thread::wait_to_finish(thread);
+		memdelete(thread);
+		thread = NULL;
+	}
+}
+
 EditorResourcePreview::EditorResourcePreview() {
 	singleton = this;
 	preview_mutex = Mutex::create();
@@ -428,10 +438,7 @@ EditorResourcePreview::EditorResourcePreview() {
 
 EditorResourcePreview::~EditorResourcePreview() {
 
-	exit = true;
-	preview_sem->post();
-	Thread::wait_to_finish(thread);
-	memdelete(thread);
+	stop();
 	memdelete(preview_mutex);
 	memdelete(preview_sem);
 }
