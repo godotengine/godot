@@ -59,27 +59,27 @@ bool Shape2D::collide(const Transform2D &p_local_xform, const Ref<Shape2D> &p_sh
 	return Physics2DServer::get_singleton()->shape_collide(get_rid(), p_local_xform, Vector2(), p_shape->get_rid(), p_shape_xform, Vector2(), NULL, 0, r);
 }
 
-Variant Shape2D::collide_with_motion_and_get_contacts(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {
+Array Shape2D::collide_with_motion_and_get_contacts(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {
 
-	ERR_FAIL_COND_V(p_shape.is_null(), Variant());
+	ERR_FAIL_COND_V(p_shape.is_null(), Array());
 	const int max_contacts = 16;
 	Vector2 result[max_contacts * 2];
 	int contacts = 0;
 
 	if (!Physics2DServer::get_singleton()->shape_collide(get_rid(), p_local_xform, p_local_motion, p_shape->get_rid(), p_shape_xform, p_shape_motion, result, max_contacts, contacts))
-		return Variant();
+		return Array();
 
 	Array results;
 	results.resize(contacts * 2);
-	for (int i = 0; i < contacts; i++) {
+	for (int i = 0; i < contacts * 2; i++) {
 		results[i] = result[i];
 	}
 
 	return results;
 }
-Variant Shape2D::collide_and_get_contacts(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform) {
+Array Shape2D::collide_and_get_contacts(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform) {
 
-	ERR_FAIL_COND_V(p_shape.is_null(), Variant());
+	ERR_FAIL_COND_V(p_shape.is_null(), Array());
 	const int max_contacts = 16;
 	Vector2 result[max_contacts * 2];
 	int contacts = 0;
@@ -89,7 +89,7 @@ Variant Shape2D::collide_and_get_contacts(const Transform2D &p_local_xform, cons
 
 	Array results;
 	results.resize(contacts * 2);
-	for (int i = 0; i < contacts; i++) {
+	for (int i = 0; i < contacts * 2; i++) {
 		results[i] = result[i];
 	}
 
