@@ -85,53 +85,55 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 	ERR_FAIL_NULL(TOOLS_DOMAIN);
 	ERR_FAIL_NULL(GDMono::get_singleton()->get_editor_tools_assembly());
 
-	String build_config = p_debug ? "Debug" : "Release";
+	if (FileAccess::exists(GodotSharpDirs::get_project_sln_path())) {
+		String build_config = p_debug ? "Debug" : "Release";
 
-	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata." + String(p_debug ? "debug" : "release"));
-	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
-	ERR_FAIL_COND(metadata_err != OK);
+		String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata." + String(p_debug ? "debug" : "release"));
+		Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+		ERR_FAIL_COND(metadata_err != OK);
 
-	ERR_FAIL_COND(!_add_file(scripts_metadata_path, scripts_metadata_path));
+		ERR_FAIL_COND(!_add_file(scripts_metadata_path, scripts_metadata_path));
 
-	ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config));
+		ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config));
 
-	// Add dependency assemblies
+		// Add dependency assemblies
 
-	Map<String, String> dependencies;
+		Map<String, String> dependencies;
 
-	String project_dll_name = ProjectSettings::get_singleton()->get("application/config/name");
-	if (project_dll_name.empty()) {
-		project_dll_name = "UnnamedProject";
-	}
+		String project_dll_name = ProjectSettings::get_singleton()->get("application/config/name");
+		if (project_dll_name.empty()) {
+			project_dll_name = "UnnamedProject";
+		}
 
-	String project_dll_src_dir = GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(build_config);
-	String project_dll_src_path = project_dll_src_dir.plus_file(project_dll_name + ".dll");
-	dependencies.insert(project_dll_name, project_dll_src_path);
+		String project_dll_src_dir = GodotSharpDirs::get_res_temp_assemblies_base_dir().plus_file(build_config);
+		String project_dll_src_path = project_dll_src_dir.plus_file(project_dll_name + ".dll");
+		dependencies.insert(project_dll_name, project_dll_src_path);
 
-	{
-		MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.ProjectExportDomain");
-		ERR_FAIL_NULL(export_domain);
-		_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(export_domain);
+		{
+			MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.ProjectExportDomain");
+			ERR_FAIL_NULL(export_domain);
+			_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(export_domain);
 
-		_GDMONO_SCOPE_DOMAIN_(export_domain);
+			_GDMONO_SCOPE_DOMAIN_(export_domain);
 
-		GDMonoAssembly *scripts_assembly = NULL;
-		bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name,
-				project_dll_src_path, &scripts_assembly, /* refonly: */ true);
+			GDMonoAssembly *scripts_assembly = NULL;
+			bool load_success = GDMono::get_singleton()->load_assembly_from(project_dll_name,
+					project_dll_src_path, &scripts_assembly, /* refonly: */ true);
 
-		ERR_EXPLAIN("Cannot load refonly assembly: " + project_dll_name);
-		ERR_FAIL_COND(!load_success);
+			ERR_EXPLAIN("Cannot load refonly assembly: " + project_dll_name);
+			ERR_FAIL_COND(!load_success);
 
-		Vector<String> search_dirs;
-		GDMonoAssembly::fill_search_dirs(search_dirs);
-		Error depend_error = _get_assembly_dependencies(scripts_assembly, search_dirs, dependencies);
-		ERR_FAIL_COND(depend_error != OK);
-	}
+			Vector<String> search_dirs;
+			GDMonoAssembly::fill_search_dirs(search_dirs);
+			Error depend_error = _get_assembly_dependencies(scripts_assembly, search_dirs, dependencies);
+			ERR_FAIL_COND(depend_error != OK);
+		}
 
-	for (Map<String, String>::Element *E = dependencies.front(); E; E = E->next()) {
-		String depend_src_path = E->value();
-		String depend_dst_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(depend_src_path.get_file());
-		ERR_FAIL_COND(!_add_file(depend_src_path, depend_dst_path));
+		for (Map<String, String>::Element *E = dependencies.front(); E; E = E->next()) {
+			String depend_src_path = E->value();
+			String depend_dst_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(depend_src_path.get_file());
+			ERR_FAIL_COND(!_add_file(depend_src_path, depend_dst_path));
+		}
 	}
 
 	// Mono specific export template extras (data dir)
