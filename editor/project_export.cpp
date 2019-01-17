@@ -377,6 +377,7 @@ void ProjectExportDialog::_custom_features_changed(const String &p_text) {
 
 void ProjectExportDialog::_tab_changed(int) {
 	_update_feature_list();
+	minimum_size_changed();
 }
 
 void ProjectExportDialog::_patch_button_pressed(Object *p_item, int p_column, int p_id) {
