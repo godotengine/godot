@@ -85,7 +85,7 @@ Array Shape2D::collide_and_get_contacts(const Transform2D &p_local_xform, const 
 	int contacts = 0;
 
 	if (!Physics2DServer::get_singleton()->shape_collide(get_rid(), p_local_xform, Vector2(), p_shape->get_rid(), p_shape_xform, Vector2(), result, max_contacts, contacts))
-		return Variant();
+		return Array();
 
 	Array results;
 	results.resize(contacts * 2);
