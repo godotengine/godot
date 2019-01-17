@@ -811,6 +811,21 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					expr = constant;
 					bfn = true;
 				}
+
+				// Check parents for the constant
+				if (!bfn && cln->extends_file != StringName()) {
+					Ref<GDScript> parent = ResourceLoader::load(cln->extends_file);
+					if (parent.is_valid() && parent->is_valid()) {
+						Map<StringName, Variant> parent_constants;
+						parent->get_constants(&parent_constants);
+						if (parent_constants.has(identifier)) {
+							ConstantNode *constant = alloc_node<ConstantNode>();
+							constant->value = parent_constants[identifier];
+							expr = constant;
+							bfn = true;
+						}
+					}
+				}
 			}
 
 			if (!bfn) {
