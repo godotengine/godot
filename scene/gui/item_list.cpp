@@ -715,9 +715,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_cancel")) {
 			search_string = "";
-		} else if (p_event->is_action("ui_select")) {
+		} else if (p_event->is_action("ui_select") && select_mode == SELECT_MULTI) {
 
-			if (select_mode == SELECT_MULTI && current >= 0 && current < items.size()) {
+			if (current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current, false);
 					emit_signal("multi_selected", current, true);
