@@ -569,10 +569,15 @@ public:
 		float light_params[4]; //spot attenuation, spot angle, specular, shadow enabled
 		float light_clamp[4];
 		float light_shadow_color_contact[4];
-		float shadow_matrix1[16]; //up to here for spot and omni, rest is for directional
-		float shadow_matrix2[16];
-		float shadow_matrix3[16];
-		float shadow_matrix4[16];
+		union {
+			struct {
+				float matrix1[16]; //up to here for spot and omni, rest is for directional
+				float matrix2[16];
+				float matrix3[16];
+				float matrix4[16];
+			};
+			float matrix[4 * 16];
+		} shadow;
 		float shadow_split_offsets[4];
 	};
 
