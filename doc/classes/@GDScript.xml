@@ -539,7 +539,7 @@
 			</description>
 		</method>
 		<method name="lerp">
-			<return type="float">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="from" type="Variant">
 			</argument>
@@ -549,8 +549,11 @@
 			</argument>
 			<description>
 				Linearly interpolates between two values by a normalized value.
+				If the [code]from[/code] and [code]to[/code] arguments are of type [int] or [float], the return value is a [float].
+				If both are of the same vector type ([Vector2], [Vector3] or [Color]), the return value will be of the same type ([code]lerp[/code] then calls the vector type's [code]linear_interpolate[/code] method).
 				[codeblock]
-				lerp(1, 3, 0.5) # returns 2
+				lerp(0, 4, 0.75) # returns 3.0
+				lerp(Vector2(1, 5), Vector2(3, 2), 0.5) # returns Vector2(2, 3.5)
 				[/codeblock]
 			</description>
 		</method>
