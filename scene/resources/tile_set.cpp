@@ -154,6 +154,8 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		tile_set_shape_transform(id, 0, p_value);
 	else if (what == "shape_one_way")
 		tile_set_shape_one_way(id, 0, p_value);
+	else if (what == "shape_one_way_margin")
+		tile_set_shape_one_way_margin(id, 0, p_value);
 	else if (what == "shapes")
 		_tile_set_shapes(id, p_value);
 	else if (what == "occluder")
@@ -266,6 +268,8 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = tile_get_shape_transform(id, 0);
 	else if (what == "shape_one_way")
 		r_ret = tile_get_shape_one_way(id, 0);
+	else if (what == "shape_one_way_margin")
+		r_ret = tile_get_shape_one_way_margin(id, 0);
 	else if (what == "shapes")
 		r_ret = _tile_get_shapes(id);
 	else if (what == "occluder")
@@ -324,6 +328,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::VECTOR2, pre + "shape_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, pre + "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::REAL, pre + "shape_one_way_margin", PROPERTY_HINT_RANGE, "0,128,0.01", PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT, pre + "z_index", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1"));
 	}
@@ -715,6 +720,22 @@ bool TileSet::tile_get_shape_one_way(int p_id, int p_shape_id) const {
 	return false;
 }
 
+void TileSet::tile_set_shape_one_way_margin(int p_id, int p_shape_id, float p_margin) {
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
+		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	tile_map[p_id].shapes_data.write[p_shape_id].one_way_collision_margin = p_margin;
+	emit_changed();
+}
+
+float TileSet::tile_get_shape_one_way_margin(int p_id, int p_shape_id) const {
+	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
+	if (tile_map[p_id].shapes_data.size() > p_shape_id)
+		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision_margin;
+
+	return 0;
+}
+
 void TileSet::tile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
@@ -884,6 +905,11 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			else
 				s.one_way_collision = default_one_way;
 
+			if (d.has("one_way_margin") && d["one_way_margin"].is_num())
+				s.one_way_collision_margin = d["one_way_margin"];
+			else
+				s.one_way_collision = 1.0;
+
 			if (d.has("autotile_coord") && d["autotile_coord"].get_type() == Variant::VECTOR2)
 				s.autotile_coord = d["autotile_coord"];
 			else
@@ -911,6 +937,7 @@ Array TileSet::_tile_get_shapes(int p_id) const {
 		shape_data["shape"] = data[i].shape;
 		shape_data["shape_transform"] = data[i].shape_transform;
 		shape_data["one_way"] = data[i].one_way_collision;
+		shape_data["one_way_margin"] = data[i].one_way_collision_margin;
 		shape_data["autotile_coord"] = data[i].autotile_coord;
 		arr.push_back(shape_data);
 	}
@@ -1034,6 +1061,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tile_get_shape_transform", "id", "shape_id"), &TileSet::tile_get_shape_transform);
 	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way", "id", "shape_id", "one_way"), &TileSet::tile_set_shape_one_way);
 	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way", "id", "shape_id"), &TileSet::tile_get_shape_one_way);
+	ClassDB::bind_method(D_METHOD("tile_set_shape_one_way_margin", "id", "shape_id", "one_way"), &TileSet::tile_set_shape_one_way_margin);
+	ClassDB::bind_method(D_METHOD("tile_get_shape_one_way_margin", "id", "shape_id"), &TileSet::tile_get_shape_one_way_margin);
 	ClassDB::bind_method(D_METHOD("tile_add_shape", "id", "shape", "shape_transform", "one_way", "autotile_coord"), &TileSet::tile_add_shape, DEFVAL(false), DEFVAL(Vector2()));
 	ClassDB::bind_method(D_METHOD("tile_get_shape_count", "id"), &TileSet::tile_get_shape_count);
 	ClassDB::bind_method(D_METHOD("tile_set_shapes", "id", "shapes"), &TileSet::_tile_set_shapes);

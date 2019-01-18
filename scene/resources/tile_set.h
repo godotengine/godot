@@ -48,9 +48,11 @@ public:
 		Transform2D shape_transform;
 		Vector2 autotile_coord;
 		bool one_way_collision;
+		float one_way_collision_margin;
 
 		ShapeData() {
 			one_way_collision = false;
+			one_way_collision_margin = 1.0;
 		}
 	};
 
@@ -193,6 +195,9 @@ public:
 
 	void tile_set_shape_one_way(int p_id, int p_shape_id, bool p_one_way);
 	bool tile_get_shape_one_way(int p_id, int p_shape_id) const;
+
+	void tile_set_shape_one_way_margin(int p_id, int p_shape_id, float p_margin);
+	float tile_get_shape_one_way_margin(int p_id, int p_shape_id) const;
 
 	void tile_clear_shapes(int p_id);
 	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way = false, const Vector2 &p_autotile_coord = Vector2());
