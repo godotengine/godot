@@ -78,6 +78,8 @@ public:
 		bool force_vertex_shading;
 
 		bool use_rgba_2d_shadows;
+
+		bool support_32_bits_indices;
 	} config;
 
 	struct Resources {
