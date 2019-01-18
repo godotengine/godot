@@ -91,6 +91,8 @@ public:
 		RasterizerStorageGLES2::Texture *current_tex_ptr;
 
 		Transform vp;
+		Light *using_light;
+		bool using_shadow;
 
 	} state;
 
@@ -99,6 +101,8 @@ public:
 	RasterizerSceneGLES2 *scene_render;
 
 	RasterizerStorageGLES2 *storage;
+
+	bool use_nvidia_rect_workaround;
 
 	virtual RID light_internal_create();
 	virtual void light_internal_update(RID p_rid, Light *p_light);

@@ -21,7 +21,7 @@
 # Marcus Correia <marknokalt@live.com>, 2017-2018.
 # Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
 # Renato Rotenberg <renato.rotenberg@gmail.com>, 2017.
-# Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018.
+# Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018, 2019.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
 # Mauricio Luan Carneiro deSouza <newmailmlcs@gmail.com>, 2018.
 # Emerson Guerra <guerraemerson@gmail.com>, 2018.
@@ -42,12 +42,14 @@
 # Fernando Martinez <contact@fernandodev.com>, 2018.
 # Marcelo <mitissa@gmail.com>, 2018, 2019.
 # Walter Bolitto <wrcarval@live.com>, 2018, 2019.
+# Vitor Chaves <vitorclcoelho@gmail.com>, 2019.
+# João Paulo Pulga <joaopaulo1339@outlook.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-01-04 19:06+0000\n"
-"Last-Translator: Henrique Combochi <henrique.combochi@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: João Paulo Pulga <joaopaulo1339@outlook.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -159,7 +161,7 @@ msgstr "Trilha de transformação 3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "Trilha do método de chamada"
+msgstr "Trilha de método de chamada"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -1005,9 +1007,8 @@ msgid "Uncompressing Assets"
 msgstr "Descompactando Assets"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "Pacote Instalado com Sucesso!"
+msgstr "Pacote instalado com sucesso!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2057,7 +2058,6 @@ msgstr "Padrão"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Show in FileSystem"
 msgstr "Mostrar em Arquivos"
 
@@ -2620,12 +2620,15 @@ msgid "[Empty]"
 msgstr "[Vazio]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
-msgstr "Atribuir.."
+msgstr "Atribuir..."
 
 #: editor/editor_properties.cpp
 #, fuzzy
+msgid "Invalid RID"
+msgstr "Caminho Inválido"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -2634,26 +2637,25 @@ msgstr ""
 "propriedade (%s)."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
-"Não é possível criar uma ViewportTexture nos recursos salvos como um "
+"Não é possível criar uma ViewportTexture em recursos salvos como um "
 "arquivo.\n"
-"Recursos precisam pertencer à cena."
+"Os recursos precisam pertencer à cena."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "Can't create a ViewportTexture on this resource because it's not set as "
 "local to scene.\n"
 "Please switch on the 'local to scene' property on it (and all resources "
 "containing it up to a node)."
 msgstr ""
-"Não é possível criar uma ViewportTexture nesse recurso porque não está "
-"definido como uma cena local.\n"
-"Por favor troque na 'local para cena' propriedade"
+"Não é possível criar uma ViewportTexture neste recurso porque ele não está "
+"definido como local a uma cena.\n"
+"Por favor ative sua propriedade \"local para cena\" (e todos os recursos que "
+"o contém até chegar nele)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
@@ -3155,12 +3157,10 @@ msgid "Find in Files"
 msgstr "Localizar nos Arquivos"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Find:"
-msgstr "Encontrar: "
+msgstr "Encontrar:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid "Folder:"
 msgstr "Pasta:"
 
@@ -3202,9 +3202,8 @@ msgid "Search complete"
 msgstr "Pesquisa concluída"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Group name already exists."
-msgstr "ERRO: Nome da animação já existe!"
+msgstr "Nome do grupo já existe."
 
 #: editor/groups_editor.cpp
 msgid "Invalid group name."
@@ -3223,7 +3222,6 @@ msgid "Filter nodes"
 msgstr "Filtrar nós"
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Nodes in Group"
 msgstr "Nós no Grupo"
 
@@ -3366,9 +3364,8 @@ msgid "Paste Params"
 msgstr "Colar Parâmetros"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Edit Resource Clipboard"
-msgstr "Recurso da área de transferência está vazio!"
+msgstr "Editar Área de Transferência de Recursos"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Resource"
@@ -3512,9 +3509,8 @@ msgstr "Adicionar Animação"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
-msgstr "Carregar.."
+msgstr "Carregar..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3543,18 +3539,17 @@ msgstr "Definir posição de mescla dentro do espaço"
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
-msgstr "Selecione e mova pontos, crie pontos com Botão Direito do Mouse."
+msgstr "Selecione e mova pontos, crie pontos com o Botão Direito do Mouse."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "Habilitar snap e mostrar a grade"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Point"
-msgstr "Mover Ponto"
+msgstr "Ponto"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3573,7 +3568,7 @@ msgstr "BlendSpace2D não pertence ao nó AnimationTree."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
-msgstr ""
+msgstr "Não existem triângulos, então nenhuma mistura pode acontecer."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3585,7 +3580,7 @@ msgstr "Apagar pontos e triângulos."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr ""
+msgstr "Gerar triângulos de mistura automaticamente (em vez de manualmente)"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3599,7 +3594,7 @@ msgstr "Editar Filtros"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr ""
+msgstr "Nós de saída não pode ser adicionado à árvore de mistura."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3610,10 +3605,14 @@ msgstr ""
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
 msgstr ""
+"Nenhum reprodutor de animação foi definido, então não é possível obter os "
+"nomes das trilhas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
 msgstr ""
+"O caminho definido para o reprodutor é inválido, então não é possível obter "
+"os nomes das trilhas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -3621,6 +3620,8 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+"O reprodutor de animações não tem caminho de nó raiz válido, então não é "
+"possível obter os nomes das trilhas."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3629,9 +3630,8 @@ msgstr "Adicionar nó..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Filtered Tracks:"
-msgstr "Editar Filtros"
+msgstr "Editar trilhas filtradas:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable filtering"
@@ -3760,9 +3760,8 @@ msgid "Edit Transitions..."
 msgstr "Editar Conexões..."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Open in Inspector"
-msgstr "Abrir no Editor"
+msgstr "Abrir no inspetor"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Display list of animations in player."
@@ -3821,9 +3820,8 @@ msgid "Include Gizmos (3D)"
 msgstr "Incluir Gizmos (3D)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Pin AnimationPlayer"
-msgstr "Colar Animação"
+msgstr "Fixar AnimationPlayer"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Create New Animation"
@@ -3867,18 +3865,17 @@ msgstr "Sincronizar"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr ""
+msgstr "Ao final"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
-msgstr ""
+msgstr "Viagem"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Start and end nodes are needed for a sub-transition."
 msgstr "Nós inicial e final são necessários para uma sub-transição."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "No playback resource set at path: %s."
 msgstr "Não está no caminho de recursos."
 
@@ -3901,17 +3898,18 @@ msgid "Connect nodes."
 msgstr "Conectar nós."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Remover trilha selecionada."
+msgstr "Remover nó ou trilha selecionada."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
+"Alternar a reprodução automática dessa animação ao iniciar, reiniciar ou "
+"zerar."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
-msgstr ""
+msgstr "Define o fim da animação. Isto é útil para subtransições."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition: "
@@ -4145,9 +4143,8 @@ msgid "First"
 msgstr "Primeiro"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Previous"
-msgstr "Guia anterior"
+msgstr "Anterior"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Next"
@@ -4332,6 +4329,8 @@ msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
 msgstr ""
+"Aviso: os filhos de um contêiner têm a posição e o tamanho determinados "
+"apenas pelos pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -4371,9 +4370,8 @@ msgid "Rotate Mode"
 msgstr "Modo Rotacionar"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Mode"
-msgstr "Modo Escala (R)"
+msgstr "Modo Escala"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -4493,7 +4491,7 @@ msgstr "Limpar Cadeia de IK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Custom Bone(s) from Node(s)"
-msgstr ""
+msgstr "Criar esqueleto(s) customizado do(s) nó(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -4532,7 +4530,7 @@ msgstr "Mostrar Viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Exibir grupo e travar ícones"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -5126,7 +5124,7 @@ msgstr "Clique: Adicionar Ponto"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #, fuzzy
 msgid "Left Click: Split Segment (in curve)"
-msgstr "Dividir Segmentos (na curva)"
+msgstr "Botão esquerdo: Dividir Segmentos (na curva)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5161,12 +5159,13 @@ msgstr "Opções"
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Mirror Handle Angles"
-msgstr ""
+msgstr "Espelhar ângulos de controle"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
+#, fuzzy
 msgid "Mirror Handle Lengths"
-msgstr ""
+msgstr "Espelhar comprimindo de controle"
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Curve Point #"
@@ -5205,7 +5204,6 @@ msgid "Split Segment (in curve)"
 msgstr "Dividir Segmentos (na curva)"
 
 #: editor/plugins/physical_bone_plugin.cpp
-#, fuzzy
 msgid "Move joint"
 msgstr "Mover Ponto"
 
@@ -5221,7 +5219,6 @@ msgid "Sync Bones"
 msgstr "Mostrar Ossos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "No texture in this polygon.\n"
 "Set a texture to be able to edit UV."
@@ -5239,32 +5236,28 @@ msgid "Create Polygon & UV"
 msgstr "Criar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Criar novo guia horizontal"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Remover Ponto de Controle de Entrada"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Editar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "A ação \"%s\" já existe!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Adicionar ponto"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "Caminho inválido!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Remover ponto"
+msgid "Remove Custom Polygon"
+msgstr "Remover Polígono e Ponto"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5293,13 +5286,13 @@ msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Editar Polígono"
+msgid "Points"
+msgstr "Ponto"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "Dividir Caminho"
+msgid "Polygons"
+msgstr "Polígono->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5335,13 +5328,14 @@ msgid "Scale Polygon"
 msgstr "Escalonar Polígono"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Selecione um item de configuração primeiro!"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -5594,7 +5588,6 @@ msgid "Copy Script Path"
 msgstr "Copiar Caminho do Script"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "History Previous"
 msgstr "Anterior no Histórico"
 
@@ -5851,9 +5844,8 @@ msgid "Find Previous"
 msgstr "Encontrar Anterior"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Find in Files..."
-msgstr "Filtrar Arquivos..."
+msgstr "Procurar nos Arquivos..."
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -6049,9 +6041,8 @@ msgid "This operation requires a single selected node."
 msgstr "Essa operação requer um único nó selecionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock View Rotation"
-msgstr "Visualizar Informações"
+msgstr "Bloquear Rotação da Visão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -6098,9 +6089,8 @@ msgid "Doppler Enable"
 msgstr "Habilitar Doppler"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Cinematic Preview"
-msgstr "Criando Previsualizações das Malhas"
+msgstr "Pré-visualização Cinemática"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Left"
@@ -6703,9 +6693,8 @@ msgid "Pick Tile"
 msgstr "Pegar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Selection"
-msgstr "Remover Seleção"
+msgstr "Copiar Seleção"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate left"
@@ -7029,7 +7018,7 @@ msgstr "Modo de Exportação:"
 
 #: editor/project_export.cpp
 msgid "Resources to export:"
-msgstr "Recursos para Exportar:"
+msgstr "Recursos para exportar:"
 
 #: editor/project_export.cpp
 msgid ""
@@ -7042,8 +7031,8 @@ msgstr ""
 msgid ""
 "Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"
 msgstr ""
-"Filtros para excluir da exportação (separados por vírgula, e.g.: *.json, *."
-"txt)"
+"Filtros para excluir arquivos do projeto (separados por vírgula, ex.: *."
+"json, *.txt)"
 
 #: editor/project_export.cpp
 msgid "Patches"
@@ -7087,8 +7076,9 @@ msgid "Encrypted (Provide Key Below)"
 msgstr "Criptografado (forneça chave abaixo)"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "Chave de Criptografia Inválida (é necessário 64 caracteres)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7236,15 +7226,15 @@ msgid "Unnamed Project"
 msgstr "Projeto Sem Nome"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Não é possível abrir o projeto"
+msgstr "Não é possível abrir o projeto em '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Tem certeza de que quer abrir mais de um projeto?"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "The following project settings file was generated by an older engine "
 "version, and needs to be converted for this version:\n"
@@ -7255,12 +7245,22 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"As configurações do projeto foram geradas por uma versão antiga, e precisam "
+"ser convertidas para esta versão:\n"
+"\n"
+"%s\n"
+"\n"
+"Você deseja realizar a conversão?\n"
+"Aviso: Não será mais possível você abrir o projeto com versões mais antigas."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"As configurações do projeto foram geradas por uma versão do Godot mais nova, "
+"cuja configurações não são compatíveis com esta versão."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7762,17 +7762,17 @@ msgid "Prefix"
 msgstr "Prefixo"
 
 #: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Suffix"
-msgstr ""
+msgstr "Sufixo"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Advanced options"
-msgstr "Opções da Encaixe"
+msgstr "Opções avançadas"
 
 #: editor/rename_dialog.cpp
 msgid "Substitute"
-msgstr ""
+msgstr "Substituir"
 
 #: editor/rename_dialog.cpp
 msgid "Node name"
@@ -7787,14 +7787,12 @@ msgid "Node type"
 msgstr "Tipo de nó"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Current scene name"
-msgstr "Cena Atual"
+msgstr "Nome da cena atual"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Root node name"
-msgstr "Nome do Nó Raíz:"
+msgstr "Nome do nó raiz"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -7815,9 +7813,8 @@ msgid "Initial value for the counter"
 msgstr "Valor inicial para o contador"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Step"
-msgstr "Passo:"
+msgstr "Passo"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -7843,9 +7840,8 @@ msgid "Regular Expressions"
 msgstr "Alterar Expressão"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Post-Process"
-msgstr "Script de Pós-Processamento:"
+msgstr "Pós-Processamento"
 
 #: editor/rename_dialog.cpp
 msgid "Keep"
@@ -7997,9 +7993,8 @@ msgid "Make Local"
 msgstr "Tornar Local"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Create Root Node:"
-msgstr "Criar Nó"
+msgstr "Criar nó raiz:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -9768,6 +9763,34 @@ msgstr "Atribuição à uniforme."
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Variáveis só podem ser atribuídas na função de vértice."
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "A ação \"%s\" já existe!"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Adicionar ponto"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Caminho inválido!"
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Remover ponto"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Editar Polígono"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "Dividir Caminho"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Selecione um item de configuração primeiro!"
 
 #~ msgid "No name provided"
 #~ msgstr "Nenhum nome fornecido"

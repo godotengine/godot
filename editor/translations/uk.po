@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 # Aleksandr <XpycT.TOP@gmail.com>, 2017.
-# Yuri Chornoivan <yurchor@ukr.net>, 2018.
+# Yuri Chornoivan <yurchor@ukr.net>, 2018, 2019.
 # Андрій Бандура <andriykopanytsia@gmail.com>, 2018.
 # Гидеон Теон <t.kudely94@gmail.com>, 2017.
 # Максим Якимчук <xpinovo@gmail.com>, 2018, 2019.
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-02 11:06+0000\n"
-"Last-Translator: Максим Якимчук <xpinovo@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -978,9 +978,8 @@ msgid "Uncompressing Assets"
 msgstr "Розпаковування активів"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "Пакет встановлений успішно!"
+msgstr "Пакунок успішно встановлено!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2592,12 +2591,15 @@ msgid "[Empty]"
 msgstr "[Порожньо]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
 msgstr "Призначити…"
 
 #: editor/editor_properties.cpp
 #, fuzzy
+msgid "Invalid RID"
+msgstr "Неправильний шлях"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -3478,7 +3480,6 @@ msgstr "Додавання анімації"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
 msgstr "Завантажити…"
 
@@ -3869,9 +3870,8 @@ msgid "Connect nodes."
 msgstr "З'єднати вузли."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Вилучити позначений вузол або перехід"
+msgstr "Вилучити позначений вузол або перехід."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -5186,28 +5186,28 @@ msgid "Create Polygon & UV"
 msgstr "Створити полігон і UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "Розділити точку."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Створити нову горизонтальну напрямну"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "Поділ не може створювати наявного ребра."
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Вилучити вхідну керувальну точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "Поділ вже існує."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "Додати поділ"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Редагувати полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "Некоректний поділ: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "Вилучити поділ"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "Вилучити полігон зіткнення"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5234,12 +5234,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "Полігон"
+#, fuzzy
+msgid "Points"
+msgstr "Точка"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "Дроблення"
+#, fuzzy
+msgid "Polygons"
+msgstr "Полігон -> UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5274,12 +5276,14 @@ msgid "Scale Polygon"
 msgstr "Масштабувати полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "З'єднайте дві точки для створення розрізу."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "Виберіть поділ для його витирання."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -6271,7 +6275,7 @@ msgstr "Після"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Штука без назви"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6679,9 +6683,10 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Показати назви плиток (якщо затиснути клавішу Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "Вилучити позначену текстуру і усі плитки, у яких її використано?"
+msgstr ""
+"Вилучити позначену текстуру? Наслідком буде вилучення усіх плиток, у яких її "
+"використано."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -6690,15 +6695,15 @@ msgstr "Вами не позначено текстури для вилучен�
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
 msgstr ""
+"Створити на основі сцени? У результаті буде перезаписано усі поточні плитки."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Об'єднати зі сцени?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "Вилучити шаблон"
+msgstr "Вилучити текстуру"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6765,86 +6770,72 @@ msgstr ""
 "Клацніть на іншій плитці, щоб редагувати її."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Встановити прямокутник області"
+msgstr "Встановити область плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Створити Теку"
+msgstr "Створити плитку"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Встановити піктограму плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Редагувати фільтри"
+msgstr "Редагувати бітову маску плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "Редагування існуючого полігону:"
+msgstr "Редагувати полігон зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "Редагувати полігон"
+msgstr "Редагувати полігон перешкоди"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "Створення навігаційного полігону"
+msgstr "Редагувати навігаційний полігон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Вставити бітову маску."
+msgstr "Вставити бітову маску плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Спорожнити бітову маску плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Вилучити шаблон"
+msgstr "Вилучити плитку"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Вилучити полігон та точку"
+msgstr "Вилучити полігон зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Створено затінювальний полігон"
+msgstr "Вилучити полігон перешкоди"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Створення навігаційного полігону"
+msgstr "Вилучити навігаційний полігон"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Редагувати фільтри"
+msgstr "Редагувати пріоритетність плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Редагувати z-індекс плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Створення навігаційного полігону"
+msgstr "Створити полігон зіткнення"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Створено затінювальний полігон"
+msgstr "Створити полігон перешкоди"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -6966,34 +6957,32 @@ msgid "Feature List:"
 msgstr "Список можливостей:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Новий скрипт"
+msgstr "Скрипт"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script Export Mode:"
-msgstr "Режим експортування:"
+msgstr "Режим експортування скрипту:"
 
 #: editor/project_export.cpp
 msgid "Text"
-msgstr ""
+msgstr "Текст"
 
 #: editor/project_export.cpp
 msgid "Compiled"
-msgstr ""
+msgstr "Зібрано"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
-msgstr ""
+msgstr "Зашифровано (ключ можна вказати нижче)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "Некоректний ключ шифрування (ключ має складатися із 64 символів)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
-msgstr ""
+msgstr "Ключ шифрування скрипту (256-бітове шістнадцяткове число):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
@@ -7136,9 +7125,8 @@ msgid "Unnamed Project"
 msgstr "Проект без назви"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Не вдалося відкрити проект"
+msgstr "Не вдалося відкрити проект у «%s»."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7155,12 +7143,22 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Вказаний нижче файл параметрів проекту було створено у застарілій версії "
+"рушія. Його доведеться перетворити до поточної версії:\n"
+"\n"
+"%s\n"
+"\n"
+"Хочете виконати таке перетворення?\n"
+"Попередження: у результаті перетворення ви втратите можливість відкриття "
+"проекту у застарілих версіях рушія."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Параметри цього проекту було створено за допомогою рушія новішої версії. Ці "
+"параметри є несумісними із версією, якою ви зараз користуєтеся."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9624,6 +9622,36 @@ msgstr "Призначення однорідного."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
+
+#~ msgid "Split point with itself."
+#~ msgstr "Розділити точку."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "Поділ не може створювати наявного ребра."
+
+#~ msgid "Split already exists."
+#~ msgstr "Поділ вже існує."
+
+#~ msgid "Add Split"
+#~ msgstr "Додати поділ"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "Некоректний поділ: "
+
+#~ msgid "Remove Split"
+#~ msgstr "Вилучити поділ"
+
+#~ msgid "Poly"
+#~ msgstr "Полігон"
+
+#~ msgid "Splits"
+#~ msgstr "Дроблення"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "З'єднайте дві точки для створення розрізу."
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "Виберіть поділ для його витирання."
 
 #~ msgid "No name provided"
 #~ msgstr "Ім'я не вказано"

@@ -165,18 +165,68 @@ uniform int spot_light_count;
 out vec4 diffuse_light_interp;
 out vec4 specular_light_interp;
 
+
 void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, inout vec3 diffuse, inout vec3 specular) {
 
-	float dotNL = max(dot(N, L), 0.0);
-	diffuse += dotNL * light_color / M_PI;
+
+	float NdotL = dot(N, L);
+	float cNdotL = max(NdotL, 0.0); // clamped NdotL
+	float NdotV = dot(N, V);
+	float cNdotV = max(NdotV, 0.0);
+
+#if defined(DIFFUSE_OREN_NAYAR)
+	vec3 diffuse_brdf_NL;
+#else
+	float diffuse_brdf_NL; // BRDF times N.L for calculating diffuse radiance
+#endif
+
+#if defined(DIFFUSE_LAMBERT_WRAP)
+	// energy conserving lambert wrap shader
+	diffuse_brdf_NL = max(0.0, (NdotL + roughness) / ((1.0 + roughness) * (1.0 + roughness)));
+
+#elif defined(DIFFUSE_OREN_NAYAR)
+
+	{
+		// see http://mimosa-pudica.net/improved-oren-nayar.html
+		float LdotV = dot(L, V);
+
+		float s = LdotV - NdotL * NdotV;
+		float t = mix(1.0, max(NdotL, NdotV), step(0.0, s));
+
+		float sigma2 = roughness * roughness; // TODO: this needs checking
+		vec3 A = 1.0 + sigma2 * (-0.5 / (sigma2 + 0.33) + 0.17 * diffuse_color / (sigma2 + 0.13));
+		float B = 0.45 * sigma2 / (sigma2 + 0.09);
+
+		diffuse_brdf_NL = cNdotL * (A + vec3(B) * s / t) * (1.0 / M_PI);
+	}
+#else
+	// lambert by default for everything else
+	diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
+#endif
+
+	diffuse += light_color * diffuse_brdf_NL;
 
 	if (roughness > 0.0) {
 
+		// D
+		float specular_brdf_NL = 0.0;
+
+#if !defined(SPECULAR_DISABLED)
+		//normalized blinn always unless disabled
 		vec3 H = normalize(V + L);
-		float dotNH = max(dot(N, H), 0.0);
-		float intensity = (roughness >= 1.0 ? 1.0 : pow(dotNH, (1.0 - roughness) * 256.0));
-		specular += light_color * intensity;
+		float cNdotH = max(dot(N, H), 0.0);
+		float cVdotH = max(dot(V, H), 0.0);
+		float cLdotH = max(dot(L, H), 0.0);
+		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+#endif
+
+		specular += specular_brdf_NL * light_color * (1.0 / M_PI);
 	}
+
+
 }
 
 void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness, inout vec3 diffuse, inout vec3 specular) {

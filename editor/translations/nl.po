@@ -26,12 +26,13 @@
 # Tahar Meijs <tntmeijs@gmail.com>, 2018.
 # Laurent Windels <laurentwindels@yahoo.com>, 2018.
 # rxadmin <r.van.eeghem@gmail.com>, 2018.
+# Peter Goelst <muis24@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:41+0100\n"
-"Last-Translator: rxadmin <r.van.eeghem@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:06+0000\n"
+"Last-Translator: Peter Goelst <muis24@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -404,7 +405,7 @@ msgstr "Plak sporen"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
-msgstr "Schaal Selectie"
+msgstr "Schaal selectie"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
@@ -2652,6 +2653,11 @@ msgstr "[Leeg]"
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Ongeldig Path"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -5318,32 +5324,28 @@ msgid "Create Polygon & UV"
 msgstr "Creëer Poly"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Maak nieuwe horizontale gids"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Verwijder In-Controle Punt"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Bewerk Poly"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "Bestaat al"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Punt toevoegen"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "Ongeldig Pad."
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Punt verwijderen"
+msgid "Remove Custom Polygon"
+msgstr "Verwijder Poly en punt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5373,13 +5375,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Bewerk Poly"
+msgid "Points"
+msgstr "Beweeg Punt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "Splits Pad"
+msgid "Polygons"
+msgstr "Polygon->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5416,13 +5418,14 @@ msgid "Scale Polygon"
 msgstr "Schaal Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Selecteer een map om te scannen"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9851,6 +9854,34 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "Bestaat al"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Punt toevoegen"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Ongeldig Pad."
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Punt verwijderen"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Bewerk Poly"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "Splits Pad"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Selecteer een map om te scannen"
 
 #~ msgid "No name provided"
 #~ msgstr "Geen naam opgegeven"

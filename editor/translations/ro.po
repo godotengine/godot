@@ -2644,6 +2644,11 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Nume nevalid."
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5288,32 +5293,28 @@ msgid "Create Polygon & UV"
 msgstr "Crează Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Creează un nou ghid orizontal"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Ștergere punct de Control-Intrare"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Editează Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "AutoLoad '%s' există deja!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Adaugă punct"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "Cale nevalidă."
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Elimină punct"
+msgid "Remove Custom Polygon"
+msgstr "Elimină Poligon Și Punct"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5343,13 +5344,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Editează Poligon"
+msgid "Points"
+msgstr "Deplasare punct"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "Divizare cale"
+msgid "Polygons"
+msgstr "Poligon->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5386,11 +5387,13 @@ msgid "Scale Polygon"
 msgstr "Redimensionează Poligon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -9657,6 +9660,30 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "AutoLoad '%s' există deja!"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Adaugă punct"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Cale nevalidă."
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Elimină punct"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Editează Poligon"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "Divizare cale"
 
 #~ msgid "No name provided"
 #~ msgstr "Niciun nume furnizat"

@@ -2661,6 +2661,11 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr ": Ugyldige argumenter: "
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5348,32 +5353,28 @@ msgid "Create Polygon & UV"
 msgstr "Lag Poly"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Lag ny horisontal veileder"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Fjern vertikal veileder"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Rediger Poly"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "Eksisterer allerede"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Legg til punkt"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr ": Ugyldige argumenter: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Fjern punkt"
+msgid "Remove Custom Polygon"
+msgstr "Fjern Poly Og Punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5403,13 +5404,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Rediger Poly"
+msgid "Points"
+msgstr "Flytt Punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "Splitt Sti"
+msgid "Polygons"
+msgstr "Rediger Poly"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5446,13 +5447,14 @@ msgid "Scale Polygon"
 msgstr "Skaler Polygon"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Velg en Mappe å Skanne"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9790,6 +9792,34 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "Eksisterer allerede"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Legg til punkt"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr ": Ugyldige argumenter: "
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Fjern punkt"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Rediger Poly"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "Splitt Sti"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Velg en Mappe å Skanne"
 
 #~ msgid "No name provided"
 #~ msgstr "Ingen navn gitt"

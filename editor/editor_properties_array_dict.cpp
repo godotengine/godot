@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "editor_properties_array_dict.h"
+
 #include "core/io/marshalls.h"
 #include "editor/editor_scale.h"
 #include "editor_properties.h"
+
 bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_value) {
 
 	String pn = p_name;
@@ -358,10 +360,14 @@ void EditorPropertyArray::update_property() {
 				vbox->add_child(hb);
 				hb->add_child(prop);
 				prop->set_h_size_flags(SIZE_EXPAND_FILL);
-				Button *edit = memnew(Button);
-				edit->set_icon(get_icon("Edit", "EditorIcons"));
-				hb->add_child(edit);
-				edit->connect("pressed", this, "_change_type", varray(edit, i + offset));
+
+				if (subtype == Variant::NIL) {
+					Button *edit = memnew(Button);
+					edit->set_icon(get_icon("Edit", "EditorIcons"));
+					hb->add_child(edit);
+					edit->connect("pressed", this, "_change_type", varray(edit, i + offset));
+				}
+
 			} else {
 				vbox->add_child(prop);
 			}

@@ -2564,6 +2564,11 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "שם שגוי."
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5164,31 +5169,26 @@ msgid "Create Polygon & UV"
 msgstr "יצירת מצולע"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+msgid "Create Internal Vertex"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
+msgid "Remove Internal Vertex"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Split already exists."
-msgstr "הפעולה ‚%s’ כבר קיימת!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Invalid Split: "
-msgstr "נתיב שגוי."
+msgid "Add Custom Polygon"
+msgstr "עריכת מצולע"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Remove Split"
-msgstr "הסרת תבנית"
+msgid "Remove Custom Polygon"
+msgstr "הסרת מצולע ונקודה"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5218,13 +5218,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "עריכת מצולע"
+msgid "Points"
+msgstr "הזזת נקודה"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "פיצול נתיב"
+msgid "Polygons"
+msgstr "עריכת מצולע"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5260,13 +5260,14 @@ msgid "Scale Polygon"
 msgstr "שינוי קנה מידה של מצולע"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "יש לבחור פריט הגדרה קודם כל!"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9527,6 +9528,30 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "הפעולה ‚%s’ כבר קיימת!"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "נתיב שגוי."
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "הסרת תבנית"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "עריכת מצולע"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "פיצול נתיב"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "יש לבחור פריט הגדרה קודם כל!"
 
 #~ msgid "No name provided"
 #~ msgstr "לא צוין שם"

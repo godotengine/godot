@@ -753,6 +753,7 @@ Area::Area() :
 	angular_damp = 1;
 	priority = 0;
 	monitoring = false;
+	monitorable = false;
 	collision_mask = 1;
 	collision_layer = 1;
 	set_ray_pickable(false);

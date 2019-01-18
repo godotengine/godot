@@ -2548,6 +2548,10 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+msgid "Invalid RID"
+msgstr ""
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5171,29 +5175,28 @@ msgid "Create Polygon & UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr ""
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Създай нова хоризонтална помощна линия"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Премахни вертикална помощна линия"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr ""
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr ""
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Remove Split"
-msgstr "Затваряне на всичко"
+msgid "Add Custom Polygon"
+msgstr "Приставки"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "Преместване на Полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5221,12 +5224,14 @@ msgid "UV"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr ""
+#, fuzzy
+msgid "Points"
+msgstr "LMB: Премести Точка."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr ""
+#, fuzzy
+msgid "Polygons"
+msgstr "Полигон->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5263,14 +5268,14 @@ msgid "Scale Polygon"
 msgstr "Мащаб на Полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Connect two points to make a split."
-msgstr "Свържи две точки, за да направиш разделение"
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "Избери разделение и го изтрий"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9590,6 +9595,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Затваряне на всичко"
+
+#, fuzzy
+#~ msgid "Connect two points to make a split."
+#~ msgstr "Свържи две точки, за да направиш разделение"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "Избери разделение и го изтрий"
 
 #~ msgid "Add Node.."
 #~ msgstr "Добави Възел..."

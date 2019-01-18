@@ -2653,6 +2653,11 @@ msgid "Assign..."
 msgstr ""
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Érvénytelen név."
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5300,32 +5305,28 @@ msgid "Create Polygon & UV"
 msgstr "Sokszög Létrehozása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Új vízszintes vezetővonal létrehozása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Be-Vezérlő Pont Eltávolítása"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Sokszög Szerkesztése"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "Már létezik '%s' AutoLoad!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "Pont hozzáadása"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "Érvénytelen Elérési Út."
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "Pont eltávolítása"
+msgid "Remove Custom Polygon"
+msgstr "Sokszög és Pont Eltávolítása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5355,13 +5356,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Sokszög Szerkesztése"
+msgid "Points"
+msgstr "Pont Mozgatása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "Útvonal Felosztása"
+msgid "Polygons"
+msgstr "Sokszög -> UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5398,11 +5399,13 @@ msgid "Scale Polygon"
 msgstr "Sokszög Skálázása"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -9681,6 +9684,30 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "Már létezik '%s' AutoLoad!"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "Pont hozzáadása"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "Érvénytelen Elérési Út."
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "Pont eltávolítása"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Sokszög Szerkesztése"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "Útvonal Felosztása"
 
 #~ msgid "No name provided"
 #~ msgstr "Nincs név megadva"

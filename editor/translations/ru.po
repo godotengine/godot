@@ -27,7 +27,7 @@
 # Yan <uvokinuvokines@gmail.com>, 2018.
 # V. <Unit68189@gmail.com>, 2018.
 # Victor Butorin <mrwebsterchannel@gmail.com>, 2018.
-# Александр <ol-vin@mail.ru>, 2018.
+# Александр <ol-vin@mail.ru>, 2018, 2019.
 # Анатолий Горбунов <afgorbunov@gmail.com>, 2018.
 # Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018.
 # Аслан Снупов <aslan170505@gmail.com>, 2018.
@@ -36,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-02 11:06+0000\n"
-"Last-Translator: Alexandr Eremeev <ae125529@gmail.com>\n"
+"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"Last-Translator: Александр <ol-vin@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -2611,6 +2611,11 @@ msgstr "[Пусто]"
 #, fuzzy
 msgid "Assign..."
 msgstr "Назначить.."
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "Неверный путь"
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -5192,28 +5197,28 @@ msgid "Create Polygon & UV"
 msgstr "Создать Полигон и UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "Точка разделения."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "Создать новую горизонтальную направляющую"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "Нельзя отделить от существующего края."
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "Удалить входную контрольную точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "Разрез уже существует."
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "Добавить разрез"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Редактировать полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "Недопустимое Разбиение: "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "Удалить разрез"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "Удалить Полигон и Точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5241,12 +5246,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "Полигон"
+#, fuzzy
+msgid "Points"
+msgstr "Точка"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "Разделение"
+#, fuzzy
+msgid "Polygons"
+msgstr "Полигон -> UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5281,12 +5288,14 @@ msgid "Scale Polygon"
 msgstr "Масштабировать полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "Соединить две точки, чтобы создать разделение."
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "Выберите разделение, чтобы стереть его."
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -6278,8 +6287,9 @@ msgid "Post"
 msgstr "После"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Безымянный штуковина"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6693,8 +6703,9 @@ msgid "You haven't selected a texture to remove."
 msgstr "Вы не выбрали текстуру для удаления."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "Создавать из сцены? Это перезапишет все текущие плитки."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -6781,7 +6792,7 @@ msgstr "Создать папку"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Установить Иконку Плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6810,7 +6821,7 @@ msgstr "Вставить битовую маску."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Очистить Битовую Маску Плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6839,7 +6850,7 @@ msgstr "Редактировать фильтры"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Редактирование Z индекса плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6991,6 +7002,7 @@ msgstr "Зашифрованный (Напишите ключ ниже)"
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
 msgstr ""
+"Недействительный ключ шифрования (длина ключа должна составлять 64 символа)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7157,12 +7169,21 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Файл настроек проекта был сгенерирован старой версией движка и должен быть "
+"преобразован для текущей версии:\n"
+"\n"
+"%s\n"
+"\n"
+"Вы хотите преобразовать его?\n"
+"Внимание: Вы больше не сможете открыть проект предыдущими версиями движка."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Настройки проекта были созданы более новой версией движка, которые "
+"несовместимы с текущей версией."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9645,6 +9666,36 @@ msgstr "Назначить форму"
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Переменные могут быть назначены только в функции вершин."
+
+#~ msgid "Split point with itself."
+#~ msgstr "Точка разделения."
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "Нельзя отделить от существующего края."
+
+#~ msgid "Split already exists."
+#~ msgstr "Разрез уже существует."
+
+#~ msgid "Add Split"
+#~ msgstr "Добавить разрез"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "Недопустимое Разбиение: "
+
+#~ msgid "Remove Split"
+#~ msgstr "Удалить разрез"
+
+#~ msgid "Poly"
+#~ msgstr "Полигон"
+
+#~ msgid "Splits"
+#~ msgstr "Разделение"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "Соединить две точки, чтобы создать разделение."
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "Выберите разделение, чтобы стереть его."
 
 #~ msgid "No name provided"
 #~ msgstr "Не указано имя"

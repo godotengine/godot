@@ -64,6 +64,7 @@ void CanvasItemMaterial::init_shaders() {
 void CanvasItemMaterial::finish_shaders() {
 
 	memdelete(dirty_materials);
+	memdelete(shader_names);
 	dirty_materials = NULL;
 
 #ifndef NO_THREADS

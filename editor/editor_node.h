@@ -470,6 +470,8 @@ private:
 	void _dropped_files(const Vector<String> &p_files, int p_screen);
 	String _recent_scene;
 
+	void _exit_editor();
+
 	bool convert_old;
 
 	void _unhandled_input(const Ref<InputEvent> &p_event);

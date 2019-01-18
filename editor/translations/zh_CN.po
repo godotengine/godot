@@ -2565,6 +2565,11 @@ msgstr "分配…。"
 
 #: editor/editor_properties.cpp
 #, fuzzy
+msgid "Invalid RID"
+msgstr "路径非法"
+
+#: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5111,28 +5116,28 @@ msgid "Create Polygon & UV"
 msgstr "创建多边形和 UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
-msgstr "拆分点本身。"
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "创建水平标尺"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr "不能从已存在的边上拆分。"
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "移除曲线内控制点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split already exists."
-msgstr "拆分已存在。"
+msgid "Invalid Polygon (need 3 different vertices)"
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Add Split"
-msgstr "添加分裂"
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "编辑多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Invalid Split: "
-msgstr "无效拆分： "
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Remove Split"
-msgstr "移除拆分"
+#, fuzzy
+msgid "Remove Custom Polygon"
+msgstr "移除多边形及顶点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5159,12 +5164,14 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Poly"
-msgstr "多边形"
+#, fuzzy
+msgid "Points"
+msgstr "点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Splits"
-msgstr "拆分"
+#, fuzzy
+msgid "Polygons"
+msgstr "多边形->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5199,12 +5206,14 @@ msgid "Scale Polygon"
 msgstr "缩放多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
-msgstr "连接两个点以进行分割。"
+msgid "Create a custom polygon. Enables custom polygon rendering."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Select a split to erase it."
-msgstr "选择一个拆分以擦除它。"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -9461,6 +9470,36 @@ msgstr "对uniform的赋值。"
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
+
+#~ msgid "Split point with itself."
+#~ msgstr "拆分点本身。"
+
+#~ msgid "Split can't form an existing edge."
+#~ msgstr "不能从已存在的边上拆分。"
+
+#~ msgid "Split already exists."
+#~ msgstr "拆分已存在。"
+
+#~ msgid "Add Split"
+#~ msgstr "添加分裂"
+
+#~ msgid "Invalid Split: "
+#~ msgstr "无效拆分： "
+
+#~ msgid "Remove Split"
+#~ msgstr "移除拆分"
+
+#~ msgid "Poly"
+#~ msgstr "多边形"
+
+#~ msgid "Splits"
+#~ msgstr "拆分"
+
+#~ msgid "Connect two points to make a split."
+#~ msgstr "连接两个点以进行分割。"
+
+#~ msgid "Select a split to erase it."
+#~ msgstr "选择一个拆分以擦除它。"
 
 #~ msgid "No name provided"
 #~ msgstr "未提供名称"

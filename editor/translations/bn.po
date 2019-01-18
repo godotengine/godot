@@ -2709,6 +2709,11 @@ msgid "Assign..."
 msgstr "নিযুক্ত"
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Invalid RID"
+msgstr "অকার্যকর পথ।"
+
+#: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -5469,32 +5474,28 @@ msgid "Create Polygon & UV"
 msgstr "Poly তৈরি করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split point with itself."
+#, fuzzy
+msgid "Create Internal Vertex"
+msgstr "নতুন স্ক্রিপ্ট তৈরি করুন"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Remove Internal Vertex"
+msgstr "বক্ররেখা আন্ত-নিয়ন্ত্রণে সরান"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid "Invalid Polygon (need 3 different vertices)"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Split can't form an existing edge."
-msgstr ""
+#, fuzzy
+msgid "Add Custom Polygon"
+msgstr "Poly সম্পাদন করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Split already exists."
-msgstr "'%s' অ্যাকশন ইতিমধ্যেই বিদ্যমান!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Add Split"
-msgstr "ইনপুট যোগ করুন"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Invalid Split: "
-msgstr "অগ্রহণযোগ্য পথ!"
-
-#: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Remove Split"
-msgstr "পথের বিন্দু অপসারণ করুন"
+msgid "Remove Custom Polygon"
+msgstr "পলি এবং বিন্দু অপসারণ করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5524,13 +5525,13 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Poly"
-msgstr "Poly সম্পাদন করুন"
+msgid "Points"
+msgstr "বিন্দু সরান"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
-msgid "Splits"
-msgstr "পথ বিভক্ত করুন"
+msgid "Polygons"
+msgstr "পলিগন->UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5567,13 +5568,14 @@ msgid "Scale Polygon"
 msgstr "পলিগন মাপ করুন"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-msgid "Connect two points to make a split."
+msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Select a split to erase it."
-msgstr "একটি সেটিং আইটেম প্রথম নির্বাচন করুন!"
+msgid ""
+"Remove a custom polygon. If none remain, custom polygon rendering is "
+"disabled."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -10151,6 +10153,34 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Split already exists."
+#~ msgstr "'%s' অ্যাকশন ইতিমধ্যেই বিদ্যমান!"
+
+#, fuzzy
+#~ msgid "Add Split"
+#~ msgstr "ইনপুট যোগ করুন"
+
+#, fuzzy
+#~ msgid "Invalid Split: "
+#~ msgstr "অগ্রহণযোগ্য পথ!"
+
+#, fuzzy
+#~ msgid "Remove Split"
+#~ msgstr "পথের বিন্দু অপসারণ করুন"
+
+#, fuzzy
+#~ msgid "Poly"
+#~ msgstr "Poly সম্পাদন করুন"
+
+#, fuzzy
+#~ msgid "Splits"
+#~ msgstr "পথ বিভক্ত করুন"
+
+#, fuzzy
+#~ msgid "Select a split to erase it."
+#~ msgstr "একটি সেটিং আইটেম প্রথম নির্বাচন করুন!"
 
 #~ msgid "No name provided"
 #~ msgstr "কোন নাম ব্যাবহার করা হয়নি"

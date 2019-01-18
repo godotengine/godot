@@ -220,13 +220,12 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 			Error err;
 			if (new_request.begins_with("http")) {
 				// New url, request all again
-				err = _parse_url(new_request);
+				_parse_url(new_request);
 			} else {
 				request_string = new_request;
 			}
 
 			err = _request();
-
 			if (err == OK) {
 				request_sent = false;
 				got_response = false;
