@@ -1565,7 +1565,8 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case MATH_LERP: {
 			MethodInfo mi("lerp", PropertyInfo(Variant::NIL, "from"), PropertyInfo(Variant::NIL, "to"), PropertyInfo(Variant::REAL, "weight"));
-			mi.return_val.type = Variant::REAL;
+			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case MATH_INVERSE_LERP: {

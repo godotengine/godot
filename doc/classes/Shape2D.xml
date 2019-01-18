@@ -27,7 +27,7 @@
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
-			<return type="Variant">
+			<return type="Array">
 			</return>
 			<argument index="0" name="local_xform" type="Transform2D">
 			</argument>
@@ -59,7 +59,7 @@
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
-			<return type="Variant">
+			<return type="Array">
 			</return>
 			<argument index="0" name="local_xform" type="Transform2D">
 			</argument>
