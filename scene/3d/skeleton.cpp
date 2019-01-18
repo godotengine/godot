@@ -320,7 +320,7 @@ void Skeleton::_notification(int p_what) {
 				}
 
 				b.transform_final = b.pose_global * b.rest_global_inverse;
-				vs->skeleton_bone_set_transform(skeleton, i, global_transform * (b.transform_final * global_transform_inverse));
+				vs->skeleton_bone_set_transform(skeleton, order[i], global_transform * (b.transform_final * global_transform_inverse));
 
 				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
 
