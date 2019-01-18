@@ -1533,6 +1533,35 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 	//_unblock();
 }
 
+void Viewport::_gui_call_notification(Control *p_control, int p_what) {
+
+	CanvasItem *ci = p_control;
+	while (ci) {
+
+		Control *control = Object::cast_to<Control>(ci);
+		if (control) {
+
+			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+				control->notification(p_what);
+			}
+
+			if (!control->is_inside_tree())
+				break;
+
+			if (!control->is_inside_tree() || control->is_set_as_toplevel())
+				break;
+			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP)
+				break;
+		}
+
+		if (ci->is_set_as_toplevel())
+			break;
+
+		ci = ci->get_parent_item();
+	}
+
+	//_unblock();
+}
 Control *Viewport::_gui_find_control(const Point2 &p_global) {
 
 	_gui_prepare_subwindows();
@@ -1975,13 +2004,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (over != gui.mouse_over) {
 
-			if (gui.mouse_over)
-				gui.mouse_over->notification(Control::NOTIFICATION_MOUSE_EXIT);
+			if (gui.mouse_over) {
+				_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+			}
 
 			_gui_cancel_tooltip();
 
-			if (over)
-				over->notification(Control::NOTIFICATION_MOUSE_ENTER);
+			if (over) {
+				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
+			}
 		}
 
 		gui.mouse_over = over;
