@@ -512,7 +512,7 @@ Ref<EditorExportPreset> ProjectExportDialog::get_current_preset() const {
 	return EditorExport::get_singleton()->get_export_preset(presets->get_current());
 }
 
-void ProjectExportDialog::_export_path_changed(const StringName &p_property, const Variant &p_value) {
+void ProjectExportDialog::_export_path_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
 
 	if (updating)
 		return;

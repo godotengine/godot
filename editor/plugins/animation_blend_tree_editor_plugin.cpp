@@ -87,7 +87,7 @@ Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
 	return Size2(10, 200);
 }
 
-void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_property, const Variant &p_value) {
+void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing) {
 
 	AnimationTree *tree = AnimationTreeEditor::get_singleton()->get_tree();
 	updating = true;

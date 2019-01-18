@@ -115,7 +115,7 @@ private:
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
-	void _export_path_changed(const StringName &p_property, const Variant &p_value);
+	void _export_path_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
 	void _duplicate_preset();

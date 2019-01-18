@@ -102,6 +102,8 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 public:
+	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
+
 	virtual Size2 get_minimum_size() const;
 
 	void set_label(const String &p_label);

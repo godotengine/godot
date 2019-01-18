@@ -104,7 +104,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _filter_toggled();
 	Ref<AnimationNode> _filter_edit;
 
-	void _property_changed(const StringName &p_property, const Variant &p_value);
+	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _removed_from_graph();
 
 	EditorFileDialog *open_file;
