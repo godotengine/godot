@@ -176,14 +176,15 @@ void ColorPicker::_update_color() {
 	updating = true;
 
 	for (int i = 0; i < 4; i++) {
-		scroll[i]->set_step(0.01);
 		if (raw_mode_enabled) {
+			scroll[i]->set_step(0.01);
 			scroll[i]->set_max(100);
 			if (i == 3)
 				scroll[i]->set_max(1);
 			scroll[i]->set_value(color.components[i]);
 		} else {
-			const int byte_value = color.components[i] * 255;
+			scroll[i]->set_step(1);
+			const float byte_value = color.components[i] * 255.0;
 			scroll[i]->set_max(next_power_of_2(MAX(255, byte_value)) - 1);
 			scroll[i]->set_value(byte_value);
 		}
