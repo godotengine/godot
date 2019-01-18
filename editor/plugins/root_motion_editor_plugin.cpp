@@ -39,7 +39,7 @@ void EditorPropertyRootMotion::_confirmed() {
 		return;
 
 	NodePath path = ti->get_metadata(0);
-	emit_signal("property_changed", get_edited_property(), path);
+	emit_changed(get_edited_property(), path);
 	update_property();
 	filter_dialog->hide(); //may come from activated
 }
@@ -195,7 +195,7 @@ void EditorPropertyRootMotion::_node_assign() {
 
 void EditorPropertyRootMotion::_node_clear() {
 
-	emit_signal("property_changed", get_edited_property(), NodePath());
+	emit_changed(get_edited_property(), NodePath());
 	update_property();
 }
 

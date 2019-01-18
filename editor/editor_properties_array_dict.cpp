@@ -165,13 +165,13 @@ EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
 
 ///////////////////// ARRAY ///////////////////////////
 
-void EditorPropertyArray::_property_changed(const String &p_prop, Variant p_value, bool changing) {
+void EditorPropertyArray::_property_changed(const String &p_prop, Variant p_value, const String &p_name, bool changing) {
 
 	if (p_prop.begins_with("indices")) {
 		int idx = p_prop.get_slice("/", 1).to_int();
 		Variant array = object->get_array();
 		array.set(idx, p_value);
-		emit_signal("property_changed", get_edited_property(), array, true);
+		emit_changed(get_edited_property(), array, "", true);
 
 		if (array.get_type() == Variant::ARRAY) {
 			array = array.call("duplicate"); //dupe, so undo/redo works better
@@ -199,7 +199,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	Variant array = object->get_array();
 	array.set(changing_type_idx, value);
 
-	emit_signal("property_changed", get_edited_property(), array);
+	emit_changed(get_edited_property(), array, "", true);
 
 	if (array.get_type() == Variant::ARRAY) {
 		array = array.call("duplicate"); //dupe, so undo/redo works better
@@ -419,7 +419,7 @@ void EditorPropertyArray::_length_changed(double p_page) {
 
 	Variant array = object->get_array();
 	array.call("resize", int(p_page));
-	emit_signal("property_changed", get_edited_property(), array);
+	emit_changed(get_edited_property(), array, "", false);
 
 	if (array.get_type() == Variant::ARRAY) {
 		if (subtype != Variant::NIL) {
@@ -461,7 +461,7 @@ void EditorPropertyArray::_bind_methods() {
 	ClassDB::bind_method("_edit_pressed", &EditorPropertyArray::_edit_pressed);
 	ClassDB::bind_method("_page_changed", &EditorPropertyArray::_page_changed);
 	ClassDB::bind_method("_length_changed", &EditorPropertyArray::_length_changed);
-	ClassDB::bind_method("_property_changed", &EditorPropertyArray::_property_changed, DEFVAL(false));
+	ClassDB::bind_method("_property_changed", &EditorPropertyArray::_property_changed, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method("_change_type", &EditorPropertyArray::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyArray::_change_type_menu);
 	ClassDB::bind_method("_object_id_selected", &EditorPropertyArray::_object_id_selected);
@@ -501,7 +501,7 @@ EditorPropertyArray::EditorPropertyArray() {
 
 ///////////////////// DICTIONARY ///////////////////////////
 
-void EditorPropertyDictionary::_property_changed(const String &p_prop, Variant p_value, bool changing) {
+void EditorPropertyDictionary::_property_changed(const String &p_prop, Variant p_value, const String &p_name, bool changing) {
 
 	if (p_prop == "new_item_key") {
 
@@ -515,7 +515,7 @@ void EditorPropertyDictionary::_property_changed(const String &p_prop, Variant p
 		Variant key = dict.get_key_at_index(idx);
 		dict[key] = p_value;
 
-		emit_signal("property_changed", get_edited_property(), dict, true);
+		emit_changed(get_edited_property(), dict, "", true);
 
 		dict = dict.duplicate(); //dupe, so undo/redo works better
 		object->set_dict(dict);
@@ -546,7 +546,7 @@ void EditorPropertyDictionary::_add_key_value() {
 	object->set_new_item_key(Variant());
 	object->set_new_item_value(Variant());
 
-	emit_signal("property_changed", get_edited_property(), dict);
+	emit_changed(get_edited_property(), dict, "", false);
 
 	dict = dict.duplicate(); //dupe, so undo/redo works better
 	object->set_dict(dict);
@@ -582,7 +582,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 		dict.erase(key);
 	}
 
-	emit_signal("property_changed", get_edited_property(), dict);
+	emit_changed(get_edited_property(), dict, "", false);
 
 	dict = dict.duplicate(); //dupe, so undo/redo works better
 	object->set_dict(dict);
@@ -957,7 +957,7 @@ void EditorPropertyDictionary::_page_changed(double p_page) {
 void EditorPropertyDictionary::_bind_methods() {
 	ClassDB::bind_method("_edit_pressed", &EditorPropertyDictionary::_edit_pressed);
 	ClassDB::bind_method("_page_changed", &EditorPropertyDictionary::_page_changed);
-	ClassDB::bind_method("_property_changed", &EditorPropertyDictionary::_property_changed, DEFVAL(false));
+	ClassDB::bind_method("_property_changed", &EditorPropertyDictionary::_property_changed, DEFVAL(String()), DEFVAL(false));
 	ClassDB::bind_method("_change_type", &EditorPropertyDictionary::_change_type);
 	ClassDB::bind_method("_change_type_menu", &EditorPropertyDictionary::_change_type_menu);
 	ClassDB::bind_method("_add_key_value", &EditorPropertyDictionary::_add_key_value);
