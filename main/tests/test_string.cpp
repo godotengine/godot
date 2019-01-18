@@ -1078,6 +1078,44 @@ bool test_34() {
 	return state;
 }
 
+bool test_35() {
+#define COUNT_TEST(x)                                            \
+	{                                                            \
+		bool success = x;                                        \
+		state = state && success;                                \
+		if (!success) {                                          \
+			OS::get_singleton()->print("\tfailed at: %s\n", #x); \
+		}                                                        \
+	}
+
+	OS::get_singleton()->print("\n\nTest 35: count and countn function\n");
+	bool state = true;
+
+	COUNT_TEST(String("").count("Test") == 0);
+	COUNT_TEST(String("Test").count("") == 0);
+	COUNT_TEST(String("Test").count("test") == 0);
+	COUNT_TEST(String("Test").count("TEST") == 0);
+	COUNT_TEST(String("TEST").count("TEST") == 1);
+	COUNT_TEST(String("Test").count("Test") == 1);
+	COUNT_TEST(String("aTest").count("Test") == 1);
+	COUNT_TEST(String("Testa").count("Test") == 1);
+	COUNT_TEST(String("TestTestTest").count("Test") == 3);
+	COUNT_TEST(String("TestTestTest").count("TestTest") == 1);
+	COUNT_TEST(String("TestGodotTestGodotTestGodot").count("Test") == 3);
+
+	COUNT_TEST(String("TestTestTestTest").count("Test", 4, 8) == 1);
+	COUNT_TEST(String("TestTestTestTest").count("Test", 4, 12) == 2);
+	COUNT_TEST(String("TestTestTestTest").count("Test", 4, 16) == 3);
+	COUNT_TEST(String("TestTestTestTest").count("Test", 4) == 3);
+
+	COUNT_TEST(String("Test").countn("test") == 1);
+	COUNT_TEST(String("Test").countn("TEST") == 1);
+	COUNT_TEST(String("testTest-Testatest").countn("tEst") == 4);
+	COUNT_TEST(String("testTest-TeStatest").countn("tEsT", 4, 16) == 2);
+
+	return state;
+}
+
 typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
@@ -1116,6 +1154,7 @@ TestFunc test_funcs[] = {
 	test_32,
 	test_33,
 	test_34,
+	test_35,
 	0
 
 };

@@ -44,6 +44,26 @@
               ["const godot_vector2 *", "p_to"],
               ["const godot_real", "p_delta"]
             ]
+          },       
+          {
+            "name": "godot_string_count",
+            "return_type": "godot_int",
+            "arguments": [
+              ["const godot_string *", "p_self"],
+              ["godot_string", "p_what"],
+              ["godot_int", "p_from"],
+              ["godot_int", "p_to"]
+            ]
+          }, 
+          {
+            "name": "godot_string_countn",
+            "return_type": "godot_int",
+            "arguments": [
+              ["const godot_string *", "p_self"],
+              ["godot_string", "p_what"],
+              ["godot_int", "p_from"],
+              ["godot_int", "p_to"]
+            ]
           }
         ]
       },

@@ -2729,6 +2729,51 @@ bool String::is_quoted() const {
 	return is_enclosed_in("\"") || is_enclosed_in("'");
 }
 
+int String::_count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const {
+	if (p_string.empty()) {
+		return 0;
+	}
+	int len = length();
+	int slen = p_string.length();
+	if (len < slen) {
+		return 0;
+	}
+	String str;
+	if (p_from >= 0 && p_to >= 0) {
+		if (p_to == 0) {
+			p_to = len;
+		} else if (p_from >= p_to) {
+			return 0;
+		}
+		if (p_from == 0 && p_to == len) {
+			str = String();
+			str.copy_from_unchecked(&c_str()[0], len);
+		} else {
+			str = substr(p_from, p_to - p_from);
+		}
+	} else {
+		return 0;
+	}
+	int c = 0;
+	int idx = -1;
+	do {
+		idx = p_case_insensitive ? str.findn(p_string) : str.find(p_string);
+		if (idx != -1) {
+			str = str.substr(idx + slen, str.length() - slen);
+			++c;
+		}
+	} while (idx != -1);
+	return c;
+}
+
+int String::count(const String &p_string, int p_from, int p_to) const {
+	return _count(p_string, p_from, p_to, false);
+}
+
+int String::countn(const String &p_string, int p_from, int p_to) const {
+	return _count(p_string, p_from, p_to, true);
+}
+
 bool String::_base_is_subsequence_of(const String &p_string, bool case_insensitive) const {
 
 	int len = length();
