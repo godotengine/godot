@@ -305,6 +305,8 @@ private:
 	bool disable_input;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
+	void _gui_call_notification(Control *p_control, int p_what);
+
 	void _gui_prepare_subwindows();
 	void _gui_sort_subwindows();
 	void _gui_sort_roots();
