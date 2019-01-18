@@ -52,6 +52,7 @@ DWORD ThreadWindows::thread_callback(LPVOID userdata) {
 
 	t->id = (ID)GetCurrentThreadId(); // must implement
 	t->callback(t->user);
+	SetEvent(t->handle);
 
 	ScriptServer::thread_exit();
 
@@ -63,13 +64,9 @@ Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void
 	ThreadWindows *tr = memnew(ThreadWindows);
 	tr->callback = p_callback;
 	tr->user = p_user;
-	tr->handle = CreateThread(
-			NULL, // default security attributes
-			0, // use default stack size
-			thread_callback, // thread function name
-			tr, // argument to thread function
-			0, // use default creation flags
-			NULL); // returns the thread identifier
+	tr->handle = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+	QueueUserWorkItem(thread_callback, tr, WT_EXECUTELONGFUNCTION);
 
 	return tr;
 }
