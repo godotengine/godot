@@ -150,6 +150,9 @@ void MonoBottomPanel::_errors_toggled(bool p_pressed) {
 
 void MonoBottomPanel::_build_project_pressed() {
 
+	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
+		return; // No solution to build
+
 	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
 	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
 	ERR_FAIL_COND(metadata_err != OK);
