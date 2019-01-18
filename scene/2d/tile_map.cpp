@@ -481,7 +481,7 @@ void TileMap::update_dirty_quadrants() {
 						}
 						ps->body_add_shape(q.body, shape->get_rid(), xform);
 						ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
-						ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[i].one_way_collision);
+						ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[i].one_way_collision, shapes[i].one_way_collision_margin);
 						shape_idx++;
 					}
 				}

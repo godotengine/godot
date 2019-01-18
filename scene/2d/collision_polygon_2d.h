@@ -54,6 +54,7 @@ protected:
 	CollisionObject2D *parent;
 	bool disabled;
 	bool one_way_collision;
+	float one_way_collision_margin;
 
 	Vector<Vector<Vector2> > _decompose_in_convex();
 
@@ -83,6 +84,9 @@ public:
 
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
+
+	void set_one_way_collision_margin(float p_margin);
+	float get_one_way_collision_margin() const;
 
 	CollisionPolygon2D();
 };

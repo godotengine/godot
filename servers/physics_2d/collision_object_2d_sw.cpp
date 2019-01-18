@@ -40,6 +40,7 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 	s.bpid = 0; //needs update
 	s.disabled = false;
 	s.one_way_collision = false;
+	s.one_way_collision_margin = 0;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
 	_update_shapes();

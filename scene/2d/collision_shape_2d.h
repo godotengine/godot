@@ -46,6 +46,7 @@ class CollisionShape2D : public Node2D {
 	void _shape_changed();
 	bool disabled;
 	bool one_way_collision;
+	float one_way_collision_margin;
 
 	void _update_in_shape_owner(bool p_xform_only = false);
 
@@ -64,6 +65,9 @@ public:
 
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
+
+	void set_one_way_collision_margin(float p_margin);
+	float get_one_way_collision_margin() const;
 
 	virtual String get_configuration_warning() const;
 

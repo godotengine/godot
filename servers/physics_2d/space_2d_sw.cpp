@@ -328,6 +328,7 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D &
 	Physics2DServerSW::CollCbkData cbk;
 	cbk.max = p_result_max;
 	cbk.amount = 0;
+	cbk.passed = 0;
 	cbk.ptr = r_results;
 	CollisionSolver2DSW::CallbackResult cbkres = NULL;
 
@@ -573,6 +574,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 					int shape_idx = intersection_query_subindex_results[i];
 
 					cbk.amount = 0;
+					cbk.passed = 0;
 					cbk.ptr = sr;
 					cbk.invalid_by_dir = 0;
 
@@ -720,6 +722,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			Physics2DServerSW::CollCbkData cbk;
 			cbk.max = max_results;
 			cbk.amount = 0;
+			cbk.passed = 0;
 			cbk.ptr = sr;
 			cbk.invalid_by_dir = 0;
 			excluded_shape_pair_count = 0; //last step is the one valid
@@ -759,7 +762,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
-						cbk.valid_depth = p_margin; //only valid depth is the collision margin
+						float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
+						print_line("margin: " + rtos(owc_margin));
+						cbk.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it wont work
 						cbk.invalid_by_dir = 0;
 
 						if (col_obj->get_type() == CollisionObject2DSW::TYPE_BODY) {
@@ -780,12 +785,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						cbk.invalid_by_dir = 0;
 					}
 
-					int current_collisions = cbk.amount;
+					int current_passed = cbk.passed; //save how many points passed collision
 					bool did_collide = false;
 
 					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
 					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, NULL, separation_margin)) {
-						did_collide = cbk.amount > current_collisions;
+						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
 					}
 
 					if (!did_collide && cbk.invalid_by_dir > 0) {
@@ -933,6 +938,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 					Physics2DServerSW::CollCbkData cbk;
 					cbk.max = 1;
 					cbk.amount = 0;
+					cbk.passed = 0;
 					cbk.ptr = cd;
 					cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
