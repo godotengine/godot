@@ -73,7 +73,7 @@ static const char *uwp_uap_capabilities[] = {
 	"voipCall",
 	NULL
 };
-static const char *uwp_device_capabilites[] = {
+static const char *uwp_device_capabilities[] = {
 	"bluetooth",
 	"location",
 	"microphone",
@@ -841,7 +841,7 @@ class EditorExportUWP : public EditorExportPlatform {
 			}
 			uap++;
 		}
-		const char **device = uwp_device_capabilites;
+		const char **device = uwp_device_capabilities;
 		while (*device) {
 			if ((bool)p_preset->get("capabilities/" + String(*device))) {
 				capabilities_elements += "    <DeviceCapability Name=\"" + String(*device) + "\" />\n";
@@ -1105,7 +1105,7 @@ public:
 			uap++;
 		}
 
-		const char **device = uwp_device_capabilites;
+		const char **device = uwp_device_capabilities;
 		while (*device) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*device).camelcase_to_underscore(false)), false));
 			device++;
