@@ -716,7 +716,10 @@ bool OS_JavaScript::main_loop_iterate() {
 			/* clang-format on */
 		}
 	}
-	process_joysticks();
+
+	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+		process_joysticks();
+
 	return Main::iteration();
 }
 
