@@ -2632,7 +2632,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	//no need for change
 	if (gui.key_focus && gui.key_focus == p_control)
 		return;
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
+	_gui_remove_focus();
 	gui.key_focus = p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
