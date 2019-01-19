@@ -1398,8 +1398,7 @@ void EditorInspector::update_tree() {
 	String group_base;
 	VBoxContainer *category_vbox = NULL;
 
-	List<PropertyInfo>
-			plist;
+	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
 
 	HashMap<String, VBoxContainer *> item_path;
@@ -1979,7 +1978,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	if (changing)
 		this->changing++;
 
-	_edit_set(p_path, p_value, false, p_name);
+	_edit_set(p_path, p_value, p_path == "script", p_name);
 
 	if (changing)
 		this->changing--;
