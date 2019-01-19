@@ -39,9 +39,9 @@ class RandomPCG {
 	pcg32_random_t pcg;
 
 public:
-	static const uint64_t DEFAULT_SEED = 12047754176567800795ULL;
+	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
 	static const uint64_t DEFAULT_INC = PCG_DEFAULT_INC_64;
-	static const uint64_t RANDOM_MAX = 4294967295;
+	static const uint64_t RANDOM_MAX = 0xFFFFFFFF;
 
 	RandomPCG(uint64_t seed = DEFAULT_SEED, uint64_t inc = PCG_DEFAULT_INC_64);
 
