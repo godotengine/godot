@@ -58,6 +58,7 @@ class OS_JavaScript : public OS_Unix {
 	int last_click_button_index;
 
 	MainLoop *main_loop;
+	int video_driver_index;
 	AudioDriverJavaScript audio_driver_javascript;
 
 	bool idb_available;
@@ -84,8 +85,6 @@ class OS_JavaScript : public OS_Unix {
 	static void main_loop_callback();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
-
-	int video_driver_index;
 
 protected:
 	virtual int get_current_video_driver() const;
