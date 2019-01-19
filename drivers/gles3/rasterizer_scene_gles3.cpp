@@ -2680,7 +2680,7 @@ void RasterizerSceneGLES3::_setup_environment(Environment *env, const CameraMatr
 // Drop -O3 for this function as it triggers a GCC bug up until at least GCC 8.2.1.
 // This refers to GH issue #19633.
 // The bug has been reported to the GCC project.
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC push_options
 #pragma GCC optimize("-O2")
 #endif
@@ -2801,7 +2801,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 3, state.directional_ubo);
 }
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC pop_options
 #endif
 
