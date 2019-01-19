@@ -2738,8 +2738,14 @@ void CanvasItemEditor::_draw_selection() {
 
 		if (single && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
 			// Draw the pivot
-			if (canvas_item->_edit_get_pivot() != Vector2() || drag_type == DRAG_PIVOT || tool == TOOL_EDIT_PIVOT) { // This is not really clean :/
-				viewport->draw_texture(pivot_icon, (xform.xform(canvas_item->_edit_get_pivot()) - (pivot_icon->get_size() / 2)).floor());
+			if (canvas_item->_edit_use_pivot()) {
+
+				// Draw the node's pivot
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+				viewport->draw_set_transform_matrix(simple_xform);
+				viewport->draw_texture(pivot_icon, canvas_item->_edit_get_pivot() - (pivot_icon->get_size() / 2).floor());
+				viewport->draw_set_transform_matrix(viewport->get_transform());
 			}
 
 			// Draw control-related helpers
