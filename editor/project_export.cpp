@@ -1298,12 +1298,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->connect("file_selected", this, "_export_project_to_path");
 	export_project->get_line_edit()->connect("text_changed", this, "_validate_export_path");
 
-	export_debug = memnew(CheckButton);
+	export_debug = memnew(CheckBox);
 	export_debug->set_text(TTR("Export With Debug"));
 	export_debug->set_pressed(true);
 	export_project->get_vbox()->add_child(export_debug);
 
-	export_pck_zip_debug = memnew(CheckButton);
+	export_pck_zip_debug = memnew(CheckBox);
 	export_pck_zip_debug->set_text(TTR("Export With Debug"));
 	export_pck_zip_debug->set_pressed(true);
 	export_pck_zip->get_vbox()->add_child(export_pck_zip_debug);
