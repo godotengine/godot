@@ -1266,7 +1266,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip->connect("file_selected", this, "_export_pck_zip_selected");
 
 	export_error = memnew(Label);
-	export_error->set_autowrap(true);
 	main_vb->add_child(export_error);
 	export_error->hide();
 	export_error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
