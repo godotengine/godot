@@ -970,7 +970,8 @@ bool OS_JavaScript::main_loop_iterate() {
 		}
 	}
 
-	process_joypads();
+	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+		process_joypads();
 
 	if (just_exited_fullscreen) {
 		if (window_maximized) {
