@@ -21,6 +21,7 @@ namespace GodotSharpTools.Project
             mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
             mainGroup.SetProperty("RootNamespace", "Godot");
             mainGroup.SetProperty("ProjectGuid", CoreApiProjectGuid);
+            mainGroup.SetProperty("BaseIntermediateOutputPath", "obj");
 
             GenAssemblyInfoFile(root, dir, CoreApiProjectName,
                                 new string[] { "[assembly: InternalsVisibleTo(\"" + EditorApiProjectName + "\")]" },
@@ -46,6 +47,7 @@ namespace GodotSharpTools.Project
             mainGroup.AddProperty("DocumentationFile", Path.Combine("$(OutputPath)", "$(AssemblyName).xml"));
             mainGroup.SetProperty("RootNamespace", "Godot");
             mainGroup.SetProperty("ProjectGuid", EditorApiProjectGuid);
+            mainGroup.SetProperty("BaseIntermediateOutputPath", "obj");
 
             GenAssemblyInfoFile(root, dir, EditorApiProjectName);
 
