@@ -716,7 +716,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			real_t rollingFriction = 0.f;
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-				if (engine_force != 0.f) {
+				if (engine_force != 0.f && wheelInfo.engine_traction != false) {
 					rollingFriction = -engine_force * s->get_step();
 				} else {
 					real_t defaultRollingFrictionImpulse = 0.f;
