@@ -49,6 +49,7 @@ public:
 
 	virtual Error init();
 	virtual void start();
+	void resume();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();

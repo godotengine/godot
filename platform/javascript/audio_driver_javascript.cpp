@@ -146,6 +146,15 @@ void AudioDriverJavaScript::start() {
 	/* clang-format on */
 }
 
+void AudioDriverJavaScript::resume() {
+	/* clang-format off */
+	EM_ASM({
+		if (_audioDriver_audioContext.resume)
+			_audioDriver_audioContext.resume();
+	});
+	/* clang-format on */
+}
+
 int AudioDriverJavaScript::get_mix_rate() const {
 
 	/* clang-format off */
