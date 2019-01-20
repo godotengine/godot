@@ -61,8 +61,9 @@ def get_opts():
     return [
         BoolVariable('use_llvm', 'Use the LLVM compiler', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
-        BoolVariable('use_sanitizer', 'Use LLVM compiler address sanitizer', False),
-        BoolVariable('use_leak_sanitizer', 'Use LLVM compiler memory leaks sanitizer (implies use_sanitizer)', False),
+        BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
+        BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
+        BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
         BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
@@ -131,12 +132,19 @@ def configure(env):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
-    # leak sanitizer requires (address) sanitizer
-    if env['use_sanitizer'] or env['use_leak_sanitizer']:
-        env.Append(CCFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
-        env.Append(LINKFLAGS=['-fsanitize=address'])
+
+    if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
         env.extra_suffix += "s"
-        if env['use_leak_sanitizer']:
+
+        if env['use_ubsan']:
+            env.Append(CCFLAGS=['-fsanitize=undefined'])
+            env.Append(LINKFLAGS=['-fsanitize=undefined'])
+
+        if env['use_asan']:
+            env.Append(CCFLAGS=['-fsanitize=address'])
+            env.Append(LINKFLAGS=['-fsanitize=address'])
+
+        if env['use_lsan']:
             env.Append(CCFLAGS=['-fsanitize=leak'])
             env.Append(LINKFLAGS=['-fsanitize=leak'])
 
