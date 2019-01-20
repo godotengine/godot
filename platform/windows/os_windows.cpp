@@ -384,78 +384,80 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			UINT dwSize;
 
 			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
-			LPBYTE lpb = new BYTE[dwSize];
-			if (lpb == NULL) {
+			try {
+				LPBYTE lpb = new BYTE[dwSize];
+
+				if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+					OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
+
+				RAWINPUT *raw = (RAWINPUT *)lpb;
+
+				if (raw->header.dwType == RIM_TYPEMOUSE) {
+					Ref<InputEventMouseMotion> mm;
+					mm.instance();
+
+					mm->set_control(control_mem);
+					mm->set_shift(shift_mem);
+					mm->set_alt(alt_mem);
+
+					mm->set_button_mask(last_button_state);
+
+					Point2i c(video_mode.width / 2, video_mode.height / 2);
+
+					// centering just so it works as before
+					POINT pos = { (int)c.x, (int)c.y };
+					ClientToScreen(hWnd, &pos);
+					SetCursorPos(pos.x, pos.y);
+
+					mm->set_position(c);
+					mm->set_global_position(c);
+					input->set_mouse_position(c);
+					mm->set_speed(Vector2(0, 0));
+
+					if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
+						mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
+
+					} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
+
+						int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+						int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+						int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
+						int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
+
+						Vector2 abs_pos(
+								(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
+								(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
+
+						POINT coords; //client coords
+						coords.x = abs_pos.x;
+						coords.y = abs_pos.y;
+
+						ScreenToClient(hWnd, &coords);
+
+						mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y));
+						old_x = coords.x;
+						old_y = coords.y;
+
+						/*Input.mi.dx = (int)((((double)(pos.x)-nScreenLeft) * 65536) / nScreenWidth + 65536 / (nScreenWidth));
+						Input.mi.dy = (int)((((double)(pos.y)-nScreenTop) * 65536) / nScreenHeight + 65536 / (nScreenHeight));
+						*/
+					}
+
+					if (window_has_focus && main_loop && mm->get_relative() != Vector2())
+						input->parse_input_event(mm);
+				}
+				delete[] lpb;
+			} catch (const std::bad_alloc &) {
 				return 0;
 			}
 
-			if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
-				OutputDebugString(TEXT("GetRawInputData does not return correct size !\n"));
-
-			RAWINPUT *raw = (RAWINPUT *)lpb;
-
-			if (raw->header.dwType == RIM_TYPEMOUSE) {
-				Ref<InputEventMouseMotion> mm;
-				mm.instance();
-
-				mm->set_control(control_mem);
-				mm->set_shift(shift_mem);
-				mm->set_alt(alt_mem);
-
-				mm->set_button_mask(last_button_state);
-
-				Point2i c(video_mode.width / 2, video_mode.height / 2);
-
-				// centering just so it works as before
-				POINT pos = { (int)c.x, (int)c.y };
-				ClientToScreen(hWnd, &pos);
-				SetCursorPos(pos.x, pos.y);
-
-				mm->set_position(c);
-				mm->set_global_position(c);
-				input->set_mouse_position(c);
-				mm->set_speed(Vector2(0, 0));
-
-				if (raw->data.mouse.usFlags == MOUSE_MOVE_RELATIVE) {
-					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
-
-				} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
-
-					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-					int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-					int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
-					int nScreenTop = GetSystemMetrics(SM_YVIRTUALSCREEN);
-
-					Vector2 abs_pos(
-							(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
-							(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
-
-					POINT coords; //client coords
-					coords.x = abs_pos.x;
-					coords.y = abs_pos.y;
-
-					ScreenToClient(hWnd, &coords);
-
-					mm->set_relative(Vector2(coords.x - old_x, coords.y - old_y));
-					old_x = coords.x;
-					old_y = coords.y;
-
-					/*Input.mi.dx = (int)((((double)(pos.x)-nScreenLeft) * 65536) / nScreenWidth + 65536 / (nScreenWidth));
-					Input.mi.dy = (int)((((double)(pos.y)-nScreenTop) * 65536) / nScreenHeight + 65536 / (nScreenHeight));
-					*/
-				}
-
-				if (window_has_focus && main_loop && mm->get_relative() != Vector2())
-					input->parse_input_event(mm);
-			}
-			delete[] lpb;
 		} break;
 		case WM_MOUSEMOVE: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
 				break;
 			}
 
-			if (input->is_emulating_mouse_from_touch()) {
+			if (input && input->is_emulating_mouse_from_touch()) {
 				// Universal translation enabled; ignore OS translation
 				LPARAM extra = GetMessageExtraInfo();
 				if (IsTouchEvent(extra)) {
@@ -948,7 +950,7 @@ void OS_Windows::process_key_events() {
 		switch (ke.uMsg) {
 
 			case WM_CHAR: {
-				if ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR)) {
+				if ((i == 0) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR)) {
 					Ref<InputEventKey> k;
 					k.instance();
 
