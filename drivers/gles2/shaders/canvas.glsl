@@ -433,19 +433,14 @@ FRAGMENT_SHADER_CODE
 
 #ifdef SHADOW_USE_GRADIENT
 
-#define SHADOW_TEST(m_ofs)                                                    \
-	{                                                                         \
-		highp float sd = SHADOW_DEPTH(shadow_texture, vec2(m_ofs, sh));       \
-		shadow_attenuation += 1.0 - smoothstep(sd, sd + shadow_gradient, sz); \
-	}
+		/* clang-format off */
+		/* GLSL es 100 doesn't support line continuation characters(backslashes) */
+#define SHADOW_TEST(m_ofs) { highp float sd = SHADOW_DEPTH(shadow_texture, vec2(m_ofs, sh)); shadow_attenuation += 1.0 - smoothstep(sd, sd + shadow_gradient, sz); }
 
 #else
 
-#define SHADOW_TEST(m_ofs)                                              \
-	{                                                                   \
-		highp float sd = SHADOW_DEPTH(shadow_texture, vec2(m_ofs, sh)); \
-		shadow_attenuation += step(sz, sd);                             \
-	}
+#define SHADOW_TEST(m_ofs) { highp float sd = SHADOW_DEPTH(shadow_texture, vec2(m_ofs, sh)); shadow_attenuation += step(sz, sd); }
+		/* clang-format on */
 
 #endif
 
