@@ -245,6 +245,8 @@ EM_BOOL OS_JavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboa
 		return false;
 	}
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	return true;
 }
 
@@ -335,6 +337,8 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	ev->set_button_mask(mask);
 
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	// Prevent multi-click text selection and wheel-click scrolling anchor.
 	// Context menu is prevented through contextmenu event.
 	return true;
@@ -663,6 +667,8 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 
 		os->input->parse_input_event(ev);
 	}
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	return true;
 }
 
@@ -970,7 +976,8 @@ bool OS_JavaScript::main_loop_iterate() {
 		}
 	}
 
-	process_joypads();
+	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+		process_joypads();
 
 	if (just_exited_fullscreen) {
 		if (window_maximized) {

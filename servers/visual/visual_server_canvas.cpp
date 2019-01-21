@@ -1110,7 +1110,6 @@ void VisualServerCanvas::canvas_light_set_shadow_buffer_size(RID p_light, int p_
 	if (new_size == clight->shadow_buffer_size)
 		return;
 
-	print_line("create shadow buffer: " + itos(p_size));
 	clight->shadow_buffer_size = next_power_of_2(p_size);
 
 	if (clight->shadow_buffer.is_valid()) {

@@ -320,7 +320,6 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	if (!auto_triangles || !trianges_dirty)
 		return;
 
-	print_line("updating triangles");
 	trianges_dirty = false;
 	triangles.clear();
 	if (blend_points_used < 3) {
@@ -335,8 +334,6 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	}
 
 	Vector<Delaunay2D::Triangle> triangles = Delaunay2D::triangulate(points);
-
-	print_line("triangles generated: " + itos(triangles.size()));
 
 	for (int i = 0; i < triangles.size(); i++) {
 		add_triangle(triangles[i].points[0], triangles[i].points[1], triangles[i].points[2]);

@@ -71,11 +71,11 @@ if [ ! -d $ANDROID_NDK_DIR ]; then
 fi
 
 echo "Installing: Android Tools ..."
-#$ANDROID_SDK_DIR/tools/bin/sdkmanager --all
+mkdir -p ~/.android && echo "count=0" > ~/.android/repositories.cfg
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager --licenses > /dev/null
-$ANDROID_SDK_DIR/tools/bin/sdkmanager 'tools' > /dev/null
-$ANDROID_SDK_DIR/tools/bin/sdkmanager 'platform-tools' > /dev/null
-$ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;28.0.1' > /dev/null
+yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'tools' > /dev/null
+yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'platform-tools' > /dev/null
+yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;28.0.1' > /dev/null
 echo
 
 EXPORT_VAL="export ANDROID_HOME=$ANDROID_SDK_PATH"
