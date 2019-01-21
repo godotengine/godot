@@ -2044,7 +2044,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		}
 	}
 
-	if (p_paths.size() >= 1) {
+	if (p_paths.size() >= 1 && path != "res://") {
 		if (!all_favorites) {
 			p_popup->add_item(TTR("Add to favorites"), FILE_ADD_FAVORITE);
 		}
