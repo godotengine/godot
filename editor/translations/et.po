@@ -1,4 +1,4 @@
-# LANGUAGE translation of the Godot Engine editor
+# Estonian translation of the Godot Engine editor
 # Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
@@ -6,6 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/et/>\n"
 "Language: et\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"

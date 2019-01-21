@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"PO-Revision-Date: 2019-01-18 22:28+0000\n"
 "Last-Translator: Александр <ol-vin@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -5208,7 +5208,7 @@ msgstr "Удалить входную контрольную точку"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr ""
+msgstr "Некорректный Полигон (требуется 3 различные вершины)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5288,14 +5288,19 @@ msgid "Scale Polygon"
 msgstr "Масштабировать полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
+"Создать пользовательский полигон. Позволяет настраивать рендеринг полигонов."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
 msgstr ""
+"Удалить пользовательский полигон. Если ничего не осталось, пользовательский "
+"рендеринг полигонов отключен."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."

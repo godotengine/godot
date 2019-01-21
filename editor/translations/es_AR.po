@@ -3,7 +3,7 @@
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
 # Diego López <diegodario21@gmail.com>, 2017.
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2018.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2018, 2019.
 # Roger Blanco Ribera <roger.blancoribera@gmail.com>, 2016-2018.
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 # Jose Luis Bossio <joseluisbossio@gmail.com>, 2018.
@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-22 11:09+0000\n"
+"PO-Revision-Date: 2019-01-16 20:20+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -974,9 +974,8 @@ msgid "Uncompressing Assets"
 msgstr "Descomprimiendo Assets"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "El Paquete se Instaló Exitosamente!"
+msgstr "El Paquete se instaló exitosamente!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2598,22 +2597,19 @@ msgid "[Empty]"
 msgstr "[Vacio]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
-msgstr "Asignar.."
+msgstr "Asignar..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr "Ruta inválida"
+msgstr "RID Inválido"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"El recurso seleccionado (%s) no concuerda con el tipo esperado para esta "
+"El recurso seleccionado (%s) no concuerda con ningún tipo esperado para esta "
 "propiedad (%s)."
 
 #: editor/editor_properties.cpp
@@ -3491,9 +3487,8 @@ msgstr "Agregar Animación"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
-msgstr "Cargar.."
+msgstr "Cargar..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3881,9 +3876,8 @@ msgid "Connect nodes."
 msgstr "Conectar nodos."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Quitar el nodo o transición seleccionado/a"
+msgstr "Quitar el nodo o transición seleccionado/a."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -5198,28 +5192,24 @@ msgid "Create Polygon & UV"
 msgstr "Crear Polígono y UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Internal Vertex"
-msgstr "Crear nueva guía horizontal"
+msgstr "Crear Vértice Interno"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Internal Vertex"
-msgstr "Quitar Punto In-Control"
+msgstr "Quitar Vértice Interno"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr ""
+msgstr "Polígono Inválido (se necesitan 3 vértices diferentes)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Add Custom Polygon"
-msgstr "Editar Polígono"
+msgstr "Agregar Polígono Personalizado"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Polygon"
-msgstr "Remover Polígono y Punto"
+msgstr "Remover Polígono Personalizado"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5246,14 +5236,12 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Points"
-msgstr "Punto"
+msgstr "Puntos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "Polígono->UV"
+msgstr "Polígonos"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5290,12 +5278,16 @@ msgstr "Escalar Polígono"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
+"Crear un polígono personalizado. Activa el rendering de polígonos "
+"personalizados."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
 msgstr ""
+"Remover un polígono personalizado. Si no queda ninguno, se desactiva el "
+"rendering de polígonos personalizados."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -6287,7 +6279,7 @@ msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Name-less gizmo"
-msgstr ""
+msgstr "Gizmo sin nombre"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6691,9 +6683,9 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Mostrar Nombres de Tiles (mantener Tecla Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "¿Quitar Textura Seleccionada y TODOS LOS TILES que la usen?"
+msgstr ""
+"¿Remover la textura seleccionada? Esto removerá todos los tiles que la usan."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
@@ -6701,16 +6693,15 @@ msgstr "No elegiste una textura para remover."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "¿Crear desde escena? Esto sobreescribirá todos los tiles actuales."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "¿Mergear desde escena?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "Remover Plantilla"
+msgstr "Remover Textura"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6777,86 +6768,72 @@ msgstr ""
 "Click en otro Tile para editarlo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Setear Region Rect"
+msgstr "Asignar Región de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Crear Carpeta"
+msgstr "Crear Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "Asignar Icono de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Editar Filtros"
+msgstr "Editar Máscara de Bits de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "Editar polígono existente:"
+msgstr "Editar Polígono de Colisión"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "Editar Polígono"
+msgstr "Editar Polígono de Oclusión"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "Crear Polígono de Navegación"
+msgstr "Editar Polígono de Navegación"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Pegar bitmask."
+msgstr "Pegar Máscara de Bits de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "Reestablecer Máscara de Bits de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Remover Plantilla"
+msgstr "Remover Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Remover Polígono y Punto"
+msgstr "Remover Polígono de Colisión"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Crear Polígono Oclusor"
+msgstr "Remover Polígono de Oclusión"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Crear Polígono de Navegación"
+msgstr "Remover Polígono de Navegación"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Editar Filtros"
+msgstr "Editar Prioridad de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "Editar Z Index de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Crear Polígono de Navegación"
+msgstr "Crear Polígono de Colisión"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Crear Polígono Oclusor"
+msgstr "Crear Polígono de Oclusión"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -6979,9 +6956,8 @@ msgid "Feature List:"
 msgstr "Lista de Características:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Nuevo Script"
+msgstr "Script"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -7001,7 +6977,7 @@ msgstr "Encriptado (Proveer la Clave Debajo)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "Clave de Encriptación Inválida (debe tener 64 caracteres de largo)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7149,9 +7125,8 @@ msgid "Unnamed Project"
 msgstr "Proyecto Sin Nombre"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "No se pudo abrir el proyecto"
+msgstr "No se puede abrir el proyecto en '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7168,12 +7143,22 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"Las siguientes configuraciones de proyecto fueron generadas para una versión "
+"anterior del motor, y deben ser convertidas para esta versión:\n"
+"\n"
+"%s\n"
+"\n"
+"¿Querés convertirlas?\n"
+"Advertencia: No vas a poder volver a abrir el proyecto con versiones "
+"anteriores del motor."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Los configuraciones de proyecto fueron creadas con una versión mas reciente "
+"del motor y no son compatibles con esta versión."
 
 #: editor/project_manager.cpp
 msgid ""

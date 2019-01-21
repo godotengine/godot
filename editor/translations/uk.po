@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"PO-Revision-Date: 2019-01-16 20:20+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -2595,9 +2595,8 @@ msgid "Assign..."
 msgstr "Призначити…"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr "Неправильний шлях"
+msgstr "Некоректний RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -5186,28 +5185,24 @@ msgid "Create Polygon & UV"
 msgstr "Створити полігон і UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Internal Vertex"
-msgstr "Створити нову горизонтальну напрямну"
+msgstr "Створити внутрішню вершину"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Internal Vertex"
-msgstr "Вилучити вхідну керувальну точку"
+msgstr "Вилучити внутрішню вершину"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr ""
+msgstr "Некоректний полігон (повинен мати 3 різні вершини)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Add Custom Polygon"
-msgstr "Редагувати полігон"
+msgstr "Додати нетиповий полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Polygon"
-msgstr "Вилучити полігон зіткнення"
+msgstr "Вилучити нетиповий полігон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5234,14 +5229,12 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Points"
-msgstr "Точка"
+msgstr "Точки"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "Полігон -> UV"
+msgstr "Полігони"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5278,12 +5271,15 @@ msgstr "Масштабувати полігон"
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
+"Створити нетиповий полігон. Вмикає обробку нетипових полігонів для показу."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
 msgstr ""
+"Вилучити нетиповий полігон. Якщо нетипових полігонів не лишиться, обробку "
+"нетипових полігонів для показу буде вимкнено."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."

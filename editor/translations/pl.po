@@ -33,8 +33,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:07+0000\n"
-"Last-Translator: Nie Powiem <blazek10@tlen.pl>\n"
+"PO-Revision-Date: 2019-01-19 19:22+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -8265,7 +8265,7 @@ msgstr "Połączono z procesem potomnym"
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
-msgstr "Błąd kopiowania"
+msgstr "Kopiuj błąd"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"

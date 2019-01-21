@@ -10,7 +10,7 @@
 # Cindy Dallaire <c.dallaire93@gmail.com>, 2018.
 # derderder77 <derderder77380@gmail.com>, 2016.
 # finkiki <specialpopol@gmx.fr>, 2016.
-# Gilles Roudiere <gilles.roudiere@gmail.com>, 2017-2018.
+# Gilles Roudiere <gilles.roudiere@gmail.com>, 2017-2018, 2019.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016-2018.
 # Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
 # John Bernier <john.bp@unknit.net>, 2018.
@@ -56,8 +56,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:07+0000\n"
-"Last-Translator: Hugo Locurcio <hugo.locurcio@hugo.pro>\n"
+"PO-Revision-Date: 2019-01-18 23:32+0000\n"
+"Last-Translator: Gilles Roudiere <gilles.roudiere@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -4561,7 +4561,7 @@ msgstr "Afficher le Viewport"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr "Montrer le groupe et verrouiller les icônes"
+msgstr "Montrer les icônes de groupe et de verrouillage"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"

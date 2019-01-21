@@ -16,7 +16,7 @@
 # Rached Noureddine <rached.noureddine@gmail.com>, 2018.
 # Rex_sa <asd1234567890m@gmail.com>, 2017, 2018.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
-# Omar Aglan <omar.aglan91@yahoo.com>, 2018.
+# Omar Aglan <omar.aglan91@yahoo.com>, 2018, 2019.
 # Codes Otaku <ilyas.gamerz@gmail.com>, 2018.
 # Takai Eddine Kennouche <takai.kenn@gmail.com>, 2018.
 # Mohamed El-Baz <albaz2000eg@gmail.com>, 2018.
@@ -26,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:38+0100\n"
-"Last-Translator: Mohammad Fares <mhdchehade@gmail.com>\n"
+"PO-Revision-Date: 2019-01-21 19:30+0000\n"
+"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -36,7 +36,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.4-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2365,7 +2365,7 @@ msgstr "المجتمع"
 
 #: editor/editor_node.cpp
 msgid "About"
-msgstr "حول"
+msgstr "عن"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
@@ -7614,7 +7614,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "General"
-msgstr "عام"
+msgstr "بشكل عام"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."

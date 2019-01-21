@@ -37,12 +37,13 @@
 # yzt <834950797@qq.com>, 2018.
 # DKLost <514dklost@gmail.com>, 2018.
 # thanksshu <hezihanshangyuan@gmail.com>, 2018.
+# Jsheng <yangea@outlook.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2018-12-18 01:28+0000\n"
-"Last-Translator: thanksshu <hezihanshangyuan@gmail.com>\n"
+"PO-Revision-Date: 2019-01-21 19:30+0000\n"
+"Last-Translator: Jsheng <yangea@outlook.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -985,7 +986,6 @@ msgid "Uncompressing Assets"
 msgstr "无压缩资源"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
 msgstr "软件包安装成功！"
 
@@ -3436,7 +3436,6 @@ msgstr "添加动画"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
 msgstr "加载..."
 
