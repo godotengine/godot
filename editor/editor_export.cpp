@@ -378,7 +378,7 @@ String EditorExportPlatform::find_export_template(String template_file_name, Str
 
 	// Not found
 	if (err) {
-		*err += "No export template found at \"" + template_path + "\".";
+		*err += TTR("No export template found at the expected path:") + "\n" + template_path + "\n";
 	}
 	return String();
 }
@@ -1404,12 +1404,12 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 
 	if (!FileAccess::exists(custom_debug_binary)) {
 		dvalid = false;
-		err = "Custom debug binary not found.\n";
+		err += TTR("Custom debug template not found.") + "\n";
 	}
 
 	if (!FileAccess::exists(custom_release_binary)) {
 		rvalid = false;
-		err += "Custom release binary not found.\n";
+		err += TTR("Custom release template not found.") + "\n";
 	}
 
 	if (dvalid || rvalid)

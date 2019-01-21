@@ -749,7 +749,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
 			valid = true;
 		} else {
-			err += "Custom debug package not found.\n";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
@@ -757,7 +757,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
 			valid = true;
 		} else {
-			err += "Custom release package not found.\n";
+			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
