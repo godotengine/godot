@@ -130,9 +130,14 @@ void gdmono_debug_init() {
 	}
 #endif
 
-	CharString da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
-								",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
-								 .utf8();
+	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
+
+	if (da_args == "") {
+		da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
+						 ",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
+						  .utf8();
+	}
+
 	// --debugger-agent=help
 	const char *options[] = {
 		"--soft-breakpoints",

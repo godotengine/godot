@@ -608,30 +608,9 @@ struct CSharpScriptDepSort {
 void CSharpLanguage::reload_all_scripts() {
 
 #ifdef DEBUG_ENABLED
-
-	List<Ref<CSharpScript> > scripts;
-
-	{
-		SCOPED_MUTEX_LOCK(script_instances_mutex);
-
-		SelfList<CSharpScript> *elem = script_list.first();
-		while (elem) {
-			if (elem->self()->get_path().is_resource_file()) {
-				scripts.push_back(Ref<CSharpScript>(elem->self())); //cast to gdscript to avoid being erased by accident
-			}
-			elem = elem->next();
-		}
+	if (is_assembly_reloading_needed()) {
+		reload_assemblies(false);
 	}
-
-	//as scripts are going to be reloaded, must proceed without locking here
-
-	scripts.sort_custom<CSharpScriptDepSort>(); //update in inheritance dependency order
-
-	for (List<Ref<CSharpScript> >::Element *E = scripts.front(); E; E = E->next()) {
-		E->get()->load_source_code(E->get()->get_path());
-		E->get()->reload(true);
-	}
-
 #endif
 }
 
@@ -829,7 +808,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 						CSharpScript::StateBackup &state_backup = scr->pending_reload_state[obj_id];
 
 						// Backup placeholder script instance state before replacing it with a script instance
-						obj->get_script_instance()->get_property_state(state_backup.properties);
+						si->get_property_state(state_backup.properties);
 
 						ScriptInstance *script_instance = scr->instance_create(obj);
 
