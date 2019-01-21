@@ -30,6 +30,9 @@
 
 #include "mono_bottom_panel.h"
 
+#include "editor/plugins/script_editor_plugin.h"
+#include "editor/script_editor_debugger.h"
+
 #include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "csharp_project.h"
@@ -160,7 +163,12 @@ void MonoBottomPanel::_build_project_pressed() {
 	bool build_success = GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 
 	if (build_success) {
+		// Notify running game for hot-reload
+		ScriptEditor::get_singleton()->get_debugger()->reload_scripts();
+
+		// Hot-reload in the editor
 		MonoReloadNode::get_singleton()->restart_reload_timer();
+
 		if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
 			CSharpLanguage::get_singleton()->reload_assemblies(false);
 		}
