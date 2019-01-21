@@ -834,15 +834,15 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	}
 
 	Ref<VisualShaderNodeInput> input = vsnode;
+	bool skip_global = input.is_valid() && for_preview;
 
-	if (input.is_valid() && for_preview) {
-		//handle for preview
-		code += input->generate_code_for_preview(type, node, inputs, outputs);
-	} else {
-		//handle normally
+	if (!skip_global) {
 		global_code += vsnode->generate_global(get_mode(), type, node);
-		code += vsnode->generate_code(get_mode(), type, node, inputs, outputs);
 	}
+
+	//handle normally
+	code += vsnode->generate_code(get_mode(), type, node, inputs, outputs, for_preview);
+
 	code += "\n"; //
 	processed.insert(node);
 
@@ -1218,56 +1218,56 @@ String VisualShaderNodeInput::get_caption() const {
 	return TTR("Input");
 }
 
-String VisualShaderNodeInput::generate_code_for_preview(VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
-	int idx = 0;
+	if (p_for_preview) {
+		int idx = 0;
 
-	String code;
+		String code;
 
-	while (preview_ports[idx].mode != Shader::MODE_MAX) {
-		if (preview_ports[idx].mode == shader_mode && preview_ports[idx].shader_type == shader_type && preview_ports[idx].name == input_name) {
-			code = "\t" + p_output_vars[0] + " = " + preview_ports[idx].string + ";\n";
-			break;
+		while (preview_ports[idx].mode != Shader::MODE_MAX) {
+			if (preview_ports[idx].mode == shader_mode && preview_ports[idx].shader_type == shader_type && preview_ports[idx].name == input_name) {
+				code = "\t" + p_output_vars[0] + " = " + preview_ports[idx].string + ";\n";
+				break;
+			}
+			idx++;
 		}
-		idx++;
-	}
 
-	if (code == String()) {
-		switch (get_output_port_type(0)) {
-			case PORT_TYPE_SCALAR: {
-				code = "\t" + p_output_vars[0] + " = 0.0;\n";
-			} break; //default (none found) is scalar
-			case PORT_TYPE_VECTOR: {
-				code = "\t" + p_output_vars[0] + " = vec3(0.0);\n";
-			} break; //default (none found) is scalar
-			case PORT_TYPE_TRANSFORM: {
-				code = "\t" + p_output_vars[0] + " = mat4( vec4(1.0,0.0,0.0,0.0), vec4(0.0,1.0,0.0,0.0), vec4(0.0,0.0,1.0,0.0), vec4(0.0,0.0,0.0,1.0) );\n";
-			} break; //default (none found) is scalar
+		if (code == String()) {
+			switch (get_output_port_type(0)) {
+				case PORT_TYPE_SCALAR: {
+					code = "\t" + p_output_vars[0] + " = 0.0;\n";
+				} break; //default (none found) is scalar
+				case PORT_TYPE_VECTOR: {
+					code = "\t" + p_output_vars[0] + " = vec3(0.0);\n";
+				} break; //default (none found) is scalar
+				case PORT_TYPE_TRANSFORM: {
+					code = "\t" + p_output_vars[0] + " = mat4( vec4(1.0,0.0,0.0,0.0), vec4(0.0,1.0,0.0,0.0), vec4(0.0,0.0,1.0,0.0), vec4(0.0,0.0,0.0,1.0) );\n";
+				} break; //default (none found) is scalar
+			}
 		}
-	}
 
-	return code;
-}
+		return code;
 
-String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+	} else {
+		int idx = 0;
 
-	int idx = 0;
+		String code;
 
-	String code;
-
-	while (ports[idx].mode != Shader::MODE_MAX) {
-		if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type && ports[idx].name == input_name) {
-			code = "\t" + p_output_vars[0] + " = " + ports[idx].string + ";\n";
-			break;
+		while (ports[idx].mode != Shader::MODE_MAX) {
+			if (ports[idx].mode == shader_mode && ports[idx].shader_type == shader_type && ports[idx].name == input_name) {
+				code = "\t" + p_output_vars[0] + " = " + ports[idx].string + ";\n";
+				break;
+			}
+			idx++;
 		}
-		idx++;
-	}
 
-	if (code == String()) {
-		code = "\t" + p_output_vars[0] + " = 0.0;\n"; //default (none found) is scalar
-	}
+		if (code == String()) {
+			code = "\t" + p_output_vars[0] + " = 0.0;\n"; //default (none found) is scalar
+		}
 
-	return code;
+		return code;
+	}
 }
 
 void VisualShaderNodeInput::set_input_name(String p_name) {
@@ -1535,7 +1535,7 @@ String VisualShaderNodeOutput::get_caption() const {
 	return TTR("Output");
 }
 
-String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const {
+String VisualShaderNodeOutput::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
 	int idx = 0;
 	int count = 0;

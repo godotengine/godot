@@ -53,7 +53,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_constant(float p_value);
 	float get_constant() const;
@@ -81,7 +81,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_constant(Color p_value);
 	Color get_constant() const;
@@ -109,7 +109,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_constant(Vector3 p_value);
 	Vector3 get_constant() const;
@@ -137,7 +137,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_constant(Transform p_value);
 	Transform get_constant() const;
@@ -187,7 +187,7 @@ public:
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_source(Source p_source);
 	Source get_source() const;
@@ -240,7 +240,7 @@ public:
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_cube_map(Ref<CubeMap> p_value);
 	Ref<CubeMap> get_cube_map() const;
@@ -288,7 +288,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
@@ -333,7 +333,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
@@ -377,7 +377,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
@@ -414,7 +414,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
@@ -453,7 +453,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
@@ -510,7 +510,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_function(Function p_func);
 	Function get_function() const;
@@ -553,7 +553,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	void set_function(Function p_func);
 	Function get_function() const;
@@ -581,7 +581,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeDotProduct();
 };
@@ -602,7 +602,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeVectorLen();
 };
@@ -623,7 +623,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeScalarInterp();
 };
@@ -644,7 +644,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeVectorInterp();
 };
@@ -665,7 +665,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeVectorCompose();
 };
@@ -686,7 +686,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeTransformCompose();
 };
@@ -707,7 +707,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeVectorDecompose();
 };
@@ -728,7 +728,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeTransformDecompose();
 };
@@ -750,7 +750,7 @@ public:
 	virtual String get_output_port_name(int p_port) const;
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeScalarUniform();
 };
@@ -770,7 +770,7 @@ public:
 	virtual String get_output_port_name(int p_port) const;
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeColorUniform();
 };
@@ -790,7 +790,7 @@ public:
 	virtual String get_output_port_name(int p_port) const;
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeVec3Uniform();
 };
@@ -810,7 +810,7 @@ public:
 	virtual String get_output_port_name(int p_port) const;
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeTransformUniform();
 };
@@ -851,7 +851,7 @@ public:
 	virtual String get_output_port_name(int p_port) const;
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	Vector<StringName> get_editable_properties() const;
 
@@ -883,7 +883,7 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
-	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	VisualShaderNodeCubeMapUniform();
 };
