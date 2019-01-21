@@ -257,7 +257,7 @@ namespace GodotSharpTools.Build
             if (null == Parameters)
                 throw new LoggerException("Log directory was not set.");
 
-            string[] parameters = Parameters.Split(';');
+            string[] parameters = Parameters.Split(new[] { ';' });
 
             string logDir = parameters[0];
 
