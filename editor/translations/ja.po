@@ -20,12 +20,13 @@
 # nyanode <akaruooyagi@yahoo.co.jp>, 2018.
 # nitenook <admin@alterbaum.net>, 2018.
 # Rob Matych <robertsmatych@gmail.com>, 2018.
+# Hidetsugu Takahashi <manzyun@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-25 05:08+0000\n"
-"Last-Translator: Rob Matych <robertsmatych@gmail.com>\n"
+"PO-Revision-Date: 2019-01-19 19:21+0000\n"
+"Last-Translator: Hidetsugu Takahashi <manzyun@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -38,13 +39,13 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "convert() の引数の型が無効です。TYPE_* 定数を使ってください。"
+msgstr "Convert()に対して無効な型の引数です。TYPE_ 定数を使ってください。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "デコードするにはバイトが足りないか、または無効な形式です。"
+msgstr "デコードバイトのバイトは足りません、または無効な形式です。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"

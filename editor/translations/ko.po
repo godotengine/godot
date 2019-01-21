@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:07+0000\n"
+"PO-Revision-Date: 2019-01-16 20:20+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -2372,11 +2372,11 @@ msgstr "에디터 윈도우가 다시 그려질 때 회전!"
 
 #: editor/editor_node.cpp
 msgid "Update Always"
-msgstr "항상 갱신"
+msgstr "항상 업데이트"
 
 #: editor/editor_node.cpp
 msgid "Update Changes"
-msgstr "변경사항만 갱신"
+msgstr "변경사항만 업데이트"
 
 #: editor/editor_node.cpp
 msgid "Disable Update Spinner"
@@ -2489,7 +2489,7 @@ msgstr "설치된 플러그인:"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Update"
-msgstr "갱신"
+msgstr "업데이트"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2578,9 +2578,8 @@ msgid "Assign..."
 msgstr "지정하기..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr "유효하지 않은 경로"
+msgstr "유효하지 않은 RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -4092,7 +4091,7 @@ msgstr "다음"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr "마지막으로"
+msgstr "끝으로"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -4766,7 +4765,7 @@ msgstr "씬으로부터 가져오기"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Update from Scene"
-msgstr "씬으로부터 갱신하기"
+msgstr "씬으로부터 업데이트 하기"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
@@ -5146,28 +5145,24 @@ msgid "Create Polygon & UV"
 msgstr "폴리곤 & UV 만들기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Internal Vertex"
-msgstr "새로운 가로 가이드 만들기"
+msgstr "내부 꼭짓점 만들기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Internal Vertex"
-msgstr "인-컨트롤 포인트 삭제"
+msgstr "내부 꼭짓점 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr ""
+msgstr "유효하지 않은 폴리곤 (3개의 다른 꼭짓점이 필요함)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Add Custom Polygon"
-msgstr "폴리곤 편집"
+msgstr "사용자 지정 폴리곤 추가"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Polygon"
-msgstr "충돌 폴리곤 삭제"
+msgstr "사용자 지정 폴리곤 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5194,14 +5189,12 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Points"
 msgstr "포인트"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "폴리곤->UV"
+msgstr "폴리곤"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5237,13 +5230,15 @@ msgstr "폴리곤 크기 조절"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create a custom polygon. Enables custom polygon rendering."
-msgstr ""
+msgstr "사용자 지정 폴리곤 만들기. 사용자 지정 폴리곤 렌더링을 활성화합니다."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
 msgstr ""
+"사용자 지정 폴리곤을 삭제. 남아있는 폴리곤이 없으면 사용자 지정 폴리곤 렌더링"
+"은 비활성화됩니다."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."

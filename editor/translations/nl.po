@@ -27,12 +27,13 @@
 # Laurent Windels <laurentwindels@yahoo.com>, 2018.
 # rxadmin <r.van.eeghem@gmail.com>, 2018.
 # Peter Goelst <muis24@gmail.com>, 2019.
+# Wouter Buckens <wou.buc@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:06+0000\n"
-"Last-Translator: Peter Goelst <muis24@gmail.com>\n"
+"PO-Revision-Date: 2019-01-21 19:30+0000\n"
+"Last-Translator: Wouter Buckens <wou.buc@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -1646,7 +1647,7 @@ msgstr "Klasse:"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
-msgstr ""
+msgstr "Eigenschap:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
@@ -1654,7 +1655,7 @@ msgstr "Zet"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "Zet Meerdere:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -1706,6 +1707,7 @@ msgstr "Fout bij het opslaan."
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
+"Kan '%s' niet openen. Het bestand is mogelijks verplaatst of verwijderd."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -1755,7 +1757,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "Kan geen scenes overschrijven die nog open zijn!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -2340,18 +2342,16 @@ msgid "Toggle Fullscreen"
 msgstr "Schakel Volledig Scherm"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Data/Settings Folder"
-msgstr "Editor Instellingen"
+msgstr "Open Editor Data/Instellingen Map"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "Open Editor Data Map"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Editor Settings Folder"
-msgstr "Editor Instellingen"
+msgstr "Open Editor Instellingen Map"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2431,7 +2431,7 @@ msgstr "Speel Aangepaste Scene"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "Om de video driver te veranderen moet de editor herstart worden."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -2636,15 +2636,15 @@ msgstr "Aanroepen"
 
 #: editor/editor_properties.cpp
 msgid "On"
-msgstr ""
+msgstr "Aan"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr ""
+msgstr "Laag"
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
-msgstr ""
+msgstr "Bit %d, waarde %d"
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
@@ -2652,7 +2652,7 @@ msgstr "[Leeg]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr ""
+msgstr "Toewijzen..."
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -2685,11 +2685,11 @@ msgstr "Kies een Aanzicht portaal"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
-msgstr ""
+msgstr "Nieuw Script"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Nieuw %s"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Make Unique"
@@ -2729,11 +2729,11 @@ msgstr "Geselecteerde ..... is geen Aanzicht Portaal!"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
-msgstr ""
+msgstr "Grootte: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
-msgstr ""
+msgstr "Pagina: "
 
 #: editor/editor_properties_array_dict.cpp
 #, fuzzy
@@ -2907,6 +2907,8 @@ msgid ""
 "Templates installation failed. The problematic templates archives can be "
 "found at '%s'."
 msgstr ""
+"Installatie van templates mislukt. De problematische template archieven "
+"kunnen gevonden worden op '%s'."
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting url: "
@@ -3188,7 +3190,7 @@ msgstr "Er is al een map in dit pad met dezelfde naam."
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "Overschrijven"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
@@ -3505,11 +3507,11 @@ msgstr "Plugins"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr ""
+msgstr "Submap:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Language:"
-msgstr ""
+msgstr "Taal:"
 
 #: editor/plugin_config_dialog.cpp
 #, fuzzy
@@ -3518,7 +3520,7 @@ msgstr "Projectnaam:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
-msgstr ""
+msgstr "Nu activeren?"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3589,8 +3591,10 @@ msgstr "Laden"
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
+"Dit type node kan niet gebruikt worden. Alleen root nodes zijn toegestaan."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3600,6 +3604,9 @@ msgid ""
 "AnimationTree is inactive.\n"
 "Activate to enable playback, check node warnings if activation fails."
 msgstr ""
+"AnimationTree is niet actief.\n"
+"Activeer om te kunnen afspelen, bekijk node waarschuwingen indien activatie "
+"mislukt."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp

@@ -24,12 +24,13 @@
 # Nicola Gramola <nicola.gramola@gmail.com>, 2018.
 # Davide Wayan Mores <moresdavidewayan@gmail.com>, 2018.
 # Alessandro Zoppi <alessandro.zoppi@live.it>, 2019.
+# Hairic95 <hairic95@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-04 04:09+0000\n"
-"Last-Translator: Alessandro Zoppi <alessandro.zoppi@live.it>\n"
+"PO-Revision-Date: 2019-01-19 19:21+0000\n"
+"Last-Translator: Hairic95 <hairic95@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -6928,7 +6929,7 @@ msgstr "Rimuovi Punto Percorso"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
-msgstr ""
+msgstr "Non hai selezionato una texture da rimuovere."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
