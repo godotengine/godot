@@ -678,19 +678,20 @@ void SpaceBullet::check_ghost_overlaps() {
 		// For each overlapping
 		for (i = ghostOverlaps.size() - 1; 0 <= i; --i) {
 
+			bool hasOverlap = false;
 			btCollisionObject *overlapped_bt_co = ghostOverlaps[i];
 			RigidCollisionObjectBullet *otherObject = static_cast<RigidCollisionObjectBullet *>(overlapped_bt_co->getUserPointer());
 
-			if (!area->is_transform_changed() && !otherObject->is_transform_changed())
-				continue;
+			if (!area->is_transform_changed() && !otherObject->is_transform_changed()) {
+				hasOverlap = true;
+				goto collision_found;
+			}
 
 			if (overlapped_bt_co->getUserIndex() == CollisionObjectBullet::TYPE_AREA) {
 				if (!static_cast<AreaBullet *>(overlapped_bt_co->getUserPointer())->is_monitorable())
 					continue;
 			} else if (overlapped_bt_co->getUserIndex() != CollisionObjectBullet::TYPE_RIGID_BODY)
 				continue;
-
-			bool hasOverlap = false;
 
 			// For each area shape
 			for (y = area->get_shape_count() - 1; 0 <= y; --y) {
