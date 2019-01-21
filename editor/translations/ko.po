@@ -1286,8 +1286,29 @@ msgid "Storing File:"
 msgstr "파일 저장 중:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"내보내기 템플릿을 찾을 수 없습니다.\n"
+"내보내기 템플릿을 다운로드하여 설치하십시요."
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "패킹 중"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "커스텀 디버그 패키지를 찾을 수 없습니다."
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "커스텀 릴리즈 패키지를 찾을 수 없습니다."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7786,6 +7807,14 @@ msgid "Duplicate Node(s)"
 msgstr "노드 복제"
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "노드를 삭제하시겠습니까?"
 
@@ -8995,6 +9024,90 @@ msgstr "Get %s"
 msgid "Set %s"
 msgstr "Set %s"
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "유효하지 않은 클래스명"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "유효한 식별자가 아닌 이름:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "유효한 식별자가 아닌 이름:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr "브라우저에서 실행"
@@ -9026,6 +9139,52 @@ msgstr "부트 스플래시 이미지 파일을 읽을 수 없음:"
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
 msgstr "기본 부트 스플래시 이미지 사용."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "유효하지 않은 고유 이름."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "유요하지 않은 프로덕트 GUID."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "유요하지 않은 퍼블리셔 GUID."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid background color."
+msgstr "유요하지 않은 배경 색상."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "유효하지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "유효하지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "유효하지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "유효하지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "유효하지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "유효하지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr ""
+"유효하지 않은 스플래쉬 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9332,13 +9491,10 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr "OrientedPathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
-
-#: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 "OrientedPathFollow는 부모 Path의 Curve 리소스에서 \"Up Vector\"를 활성화해야 "
 "합니다."
@@ -9545,6 +9701,9 @@ msgstr "균일하게 배치함."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
+
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr "OrientedPathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
 
 #~ msgid "Split point with itself."
 #~ msgstr "자체적으로 포인트 분할."
@@ -10756,53 +10915,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "패키지 서명을 생성하는 중 에러가 발생했습니다."
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "내보내기 템플릿을 찾을 수 없습니다.\n"
-#~ "내보내기 템플릿을 다운로드하여 설치하십시요."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "커스텀 디버그 패키지를 찾을 수 없습니다."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "커스텀 릴리즈 패키지를 찾을 수 없습니다."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "유효하지 않은 고유 이름."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "유요하지 않은 프로덕트 GUID."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "유요하지 않은 퍼블리셔 GUID."
-
-#~ msgid "Invalid background color."
-#~ msgstr "유요하지 않은 배경 색상."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "유효하지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "유효하지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "유효하지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr "유효하지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr "유효하지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "유효하지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr ""
-#~ "유효하지 않은 스플래쉬 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
 
 #, fuzzy
 #~ msgid "RAW Mode"

@@ -1297,8 +1297,29 @@ msgid "Storing File:"
 msgstr "ファイルの保存:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"エクスポートするテンプレートが見つかりません.\n"
+"ダウンロードしてインストールしてください."
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "パックする"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "カスタム　デバッグパッケージが見つかりません"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "カスタム　リリースパッケージが見つかりません."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -8017,6 +8038,14 @@ msgid "Duplicate Node(s)"
 msgstr "ノードを複製"
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "ノードを削除しますか?"
 
@@ -9325,6 +9354,90 @@ msgstr ""
 msgid "Set %s"
 msgstr ""
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "不正なクラス名"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "この名前は不正な識別子です:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "この名前は不正な識別子です:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr "ブラウザで実行"
@@ -9358,6 +9471,61 @@ msgstr "ブートスプラッシュ画像ファイルを読み込めませんで
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
 msgstr "デフォルトのブートスプラッシュ画像を使用します。"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "無効なフォント サイズです。"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid product GUID."
+msgstr "無効なフォント サイズです。"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid publisher GUID."
+msgstr "パブリッシャのGUIDが不正です."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid background color."
+msgstr "不正な背景色"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "不正なStoreロゴイメージ(縦横50x50でないといけません）"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "不正な44X44正方ロゴイメージ（縦横44x44でないといけません）"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "不正な71x71正方ロゴイメージ（縦横71x71でないといけません）"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "不正な150X150正方ロゴイメージ（縦横150x150でないといけません）"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "不正な310X310正方ロゴイメージ（縦横310x310でないといけません）"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "不正な310X150幅広ロゴイメージ（縦横310x150でないといけません）"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "不正なスプラッシュスクリーンイメージ（縦横620x300でないといけません）"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9663,15 +9831,9 @@ msgstr ""
 "PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
 
 #: scene/3d/path.cpp
-#, fuzzy
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr ""
-"PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
-
-#: scene/3d/path.cpp
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9879,6 +10041,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr ""
+#~ "PathFollow2D は、Path2D ノードの子として設定されている場合のみ動作します。"
 
 #, fuzzy
 #~ msgid "Split already exists."
@@ -11254,67 +11421,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Error creating the package signature."
 #~ msgstr "パッケージ署名生成エラー"
-
-#, fuzzy
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "エクスポートするテンプレートが見つかりません.\n"
-#~ "ダウンロードしてインストールしてください."
-
-#, fuzzy
-#~ msgid "Custom debug package not found."
-#~ msgstr "カスタム　デバッグパッケージが見つかりません"
-
-#, fuzzy
-#~ msgid "Custom release package not found."
-#~ msgstr "カスタム　リリースパッケージが見つかりません."
-
-#, fuzzy
-#~ msgid "Invalid unique name."
-#~ msgstr "無効なフォント サイズです。"
-
-#, fuzzy
-#~ msgid "Invalid product GUID."
-#~ msgstr "無効なフォント サイズです。"
-
-#, fuzzy
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "パブリッシャのGUIDが不正です."
-
-#, fuzzy
-#~ msgid "Invalid background color."
-#~ msgstr "不正な背景色"
-
-#, fuzzy
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "不正なStoreロゴイメージ(縦横50x50でないといけません）"
-
-#, fuzzy
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "不正な44X44正方ロゴイメージ（縦横44x44でないといけません）"
-
-#, fuzzy
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "不正な71x71正方ロゴイメージ（縦横71x71でないといけません）"
-
-#, fuzzy
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr "不正な150X150正方ロゴイメージ（縦横150x150でないといけません）"
-
-#, fuzzy
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr "不正な310X310正方ロゴイメージ（縦横310x310でないといけません）"
-
-#, fuzzy
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "不正な310X150幅広ロゴイメージ（縦横310x150でないといけません）"
-
-#, fuzzy
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr ""
-#~ "不正なスプラッシュスクリーンイメージ（縦横620x300でないといけません）"
 
 #~ msgid "RAW Mode"
 #~ msgstr "RAWモード"

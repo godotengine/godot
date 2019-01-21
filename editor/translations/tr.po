@@ -1330,8 +1330,29 @@ msgid "Storing File:"
 msgstr "Dosya Depolama:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"Hiçbir dışa aktarım kalıbı bulunamadı.\n"
+"Dışa aktarım kalıplarını indirin ve yükleyin..."
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Çıkınla"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "Özel kusur ayıklama çıkını bulunmadı."
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "Özel yayınlama çıkını bulunamadı."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -8061,6 +8082,14 @@ msgid "Duplicate Node(s)"
 msgstr "Düğüm(leri) Çoğalt"
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "Düğüm(ler) Silinsin mi?"
 
@@ -9294,6 +9323,90 @@ msgstr ""
 msgid "Set %s"
 msgstr ""
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "Geçersiz sınıf ismi"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "Ad doğru bir belirleyici değil:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "Ad doğru bir belirleyici değil:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr "Tarayıcıda Çalıştır"
@@ -9325,6 +9438,51 @@ msgstr "Açılış ekranı resim dosyası okunamadı:"
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
 msgstr "Açılış ekranı resim dosyası okunamadı."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "Benzersiz Ad Geçersiz."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "Geçersiz ürün GUID'i."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "Geçersiz yayıncı GUID'i."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid background color."
+msgstr "Geçersiz arkaplan rengi."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "Geçersiz Yığım Belirtkesi, bedizin boyutları (50x50 olmalı)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "Geçersiz kare 44x44 belirtkenin bediz boyutları (44x44 olmalı)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "Geçersiz kare 71x71 belirtkenin bediz boyutları (71x71 olmalı)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "Geçersiz kare 150x150 belirtkenin bediz boyutları (150x150 olmalı)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "Geçersiz kare 310x310 belirtkenin bediz boyutları (310x310 olmalı)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "Geçersiz kare 310x150 belirtkenin bediz boyutları (310x150 olmalı)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "Geçersiz açılış görüntülüğü bediz boyutları (620x300 olmalı)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9638,15 +9796,9 @@ msgstr ""
 "PathFollow2D yalnızca Path2D düğümünün çocuğu olarak ayarlanınca çalışır."
 
 #: scene/3d/path.cpp
-#, fuzzy
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr ""
-"PathFollow2D yalnızca Path2D düğümünün çocuğu olarak ayarlanınca çalışır."
-
-#: scene/3d/path.cpp
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9862,6 +10014,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr ""
+#~ "PathFollow2D yalnızca Path2D düğümünün çocuğu olarak ayarlanınca çalışır."
 
 #, fuzzy
 #~ msgid "Split already exists."
@@ -11081,52 +11238,6 @@ msgstr ""
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Çıkın imzasını oluşturmada sorun."
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "Hiçbir dışa aktarım kalıbı bulunamadı.\n"
-#~ "Dışa aktarım kalıplarını indirin ve yükleyin..."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "Özel kusur ayıklama çıkını bulunmadı."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "Özel yayınlama çıkını bulunamadı."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "Benzersiz Ad Geçersiz."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "Geçersiz ürün GUID'i."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Geçersiz yayıncı GUID'i."
-
-#~ msgid "Invalid background color."
-#~ msgstr "Geçersiz arkaplan rengi."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "Geçersiz Yığım Belirtkesi, bedizin boyutları (50x50 olmalı)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "Geçersiz kare 44x44 belirtkenin bediz boyutları (44x44 olmalı)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "Geçersiz kare 71x71 belirtkenin bediz boyutları (71x71 olmalı)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr "Geçersiz kare 150x150 belirtkenin bediz boyutları (150x150 olmalı)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr "Geçersiz kare 310x310 belirtkenin bediz boyutları (310x310 olmalı)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "Geçersiz kare 310x150 belirtkenin bediz boyutları (310x150 olmalı)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr "Geçersiz açılış görüntülüğü bediz boyutları (620x300 olmalı)."
 
 #, fuzzy
 #~ msgid "RAW Mode"

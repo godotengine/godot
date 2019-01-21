@@ -1314,8 +1314,29 @@ msgid "Storing File:"
 msgstr "Сохранение файла:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"Шаблоны экспорта не найдены.\n"
+"Скачайте и установите шаблоны экспорта."
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Упаковывание"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "Пользовательский отладочный пакет не найден."
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "Пользовательский релизный пакет не найден."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7881,6 +7902,14 @@ msgid "Duplicate Node(s)"
 msgstr "Дублировать узел(узлы)"
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "Удалить узел(узлы)?"
 
@@ -9099,6 +9128,90 @@ msgstr "Получить %s"
 msgid "Set %s"
 msgstr "Задать %s"
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "Недопустимое имя класса"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "Имя не является допустимым идентификатором:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "Имя не является допустимым идентификатором:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr "Запустить в браузере"
@@ -9130,6 +9243,51 @@ msgstr "Не удалось прочитать файл изображения �
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
 msgstr "Использовать изображения заставки по умолчанию."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "Неверное уникальное имя."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "Неверный GUID продукта."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "Неверный GUID издателя."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid background color."
+msgstr "Недопустимый цвет фона."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "Неверные размеры логотипа для магазина (должны быть 50х50)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "Неверные размеры квадратного логотипа 44x44 (должны быть 44x44)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "Неверные размеры квадратного логотипа 71x71 (должны быть 71x71)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "Неверные размеры квадратного логотипа 150x150 (должны быть 150x150)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "Неверные размеры квадратного логотипа 310x310 (должны быть 310x310)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "Неверные размеры широкого логотипа 310x150 (должны быть 310x150)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "Неверные размеры заставки (должны быть 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9450,14 +9608,10 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow работает только при если она дочь узла Path."
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr "OrientedPathFollow работает только если она дочь узла Path."
-
-#: scene/3d/path.cpp
 #, fuzzy
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 "OrientedPathFollow требует, чтобы в его родительском пути были включены "
 "векторы."
@@ -9671,6 +9825,9 @@ msgstr "Назначить форму"
 #, fuzzy
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Переменные могут быть назначены только в функции вершин."
+
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr "OrientedPathFollow работает только если она дочь узла Path."
 
 #~ msgid "Split point with itself."
 #~ msgstr "Точка разделения."
@@ -10914,54 +11071,6 @@ msgstr "Переменные могут быть назначены только
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Ошибка при создании подписи пакета."
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "Шаблоны экспорта не найдены.\n"
-#~ "Скачайте и установите шаблоны экспорта."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "Пользовательский отладочный пакет не найден."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "Пользовательский релизный пакет не найден."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "Неверное уникальное имя."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "Неверный GUID продукта."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Неверный GUID издателя."
-
-#~ msgid "Invalid background color."
-#~ msgstr "Недопустимый цвет фона."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "Неверные размеры логотипа для магазина (должны быть 50х50)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "Неверные размеры квадратного логотипа 44x44 (должны быть 44x44)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "Неверные размеры квадратного логотипа 71x71 (должны быть 71x71)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr ""
-#~ "Неверные размеры квадратного логотипа 150x150 (должны быть 150x150)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr ""
-#~ "Неверные размеры квадратного логотипа 310x310 (должны быть 310x310)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "Неверные размеры широкого логотипа 310x150 (должны быть 310x150)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr "Неверные размеры заставки (должны быть 620x300)."
 
 #~ msgid "RAW Mode"
 #~ msgstr "Грубый режим"
