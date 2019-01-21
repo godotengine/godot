@@ -155,7 +155,7 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		if (FileAccess::exists(p_preset->get("custom_template/debug"))) {
 			valid = true;
 		} else {
-			err += "Custom debug template not found.\n";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
@@ -163,7 +163,7 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		if (FileAccess::exists(p_preset->get("custom_template/release"))) {
 			valid = true;
 		} else {
-			err += "Custom release template not found.\n";
+			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 

@@ -426,7 +426,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 		if (pname.length() == 0) {
 			if (r_error) {
-				*r_error = "Package name is missing.";
+				*r_error = TTR("Package name is missing.");
 			}
 			return false;
 		}
@@ -437,7 +437,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 			CharType c = pname[i];
 			if (first && c == '.') {
 				if (r_error) {
-					*r_error = "Package segments must be of non-zero length.";
+					*r_error = TTR("Package segments must be of non-zero length.");
 				}
 				return false;
 			}
@@ -448,19 +448,19 @@ class EditorExportAndroid : public EditorExportPlatform {
 			}
 			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
 				if (r_error) {
-					*r_error = "The character '" + String::chr(c) + "' is not allowed in Android application package names.";
+					*r_error = vformat(TTR("The character '%s' is not allowed in Android application package names."), String::chr(c));
 				}
 				return false;
 			}
 			if (first && (c >= '0' && c <= '9')) {
 				if (r_error) {
-					*r_error = "A digit cannot be the first character in a package segment.";
+					*r_error = TTR("A digit cannot be the first character in a package segment.");
 				}
 				return false;
 			}
 			if (first && c == '_') {
 				if (r_error) {
-					*r_error = "The character '" + String::chr(c) + "' cannot be the first character in a package segment.";
+					*r_error = vformat(TTR("The character '%s' cannot be the first character in a package segment."), String::chr(c));
 				}
 				return false;
 			}
@@ -469,14 +469,14 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 		if (segments == 0) {
 			if (r_error) {
-				*r_error = "The package must have at least one '.' separator.";
+				*r_error = TTR("The package must have at least one '.' separator.");
 			}
 			return false;
 		}
 
 		if (first) {
 			if (r_error) {
-				*r_error = "Package segments must be of non-zero length.";
+				*r_error = TTR("Package segments must be of non-zero length.");
 			}
 			return false;
 		}
@@ -584,7 +584,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 	static Error save_apk_so(void *p_userdata, const SharedObject &p_so) {
 		if (!p_so.path.get_file().begins_with("lib")) {
 			String err = "Android .so file names must start with \"lib\", but got: " + p_so.path;
-			ERR_PRINT(err.utf8().get_data());
+			ERR_PRINTS(err);
 			return FAILED;
 		}
 		APKExportData *ed = (APKExportData *)p_userdata;
@@ -605,7 +605,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 		if (!exported) {
 			String abis_string = String(" ").join(abis);
 			String err = "Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + abis_string;
-			ERR_PRINT(err.utf8().get_data());
+			ERR_PRINTS(err);
 			return FAILED;
 		}
 		return OK;
@@ -1390,7 +1390,7 @@ public:
 			if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
 				r_missing_templates = false;
 			} else {
-				err += "Custom debug package not found.\n";
+				err += TTR("Custom debug template not found.") + "\n";
 			}
 		}
 
@@ -1398,7 +1398,7 @@ public:
 			if (FileAccess::exists(p_preset->get("custom_package/release"))) {
 				r_missing_templates = false;
 			} else {
-				err += "Custom release package not found.\n";
+				err += TTR("Custom release template not found.") + "\n";
 			}
 		}
 
@@ -1409,7 +1409,7 @@ public:
 		if (!FileAccess::exists(adb)) {
 
 			valid = false;
-			err += "ADB executable not configured in the Editor Settings.\n";
+			err += TTR("ADB executable not configured in the Editor Settings.") + "\n";
 		}
 
 		String js = EditorSettings::get_singleton()->get("export/android/jarsigner");
@@ -1417,7 +1417,7 @@ public:
 		if (!FileAccess::exists(js)) {
 
 			valid = false;
-			err += "OpenJDK 8 jarsigner not configured in the Editor Settings.\n";
+			err += TTR("OpenJDK jarsigner not configured in the Editor Settings.") + "\n";
 		}
 
 		String dk = p_preset->get("keystore/debug");
@@ -1427,7 +1427,7 @@ public:
 			dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 			if (!FileAccess::exists(dk)) {
 				valid = false;
-				err += "Debug keystore not configured in the Editor Settings nor in the preset.\n";
+				err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
 			}
 		}
 
@@ -1435,19 +1435,12 @@ public:
 
 		if (apk_expansion) {
 
-			/*
-			 if (apk_expansion_salt=="") {
-				 valid=false;
-				 err+="Invalid SALT for apk expansion.\n";
-			 }
-			 */
-
 			String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
 			if (apk_expansion_pkey == "") {
 				valid = false;
 
-				err += "Invalid public key for APK expansion.\n";
+				err += TTR("Invalid public key for APK expansion.") + "\n";
 			}
 		}
 
@@ -1457,7 +1450,7 @@ public:
 		if (!is_package_name_valid(get_package_name(pn), &pn_err)) {
 
 			valid = false;
-			err += "Invalid package name - " + pn_err + "\n";
+			err += TTR("Invalid package name:") + " " + pn_err + "\n";
 		}
 
 		r_error = err;
@@ -1655,16 +1648,6 @@ public:
 		gen_export_flags(cl, p_flags);
 
 		if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-
-			/*String host = EditorSettings::get_singleton()->get("filesystem/file_server/host");
-			int port = EditorSettings::get_singleton()->get("filesystem/file_server/post");
-			String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
-			cl.push_back("--remote-fs");
-			cl.push_back(host+":"+itos(port));
-			if (passwd!="") {
-				cl.push_back("--remote-fs-password");
-				cl.push_back(passwd);
-			}*/
 
 			APKExportData ed;
 			ed.ep = &ep;
