@@ -83,6 +83,8 @@ private:
 	Container *name_container;
 	Container *path_container;
 	Container *install_path_container;
+	Container *rasterizer_container;
+	Ref<ButtonGroup> rasterizer_button_group;
 	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
@@ -471,6 +473,13 @@ private:
 				if (mode == MODE_NEW) {
 
 					ProjectSettings::CustomMap initial_settings;
+					if (rasterizer_button_group->get_pressed_button()->get_meta("driver_name") == "GLES3") {
+						initial_settings["rendering/quality/driver/driver_name"] = "GLES3";
+					} else {
+						initial_settings["rendering/quality/driver/driver_name"] = "GLES2";
+						initial_settings["rendering/vram_compression/import_etc2"] = false;
+						initial_settings["rendering/vram_compression/import_etc"] = true;
+					}
 					initial_settings["application/config/name"] = project_name->get_text();
 					initial_settings["application/config/icon"] = "res://icon.png";
 					initial_settings["rendering/environment/default_environment"] = "res://default_env.tres";
@@ -687,6 +696,7 @@ public:
 			msg->hide();
 			install_path_container->hide();
 			install_status_rect->hide();
+			rasterizer_container->hide();
 			get_ok()->set_disabled(false);
 
 			ProjectSettings *current = memnew(ProjectSettings);
@@ -738,6 +748,7 @@ public:
 				get_ok()->set_text(TTR("Import & Edit"));
 				name_container->hide();
 				install_path_container->hide();
+				rasterizer_container->hide();
 				project_path->grab_focus();
 
 			} else if (mode == MODE_NEW) {
@@ -746,6 +757,7 @@ public:
 				get_ok()->set_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
+				rasterizer_container->show();
 				project_name->call_deferred("grab_focus");
 				project_name->call_deferred("select_all");
 
@@ -755,13 +767,14 @@ public:
 				get_ok()->set_text(TTR("Install & Edit"));
 				name_container->hide();
 				install_path_container->hide();
+				rasterizer_container->hide();
 				project_path->grab_focus();
 			}
 
 			_test_path();
 		}
 
-		popup_centered(Size2(500, 0) * EDSCALE);
+		popup_centered_minsize(Size2(500, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
@@ -839,6 +852,48 @@ public:
 		msg = memnew(Label);
 		msg->set_align(Label::ALIGN_CENTER);
 		vb->add_child(msg);
+
+		// rasterizer selection
+		rasterizer_container = memnew(VBoxContainer);
+		vb->add_child(rasterizer_container);
+		l = memnew(Label);
+		l->set_text(TTR("Renderer:"));
+		rasterizer_container->add_child(l);
+		Container *rshb = memnew(HBoxContainer);
+		rasterizer_container->add_child(rshb);
+		rasterizer_button_group.instance();
+
+		Container *rvb = memnew(VBoxContainer);
+		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		rshb->add_child(rvb);
+		Button *rs_button = memnew(CheckBox);
+		rs_button->set_button_group(rasterizer_button_group);
+		rs_button->set_text(TTR("OpenGL ES 3.0"));
+		rs_button->set_meta("driver_name", "GLES3");
+		rs_button->set_pressed(true);
+		rvb->add_child(rs_button);
+		l = memnew(Label);
+		l->set_text(TTR("Higher visual quality\nAll features available\nIncompatible with older hardware\nNot recommended for web games"));
+		rvb->add_child(l);
+
+		rshb->add_child(memnew(VSeparator));
+
+		rvb = memnew(VBoxContainer);
+		rvb->set_h_size_flags(SIZE_EXPAND_FILL);
+		rshb->add_child(rvb);
+		rs_button = memnew(CheckBox);
+		rs_button->set_button_group(rasterizer_button_group);
+		rs_button->set_text(TTR("OpenGL ES 2.0"));
+		rs_button->set_meta("driver_name", "GLES2");
+		rvb->add_child(rs_button);
+		l = memnew(Label);
+		l->set_text(TTR("Lower visual quality\nSome features not available\nWorks on most hardware\nRecommended for web games"));
+		rvb->add_child(l);
+
+		l = memnew(Label);
+		l->set_text(TTR("Renderer can be changed later, but scenes may need to be adjusted."));
+		l->set_align(Label::ALIGN_CENTER);
+		rasterizer_container->add_child(l);
 
 		fdialog = memnew(FileDialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
