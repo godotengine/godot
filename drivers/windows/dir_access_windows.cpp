@@ -346,6 +346,35 @@ size_t DirAccessWindows::get_space_left() {
 	return (size_t)bytes;
 }
 
+String DirAccessWindows::get_filesystem_type() const {
+	String path = fix_path(const_cast<DirAccessWindows*>(this)->get_current_dir());
+	print_line("fixed path: "+path);
+	int unit_end = path.find(":");
+	ERR_FAIL_COND_V(unit_end==-1,String());
+	String unit = path.substr(0,unit_end+1) + "\\";
+	print_line("unit: "+unit);
+
+	TCHAR szVolumeName[100]    = "";
+	TCHAR szFileSystemName[10] = "";
+	DWORD dwSerialNumber       = 0;
+	DWORD dwMaxFileNameLength  = 0;
+	DWORD dwFileSystemFlags    = 0;
+
+	if(::GetVolumeInformation(unit.utf8().get_data(),
+				    szVolumeName,
+				    sizeof(szVolumeName),
+				    &dwSerialNumber,
+				    &dwMaxFileNameLength,
+				    &dwFileSystemFlags,
+				    szFileSystemName,
+				  sizeof(szFileSystemName)) == TRUE) {
+
+		return String(szFileSystemName);
+	}
+
+	ERR_FAIL_V("");
+}
+
 DirAccessWindows::DirAccessWindows() {
 
 	p = memnew(DirAccessWindowsPrivate);

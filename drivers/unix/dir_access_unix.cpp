@@ -407,6 +407,10 @@ size_t DirAccessUnix::get_space_left() {
 #endif
 };
 
+String DirAccessUnix::get_filesystem_type() const {
+	return ""; //TODO this should be implemented
+}
+
 DirAccessUnix::DirAccessUnix() {
 
 	dir_stream = 0;

@@ -212,6 +212,12 @@ Error DirAccessJAndroid::remove(String p_name) {
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
 
+String DirAccessJAndroid::get_filesystem_type() const {
+
+	return "APK";
+}
+
+
 //FileType get_file_type() const;
 size_t DirAccessJAndroid::get_space_left() {
 
