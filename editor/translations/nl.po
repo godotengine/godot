@@ -1321,8 +1321,29 @@ msgid "Storing File:"
 msgstr "Bestand Opslaan:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"Geen export templates gevonden.\n"
+"Download en installeer export templates."
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Inpakken"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "Custom debug pakket niet gevonden."
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "Custom release pakket niet gevonden."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -8075,6 +8096,14 @@ msgid "Duplicate Node(s)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr ""
 
@@ -9321,6 +9350,90 @@ msgstr ""
 msgid "Set %s"
 msgstr ""
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "Ongeldige klassenaam"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "Naam is geen geldige identifier:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "Naam is geen geldige identifier:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr ""
@@ -9358,6 +9471,58 @@ msgstr "Map kon niet gemaakt worden."
 #, fuzzy
 msgid "Using default boot splash image."
 msgstr "Map kon niet gemaakt worden."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "Ongeldige unieke naam."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "Ongeldig product GUID."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "Ongeldige uitgever GUID."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid background color."
+msgstr "Ongeldige achtergrondkleur."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "Ongeldige afmetingen voor Store Logo afbeelding (moet 50×50 zijn)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 44×44 logo afbeelding (moet 44×44 zijn)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 71×71 logo afbeelding (moet 71×71 zijn)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 150×150 logo afbeelding (moet 150×150 "
+"zijn)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+"Ongeldige afmetingen van vierkante 310×310 logo afbeelding (moet 310×310 "
+"zijn)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+"Ongeldige afmetingen van brede 310×150 logo afbeelding (moet 310×150 zijn)."
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "Ongeldige afmetingen van splash screen afbeelding (moet 620×300 zijn)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9652,14 +9817,9 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
 
 #: scene/3d/path.cpp
-#, fuzzy
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
-
-#: scene/3d/path.cpp
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -9861,6 +10021,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr ""
+#~ "PathFollow2D werkt alleen wanneer het een kind van een Path2D node is."
 
 #, fuzzy
 #~ msgid "Split already exists."
@@ -10456,63 +10621,6 @@ msgstr ""
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "Error bij het maken van het pakket signatuur."
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "Geen export templates gevonden.\n"
-#~ "Download en installeer export templates."
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "Custom debug pakket niet gevonden."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "Custom release pakket niet gevonden."
-
-#~ msgid "Invalid unique name."
-#~ msgstr "Ongeldige unieke naam."
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "Ongeldig product GUID."
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Ongeldige uitgever GUID."
-
-#~ msgid "Invalid background color."
-#~ msgstr "Ongeldige achtergrondkleur."
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "Ongeldige afmetingen voor Store Logo afbeelding (moet 50×50 zijn)."
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 44×44 logo afbeelding (moet 44×44 "
-#~ "zijn)."
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 71×71 logo afbeelding (moet 71×71 "
-#~ "zijn)."
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 150×150 logo afbeelding (moet 150×150 "
-#~ "zijn)."
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van vierkante 310×310 logo afbeelding (moet 310×310 "
-#~ "zijn)."
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van brede 310×150 logo afbeelding (moet 310×150 "
-#~ "zijn)."
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr ""
-#~ "Ongeldige afmetingen van splash screen afbeelding (moet 620×300 zijn)."
 
 #~ msgid "Node From Scene"
 #~ msgstr "Node Uit Scene"

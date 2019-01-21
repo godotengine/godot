@@ -1325,8 +1325,29 @@ msgid "Storing File:"
 msgstr "Archivo de almacenamiento:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"No se han encontrado plantillas de exportación.\n"
+"Tienes que descargar e instalarlas para continuar."
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Empaquetando"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "No se ha encontrado ningún paquete de depuración personalizado."
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "No se ha encontrado ningún paquete final personalizado."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7890,6 +7911,14 @@ msgid "Duplicate Node(s)"
 msgstr "Duplicar nodo(s)"
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "¿Eliminar nodo(s)?"
 
@@ -9106,6 +9135,90 @@ msgstr "Obtener %s"
 msgid "Set %s"
 msgstr "Establecer %s"
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "El nombre de clase no es correcto"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "El nombre no es un identificador válido:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "El nombre no es un identificador válido:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
 msgstr "Ejecutar en navegador"
@@ -9137,6 +9250,67 @@ msgstr "No se pudo leer la imagen de carga:"
 #: platform/javascript/export/export.cpp
 msgid "Using default boot splash image."
 msgstr "Usando la imagen de carga por defecto."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "El nombre no es correcto."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid product GUID."
+msgstr "Tamaño de tipografía incorrecto."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid publisher GUID."
+msgstr "Ruta base incorrecta"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid background color."
+msgstr "El origen personalizado de tipografía no es correcto."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "El logo de la tienda no es del tamaño adecuado (debe ser de 50x50)."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr ""
+"El logo cuadrado de 44x44 no es del tamaño adecuado (debe ser de 44x44)."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr ""
+"El logo cuadrado de 71x71 no es del tamaño adecuado (debe ser de 71x71)."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr ""
+"El logo cuadrado de 150x150 no es del tamaño adecuado (debe ser de 150x150)."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr ""
+"El logo cuadrado de 310x310 no es del tamaño adecuado (debe ser de 310x310)."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr ""
+"El logo ancho de 310x150 no es del tamaño adecuado (debe ser de 310x150)."
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr ""
+"El tamaño de la imagen de arranque no es correcto (debe ser de 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9459,15 +9633,10 @@ msgstr ""
 "PathFollow solo funciona cuando está asignado como hijo de un nodo Path."
 
 #: scene/3d/path.cpp
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr ""
-"OrientedPathFollow solo funciona cuando esta asignado como hijo de un nodo "
-"Path."
-
-#: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 "OrientedPathFollow requiere que \"Up Vector\" esté activo en el recurso "
 "Curve de su Path padre."
@@ -9678,6 +9847,11 @@ msgstr "Asignación a uniform."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Solo se pueden asignar variaciones en funciones de vértice."
+
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr ""
+#~ "OrientedPathFollow solo funciona cuando esta asignado como hijo de un "
+#~ "nodo Path."
 
 #~ msgid "Split point with itself."
 #~ msgstr "Dividir punto con sí mismo."
@@ -10951,73 +11125,6 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #, fuzzy
 #~ msgid "Error creating the package signature."
 #~ msgstr "Se produjo un error al firmar el paquete."
-
-#, fuzzy
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "No se han encontrado plantillas de exportación.\n"
-#~ "Tienes que descargar e instalarlas para continuar."
-
-#, fuzzy
-#~ msgid "Custom debug package not found."
-#~ msgstr "No se ha encontrado ningún paquete de depuración personalizado."
-
-#~ msgid "Custom release package not found."
-#~ msgstr "No se ha encontrado ningún paquete final personalizado."
-
-#, fuzzy
-#~ msgid "Invalid unique name."
-#~ msgstr "El nombre no es correcto."
-
-#, fuzzy
-#~ msgid "Invalid product GUID."
-#~ msgstr "Tamaño de tipografía incorrecto."
-
-#, fuzzy
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Ruta base incorrecta"
-
-#, fuzzy
-#~ msgid "Invalid background color."
-#~ msgstr "El origen personalizado de tipografía no es correcto."
-
-#, fuzzy
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "El logo de la tienda no es del tamaño adecuado (debe ser de 50x50)."
-
-#, fuzzy
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr ""
-#~ "El logo cuadrado de 44x44 no es del tamaño adecuado (debe ser de 44x44)."
-
-#, fuzzy
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr ""
-#~ "El logo cuadrado de 71x71 no es del tamaño adecuado (debe ser de 71x71)."
-
-#, fuzzy
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr ""
-#~ "El logo cuadrado de 150x150 no es del tamaño adecuado (debe ser de "
-#~ "150x150)."
-
-#, fuzzy
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr ""
-#~ "El logo cuadrado de 310x310 no es del tamaño adecuado (debe ser de "
-#~ "310x310)."
-
-#, fuzzy
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr ""
-#~ "El logo ancho de 310x150 no es del tamaño adecuado (debe ser de 310x150)."
-
-#, fuzzy
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr ""
-#~ "El tamaño de la imagen de arranque no es correcto (debe ser de 620x300)."
 
 #, fuzzy
 #~ msgid "RAW Mode"

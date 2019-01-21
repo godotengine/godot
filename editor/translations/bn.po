@@ -1332,8 +1332,29 @@ msgid "Storing File:"
 msgstr "সংরক্ষিত ফাইল:"
 
 #: editor/editor_export.cpp
+#, fuzzy
+msgid "No export template found at the expected path:"
+msgstr ""
+"এক্সপোর্ট এর জন্য প্রয়োজণীয় টেমপ্লেট পাওয়া যায়নি।\n"
+"এক্সপোর্ট টেমপ্লেট-সমূহ ডাউনলোড করে ইন্সটল করুন।"
+
+#: editor/editor_export.cpp
 msgid "Packing"
 msgstr "প্যাক/গুচ্ছিত করা"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom debug template not found."
+msgstr "স্বনির্মিত ডিবাগ (debug) প্যাকেজ খুঁজে পাওয়া যায়নি।"
+
+#: editor/editor_export.cpp platform/android/export/export.cpp
+#: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
+#: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Custom release template not found."
+msgstr "স্বনির্মিত রিলিস (release) প্যাকেজ খুঁজে পাওয়া যায়নি।"
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 #, fuzzy
@@ -8307,6 +8328,14 @@ msgid "Duplicate Node(s)"
 msgstr "নোড(সমূহ) প্রতিলিপি করুন"
 
 #: editor/scene_tree_dock.cpp
+msgid "Node must belong to the edited scene to become root."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Instantiated scenes can't become root"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "নোড(সমূহ) অপসারণ করবেন?"
 
@@ -9620,6 +9649,90 @@ msgstr ""
 msgid "Set %s"
 msgstr ""
 
+#: platform/android/export/export.cpp
+msgid "Package name is missing."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Package segments must be of non-zero length."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' is not allowed in Android application package names."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "A digit cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The character '%s' cannot be the first character in a package segment."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "The package must have at least one '.' separator."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "ADB executable not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "OpenJDK jarsigner not configured in the Editor Settings."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr ""
+
+#: platform/android/export/export.cpp
+#, fuzzy
+msgid "Invalid package name:"
+msgstr "অগ্রহণযোগ্য ক্লাস নাম"
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier is missing."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "Identifier segments must be of non-zero length."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "The character '%s' is not allowed in Identifier."
+msgstr "নামটি কার্যকর সনাক্তকারী নয়:"
+
+#: platform/iphone/export/export.cpp
+msgid "A digit cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid ""
+"The character '%s' cannot be the first character in a Identifier segment."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "The Identifier must have at least one '.' separator."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+msgid "App Store Team ID not specified - cannot configure the project."
+msgstr ""
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Invalid Identifier:"
+msgstr "নামটি কার্যকর সনাক্তকারী নয়:"
+
+#: platform/iphone/export/export.cpp
+msgid "Required icon is not specified in the preset."
+msgstr ""
+
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Run in Browser"
@@ -9658,6 +9771,51 @@ msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
 #, fuzzy
 msgid "Using default boot splash image."
 msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
+
+#: platform/uwp/export/export.cpp
+#, fuzzy
+msgid "Invalid package unique name."
+msgstr "একক (অনন্য) নামটি অগ্রহনযোগ্য।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid product GUID."
+msgstr "পণ্যের অগ্রহনযোগ্য GUID।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid publisher GUID."
+msgstr "প্রকাশকের অগ্রহনযোগ্য GUID।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid background color."
+msgstr "পটভূমির (background) অগ্রহনযোগ্য রঙ।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid Store Logo image dimensions (should be 50x50)."
+msgstr "স্টোর লোগোর (Store Logo) ছবির অগ্রহনযোগ্য মাত্রা (৫০x৫০ হতে হবে)।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+msgstr "৪৪x৪৪ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৪৪x৪৪ হতে হবে)।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+msgstr "৭১x৭১ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৭১x৭১ হতে হবে)।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+msgstr "১৫০x১৫০ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (১৫০x১৫০ হতে হবে)।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+msgstr "৩১০x৩১০ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৩১০x৩১০ হতে হবে)।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+msgstr "৩১০x১৫০ প্রশস্ত লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৩১০x১৫০ হতে হবে)।"
+
+#: platform/uwp/export/export.cpp
+msgid "Invalid splash screen image dimensions (should be 620x300)."
+msgstr "স্প্ল্যাশ পর্দার (splash screen) ছবির অগ্রহনযোগ্য মাত্রা (৬২০x৩০০ হতে হবে)।"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9947,14 +10105,9 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
 
 #: scene/3d/path.cpp
-#, fuzzy
-msgid "OrientedPathFollow only works when set as a child of a Path node."
-msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
-
-#: scene/3d/path.cpp
 msgid ""
-"OrientedPathFollow requires \"Up Vector\" enabled in its parent Path's Curve "
-"resource."
+"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
+"Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -10153,6 +10306,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "OrientedPathFollow only works when set as a child of a Path node."
+#~ msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসেবে নির্ধারন করালেই কাজ করে।"
 
 #, fuzzy
 #~ msgid "Split already exists."
@@ -11383,53 +11540,6 @@ msgstr ""
 
 #~ msgid "Error creating the package signature."
 #~ msgstr "প্যাকেজের স্বাক্ষর (package signature) তৈরিতে সমস্যা হয়েছে।"
-
-#~ msgid ""
-#~ "No export templates found.\n"
-#~ "Download and install export templates."
-#~ msgstr ""
-#~ "এক্সপোর্ট এর জন্য প্রয়োজণীয় টেমপ্লেট পাওয়া যায়নি।\n"
-#~ "এক্সপোর্ট টেমপ্লেট-সমূহ ডাউনলোড করে ইন্সটল করুন।"
-
-#~ msgid "Custom debug package not found."
-#~ msgstr "স্বনির্মিত ডিবাগ (debug) প্যাকেজ খুঁজে পাওয়া যায়নি।"
-
-#~ msgid "Custom release package not found."
-#~ msgstr "স্বনির্মিত রিলিস (release) প্যাকেজ খুঁজে পাওয়া যায়নি।"
-
-#~ msgid "Invalid unique name."
-#~ msgstr "একক (অনন্য) নামটি অগ্রহনযোগ্য।"
-
-#~ msgid "Invalid product GUID."
-#~ msgstr "পণ্যের অগ্রহনযোগ্য GUID।"
-
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "প্রকাশকের অগ্রহনযোগ্য GUID।"
-
-#~ msgid "Invalid background color."
-#~ msgstr "পটভূমির (background) অগ্রহনযোগ্য রঙ।"
-
-#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
-#~ msgstr "স্টোর লোগোর (Store Logo) ছবির অগ্রহনযোগ্য মাত্রা (৫০x৫০ হতে হবে)।"
-
-#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-#~ msgstr "৪৪x৪৪ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৪৪x৪৪ হতে হবে)।"
-
-#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-#~ msgstr "৭১x৭১ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৭১x৭১ হতে হবে)।"
-
-#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-#~ msgstr "১৫০x১৫০ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (১৫০x১৫০ হতে হবে)।"
-
-#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-#~ msgstr "৩১০x৩১০ বর্গ লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৩১০x৩১০ হতে হবে)।"
-
-#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-#~ msgstr "৩১০x১৫০ প্রশস্ত লোগোর (logo) ছবির অগ্রহনযোগ্য মাত্রা (৩১০x১৫০ হতে হবে)।"
-
-#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
-#~ msgstr ""
-#~ "স্প্ল্যাশ পর্দার (splash screen) ছবির অগ্রহনযোগ্য মাত্রা (৬২০x৩০০ হতে হবে)।"
 
 #, fuzzy
 #~ msgid "RAW Mode"
