@@ -490,6 +490,10 @@ size_t DirAccessPack::get_space_left() {
 	return 0;
 }
 
+String DirAccessPack::get_filesystem_type() const {
+	return "PCK";
+}
+
 DirAccessPack::DirAccessPack() {
 
 	current = PackedData::get_singleton()->root;

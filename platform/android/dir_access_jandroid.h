@@ -75,6 +75,8 @@ public:
 	virtual Error rename(String p_from, String p_to);
 	virtual Error remove(String p_name);
 
+	virtual String get_filesystem_type() const;
+
 	//virtual FileType get_file_type() const;
 	size_t get_space_left();
 
