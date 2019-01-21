@@ -524,7 +524,11 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth); //resize depth buffer
+#ifdef JAVASCRIPT_ENABLED
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size, size);
+#else
 		glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, size, size);
+#endif
 
 		for (int i = 0; i < 6; i++) {
 			glBindFramebuffer(GL_FRAMEBUFFER, rpi->fbo[i]);
