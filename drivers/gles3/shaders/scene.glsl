@@ -165,9 +165,7 @@ uniform int spot_light_count;
 out vec4 diffuse_light_interp;
 out vec4 specular_light_interp;
 
-
 void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, inout vec3 diffuse, inout vec3 specular) {
-
 
 	float NdotL = dot(N, L);
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
@@ -225,8 +223,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, vec3 light_color, float roughness, in
 
 		specular += specular_brdf_NL * light_color * (1.0 / M_PI);
 	}
-
-
 }
 
 void light_process_omni(int idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness, inout vec3 diffuse, inout vec3 specular) {

@@ -763,7 +763,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
 
 						float owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
-						print_line("margin: " + rtos(owc_margin));
 						cbk.valid_depth = MAX(owc_margin, p_margin); //user specified, but never less than actual margin or it wont work
 						cbk.invalid_by_dir = 0;
 
