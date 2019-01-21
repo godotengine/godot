@@ -1151,12 +1151,12 @@ public:
 
 		if (!FileAccess::exists(custom_debug_binary)) {
 			dvalid = false;
-			err = "\nCustom debug binary not found.";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 
 		if (!FileAccess::exists(custom_release_binary)) {
 			rvalid = false;
-			err += "\nCustom release binary not found.";
+			err += TTR("Custom release template not found.") + "\n";
 		}
 
 		if (dvalid || rvalid)
@@ -1169,57 +1169,57 @@ public:
 
 		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
 			valid = false;
-			err += "\nInvalid unique name.";
+			err += TTR("Invalid package unique name.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/product_guid"))) {
 			valid = false;
-			err += "\nInvalid product GUID.";
+			err += TTR("Invalid product GUID.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/publisher_guid"))) {
 			valid = false;
-			err += "\nInvalid publisher GUID.";
+			err += TTR("Invalid publisher GUID.") + "\n";
 		}
 
 		if (!_valid_bgcolor(p_preset->get("images/background_color"))) {
 			valid = false;
-			err += "\nInvalid background color.";
+			err += TTR("Invalid background color.") + "\n";
 		}
 
 		if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
 			valid = false;
-			err += "\nInvalid Store Logo image dimensions (should be 50x50).";
+			err += TTR("Invalid Store Logo image dimensions (should be 50x50).") + "\n";
 		}
 
 		if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
 			valid = false;
-			err += "\nInvalid square 44x44 logo image dimensions (should be 44x44).";
+			err += TTR("Invalid square 44x44 logo image dimensions (should be 44x44).") + "\n";
 		}
 
 		if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
 			valid = false;
-			err += "\nInvalid square 71x71 logo image dimensions (should be 71x71).";
+			err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 		}
 
 		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 0)) {
 			valid = false;
-			err += "\nInvalid square 150x150 logo image dimensions (should be 150x150).";
+			err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 		}
 
 		if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
 			valid = false;
-			err += "\nInvalid square 310x310 logo image dimensions (should be 310x310).";
+			err += TTR("Invalid square 310x310 logo image dimensions (should be 310x310).") + "\n";
 		}
 
 		if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
 			valid = false;
-			err += "\nInvalid wide 310x150 logo image dimensions (should be 310x150).";
+			err += TTR("Invalid wide 310x150 logo image dimensions (should be 310x150).") + "\n";
 		}
 
 		if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
 			valid = false;
-			err += "\nInvalid splash screen image dimensions (should be 620x300).";
+			err += TTR("Invalid splash screen image dimensions (should be 620x300).") + "\n";
 		}
 
 		r_error = err;

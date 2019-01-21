@@ -105,7 +105,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 		if (pname.length() == 0) {
 			if (r_error) {
-				*r_error = "Identifier is missing.";
+				*r_error = TTR("Identifier is missing.");
 			}
 			return false;
 		}
@@ -116,7 +116,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			CharType c = pname[i];
 			if (first && c == '.') {
 				if (r_error) {
-					*r_error = "Identifier segments must be of non-zero length.";
+					*r_error = TTR("Identifier segments must be of non-zero length.");
 				}
 				return false;
 			}
@@ -127,19 +127,19 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			}
 			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
 				if (r_error) {
-					*r_error = "The character '" + String::chr(c) + "' is not allowed in Identifier.";
+					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
 				}
 				return false;
 			}
 			if (first && (c >= '0' && c <= '9')) {
 				if (r_error) {
-					*r_error = "A digit cannot be the first character in a Identifier segment.";
+					*r_error = TTR("A digit cannot be the first character in a Identifier segment.");
 				}
 				return false;
 			}
 			if (first && c == '_') {
 				if (r_error) {
-					*r_error = "The character '" + String::chr(c) + "' cannot be the first character in a Identifier segment.";
+					*r_error = vformat(TTR("The character '%s' cannot be the first character in a Identifier segment."), String::chr(c));
 				}
 				return false;
 			}
@@ -148,14 +148,14 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 		if (segments == 0) {
 			if (r_error) {
-				*r_error = "The Identifier must have at least one '.' separator.";
+				*r_error = TTR("The Identifier must have at least one '.' separator.");
 			}
 			return false;
 		}
 
 		if (first) {
 			if (r_error) {
-				*r_error = "Identifier segments must be of non-zero length.";
+				*r_error = TTR("Identifier segments must be of non-zero length.");
 			}
 			return false;
 		}
@@ -1036,7 +1036,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
 			r_missing_templates = false;
 		} else {
-			err += "Custom debug package not found.\n";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
@@ -1044,7 +1044,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
 			r_missing_templates = false;
 		} else {
-			err += "Custom release package not found.\n";
+			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
@@ -1052,14 +1052,14 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 
 	String team_id = p_preset->get("application/app_store_team_id");
 	if (team_id.length() == 0) {
-		err += "App Store Team ID not specified - cannot configure the project.\n";
+		err += TTR("App Store Team ID not specified - cannot configure the project.") + "\n";
 		valid = false;
 	}
 
 	String identifier = p_preset->get("application/identifier");
 	String pn_err;
 	if (!is_package_name_valid(identifier, &pn_err)) {
-		err += "Invalid Identifier - " + pn_err + "\n";
+		err += TTR("Invalid Identifier:") + " " + pn_err + "\n";
 		valid = false;
 	}
 
@@ -1068,7 +1068,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		String icon_path = p_preset->get(info.preset_key);
 		if (icon_path.length() == 0) {
 			if (info.is_required) {
-				err += "Required icon is not specified in the preset.\n";
+				err += TTR("Required icon is not specified in the preset.") + "\n";
 				valid = false;
 			}
 			break;
