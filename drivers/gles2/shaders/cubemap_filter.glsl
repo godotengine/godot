@@ -25,9 +25,17 @@ void main() {
 /* clang-format off */
 [fragment]
 
-#extension GL_ARB_shader_texture_lod : enable
+#ifdef GL_EXT_shader_texture_lod
+#extension GL_EXT_shader_texture_lod : enable
+#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
+#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
+#endif
 
-#ifndef GL_ARB_shader_texture_lod
+#ifdef GL_ARB_shader_texture_lod
+#extension GL_ARB_shader_texture_lod : enable
+#endif
+
+#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
 #define texture2DLod(img, coord, lod) texture2D(img, coord)
 #define textureCubeLod(img, coord, lod) textureCube(img, coord)
 #endif
@@ -118,7 +126,13 @@ vec3 texelCoordToVec(vec2 uv, int faceID) {
 	faceUvVectors[5][2] = vec3(0.0, 0.0, 1.0); // +z face
 
 	// out = u * s_faceUv[0] + v * s_faceUv[1] + s_faceUv[2].
-	vec3 result = (faceUvVectors[faceID][0] * uv.x) + (faceUvVectors[faceID][1] * uv.y) + faceUvVectors[faceID][2];
+	vec3 result;
+	for (int i = 0; i < 6; i++) {
+		if (i == faceID) {
+			result = (faceUvVectors[i][0] * uv.x) + (faceUvVectors[i][1] * uv.y) + faceUvVectors[i][2];
+			break;
+		}
+	}
 	return normalize(result);
 }
 
