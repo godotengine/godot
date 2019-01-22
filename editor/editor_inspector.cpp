@@ -1366,7 +1366,28 @@ void EditorInspector::update_tree() {
 
 	//to update properly if all is refreshed
 	StringName current_selected = property_selected;
-	int current_focusable = property_focusable;
+	int current_focusable = -1;
+
+	if (property_focusable != -1) {
+		//check focusable is really focusable
+		bool restore_focus = false;
+		Control *focused = get_focus_owner();
+		if (focused) {
+			Node *parent = focused->get_parent();
+			while (parent) {
+				EditorInspector *inspector = Object::cast_to<EditorInspector>(parent);
+				if (inspector) {
+					restore_focus = inspector == this; //may be owned by another inspector
+					break; //exit after the first inspector is found, since there may be nested ones
+				}
+				parent = parent->get_parent();
+			}
+		}
+
+		if (restore_focus) {
+			current_focusable = property_focusable;
+		}
+	}
 
 	_clear();
 
