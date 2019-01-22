@@ -88,6 +88,9 @@ vars.Update(env_mono)
 if env_mono['mono_glue']:
     env_mono.Append(CPPDEFINES=['MONO_GLUE_ENABLED'])
 
+if env_mono['tools'] or env_mono['target'] != 'release':
+    env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
+
 # Configure TLS checks
 
 import tls_configure
