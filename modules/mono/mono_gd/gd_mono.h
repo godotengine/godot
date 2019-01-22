@@ -95,7 +95,9 @@ class GDMono {
 #endif
 
 	bool core_api_assembly_out_of_sync;
+#ifdef TOOLS_ENABLED
 	bool editor_api_assembly_out_of_sync;
+#endif
 
 	GDMonoAssembly *corlib_assembly;
 	GDMonoAssembly *core_api_assembly;
@@ -193,7 +195,7 @@ public:
 
 	GDMonoClass *get_class(MonoClass *p_raw_class);
 
-#ifdef TOOLS_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 	Error reload_scripts_domain();
 #endif
 

@@ -607,7 +607,7 @@ struct CSharpScriptDepSort {
 
 void CSharpLanguage::reload_all_scripts() {
 
-#ifdef DEBUG_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
 		reload_assemblies(false);
 	}
@@ -618,15 +618,20 @@ void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft
 
 	(void)p_script; // UNUSED
 
+	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
+
 #ifdef TOOLS_ENABLED
 	MonoReloadNode::get_singleton()->restart_reload_timer();
+#endif
+
+#ifdef GD_MONO_HOT_RELOAD
 	if (is_assembly_reloading_needed()) {
 		reload_assemblies(p_soft_reload);
 	}
 #endif
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 bool CSharpLanguage::is_assembly_reloading_needed() {
 
 	if (!gdmono->is_runtime_initialized())
@@ -658,11 +663,13 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // No assembly to load
 	}
 
+#ifdef TOOLS_ENABLED
 	if (!gdmono->get_core_api_assembly() && gdmono->metadata_is_api_assembly_invalidated(APIAssembly::API_CORE))
 		return false; // The core API assembly to load is invalidated
 
 	if (!gdmono->get_editor_api_assembly() && gdmono->metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR))
 		return false; // The editor API assembly to load is invalidated
+#endif
 
 	return true;
 }
@@ -760,9 +767,11 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				PlaceHolderScriptInstance *placeholder = scr->placeholder_instance_create(obj);
 				obj->set_script_instance(placeholder);
 
+#ifdef TOOLS_ENABLED
 				// Even though build didn't fail, this tells the placeholder to keep properties and
 				// it allows using property_set_fallback for restoring the state without a valid script.
 				scr->placeholder_fallback_enabled = true;
+#endif
 
 				// Restore Variant properties state, it will be kept by the placeholder until the next script reloading
 				for (List<Pair<StringName, Variant> >::Element *G = scr->pending_reload_state[obj_id].properties.front(); G; G = G->next()) {
@@ -778,13 +787,14 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 	for (List<Ref<CSharpScript> >::Element *E = to_reload.front(); E; E = E->next()) {
 
 		Ref<CSharpScript> scr = E->get();
+#ifdef TOOLS_ENABLED
 		scr->exports_invalidated = true;
+#endif
 		scr->signals_invalidated = true;
 		scr->reload(p_soft_reload);
 		scr->update_exports();
 
 		{
-#ifdef DEBUG_ENABLED
 			for (Set<ObjectID>::Element *F = scr->pending_reload_instances.front(); F; F = F->next()) {
 				ObjectID obj_id = F->get();
 				Object *obj = ObjectDB::get_instance(obj_id);
@@ -843,17 +853,18 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				scr->pending_reload_state.erase(obj_id);
 			}
-#endif
 
 			scr->pending_reload_instances.clear();
 		}
 	}
 
+#ifdef TOOLS_ENABLED
 	// FIXME: Hack to refresh editor in order to display new properties and signals. See if there is a better alternative.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		EditorNode::get_singleton()->get_inspector()->update_tree();
 		NodeDock::singleton->update_lists();
 	}
+#endif
 }
 #endif
 
@@ -2810,9 +2821,11 @@ Error ResourceFormatSaverCSharpScript::save(const String &p_path, const RES &p_r
 	file->close();
 	memdelete(file);
 
+#ifdef TOOLS_ENABLED
 	if (ScriptServer::is_reload_scripts_on_save_enabled()) {
 		CSharpLanguage::get_singleton()->reload_tool_script(p_resource, false);
 	}
+#endif
 
 	return OK;
 }

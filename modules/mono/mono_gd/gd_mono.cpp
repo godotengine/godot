@@ -731,7 +731,9 @@ Error GDMono::_unload_scripts_domain() {
 #endif
 
 	core_api_assembly_out_of_sync = false;
+#ifdef TOOLS_ENABLED
 	editor_api_assembly_out_of_sync = false;
+#endif
 
 	MonoDomain *domain = scripts_domain;
 	scripts_domain = NULL;
@@ -764,7 +766,7 @@ Error GDMono::_load_tools_domain() {
 }
 #endif
 
-#ifdef TOOLS_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 Error GDMono::reload_scripts_domain() {
 
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
@@ -785,8 +787,12 @@ Error GDMono::reload_scripts_domain() {
 
 #ifdef MONO_GLUE_ENABLED
 	if (!_load_api_assemblies()) {
-		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)) ||
-				(editor_api_assembly && editor_api_assembly_out_of_sync)) {
+		if ((core_api_assembly && (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated))
+#ifdef TOOLS_ENABLED
+				|| (editor_api_assembly && editor_api_assembly_out_of_sync)
+#endif
+		) {
+#ifdef TOOLS_ENABLED
 			// The assembly was successfully loaded, but the full api could not be cached.
 			// This is most likely an outdated assembly loaded because of an invalid version in the
 			// metadata, so we invalidate the version in the metadata and unload the script domain.
@@ -810,6 +816,10 @@ Error GDMono::reload_scripts_domain() {
 			}
 
 			return ERR_CANT_RESOLVE;
+#else
+			ERR_PRINT("The loaded API assembly is invalid");
+			CRASH_NOW();
+#endif
 		} else {
 			return ERR_CANT_OPEN;
 		}
@@ -924,7 +934,9 @@ GDMono::GDMono() {
 #endif
 
 	core_api_assembly_out_of_sync = false;
+#ifdef TOOLS_ENABLED
 	editor_api_assembly_out_of_sync = false;
+#endif
 
 	corlib_assembly = NULL;
 	core_api_assembly = NULL;

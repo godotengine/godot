@@ -82,10 +82,7 @@ class CSharpScript : public Script {
 
 	Set<Object *> instances;
 
-#ifdef DEBUG_ENABLED
-	Set<ObjectID> pending_reload_instances;
-#endif
-
+#ifdef GD_MONO_HOT_RELOAD
 	struct StateBackup {
 		// TODO
 		// Replace with buffer containing the serialized state of managed scripts.
@@ -93,8 +90,8 @@ class CSharpScript : public Script {
 		List<Pair<StringName, Variant> > properties;
 	};
 
-#ifdef TOOLS_ENABLED
-	Map<ObjectID, CSharpScript::StateBackup> pending_reload_state;
+	Set<ObjectID> pending_reload_instances;
+	Map<ObjectID, StateBackup> pending_reload_state;
 #endif
 
 	String source;
@@ -313,7 +310,7 @@ public:
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
-#ifdef TOOLS_ENABLED
+#ifdef GD_MONO_HOT_RELOAD
 	bool is_assembly_reloading_needed();
 	void reload_assemblies(bool p_soft_reload);
 #endif

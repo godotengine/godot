@@ -31,6 +31,7 @@
 #include "core/ustring.h"
 
 #ifndef OSX_UTILS_H
+#define OSX_UTILS_H
 
 #ifdef OSX_ENABLED
 
