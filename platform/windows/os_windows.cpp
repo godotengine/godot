@@ -50,6 +50,7 @@
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "windows_terminal_logger.h"
+#include <avrt.h>
 
 #include <process.h>
 #include <regstr.h>
@@ -1372,6 +1373,19 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	im_position = Vector2();
 
 	set_ime_active(false);
+
+	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
+		//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+		DWORD index = 0;
+		HANDLE handle = AvSetMmThreadCharacteristics("Games", &index);
+		if (handle)
+			AvSetMmThreadPriority(handle, AVRT_PRIORITY_CRITICAL);
+
+		// This is needed to make sure that background work does not starve the main thread.
+		// This is only setting priority of this thread, not the whole process.
+		SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	}
 
 	return OK;
 }

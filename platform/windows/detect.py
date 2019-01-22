@@ -218,7 +218,7 @@ def configure_msvc(env, manual_msvc_config):
 
     LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32',
             'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32',
-            'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt']
+	    'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt','Avrt']
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
     if manual_msvc_config:
@@ -329,7 +329,7 @@ def configure_mingw(env):
     env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
     env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
     env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
-    env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt'])
+    env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt','avrt'])
 
     env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
 
