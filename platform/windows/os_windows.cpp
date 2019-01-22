@@ -783,7 +783,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WM_TIMER: {
 			if (wParam == move_timer_id) {
 				process_key_events();
-				Main::iteration();
+				if (!Main::is_iterating()) {
+					Main::iteration();
+				}
 			}
 		} break;
 
