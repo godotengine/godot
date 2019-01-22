@@ -27,5 +27,18 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include <editor/editor_export.h>
+#include <core/object.h>
 
-void register_sdl_exporter();
+void register_sailfish_exporter();
+
+class EditorExportPlatfromSailfish : public EditorExportPlatform
+{
+    GDCLASS(EditorExportPlatfromSailfish, EditorExportPlatform)
+
+    GString arch; 
+public:
+    EditorExportPlatfromSailfish() {
+
+    }
+};
