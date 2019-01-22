@@ -47,6 +47,7 @@ class Main {
 	static uint32_t frames;
 	static uint32_t frame;
 	static bool force_redraw_requested;
+	static bool iterating;
 
 public:
 	static bool is_project_manager();
@@ -57,6 +58,8 @@ public:
 
 	static bool iteration();
 	static void force_redraw();
+
+	static bool is_iterating();
 
 	static void cleanup();
 };
