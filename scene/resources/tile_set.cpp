@@ -908,7 +908,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			if (d.has("one_way_margin") && d["one_way_margin"].is_num())
 				s.one_way_collision_margin = d["one_way_margin"];
 			else
-				s.one_way_collision = 1.0;
+				s.one_way_collision_margin = 1.0;
 
 			if (d.has("autotile_coord") && d["autotile_coord"].get_type() == Variant::VECTOR2)
 				s.autotile_coord = d["autotile_coord"];
