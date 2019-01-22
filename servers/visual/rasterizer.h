@@ -141,6 +141,7 @@ public:
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
+	virtual bool light_instances_can_render_shadow_cube() const { return true; }
 
 	virtual RID reflection_atlas_create() = 0;
 	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_size) = 0;

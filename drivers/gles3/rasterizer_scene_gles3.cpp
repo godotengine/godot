@@ -1832,6 +1832,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 					storage->info.render.vertices_count += s->index_array_len * amount;
 				} else
 #endif
+
 						if (s->index_array_len > 0) {
 
 					glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
