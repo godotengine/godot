@@ -2877,7 +2877,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 		if (light->type == VS::LIGHT_OMNI) {
 			// cubemap only
-			if (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE) {
+			if (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && storage->config.support_write_depth) {
 				int cubemap_index = shadow_cubemaps.size() - 1;
 
 				// find an appropriate cubemap to render to
@@ -2973,7 +2973,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES2::RENDER_DEPTH_DUAL_PARABOLOID, false);
 
 	// convert cubemap to dual paraboloid if needed
-	if (light->type == VS::LIGHT_OMNI && light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && p_pass == 5) {
+	if (light->type == VS::LIGHT_OMNI && (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && storage->config.support_write_depth) && p_pass == 5) {
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow_atlas->fbo);
