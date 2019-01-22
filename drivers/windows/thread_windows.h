@@ -51,7 +51,7 @@ class ThreadWindows : public Thread {
 
 	static Thread *create_thread_windows();
 
-	static DWORD WINAPI thread_callback(LPVOID userdata);
+	static void NTAPI thread_callback(PTP_CALLBACK_INSTANCE Instance, PVOID Context, PTP_WORK Work);
 
 	static Thread *create_func_windows(ThreadCreateCallback p_callback, void *, const Settings &);
 	static ID get_thread_id_func_windows();
@@ -63,6 +63,9 @@ public:
 	virtual ID get_id() const;
 
 	static void make_default();
+
+	static void initialize();
+	static void cleanup();
 
 	~ThreadWindows();
 };

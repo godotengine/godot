@@ -1102,6 +1102,8 @@ int OS_Windows::get_current_video_driver() const {
 
 Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
+	ThreadWindows::initialize();
+
 	main_loop = NULL;
 	outside = true;
 	window_has_focus = true;
@@ -1537,6 +1539,7 @@ void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
+	ThreadWindows::cleanup();
 }
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {

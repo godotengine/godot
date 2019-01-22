@@ -33,6 +33,13 @@
 #if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
 
 #include "core/os/memory.h"
+#include "core/project_settings.h"
+
+TP_CALLBACK_ENVIRON env;
+PTP_CLEANUP_GROUP group = NULL;
+PTP_POOL pool = NULL;
+
+const DWORD MaximumThreads = 512;
 
 Thread::ID ThreadWindows::get_id() const {
 
@@ -44,19 +51,17 @@ Thread *ThreadWindows::create_thread_windows() {
 	return memnew(ThreadWindows);
 }
 
-DWORD ThreadWindows::thread_callback(LPVOID userdata) {
+void NTAPI ThreadWindows::thread_callback(PTP_CALLBACK_INSTANCE Instance, PVOID Context, PTP_WORK Work) {
 
-	ThreadWindows *t = reinterpret_cast<ThreadWindows *>(userdata);
+	ThreadWindows *t = reinterpret_cast<ThreadWindows *>(Context);
+	SetEventWhenCallbackReturns(Instance, t->handle);
 
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
 
 	t->id = (ID)GetCurrentThreadId(); // must implement
 	t->callback(t->user);
-	SetEvent(t->handle);
 
 	ScriptServer::thread_exit();
-
-	return 0;
 }
 
 Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
@@ -66,7 +71,8 @@ Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void
 	tr->user = p_user;
 	tr->handle = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	QueueUserWorkItem(thread_callback, tr, WT_EXECUTELONGFUNCTION);
+	PTP_WORK work = CreateThreadpoolWork(thread_callback, tr, &env);
+	SubmitThreadpoolWork(work);
 
 	return tr;
 }
@@ -83,7 +89,34 @@ void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 	//`memdelete(tp);
 }
 
+void ThreadWindows::cleanup() {
+	CloseThreadpoolCleanupGroupMembers(group, TRUE, NULL);
+	CloseThreadpoolCleanupGroup(group);
+	CloseThreadpool(pool);
+}
+
+void ThreadWindows::initialize() {
+	const DWORD minThreads = MAX(0, (int)GLOBAL_DEF("thread_pool/min", 0));
+	const DWORD maxThreads = MAX(minThreads, MaximumThreads);
+
+	SetThreadpoolThreadMaximum(pool, maxThreads);
+	SetThreadpoolThreadMinimum(pool, minThreads);
+}
+
 void ThreadWindows::make_default() {
+	InitializeThreadpoolEnvironment(&env);
+
+	group = CreateThreadpoolCleanupGroup();
+	ERR_FAIL_COND(!group);
+
+	pool = CreateThreadpool(NULL);
+	ERR_FAIL_COND(!pool);
+
+	SetThreadpoolThreadMaximum(pool, MaximumThreads);
+	SetThreadpoolThreadMinimum(pool, 1);
+
+	SetThreadpoolCallbackPool(&env, pool);
+	SetThreadpoolCallbackCleanupGroup(&env, group, NULL);
 
 	create_func = create_func_windows;
 	get_thread_id_func = get_thread_id_func_windows;
