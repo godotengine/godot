@@ -208,8 +208,8 @@ def configure_msvc(env, manual_msvc_config):
                                    'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
                                    'WINMIDI_ENABLED', 'TYPED_METHOD_BIND',
                                    'WIN32', 'MSVC',
-                                   'WINVER=$target_win_version',
-                                   '_WIN32_WINNT=$target_win_version'])
+                                   'WINVER=%s' % env["target_win_version"],
+                                   '_WIN32_WINNT=%s' % env["target_win_version"]])
     env.AppendUnique(CPPDEFINES=['NOMINMAX']) # disable bogus min/max WinDef.h macros
     if env["bits"] == "64":
         env.AppendUnique(CPPDEFINES=['_WIN64'])
