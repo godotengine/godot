@@ -4007,7 +4007,11 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 	glGenRenderbuffers(1, &rt->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rt->depth);
+#ifdef JAVASCRIPT_ENABLED
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, rt->width, rt->height);
+#else
 	glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, rt->width, rt->height);
+#endif
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -4218,7 +4222,11 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 
 	glGenRenderbuffers(1, &cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, cls->size, cls->height);
+#ifdef JAVASCRIPT_ENABLED
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, cls->size, cls->height);
+#else
+	glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, cls->size, cls->height);
+#endif
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
