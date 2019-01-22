@@ -565,6 +565,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			//check that from node to root, all owners are right
 
+			if (root->get_scene_inherited_state().is_valid()) {
+				accept->set_text(TTR("Can't reparent nodes in inherited scenes, order of nodes can't change."));
+				accept->popup_centered_minsize();
+				return;
+			}
+
 			if (node->get_owner() != root) {
 				accept->set_text(TTR("Node must belong to the edited scene to become root."));
 				accept->popup_centered_minsize();
