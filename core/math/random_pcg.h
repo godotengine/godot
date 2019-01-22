@@ -50,8 +50,8 @@ public:
 
 	void randomize();
 	_FORCE_INLINE_ uint32_t rand() { return pcg32_random_r(&pcg); }
-	_FORCE_INLINE_ double randd() { return (double)rand() / (double)RANDOM_MAX; }
-	_FORCE_INLINE_ float randf() { return (float)rand() / (float)RANDOM_MAX; }
+	_FORCE_INLINE_ double randf() { return (double)rand() / (double)RANDOM_MAX; }
+	_FORCE_INLINE_ float randd() { return (float)rand() / (float)RANDOM_MAX; }
 
 	double random(double from, double to);
 	float random(float from, float to);
