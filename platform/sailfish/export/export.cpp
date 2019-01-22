@@ -31,15 +31,15 @@
 #include "export.h"
 
 #include "editor/editor_export.h"
-#include "platform/sdl/logo.gen.h"
+#include "platform/sailfish/logo.gen.h"
 #include "scene/resources/texture.h"
 
-void register_sdl_exporter() {
+void register_sailfish_exporter() {
 
 	Ref<EditorExportPlatformPC> platform;
 	platform.instance();
 
-	Ref<Image> img = memnew(Image(_sdl_logo));
+	Ref<Image> img = memnew(Image(_sailfish_logo));
 	Ref<ImageTexture> logo;
 	logo.instance();
 	logo->create_from_image(img);

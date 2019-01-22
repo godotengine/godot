@@ -563,18 +563,18 @@ void OS_SDL::process_events() {
 	SDL_bool text_edit_mode = SDL_IsTextInputActive();
 	Vector<String> dropped_files;
 
-	if (!window_has_focus) {
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-				if(OS::get_singleton()->is_stdout_verbose())
-						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
-				minimized = false;
-				window_has_focus = true;
-				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-			}
-		}
-		return;
-	}
+	// if (!window_has_focus) {
+	// 	while (SDL_PollEvent(&event)) {
+	// 		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+	// 			if(OS::get_singleton()->is_stdout_verbose())
+	// 					OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
+	// 			minimized = false;
+	// 			window_has_focus = true;
+	// 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	// 		}
+	// 	}
+	// 	return;
+	// }
 
 	while (SDL_PollEvent(&event)) {
 
