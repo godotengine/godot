@@ -3135,7 +3135,7 @@ void RasterizerSceneGLES2::initialize() {
 	}
 
 	// cubemaps for shadows
-	{
+	if (!storage->config.support_write_depth) { //not going to be used
 		int max_shadow_cubemap_sampler_size = 512;
 
 		int cube_size = max_shadow_cubemap_sampler_size;
