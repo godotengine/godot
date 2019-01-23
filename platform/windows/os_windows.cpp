@@ -2335,6 +2335,9 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 		iconinfo.hbmMask = hAndMask;
 		iconinfo.hbmColor = hXorMask;
 
+		if (cursors[p_shape])
+			DestroyIcon(cursors[p_shape]);
+
 		cursors[p_shape] = CreateIconIndirect(&iconinfo);
 
 		if (p_shape == cursor_shape) {
