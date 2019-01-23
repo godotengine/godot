@@ -1715,15 +1715,6 @@ RID RasterizerStorageGLES2::mesh_create() {
 	return mesh_owner.make_rid(mesh);
 }
 
-static float Float16ToFloat(short fltInt16) {
-	int fltInt32 = ((fltInt16 & 0x8000) << 16);
-	fltInt32 |= ((fltInt16 & 0x7fff) << 13) + 0x38000000;
-
-	float fRet;
-	memcpy(&fRet, &fltInt32, sizeof(float));
-	return fRet;
-}
-
 static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array, uint32_t &format, int p_vertices) {
 
 	uint32_t p_format = format;
