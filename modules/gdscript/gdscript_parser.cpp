@@ -4682,7 +4682,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 					}
 #ifdef TOOLS_ENABLED
-					if (subexpr->type == Node::TYPE_CONSTANT && member._export.type != Variant::NIL) {
+					if (subexpr->type == Node::TYPE_CONSTANT && (member._export.type != Variant::NIL || member.data_type.has_type)) {
 
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
