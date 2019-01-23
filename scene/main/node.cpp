@@ -925,9 +925,9 @@ bool Node::_validate_node_name(String &p_name) {
 void Node::set_name(const String &p_name) {
 
 	String name = p_name;
-    ERR_FAIL_COND(!_validate_node_name(name));
+        ERR_FAIL_COND(!_validate_node_name(name));
 	ERR_FAIL_COND(name == "");
-    data.name = name;
+        data.name = name;
 
 	if (data.parent) {
 

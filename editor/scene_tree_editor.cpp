@@ -673,7 +673,7 @@ void SceneTreeEditor::_renamed() {
 	}
 
 	String new_name = which->get_text(0);
-    String pristine_new_name = new_name;
+        String pristine_new_name = new_name;
 	if (!Node::_validate_node_name(new_name)) {
 
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + Node::invalid_character);
