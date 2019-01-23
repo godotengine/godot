@@ -33,6 +33,8 @@ void main() {
 #define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
 #endif
 
+#endif
+
 #ifdef GL_ARB_shader_texture_lod
 #extension GL_ARB_shader_texture_lod : enable
 #endif
@@ -42,7 +44,7 @@ void main() {
 #define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
 #endif
 
-#endif
+
 
 #ifdef USE_GLES_OVER_GL
 #define lowp
