@@ -1715,8 +1715,205 @@ RID RasterizerStorageGLES2::mesh_create() {
 	return mesh_owner.make_rid(mesh);
 }
 
+static float Float16ToFloat(short fltInt16) {
+	int fltInt32 = ((fltInt16 & 0x8000) << 16);
+	fltInt32 |= ((fltInt16 & 0x7fff) << 13) + 0x38000000;
+
+	float fRet;
+	memcpy(&fRet, &fltInt32, sizeof(float));
+	return fRet;
+}
+
+static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array, uint32_t &format, int p_vertices) {
+
+	uint32_t p_format = format;
+
+	static int src_size[VS::ARRAY_MAX];
+	static int dst_size[VS::ARRAY_MAX];
+	static int to_convert[VS::ARRAY_MAX];
+
+	int src_stride = 0;
+	int dst_stride = 0;
+
+	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+
+		to_convert[i] = 0;
+		if (!(p_format & (1 << i))) {
+			src_size[i] = 0;
+			dst_size[i] = 0;
+			continue;
+		}
+
+		switch (i) {
+
+			case VS::ARRAY_VERTEX: {
+
+				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
+
+					if (p_format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
+						src_size[i] = 4;
+						dst_size[i] = 8;
+						to_convert[i] = 2;
+					} else {
+						src_size[i] = 8;
+						dst_size[i] = 12;
+						to_convert[i] = 3;
+					}
+
+					format &= ~VS::ARRAY_COMPRESS_VERTEX;
+				} else {
+
+					if (p_format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
+						src_size[i] = 8;
+						dst_size[i] = 8;
+					} else {
+						src_size[i] = 12;
+						dst_size[i] = 12;
+					}
+				}
+
+			} break;
+			case VS::ARRAY_NORMAL: {
+
+				if (p_format & VS::ARRAY_COMPRESS_NORMAL) {
+					src_size[i] = 4;
+					dst_size[i] = 4;
+				} else {
+					src_size[i] = 12;
+					dst_size[i] = 12;
+				}
+
+			} break;
+			case VS::ARRAY_TANGENT: {
+
+				if (p_format & VS::ARRAY_COMPRESS_TANGENT) {
+					src_size[i] = 4;
+					dst_size[i] = 4;
+				} else {
+					src_size[i] = 16;
+					dst_size[i] = 16;
+				}
+
+			} break;
+			case VS::ARRAY_COLOR: {
+
+				if (p_format & VS::ARRAY_COMPRESS_COLOR) {
+					src_size[i] = 4;
+					dst_size[i] = 4;
+				} else {
+					src_size[i] = 16;
+					dst_size[i] = 16;
+				}
+
+			} break;
+			case VS::ARRAY_TEX_UV: {
+
+				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
+					src_size[i] = 4;
+					to_convert[i] = 2;
+					format &= ~VS::ARRAY_COMPRESS_TEX_UV;
+				} else {
+					src_size[i] = 8;
+				}
+
+				dst_size[i] = 8;
+
+			} break;
+			case VS::ARRAY_TEX_UV2: {
+
+				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
+					src_size[i] = 4;
+					to_convert[i] = 2;
+					format &= ~VS::ARRAY_COMPRESS_TEX_UV2;
+				} else {
+					src_size[i] = 8;
+				}
+
+				dst_size[i] = 8;
+
+			} break;
+			case VS::ARRAY_BONES: {
+
+				if (p_format & VS::ARRAY_FLAG_USE_16_BIT_BONES) {
+					src_size[i] = 8;
+					dst_size[i] = 8;
+				} else {
+					src_size[i] = 4;
+					dst_size[i] = 4;
+				}
+
+			} break;
+			case VS::ARRAY_WEIGHTS: {
+
+				if (p_format & VS::ARRAY_COMPRESS_WEIGHTS) {
+					src_size[i] = 8;
+					dst_size[i] = 8;
+				} else {
+					src_size[i] = 16;
+					dst_size[i] = 16;
+				}
+
+			} break;
+			case VS::ARRAY_INDEX: {
+
+				src_size[i] = 0;
+				dst_size[i] = 0;
+
+			} break;
+		}
+
+		src_stride += src_size[i];
+		dst_stride += dst_size[i];
+	}
+
+	PoolVector<uint8_t> ret;
+	ret.resize(p_vertices * dst_stride);
+
+	PoolVector<uint8_t>::Read r = array.read();
+	PoolVector<uint8_t>::Write w = ret.write();
+
+	int src_offset = 0;
+	int dst_offset = 0;
+
+	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+
+		if (src_size[i] == 0) {
+			continue; //no go
+		}
+		const uint8_t *rptr = r.ptr();
+		uint8_t *wptr = w.ptr();
+		if (to_convert[i]) { //converting
+
+			for (int j = 0; j < p_vertices; j++) {
+				const uint16_t *src = (const uint16_t *)&rptr[src_stride * j + src_offset];
+				float *dst = (float *)&wptr[dst_stride * j + dst_offset];
+
+				for (int k = 0; k < to_convert[i]; k++) {
+
+					dst[k] = Math::half_to_float(src[k]);
+				}
+			}
+
+		} else {
+			//just copy
+			for (int j = 0; j < p_vertices; j++) {
+				for (int k = 0; k < src_size[i]; k++) {
+					wptr[dst_stride * j + dst_offset + k] = rptr[src_stride * j + src_offset + k];
+				}
+			}
+		}
+
+		src_offset += src_size[i];
+		dst_offset += dst_size[i];
+	}
+
+	r = PoolVector<uint8_t>::Read();
+	w = PoolVector<uint8_t>::Write();
+
+	return ret;
+}
+
 void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes, const Vector<AABB> &p_bone_aabbs) {
-	PoolVector<uint8_t> array = p_array;
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -1735,6 +1932,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
 	int stride = 0;
+	bool uses_half_float = false;
 
 	for (int i = 0; i < VS::ARRAY_MAX; i++) {
 
@@ -1763,6 +1961,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_format & VS::ARRAY_COMPRESS_VERTEX) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
 					stride += attribs[i].size * 2;
+					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
 					stride += attribs[i].size * 4;
@@ -1823,6 +2022,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
 					stride += 4;
+					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
 					stride += 8;
@@ -1838,6 +2038,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				if (p_format & VS::ARRAY_COMPRESS_TEX_UV2) {
 					attribs[i].type = _GL_HALF_FLOAT_OES;
 					stride += 4;
+					uses_half_float = true;
 				} else {
 					attribs[i].type = GL_FLOAT;
 					stride += 8;
@@ -1900,6 +2101,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	//validate sizes
+	PoolVector<uint8_t> array = p_array;
 
 	int array_size = stride * p_vertex_count;
 	int index_array_size = 0;
@@ -1930,6 +2132,15 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 
 	ERR_FAIL_COND(array.size() != array_size);
+
+	if (!config.support_half_float_vertices && uses_half_float) {
+
+		uint32_t new_format = p_format;
+		PoolVector<uint8_t> unpacked_array = _unpack_half_floats(array, new_format, p_vertex_count);
+
+		mesh_add_surface(p_mesh, new_format, p_primitive, unpacked_array, p_vertex_count, p_index_array, p_index_count, p_aabb, p_blend_shapes, p_bone_aabbs);
+		return; //do not go any further, above function used unpacked stuff will be used instead.
+	}
 
 	if (p_format & VS::ARRAY_FORMAT_INDEX) {
 
@@ -4679,6 +4890,12 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_write_depth = config.extensions.has("GL_EXT_frag_depth");
 #endif
 
+#ifdef JAVASCRIPT_ENABLED
+	config.support_half_float_vertices = false;
+#else
+	//every other platform, be it mobile or desktop, supports this (even if not in the GLES2 spec).
+	config.support_half_float_vertices = true;
+#endif
 
 	frame.count = 0;
 	frame.delta = 0;
