@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-# include <iostream>
-# include <typeinfo>
-
 #include "scene_tree_editor.h"
 
 #include "core/message_queue.h"
