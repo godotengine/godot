@@ -805,6 +805,13 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					gr_mem = alt_mem;
 			}
 
+			if (mouse_mode == MOUSE_MODE_CAPTURED) {
+				// When SetCapture is used, ALT+F4 hotkey is ignored by Windows, so handle it ourselves
+				if (wParam == VK_F4 && alt_mem && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)) {
+					if (main_loop)
+						main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+				}
+			}
 			/*
 			if (wParam==VK_WIN) TODO wtf is this?
 				meta_mem=uMsg==WM_KEYDOWN;
