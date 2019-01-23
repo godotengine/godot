@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+# include <iostream>
+# include <typeinfo>
+
 #include "scene_tree_editor.h"
 
 #include "core/message_queue.h"
@@ -673,6 +676,7 @@ void SceneTreeEditor::_renamed() {
 	}
 
 	String new_name = which->get_text(0);
+    String pristine_new_name = new_name;
 	if (!Node::_validate_node_name(new_name)) {
 
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + Node::invalid_character);
@@ -691,7 +695,7 @@ void SceneTreeEditor::_renamed() {
 	} else {
 		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal("node_prerename", n, new_name);
-		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
+		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), pristine_new_name);
 		undo_redo->add_undo_method(this, "_rename_node", n->get_instance_id(), n->get_name());
 		undo_redo->commit_action();
 	}
