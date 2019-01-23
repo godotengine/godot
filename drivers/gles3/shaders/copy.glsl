@@ -61,17 +61,33 @@ in vec3 cube_interp;
 #else
 in vec2 uv_interp;
 #endif
-/* clang-format on */
 
 #ifdef USE_ASYM_PANO
 uniform highp mat4 pano_transform;
 uniform highp vec4 asym_proj;
 #endif
 
+// These definitions are here because the shader-wrapper builder does
+// not understand `#elif defined()`
+#ifdef USE_TEXTURE3D
+#endif
+#ifdef USE_TEXTURE2DARRAY
+#endif
+
 #ifdef USE_CUBEMAP
 uniform samplerCube source_cube; //texunit:0
+#elif defined(USE_TEXTURE3D)
+uniform sampler3D source_3d; //texunit:0
+#elif defined(USE_TEXTURE2DARRAY)
+uniform sampler2DArray source_2d_array; //texunit:0
 #else
 uniform sampler2D source; //texunit:0
+#endif
+
+/* clang-format on */
+
+#if defined(USE_TEXTURE3D) || defined(USE_TEXTURE2DARRAY)
+uniform float layer;
 #endif
 
 #ifdef USE_MULTIPLIER
@@ -97,7 +113,6 @@ vec4 texturePanorama(vec3 normal, sampler2D pano) {
 
 #endif
 
-uniform float stuff;
 uniform vec2 pixel_size;
 
 in vec2 uv2_interp;
@@ -147,6 +162,10 @@ void main() {
 #elif defined(USE_CUBEMAP)
 	vec4 color = texture(source_cube, normalize(cube_interp));
 
+#elif defined(USE_TEXTURE3D)
+	vec4 color = textureLod(source_3d, vec3(uv_interp, layer), 0.0);
+#elif defined(USE_TEXTURE2DARRAY)
+	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), 0.0);
 #else
 	vec4 color = textureLod(source, uv_interp, 0.0);
 #endif

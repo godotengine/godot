@@ -1056,6 +1056,128 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 		return texture->images[p_layer];
 	}
 
+	// 3D textures and 2D texture arrays need special treatment, as the glGetTexImage reads **the whole**
+	// texture to host-memory. 3D textures and 2D texture arrays are potentially very big, so reading
+	// everything just to throw everything but one layer away is A Bad Idea.
+	//
+	// Unfortunately, to solve this, the copy shader has to read the data out via a shader and store it
+	// in a temporary framebuffer. The data from the framebuffer can then be read using glReadPixels.
+	if (texture->type == VS::TEXTURE_TYPE_2D_ARRAY || texture->type == VS::TEXTURE_TYPE_3D) {
+		// can't read a layer that doesn't exist
+		ERR_FAIL_INDEX_V(p_layer, texture->alloc_depth, Ref<Image>());
+
+		// get some information about the texture
+		Image::Format real_format;
+		GLenum gl_format;
+		GLenum gl_internal_format;
+		GLenum gl_type;
+
+		bool compressed;
+		bool srgb;
+
+		_get_gl_image_and_format(
+				Ref<Image>(),
+				texture->format,
+				texture->flags,
+				real_format,
+				gl_format,
+				gl_internal_format,
+				gl_type,
+				compressed,
+				srgb);
+
+		PoolVector<uint8_t> data;
+
+		// TODO need to decide between RgbaUnorm and RgbaFloat32 for output
+		int data_size = Image::get_image_data_size(texture->alloc_width, texture->alloc_height, Image::FORMAT_RGBA8, false);
+
+		data.resize(data_size * 2); // add some more memory at the end, just in case for buggy drivers
+		PoolVector<uint8_t>::Write wb = data.write();
+
+		// generate temporary resources
+		GLuint tmp_fbo;
+		glGenFramebuffers(1, &tmp_fbo);
+
+		GLuint tmp_color_attachment;
+		glGenTextures(1, &tmp_color_attachment);
+
+		// now bring the OpenGL context into the correct state
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, tmp_fbo);
+
+			// back color attachment with memory, then set properties
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, tmp_color_attachment);
+			// TODO support HDR properly
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->alloc_width, texture->alloc_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			// use the color texture as color attachment for this render pass
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tmp_color_attachment, 0);
+
+			// more GL state, wheeeey
+			glDepthMask(GL_FALSE);
+			glDisable(GL_DEPTH_TEST);
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_BLEND);
+			glDepthFunc(GL_LEQUAL);
+			glColorMask(1, 1, 1, 1);
+
+			// use volume tex for reading
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(texture->target, texture->tex_id);
+
+			glViewport(0, 0, texture->alloc_width, texture->alloc_height);
+
+			// set up copy shader for proper use
+			shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, !srgb);
+			shaders.copy.set_conditional(CopyShaderGLES3::USE_TEXTURE3D, texture->type == VS::TEXTURE_TYPE_3D);
+			shaders.copy.set_conditional(CopyShaderGLES3::USE_TEXTURE2DARRAY, texture->type == VS::TEXTURE_TYPE_2D_ARRAY);
+			shaders.copy.bind();
+
+			// calculate the normalized z coordinate for the layer
+			float layer = (float)p_layer / (float)texture->alloc_depth;
+
+			shaders.copy.set_uniform(CopyShaderGLES3::LAYER, layer);
+
+			glBindVertexArray(resources.quadie_array);
+		}
+
+		// clear color attachment, then perform copy
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+		// read the image into the host buffer
+		glReadPixels(0, 0, texture->alloc_width, texture->alloc_height, GL_RGBA, GL_UNSIGNED_BYTE, &wb[0]);
+
+		// remove temp resources and unset some GL state
+		{
+			shaders.copy.set_conditional(CopyShaderGLES3::USE_TEXTURE3D, false);
+			shaders.copy.set_conditional(CopyShaderGLES3::USE_TEXTURE2DARRAY, false);
+			shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, false);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			glDeleteTextures(1, &tmp_color_attachment);
+			glDeleteFramebuffers(1, &tmp_fbo);
+		}
+
+		wb = PoolVector<uint8_t>::Write();
+
+		data.resize(data_size);
+
+		Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, false, Image::FORMAT_RGBA8, data));
+		if (!texture->compressed) {
+			img->convert(real_format);
+		}
+
+		return Ref<Image>(img);
+	}
+
 #ifdef GLES_OVER_GL
 
 	Image::Format real_format;
@@ -1172,9 +1294,8 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 
 	glViewport(0, 0, texture->alloc_width, texture->alloc_height);
 
-	shaders.copy.bind();
-
 	shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, !srgb);
+	shaders.copy.bind();
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 	glClear(GL_COLOR_BUFFER_BIT);
