@@ -241,7 +241,7 @@ void SectionedInspector::update_category_list() {
 
 		int sp = pi.name.find("/");
 		if (sp == -1)
-			pi.name = "Global/" + pi.name;
+			pi.name = "global/" + pi.name;
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
