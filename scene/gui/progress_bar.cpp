@@ -92,5 +92,6 @@ void ProgressBar::_bind_methods() {
 ProgressBar::ProgressBar() {
 
 	set_v_size_flags(0);
+	set_step(0.01);
 	percent_visible = true;
 }
