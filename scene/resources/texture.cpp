@@ -185,6 +185,7 @@ void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uin
 	format = p_format;
 	w = p_width;
 	h = p_height;
+	_change_notify();
 }
 void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
@@ -211,6 +212,7 @@ void ImageTexture::set_flags(uint32_t p_flags) {
 		return; //uninitialized, do not set to texture
 	}
 	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
+	_change_notify("flags");
 }
 
 uint32_t ImageTexture::get_flags() const {
@@ -712,6 +714,7 @@ Error StreamTexture::load(const String &p_path) {
 	path_to_file = p_path;
 	format = image->get_format();
 
+	_change_notify();
 	return OK;
 }
 String StreamTexture::get_load_path() const {
@@ -801,6 +804,7 @@ bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
 void StreamTexture::set_flags(uint32_t p_flags) {
 	flags = p_flags;
 	VS::get_singleton()->texture_set_flags(texture, flags);
+	_change_notify("flags");
 }
 
 void StreamTexture::reload_from_file() {
