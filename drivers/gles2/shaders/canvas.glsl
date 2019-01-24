@@ -6,8 +6,8 @@
 #define mediump
 #define highp
 #else
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 #endif
 
 uniform highp mat4 projection_matrix;
@@ -243,8 +243,13 @@ VERTEX_SHADER_CODE
 #define mediump
 #define highp
 #else
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
+precision highp int;
+#else
 precision mediump float;
 precision mediump int;
+#endif
 #endif
 
 uniform sampler2D color_texture; // texunit:-1

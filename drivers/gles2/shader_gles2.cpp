@@ -242,6 +242,11 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	strings.push_back("#define USE_GLES_OVER_GL\n");
 #else
 	strings.push_back("#version 100\n");
+//angle does not like
+#ifdef JAVASCRIPT_ENABLED
+	strings.push_back("#define USE_HIGHP_PRECISION\n");
+#endif
+
 #endif
 
 	int define_line_ofs = 1;

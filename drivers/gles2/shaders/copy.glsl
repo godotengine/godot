@@ -6,8 +6,8 @@
 #define mediump
 #define highp
 #else
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 #endif
 
 attribute highp vec4 vertex_attrib; // attrib:0
@@ -61,8 +61,13 @@ void main() {
 #define mediump
 #define highp
 #else
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
+precision highp int;
+#else
 precision mediump float;
 precision mediump int;
+#endif
 #endif
 
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
