@@ -338,6 +338,7 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			minimum_size_changed();
 			call_deferred("_on_theme_changed"); //wait until all changed theme
 		} break;
 	}
