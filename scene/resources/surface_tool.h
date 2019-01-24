@@ -118,8 +118,6 @@ public:
 	void generate_normals(bool p_flip = false);
 	void generate_tangents();
 
-	void add_to_format(int p_flags) { format |= p_flags; }
-
 	void set_material(const Ref<Material> &p_material);
 
 	void clear();
