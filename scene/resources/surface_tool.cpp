@@ -1021,8 +1021,6 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_normals", "flip"), &SurfaceTool::generate_normals, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("generate_tangents"), &SurfaceTool::generate_tangents);
 
-	ClassDB::bind_method(D_METHOD("add_to_format", "flags"), &SurfaceTool::add_to_format);
-
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &SurfaceTool::set_material);
 
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
