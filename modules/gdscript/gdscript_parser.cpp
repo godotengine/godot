@@ -811,6 +811,21 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					expr = constant;
 					bfn = true;
 				}
+
+				// Check parents for the constant
+				if (!bfn && cln->extends_file != StringName()) {
+					Ref<GDScript> parent = ResourceLoader::load(cln->extends_file);
+					if (parent.is_valid() && parent->is_valid()) {
+						Map<StringName, Variant> parent_constants;
+						parent->get_constants(&parent_constants);
+						if (parent_constants.has(identifier)) {
+							ConstantNode *constant = alloc_node<ConstantNode>();
+							constant->value = parent_constants[identifier];
+							expr = constant;
+							bfn = true;
+						}
+					}
+				}
 			}
 
 			if (!bfn) {
@@ -4667,7 +4682,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 					}
 #ifdef TOOLS_ENABLED
-					if (subexpr->type == Node::TYPE_CONSTANT && member._export.type != Variant::NIL) {
+					if (subexpr->type == Node::TYPE_CONSTANT && (member._export.type != Variant::NIL || member.data_type.has_type)) {
 
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
@@ -5438,6 +5453,12 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 			// Inner classes
 			ClassNode *outer_class = p;
 			while (outer_class) {
+				if (outer_class->name == id) {
+					found = true;
+					result.kind = DataType::CLASS;
+					result.class_type = outer_class;
+					break;
+				}
 				for (int i = 0; i < outer_class->subclasses.size(); i++) {
 					if (outer_class->subclasses[i] == p) {
 						continue;
@@ -7277,7 +7298,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		DataType cont = _resolve_type(c.type, c.expression->line);
 		DataType expr = _resolve_type(c.expression->get_datatype(), c.expression->line);
 
-		if (!_is_type_compatible(cont, expr)) {
+		if (check_types && !_is_type_compatible(cont, expr)) {
 			_set_error("Constant value type (" + expr.to_string() + ") is not compatible with declared type (" + cont.to_string() + ").",
 					c.expression->line);
 			return;
@@ -7321,7 +7342,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		if (v.expression) {
 			DataType expr_type = _reduce_node_type(v.expression);
 
-			if (!_is_type_compatible(v.data_type, expr_type)) {
+			if (check_types && !_is_type_compatible(v.data_type, expr_type)) {
 				// Try supertype test
 				if (_is_type_compatible(expr_type, v.data_type)) {
 					_mark_line_as_unsafe(v.line);
@@ -7783,7 +7804,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							return;
 						}
 
-						if (!lh_type.has_type) {
+						if (!lh_type.has_type && check_types) {
 							if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
 								_mark_line_as_unsafe(op->line);
 							}
@@ -7805,7 +7826,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							bool valid = false;
 							rh_type = _get_operation_type(oper, lh_type, arg_type, valid);
 
-							if (!valid) {
+							if (check_types && !valid) {
 								_set_error("Invalid operand types ('" + lh_type.to_string() + "' and '" + arg_type.to_string() +
 												   "') to assignment operator '" + Variant::get_operator_name(oper) + "'.",
 										op->line);
@@ -7828,7 +7849,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 						}
 #endif // DEBUG_ENABLED
 
-						if (!_is_type_compatible(lh_type, rh_type)) {
+						if (check_types && !_is_type_compatible(lh_type, rh_type)) {
 							// Try supertype test
 							if (_is_type_compatible(rh_type, lh_type)) {
 								_mark_line_as_unsafe(op->line);
@@ -7864,9 +7885,11 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 #endif // DEBUG_ENABLED
 							}
 						}
+#ifdef DEBUG_ENABLED
 						if (!rh_type.has_type && (op->op != OperatorNode::OP_ASSIGN || lh_type.has_type || op->arguments[0]->type == Node::TYPE_OPERATOR)) {
 							_mark_line_as_unsafe(op->line);
 						}
+#endif // DEBUG_ENABLED
 					} break;
 					case OperatorNode::OP_CALL:
 					case OperatorNode::OP_PARENT_CALL: {
@@ -8103,7 +8126,6 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	check_types = false;
 #endif
 
-#ifdef DEBUG_ENABLED
 	// Resolve all class-level stuff before getting into function blocks
 	_check_class_level_types(main_class);
 
@@ -8117,6 +8139,8 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	if (error_set) {
 		return ERR_PARSE_ERROR;
 	}
+
+#ifdef DEBUG_ENABLED
 
 	// Resolve warning ignores
 	Vector<Pair<int, String> > warning_skips = tokenizer->get_warning_skips();
