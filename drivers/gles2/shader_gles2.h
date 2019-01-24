@@ -465,6 +465,8 @@ public:
 	void set_custom_shader(uint32_t p_code_id);
 	void free_custom_shader(uint32_t p_code_id);
 
+	uint32_t get_version_key() const { return conditional_version.version; }
+
 	void set_uniform_default(int p_idx, const Variant &p_value) {
 
 		if (p_value.get_type() == Variant::NIL) {

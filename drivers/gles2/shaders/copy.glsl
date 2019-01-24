@@ -29,7 +29,7 @@ varying vec2 uv_interp;
 varying vec2 uv2_interp;
 
 #ifdef USE_COPY_SECTION
-uniform vec4 copy_section;
+uniform highp vec4 copy_section;
 #endif
 
 void main() {

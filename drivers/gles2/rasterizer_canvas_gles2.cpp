@@ -1162,7 +1162,65 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
 
-	// This isn't really working yet, so disabling for now.
+	if (storage->frame.current_rt->copy_screen_effect.color == 0) {
+		ERR_EXPLAIN("Can't use screen texture copying in a render target configured without copy buffers");
+		ERR_FAIL();
+	}
+
+	glDisable(GL_BLEND);
+
+	state.canvas_texscreen_used = true;
+
+	Vector2 wh(storage->frame.current_rt->width, storage->frame.current_rt->height);
+
+	Color copy_section(p_rect.position.x / wh.x, p_rect.position.y / wh.y, p_rect.size.x / wh.x, p_rect.size.y / wh.y);
+
+	if (p_rect != Rect2()) {
+		storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, true);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->copy_screen_effect.fbo);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
+
+	glClearColor(1, 0, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	storage->shaders.copy.bind();
+	storage->shaders.copy.set_uniform(CopyShaderGLES2::COPY_SECTION, copy_section);
+
+	const Vector2 vertpos[4] = {
+		Vector2(-1, -1),
+		Vector2(-1, 1),
+		Vector2(1, 1),
+		Vector2(1, -1),
+	};
+
+	const Vector2 uvpos[4] = {
+		Vector2(0, 0),
+		Vector2(0, 1),
+		Vector2(1, 1),
+		Vector2(1, 0)
+	};
+
+	const int indexpos[6] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	_draw_polygon(indexpos, 6, 4, vertpos, uvpos, NULL, false);
+
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //back to front
+
+	// back to canvas, force rebind
+	state.using_texture_rect = false;
+	state.canvas_shader.bind();
+	_bind_canvas_texture(state.current_tex, state.current_normal);
+	_set_uniforms();
+
+	glEnable(GL_BLEND);
 }
 
 void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
@@ -1178,6 +1236,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 	state.current_tex = RID();
 	state.current_tex_ptr = NULL;
 	state.current_normal = RID();
+	state.canvas_texscreen_used = false;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->resources.white_tex);
@@ -1265,7 +1324,18 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 			if (shader_ptr) {
 				if (shader_ptr->canvas_item.uses_screen_texture) {
-					_copy_texscreen(Rect2());
+					if (!state.canvas_texscreen_used) {
+						//copy if not copied before
+						_copy_texscreen(Rect2());
+
+						// blend mode will have been enabled so make sure we disable it again later on
+						//last_blend_mode = last_blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_DISABLED ? last_blend_mode : -1;
+					}
+
+					if (storage->frame.current_rt->copy_screen_effect.color) {
+						glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+						glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->copy_screen_effect.color);
+					}
 				}
 
 				if (shader_ptr != shader_cache) {
