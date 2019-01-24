@@ -255,6 +255,10 @@ void BoxContainer::_notification(int p_what) {
 
 			_resort();
 		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+
+			minimum_size_changed();
+		} break;
 	}
 }
 

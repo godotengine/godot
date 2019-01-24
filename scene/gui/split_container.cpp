@@ -193,6 +193,10 @@ void SplitContainer::_notification(int p_what) {
 					draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
 			}
 		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+
+			minimum_size_changed();
+		} break;
 	}
 }
 
