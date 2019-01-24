@@ -31,17 +31,7 @@
 #include "thread_jandroid.h"
 
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
 #include "core/script_language.h"
-
-static pthread_key_t _create_thread_id_key() {
-	pthread_key_t key;
-	pthread_key_create(&key, NULL);
-	return key;
-}
-
-pthread_key_t ThreadAndroid::thread_id_key = _create_thread_id_key();
-Thread::ID ThreadAndroid::next_thread_id = 0;
 
 Thread::ID ThreadAndroid::get_id() const {
 
@@ -58,8 +48,7 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 	ThreadAndroid *t = reinterpret_cast<ThreadAndroid *>(userdata);
 	setup_thread();
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
-	t->id = atomic_increment(&next_thread_id);
-	pthread_setspecific(thread_id_key, (void *)t->id);
+	t->id = (ID)pthread_self();
 	t->callback(t->user);
 	ScriptServer::thread_exit();
 	return NULL;
@@ -80,7 +69,7 @@ Thread *ThreadAndroid::create_func_jandroid(ThreadCreateCallback p_callback, voi
 
 Thread::ID ThreadAndroid::get_thread_id_func_jandroid() {
 
-	return (ID)pthread_getspecific(thread_id_key);
+	return (ID)pthread_self();
 }
 
 void ThreadAndroid::wait_to_finish_func_jandroid(Thread *p_thread) {
