@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "style_box.h"
+#include "scene/2d/canvas_item.h"
+
 #include <limits.h>
 
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
@@ -52,6 +54,10 @@ float StyleBox::get_margin(Margin p_margin) const {
 		return get_style_margin(p_margin);
 	else
 		return margin[p_margin];
+}
+
+CanvasItem *StyleBox::get_current_item_drawn() const {
+	return CanvasItem::get_current_item_drawn();
 }
 
 Size2 StyleBox::get_minimum_size() const {
@@ -83,6 +89,7 @@ void StyleBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_minimum_size"), &StyleBox::get_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_center_size"), &StyleBox::get_center_size);
 	ClassDB::bind_method(D_METHOD("get_offset"), &StyleBox::get_offset);
+	ClassDB::bind_method(D_METHOD("get_current_item_drawn"), &StyleBox::get_current_item_drawn);
 
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "rect"), &StyleBox::draw);
 

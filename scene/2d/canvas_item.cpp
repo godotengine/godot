@@ -434,6 +434,11 @@ void CanvasItem::hide() {
 	_change_notify("visible");
 }
 
+CanvasItem *CanvasItem::current_item_drawn = NULL;
+CanvasItem *CanvasItem::get_current_item_drawn() {
+	return current_item_drawn;
+}
+
 void CanvasItem::_update_callback() {
 
 	if (!is_inside_tree()) {
@@ -449,11 +454,13 @@ void CanvasItem::_update_callback() {
 			first_draw = false;
 		}
 		drawing = true;
+		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		if (get_script_instance()) {
 			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
 		}
+		current_item_drawn = NULL;
 		drawing = false;
 	}
 	//todo updating = false
