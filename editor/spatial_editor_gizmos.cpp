@@ -551,7 +551,10 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		Transform t = spatial_node->get_global_transform();
 		t.orthonormalize();
-		t.set_look_at(t.origin, p_camera->get_camera_transform().origin, Vector3(0, 1, 0));
+		Vector3 camera_position = p_camera->get_camera_transform().origin;
+		if (camera_position.distance_squared_to(t.origin) > 0.01) {
+			t.set_look_at(t.origin, camera_position, Vector3(0, 1, 0));
+		}
 
 		float scale = t.origin.distance_to(p_camera->get_camera_transform().origin);
 
@@ -563,16 +566,18 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		Point2 center = p_camera->unproject_position(t.origin);
 
-		Transform oct = p_camera->get_camera_transform();
+		Transform orig_camera_transform = p_camera->get_camera_transform();
 
-		p_camera->look_at(t.origin, Vector3(0, 1, 0));
+		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01) {
+			p_camera->look_at(t.origin, Vector3(0, 1, 0));
+		}
 		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
 		Vector3 c1 = t.xform(Vector3(-selectable_icon_size, -selectable_icon_size, 0) * scale);
 
 		Point2 p0 = p_camera->unproject_position(c0);
 		Point2 p1 = p_camera->unproject_position(c1);
 
-		p_camera->set_global_transform(oct);
+		p_camera->set_global_transform(orig_camera_transform);
 
 		Rect2 rect(p0, p1 - p0);
 
