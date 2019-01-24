@@ -100,7 +100,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
 		MD5Final(&md5);
 
-		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_INVALID_ENCRYPTION_KEY);
 
 		file = p_base;
 	}
