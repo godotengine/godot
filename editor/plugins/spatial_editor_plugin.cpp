@@ -2865,6 +2865,18 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 	Transform xform = spatial_editor->get_gizmo_transform();
 
 	Transform camera_xform = camera->get_transform();
+
+	if (xform.origin.distance_squared_to(camera_xform.origin) < 0.01) {
+		for (int i = 0; i < 3; i++) {
+			VisualServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], false);
+			VisualServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], false);
+			VisualServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], false);
+			VisualServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], false);
+			VisualServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], false);
+		}
+		return;
+	}
+
 	Vector3 camz = -camera_xform.get_basis().get_axis(2).normalized();
 	Vector3 camy = -camera_xform.get_basis().get_axis(1).normalized();
 	Plane p(camera_xform.origin, camz);
