@@ -4251,7 +4251,8 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// copy texscreen buffers
-	{
+	if (!(rt->flags[RasterizerStorage::RENDER_TARGET_NO_SAMPLING])) {
+
 		int w = rt->width;
 		int h = rt->height;
 
@@ -4259,10 +4260,17 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glBindTexture(GL_TEXTURE_2D, rt->copy_screen_effect.color);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glGenFramebuffers(1, &rt->copy_screen_effect.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, rt->copy_screen_effect.fbo);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->copy_screen_effect.color, 0);
+
+		glClearColor(0, 0, 0, 0);
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
