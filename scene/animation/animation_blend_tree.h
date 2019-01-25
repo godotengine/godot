@@ -91,6 +91,7 @@ private:
 	StringName prev_active;
 	StringName time;
 	StringName remaining;
+	StringName time_to_restart;
 
 protected:
 	static void _bind_methods();

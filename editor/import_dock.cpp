@@ -424,7 +424,7 @@ void ImportDock::_reimport_attempt() {
 void ImportDock::_reimport_and_restart() {
 
 	EditorNode::get_singleton()->save_all_scenes();
-	EditorResourcePreview::get_singleton()->stop(); //dont try to re-create previews
+	EditorResourcePreview::get_singleton()->stop(); //dont try to re-create previews after import
 	_reimport();
 	EditorNode::get_singleton()->restart_editor();
 }

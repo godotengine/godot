@@ -141,10 +141,14 @@ void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const 
 	r_list->push_back(PropertyInfo(Variant::BOOL, prev_active, PROPERTY_HINT_NONE, "", 0));
 	r_list->push_back(PropertyInfo(Variant::REAL, time, PROPERTY_HINT_NONE, "", 0));
 	r_list->push_back(PropertyInfo(Variant::REAL, remaining, PROPERTY_HINT_NONE, "", 0));
+	r_list->push_back(PropertyInfo(Variant::REAL, time_to_restart, PROPERTY_HINT_NONE, "", 0));
 }
+
 Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_parameter) const {
 	if (p_parameter == active || p_parameter == prev_active) {
 		return false;
+	} else if (p_parameter == time_to_restart) {
+		return -1;
 	} else {
 		return 0.0;
 	}
@@ -218,13 +222,26 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 	bool prev_active = get_parameter(this->prev_active);
 	float time = get_parameter(this->time);
 	float remaining = get_parameter(this->remaining);
+	float time_to_restart = get_parameter(this->time_to_restart);
 
 	if (!active) {
 		//make it as if this node doesn't exist, pass input 0 by.
 		if (prev_active) {
 			set_parameter(this->prev_active, false);
 		}
-		return blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+		if (time_to_restart >= 0.0 && !p_seek) {
+			time_to_restart -= p_time;
+			if (time_to_restart < 0) {
+				//restart
+				set_parameter(this->active, true);
+				active = true;
+			}
+			set_parameter(this->time_to_restart, time_to_restart);
+		}
+
+		if (!active) {
+			return blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
+		}
 	}
 
 	bool os_seek = p_seek;
@@ -276,6 +293,10 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 		if (remaining <= 0) {
 			set_parameter(this->active, false);
 			set_parameter(this->prev_active, false);
+			if (autorestart) {
+				float restart_sec = autorestart_delay + Math::randf() * autorestart_random_delay;
+				set_parameter(this->time_to_restart, restart_sec);
+			}
 		}
 	}
 
@@ -350,6 +371,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 	prev_active = "prev_active";
 	time = "time";
 	remaining = "remaining";
+	time_to_restart = "time_to_restart";
 }
 
 ////////////////////////////////////////////////
