@@ -898,6 +898,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 					item.name = strings[2];
 					item.script = strings[0];
 					item.line = strings[1].to_int();
+				} else if (strings.size() == 4) { //Built-in scripts have an :: in their name
+					item.name = strings[3];
+					item.script = strings[0] + "::" + strings[1];
+					item.line = strings[2].to_int();
 				}
 
 			} else {
