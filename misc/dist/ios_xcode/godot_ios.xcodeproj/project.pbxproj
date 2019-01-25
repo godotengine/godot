@@ -17,6 +17,7 @@
 		1FE9269F1FBBF86B00F53A6F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FE926901FBBF78E00F53A6F /* CoreMedia.framework */; };
 		1FE926A01FBBF86D00F53A6F /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FE9268E1FBBF77300F53A6F /* AudioToolbox.framework */; };
 		1FE926A11FBBF86D00F53A6F /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FE9268F1FBBF77F00F53A6F /* CoreAudio.framework */; };
+		E360193721F32F38009258C1 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E360193621F32F37009258C1 /* CoreVideo.framework */; };
 		DEADBEEF2F582BE20003B888 /* $binary.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF1F582BE20003B888 /* $binary.a */; };
 		1FF8DBB11FBA9DE1009DE660 /* dummy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FF8DBB01FBA9DE1009DE660 /* dummy.cpp */; };
 		1FF4C1851F584E3F00A41E41 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FF4C1841F584E3F00A41E41 /* GameKit.framework */; };
@@ -53,6 +54,7 @@
 		D0BCFE3418AEBDA2004A7AAE /* $binary.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = $binary.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0BCFE3718AEBDA2004A7AAE /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D0BCFE3918AEBDA2004A7AAE /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		E360193621F32F37009258C1 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		D0BCFE3B18AEBDA2004A7AAE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		D0BCFE3D18AEBDA2004A7AAE /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		D0BCFE3F18AEBDA2004A7AAE /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -69,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0BCFE3A18AEBDA2004A7AAE /* CoreGraphics.framework in Frameworks */,
+				E360193721F32F38009258C1 /* CoreVideo.framework in Frameworks */,
 				1FE926991FBBF85400F53A6F /* SystemConfiguration.framework in Frameworks */,
 				1FE9269A1FBBF85F00F53A6F /* Security.framework in Frameworks */,
 				1FE9269B1FBBF86200F53A6F /* QuartzCore.framework in Frameworks */,
@@ -124,6 +127,7 @@
 				1FE926911FBBF79500F53A6F /* CoreMotion.framework */,
 				1FE926901FBBF78E00F53A6F /* CoreMedia.framework */,
 				1FE9268F1FBBF77F00F53A6F /* CoreAudio.framework */,
+				E360193621F32F37009258C1 /* CoreVideo.framework */,
 				1FE9268E1FBBF77300F53A6F /* AudioToolbox.framework */,
 				1FF4C1861F584E5600A41E41 /* StoreKit.framework */,
 				1FF4C1841F584E3F00A41E41 /* GameKit.framework */,
@@ -190,15 +194,82 @@
 				TargetAttributes = {
 					D0BCFE3318AEBDA2004A7AAE = {
 						DevelopmentTeam = $team_id;
+						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
-							com.apple.GameCenter = {
-								enabled = 1;
+							com.apple.AccessWiFi = {
+								enabled = $access_wifi;
+							};
+							com.apple.ApplePay = {
+								enabled = 0;
+							};
+							com.apple.ApplicationGroups.iOS = {
+								enabled = 0;
+							};
+							com.apple.AutoFillCredentialProvider = {
+								enabled = 0;
+							};
+							com.apple.BackgroundModes = {
+								enabled = 0;
+							};
+							com.apple.ClassKit = {
+								enabled = 0;
+							};
+							com.apple.DataProtection = {
+								enabled = 0;
+							};
+							com.apple.GameCenter.iOS = {
+								enabled = $game_center;
+							};
+							com.apple.HealthKit = {
+								enabled = 0;
+							};
+							com.apple.HomeKit = {
+								enabled = 0;
+							};
+							com.apple.HotspotConfiguration = {
+								enabled = 0;
 							};
 							com.apple.InAppPurchase = {
-								enabled = 1;
+								enabled = $in_app_purchases;
+							};
+							com.apple.InterAppAudio = {
+								enabled = 0;
+							};
+							com.apple.Keychain = {
+								enabled = 0;
+							};
+							com.apple.Maps.iOS = {
+								enabled = 0;
+							};
+							com.apple.Multipath = {
+								enabled = 0;
+							};
+							com.apple.NearFieldCommunicationTagReading = {
+								enabled = 0;
+							};
+							com.apple.NetworkExtensions.iOS = {
+								enabled = 0;
 							};
 							com.apple.Push = {
-								enabled = 1;
+								enabled = $push_notifications;
+							};
+							com.apple.SafariKeychain = {
+								enabled = 0;
+							};
+							com.apple.Siri = {
+								enabled = 0;
+							};
+							com.apple.VPNLite = {
+								enabled = 0;
+							};
+							com.apple.WAC = {
+								enabled = 0;
+							};
+							com.apple.Wallet = {
+								enabled = 0;
+							};
+							com.apple.iCloud = {
+								enabled = 0;
 							};
 						};
 					};
@@ -277,6 +348,7 @@
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "$code_sign_identity_debug";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_BITCODE = NO;
@@ -400,7 +472,7 @@
 				D0BCFE7018AEBDA3004A7AAE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		D0BCFE7118AEBDA3004A7AAE /* Build configuration list for PBXNativeTarget "$binary" */ = {
 			isa = XCConfigurationList;
@@ -409,7 +481,7 @@
 				D0BCFE7318AEBDA3004A7AAE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
