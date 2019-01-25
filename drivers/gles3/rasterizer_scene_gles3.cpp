@@ -4162,7 +4162,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		if (state.used_contact_shadows) {
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glReadBuffer(GL_DEPTH_ATTACHMENT);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
 			glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
