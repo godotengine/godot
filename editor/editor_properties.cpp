@@ -2448,7 +2448,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector->set_enable_v_scroll(false);
 				sub_inspector->set_use_doc_hints(true);
 
-				sub_inspector->set_use_sub_inspector_bg(true);
+				sub_inspector->set_sub_inspector(true);
 				sub_inspector->set_enable_capitalize_paths(true);
 
 				sub_inspector->connect("property_keyed", this, "_sub_inspector_property_keyed");
