@@ -117,6 +117,7 @@ private:
 		uint32_t version;
 		Vector<StringName> texture_uniforms;
 		Vector<CharString> custom_defines;
+		Set<uint32_t> versions;
 	};
 
 	struct Version {
