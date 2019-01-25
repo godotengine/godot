@@ -33,6 +33,7 @@
 #include "RgbaBitmap.h"
 #include "core/os/file_access.h"
 #include <string.h>
+#include <new>
 
 static void _pvrtc_decompress(Image *p_img);
 
@@ -215,12 +216,10 @@ static void _compress_pvrtc4(Image *p_img) {
 			int ofs, size, w, h;
 			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::RgbaBitmap bm(w, h);
-			copymem(bm.GetData(), &r[ofs], size);
-			{
+			for (unsigned j = 0; j < size / 4; j++) {
 				Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
-				for (int j = 0; j < size / 4; j++) {
-					SWAP(dp[j].r, dp[j].b);
-				}
+				/* red and Green colors are swapped.  */
+				new (dp) Javelin::ColorRgba<unsigned char>(r[ofs + 4 * j + 2], r[ofs + 4 * j + 1], r[ofs + 4 * j], r[ofs + 4 * j + 3]);
 			}
 
 			new_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
