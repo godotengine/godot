@@ -184,6 +184,7 @@ public:
 	void get_type_list(List<StringName> *p_list) const;
 
 	void copy_default_theme();
+	void copy_theme(const Ref<Theme> &p_other);
 	void clear();
 
 	Theme();
