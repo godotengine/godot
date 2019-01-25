@@ -622,43 +622,47 @@ void Theme::clear() {
 void Theme::copy_default_theme() {
 
 	Ref<Theme> default_theme = get_default();
+	copy_theme(default_theme);
+}
+
+void Theme::copy_theme(const Ref<Theme> &p_other) {
 
 	//these need reconnecting, so add normally
 	{
 		const StringName *K = NULL;
-		while ((K = default_theme->icon_map.next(K))) {
+		while ((K = p_other->icon_map.next(K))) {
 			const StringName *L = NULL;
-			while ((L = default_theme->icon_map[*K].next(L))) {
-				set_icon(*K, *L, default_theme->icon_map[*K][*L]);
+			while ((L = p_other->icon_map[*K].next(L))) {
+				set_icon(*L, *K, p_other->icon_map[*K][*L]);
 			}
 		}
 	}
 
 	{
 		const StringName *K = NULL;
-		while ((K = default_theme->style_map.next(K))) {
+		while ((K = p_other->style_map.next(K))) {
 			const StringName *L = NULL;
-			while ((L = default_theme->style_map[*K].next(L))) {
-				set_stylebox(*K, *L, default_theme->style_map[*K][*L]);
+			while ((L = p_other->style_map[*K].next(L))) {
+				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
 			}
 		}
 	}
 
 	{
 		const StringName *K = NULL;
-		while ((K = default_theme->font_map.next(K))) {
+		while ((K = p_other->font_map.next(K))) {
 			const StringName *L = NULL;
-			while ((L = default_theme->font_map[*K].next(L))) {
-				set_font(*K, *L, default_theme->font_map[*K][*L]);
+			while ((L = p_other->font_map[*K].next(L))) {
+				set_font(*L, *K, p_other->font_map[*K][*L]);
 			}
 		}
 	}
 
 	//these are ok to just copy
 
-	color_map = default_theme->color_map;
-	constant_map = default_theme->constant_map;
-	shader_map = default_theme->shader_map;
+	color_map = p_other->color_map;
+	constant_map = p_other->constant_map;
+	shader_map = p_other->shader_map;
 
 	_change_notify();
 	emit_changed();
@@ -752,6 +756,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_emit_theme_changed"), &Theme::_emit_theme_changed);
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
+	ClassDB::bind_method("copy_theme", &Theme::copy_theme);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 }
