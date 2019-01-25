@@ -281,7 +281,7 @@ class EditorInspector : public ScrollContainer {
 	bool update_all_pending;
 	bool read_only;
 	bool keying;
-	bool use_sub_inspector_bg;
+	bool sub_inspector;
 
 	float refresh_countdown;
 	bool update_tree_pending;
@@ -375,7 +375,7 @@ public:
 	void set_object_class(const String &p_class);
 	String get_object_class() const;
 
-	void set_use_sub_inspector_bg(bool p_enable);
+	void set_sub_inspector(bool p_enable);
 
 	EditorInspector();
 };

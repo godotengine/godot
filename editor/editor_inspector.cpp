@@ -1899,13 +1899,13 @@ int EditorInspector::get_scroll_offset() const {
 	return get_v_scroll();
 }
 
-void EditorInspector::set_use_sub_inspector_bg(bool p_enable) {
+void EditorInspector::set_sub_inspector(bool p_enable) {
 
-	use_sub_inspector_bg = p_enable;
+	sub_inspector = p_enable;
 	if (!is_inside_tree())
 		return;
 
-	if (use_sub_inspector_bg) {
+	if (sub_inspector) {
 		add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
 	} else {
 		add_style_override("bg", get_stylebox("bg", "Tree"));
@@ -2126,16 +2126,18 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		get_tree()->connect("node_removed", this, "_node_removed");
-		if (use_sub_inspector_bg) {
+		if (sub_inspector) {
 			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
-		} else if (is_inside_tree()) {
+		} else {
 			add_style_override("bg", get_stylebox("bg", "Tree"));
+			get_tree()->connect("node_removed", this, "_node_removed");
 		}
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		get_tree()->disconnect("node_removed", this, "_node_removed");
+		if (!sub_inspector) {
+			get_tree()->disconnect("node_removed", this, "_node_removed");
+		}
 		edit(NULL);
 	}
 
@@ -2184,7 +2186,7 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		if (use_sub_inspector_bg) {
+		if (sub_inspector) {
 			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
 		} else if (is_inside_tree()) {
 			add_style_override("bg", get_stylebox("bg", "Tree"));
@@ -2280,7 +2282,7 @@ EditorInspector::EditorInspector() {
 	_prop_edited = "property_edited";
 	set_process(true);
 	property_focusable = -1;
-	use_sub_inspector_bg = false;
+	sub_inspector = false;
 
 	get_v_scrollbar()->connect("value_changed", this, "_vscroll_changed");
 	update_scroll_request = -1;
