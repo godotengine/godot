@@ -372,6 +372,62 @@ void ImportDock::clear() {
 	preset->get_popup()->clear();
 }
 
+static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) {
+
+	if (!efsd)
+		return false;
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+
+		if (_find_owners(efsd->get_subdir(i), p_path)) {
+			return true;
+		}
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+
+		Vector<String> deps = efsd->get_file_deps(i);
+		if (deps.find(p_path) != -1)
+			return true;
+	}
+
+	return false;
+}
+void ImportDock::_reimport_attempt() {
+
+	bool need_restart = false;
+	bool used_in_resources = false;
+	for (int i = 0; i < params->paths.size(); i++) {
+		Ref<ConfigFile> config;
+		config.instance();
+		Error err = config->load(params->paths[i] + ".import");
+		ERR_CONTINUE(err != OK);
+
+		String imported_with = config->get_value("remap", "importer");
+		if (imported_with != params->importer->get_importer_name()) {
+			need_restart = true;
+			if (_find_owners(EditorFileSystem::get_singleton()->get_filesystem(), params->paths[i])) {
+				used_in_resources = true;
+			}
+		}
+	}
+
+	if (need_restart) {
+		label_warning->set_visible(used_in_resources);
+		reimport_confirm->popup_centered_minsize();
+		return;
+	}
+
+	_reimport();
+}
+
+void ImportDock::_reimport_and_restart() {
+
+	EditorNode::get_singleton()->save_all_scenes();
+	_reimport();
+	EditorNode::get_singleton()->restart_editor();
+}
+
 void ImportDock::_reimport() {
 
 	for (int i = 0; i < params->paths.size(); i++) {
@@ -416,6 +472,7 @@ void ImportDock::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			import_opts->edit(params);
+			label_warning->add_color_override("font_color", get_color("warning_color", "Editor"));
 		} break;
 	}
 }
@@ -433,6 +490,8 @@ void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_preset_selected"), &ImportDock::_preset_selected);
 	ClassDB::bind_method(D_METHOD("_importer_selected"), &ImportDock::_importer_selected);
 	ClassDB::bind_method(D_METHOD("_property_toggled"), &ImportDock::_property_toggled);
+	ClassDB::bind_method(D_METHOD("_reimport_and_restart"), &ImportDock::_reimport_and_restart);
+	ClassDB::bind_method(D_METHOD("_reimport_attempt"), &ImportDock::_reimport_attempt);
 }
 
 void ImportDock::initialize_import_options() const {
@@ -469,10 +528,21 @@ ImportDock::ImportDock() {
 	add_child(hb);
 	import = memnew(Button);
 	import->set_text(TTR("Reimport"));
-	import->connect("pressed", this, "_reimport");
+	import->connect("pressed", this, "_reimport_attempt");
 	hb->add_spacer();
 	hb->add_child(import);
 	hb->add_spacer();
+
+	reimport_confirm = memnew(ConfirmationDialog);
+	reimport_confirm->get_ok()->set_text(TTR("Save scenes, re-import and restart"));
+	add_child(reimport_confirm);
+	reimport_confirm->connect("confirmed", this, "_reimport_and_restart");
+
+	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
+	vbc_confirm->add_child(memnew(Label(TTR("Changing the type of an imported file requires editor restart."))));
+	label_warning = memnew(Label(TTR("WARNING: Assets exist that use this resource, they may stop loading properly.")));
+	vbc_confirm->add_child(label_warning);
+	reimport_confirm->add_child(vbc_confirm);
 
 	params = memnew(ImportDockParameters);
 }

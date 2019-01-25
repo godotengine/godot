@@ -36,6 +36,7 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
@@ -52,6 +53,8 @@ class ImportDock : public VBoxContainer {
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> property_values;
 
+	ConfirmationDialog *reimport_confirm;
+	Label *label_warning;
 	Button *import;
 
 	ImportDockParameters *params;
@@ -61,6 +64,8 @@ class ImportDock : public VBoxContainer {
 	void _update_options(const Ref<ConfigFile> &p_config = Ref<ConfigFile>());
 
 	void _property_toggled(const StringName &p_prop, bool p_checked);
+	void _reimport_attempt();
+	void _reimport_and_restart();
 	void _reimport();
 
 	enum {
