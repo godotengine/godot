@@ -93,7 +93,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> rect = node->get_shape();
 
-			if (idx < 2) {
+			if (idx < 3) {
 				return rect->get_extents().abs();
 			}
 
@@ -175,12 +175,15 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 		} break;
 
 		case RECTANGLE_SHAPE: {
-			if (idx < 2) {
+			if (idx < 3) {
 				Ref<RectangleShape2D> rect = node->get_shape();
 
 				Vector2 extents = rect->get_extents();
-				extents[idx] = p_point[idx];
-
+				if (idx == 2) {
+					extents = p_point;
+				} else {
+					extents[idx] = p_point[idx];
+				}
 				rect->set_extents(extents.abs());
 
 				canvas_item_editor->update_viewport();
@@ -496,13 +499,15 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		case RECTANGLE_SHAPE: {
 			Ref<RectangleShape2D> shape = node->get_shape();
 
-			handles.resize(2);
+			handles.resize(3);
 			Vector2 ext = shape->get_extents();
 			handles.write[0] = Point2(ext.x, 0);
 			handles.write[1] = Point2(0, -ext.y);
+			handles.write[2] = Point2(ext.x, -ext.y);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
+			p_overlay->draw_texture(h, gt.xform(handles[2]) - size);
 
 		} break;
 
