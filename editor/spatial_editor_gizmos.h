@@ -214,7 +214,7 @@ public:
 	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	void commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel);
-	bool is_gizmo_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const;
+	bool is_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const;
 
 	SoftBodySpatialGizmoPlugin();
 };

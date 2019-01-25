@@ -5732,6 +5732,7 @@ void SpatialEditorPlugin::snap_cursor_to_plane(const Plane &p_plane) {
 }
 
 void SpatialEditor::add_gizmo_plugin(Ref<EditorSpatialGizmoPlugin> p_plugin) {
+	ERR_FAIL_NULL(p_plugin.ptr());
 	gizmo_plugins.push_back(p_plugin);
 	_update_gizmos_menu();
 	SpatialEditor::get_singleton()->update_all_gizmos();
@@ -5869,7 +5870,7 @@ Ref<SpatialMaterial> EditorSpatialGizmoPlugin::get_material(const String &p_name
 	ERR_FAIL_COND_V(!materials.has(p_name), Ref<SpatialMaterial>());
 	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<SpatialMaterial>());
 
-	if (p_gizmo.is_null()) return materials[p_name][0];
+	if (p_gizmo.is_null() || materials[p_name].size() == 1) return materials[p_name][0];
 
 	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
 
@@ -5888,7 +5889,7 @@ String EditorSpatialGizmoPlugin::get_name() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_name")) {
 		return get_script_instance()->call("get_name");
 	}
-	return TTR("Name-less gizmo");
+	return TTR("Nameless gizmo");
 }
 
 Ref<EditorSpatialGizmo> EditorSpatialGizmoPlugin::get_gizmo(Spatial *p_spatial) {
@@ -5938,7 +5939,7 @@ void EditorSpatialGizmoPlugin::_bind_methods() {
 	cm.default_arguments.push_back(false);
 	BIND_VMETHOD(cm);
 
-	BIND_VMETHOD(MethodInfo(Variant::BOOL, "is_gizmo_handle_highlighted", GIZMO_REF, PropertyInfo(Variant::INT, "index")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "is_handle_highlighted", GIZMO_REF, PropertyInfo(Variant::INT, "index")));
 
 #undef GIZMO_REF
 }
@@ -6008,9 +6009,9 @@ void EditorSpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_
 	}
 }
 
-bool EditorSpatialGizmoPlugin::is_gizmo_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
-	if (get_script_instance() && get_script_instance()->has_method("is_gizmo_handle_highlighted")) {
-		return get_script_instance()->call("is_gizmo_handle_highlighted", p_gizmo, p_idx);
+bool EditorSpatialGizmoPlugin::is_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
+	if (get_script_instance() && get_script_instance()->has_method("is_handle_highlighted")) {
+		return get_script_instance()->call("is_handle_highlighted", p_gizmo, p_idx);
 	}
 	return false;
 }
