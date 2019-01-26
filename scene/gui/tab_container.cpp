@@ -781,37 +781,6 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 	}
 }
 
-Size2 TabContainer::get_minimum_size() const {
-
-	Size2 ms;
-
-	Vector<Control *> tabs = _get_tabs();
-	for (int i = 0; i < tabs.size(); i++) {
-
-		Control *c = tabs[i];
-
-		if (!c->is_visible_in_tree())
-			continue;
-
-		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(ms.x, cms.x);
-		ms.y = MAX(ms.y, cms.y);
-	}
-
-	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
-	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
-	Ref<Font> font = get_font("font");
-
-	ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
-	ms.y += font->get_height();
-
-	Ref<StyleBox> sb = get_stylebox("panel");
-	ms += sb->get_minimum_size();
-
-	return ms;
-}
-
 void TabContainer::set_popup(Node *p_popup) {
 	ERR_FAIL_NULL(p_popup);
 	popup = Object::cast_to<Popup>(p_popup);

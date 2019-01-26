@@ -104,8 +104,6 @@ public:
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;
 
-	virtual Size2 get_minimum_size() const;
-
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
 	void set_popup(Node *p_popup);
