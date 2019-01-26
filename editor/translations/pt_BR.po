@@ -30,7 +30,7 @@
 # Henrique Combochi <henrique.combochi@gmail.com>, 2018, 2019.
 # Gabriel Carvalho <billlmaster@gmail.com>, 2018, 2019.
 # miketangogamer <miketangogamer@gmail.com>, 2018.
-# Eduardo Abreu <eduo.abreu@gmail.com>, 2018.
+# Eduardo Abreu <eduo.abreu@gmail.com>, 2018, 2019.
 # Bruno Miranda Da Silva <brunofreezee@gmail.com>, 2018.
 # Marcos Roberto Rodrigues Marques <contato.mroberto@gmail.com>, 2018.
 # Dyefferson Azevedo <gamecanalbrasil@gmail.com>, 2018.
@@ -52,8 +52,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-01-21 19:30+0000\n"
-"Last-Translator: Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"Last-Translator: Eduardo Abreu <eduo.abreu@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -61,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1327,7 +1327,7 @@ msgstr "Armazenando Arquivo:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Nenhum template para exportação foi encontrado no caminho esperado:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1336,15 +1336,14 @@ msgstr "Empacotando"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Arquivo de modelo não encontrado:"
+msgstr "Modelo customizado de depuração não encontrado."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Template customizado de release não encontrado."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7887,12 +7886,13 @@ msgid "Duplicate Node(s)"
 msgstr "Duplicar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "Node necessita pertencer à cena editada para se tornar raiz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Cenas instanciadas não podem se tornar raiz"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9107,20 +9107,24 @@ msgid "Set %s"
 msgstr "Conjunto %s"
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Package name is missing."
-msgstr ""
+msgstr "Nome do pacote está faltando."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Seguimentos de pacote necessitam ser de tamanho diferente de zero."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
+"O caractere '%s' não é permitido em nomes de pacotes de aplicações Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
+"Um dígito não pode ser o primeiro caractere em um seguimento de pacote."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."

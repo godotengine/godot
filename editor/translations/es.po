@@ -10,7 +10,7 @@
 # Carlos López <genetita@gmail.com>, 2016.
 # David Arranz <davarrcal@hotmail.com>, 2018.
 # David Couto <davidcouto@gmail.com>, 2017.
-# Dharkael <izhe@hotmail.es>, 2017.
+# Dharkael <izhe@hotmail.es>, 2017, 2019.
 # Diego López <diegodario21@gmail.com>, 2017.
 # eon-s <emanuel.segretin@gmail.com>, 2018.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
@@ -42,8 +42,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-16 20:20+0000\n"
-"Last-Translator: juan david julio <illus.kun@gmail.com>\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"Last-Translator: Dharkael <izhe@hotmail.es>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -51,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -7916,7 +7916,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Las escenas instanciadas no pueden ser raíz"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9146,6 +9146,8 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
+"El carácter '%s' no está permitido en nombres de paquete de aplicación "
+"Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
@@ -9157,15 +9159,15 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "El paquete debe tener al menos un '.' como separador."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "Ejecutable ADB no configurado en Ajustes del Editor."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "OpenJDK jarsigner no configurado en Ajustes del Editor."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -9173,7 +9175,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Clave pública inválida para la expansión de APK."
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -9182,7 +9184,7 @@ msgstr "El nombre de clase no es correcto"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Identificador no encontrado."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
@@ -9204,11 +9206,12 @@ msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "El Identificador debe tener al menos un '.' como separador."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
+"App Store Team ID no especificado - no se puede configurar el proyecto."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy

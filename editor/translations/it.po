@@ -25,12 +25,14 @@
 # Davide Wayan Mores <moresdavidewayan@gmail.com>, 2018.
 # Alessandro Zoppi <alessandro.zoppi@live.it>, 2019.
 # Hairic95 <hairic95@gmail.com>, 2019.
+# Christian Biffi <creixx@virgilio.it>, 2019.
+# Giuseppe Guerra <me@nyodev.xyz>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-19 19:21+0000\n"
-"Last-Translator: Hairic95 <hairic95@gmail.com>\n"
+"PO-Revision-Date: 2019-01-26 13:31+0000\n"
+"Last-Translator: Giuseppe Guerra <me@nyodev.xyz>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -38,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -93,9 +95,8 @@ msgid "Balanced"
 msgstr "Bilanciato"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Specchia X"
+msgstr "Specchia"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -145,7 +146,7 @@ msgstr "Proprietà:"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "3D Transform Track"
-msgstr "Tipo Transform"
+msgstr "Trasformazione 3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
@@ -153,7 +154,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Traccia Curva di Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
@@ -165,19 +166,16 @@ msgid "Animation Playback Track"
 msgstr "Ferma il playback dell'animazione. (S)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Anim Aggiungi Traccia"
+msgstr "Aggiungi Traccia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "Lunghezza animazone (in secondi)."
+msgstr "Durata animazione (in secondi)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Zoom Animazione."
+msgstr "Ripeti Animazione"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -195,9 +193,8 @@ msgid "Anim Clips:"
 msgstr "Clips"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Abilita modalità senza distrazioni."
+msgstr "Attiva/Disattiva la traccia."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -213,14 +210,12 @@ msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "Rimuovi traccia selezionata."
+msgstr "Rimuovi questa traccia."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "Tempo(i) di Crossfade:"
+msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -235,13 +230,13 @@ msgid "Trigger"
 msgstr "Attivazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "Texture"
+msgstr "Cattura"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Nearest"
-msgstr ""
+msgstr "Più vicino"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -250,7 +245,7 @@ msgstr "Lineare"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Cubico"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -356,7 +351,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Method not found in object: "
-msgstr "VariableGet non trovato nello script: "
+msgstr "Metodo non trovato nell'oggetto: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -365,7 +360,7 @@ msgstr "Anim Sposta Key"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Clipboard is empty"
-msgstr "Clipboard risorse vuota!"
+msgstr "Gli appunti sono vuoti"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -404,9 +399,8 @@ msgid "Edit"
 msgstr "Modifica"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "AnimazioneAlbero"
+msgstr "Proprietà animazione."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -435,19 +429,16 @@ msgid "Duplicate Transposed"
 msgstr "Duplica Transposto"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Elimina selezionati"
+msgstr "Elimina la selezione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
-msgstr "Vai a Step Successivo"
+msgstr "Vai allo Step Successivo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
-msgstr "Vai a Step Precedente"
+msgstr "Vai allo Step Precedente"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -591,9 +582,8 @@ msgid "Warnings:"
 msgstr "Avvertimento"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Font Size:"
-msgstr "Dimensione Font sorgente:"
+msgstr "Dimensione Font:"
 
 #: editor/code_editor.cpp
 msgid "Line:"
@@ -701,17 +691,15 @@ msgstr "Disconnetti"
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Connect Signal: "
-msgstr "Connessione Segnali:"
+msgstr "Connetti il segnale: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection: "
-msgstr "Modifica Connessioni"
+msgstr "Modifica Connessione: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Sei sicuro di voler eseguire più di un progetto?"
+msgstr "Sei sicuro di voler rimuovere tutte le connessioni dal segnale \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -722,9 +710,8 @@ msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "Disconnetti"
+msgstr "Disconnetti tutto"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -732,9 +719,8 @@ msgid "Edit..."
 msgstr "Modifica"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "Metodi"
+msgstr "Vai al metodo"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -1377,9 +1363,8 @@ msgid "File Exists, Overwrite?"
 msgstr "File Esistente, Sovrascrivere?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select This Folder"
-msgstr "Seleziona Metodo"
+msgstr "Seleziona questa cartella"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
@@ -1392,7 +1377,6 @@ msgstr "Mostra nel File Manager"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Show in File Manager"
 msgstr "Mostra nel File Manager"
 
@@ -1537,19 +1521,16 @@ msgid "Methods"
 msgstr "Metodi"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Methods:"
-msgstr "Metodi"
+msgstr "Metodi:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
-msgstr "Proprietà"
+msgstr "Proprietà del tema"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties:"
-msgstr "Proprietà:"
+msgstr "Proprietà del tema:"
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
@@ -1576,14 +1557,12 @@ msgid "Constants:"
 msgstr "Costanti:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Class Description"
-msgstr "Descrizione"
+msgstr "Descrizione della classe"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Class Description:"
-msgstr "Descrizione:"
+msgstr "Descrizione della classe:"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials:"
@@ -1600,12 +1579,10 @@ msgstr ""
 "$url2]richiedendone una[/url][/color]."
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
-msgstr "Descrizione Proprietà:"
+msgstr "Descrizione Proprietà"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions:"
 msgstr "Descrizione Proprietà:"
 
@@ -1618,12 +1595,10 @@ msgstr ""
 "$color][url=$url]aggiungendone una[/url][/color]!"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Method Descriptions"
-msgstr "Descrizione Metodo:"
+msgstr "Descrizione Metodo"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Method Descriptions:"
 msgstr "Descrizione Metodo:"
 
@@ -1641,39 +1616,32 @@ msgid "Search Help"
 msgstr "Cerca Aiuto"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Display All"
-msgstr "Mostra Normale"
+msgstr "Mostra Tutto"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Classes Only"
-msgstr "Classi"
+msgstr "Solo le classi"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Methods Only"
-msgstr "Metodi"
+msgstr "Solo i metodi"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Signals Only"
-msgstr "Segnali"
+msgstr "Solo i segnali"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Constants Only"
-msgstr "Costanti"
+msgstr "Solo le costanti"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Properties Only"
-msgstr "Proprietà"
+msgstr "Solo le proprietà"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Properties Only"
-msgstr "Proprietà"
+msgstr "Solo le proprietà del tema"
 
 #: editor/editor_help_search.cpp
 #, fuzzy
@@ -1681,9 +1649,8 @@ msgid "Member Type"
 msgstr "Membri"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Class"
-msgstr "Classe:"
+msgstr "Classe"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -2059,13 +2026,12 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Impossibile caricare uno script aggiuntivo dal percorso: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"Impossibile caricare uno script aggiuntivo dal percorso: Lo script '%s' non "
-"è in tool mode."
+"Impossibile caricare uno script aggiuntivo dal percorso: '%s' Sembra esserci "
+"un errore nel codice, controlla la sintassi."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2121,19 +2087,16 @@ msgstr "Default"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Show in FileSystem"
-msgstr "Mostra nel File System"
+msgstr "Mostra nel FileSystem"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Play This Scene"
 msgstr "Esegui Scena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close Tab"
-msgstr "Chiudi le altre schede"
+msgstr "Chiudi scheda"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2208,7 +2171,6 @@ msgid "Save Scene"
 msgstr "Salva Scena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save All Scenes"
 msgstr "Salva tutte le Scene"
 
@@ -2267,9 +2229,8 @@ msgid "Tools"
 msgstr "Strumenti"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "Aprire Gestione Progetti?"
+msgstr "Apri la cartella del progetto"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -7669,7 +7630,7 @@ msgstr "Aggiungi Evento"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr ""
+msgstr "Bottone"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -9814,7 +9775,7 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent"
-msgstr "ARVRCamera deve avere un nodo ARVROrigin come suo genitore."
+msgstr "ARVRCamera deve avere un nodo ARVROrigin come suo nodo padre"
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent"

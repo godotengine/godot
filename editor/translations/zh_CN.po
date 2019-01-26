@@ -38,12 +38,14 @@
 # DKLost <514dklost@gmail.com>, 2018.
 # thanksshu <hezihanshangyuan@gmail.com>, 2018.
 # Jsheng <yangea@outlook.com>, 2019.
+# Zhang Zhibo <zzhibo98@gmail.com>, 2019.
+# ws00010203 <ws00010203@hotmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-01-21 19:30+0000\n"
-"Last-Translator: Jsheng <yangea@outlook.com>\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"Last-Translator: ws00010203 <ws00010203@hotmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -51,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1298,11 +1300,8 @@ msgid "Storing File:"
 msgstr "文件排序:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr ""
-"找不到导出模版。\n"
-"下载并安装导出模版。"
+msgstr "目标路径找不到导出模版："
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1311,14 +1310,12 @@ msgstr "打包中"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
 msgstr "找不到自定义调试包。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom release template not found."
 msgstr "找不到自定义发布包。"
 
@@ -2580,17 +2577,14 @@ msgid "[Empty]"
 msgstr "[空]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
-msgstr "分配…。"
+msgstr "分配…"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
 msgstr "路径非法"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
@@ -3834,9 +3828,8 @@ msgid "Connect nodes."
 msgstr "连接节点。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "移除选中的节点或过渡动画"
+msgstr "移除选中的节点或过渡动画。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -4250,11 +4243,10 @@ msgid "Paste Pose"
 msgstr "粘贴姿势"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
-msgstr "警告：容器中的子级只能由它的父级确定位置与大小。"
+msgstr "警告：容器子级的位置与大小只能由它的父级确定。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -5136,9 +5128,8 @@ msgid "Create Polygon & UV"
 msgstr "创建多边形和 UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Internal Vertex"
-msgstr "创建水平标尺"
+msgstr "创建内部顶点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5146,13 +5137,13 @@ msgid "Remove Internal Vertex"
 msgstr "移除曲线内控制点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr ""
+msgstr "无效的多边形（需要三个控制点）"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Add Custom Polygon"
-msgstr "编辑多边形"
+msgstr "添加自定义多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5227,13 +5218,13 @@ msgstr "缩放多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create a custom polygon. Enables custom polygon rendering."
-msgstr ""
+msgstr "建立自定义多边形。启用自定义多边形渲染。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
-msgstr ""
+msgstr "移除自定义多边形。如果不存在，禁用自定义多边形渲染。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -6644,8 +6635,9 @@ msgid "You haven't selected a texture to remove."
 msgstr "请先选择要移除的纹理。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr ""
+msgstr "从场景创建？这将覆盖所有当前标题。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"

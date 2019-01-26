@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-16 20:20+0000\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1286,11 +1286,8 @@ msgid "Storing File:"
 msgstr "파일 저장 중:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr ""
-"내보내기 템플릿을 찾을 수 없습니다.\n"
-"내보내기 템플릿을 다운로드하여 설치하십시요."
+msgstr "예상 경로에서 내보내기 템플릿을 찾을 수 없습니다:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1299,16 +1296,14 @@ msgstr "패킹 중"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "커스텀 디버그 패키지를 찾을 수 없습니다."
+msgstr "커스텀 디버그 템플릿을 찾을 수 없습니다."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom release template not found."
-msgstr "커스텀 릴리즈 패키지를 찾을 수 없습니다."
+msgstr "커스텀 릴리즈 템플릿을 찾을 수 없습니다."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7808,11 +7803,11 @@ msgstr "노드 복제"
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "노드는 루트로 되려면 편집된 씬에 속해있어야 합니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "인스턴트화된 씬은 루트가 될 수 없습니다"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9026,87 +9021,84 @@ msgstr "Set %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "패키지 이름이 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "패키지 세그먼트는 길이가 0이 아니어야 합니다."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
+msgstr "문자 '%s' 는 안드로이드 애플리케이션 패키지 이름으로 쓸 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "숫자는 패키지 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
+msgstr "문자 '%s' 는 패키지 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "패키지는 적어도 하나의 '.' 분리 기호를 갖고 있어야 합니다."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "ADB 실행 파일이 에디터 설정에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "OpenJDK jarsigner가 에디터 설정에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr ""
+msgstr "Debug keystore이 에디터 설정 또는 프리셋에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "APK 확장에 유효하지 않은 공용 키입니다."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
-msgstr "유효하지 않은 클래스명"
+msgstr "유효하지 않은 패키지 이름:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "식별자가 없습니다."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "식별자 세그먼트는 길이가 0이 아니어야 합니다."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "유효한 식별자가 아닌 이름:"
+msgstr "문자 '%s' 는 식별자에 쓸 수 없습니다."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "숫자는 식별자 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "문자 '%s' 는 식별자 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "식별자는 적어도 하나의 '.' 분리 기호를 갖고 있어야 합니다."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
+msgstr "앱스토어 팀 ID가 지정되지 않았습니다 - 프로젝트를 구성할 수 없습니다."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "유효한 식별자가 아닌 이름:"
+msgstr "유효하지 않은 식별자:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "요구되는 아이콘이 프리셋에서 지정되지 않았습니다."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9141,9 +9133,8 @@ msgid "Using default boot splash image."
 msgstr "기본 부트 스플래시 이미지 사용."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "유효하지 않은 고유 이름."
+msgstr "유효하지 않은 패키지 고유 이름."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -9491,13 +9482,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow는 부모 Path의 Curve 리소스에서 \"Up Vector\"를 활성화해야 "
-"합니다."
+"PathFollow ROTATION_ORIENTED는 부모 Path의 Curve 리소스에서 \"Up Vector\"가 "
+"활성화되어 있어야 합니다."
 
 #: scene/3d/physics_body.cpp
 msgid ""
