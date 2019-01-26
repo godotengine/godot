@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-16 20:20+0000\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1288,7 +1288,7 @@ msgstr "Varastoidaan tiedostoa:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Vientimallia ei löytynyt odotetusta polusta:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1297,15 +1297,14 @@ msgstr "Pakataan"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Mallitiedostoa ei löytynyt:"
+msgstr "Mukautettua debug-vientimallia ei löytynyt."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Mukautettua release-vientimallia ei löytynyt."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7831,10 +7830,12 @@ msgstr "Kahdenna solmu(t)"
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
 msgstr ""
+"Solmun täytyy kuulua muokattavana olevaan skeneen, jotta se voidaan asettaa "
+"juureksi."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Skenejen ilmentymiä ei voi asettaa juureksi"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9052,87 +9053,85 @@ msgstr "Aseta %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Paketin nimi puuttuu."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Paketin osioiden pituuksien täytyy olla nollasta poikkeavia."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
+msgstr "Merkki '%s' ei ole sallittu Android-sovellusten pakettien nimissä."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "Paketin osion ensimmäinen merkki ei voi olla numero."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
+msgstr "Merkki '%s' ei voi olla paketin osion ensimmäinen merkki."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "Paketilla on oltava ainakin yksi '.' erotinmerkki."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "ADB käynnistystiedostoa ei ole määritetty editorin asetuksissa."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "OpenJDK jarsigner ei ole määritettynä editorin asetuksissa."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
+"Debug keystore ei ole määritettynä editorin asetuksissa eikä esiasetuksissa."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Virheellinen julkinen avain APK-laajennosta varten."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
-msgstr "Virheellinen luokan nimi"
+msgstr "Virheellinen paketin nimi:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Tunniste puuttuu."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "Tunnisteen osiot eivät voi olla nollan pituisia."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "Nimi ei ole kelvollinen tunniste:"
+msgstr "Merkki '%s' ei ole sallittu Identifier osiossa."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "Identifier osion ensimmäinen merkki ei voi olla numero."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "Merkki '%s' ei voi olla Identifier osion ensimmäinen merkki."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "Identifier osiossa täytyy olla vähintään yksi '.' erotinmerkki."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
+msgstr "App Store Team ID ei ole määritetty - ei voida konfiguroida projektia."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "Nimi ei ole kelvollinen tunniste:"
+msgstr "Virheellinen Identifier osio:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "Vaadittavaa ikonia ei ole määritetty esiasetuksissa."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9167,19 +9166,16 @@ msgid "Using default boot splash image."
 msgstr "Käytetään oletuskäynnistyskuvaa."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Virheellinen ryhmän nimi."
+msgstr "Paketin yksilöllinen nimi on virheellinen."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Virheellinen projektin nimi."
+msgstr "Tuotteen GUID (yleisesti yksilöllinen tunniste) on virheellinen."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "Virheellinen jako: "
+msgstr "Julkaisijan GUID (yleisesti yksilöllinen tunniste) on virheellinen."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid background color."
@@ -9187,31 +9183,33 @@ msgstr "Virheellinen taustaväri."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Virheellinen Store Logo kuvan koko (pitäisi olla 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Virheellinen neliömäisen 44x44 logon kuvakoko (pitäisi olla 44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Virheellinen neliömäisen 71x71 logon kuvakoko (pitäisi olla 71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
+"Virheellinen neliömäisen 150x150 logon kuvakoko (pitäisi olla 150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
+"Virheellinen neliömäisen 310x310 logon kuvakoko (pitäisi olla 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Virheellinen leveän 310x150 logon kuvakoko (pitäisi olla 310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Virheellinen käynnistyskuvan kuvakoko (pitäisi olla 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9530,13 +9528,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow toimii ainoastaan ollessaan asetettuna Path solmun alle."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow edellyttää, että sen Path isäntäsolmun Curve resurssin "
-"\"Up Vector\" on asetettu päälle."
+"PathFollow ROTATION_ORIENTED edellyttää, että sen Path isäntäsolmun Curve "
+"resurssin \"Up Vector\" on asetettu päälle."
 
 #: scene/3d/physics_body.cpp
 msgid ""

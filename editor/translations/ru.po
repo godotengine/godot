@@ -22,22 +22,23 @@
 # Егор Бураков <fend.q@mail.ru>, 2018.
 # Grigore Antoniuc <grisa181@gmail.com>, 2018.
 # Neo6666666 <Neo6666666@gmail.com>, 2018.
-# Roman <Steel_hawk@list.ru>, 2018.
+# Roman <Steel_hawk@list.ru>, 2018, 2019.
 # Егор Рябуха (REgorion) <ryrgor@gmail.com>, 2018.
 # Yan <uvokinuvokines@gmail.com>, 2018.
-# V. <Unit68189@gmail.com>, 2018.
+# V. <Unit68189@gmail.com>, 2018, 2019.
 # Victor Butorin <mrwebsterchannel@gmail.com>, 2018.
 # Александр <ol-vin@mail.ru>, 2018, 2019.
-# Анатолий Горбунов <afgorbunov@gmail.com>, 2018.
-# Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018.
+# Анатолий Горбунов <afgorbunov@gmail.com>, 2018, 2019.
+# Vadim Vergasov <vadim.vergasov2003@gmail.com>, 2018, 2019.
 # Аслан Снупов <aslan170505@gmail.com>, 2018.
 # Alexandr Eremeev <ae125529@gmail.com>, 2019.
+# Ruaguzov Michael <miha890r@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-18 22:28+0000\n"
-"Last-Translator: Александр <ol-vin@mail.ru>\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"Last-Translator: Ruaguzov Michael <miha890r@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -46,7 +47,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -995,7 +996,6 @@ msgid "Uncompressing Assets"
 msgstr "Распаковка ассетов"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
 msgstr "Пакет успешно установлен!"
 
@@ -1240,7 +1240,7 @@ msgstr "Не в пути ресурсов."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr "Добавить автозагрузку"
+msgstr "Добавить в автозагрузку"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
@@ -1314,11 +1314,8 @@ msgid "Storing File:"
 msgstr "Сохранение файла:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr ""
-"Шаблоны экспорта не найдены.\n"
-"Скачайте и установите шаблоны экспорта."
+msgstr "Шаблоны экспорта не найдены по ожидаемому пути:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1327,9 +1324,8 @@ msgstr "Упаковывание"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Пользовательский отладочный пакет не найден."
+msgstr "Пользовательский отладочный шаблон не найден."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2325,16 +2321,17 @@ msgid "Toggle Fullscreen"
 msgstr "Переключить полноэкранный режим"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Open Editor Data/Settings Folder"
 msgstr "Открыть папку данных/настроек редактора"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "Открыть папку данных редактора"
+msgstr "Открыть папку редактора данных"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "Открыть папку настроек Редктора"
+msgstr "Открыть папку настроек редактора"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2629,22 +2626,19 @@ msgid "[Empty]"
 msgstr "[Пусто]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
-#, fuzzy
 msgid "Assign..."
-msgstr "Назначить.."
+msgstr "Назначается..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
 msgstr "Неверный путь"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"Выбранные ресурсы (%s) не соответствуют типу, ожидаемому для данного "
+"Выбранные ресурсы (%s) не соответствуют типам, ожидаемым для данного "
 "свойства (%s)."
 
 #: editor/editor_properties.cpp
@@ -2664,8 +2658,8 @@ msgid ""
 msgstr ""
 "Невозможно создать ViewportTexture для этого ресурса, потому что он не "
 "установлен как локальный для сцены.\n"
-"Включите свойство «Локально для сцены» (и все ресурсы, содержащие его вверх "
-"от узла)."
+"Пожалуйста, включите свойство «Локально для сцены» для него (и для всех "
+"родительских ресурсов)."
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
@@ -2730,7 +2724,7 @@ msgstr "Новое значение:"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
-msgstr "добавить пару Ключ/Значение"
+msgstr "Добавить пару: Ключ/Значение"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -2812,7 +2806,7 @@ msgstr "(Текущий)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr "Получение зеркал, пожалуйста подождите."
+msgstr "Получение зеркал, пожалуйста подождите..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
@@ -2824,7 +2818,7 @@ msgstr "Не удаётся открыть архив шаблонов эксп�
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "Недействительный формат version.txt внутри шаблонов: %s."
+msgstr "Неверный формат version.txt файла внутри шаблонов: %s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -2852,6 +2846,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Can't resolve."
 msgstr "Не удаётся разрешить."
 
@@ -3518,9 +3513,8 @@ msgstr "Добавить анимацию"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Load..."
-msgstr "Загрузить.."
+msgstr "Загрузка..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3904,9 +3898,8 @@ msgid "Connect nodes."
 msgstr "Соединить узлы."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Remove selected node or transition."
-msgstr "Удалить выделенный узел или переход"
+msgstr "Удалить выделенный узел или переход."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -5218,28 +5211,24 @@ msgid "Create Polygon & UV"
 msgstr "Создать Полигон и UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Internal Vertex"
-msgstr "Создать новую горизонтальную направляющую"
+msgstr "Создать внутреннюю вершину"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Internal Vertex"
-msgstr "Удалить входную контрольную точку"
+msgstr "Удалить внутреннюю вершину"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
 msgstr "Некорректный Полигон (требуется 3 различные вершины)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Add Custom Polygon"
-msgstr "Редактировать полигон"
+msgstr "Добавить пользовательский полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Polygon"
-msgstr "Удалить Полигон и Точку"
+msgstr "Удалить пользовательский полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5250,9 +5239,8 @@ msgid "Transform Polygon"
 msgstr "Преобразовать полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Paint Bone Weights"
-msgstr "Костные грузы для краски"
+msgstr "Изменить вес костей"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
@@ -5267,14 +5255,12 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Points"
-msgstr "Точка"
+msgstr "Точки"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "Полигон -> UV"
+msgstr "Полигоны"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5309,28 +5295,25 @@ msgid "Scale Polygon"
 msgstr "Масштабировать полигон"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create a custom polygon. Enables custom polygon rendering."
 msgstr ""
-"Создать пользовательский полигон. Позволяет настраивать рендеринг полигонов."
+"Создать пользовательский полигон. Включает рендер пользовательских полигонов."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
 msgstr ""
-"Удалить пользовательский полигон. Если ничего не осталось, пользовательский "
-"рендеринг полигонов отключен."
+"Удалить пользовательский полигон. Если ничего не осталось, рендер "
+"пользовательских полигонов отключится."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
 msgstr "Покрасить веса с заданной интенсивностью."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Unpaint weights with specified intensity."
-msgstr "Снять краску веса с заданной интенсивностью"
+msgstr "Убрать вес с заданной интенсивностью."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
@@ -5923,7 +5906,7 @@ msgstr "Высота"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Yaw"
-msgstr "Отклонение"
+msgstr "Рыскание"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Objects Drawn"
@@ -6469,7 +6452,7 @@ msgstr "Разделитель:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
-msgstr "TextureRegion"
+msgstr "ОбластьТекстуры"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -6720,27 +6703,25 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "Отобразить имена плиток (удерживать нажатой клавишу Alt)"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "Удалить выделенную текстуру и ВСЕ ПЛИТКИ, которые ее используют?"
+msgstr ""
+"Удалить выделенную текстуру? Это удалит все тайлы, которые её используют."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr "Вы не выбрали текстуру для удаления."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Создавать из сцены? Это перезапишет все текущие плитки."
+msgstr "Создавать из сцены? Это перезапишет все текущие тайлы."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "Слияние из сцены?"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "Удалить шаблон"
+msgstr "Удалить текстуру"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6807,86 +6788,72 @@ msgstr ""
 "Нажмите на другую плитку, чтобы отредактировать ее."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "Задать регион"
+msgstr "Задать область тайла"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "Создать папку"
+msgstr "Создать тайл"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
 msgstr "Установить Иконку Плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "Редактировать фильтры"
+msgstr "Редактировать битовую маску тайла"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "Редактировать существующий полигон:"
+msgstr "Редактирование полигона столкновений"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "Редактировать полигон"
+msgstr "Редактировать полигон перекрытия"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "Создать Navigation Polygon"
+msgstr "Редактирование полигона навигации"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "Вставить битовую маску."
+msgstr "Вставить битовую маску тайла"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
 msgstr "Очистить Битовую Маску Плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "Удалить шаблон"
+msgstr "Удалить тайл"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "Удалить Полигон и Точку"
+msgstr "Удалить полигон столкновений"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "Создан затеняющий полигон"
+msgstr "Удалить полигон перекрытия"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "Создать Navigation Polygon"
+msgstr "Удалить полигон навигации"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "Редактировать фильтры"
+msgstr "Редактировать приоритет тайла"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "Редактирование Z индекса плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "Создать Navigation Polygon"
+msgstr "Создать полигон столкновений"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "Создан затеняющий полигон"
+msgstr "Создать полигон перекрытия"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
@@ -7005,9 +6972,8 @@ msgid "Feature List:"
 msgstr "Список свойств:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Новый скрипт"
+msgstr "Скрипт"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -7176,9 +7142,8 @@ msgid "Unnamed Project"
 msgstr "Безымянный проект"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Не удаётся открыть проект"
+msgstr "Нельзя открыть проект в \"%s\"."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7779,7 +7744,7 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 msgid "Regular Expressions"
-msgstr "Регулярные Выражения"
+msgstr "Регулярное выражение"
 
 #: editor/rename_dialog.cpp
 msgid "Post-Process"
@@ -7794,9 +7759,8 @@ msgid "CamelCase to under_scored"
 msgstr "CamelCase в under_scored"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "under_scored to CamelCase"
-msgstr "under_scored в CamelCase"
+msgstr "under_scored к CamelCase"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -7804,18 +7768,16 @@ msgid "Case"
 msgstr "Регистр"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "To Lowercase"
-msgstr "нижний регистр"
+msgstr "К нижнему регистру"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "To Uppercase"
-msgstr "ВЕРХНИЙ РЕГИСТР"
+msgstr "В верхний регистр"
 
 #: editor/rename_dialog.cpp
 msgid "Reset"
-msgstr "Сброс"
+msgstr "Сбросить"
 
 #: editor/rename_dialog.cpp
 msgid "Error"
@@ -7903,11 +7865,11 @@ msgstr "Дублировать узел(узлы)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "Узел должен принадлежать редактируемой сцене, что бы стать корневым."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Мгновенные сцены не могут быть корневыми"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -7951,11 +7913,11 @@ msgstr "Создать корневой узел:"
 
 #: editor/scene_tree_dock.cpp
 msgid "2D Scene"
-msgstr "2D-сцена"
+msgstr "2D сцена"
 
 #: editor/scene_tree_dock.cpp
 msgid "3D Scene"
-msgstr "3D-сцена"
+msgstr "3D сцена"
 
 #: editor/scene_tree_dock.cpp
 msgid "User Interface"
@@ -8179,7 +8141,6 @@ msgid "N/A"
 msgstr "Н/Д"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Open Script/Choose Location"
 msgstr "Открыть Скрипт/Выбрать Место"
 
@@ -8402,9 +8363,8 @@ msgid "Change Camera Size"
 msgstr "Изменить размер камеры"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Notifier AABB"
-msgstr "Изменить границы уведомителя"
+msgstr "Изменить уведомитель AABB"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Particles AABB"
@@ -8511,7 +8471,6 @@ msgid "GDNative"
 msgstr "GDNative"
 
 #: modules/gdscript/gdscript_functions.cpp
-#, fuzzy
 msgid "Step argument is zero!"
 msgstr "Аргумент шага равен нулю!"
 
@@ -8577,9 +8536,8 @@ msgid "GridMap Delete Selection"
 msgstr "Удалить выделенную сетку"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Fill Selection"
-msgstr "Заполнить выделенную GridMap"
+msgstr "Злить выделенную GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
@@ -8734,9 +8692,8 @@ msgid "End of inner exception stack trace"
 msgstr "Конец трассировки внутреннего стека исключений"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
-#, fuzzy
 msgid "Bake NavMesh"
-msgstr "Испечь NavMesh"
+msgstr "Запечь NavMesh"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -8963,7 +8920,6 @@ msgid "Connect Nodes"
 msgstr "Присоединить узлы"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Connect Node Data"
 msgstr "Присоединить данные узла"
 
@@ -9130,87 +9086,87 @@ msgstr "Задать %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Отсутствует имя пакета."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Части пакета не могут быть пустыми."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
+msgstr "Символ '%s' не допустим в имени пакета приложения под Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "Число не может быть первым символом в части пакета."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
+msgstr "Символ '%s' не может стоять первым в сегменте пакета."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "Пакет должен иметь хотя бы один '.' разделитель."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "Исполняемый файл ADB не сконфигурирован в настройках редактора."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "Значок OpenJDK jarsigner не сконфигурирован в настройках редактора."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
+"Отладочная клавиатура не настроена ни в настройках редактора, ни в "
+"предустановках."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Недействительный публичный ключ для расширения APK."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
-msgstr "Недопустимое имя класса"
+msgstr "Недопустимое имя пакета:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Отсутствует определитель."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "Идентифицированные сегменты не должны быть пустыми."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "Имя не является допустимым идентификатором:"
+msgstr "Символ '%s' в идентификаторе не допускается."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "Цифра не может быть первым символом идентификатора сегмента."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "Символ '%s' не может быть первым символом идентификатора сегмента."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "Идентификатор должен иметь хотя бы один '.' разделитель."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
+msgstr "App Store Team ID не указан - невозможно настроить проект."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "Имя не является допустимым идентификатором:"
+msgstr "Неверный идентификатор:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "Требуемый значок не указан в предустановке."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9245,9 +9201,8 @@ msgid "Using default boot splash image."
 msgstr "Использовать изображения заставки по умолчанию."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Неверное уникальное имя."
+msgstr "Неверное уникальное имя пакета."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -9608,13 +9563,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow работает только при если она дочь узла Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow требует, чтобы в его родительском пути были включены "
-"векторы."
+"PathFollow ROTATION_ORIENTED требует включения параметра \"Up Vector\" в "
+"родительском ресурсе Path's Curve."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9804,9 +9758,8 @@ msgid "Invalid font size."
 msgstr "Недопустимый размер шрифта."
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Добавить вход"
+msgstr "Вход"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."

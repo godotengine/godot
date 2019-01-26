@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-16 20:20+0000\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1295,7 +1295,7 @@ msgstr "Збереження файлу:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "У очікуваному каталозі не знайдено шаблонів експортування:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1304,15 +1304,14 @@ msgstr "Пакування"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Файл шаблону не знайдено:"
+msgstr "Нетипового шаблону діагностики не знайдено."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Нетипового шаблону випуску не знайдено."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7861,11 +7860,11 @@ msgstr "Дублювати вузли"
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "Щоб стати кореневим, вузол має належати редагованій сцені."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Сцени зі створеними екземплярами не можуть ставати кореневими"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9079,87 +9078,92 @@ msgstr "Встановити %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Не вказано назви пакунка."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Сегменти пакунка повинні мати ненульову довжину."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
+"Не можна використовувати у назві пакунка програми на Android символи «%s»."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "Цифра не може бути першим символом у сегменті пакунка."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
+"Не можна використовувати символ «%s» як перший символ назви сегмента пакунка."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "У назві пакунка має бути принаймні один роздільник «.»."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "У параметрах редактора не налаштовано виконуваного файла ADB."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "У параметрах редактора не налаштовано jarsigner з OpenJDK."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
+"Ні у параметрах редактора, ні у шаблоні не налаштовано діагностичне сховище "
+"ключів."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Неокректний відкритий ключ для розгортання APK."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
-msgstr "Некоректна назва класу"
+msgstr "Некоректна назва пакунка:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Не вказано ідентифікатор."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "Сегменти ідентифікатора повинні мати ненульову довжину."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "Назва не є коректним ідентифікатором:"
+msgstr "У назві ідентифікатора не можна використовувати символи «%s»."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
 msgstr ""
+"Не можна використовувати цифри як перші символи сегмента ідентифікатора."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
+"Не можна використовувати символ «%s» як перший символ сегмента "
+"ідентифікатора."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "У ідентифікаторі має бути принаймні один роздільник «.»."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
+"Не вказано ідентифікатор команди App Store — проект неможливо налаштувати."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "Назва не є коректним ідентифікатором:"
+msgstr "Некоректний ідентифікатор:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "У шаблоні не вказано потрібної піктограми."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9194,52 +9198,58 @@ msgid "Using default boot splash image."
 msgstr "Використання типового файлу зображення заставки."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Неприпустима назва групи."
+msgstr "Некоректна унікальна назва пакунка."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Некоректна назва проекту."
+msgstr "Некоректний GUID продукту."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "Некоректний поділ: "
+msgstr "Некоректний GUID видавця."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "Неприпустима назва групи."
+msgstr "Некоректний колір тла."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Некоректні розмірності зображення логотипу Store (мають бути 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr ""
+"Некоректні розмірності зображення квадратного логотипу 44x44 (мають бути "
+"44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr ""
+"Некоректні розмірності зображення квадратного логотипу 71x71 (мають бути "
+"71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
+"Некоректні розмірності зображення квадратного логотипу 150x150 (мають бути "
+"150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
+"Некоректні розмірності зображення квадратного логотипу 310x310 (мають бути "
+"310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr ""
+"Некоректні розмірності зображення широкого логотипу 310x150 (мають бути "
+"310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Некоректні розмірності зображення вікна вітання (мають бути 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9558,12 +9568,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow працюватиме лише як дочірній елемент вузла Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow потребує вмикання «Up Vector» у його батьківському Path."
+"PathFollow ROTATION_ORIENTED потребує вмикання «Up Vector» у його "
+"батьківському ресурсі Curve у Path."
 
 #: scene/3d/physics_body.cpp
 msgid ""

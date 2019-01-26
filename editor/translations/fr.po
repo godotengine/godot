@@ -50,14 +50,15 @@
 # Florent Wijanto <f_wijanto@hotmail.com>, 2018.
 # Olivier gareau <olivier.gareau@protonmail.com>, 2018.
 # Rémi Verschelde <akien@godotengine.org>, 2018, 2019.
-# Rémi Bintein <reminus5@hotmail.fr>, 2018.
+# Rémi Bintein <reminus5@hotmail.fr>, 2018, 2019.
 # Sylvain Corsini <sylvain.corsini@gmail.com>, 2018.
+# Caye Pierre <pierrecaye@laposte.net>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-18 23:32+0000\n"
-"Last-Translator: Gilles Roudiere <gilles.roudiere@gmail.com>\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"Last-Translator: Rémi Bintein <reminus5@hotmail.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -65,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1343,7 +1344,7 @@ msgstr "Stockage du fichier :"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Aucun modèle d'exportation n'a été trouvé au chemin prévu :"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1352,15 +1353,14 @@ msgstr "Empaquetage"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Fichier modèle introuvable :"
+msgstr "Modèle de débogage personnalisé introuvable."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Modèle de version personnalisée introuvable."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7942,11 +7942,11 @@ msgstr "Dupliquer le(s) nœud(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "Le nœud doit appartenir à la scène éditée pour devenir la racine."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Les scènes instanciées ne peuvent pas devenir la racine"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9168,87 +9168,97 @@ msgstr "Définir %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Nom du paquet manquant."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Les segments du paquet doivent être de longueur non nulle."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
+"Le caractère '%s' n'est pas autorisé dans les noms de paquet d'applications "
+"Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
+"Un chiffre ne peut pas être le premier caractère d'un segment de paquet."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
+"Le caractère \"%s\" ne peut pas être le premier caractère d'un segment de "
+"paquet."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "Le paquet doit comporter au moins un séparateur '.'."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "L'exécutable ADB n'est pas configuré dans les paramètres de l'éditeur."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
 msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr ""
-
-#: platform/android/export/export.cpp
-msgid "Invalid public key for APK expansion."
-msgstr ""
+"OpenJDK jarsigner n'est pas configuré dans les paramètres de l'éditeur."
 
 #: platform/android/export/export.cpp
 #, fuzzy
+msgid "Debug keystore not configured in the Editor Settings nor in the preset."
+msgstr ""
+"Debug keystore n'est pas configuré dans les paramètres de l'éditeur ni dans "
+"le préréglage."
+
+#: platform/android/export/export.cpp
+msgid "Invalid public key for APK expansion."
+msgstr "Clé publique invalide pour l'expansion APK."
+
+#: platform/android/export/export.cpp
 msgid "Invalid package name:"
-msgstr "Nom de classe invalide"
+msgstr "Nom de paquet invalide :"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "L'identifiant est manquant."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
 msgstr ""
+"Les segments de l'identifiant doivent être d'une longueur différente de zéro."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "Le nom n'est pas un identifiant valide :"
+msgstr "Le caractère'%s' n'est pas autorisé dans l'identifiant."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
 msgstr ""
+"Un chiffre ne peut pas être le premier caractère d'un segment d'identifiant."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
+"Le caractère'%s' ne peut pas être le premier caractère d'un segment "
+"d'identifiant."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "L'identifiant doit avoir au moins un séparateur '.'."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
+msgstr "App Store Team ID non spécifié - ne peut pas configurer le projet."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "Le nom n'est pas un identifiant valide :"
+msgstr "Identifiant invalide :"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "L'icône requise n'est pas spécifiée dans le préréglage."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9283,52 +9293,61 @@ msgid "Using default boot splash image."
 msgstr "Impossible de lire l'image de démarrage."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Nom de groupe invalide."
+msgstr "Nom unique de paquet invalide."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Nom du projet invalide."
+msgstr "GUID produit invalide."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "Fractionnement invalide : "
+msgstr "GUID éditeur invalide."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "Nom de groupe invalide."
+msgstr "Couleur de fond invalide."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr ""
+"Les dimensions de l'image du logo du magasin ne sont pas valides (doit être "
+"50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr ""
+"Les dimensions de l'image du logo carré 44x44 sont invalides (doivent être "
+"44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr ""
+"Les dimensions de l'image du logo carré 71x71 sont invalides (doivent être "
+"71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
+"Les dimensions de l'image du logo carré 150x150 sont invalides (doivent être "
+"150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
+"Les dimensions de l'image du logo carré 310x310 sont invalides (doivent être "
+"310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr ""
+"Les dimensions de l'image du logo large sont invalides (doivent être de "
+"310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+"Les dimensions du splash screen sont invalides (doivent être de 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9654,13 +9673,12 @@ msgstr ""
 "nœud de type Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow requiert l'activation de la propriété \"Up Vector\" de la "
-"ressource Curve de son Path parent."
+"PathFollow ROTATION_ORIENTED nécessite l'activation de \"Up Vector\" dans la "
+"ressource Path's Curve de son parent."
 
 #: scene/3d/physics_body.cpp
 msgid ""

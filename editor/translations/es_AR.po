@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-16 20:20+0000\n"
+"PO-Revision-Date: 2019-01-26 21:22+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1292,11 +1292,8 @@ msgid "Storing File:"
 msgstr "Almacenando Archivo:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr ""
-"No se encontraron plantillas de exportación.\n"
-"Descargá o instalá plantillas de exportación."
+msgstr "No se encontraron plantillas de exportación en la ruta esperada:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1305,16 +1302,14 @@ msgstr "Empaquetando"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Paquete debug personalizado no encontrado."
+msgstr "Plantilla debug personalizada no encontrada."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom release template not found."
-msgstr "Paquete release personalizado no encontrado."
+msgstr "Plantilla release personalizada no encontrada."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -7870,11 +7865,11 @@ msgstr "Duplicar Nodo(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "El nodo debe pertenecer a la escena editada para convertirse en raíz."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "Las escenas instanciadas no pueden convertirse en raíz"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9094,87 +9089,92 @@ msgstr "Asignar %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Nombre de paquete faltante."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Los segmentos del paquete deben ser de largo no nulo."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
+"El caracter '%s' no está permitido en nombres de paquete de aplicación "
+"Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "Un dígito no puede ser el primer caracter en un segmento de paquete."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
+"El caracter '%s' no puede ser el primer caracter en un segmento de paquete."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "El paquete debe tener al menos un '.' como separador."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "Ejecutable ADB no configurado en Configuración del Editor."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "OpenJDK jarsigner no configurado en Configuración del Editor."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
+"Keystore debug no configurada en Configuración del Editor ni en el preset."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Clave pública inválida para la expansión de APK."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
-msgstr "Nombre de clase inválido"
+msgstr "Nombre de paquete inválido:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Identificador no encontrado."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "Los segmentos de un identificador deben ser de largo no nulo."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "El nombre no es un identificador válido:"
+msgstr "El caracter '%s' no esta permitido como identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
 msgstr ""
+"Un dígito no puede ser el primer caracter en un segmento Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
+"El caracter '%s' no puede ser el primer caracter en un segmento "
+"Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "El Identificador debe tener al menos un '.' como separador."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
+"App Store Team ID no especificado - no se puede configurar el proyecto."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "El nombre no es un identificador válido:"
+msgstr "Identificador inválido:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "El icono requerido no esta especificado en el preset."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9209,9 +9209,8 @@ msgid "Using default boot splash image."
 msgstr "Usando imagen boot splash por defecto."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Nombre único inválido."
+msgstr "Nombre único de paquete inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -9579,13 +9578,12 @@ msgstr ""
 "PathFollow solo funciona cuando está asignado como hijo de un nodo Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow requiere que \"Up Vector\" esté activo en el recurso "
-"Curve de su Path padre."
+"PathFollow ROTATION_ORIENTED requiere que \"Up Vector\" esté activo en el "
+"recurso Curve de su Path padre."
 
 #: scene/3d/physics_body.cpp
 msgid ""
