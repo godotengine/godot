@@ -37,7 +37,21 @@
 extern "C" {
 #endif
 
+// Workaround GCC ICE on armv7hl which was affected GCC 6.0 up to 8.0 (GH-16100).
+// It was fixed upstream in 8.1, and a fix was backported to 7.4.
+// This can be removed once no supported distro ships with versions older than 7.4.
+#if defined(__arm__) && defined(__GNUC__) && !defined(__clang__) && \
+		(__GNUC__ == 6 || (__GNUC__ == 7 && __GNUC_MINOR__ < 4) || (__GNUC__ == 8 && __GNUC_MINOR__ < 1))
+#pragma GCC push_options
+#pragma GCC optimize("-O0")
+#endif
+
 #define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
+
+#if defined(__arm__) && defined(__GNUC__) && !defined(__clang__) && \
+		(__GNUC__ == 6 || (__GNUC__ == 7 && __GNUC_MINOR__ < 4) || (__GNUC__ == 8 && __GNUC_MINOR__ < 1))
+#pragma GCC pop_options
+#endif
 
 // Constructors
 
