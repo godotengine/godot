@@ -693,6 +693,13 @@ bool Viewport::use_arvr() {
 	return arvr;
 }
 
+void Viewport::update_canvas_items() {
+	if (!is_inside_tree())
+		return;
+
+	_update_canvas_items(this);
+}
+
 void Viewport::set_size(const Size2 &p_size) {
 
 	if (size == p_size.floor())
@@ -1126,6 +1133,26 @@ Camera *Viewport::get_camera() const {
 Transform2D Viewport::get_final_transform() const {
 
 	return stretch_transform * global_canvas_transform;
+}
+
+void Viewport::_update_canvas_items(Node *p_node) {
+	if (p_node != this) {
+
+		Viewport *vp = Object::cast_to<Viewport>(p_node);
+		if (vp)
+			return;
+
+		CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
+		if (ci) {
+			ci->update();
+		}
+	}
+
+	int cc = p_node->get_child_count();
+
+	for (int i = 0; i < cc; i++) {
+		_update_canvas_items(p_node->get_child(i));
+	}
 }
 
 void Viewport::set_size_override(bool p_enable, const Size2 &p_size, const Vector2 &p_margin) {

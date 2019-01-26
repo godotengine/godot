@@ -484,6 +484,14 @@ bool SceneTree::iteration(float p_time) {
 	return _quit;
 }
 
+void SceneTree::_update_font_oversampling(float p_ratio) {
+
+	if (use_font_oversampling) {
+		DynamicFontAtSize::font_oversampling = p_ratio;
+		DynamicFont::update_oversampling();
+	}
+}
+
 bool SceneTree::idle(float p_time) {
 
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
@@ -515,12 +523,6 @@ bool SceneTree::idle(float p_time) {
 
 		last_screen_size = win_size;
 		_update_root_rect();
-
-		if (use_font_oversampling) {
-			DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
-			DynamicFont::update_oversampling();
-		}
-
 		emit_signal("screen_resized");
 	}
 
@@ -1133,10 +1135,12 @@ void SceneTree::_update_root_rect() {
 
 	if (stretch_mode == STRETCH_MODE_DISABLED) {
 
+		_update_font_oversampling(1.0);
 		root->set_size((last_screen_size / stretch_shrink).floor());
 		root->set_attach_to_screen_rect(Rect2(Point2(), last_screen_size));
 		root->set_size_override_stretch(false);
 		root->set_size_override(false, Size2());
+		root->update_canvas_items();
 		return; //user will take care
 	}
 
@@ -1154,6 +1158,9 @@ void SceneTree::_update_root_rect() {
 		//same aspect or ignore aspect
 		viewport_size = desired_res;
 		screen_size = video_mode;
+		if (use_font_oversampling) {
+			WARN_PRINT("Font oversampling only works with the following resize modes 'Keep Width', 'Keep Height', and 'Expand'.")
+		}
 	} else if (viewport_aspect < video_mode_aspect) {
 		// screen ratio is smaller vertically
 
@@ -1208,21 +1215,30 @@ void SceneTree::_update_root_rect() {
 	switch (stretch_mode) {
 		case STRETCH_MODE_DISABLED: {
 			// Already handled above
+			_update_font_oversampling(1.0);
 		} break;
 		case STRETCH_MODE_2D: {
 
+			_update_font_oversampling(screen_size.x / viewport_size.x); //screen / viewport radio drives oversampling
 			root->set_size((screen_size / stretch_shrink).floor());
 			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
 			root->set_size_override_stretch(true);
 			root->set_size_override(true, (viewport_size / stretch_shrink).floor());
+			root->update_canvas_items(); //force them to update just in case
 
 		} break;
 		case STRETCH_MODE_VIEWPORT: {
 
+			_update_font_oversampling(1.0);
 			root->set_size((viewport_size / stretch_shrink).floor());
 			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
 			root->set_size_override_stretch(false);
 			root->set_size_override(false, Size2());
+			root->update_canvas_items(); //force them to update just in case
+
+			if (use_font_oversampling) {
+				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.")
+			}
 
 		} break;
 	}
