@@ -3373,6 +3373,20 @@ msgstr "Ajuste..."
 msgid "Reimport"
 msgstr "Reimportar"
 
+#: editor/import_dock.cpp
+msgid "Save scenes, re-import and restart"
+msgstr ""
+
+#: editor/import_dock.cpp
+#, fuzzy
+msgid "Changing the type of an imported file requires editor restart."
+msgstr "Cambiar el driver de video requiere reiniciar el editor."
+
+#: editor/import_dock.cpp
+msgid ""
+"WARNING: Assets exist that use this resource, they may stop loading properly."
+msgstr ""
+
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
 msgstr "Error al cargar el recurso."
@@ -7184,6 +7198,38 @@ msgid "Browse"
 msgstr "Examinar"
 
 #: editor/project_manager.cpp
+msgid "Renderer:"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "OpenGL ES 3.0"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"Higher visual quality\n"
+"All features available\n"
+"Incompatible with older hardware\n"
+"Not recommended for web games"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "OpenGL ES 2.0"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"Lower visual quality\n"
+"Some features not available\n"
+"Works on most hardware\n"
+"Recommended for web games"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid "Renderer can be changed later, but scenes may need to be adjusted."
+msgstr ""
+
+#: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "Proyecto sin nombre"
 
@@ -7909,6 +7955,10 @@ msgstr "Mover nodos dentro del padre"
 #: editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
 msgstr "Duplicar nodo(s)"
+
+#: editor/scene_tree_dock.cpp
+msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
+msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
