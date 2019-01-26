@@ -48,6 +48,7 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
+				Note that many resources types are imported (e.g. textures or sound files), and that their source asset will not be included in the exported game, as only the imported version is used (in the [code]res://.import[/code] folder). To check for the existence of such resources while taking into account the remapping to their imported location, use [method ResourceLoader.exists]. Typically, using [code]File.file_exists[/code] on an imported resource would work while you are developing in the editor (the source asset is present in [code]res://[/code], but fail when exported).
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
