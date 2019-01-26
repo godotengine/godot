@@ -735,6 +735,8 @@
 			</argument>
 			<argument index="2" name="enable" type="bool">
 			</argument>
+			<argument index="3" name="margin" type="float">
+			</argument>
 			<description>
 				Enables one way collision on body if [code]enable[/code] is [code]true[/code].
 			</description>

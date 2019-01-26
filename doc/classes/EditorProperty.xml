@@ -9,6 +9,20 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="emit_changed">
+			<return type="void">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<argument index="2" name="field" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="3" name="changing" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_edited_object">
 			<return type="Object">
 			</return>

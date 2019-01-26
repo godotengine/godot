@@ -80,6 +80,14 @@
 				Sets theme values to a copy of the default theme values.
 			</description>
 		</method>
+		<method name="copy_theme">
+			<return type="void">
+			</return>
+			<argument index="0" name="other" type="Theme">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_color" qualifiers="const">
 			<return type="Color">
 			</return>

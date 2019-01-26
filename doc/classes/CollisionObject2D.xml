@@ -40,6 +40,14 @@
 				Returns the object's [RID].
 			</description>
 		</method>
+		<method name="get_shape_owner_one_way_collision_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_shape_owners">
 			<return type="Array">
 			</return>
@@ -183,6 +191,16 @@
 			</argument>
 			<description>
 				If [code]enable[/code] is [code]true[/code], collisions for the shape owner originating from this [code]CollisionObject2D[/code] will not be reported to collided with [code]CollisionObject2D[/code]s.
+			</description>
+		</method>
+		<method name="shape_owner_set_one_way_collision_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="owner_id" type="int">
+			</argument>
+			<argument index="1" name="margin" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">
