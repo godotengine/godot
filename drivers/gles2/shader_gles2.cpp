@@ -229,7 +229,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			glDeleteShader(v.vert_id);
 			glDeleteShader(v.frag_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 		}
 	}
@@ -329,7 +328,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		if (iloglen < 0) {
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 
 			ERR_PRINT("No OpenGL vertex shader compiler log. What the frick?");
@@ -351,7 +349,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			Memory::free_static(ilogmem);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 		}
 
@@ -406,7 +403,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			glDeleteShader(v.frag_id);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 
 			ERR_PRINT("No OpenGL fragment shader compiler log. What the frick?");
@@ -429,7 +425,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			glDeleteShader(v.frag_id);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 		}
 
@@ -457,7 +452,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			glDeleteShader(v.frag_id);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 
 			ERR_PRINT("No OpenGL program link log. What the frick?");
@@ -482,7 +476,6 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 		glDeleteShader(v.frag_id);
 		glDeleteShader(v.vert_id);
 		glDeleteProgram(v.id);
-		memdelete_arr(v.uniform_location);
 		v.id = 0;
 
 		ERR_FAIL_V(NULL);
@@ -696,8 +689,10 @@ void ShaderGLES2::set_custom_shader(uint32_t p_code_id) {
 void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
 
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
-	if (conditional_version.code_version == p_code_id)
+	if (conditional_version.code_version == p_code_id) {
 		conditional_version.code_version = 0; //do not keep using a version that is going away
+		unbind();
+	}
 
 	VersionKey key;
 	key.code_version = p_code_id;
