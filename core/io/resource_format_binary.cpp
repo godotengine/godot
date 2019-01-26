@@ -342,7 +342,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 					int erindex = f->get_32();
 
 					if (erindex < 0 || erindex >= external_resources.size()) {
-						WARN_PRINT("Broken external resource! (index out of size");
+						WARN_PRINT("Broken external resource! (index out of size)");
 						r_v = Variant();
 					} else {
 

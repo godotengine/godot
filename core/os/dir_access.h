@@ -98,7 +98,7 @@ public:
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
 
-	virtual String get_filesystem_type() const=0 ;
+	virtual String get_filesystem_type() const = 0;
 	static String get_full_path(const String &p_path, AccessType p_access);
 	static DirAccess *create_for_path(const String &p_path);
 

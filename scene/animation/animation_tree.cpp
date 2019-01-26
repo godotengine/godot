@@ -686,7 +686,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 					} break;
 					default: {
-						ERR_PRINT("Animation corrupted (invalid track type");
+						ERR_PRINT("Animation corrupted (invalid track type)");
 						continue;
 					}
 				}

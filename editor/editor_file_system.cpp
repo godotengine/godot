@@ -1810,13 +1810,11 @@ EditorFileSystem::EditorFileSystem() {
 		da->make_dir("res://.import");
 	}
 	//this should probably also work on Unix and use the string it returns for FAT32
-	using_fat_32 = da->get_filesystem_type()=="FAT32";
+	using_fat_32 = da->get_filesystem_type() == "FAT32";
 	memdelete(da);
 
 	scan_total = 0;
 	update_script_classes_queued = false;
-
-
 }
 
 EditorFileSystem::~EditorFileSystem() {
