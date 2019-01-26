@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventMIDI" inherits="InputEvent" category="Core" version="3.1">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="channel" type="int" setter="set_channel" getter="get_channel">
+		</member>
+		<member name="controller_number" type="int" setter="set_controller_number" getter="get_controller_number">
+		</member>
+		<member name="controller_value" type="int" setter="set_controller_value" getter="get_controller_value">
+		</member>
+		<member name="instrument" type="int" setter="set_instrument" getter="get_instrument">
+		</member>
+		<member name="message" type="int" setter="set_message" getter="get_message">
+		</member>
+		<member name="pitch" type="int" setter="set_pitch" getter="get_pitch">
+		</member>
+		<member name="pressure" type="int" setter="set_pressure" getter="get_pressure">
+		</member>
+		<member name="velocity" type="int" setter="set_velocity" getter="get_velocity">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

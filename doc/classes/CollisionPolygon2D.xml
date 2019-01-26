@@ -22,6 +22,8 @@
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled">
 			If [code]true[/code], only edges that face up, relative to CollisionPolygon2D's rotation, will collide with other objects.
 		</member>
+		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin">
+		</member>
 		<member name="polygon" type="PoolVector2Array" setter="set_polygon" getter="get_polygon">
 			The polygon's list of vertices. The final point will be connected to the first.
 		</member>

@@ -27,6 +27,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_current_item_drawn" qualifiers="const">
+			<return type="CanvasItem">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_margin" qualifiers="const">
 			<return type="float">
 			</return>

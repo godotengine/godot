@@ -75,14 +75,6 @@
 				Specify a Tangent for the next Vertex to use.
 			</description>
 		</method>
-		<method name="add_to_format">
-			<return type="void">
-			</return>
-			<argument index="0" name="flags" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="add_triangle_fan">
 			<return type="void">
 			</return>

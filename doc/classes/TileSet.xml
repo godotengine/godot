@@ -439,6 +439,16 @@
 				Returns the one-way collision value of a tile's shape.
 			</description>
 		</method>
+		<method name="tile_get_shape_one_way_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="tile_get_shape_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
@@ -631,6 +641,18 @@
 			</argument>
 			<description>
 				Enables one-way collision on a tile's shape.
+			</description>
+		</method>
+		<method name="tile_set_shape_one_way_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_id" type="int">
+			</argument>
+			<argument index="2" name="one_way" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="tile_set_shape_transform">

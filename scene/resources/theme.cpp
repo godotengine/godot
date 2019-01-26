@@ -756,7 +756,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_emit_theme_changed"), &Theme::_emit_theme_changed);
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
-	ClassDB::bind_method("copy_theme", &Theme::copy_theme);
+	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 }

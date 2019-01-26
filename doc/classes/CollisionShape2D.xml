@@ -20,6 +20,8 @@
 		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled">
 			Sets whether this collision shape should only detect collision on one side (top or bottom).
 		</member>
+		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin">
+		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
 			The actual shape owned by this collision shape.
 		</member>
