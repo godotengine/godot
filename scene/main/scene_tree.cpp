@@ -1941,12 +1941,11 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 void SceneTree::set_use_font_oversampling(bool p_oversampling) {
 
+	if (use_font_oversampling == p_oversampling)
+		return;
+
 	use_font_oversampling = p_oversampling;
-	if (use_font_oversampling) {
-		DynamicFontAtSize::font_oversampling = OS::get_singleton()->get_window_size().width / root->get_visible_rect().size.width;
-	} else {
-		DynamicFontAtSize::font_oversampling = 1.0;
-	}
+	_update_root_rect();
 }
 
 bool SceneTree::is_using_font_oversampling() const {
@@ -1960,6 +1959,7 @@ SceneTree::SceneTree() {
 	accept_quit = true;
 	quit_on_go_back = true;
 	initialized = false;
+	use_font_oversampling = false;
 #ifdef DEBUG_ENABLED
 	debug_collisions_hint = false;
 	debug_navigation_hint = false;
@@ -2095,8 +2095,6 @@ SceneTree::SceneTree() {
 	live_edit_root = NodePath("/root");
 
 #endif
-
-	use_font_oversampling = false;
 }
 
 SceneTree::~SceneTree() {
