@@ -573,6 +573,19 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 	if (instance->transform == p_transform)
 		return; //must be checked to avoid worst evil
 
+#ifdef DEBUG_ENABLED
+
+	for (int i = 0; i < 4; i++) {
+		const Vector3 &v = i < 3 ? p_transform.basis.elements[i] : p_transform.origin;
+		ERR_FAIL_COND(Math::is_inf(v.x));
+		ERR_FAIL_COND(Math::is_nan(v.x));
+		ERR_FAIL_COND(Math::is_inf(v.y));
+		ERR_FAIL_COND(Math::is_nan(v.y));
+		ERR_FAIL_COND(Math::is_inf(v.z));
+		ERR_FAIL_COND(Math::is_nan(v.z));
+	}
+
+#endif
 	instance->transform = p_transform;
 	_instance_queue_update(instance, true);
 }
