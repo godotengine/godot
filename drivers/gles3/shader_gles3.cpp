@@ -204,7 +204,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.vert_id);
 			glDeleteShader(v.frag_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 		}
 	}
@@ -325,7 +324,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 
 			ERR_PRINT("Vertex shader compilation failed with empty log");
@@ -347,7 +345,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			memfree(ilogmem);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 		}
 
@@ -421,7 +418,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.frag_id);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 			ERR_PRINT("Fragment shader compilation failed with empty log");
 		} else {
@@ -444,7 +440,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.frag_id);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 		}
 
@@ -491,7 +486,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			glDeleteShader(v.frag_id);
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
-			memdelete_arr(v.uniform_location);
 			v.id = 0;
 			ERR_FAIL_COND_V(iloglen <= 0, NULL);
 		}
@@ -514,7 +508,6 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		glDeleteShader(v.frag_id);
 		glDeleteShader(v.vert_id);
 		glDeleteProgram(v.id);
-		memdelete_arr(v.uniform_location);
 		v.id = 0;
 
 		ERR_FAIL_V(NULL);
@@ -751,8 +744,10 @@ void ShaderGLES3::set_custom_shader(uint32_t p_code_id) {
 void ShaderGLES3::free_custom_shader(uint32_t p_code_id) {
 
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
-	if (conditional_version.code_version == p_code_id)
+	if (conditional_version.code_version == p_code_id) {
 		conditional_version.code_version = 0; //do not keep using a version that is going away
+		unbind();
+	}
 
 	VersionKey key;
 	key.code_version = p_code_id;

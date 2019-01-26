@@ -4631,7 +4631,7 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		Shader *shader = shader_owner.get(p_rid);
 
-		if (shader->shader) {
+		if (shader->shader && shader->custom_code_id) {
 			shader->shader->free_custom_shader(shader->custom_code_id);
 		}
 
