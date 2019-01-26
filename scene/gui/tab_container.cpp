@@ -787,6 +787,12 @@ Size2 TabContainer::get_minimum_size() const {
 	Size2 ms;
 
 	Vector<Control *> tabs = _get_tabs();
+	if (tabs.size() <= 2) {
+		ms.x = 0;
+		ms.y = 0;
+		return ms;
+	}
+
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
