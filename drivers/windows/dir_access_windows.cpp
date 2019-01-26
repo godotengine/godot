@@ -354,13 +354,13 @@ String DirAccessWindows::get_filesystem_type() const {
 	String unit = path.substr(0,unit_end+1) + "\\";
 	print_line("unit: "+unit);
 
-	TCHAR szVolumeName[100]    = "";
-	TCHAR szFileSystemName[10] = "";
+	WCHAR szVolumeName[100];
+	WCHAR szFileSystemName[10];
 	DWORD dwSerialNumber       = 0;
 	DWORD dwMaxFileNameLength  = 0;
 	DWORD dwFileSystemFlags    = 0;
 
-	if(::GetVolumeInformation(unit.utf8().get_data(),
+	if(::GetVolumeInformationW(unit.c_str(),
 				    szVolumeName,
 				    sizeof(szVolumeName),
 				    &dwSerialNumber,
