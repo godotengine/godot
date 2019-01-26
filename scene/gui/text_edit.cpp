@@ -1560,8 +1560,7 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 	}
 
 	if ((ch == '\'' || ch == '"') &&
-			cursor_get_column() > 0 &&
-			_is_text_char(text[cursor.line][cursor_get_column() - 1])) {
+			cursor_get_column() > 0 && _is_text_char(text[cursor.line][cursor_get_column() - 1]) && !_is_pair_right_symbol(text[cursor.line][cursor_get_column()])) {
 		insert_text_at_cursor(ch_single);
 		cursor_set_column(cursor_position_to_move);
 		return;
