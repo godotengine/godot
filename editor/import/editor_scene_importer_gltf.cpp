@@ -1030,11 +1030,19 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 						int size = src_varr.size();
 						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
 						{
+
+							int max_idx = varr.size();
+							varr.resize(size);
+
 							PoolVector<Vector3>::Write w_varr = varr.write();
 							PoolVector<Vector3>::Read r_varr = varr.read();
 							PoolVector<Vector3>::Read r_src_varr = src_varr.read();
 							for (int l = 0; l < size; l++) {
-								w_varr[l] = r_varr[l] + r_src_varr[l];
+								if (l < max_idx) {
+									w_varr[l] = r_varr[l] + r_src_varr[l];
+								} else {
+									w_varr[l] = r_src_varr[l];
+								}
 							}
 						}
 						array_copy[Mesh::ARRAY_VERTEX] = varr;
@@ -1045,11 +1053,18 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 						int size = src_narr.size();
 						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
 						{
+							int max_idx = narr.size();
+							narr.resize(size);
+
 							PoolVector<Vector3>::Write w_narr = narr.write();
 							PoolVector<Vector3>::Read r_narr = narr.read();
 							PoolVector<Vector3>::Read r_src_narr = src_narr.read();
 							for (int l = 0; l < size; l++) {
-								w_narr[l] = r_narr[l] + r_src_narr[l];
+								if (l < max_idx) {
+									w_narr[l] = r_narr[l] + r_src_narr[l];
+								} else {
+									w_narr[l] = r_src_narr[l];
+								}
 							}
 						}
 						array_copy[Mesh::ARRAY_NORMAL] = narr;
@@ -1062,6 +1077,8 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 						{
 
+							int max_idx = tangents_v3.size();
+
 							int size4 = src_tangents.size();
 							tangents_v4.resize(size4);
 							PoolVector<float>::Write w4 = tangents_v4.write();
@@ -1071,9 +1088,15 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 							for (int l = 0; l < size4 / 4; l++) {
 
-								w4[l * 4 + 0] = r3[l].x + r4[l * 4 + 0];
-								w4[l * 4 + 1] = r3[l].y + r4[l * 4 + 1];
-								w4[l * 4 + 2] = r3[l].z + r4[l * 4 + 2];
+								if (l < max_idx) {
+									w4[l * 4 + 0] = r3[l].x + r4[l * 4 + 0];
+									w4[l * 4 + 1] = r3[l].y + r4[l * 4 + 1];
+									w4[l * 4 + 2] = r3[l].z + r4[l * 4 + 2];
+								} else {
+									w4[l * 4 + 0] = r4[l * 4 + 0];
+									w4[l * 4 + 1] = r4[l * 4 + 1];
+									w4[l * 4 + 2] = r4[l * 4 + 2];
+								}
 								w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
 							}
 						}
