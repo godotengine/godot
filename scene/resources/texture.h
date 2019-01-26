@@ -111,7 +111,7 @@ private:
 	Size2 size_override;
 	float lossy_storage_quality;
 	mutable Ref<BitMap> alpha_cache;
-	Ref<ImageTexture> image_cache;
+	Ref<Image> image_cache;
 
 protected:
 	virtual void reload_from_file();
