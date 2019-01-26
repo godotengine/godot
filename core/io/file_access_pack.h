@@ -223,7 +223,6 @@ public:
 
 	virtual String get_filesystem_type() const;
 
-
 	DirAccessPack();
 	~DirAccessPack();
 };
