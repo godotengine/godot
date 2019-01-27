@@ -53,6 +53,12 @@ Error ResourceInteractiveLoader::wait() {
 	return err;
 }
 
+ResourceInteractiveLoader::~ResourceInteractiveLoader() {
+	if (path_loading != String()) {
+		ResourceLoader::_remove_from_loading_map(path_loading);
+	}
+}
+
 bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_for_type) const {
 
 	String extension = p_path.get_extension();
@@ -280,6 +286,39 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 	return RES();
 }
 
+bool ResourceLoader::_add_to_loading_map(const String &p_path) {
+
+	bool success;
+	if (loading_map_mutex) {
+		loading_map_mutex->lock();
+	}
+
+	if (loading_map.has(p_path)) {
+		success = false;
+	} else {
+		loading_map[p_path] = true;
+		success = true;
+	}
+
+	if (loading_map_mutex) {
+		loading_map_mutex->unlock();
+	}
+
+	return success;
+}
+
+void ResourceLoader::_remove_from_loading_map(const String &p_path) {
+	if (loading_map_mutex) {
+		loading_map_mutex->lock();
+	}
+
+	loading_map.erase(p_path);
+
+	if (loading_map_mutex) {
+		loading_map_mutex->unlock();
+	}
+}
+
 RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
 
 	if (r_error)
@@ -292,6 +331,15 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	if (!p_no_cache) {
+
+		{
+			bool success = _add_to_loading_map(local_path);
+			if (!success) {
+				ERR_EXPLAIN("Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
+				ERR_FAIL_V(RES());
+			}
+		}
+
 		//lock first if possible
 		if (ResourceCache::lock) {
 			ResourceCache::lock->read_lock();
@@ -310,7 +358,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 				if (ResourceCache::lock) {
 					ResourceCache::lock->read_unlock();
 				}
-				print_verbose("Loading resource: " + local_path + " (cached)");
+				_remove_from_loading_map(local_path);
 				return res;
 			}
 		}
@@ -322,12 +370,21 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 	bool xl_remapped = false;
 	String path = _path_remap(local_path, &xl_remapped);
 
-	ERR_FAIL_COND_V(path == "", RES());
+	if (path == "") {
+		if (!p_no_cache) {
+			_remove_from_loading_map(local_path);
+		}
+		ERR_EXPLAIN("Remapping '" + local_path + "'failed.");
+		ERR_FAIL_V(RES());
+	}
 
 	print_verbose("Loading resource: " + path);
 	RES res = _load(path, local_path, p_type_hint, p_no_cache, r_error);
 
 	if (res.is_null()) {
+		if (!p_no_cache) {
+			_remove_from_loading_map(local_path);
+		}
 		return RES();
 	}
 	if (!p_no_cache)
@@ -345,6 +402,10 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		res->set_last_modified_time(mt);
 	}
 #endif
+
+	if (!p_no_cache) {
+		_remove_from_loading_map(local_path);
+	}
 
 	if (_loaded_callback) {
 		_loaded_callback(res, p_path);
@@ -394,19 +455,36 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	else
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
-	if (!p_no_cache && ResourceCache::has(local_path)) {
+	if (!p_no_cache) {
 
-		print_verbose("Loading resource: " + local_path + " (cached)");
-		Ref<Resource> res_cached = ResourceCache::get(local_path);
-		Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+		bool success = _add_to_loading_map(local_path);
+		if (!success) {
+			ERR_EXPLAIN("Resource: '" + local_path + "' is already being loaded. Cyclic reference?");
+			ERR_FAIL_V(RES());
+		}
 
-		ril->resource = res_cached;
-		return ril;
+		if (ResourceCache::has(local_path)) {
+
+			print_verbose("Loading resource: " + local_path + " (cached)");
+			Ref<Resource> res_cached = ResourceCache::get(local_path);
+			Ref<ResourceInteractiveLoaderDefault> ril = Ref<ResourceInteractiveLoaderDefault>(memnew(ResourceInteractiveLoaderDefault));
+
+			ril->resource = res_cached;
+			ril->path_loading = local_path;
+			return ril;
+		}
 	}
 
 	bool xl_remapped = false;
 	String path = _path_remap(local_path, &xl_remapped);
-	ERR_FAIL_COND_V(path == "", Ref<ResourceInteractiveLoader>());
+	if (path == "") {
+		if (!p_no_cache) {
+			_remove_from_loading_map(local_path);
+		}
+		ERR_EXPLAIN("Remapping '" + local_path + "'failed.");
+		ERR_FAIL_V(RES());
+	}
+
 	print_verbose("Loading resource: " + path);
 
 	bool found = false;
@@ -418,12 +496,19 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(path, local_path, r_error);
 		if (ril.is_null())
 			continue;
-		if (!p_no_cache)
+		if (!p_no_cache) {
 			ril->set_local_path(local_path);
+			ril->path_loading = local_path;
+		}
+
 		if (xl_remapped)
 			ril->set_translation_remapped(true);
 
 		return ril;
+	}
+
+	if (!p_no_cache) {
+		_remove_from_loading_map(local_path);
 	}
 
 	if (found) {
@@ -831,6 +916,27 @@ void ResourceLoader::remove_custom_loaders() {
 	for (int i = 0; i < custom_loaders.size(); ++i) {
 		remove_resource_format_loader(custom_loaders[i]);
 	}
+}
+
+Mutex *ResourceLoader::loading_map_mutex = NULL;
+HashMap<String, int> ResourceLoader::loading_map;
+
+void ResourceLoader::initialize() {
+#ifndef NO_THREADS
+	loading_map_mutex = Mutex::create();
+#endif
+}
+
+void ResourceLoader::finalize() {
+#ifndef NO_THREADS
+	const String *K = NULL;
+	while ((K = loading_map.next(K))) {
+		ERR_PRINTS("Exited while resource is being loaded: " + *K);
+	}
+	loading_map.clear();
+	memdelete(loading_map_mutex);
+	loading_map_mutex = NULL;
+#endif
 }
 
 ResourceLoadErrorNotify ResourceLoader::err_notify = NULL;

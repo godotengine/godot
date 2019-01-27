@@ -99,6 +99,7 @@ void register_core_types() {
 	_global_mutex = Mutex::create();
 
 	StringName::setup();
+	ResourceLoader::initialize();
 
 	register_global_constants();
 	register_variant_methods();
@@ -268,6 +269,8 @@ void unregister_core_types() {
 
 	if (ip)
 		memdelete(ip);
+
+	ResourceLoader::finalize();
 
 	ObjectDB::cleanup();
 
