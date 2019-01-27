@@ -116,6 +116,8 @@ protected:
 
 	virtual void _validate_property(PropertyInfo &property) const;
 
+	Array get_meshes() const;
+
 public:
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
