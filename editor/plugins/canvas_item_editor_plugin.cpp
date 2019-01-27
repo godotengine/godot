@@ -2741,10 +2741,11 @@ void CanvasItemEditor::_draw_selection() {
 			if (canvas_item->_edit_use_pivot()) {
 
 				// Draw the node's pivot
-				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position())).orthonormalized();
+				Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * Transform2D(canvas_item->_edit_get_rotation(), canvas_item->_edit_get_position() + canvas_item->_edit_get_pivot())).orthonormalized();
 				Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
+
 				viewport->draw_set_transform_matrix(simple_xform);
-				viewport->draw_texture(pivot_icon, canvas_item->_edit_get_pivot() - (pivot_icon->get_size() / 2).floor());
+				viewport->draw_texture(pivot_icon, -(pivot_icon->get_size() / 2).floor());
 				viewport->draw_set_transform_matrix(viewport->get_transform());
 			}
 
