@@ -4,7 +4,7 @@
 		Custom gizmo for editing Spatial objects.
 	</brief_description>
 	<description>
-		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. These are created by [method EditorSpatialGizmoPlugin.create_gizmo].
+		Custom gizmo that is used for providing custom visualization and editing (handles) for 3D Spatial objects. See [EditorSpatialGizmoPlugin] for more information.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -116,7 +116,30 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Get actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle]
+				Get actual value of a handle. This value can be anything and used for eventually undoing the motion when calling [method commit_handle].
+			</description>
+		</method>
+		<method name="get_plugin" qualifiers="const">
+			<return type="EditorSpatialGizmoPlugin">
+			</return>
+			<description>
+				Return the [EditorSpatialGizmoPlugin] that owns this gizmo. It's useful to retrieve materials using [method EditorSpatialGizmoPlugin.get_material].
+			</description>
+		</method>
+		<method name="get_spatial_node" qualifiers="const">
+			<return type="Spatial">
+			</return>
+			<description>
+				Returns the Spatial node associated with this gizmo.
+			</description>
+		</method>
+		<method name="is_handle_highlighted" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+				Get whether a handle is highlighted or not.
 			</description>
 		</method>
 		<method name="redraw" qualifiers="virtual">

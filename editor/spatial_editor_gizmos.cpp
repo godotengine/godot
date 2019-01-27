@@ -99,26 +99,63 @@ void EditorSpatialGizmo::clear() {
 
 void EditorSpatialGizmo::redraw() {
 
+	if (get_script_instance() && get_script_instance()->has_method("redraw")) {
+		get_script_instance()->call("redraw");
+		return;
+	}
+
 	ERR_FAIL_COND(!gizmo_plugin);
 	gizmo_plugin->redraw(this);
 }
 
 String EditorSpatialGizmo::get_handle_name(int p_idx) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("get_handle_name")) {
+		return get_script_instance()->call("get_handle_name", p_idx);
+	}
+
 	ERR_FAIL_COND_V(!gizmo_plugin, "");
 	return gizmo_plugin->get_handle_name(this, p_idx);
 }
 
+bool EditorSpatialGizmo::is_handle_highlighted(int p_idx) const {
+
+	if (get_script_instance() && get_script_instance()->has_method("is_handle_highlighted")) {
+		return get_script_instance()->call("is_handle_highlighted", p_idx);
+	}
+
+	ERR_FAIL_COND_V(!gizmo_plugin, false);
+	return gizmo_plugin->is_handle_highlighted(this, p_idx);
+}
+
 Variant EditorSpatialGizmo::get_handle_value(int p_idx) {
+
+	if (get_script_instance() && get_script_instance()->has_method("get_handle_value")) {
+		return get_script_instance()->call("get_handle_value", p_idx);
+	}
+
 	ERR_FAIL_COND_V(!gizmo_plugin, Variant());
 	return gizmo_plugin->get_handle_value(this, p_idx);
 }
 
 void EditorSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+
+	if (get_script_instance() && get_script_instance()->has_method("set_handle")) {
+		get_script_instance()->call("set_handle", p_idx, p_camera, p_point);
+		return;
+	}
+
 	ERR_FAIL_COND(!gizmo_plugin);
 	return gizmo_plugin->set_handle(this, p_idx, p_camera, p_point);
 }
 
 void EditorSpatialGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+
+	if (get_script_instance() && get_script_instance()->has_method("commit_handle")) {
+		get_script_instance()->call("commit_handle", p_idx, p_restore, p_cancel);
+		return;
+	}
+
 	ERR_FAIL_COND(!gizmo_plugin);
 	return gizmo_plugin->commit_handle(this, p_idx, p_restore, p_cancel);
 }
@@ -298,7 +335,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref
 		for (int i = 0; i < p_handles.size(); i++) {
 
 			Color col(1, 1, 1, 1);
-			if (gizmo_plugin->is_gizmo_handle_highlighted(this, i))
+			if (is_handle_highlighted(i))
 				col = Color(0, 0, 1, 0.9);
 
 			if (SpatialEditor::get_singleton()->get_over_gizmo_handle() != i)
@@ -690,11 +727,14 @@ void EditorSpatialGizmo::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_unscaled_billboard", "material", "default_scale"), &EditorSpatialGizmo::add_unscaled_billboard, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("add_handles", "handles", "material", "billboard", "secondary"), &EditorSpatialGizmo::add_handles, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_spatial_node", "node"), &EditorSpatialGizmo::_set_spatial_node);
+	ClassDB::bind_method(D_METHOD("get_spatial_node"), &EditorSpatialGizmo::get_spatial_node);
+	ClassDB::bind_method(D_METHOD("get_plugin"), &EditorSpatialGizmo::get_plugin);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorSpatialGizmo::clear);
 	ClassDB::bind_method(D_METHOD("set_hidden", "hidden"), &EditorSpatialGizmo::set_hidden);
 
 	BIND_VMETHOD(MethodInfo("redraw"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_handle_name", PropertyInfo(Variant::INT, "index")));
+	BIND_VMETHOD(MethodInfo(Variant::BOOL, "is_handle_highlighted", PropertyInfo(Variant::INT, "index")));
 
 	MethodInfo hvget(Variant::NIL, "get_handle_value", PropertyInfo(Variant::INT, "index"));
 	hvget.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
@@ -2117,7 +2157,7 @@ void SoftBodySpatialGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int 
 	soft_body->pin_point_toggle(p_idx);
 }
 
-bool SoftBodySpatialGizmoPlugin::is_gizmo_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const {
+bool SoftBodySpatialGizmoPlugin::is_handle_highlighted(const EditorSpatialGizmo *p_gizmo, int idx) const {
 	SoftBody *soft_body = Object::cast_to<SoftBody>(p_gizmo->get_spatial_node());
 	return soft_body->is_point_pinned(idx);
 }
