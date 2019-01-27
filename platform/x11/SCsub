@@ -13,6 +13,7 @@ common_x11 = [
     "key_mapping_x11.cpp",
     "joypad_linux.cpp",
     "power_x11.cpp",
+    "detect_prime.cpp"
 ]
 
 prog = env.add_program('#bin/godot', ['godot_x11.cpp'] + common_x11)
