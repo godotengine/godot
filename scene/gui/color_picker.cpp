@@ -35,6 +35,7 @@
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor_scale.h"
 #include "editor_settings.h"
 #endif
 
@@ -156,7 +157,7 @@ void ColorPicker::_value_changed(double) {
 
 void ColorPicker::_html_entered(const String &p_html) {
 
-	if (updating)
+	if (updating || text_is_constructor || !c_text->is_visible())
 		return;
 
 	float last_alpha = color.a;
@@ -211,15 +212,18 @@ void ColorPicker::_update_presets() {
 }
 
 void ColorPicker::_text_type_toggled() {
-	if (!Engine::get_singleton()->is_editor_hint())
-		return;
+
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
 		text_type->set_text("");
 		text_type->set_icon(get_icon("Script", "EditorIcons"));
+
+		c_text->set_editable(false);
 	} else {
 		text_type->set_text("#");
 		text_type->set_icon(NULL);
+
+		c_text->set_editable(true);
 	}
 	_update_color();
 }
@@ -304,19 +308,21 @@ bool ColorPicker::is_deferred_mode() const {
 void ColorPicker::_update_text_value() {
 	bool visible = true;
 	if (text_is_constructor) {
-		String t = "Color(" + String::num(color.r) + "," + String::num(color.g) + "," + String::num(color.b);
+		String t = "Color(" + String::num(color.r) + ", " + String::num(color.g) + ", " + String::num(color.b);
 		if (edit_alpha && color.a < 1)
-			t += ("," + String::num(color.a) + ")");
+			t += ", " + String::num(color.a) + ")";
 		else
 			t += ")";
 		c_text->set_text(t);
-	} else {
-		if (color.r > 1 || color.g > 1 || color.b > 1 || color.r < 0 || color.g < 0 || color.b < 0) {
-			visible = false;
-		} else {
-			c_text->set_text(color.to_html(edit_alpha && color.a < 1));
-		}
 	}
+
+	if (color.r > 1 || color.g > 1 || color.b > 1 || color.r < 0 || color.g < 0 || color.b < 0) {
+		visible = false;
+	} else if (!text_is_constructor) {
+		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
+	}
+
+	text_type->set_visible(visible);
 	c_text->set_visible(visible);
 }
 
@@ -615,22 +621,25 @@ ColorPicker::ColorPicker() :
 	screen = NULL;
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
-	btn_pick = memnew(ToolButton);
-	btn_pick->connect("pressed", this, "_screen_pick_pressed");
+	add_child(hb_smpl);
 
 	sample = memnew(TextureRect);
+	hb_smpl->add_child(sample);
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
 	sample->connect("draw", this, "_sample_draw");
 
-	hb_smpl->add_child(sample);
+	btn_pick = memnew(ToolButton);
 	hb_smpl->add_child(btn_pick);
-	add_child(hb_smpl);
+	btn_pick->set_toggle_mode(true);
+	btn_pick->set_tooltip(TTR("Pick a color from the screen."));
+	btn_pick->connect("pressed", this, "_screen_pick_pressed");
 
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
+	add_child(hb_edit);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	uv_edit = memnew(Control);
-
+	hb_edit->add_child(uv_edit);
 	uv_edit->connect("gui_input", this, "_uv_input");
 	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -638,18 +647,13 @@ ColorPicker::ColorPicker() :
 	uv_edit->set_custom_minimum_size(Size2(get_constant("sv_width"), get_constant("sv_height")));
 	uv_edit->connect("draw", this, "_hsv_draw", make_binds(0, uv_edit));
 
-	add_child(hb_edit);
-
 	w_edit = memnew(Control);
+	hb_edit->add_child(w_edit);
 	w_edit->set_custom_minimum_size(Size2(get_constant("h_width"), 0));
 	w_edit->set_h_size_flags(SIZE_FILL);
 	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 	w_edit->connect("gui_input", this, "_w_input");
 	w_edit->connect("draw", this, "_hsv_draw", make_binds(1, w_edit));
-
-	hb_edit->add_child(uv_edit);
-	hb_edit->add_child(memnew(VSeparator));
-	hb_edit->add_child(w_edit);
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
 	add_child(vbl);
@@ -691,30 +695,42 @@ ColorPicker::ColorPicker() :
 	}
 
 	HBoxContainer *hhb = memnew(HBoxContainer);
+	vbr->add_child(hhb);
 
 	btn_mode = memnew(CheckButton);
+	hhb->add_child(btn_mode);
 	btn_mode->set_text(TTR("Raw Mode"));
 	btn_mode->connect("toggled", this, "set_raw_mode");
-	hhb->add_child(btn_mode);
-	vbr->add_child(hhb);
+
 	text_type = memnew(Button);
-	text_type->set_flat(true);
-	text_type->connect("pressed", this, "_text_type_toggled");
 	hhb->add_child(text_type);
+	text_type->set_text("#");
+	text_type->set_tooltip(TTR("Switch between hexadecimal and code values."));
+	if (Engine::get_singleton()->is_editor_hint()) {
+
+#ifdef TOOLS_ENABLED
+		text_type->set_custom_minimum_size(Size2(28 * EDSCALE, 0)); // Adjust for the width of the "Script" icon.
+#endif
+		text_type->connect("pressed", this, "_text_type_toggled");
+	} else {
+
+		text_type->set_flat(true);
+		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	}
 
 	c_text = memnew(LineEdit);
 	hhb->add_child(c_text);
+	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	c_text->connect("text_entered", this, "_html_entered");
 	c_text->connect("focus_entered", this, "_focus_enter");
 	c_text->connect("focus_exited", this, "_html_focus_exit");
-
-	text_type->set_text("#");
-	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	_update_controls();
 	updating = false;
 
 	set_pick_color(Color(1, 1, 1));
+
+	add_child(memnew(HSeparator));
 
 	HBoxContainer *bbc = memnew(HBoxContainer);
 	add_child(bbc);
@@ -725,9 +741,9 @@ ColorPicker::ColorPicker() :
 	preset->connect("draw", this, "_update_presets");
 
 	bt_add_preset = memnew(Button);
+	bbc->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset"));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
-	bbc->add_child(bt_add_preset);
 }
 
 /////////////////
@@ -814,6 +830,8 @@ void ColorPickerButton::_update_picker() {
 		add_child(popup);
 		picker->connect("color_changed", this, "_color_changed");
 		popup->connect("modal_closed", this, "_modal_closed");
+		popup->connect("about_to_show", this, "set_pressed", varray(true));
+		popup->connect("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 	}
@@ -838,10 +856,12 @@ void ColorPickerButton::_bind_methods() {
 
 ColorPickerButton::ColorPickerButton() {
 
-	//Initialization is now done deferred
-	//this improves performance in the inspector as the color picker
-	//can be expensive to initialize
+	// Initialization is now done deferred,
+	// this improves performance in the inspector as the color picker
+	// can be expensive to initialize.
 	picker = NULL;
 	popup = NULL;
 	edit_alpha = true;
+
+	set_toggle_mode(true);
 }
