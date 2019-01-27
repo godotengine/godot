@@ -241,6 +241,7 @@ public:
 	void textures_keep_original(bool p_enable) {}
 
 	void texture_set_proxy(RID p_proxy, RID p_base) {}
+	virtual Size2 texture_size_with_proxy(RID p_texture) const { return Size2(); }
 	void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 
 	/* SKY API */

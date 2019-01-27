@@ -846,6 +846,17 @@ void RasterizerStorageGLES2::textures_keep_original(bool p_enable) {
 	config.keep_original_textures = p_enable;
 }
 
+Size2 RasterizerStorageGLES2::texture_size_with_proxy(RID p_texture) const {
+
+	const Texture *texture = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!texture, Size2());
+	if (texture->proxy) {
+		return Size2(texture->proxy->width, texture->proxy->height);
+	} else {
+		return Size2(texture->width, texture->height);
+	}
+}
+
 void RasterizerStorageGLES2::texture_set_proxy(RID p_texture, RID p_proxy) {
 	Texture *texture = texture_owner.getornull(p_texture);
 	ERR_FAIL_COND(!texture);

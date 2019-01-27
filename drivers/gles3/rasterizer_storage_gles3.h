@@ -375,6 +375,8 @@ public:
 	virtual void texture_set_detect_normal_callback(RID p_texture, VisualServer::TextureDetectCallback p_callback, void *p_userdata);
 
 	virtual void texture_set_proxy(RID p_texture, RID p_proxy);
+	virtual Size2 texture_size_with_proxy(RID p_texture) const;
+
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable);
 
 	/* SKY API */

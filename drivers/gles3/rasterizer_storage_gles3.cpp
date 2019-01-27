@@ -1687,6 +1687,17 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
 	return texture_owner.make_rid(ctex);
 }
 
+Size2 RasterizerStorageGLES3::texture_size_with_proxy(RID p_texture) const {
+
+	const Texture *texture = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!texture, Size2());
+	if (texture->proxy) {
+		return Size2(texture->proxy->width, texture->proxy->height);
+	} else {
+		return Size2(texture->width, texture->height);
+	}
+}
+
 void RasterizerStorageGLES3::texture_set_proxy(RID p_texture, RID p_proxy) {
 
 	Texture *texture = texture_owner.get(p_texture);
