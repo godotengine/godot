@@ -3277,7 +3277,24 @@ void CanvasItemEditor::_notification(int p_what) {
 		pivot_button->set_disabled(nb_having_pivot == 0);
 
 		// Show / Hide the layout button
-		presets_menu->set_visible(nb_control > 0 && nb_control == selection.size());
+		if (nb_control > 0 && nb_control == selection.size()) {
+			presets_menu->set_visible(true);
+			presets_menu->set_tooltip(TTR("Presets for the anchors and margins values of a Control node."));
+
+			// Disable if the selected node is child of a container
+			presets_menu->set_disabled(false);
+			for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
+				Control *control = Object::cast_to<Control>(E->get());
+				if (!control || Object::cast_to<Container>(control->get_parent())) {
+					presets_menu->set_disabled(true);
+					presets_menu->set_tooltip(TTR("A child of a container gets its anchors and margins values overriden by its parent."));
+					break;
+				}
+			}
+
+		} else {
+			presets_menu->set_visible(false);
+		}
 
 		// Update the viewport if bones changes
 		for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
