@@ -159,6 +159,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			small_thumbnail_size *= EDSCALE;
 
 			Ref<Image> small_image = r_texture->get_data();
+			small_image = small_image->duplicate();
 			small_image->resize(small_thumbnail_size, small_thumbnail_size, Image::INTERPOLATE_CUBIC);
 			r_small_texture.instance();
 			r_small_texture->create_from_image(small_image);

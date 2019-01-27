@@ -99,12 +99,14 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
 	} else {
 		Ref<Texture> tex = p_from;
 		img = tex->get_data();
+		if (img.is_valid()) {
+			img = img->duplicate();
+		}
 	}
 
 	if (img.is_null() || img->empty())
 		return Ref<Texture>();
 
-	img = img->duplicate();
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {

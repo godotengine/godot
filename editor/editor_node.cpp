@@ -952,6 +952,9 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	}
 
 	if (img.is_valid()) {
+
+		img = img->duplicate();
+
 		save.step(TTR("Creating Thumbnail"), 2);
 		save.step(TTR("Creating Thumbnail"), 3);
 
