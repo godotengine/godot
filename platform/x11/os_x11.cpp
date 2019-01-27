@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "os_x11.h"
+#include "detect_prime.h"
+
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -240,28 +242,15 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 // maybe contextgl wants to be in charge of creating the window
 #if defined(OPENGL_ENABLED)
-	// Set DRI_PRIME if not set. This means that Godot should default to a higher-power GPU if it exists.
-	// Note: Due to the final '0' parameter to setenv any existing DRI_PRIME environment variables will not
-	// be overwritten.
-	bool enable_dri_prime = true;
-	// Check if Nouveau is loaded, we don't want to force dGPU usage with that driver.
-	if (FileAccess *f = FileAccess::open("/proc/modules", FileAccess::READ)) {
-		// Match driver name + space
-		String nouveau_str = "nouveau ";
+	if (getenv("DRI_PRIME") == NULL) {
+		print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
+		int use_prime = detect_prime();
 
-		while (!f->eof_reached()) {
-			String line = f->get_line();
-
-			if (line.begins_with(nouveau_str)) {
-				enable_dri_prime = false;
-				break;
-			}
+		if (use_prime) {
+			print_line("Found discrete GPU, setting DRI_PRIME=1 to use it.");
+			print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
+			setenv("DRI_PRIME", "1", 1);
 		}
-		f->close();
-		memdelete(f);
-	}
-	if (enable_dri_prime) {
-		setenv("DRI_PRIME", "1", 0);
 	}
 
 	ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_3_0_COMPATIBLE;
