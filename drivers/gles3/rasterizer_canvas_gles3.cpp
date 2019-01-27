@@ -146,10 +146,15 @@ void RasterizerCanvasGLES3::canvas_begin() {
 
 	if (storage->frame.current_rt && storage->frame.clear_request) {
 		// a clear request may be pending, so do it
+		bool transparent = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 
-		glClearColor(storage->frame.clear_request_color.r, storage->frame.clear_request_color.g, storage->frame.clear_request_color.b, storage->frame.clear_request_color.a);
+		glClearColor(storage->frame.clear_request_color.r,
+				storage->frame.clear_request_color.g,
+				storage->frame.clear_request_color.b,
+				transparent ? storage->frame.clear_request_color.a : 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		storage->frame.clear_request = false;
+		glColorMask(1, 1, 1, transparent ? 1 : 0);
 	}
 
 	reset_canvas();
@@ -193,6 +198,7 @@ void RasterizerCanvasGLES3::canvas_end() {
 
 	glBindVertexArray(0);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
+	glColorMask(1, 1, 1, 1);
 
 	state.using_texture_rect = false;
 	state.using_ninepatch = false;

@@ -112,9 +112,11 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 void RasterizerCanvasGLES2::canvas_begin() {
 
 	state.canvas_shader.bind();
+	bool transparent = false;
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glColorMask(1, 1, 1, 1);
+		transparent = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 	}
 
 	if (storage->frame.clear_request) {
@@ -122,10 +124,12 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		glClearColor(storage->frame.clear_request_color.r,
 				storage->frame.clear_request_color.g,
 				storage->frame.clear_request_color.b,
-				storage->frame.clear_request_color.a);
+				transparent ? storage->frame.clear_request_color.a : 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		storage->frame.clear_request = false;
 	}
+
+	glColorMask(1, 1, 1, transparent ? 1 : 0);
 
 	/*
 	if (storage->frame.current_rt) {
@@ -182,6 +186,7 @@ void RasterizerCanvasGLES2::canvas_end() {
 	state.using_texture_rect = false;
 	state.using_skeleton = false;
 	state.using_ninepatch = false;
+	glColorMask(1, 1, 1, 1);
 }
 
 RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
