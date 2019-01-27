@@ -112,15 +112,6 @@ void glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid 
 	}, target, offset, data, size);
 	/* clang-format on */
 }
-
-void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid *data) {
-
-	/* clang-format off */
-	EM_ASM({
-	    GLctx.bufferSubData($0, $1, HEAPU8, $2, $3);
-	}, target, offset, data, size);
-	/* clang-format on */
-}
 #endif
 
 void glTexStorage2DCustom(GLenum target, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type) {
