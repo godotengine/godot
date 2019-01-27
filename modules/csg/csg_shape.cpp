@@ -575,6 +575,18 @@ void CSGShape::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+Array CSGShape::get_meshes() const {
+
+	if (root_mesh.is_valid()) {
+		Array arr;
+		arr.resize(2);
+		arr[0] = Transform();
+		arr[1] = root_mesh;
+		return arr;
+	}
+
+	return Array();
+}
 void CSGShape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape::_update_shape);
@@ -603,6 +615,8 @@ void CSGShape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape::is_calculating_tangents);
+
+	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape::get_meshes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
