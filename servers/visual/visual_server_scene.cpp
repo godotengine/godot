@@ -32,6 +32,7 @@
 #include "core/os/os.h"
 #include "visual_server_global.h"
 #include "visual_server_raster.h"
+#include <new>
 /* CAMERA API */
 
 RID VisualServerScene::camera_create() {
@@ -1253,7 +1254,9 @@ void VisualServerScene::_update_instance_lightmap_captures(Instance *p_instance)
 
 	//print_line("update captures for pos: " + p_instance->transform.origin);
 
-	zeromem(p_instance->lightmap_capture_data.ptrw(), 12 * sizeof(Color));
+	for (int i = 0; i < 12; i++)
+		new (&p_instance->lightmap_capture_data.ptrw()[i]) Color;
+
 	//this could use some sort of blending..
 	for (List<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
 		const PoolVector<RasterizerStorage::LightmapCaptureOctree> *octree = VSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
