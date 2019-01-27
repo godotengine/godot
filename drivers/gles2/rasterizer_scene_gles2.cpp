@@ -998,6 +998,7 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 			//add element to opaque
 			RenderList::Element *eo = render_list.add_element();
 			*eo = *e;
+			eo->use_accum_ptr = &eo->use_accum;
 		}
 
 		int rpsize = e->instance->reflection_probe_instances.size();
@@ -2066,6 +2067,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 	bool prev_unshaded = false;
 	bool prev_instancing = false;
+	bool prev_depth_prepass = false;
 	state.scene_shader.set_conditional(SceneShaderGLES2::SHADELESS, false);
 	RasterizerStorageGLES2::Material *prev_material = NULL;
 	RasterizerStorageGLES2::Geometry *prev_geometry = NULL;
@@ -2139,6 +2141,19 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				}
 
 				prev_unshaded = unshaded;
+			}
+
+			bool depth_prepass = false;
+
+			if (!p_alpha_pass && material->shader && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+				depth_prepass = true;
+			}
+
+			if (depth_prepass != prev_depth_prepass) {
+
+				state.scene_shader.set_conditional(SceneShaderGLES2::USE_DEPTH_PREPASS, depth_prepass);
+				prev_depth_prepass = depth_prepass;
+				rebind = true;
 			}
 
 			bool base_pass = !accum_pass && !unshaded; //conditions for a base pass
@@ -2432,6 +2447,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_CAPTURE, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_RADIANCE_MAP, false);
 }
 
 void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation) {
