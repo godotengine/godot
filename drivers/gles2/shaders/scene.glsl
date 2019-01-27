@@ -1498,6 +1498,12 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#ifdef USE_DEPTH_PREPASS
+	if (alpha < 0.99) {
+		discard;
+	}
+#endif
+
 #ifdef BASE_PASS
 	//none
 #ifdef USE_RADIANCE_MAP
