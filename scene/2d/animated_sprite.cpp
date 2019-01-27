@@ -395,8 +395,8 @@ void AnimatedSprite::_notification(int p_what) {
 					int fc = frames->get_frame_count(animation);
 					if (frame >= fc - 1) {
 						if (frames->get_animation_loop(animation)) {
-							emit_signal(SceneStringNames::get_singleton()->animation_finished);
 							frame = 0;
+							emit_signal(SceneStringNames::get_singleton()->animation_finished);
 						} else {
 							frame = fc - 1;
 							if (!is_over) {
