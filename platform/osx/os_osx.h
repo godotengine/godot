@@ -43,8 +43,10 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
+#include <AppKit/AppKit.h>
 #include <AppKit/NSCursor.h>
 #include <ApplicationServices/ApplicationServices.h>
+#include <CoreVideo/CoreVideo.h>
 
 #undef CursorShape
 /**
@@ -102,10 +104,13 @@ public:
 	id window_view;
 	id autoreleasePool;
 	id cursor;
-	id pixelFormat;
-	id context;
+	NSOpenGLPixelFormat *pixelFormat;
+	NSOpenGLContext *context;
 
 	bool layered_window;
+	bool waiting_for_vsync;
+	NSCondition *vsync_condition;
+	CVDisplayLinkRef displayLink;
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
