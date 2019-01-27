@@ -40,6 +40,8 @@
 class ResourceInteractiveLoader : public Reference {
 
 	GDCLASS(ResourceInteractiveLoader, Reference);
+	friend class ResourceLoader;
+	String path_loading;
 
 protected:
 	static void _bind_methods();
@@ -54,6 +56,7 @@ public:
 	virtual Error wait();
 
 	ResourceInteractiveLoader() {}
+	~ResourceInteractiveLoader();
 };
 
 class ResourceFormatLoader : public Reference {
@@ -110,12 +113,18 @@ class ResourceLoader {
 	static SelfList<Resource>::List remapped_list;
 
 	friend class ResourceFormatImporter;
+	friend class ResourceInteractiveLoader;
 	//internal load function
 	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error);
 
 	static ResourceLoadedCallback _loaded_callback;
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
+	static Mutex *loading_map_mutex;
+	static HashMap<String, int> loading_map;
+
+	static bool _add_to_loading_map(const String &p_path);
+	static void _remove_from_loading_map(const String &p_path);
 
 public:
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
@@ -170,6 +179,9 @@ public:
 	static void remove_custom_resource_format_loader(String script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
+
+	static void initialize();
+	static void finalize();
 };
 
 #endif
