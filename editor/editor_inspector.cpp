@@ -2010,7 +2010,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	}
 }
 
-void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value) {
+void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing) {
 	update_tree();
 }
 
