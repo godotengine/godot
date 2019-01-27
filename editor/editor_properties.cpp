@@ -2187,7 +2187,19 @@ void EditorPropertyResource::_menu_option(int p_which) {
 				return;
 			}
 
-			Object *obj = ClassDB::instance(intype);
+			Object *obj = NULL;
+
+			if (ScriptServer::is_global_class(intype)) {
+				obj = ClassDB::instance(ScriptServer::get_global_class_base(intype));
+				if (obj) {
+					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(intype));
+					if (script.is_valid()) {
+						obj->set_script(Variant(script));
+					}
+				}
+			} else {
+				obj = ClassDB::instance(intype);
+			}
 
 			if (!obj) {
 				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
