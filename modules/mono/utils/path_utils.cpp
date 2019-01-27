@@ -59,7 +59,7 @@ String path_which(const String &p_name) {
 
 #ifdef WINDOWS_ENABLED
 		for (int j = 0; j < exts.size(); j++) {
-			String p2 = p + exts[j];
+			String p2 = p + exts[j].to_lower(); // lowercase to reduce risk of case mismatch warning
 
 			if (FileAccess::exists(p2))
 				return p2;
