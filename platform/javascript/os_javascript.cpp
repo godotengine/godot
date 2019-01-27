@@ -442,6 +442,9 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 
 		if (texture.is_valid()) {
 			image = texture->get_data();
+			if (image.is_valid()) {
+				image->duplicate();
+			}
 		}
 
 		if (!image.is_valid() && atlas_texture.is_valid()) {
@@ -467,6 +470,8 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 		image = texture->get_data();
 
 		ERR_FAIL_COND(!image.is_valid());
+
+		image = image->duplicate();
 
 		if (atlas_texture.is_valid())
 			image->crop_from_point(
