@@ -187,6 +187,8 @@ if env['builtin_bullet']:
     thirdparty_sources = [thirdparty_dir + file for file in bullet2_src]
 
     env_bullet.Append(CPPPATH=[thirdparty_dir])
+    if env['target'] == "debug" or env['target'] == "release_debug":
+        env_bullet.Append(CCFLAGS=['-DBT_DEBUG'])
 
     env_thirdparty = env_bullet.Clone()
     env_thirdparty.disable_warnings()
