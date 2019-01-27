@@ -2,36 +2,57 @@
 # Each line is a file pattern followed by one or more owners.
 # Owners can be @users, @org/teams or emails
 
-core/*            @reduz
+/core/               @reduz
 
-doc/*             @godotengine/documentation
+/doc/                @godotengine/documentation
+doc_classes/*        @godotengine/documentation
 
-drivers/gles2/*   @karroffel
-drivers/gles3/*   @reduz
+# Rendering
+/drivers/gl_context/ @reduz
+/drivers/gles2/      @reduz
+/drivers/gles3/      @reduz
 
-editor/icons/*    @djrm
+# Audio
+/drivers/alsa/       @marcelofg55
+/drivers/alsamidi/   @marcelofg55
+/drivers/coreaudio/  @marcelofg55
+/drivers/coremidi/   @marcelofg55
+/drivers/pulseaudio/ @marcelofg55
+/drivers/rtaudio/    @marcelofg55
+/drivers/wasapi/     @marcelofg55
+/drivers/winmidi/    @marcelofg55
+/drivers/xaudio2/    @marcelofg55
 
-main/*            @reduz
+# Porting
+/drivers/unix/       @reduz @hpvb
+/drivers/windows/    @reduz @hpvb
 
-misc/*            @akien-mga
+/editor/icons/       @djrm
 
-modules/bullet/*     @AndreaCatania
-modules/enet/*       @godotengine/network
-modules/gdnative/*   @karroffel
-modules/gdscript/*   @reduz @vnen @bojidar-bg
-modules/mbedtls/*    @godotengine/network
-modules/mobile_vr/*  @BastiaanOlij
-modules/mono/*       @neikeq
-modules/regex/*      @LeeZH
-modules/upnp/*       @godotengine/network
-modules/websocket/*  @godotengine/network
+/main/               @reduz
 
-platform/javascript/*  @eska014
-platform/uwp/*         @vnen
+/misc/               @akien-mga
 
-scene/main/*      @reduz
+/modules/bullet/     @AndreaCatania
+/modules/csg/        @reduz @BastiaanOlij
+/modules/enet/       @godotengine/network
+/modules/gdnative/   @karroffel
+/modules/gdnative/*arvr/ @BastiaanOlij
+/modules/gdscript/   @reduz @vnen @bojidar-bg
+/modules/mbedtls/    @godotengine/network
+/modules/mobile_vr/  @BastiaanOlij
+/modules/mono/       @neikeq
+/modules/opensimplex/ @JFonS
+/modules/regex/      @LeeZH
+/modules/upnp/       @godotengine/network
+/modules/websocket/  @godotengine/network
 
-server/physics*   @reduz @AndreaCatania
-server/visual*    @reduz @karroffel
+/platform/javascript/ @eska014
+/platform/uwp/       @vnen
 
-thirdparty/*      @akien-mga
+/scene/main/         @reduz
+
+/server/physics*/    @reduz @AndreaCatania
+/server/visual*/     @reduz @karroffel
+
+/thirdparty/         @akien-mga
