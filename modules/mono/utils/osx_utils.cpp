@@ -30,9 +30,9 @@
 
 #include "osx_utils.h"
 
-#include "core/print_string.h"
-
 #ifdef OSX_ENABLED
+
+#include "core/print_string.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreServices/CoreServices.h>

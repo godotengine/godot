@@ -565,7 +565,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 		if (unexpected_exc) {
 			GDMonoInternals::unhandled_exception(unexpected_exc);
-			_UNREACHABLE_();
+			GD_UNREACHABLE();
 		}
 
 		Vector<ScriptLanguage::StackInfo> _si;
@@ -604,7 +604,7 @@ void debug_unhandled_exception(MonoException *p_exc) {
 		ScriptDebugger::get_singleton()->idle_poll();
 #endif
 	GDMonoInternals::unhandled_exception(p_exc); // prints the exception as well
-	_UNREACHABLE_();
+	GD_UNREACHABLE();
 }
 
 void print_unhandled_exception(MonoException *p_exc) {
@@ -615,7 +615,7 @@ void set_pending_exception(MonoException *p_exc) {
 #ifdef HAS_PENDING_EXCEPTIONS
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
-		_UNREACHABLE_();
+		GD_UNREACHABLE();
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {
@@ -624,7 +624,7 @@ void set_pending_exception(MonoException *p_exc) {
 	}
 #else
 	debug_unhandled_exception(p_exc);
-	_UNREACHABLE_();
+	GD_UNREACHABLE();
 #endif
 }
 

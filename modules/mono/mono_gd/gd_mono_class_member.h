@@ -35,7 +35,7 @@
 
 #include <mono/metadata/object.h>
 
-class GDMonoClassMember {
+class IMonoClassMember {
 public:
 	enum Visibility {
 		PRIVATE,
@@ -51,7 +51,7 @@ public:
 		MEMBER_TYPE_METHOD
 	};
 
-	virtual ~GDMonoClassMember() {}
+	virtual ~IMonoClassMember() {}
 
 	virtual MemberType get_member_type() = 0;
 

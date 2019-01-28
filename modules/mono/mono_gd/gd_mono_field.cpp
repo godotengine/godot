@@ -505,20 +505,20 @@ bool GDMonoField::is_static() {
 	return mono_field_get_flags(mono_field) & MONO_FIELD_ATTR_STATIC;
 }
 
-GDMonoClassMember::Visibility GDMonoField::get_visibility() {
+IMonoClassMember::Visibility GDMonoField::get_visibility() {
 	switch (mono_field_get_flags(mono_field) & MONO_FIELD_ATTR_FIELD_ACCESS_MASK) {
 		case MONO_FIELD_ATTR_PRIVATE:
-			return GDMonoClassMember::PRIVATE;
+			return IMonoClassMember::PRIVATE;
 		case MONO_FIELD_ATTR_FAM_AND_ASSEM:
-			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
+			return IMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_FIELD_ATTR_ASSEMBLY:
-			return GDMonoClassMember::INTERNAL;
+			return IMonoClassMember::INTERNAL;
 		case MONO_FIELD_ATTR_FAMILY:
-			return GDMonoClassMember::PROTECTED;
+			return IMonoClassMember::PROTECTED;
 		case MONO_FIELD_ATTR_PUBLIC:
-			return GDMonoClassMember::PUBLIC;
+			return IMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
+			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
 }
 

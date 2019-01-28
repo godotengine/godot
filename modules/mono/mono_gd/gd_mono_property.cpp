@@ -80,24 +80,24 @@ bool GDMonoProperty::is_static() {
 	return mono_method_get_flags(prop_method, NULL) & MONO_METHOD_ATTR_STATIC;
 }
 
-GDMonoClassMember::Visibility GDMonoProperty::get_visibility() {
+IMonoClassMember::Visibility GDMonoProperty::get_visibility() {
 	MonoMethod *prop_method = mono_property_get_get_method(mono_property);
 	if (prop_method == NULL)
 		prop_method = mono_property_get_set_method(mono_property);
 
 	switch (mono_method_get_flags(prop_method, NULL) & MONO_METHOD_ATTR_ACCESS_MASK) {
 		case MONO_METHOD_ATTR_PRIVATE:
-			return GDMonoClassMember::PRIVATE;
+			return IMonoClassMember::PRIVATE;
 		case MONO_METHOD_ATTR_FAM_AND_ASSEM:
-			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
+			return IMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_METHOD_ATTR_ASSEM:
-			return GDMonoClassMember::INTERNAL;
+			return IMonoClassMember::INTERNAL;
 		case MONO_METHOD_ATTR_FAMILY:
-			return GDMonoClassMember::PROTECTED;
+			return IMonoClassMember::PROTECTED;
 		case MONO_METHOD_ATTR_PUBLIC:
-			return GDMonoClassMember::PUBLIC;
+			return IMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
+			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
 }
 

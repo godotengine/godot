@@ -76,6 +76,9 @@ public:
 
 	static void show_build_error_dialog(const String &p_message);
 
+	static const char *get_msbuild_issues_filename() { return "msbuild_issues.csv"; }
+	static const char *get_msbuild_log_filename() { return "msbuild_log.txt"; }
+
 	void build_exit_callback(const MonoBuildInfo &p_build_info, int p_exit_code);
 
 	void restart_build(MonoBuildTab *p_build_tab);

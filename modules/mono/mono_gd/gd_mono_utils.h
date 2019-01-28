@@ -44,7 +44,7 @@
 #define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
 	if (unlikely(m_exc != NULL)) {                     \
 		GDMonoUtils::debug_unhandled_exception(m_exc); \
-		_UNREACHABLE_();                               \
+		GD_UNREACHABLE();                              \
 	}
 
 namespace GDMonoUtils {
@@ -214,7 +214,7 @@ void set_exception_message(MonoException *p_exc, String message);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);
-_NO_RETURN_ void debug_unhandled_exception(MonoException *p_exc);
+GD_NORETURN void debug_unhandled_exception(MonoException *p_exc);
 void print_unhandled_exception(MonoException *p_exc);
 
 /**

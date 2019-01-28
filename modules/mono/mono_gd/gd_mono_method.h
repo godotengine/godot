@@ -35,7 +35,7 @@
 #include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
 
-class GDMonoMethod : public GDMonoClassMember {
+class GDMonoMethod : public IMonoClassMember {
 
 	StringName name;
 
@@ -57,17 +57,17 @@ class GDMonoMethod : public GDMonoClassMember {
 	MonoMethod *mono_method;
 
 public:
-	virtual MemberType get_member_type() { return MEMBER_TYPE_METHOD; }
+	virtual MemberType get_member_type() GD_FINAL { return MEMBER_TYPE_METHOD; }
 
-	virtual StringName get_name() { return name; }
+	virtual StringName get_name() GD_FINAL { return name; }
 
-	virtual bool is_static();
+	virtual bool is_static() GD_FINAL;
 
-	virtual Visibility get_visibility();
+	virtual Visibility get_visibility() GD_FINAL;
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class);
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
-	virtual void fetch_attributes();
+	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
+	void fetch_attributes();
 
 	_FORCE_INLINE_ int get_parameters_count() { return params_count; }
 	_FORCE_INLINE_ ManagedType get_return_type() { return return_type; }

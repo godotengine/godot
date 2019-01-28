@@ -517,7 +517,7 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 
 	// Remove old issues file
 
-	String issues_file = "msbuild_issues.csv";
+	String issues_file = get_msbuild_issues_filename();
 	DirAccessRef d = DirAccess::create_for_path(log_dirpath);
 	if (d->file_exists(issues_file)) {
 		Error err = d->remove(issues_file);
@@ -584,7 +584,8 @@ void GodotSharpBuilds::BuildProcess::start(bool p_blocking) {
 		exit_code = klass->get_field("exitCode")->get_int_value(mono_object);
 
 		if (exit_code != 0) {
-			print_verbose("MSBuild finished with exit code " + itos(exit_code));
+			String log_filepath = build_info.get_log_dirpath().plus_file(get_msbuild_log_filename());
+			print_verbose("MSBuild exited with code: " + itos(exit_code) + ". Log file: " + log_filepath);
 		}
 
 		build_tab->on_build_exit(exit_code == 0 ? MonoBuildTab::RESULT_SUCCESS : MonoBuildTab::RESULT_ERROR);

@@ -578,7 +578,7 @@ void CSharpLanguage::frame() {
 
 				if (exc) {
 					GDMonoUtils::debug_unhandled_exception(exc);
-					_UNREACHABLE_();
+					GD_UNREACHABLE();
 				}
 			}
 		}
@@ -1608,7 +1608,7 @@ bool CSharpInstance::refcount_decremented() {
 	return ref_dying;
 }
 
-MultiplayerAPI::RPCMode CSharpInstance::_member_get_rpc_mode(GDMonoClassMember *p_member) const {
+MultiplayerAPI::RPCMode CSharpInstance::_member_get_rpc_mode(IMonoClassMember *p_member) const {
 
 	if (p_member->has_attribute(CACHED_CLASS(RemoteAttribute)))
 		return MultiplayerAPI::RPC_MODE_REMOTE;
@@ -2019,7 +2019,7 @@ bool CSharpScript::_get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Ve
  * Returns false if there was an error, otherwise true.
  * If there was an error, r_prop_info and r_exported are not assigned any value.
  */
-bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
+bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported) {
 
 	StringName name = p_member->get_name();
 
@@ -2034,9 +2034,9 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p
 
 	ManagedType type;
 
-	if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_FIELD) {
+	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_FIELD) {
 		type = static_cast<GDMonoField *>(p_member)->get_type();
-	} else if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_PROPERTY) {
+	} else if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
 		type = static_cast<GDMonoProperty *>(p_member)->get_type();
 	} else {
 		CRASH_NOW();
@@ -2050,7 +2050,7 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, GDMonoClassMember *p
 		return true;
 	}
 
-	if (p_member->get_member_type() == GDMonoClassMember::MEMBER_TYPE_PROPERTY) {
+	if (p_member->get_member_type() == IMonoClassMember::MEMBER_TYPE_PROPERTY) {
 		GDMonoProperty *property = static_cast<GDMonoProperty *>(p_member);
 		if (!property->has_getter() || !property->has_setter()) {
 			ERR_PRINTS("Cannot export property because it does not provide a getter or a setter: " + p_class->get_full_name() + "." + name.operator String());
