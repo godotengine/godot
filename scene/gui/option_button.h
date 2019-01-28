@@ -71,6 +71,7 @@ public:
 	String get_item_text(int p_idx) const;
 	Ref<Texture> get_item_icon(int p_idx) const;
 	int get_item_id(int p_idx) const;
+	int get_item_index(int p_id) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;
 
