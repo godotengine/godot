@@ -82,11 +82,8 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
 
-			if (screen != NULL) {
-				if (screen->is_visible()) {
-					screen->hide();
-				}
-			}
+			if (screen != NULL && screen->is_visible())
+				screen->hide();
 		} break;
 	}
 }
@@ -500,21 +497,17 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> bev = p_event;
-
-	if (bev.is_valid()) {
-
-		if (bev->get_button_index() == BUTTON_LEFT && !bev->is_pressed()) {
-			emit_signal("color_changed", color);
-			screen->hide();
-		}
+	if (bev.is_valid() && bev->get_button_index() == BUTTON_LEFT && !bev->is_pressed()) {
+		emit_signal("color_changed", color);
+		screen->hide();
 	}
 
 	Ref<InputEventMouseMotion> mev = p_event;
-
 	if (mev.is_valid()) {
 		Viewport *r = get_tree()->get_root();
 		if (!r->get_visible_rect().has_point(Point2(mev->get_global_position().x, mev->get_global_position().y)))
 			return;
+
 		Ref<Image> img = r->get_texture()->get_data();
 		if (img.is_valid() && !img->empty()) {
 			img->lock();
@@ -540,6 +533,8 @@ void ColorPicker::_screen_pick_pressed() {
 		screen->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 		screen->set_default_cursor_shape(CURSOR_POINTING_HAND);
 		screen->connect("gui_input", this, "_screen_input");
+		// It immediately toggles off in the first press otherwise.
+		screen->call_deferred("connect", "hide", btn_pick, "set_pressed", varray(false));
 	}
 	screen->raise();
 	screen->show_modal();
@@ -830,8 +825,6 @@ void ColorPickerButton::_update_picker() {
 		add_child(popup);
 		picker->connect("color_changed", this, "_color_changed");
 		popup->connect("modal_closed", this, "_modal_closed");
-		popup->connect("about_to_show", this, "set_pressed", varray(true));
-		popup->connect("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 	}
@@ -862,6 +855,4 @@ ColorPickerButton::ColorPickerButton() {
 	picker = NULL;
 	popup = NULL;
 	edit_alpha = true;
-
-	set_toggle_mode(true);
 }
