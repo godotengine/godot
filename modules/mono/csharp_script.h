@@ -127,7 +127,7 @@ class CSharpScript : public Script {
 
 	bool _update_exports();
 #ifdef TOOLS_ENABLED
-	bool _get_member_export(GDMonoClass *p_class, GDMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
+	bool _get_member_export(GDMonoClass *p_class, IMonoClassMember *p_member, PropertyInfo &r_prop_info, bool &r_exported);
 #endif
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error);
@@ -216,7 +216,7 @@ class CSharpInstance : public ScriptInstance {
 
 	void _call_multilevel(MonoObject *p_mono_object, const StringName &p_method, const Variant **p_args, int p_argcount);
 
-	MultiplayerAPI::RPCMode _member_get_rpc_mode(GDMonoClassMember *p_member) const;
+	MultiplayerAPI::RPCMode _member_get_rpc_mode(IMonoClassMember *p_member) const;
 
 public:
 	MonoObject *get_mono_object() const;

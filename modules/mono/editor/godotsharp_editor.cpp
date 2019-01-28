@@ -452,7 +452,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 	EDITOR_DEF("mono/editor/external_editor", EDITOR_NONE);
 
-	String settings_hint_str = "None";
+	String settings_hint_str = "Disabled";
 
 #ifdef WINDOWS_ENABLED
 	settings_hint_str += ",MonoDevelop,Visual Studio Code";
