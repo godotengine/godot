@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "joypad.h"
+
 #include <oleauto.h>
 #include <wbemidl.h>
-#include <iostream>
 
 #ifndef __GNUC__
 #define __builtin_bswap32 _byteswap_ulong
@@ -149,15 +149,12 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 	const DWORD devtype = (instance->dwDevType & 0xFF);
 
 	if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
-		//printf("ignore device %s, type %x\n", instance->tszProductName, devtype);
 		return false;
 	}
 
 	hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, NULL);
 
 	if (FAILED(hr)) {
-
-		//std::wcout << "failed to create device: " << instance->tszProductName << std::endl;
 		return false;
 	}
 
@@ -383,8 +380,6 @@ void JoypadWindows::process_joypads() {
 
 		hr = joy->di_joy->GetDeviceState(sizeof(DIJOYSTATE2), &js);
 		if (FAILED(hr)) {
-
-			//printf("failed to read joy #%d\n", i);
 			continue;
 		}
 
