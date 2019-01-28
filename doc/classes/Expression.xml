@@ -16,7 +16,7 @@
 		func _on_text_entered(command):
 		    var error = expression.parse(command, [])
 		    if error != OK:
-		        print(get_error_text())
+		        print(expression.get_error_text())
 		        return
 		    var result = expression.execute([], null, true)
 		    if not expression.has_execute_failed():
