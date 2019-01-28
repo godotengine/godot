@@ -4,7 +4,7 @@
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [code]Image[/code] is 16384 pixels.
+		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [code]Image[/code] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -476,6 +476,12 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="MAX_WIDTH" value="16384">
+			The maximal width allowed for [code]Image[/code] resources.
+		</constant>
+		<constant name="MAX_HEIGHT" value="16384">
+			The maximal height allowed for [code]Image[/code] resources.
+		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
 		</constant>
 		<constant name="FORMAT_LA8" value="1" enum="Format">

@@ -52,13 +52,13 @@ typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 class Image : public Resource {
 	GDCLASS(Image, Resource);
 
+public:
+	static SavePNGFunc save_png_func;
+
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
 		MAX_HEIGHT = 16384 // force a limit somehow
 	};
-
-public:
-	static SavePNGFunc save_png_func;
 
 	enum Format {
 

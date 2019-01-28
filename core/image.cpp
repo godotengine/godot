@@ -2632,6 +2632,9 @@ void Image::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
 
+	BIND_CONSTANT(MAX_WIDTH);
+	BIND_CONSTANT(MAX_HEIGHT);
+
 	BIND_ENUM_CONSTANT(FORMAT_L8); //luminance
 	BIND_ENUM_CONSTANT(FORMAT_LA8); //luminance-alpha
 	BIND_ENUM_CONSTANT(FORMAT_R8);
