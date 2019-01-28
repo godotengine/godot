@@ -497,6 +497,7 @@ Size2 Font::get_string_size(const String &p_string) const {
 }
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
+	ERR_FAIL_COND(p_fallback == this);
 	fallback = p_fallback;
 }
 

@@ -943,6 +943,7 @@ uint32_t AtlasTexture::get_flags() const {
 
 void AtlasTexture::set_atlas(const Ref<Texture> &p_atlas) {
 
+	ERR_FAIL_COND(p_atlas == this);
 	if (atlas == p_atlas)
 		return;
 	atlas = p_atlas;
@@ -1182,6 +1183,7 @@ void LargeTexture::set_piece_offset(int p_idx, const Point2 &p_offset) {
 
 void LargeTexture::set_piece_texture(int p_idx, const Ref<Texture> &p_texture) {
 
+	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_INDEX(p_idx, pieces.size());
 	pieces.write[p_idx].texture = p_texture;
 };
@@ -1747,6 +1749,7 @@ void ProxyTexture::_bind_methods() {
 
 void ProxyTexture::set_base(const Ref<Texture> &p_texture) {
 
+	ERR_FAIL_COND(p_texture == this);
 	base = p_texture;
 	if (base.is_valid()) {
 		VS::get_singleton()->texture_set_proxy(proxy, base->get_rid());
@@ -1862,6 +1865,8 @@ int AnimatedTexture::get_frames() const {
 }
 
 void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture> &p_texture) {
+
+	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_INDEX(p_frame, MAX_FRAMES);
 
 	RWLockWrite w(rw_lock);
