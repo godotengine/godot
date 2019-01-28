@@ -797,6 +797,9 @@ void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transfor
 			btBody->setLinearVelocity((p_global_transform.getOrigin() - btBody->getWorldTransform().getOrigin()) / space->get_delta_time());
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(p_global_transform);
+	} else {
+		// Is necesasry to avoid wrong location on the rendering side on the next frame
+		godotMotionState->setWorldTransform(p_global_transform);
 	}
 	CollisionObjectBullet::set_transform__bullet(p_global_transform);
 }
