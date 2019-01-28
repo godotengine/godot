@@ -44,8 +44,6 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 
-#include <iostream>
-
 struct ColladaImport {
 
 	Collada collada;
