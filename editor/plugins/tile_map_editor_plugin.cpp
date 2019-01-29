@@ -66,6 +66,11 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			paint_button->set_icon(get_icon("Edit", "EditorIcons"));
+			bucket_fill_button->set_icon(get_icon("Bucket", "EditorIcons"));
+			picker_button->set_icon(get_icon("ColorPick", "EditorIcons"));
+			select_button->set_icon(get_icon("ActionCopy", "EditorIcons"));
+
 			rotate_left_button->set_icon(get_icon("Rotate270", "EditorIcons"));
 			rotate_right_button->set_icon(get_icon("Rotate90", "EditorIcons"));
 			flip_horizontal_button->set_icon(get_icon("MirrorX", "EditorIcons"));
@@ -76,9 +81,6 @@ void TileMapEditor::_notification(int p_what) {
 			search_box->set_clear_button_enabled(true);
 
 			PopupMenu *p = options->get_popup();
-			p->set_item_icon(p->get_item_index(OPTION_PAINTING), get_icon("Edit", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_PICK_TILE), get_icon("ColorPick", "EditorIcons"));
-			p->set_item_icon(p->get_item_index(OPTION_SELECT), get_icon("ActionCopy", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_CUT), get_icon("ActionCut", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_COPY), get_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_icon("Remove", "EditorIcons"));
@@ -87,37 +89,51 @@ void TileMapEditor::_notification(int p_what) {
 	}
 }
 
+void TileMapEditor::_update_button_tool() {
+
+	ToolButton *tb[4] = { paint_button, bucket_fill_button, picker_button, select_button };
+	// Unpress all buttons
+	for (int i = 0; i < 4; i++) {
+		tb[i]->set_pressed(false);
+	}
+
+	// Press the good button
+	switch (tool) {
+		case TOOL_NONE:
+		case TOOL_PAINTING: {
+			paint_button->set_pressed(true);
+		} break;
+		case TOOL_BUCKET: {
+			bucket_fill_button->set_pressed(true);
+		} break;
+		case TOOL_PICKING: {
+			picker_button->set_pressed(true);
+		} break;
+		case TOOL_SELECTING: {
+			select_button->set_pressed(true);
+		} break;
+		default:
+			break;
+	}
+}
+
+void TileMapEditor::_button_tool_select(int p_tool) {
+	tool = (Tool)p_tool;
+	_update_button_tool();
+	switch (tool) {
+		case TOOL_SELECTING: {
+
+			selection_active = false;
+		} break;
+		default:
+			break;
+	}
+	CanvasItemEditor::get_singleton()->update_viewport();
+}
+
 void TileMapEditor::_menu_option(int p_option) {
 
 	switch (p_option) {
-
-		case OPTION_PAINTING: {
-			// NOTE: We do not set tool = TOOL_PAINTING as this begins painting
-			// immediately without pressing the left mouse button first
-			tool = TOOL_NONE;
-
-			CanvasItemEditor::get_singleton()->update_viewport();
-
-		} break;
-		case OPTION_BUCKET: {
-
-			tool = TOOL_BUCKET;
-
-			CanvasItemEditor::get_singleton()->update_viewport();
-		} break;
-		case OPTION_PICK_TILE: {
-
-			tool = TOOL_PICKING;
-
-			CanvasItemEditor::get_singleton()->update_viewport();
-		} break;
-		case OPTION_SELECT: {
-
-			tool = TOOL_SELECTING;
-			selection_active = false;
-
-			CanvasItemEditor::get_singleton()->update_viewport();
-		} break;
 		case OPTION_COPY: {
 
 			_update_copydata();
@@ -168,6 +184,7 @@ void TileMapEditor::_menu_option(int p_option) {
 			}
 		} break;
 	}
+	_update_button_tool();
 }
 
 void TileMapEditor::_palette_selected(int index) {
@@ -944,6 +961,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						selection_active = false;
 						rectangle_begin = over_tile;
 
+						_update_button_tool();
 						return true;
 					}
 #ifdef APPLE_STYLE_KEYS
@@ -953,11 +971,13 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 #endif
 						tool = TOOL_PICKING;
 						_pick_tile(over_tile);
+						_update_button_tool();
 
 						return true;
 					}
 
 					tool = TOOL_PAINTING;
+					_update_button_tool();
 				}
 
 				if (tool == TOOL_PAINTING) {
@@ -979,6 +999,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					rectangle_begin = over_tile;
 				}
 
+				_update_button_tool();
 				return true;
 
 			} else {
@@ -1075,6 +1096,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					tool = TOOL_NONE;
+					_update_button_tool();
 
 					return true;
 				}
@@ -1090,6 +1112,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					CanvasItemEditor::get_singleton()->update_viewport();
 
+					_update_button_tool();
 					return true;
 				}
 
@@ -1100,6 +1123,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					CanvasItemEditor::get_singleton()->update_viewport();
 
+					_update_button_tool();
 					return true;
 				}
 
@@ -1130,6 +1154,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						_set_cell(local, invalid_cell);
 					}
 
+					_update_button_tool();
 					return true;
 				}
 
@@ -1144,6 +1169,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					tool = TOOL_NONE;
 
+					_update_button_tool();
 					return true;
 
 				} else if (tool == TOOL_BUCKET) {
@@ -1329,6 +1355,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			CanvasItemEditor::get_singleton()->update_viewport();
 
+			_update_button_tool();
 			return true;
 		}
 
@@ -1343,17 +1370,20 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			tool = TOOL_NONE;
 			CanvasItemEditor::get_singleton()->update_viewport();
 
+			_update_button_tool();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/bucket_fill", p_event)) {
 			tool = TOOL_BUCKET;
 			CanvasItemEditor::get_singleton()->update_viewport();
 
+			_update_button_tool();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/erase_selection", p_event)) {
 			_menu_option(OPTION_ERASE_SELECTION);
 
+			_update_button_tool();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/select", p_event)) {
@@ -1362,6 +1392,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			CanvasItemEditor::get_singleton()->update_viewport();
 
+			_update_button_tool();
 			return true;
 		}
 		if (ED_IS_SHORTCUT("tile_map_editor/copy_selection", p_event)) {
@@ -1372,6 +1403,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 				CanvasItemEditor::get_singleton()->update_viewport();
 
+				_update_button_tool();
 				return true;
 			}
 		}
@@ -1388,6 +1420,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				tool = TOOL_PASTING;
 
 				CanvasItemEditor::get_singleton()->update_viewport();
+				_update_button_tool();
 				return true;
 			}
 		}
@@ -1700,6 +1733,7 @@ void TileMapEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_text_entered"), &TileMapEditor::_text_entered);
 	ClassDB::bind_method(D_METHOD("_text_changed"), &TileMapEditor::_text_changed);
 	ClassDB::bind_method(D_METHOD("_sbox_input"), &TileMapEditor::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_button_tool_select"), &TileMapEditor::_button_tool_select);
 	ClassDB::bind_method(D_METHOD("_menu_option"), &TileMapEditor::_menu_option);
 	ClassDB::bind_method(D_METHOD("_canvas_mouse_enter"), &TileMapEditor::_canvas_mouse_enter);
 	ClassDB::bind_method(D_METHOD("_canvas_mouse_exit"), &TileMapEditor::_canvas_mouse_exit);
@@ -1880,37 +1914,64 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	// Add menu items
 	toolbar = memnew(HBoxContainer);
-	toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
-	toolbar->set_alignment(BoxContainer::ALIGN_END);
 	toolbar->hide();
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar);
 
+	// Separator
+	toolbar->add_child(memnew(VSeparator));
+
+	// Tools
+	paint_button = memnew(ToolButton);
+	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
+	paint_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_NONE));
+	paint_button->set_toggle_mode(true);
+	toolbar->add_child(paint_button);
+
+	bucket_fill_button = memnew(ToolButton);
+	bucket_fill_button->set_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_G));
+	bucket_fill_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_BUCKET));
+	bucket_fill_button->set_toggle_mode(true);
+	toolbar->add_child(bucket_fill_button);
+
+	picker_button = memnew(ToolButton);
+	picker_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pîck_tile", TTR("Pick Tile"), KEY_CONTROL));
+	picker_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PICKING));
+	picker_button->set_toggle_mode(true);
+	toolbar->add_child(picker_button);
+
+	select_button = memnew(ToolButton);
+	select_button->set_shortcut(ED_SHORTCUT("tile_map_editor/pîck_tile", TTR("Select"), KEY_MASK_CMD + KEY_B));
+	select_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_SELECTING));
+	select_button->set_toggle_mode(true);
+	toolbar->add_child(select_button);
+
+	_update_button_tool();
+
+	// Container to the right of the toolbar
+	toolbar_right = memnew(HBoxContainer);
+	toolbar_right->set_h_size_flags(SIZE_EXPAND_FILL);
+	toolbar_right->set_alignment(BoxContainer::ALIGN_END);
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar_right);
+
 	// Tile position
 	tile_info = memnew(Label);
-	toolbar->add_child(tile_info);
+	toolbar_right->add_child(tile_info);
 
+	// Menu
 	options = memnew(MenuButton);
 	options->set_text("TileMap");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TileMap", "EditorIcons"));
 	options->set_process_unhandled_key_input(false);
+	toolbar_right->add_child(options);
 
 	PopupMenu *p = options->get_popup();
-
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P), OPTION_PAINTING);
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/bucket_fill", TTR("Bucket Fill"), KEY_G), OPTION_BUCKET);
-	p->add_separator();
-	p->add_item(TTR("Pick Tile"), OPTION_PICK_TILE, KEY_CONTROL);
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("tile_map_editor/select", TTR("Select"), KEY_MASK_CMD + KEY_B), OPTION_SELECT);
 	p->add_shortcut(ED_SHORTCUT("tile_map_editor/cut_selection", TTR("Cut Selection"), KEY_MASK_CMD + KEY_X), OPTION_CUT);
 	p->add_shortcut(ED_SHORTCUT("tile_map_editor/copy_selection", TTR("Copy Selection"), KEY_MASK_CMD + KEY_C), OPTION_COPY);
 	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 	p->add_separator();
 	p->add_item(TTR("Fix Invalid Tiles"), OPTION_FIX_INVALID);
-
 	p->connect("id_pressed", this, "_menu_option");
 
-	toolbar->add_child(options);
 	rotate_left_button = memnew(ToolButton);
 	rotate_left_button->set_tooltip(TTR("Rotate left"));
 	rotate_left_button->set_focus_mode(FOCUS_NONE);

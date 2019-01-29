@@ -66,12 +66,8 @@ class TileMapEditor : public VBoxContainer {
 
 	enum Options {
 
-		OPTION_BUCKET,
-		OPTION_PICK_TILE,
-		OPTION_SELECT,
 		OPTION_COPY,
 		OPTION_ERASE_SELECTION,
-		OPTION_PAINTING,
 		OPTION_FIX_INVALID,
 		OPTION_CUT
 	};
@@ -90,9 +86,15 @@ class TileMapEditor : public VBoxContainer {
 	ItemList *manual_palette;
 
 	HBoxContainer *toolbar;
+	HBoxContainer *toolbar_right;
 
 	Label *tile_info;
 	MenuButton *options;
+
+	ToolButton *paint_button;
+	ToolButton *bucket_fill_button;
+	ToolButton *picker_button;
+	ToolButton *select_button;
 
 	ToolButton *flip_horizontal_button;
 	ToolButton *flip_vertical_button;
@@ -184,6 +186,8 @@ class TileMapEditor : public VBoxContainer {
 	void _text_changed(const String &p_text);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_palette();
+	void _update_button_tool();
+	void _button_tool_select(int p_tool);
 	void _menu_option(int p_option);
 	void _palette_selected(int index);
 	void _palette_multi_selected(int index, bool selected);
