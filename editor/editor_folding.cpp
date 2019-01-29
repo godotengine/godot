@@ -173,7 +173,7 @@ void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	for (int i = 0; i < unfolds.size(); i += 2) {
 		NodePath path = unfolds[i];
 		PoolVector<String> un = unfolds[i + 1];
-		Node *node = p_scene->get_node(path);
+		Node *node = p_scene->get_node_or_null(path);
 		if (!node) {
 			continue;
 		}

@@ -1311,7 +1311,7 @@ Node *Node::_get_child_by_name(const StringName &p_name) const {
 	return NULL;
 }
 
-Node *Node::_get_node(const NodePath &p_path) const {
+Node *Node::get_node_or_null(const NodePath &p_path) const {
 
 	if (!data.inside_tree && p_path.is_absolute()) {
 		ERR_EXPLAIN("Can't use get_node() with absolute paths from outside the active scene tree.");
@@ -1376,7 +1376,7 @@ Node *Node::_get_node(const NodePath &p_path) const {
 
 Node *Node::get_node(const NodePath &p_path) const {
 
-	Node *node = _get_node(p_path);
+	Node *node = get_node_or_null(p_path);
 	if (!node) {
 		ERR_EXPLAIN("Node not found: " + p_path);
 		ERR_FAIL_COND_V(!node, NULL);
@@ -1386,7 +1386,7 @@ Node *Node::get_node(const NodePath &p_path) const {
 
 bool Node::has_node(const NodePath &p_path) const {
 
-	return _get_node(p_path) != NULL;
+	return get_node_or_null(p_path) != NULL;
 }
 
 Node *Node::find_node(const String &p_mask, bool p_recursive, bool p_owned) const {
@@ -2709,6 +2709,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
+	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
 	ClassDB::bind_method(D_METHOD("get_parent"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("find_parent", "mask"), &Node::find_parent);
