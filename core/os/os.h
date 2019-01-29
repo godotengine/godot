@@ -266,6 +266,7 @@ public:
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
+	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
 	virtual String get_name() = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
