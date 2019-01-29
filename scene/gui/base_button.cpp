@@ -376,7 +376,7 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		bool pressing;
 		if (status.press_attempt) {
 
-			pressing = status.pressing_inside;
+			pressing = (status.pressing_inside || keep_pressed_outside);
 			if (status.pressed)
 				pressing = !pressing;
 		} else {
@@ -444,6 +444,16 @@ void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
 Control::FocusMode BaseButton::get_enabled_focus_mode() const {
 
 	return enabled_focus_mode;
+}
+
+void BaseButton::set_keep_pressed_outside(bool p_on) {
+
+	keep_pressed_outside = p_on;
+}
+
+bool BaseButton::is_keep_pressed_outside() const {
+
+	return keep_pressed_outside;
 }
 
 void BaseButton::set_shortcut(const Ref<ShortCut> &p_shortcut) {
@@ -528,6 +538,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
 	ClassDB::bind_method(D_METHOD("set_enabled_focus_mode", "mode"), &BaseButton::set_enabled_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_enabled_focus_mode"), &BaseButton::get_enabled_focus_mode);
+	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
+	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
 
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &BaseButton::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &BaseButton::get_shortcut);
@@ -549,6 +561,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_enabled_focus_mode", "get_enabled_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "ShortCut"), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
 
@@ -566,6 +579,7 @@ BaseButton::BaseButton() {
 
 	toggle_mode = false;
 	shortcut_in_tooltip = true;
+	keep_pressed_outside = false;
 	status.pressed = false;
 	status.press_attempt = false;
 	status.hovering = false;
