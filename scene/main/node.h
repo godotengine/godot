@@ -153,7 +153,6 @@ private:
 	void _print_tree_pretty(const String prefix, const bool last);
 	void _print_tree(const Node *p_node);
 
-	Node *_get_node(const NodePath &p_path) const;
 	Node *_get_child_by_name(const StringName &p_name) const;
 
 	void _replace_connections_target(Node *p_new_target);
@@ -252,6 +251,7 @@ public:
 	Node *get_child(int p_index) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
+	Node *get_node_or_null(const NodePath &p_path) const;
 	Node *find_node(const String &p_mask, bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
