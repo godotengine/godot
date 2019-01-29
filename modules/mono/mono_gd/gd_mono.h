@@ -146,6 +146,8 @@ class GDMono {
 	MonoRegInfo mono_reg_info;
 #endif
 
+	void add_mono_shared_libs_dir_to_path();
+
 protected:
 	static GDMono *singleton;
 

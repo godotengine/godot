@@ -139,6 +139,40 @@ void gdmono_debug_init() {
 
 } // namespace
 
+void GDMono::add_mono_shared_libs_dir_to_path() {
+	// By default Mono seems to search shared libraries in the following directories:
+	// Current working directory, @executable_path@ and PATH
+	// The parent directory of the image file (assembly where the dllimport method is declared)
+	// @executable_path@/../lib
+	// @executable_path@/../Libraries (__MACH__ only)
+
+	// This does not work when embedding Mono unless we use the same directory structure.
+	// To fix this we append the directory containing our shared libraries to PATH.
+
+#if defined(WINDOWS_ENABLED) || defined(UNIX_ENABLED)
+	String path_var("PATH");
+	String path_value = OS::get_singleton()->get_environment(path_var);
+
+#ifdef WINDOWS_ENABLED
+	path_value += ';';
+
+	String bundled_bin_dir = GodotSharpDirs::get_data_mono_bin_dir();
+	path_value += DirAccess::exists(bundled_bin_dir) ? bundled_bin_dir : mono_reg_info.bin_dir;
+#else
+	path_value += ':';
+
+	String bundled_lib_dir = GodotSharpDirs::get_data_mono_lib_dir();
+	if (DirAccess::exists(bundled_lib_dir)) {
+		path_value += bundled_lib_dir;
+	} else {
+		// TODO: Do we need to add the lib dir when using the system installed Mono on Unix platforms?
+	}
+#endif
+
+	OS::get_singleton()->set_environment(path_var, path_value);
+#endif
+}
+
 void GDMono::initialize() {
 
 	ERR_FAIL_NULL(Engine::get_singleton());
@@ -206,6 +240,8 @@ void GDMono::initialize() {
 	// Leak if we call mono_set_dirs more than once
 	mono_set_dirs(assembly_rootdir.length() ? assembly_rootdir.utf8().get_data() : NULL,
 			config_dir.length() ? config_dir.utf8().get_data() : NULL);
+
+	add_mono_shared_libs_dir_to_path();
 
 	GDMonoAssembly::initialize();
 
