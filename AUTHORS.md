@@ -18,6 +18,10 @@ name is available.
 ## Lead Developer
 
     Juan Linietsky (reduz)
+    
+## ForkingBestGodot
+    
+    Edouard Gruyters
 
 ## Project Manager
 

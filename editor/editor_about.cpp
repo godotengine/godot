@@ -150,6 +150,7 @@ EditorAbout::EditorAbout() {
 	List<String> dev_sections;
 	dev_sections.push_back(TTR("Project Founders"));
 	dev_sections.push_back(TTR("Lead Developer"));
+    dev_sections.push_back(TTR("ForkingBestGodot"));
 	dev_sections.push_back(TTR("Project Manager ")); // " " appended to distinguish between 'project supervisor' and 'project list'
 	dev_sections.push_back(TTR("Developers"));
 	const char *const *dev_src[] = { AUTHORS_FOUNDERS, AUTHORS_LEAD_DEVELOPERS,
