@@ -52,6 +52,7 @@ private:
 	int button_mask;
 	bool toggle_mode;
 	bool shortcut_in_tooltip;
+	bool keep_pressed_outside;
 	FocusMode enabled_focus_mode;
 	Ref<ShortCut> shortcut;
 
@@ -109,6 +110,9 @@ public:
 
 	void set_action_mode(ActionMode p_mode);
 	ActionMode get_action_mode() const;
+
+	void set_keep_pressed_outside(bool p_on);
+	bool is_keep_pressed_outside() const;
 
 	void set_button_mask(int p_mask);
 	int get_button_mask() const;
