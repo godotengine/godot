@@ -483,7 +483,7 @@ public:
 				hint = HINT_NONE;
 				hint_range[0] = 0;
 				hint_range[1] = 1;
-				hint_range[2] = 0.001;
+				hint_range[2] = 0;
 			}
 		};
 
