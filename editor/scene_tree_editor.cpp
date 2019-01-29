@@ -678,6 +678,11 @@ void SceneTreeEditor::_renamed() {
 		error->set_text(TTR("Invalid node name, the following characters are not allowed:") + "\n" + Node::invalid_character);
 		error->popup_centered_minsize();
 
+		if (new_name.empty()) {
+			which->set_text(0, n->get_name());
+			return;
+		}
+
 		which->set_text(0, new_name);
 	}
 
