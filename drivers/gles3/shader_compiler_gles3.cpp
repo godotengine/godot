@@ -389,9 +389,9 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
 						uses_uniforms = true;
 					}
-					uniform_defines.write[E->get().order] = ucode;
-					uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
-					uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
+					uniform_defines.write[E->get().constant_order] = ucode;
+					uniform_sizes.write[E->get().constant_order] = _get_datatype_size(E->get().type);
+					uniform_alignments.write[E->get().constant_order] = _get_datatype_alignment(E->get().type);
 				}
 
 				p_actions.uniforms->insert(E->key(), E->get());

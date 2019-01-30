@@ -4012,6 +4012,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 	int texture_uniforms = 0;
 	int uniforms = 0;
+	int properties = 0;
 
 	while (tk.type != TK_EOF) {
 
@@ -4107,11 +4108,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (is_sampler_type(type)) {
 						uniform.texture_order = texture_uniforms++;
-						uniform.order = -1;
+						uniform.constant_order = -1;
 					} else {
 						uniform.texture_order = -1;
-						uniform.order = uniforms++;
+						uniform.constant_order = uniforms++;
 					}
+					uniform.property_order = properties++;
 					uniform.type = type;
 					uniform.precission = precision;
 

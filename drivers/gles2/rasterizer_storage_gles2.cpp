@@ -1281,11 +1281,7 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
 
-		if (E->get().texture_order >= 0) {
-			order[E->get().texture_order + 100000] = E->key();
-		} else {
-			order[E->get().order] = E->key();
-		}
+		order[E->get().property_order] = E->key();
 	}
 
 	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {

@@ -471,8 +471,9 @@ public:
 				HINT_MAX
 			};
 
-			int order;
+			int constant_order;
 			int texture_order;
+			int property_order;
 			DataType type;
 			DataPrecision precission;
 			Vector<ConstantNode::Value> default_value;

@@ -2186,11 +2186,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
 
-		if (E->get().texture_order >= 0) {
-			order[E->get().texture_order + 100000] = E->key();
-		} else {
-			order[E->get().order] = E->key();
-		}
+		order[E->get().property_order] = E->key();
 	}
 
 	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
@@ -3026,11 +3022,11 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 
 		for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = material->shader->uniforms.front(); E; E = E->next()) {
 
-			if (E->get().order < 0)
+			if (E->get().constant_order < 0)
 				continue; // texture, does not go here
 
 			//regular uniform
-			uint8_t *data = &local_ubo[material->shader->ubo_offsets[E->get().order]];
+			uint8_t *data = &local_ubo[material->shader->ubo_offsets[E->get().constant_order]];
 
 			Map<StringName, Variant>::Element *V = material->params.find(E->key());
 
