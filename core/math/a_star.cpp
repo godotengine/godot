@@ -260,8 +260,8 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		}
 		// Check open list
 
-		SelfList<Point> *least_cost_point = NULL;
-		real_t least_cost = 1e30;
+		SelfList<Point> *least_cost_point = open_list.first();
+		real_t least_cost = Math_INF;
 
 		// TODO: Cache previous results
 		for (SelfList<Point> *E = open_list.first(); E; E = E->next()) {
