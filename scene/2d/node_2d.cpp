@@ -376,7 +376,7 @@ void Node2D::look_at(const Vector2 &p_pos) {
 
 float Node2D::get_angle_to(const Vector2 &p_pos) const {
 
-	return (get_global_transform().affine_inverse().xform(p_pos)).angle();
+	return (to_local(p_pos) * get_scale()).angle();
 }
 
 Point2 Node2D::to_local(Point2 p_global) const {
