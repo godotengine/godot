@@ -64,7 +64,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <glib.h>
 //stupid linux.h
 #ifdef KEY_TAB
 #undef KEY_TAB
@@ -72,7 +71,8 @@
 
 #undef CursorShape
 
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED) && ! defined(DISABLE_LIBAUDIORESOURCE)
+#include <glib.h>
 static void on_audio_resource_acquired(audioresource_t*, bool, void*);
 #endif
 
@@ -176,7 +176,8 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		cursors[i] = NULL;
 	}
 
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED )
+#  if !defined(DISABLE_LIBAUDIORESOURCE)
 	// initialize libaudioresource
 	audio_resource  = audioresource_init(
 		AUDIO_RESOURCE_GAME,
@@ -192,6 +193,9 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		// process_events();
 		// force_process_input();
 	}
+#  else
+	start_audio_driver();
+#  endif
 	//OS::get_singleton()->print("\nlibaudioresource initialization finished.\n");
 #endif
 
@@ -250,10 +254,10 @@ void OS_SDL::finalize() {
 	// {
 	// 	AudioDriverManager::get_driver(i)->finish();
 	// }
-	
+#if !defined(DISABLE_LIBAUDIORESOURCE)
 	audioresource_release(audio_resource);
 	audioresource_free(audio_resource);
-
+#endif
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
 #endif
@@ -1498,12 +1502,9 @@ OS::LatinKeyboardVariant OS_SDL::get_latin_keyboard_variant() const {
 	return LATIN_KEYBOARD_QWERTY;
 }
 
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED) 
 void OS_SDL::start_audio_driver()
 {
-	// if ( AudioDriverManager::get_driver(0)->init() != OK) {
-	// 	ERR_PRINT("Initializing audio failed.");
-	// }
 	AudioDriverManager::initialize(-1);
 }
 
@@ -1512,10 +1513,9 @@ void OS_SDL::stop_audio_driver() {
 		AudioDriverManager::get_driver(i)->finish();
 	}
 }
-
+#  ifndef DISABLE_LIBAUDIORESOURCE
 static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acquired, void* user_data) 
 {
-	//AudioDriver* driver = (AudioDriver*) user_data;
 	OS_SDL* os = (OS_SDL*) user_data;
 
 	if (acquired) {
@@ -1529,14 +1529,17 @@ static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acq
 		os->stop_audio_driver();
 	}
 }
+#  endif
 #endif
 
 OS_SDL::OS_SDL() {
 
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED)
 	AudioDriverManager::add_driver(&driver_pulseaudio);
+#  if !defined(DISABLE_LIBAUDIORESOURCE)
 	audio_resource = NULL;
 	is_audio_resource_acquired = false;
+#  endif
 #endif
 
 // #ifdef ALSA_ENABLED

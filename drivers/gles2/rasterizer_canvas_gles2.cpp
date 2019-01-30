@@ -238,6 +238,11 @@ RasterizerCanvasGLES2::Batch *RasterizerCanvasGLES2::_batch_request_new(bool p_b
 		memset(batch, 0, sizeof(Batch));
 
 	return batch;
+	// old SailfishOS code
+	// _set_uniforms();
+	// // force landscape only for final render 
+	// state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, true);
+	// _bind_quad_buffer();
 }
 
 // This function may be called MULTIPLE TIMES for each item, so needs to record how far it has got

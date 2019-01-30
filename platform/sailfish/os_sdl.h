@@ -47,7 +47,7 @@
 #include <SDL.h>
 
 
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED) && !defined(DISABLE_LIBAUDIORESOURCE)
 #include <audioresource.h>
 #endif
 
@@ -126,7 +126,9 @@ class OS_SDL : public OS_Unix {
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
+	#ifndef DISABLE_LIBAUDIORESOURCE
 	audioresource_t      *audio_resource;
+	#endif
 #endif
 
 	// Atom net_wm_icon;
@@ -168,8 +170,10 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
-#ifdef PULSEAUDIO_ENABLED
+#if defined(PULSEAUDIO_ENABLED) 
+#  if !defined(DISABLE_LIBAUDIORESOURCE) 
 	bool is_audio_resource_acquired;
+#  endif
 	void start_audio_driver();
 	void stop_audio_driver();
 #endif
