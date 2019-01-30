@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
-#include "navigation_2d.h"
+#include "navigation2d.h"
 
 #include "thirdparty/misc/triangulator.h"
 
@@ -80,6 +80,9 @@ void NavigationPolygon::set_vertices(const PoolVector<Vector2> &p_vertices) {
 
 	vertices = p_vertices;
 	rect_cache_dirty = true;
+	set_outline(0, p_vertices);
+	_change_notify("navpoly");
+	emit_changed();
 }
 
 PoolVector<Vector2> NavigationPolygon::get_vertices() const {
@@ -312,7 +315,7 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_outlines", "outlines"), &NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(D_METHOD("_get_outlines"), &NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices"), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 }
