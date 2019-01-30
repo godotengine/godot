@@ -2108,9 +2108,11 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		set_process(visible);
 
-		if (visible)
+		if (visible) {
 			_update_camera(0);
-
+		} else {
+			set_freelook_active(false);
+		}
 		call_deferred("update_transform_gizmo_view");
 	}
 
