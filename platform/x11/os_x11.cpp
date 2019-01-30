@@ -3004,7 +3004,9 @@ bool OS_X11::is_vsync_enabled() const {
 */
 void OS_X11::set_context(int p_context) {
 
+	char *config_name = NULL;
 	XClassHint *classHint = XAllocClassHint();
+
 	if (classHint) {
 
 		char *wm_class = (char *)"Godot";
@@ -3015,13 +3017,15 @@ void OS_X11::set_context(int p_context) {
 
 		if (p_context == CONTEXT_ENGINE) {
 			classHint->res_name = (char *)"Godot_Engine";
-			wm_class = (char *)((String)GLOBAL_GET("application/config/name")).utf8().ptrw();
+			config_name = strdup((char *)((String)GLOBAL_GET("application/config/name")).utf8().ptrw());
+			wm_class = config_name;
 		}
 
 		classHint->res_class = wm_class;
 
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
+		free(config_name);
 	}
 }
 

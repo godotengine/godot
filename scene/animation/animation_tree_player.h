@@ -109,6 +109,14 @@ private:
 		Variant value;
 
 		bool skip;
+
+		Track() :
+				id(0),
+				object(NULL),
+				spatial(NULL),
+				skeleton(NULL),
+				bone_idx(-1),
+				skip(false) {}
 	};
 
 	typedef Map<TrackKey, Track> TrackMap;

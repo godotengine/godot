@@ -2816,27 +2816,37 @@ uint32_t Variant::hash() const {
 
 			const PoolVector<uint8_t> &arr = *reinterpret_cast<const PoolVector<uint8_t> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<uint8_t>::Read r = arr.read();
-
-			return hash_djb2_buffer((uint8_t *)&r[0], len);
+			if (likely(len)) {
+				PoolVector<uint8_t>::Read r = arr.read();
+				return hash_djb2_buffer((uint8_t *)&r[0], len);
+			} else {
+				return hash_djb2_one_64(0);
+			}
 
 		} break;
 		case POOL_INT_ARRAY: {
 
 			const PoolVector<int> &arr = *reinterpret_cast<const PoolVector<int> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<int>::Read r = arr.read();
-
-			return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int));
+			if (likely(len)) {
+				PoolVector<int>::Read r = arr.read();
+				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(int));
+			} else {
+				return hash_djb2_one_64(0);
+			}
 
 		} break;
 		case POOL_REAL_ARRAY: {
 
 			const PoolVector<real_t> &arr = *reinterpret_cast<const PoolVector<real_t> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<real_t>::Read r = arr.read();
 
-			return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(real_t));
+			if (likely(len)) {
+				PoolVector<real_t>::Read r = arr.read();
+				return hash_djb2_buffer((uint8_t *)&r[0], len * sizeof(real_t));
+			} else {
+				return hash_djb2_one_float(0.0);
+			}
 
 		} break;
 		case POOL_STRING_ARRAY: {
@@ -2844,10 +2854,13 @@ uint32_t Variant::hash() const {
 			uint32_t hash = 5831;
 			const PoolVector<String> &arr = *reinterpret_cast<const PoolVector<String> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<String>::Read r = arr.read();
 
-			for (int i = 0; i < len; i++) {
-				hash = hash_djb2_one_32(r[i].hash(), hash);
+			if (likely(len)) {
+				PoolVector<String>::Read r = arr.read();
+
+				for (int i = 0; i < len; i++) {
+					hash = hash_djb2_one_32(r[i].hash(), hash);
+				}
 			}
 
 			return hash;
@@ -2857,48 +2870,54 @@ uint32_t Variant::hash() const {
 			uint32_t hash = 5831;
 			const PoolVector<Vector2> &arr = *reinterpret_cast<const PoolVector<Vector2> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<Vector2>::Read r = arr.read();
 
-			for (int i = 0; i < len; i++) {
-				hash = hash_djb2_one_float(r[i].x, hash);
-				hash = hash_djb2_one_float(r[i].y, hash);
+			if (likely(len)) {
+				PoolVector<Vector2>::Read r = arr.read();
+
+				for (int i = 0; i < len; i++) {
+					hash = hash_djb2_one_float(r[i].x, hash);
+					hash = hash_djb2_one_float(r[i].y, hash);
+				}
 			}
 
 			return hash;
-
 		} break;
 		case POOL_VECTOR3_ARRAY: {
 
 			uint32_t hash = 5831;
 			const PoolVector<Vector3> &arr = *reinterpret_cast<const PoolVector<Vector3> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<Vector3>::Read r = arr.read();
 
-			for (int i = 0; i < len; i++) {
-				hash = hash_djb2_one_float(r[i].x, hash);
-				hash = hash_djb2_one_float(r[i].y, hash);
-				hash = hash_djb2_one_float(r[i].z, hash);
+			if (likely(len)) {
+				PoolVector<Vector3>::Read r = arr.read();
+
+				for (int i = 0; i < len; i++) {
+					hash = hash_djb2_one_float(r[i].x, hash);
+					hash = hash_djb2_one_float(r[i].y, hash);
+					hash = hash_djb2_one_float(r[i].z, hash);
+				}
 			}
 
 			return hash;
-
 		} break;
 		case POOL_COLOR_ARRAY: {
 
 			uint32_t hash = 5831;
 			const PoolVector<Color> &arr = *reinterpret_cast<const PoolVector<Color> *>(_data._mem);
 			int len = arr.size();
-			PoolVector<Color>::Read r = arr.read();
 
-			for (int i = 0; i < len; i++) {
-				hash = hash_djb2_one_float(r[i].r, hash);
-				hash = hash_djb2_one_float(r[i].g, hash);
-				hash = hash_djb2_one_float(r[i].b, hash);
-				hash = hash_djb2_one_float(r[i].a, hash);
+			if (likely(len)) {
+				PoolVector<Color>::Read r = arr.read();
+
+				for (int i = 0; i < len; i++) {
+					hash = hash_djb2_one_float(r[i].r, hash);
+					hash = hash_djb2_one_float(r[i].g, hash);
+					hash = hash_djb2_one_float(r[i].b, hash);
+					hash = hash_djb2_one_float(r[i].a, hash);
+				}
 			}
 
 			return hash;
-
 		} break;
 		default: {}
 	}

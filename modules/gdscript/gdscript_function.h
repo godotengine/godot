@@ -45,10 +45,11 @@ class GDScript;
 struct GDScriptDataType {
 	bool has_type;
 	enum {
+		UNINITIALIZED,
 		BUILTIN,
 		NATIVE,
 		SCRIPT,
-		GDSCRIPT
+		GDSCRIPT,
 	} kind;
 	Variant::Type builtin_type;
 	StringName native_type;
@@ -58,6 +59,8 @@ struct GDScriptDataType {
 		if (!has_type) return true; // Can't type check
 
 		switch (kind) {
+			case UNINITIALIZED:
+				break;
 			case BUILTIN: {
 				Variant::Type var_type = p_variant.get_type();
 				bool valid = builtin_type == var_type;
@@ -113,6 +116,8 @@ struct GDScriptDataType {
 		PropertyInfo info;
 		if (has_type) {
 			switch (kind) {
+				case UNINITIALIZED:
+					break;
 				case BUILTIN: {
 					info.type = builtin_type;
 				} break;
@@ -134,7 +139,9 @@ struct GDScriptDataType {
 	}
 
 	GDScriptDataType() :
-			has_type(false) {}
+			has_type(false),
+			kind(UNINITIALIZED),
+			builtin_type(Variant::NIL) {}
 };
 
 class GDScriptFunction {

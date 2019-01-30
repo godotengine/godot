@@ -373,7 +373,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					ucode = "uniform ";
 				}
 
-				ucode += _prestr(E->get().precission);
+				ucode += _prestr(E->get().precision);
 				ucode += _typestr(E->get().type);
 				ucode += " " + _mkid(E->key());
 				ucode += ";\n";
@@ -464,7 +464,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				String vcode;
 				String interp_mode = _interpstr(E->get().interpolation);
-				vcode += _prestr(E->get().precission);
+				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
 				vcode += " " + _mkid(E->key());
 				vcode += ";\n";

@@ -110,7 +110,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
 
 				String ucode = "uniform ";
-				ucode += _prestr(E->get().precission);
+				ucode += _prestr(E->get().precision);
 				ucode += _typestr(E->get().type);
 				ucode += " " + String(E->key());
 
@@ -137,7 +137,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
 
 				String vcode = "varying ";
-				vcode += _prestr(E->get().precission);
+				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
 				vcode += " " + String(E->key());
 

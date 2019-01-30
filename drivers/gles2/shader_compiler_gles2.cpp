@@ -318,7 +318,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				uniform_code += "uniform ";
 
-				uniform_code += _prestr(E->get().precission);
+				uniform_code += _prestr(E->get().precision);
 				uniform_code += _typestr(E->get().type);
 				uniform_code += " ";
 				uniform_code += _mkid(E->key());
@@ -344,7 +344,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				StringBuffer<> varying_code;
 
 				varying_code += "varying ";
-				varying_code += _prestr(E->get().precission);
+				varying_code += _prestr(E->get().precision);
 				varying_code += _typestr(E->get().type);
 				varying_code += " ";
 				varying_code += _mkid(E->key());
