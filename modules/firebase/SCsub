@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+# Thirdparty source files
+
+env_firebase = env_modules.Clone()
+
+if env['builtin_firebase']:
+    thirdparty_dir = "#thirdparty/firebase/"
+    env_firebase.Append(CPPPATH=[thirdparty_dir + 'include', '#modules/firebase'])
+    env_firebase.Append(CXXFLAGS='-std=c++11')
+
+    libs = []
+    lib_path = thirdparty_dir + 'libs/'
+    if env['platform'] == 'android':
+        arch_subpath = env['android_arch']
+        if env['android_arch'] == 'armv6':
+            arch_subpath = 'armeabi'
+        elif env['android_arch'] == 'armv7':
+            arch_subpath = 'armeabi-v7a'
+        elif env['android_arch'] == 'arm64v8':
+            arch_subpath = 'arm64-v8a'
+        libs = libs + ['libfirebase_app', 'libfirebase_auth']
+        env.Append(LIBPATH=[lib_path + 'android/' + arch_subpath + '/c++'])
+    elif env['platform'] == 'osx':
+        libs = libs + ['libfirebase_app', 'libfirebase_auth']
+        env.Append(LIBPATH=[lib_path + 'darwin/x86_64']) 
+        env.Append(FRAMEWORKPATH=[env.Dir(thirdparty_dir).abspath + '/frameworks/darwin/x86_64'])
+        env.Append(LINKFLAGS=['-framework', 'CoreFoundation', '-framework', 'Security', '-framework', 'firebase', '-framework', 'firebase_auth'])
+    elif env['platform'] == 'windows':
+        # TODO: enable debug libs.(may be add? some CCFLAGS)
+        bits = 'x64'
+        if env['bits'] == '32':
+            bits = 'x86'
+        env.Append(LIBPATH=[lib_path + 'windows/VS2015/MT/' + bits + '/Release'])
+        env.Append(LINKFLAGS=['firebase_app.lib', 'firebase_auth.lib'])
+        env.Append(LINKFLAGS=['advapi32.lib', 'ws2_32.lib', 'crypt32.lib'])
+    env.Append(LIBS=libs)
+
+env_firebase.add_source_files(env.modules_sources, '*.cpp')
+if env['platform'] == 'android':
+    env_firebase.add_source_files(env.modules_sources, 'android/*.cpp')
+elif env['platform'] in ['osx', 'windows']:
+    env_firebase.add_source_files(env.modules_sources, 'desktop/*.cpp')
