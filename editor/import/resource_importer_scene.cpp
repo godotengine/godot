@@ -1239,6 +1239,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	String root_type = p_options["nodes/root_type"];
+	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
+
+	Ref<Script> root_script = NULL;
+	if (ScriptServer::is_global_class(root_type)) {
+		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
+		root_type = ScriptServer::get_global_class_base(root_type);
+	}
 
 	if (scene->get_class() != root_type) {
 		Node *base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
@@ -1249,6 +1256,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			memdelete(scene);
 			scene = base_node;
 		}
+	}
+
+	if (root_script.is_valid()) {
+		scene->set_script(Variant(root_script));
 	}
 
 	if (Object::cast_to<Spatial>(scene)) {
