@@ -320,6 +320,7 @@ const bool at_light_pass = true;
 const bool at_light_pass = false;
 #endif
 
+uniform bool force_landscape;
 uniform bool use_default_normal;
 
 /* clang-format off */
@@ -365,11 +366,18 @@ void main() {
 
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
-	color *= texture2D(color_texture, uv);
+	// landscape leftside - is down
+	if ( force_landscape ) {
+		vec2 canvas_uv = vec2(1.0 - uv.y, uv.x);
+		color *= texture2D(color_texture, canvas_uv);
+	}
+	else
+		color *= texture2D(color_texture, uv);
 #endif
 
 #ifdef SCREEN_UV_USED
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
+	//screen_uv = vec2(1.0 - gl_FragCoord.y, gl_FragCoord.x);
 #endif
 
 	vec3 normal;

@@ -51,7 +51,7 @@ void RasterizerCanvasGLES2::light_internal_free(RID p_rid) {
 }
 
 void RasterizerCanvasGLES2::_set_uniforms() {
-
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, false);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX, state.uniforms.projection_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);
@@ -158,7 +158,7 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	// set up default uniforms
 
 	Transform canvas_transform;
-
+	//canvas_transform.rotate( (3.1415926536f) * 0.5f );
 	if (storage->frame.current_rt) {
 
 		float csy = 1.0;
@@ -181,6 +181,8 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	state.uniforms.extra_matrix = Transform2D();
 
 	_set_uniforms();
+	// force landscape only for final render 
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, true);
 	_bind_quad_buffer();
 }
 

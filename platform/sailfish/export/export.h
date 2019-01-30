@@ -36,7 +36,7 @@ class EditorExportPlatfromSailfish : public EditorExportPlatform
 {
     GDCLASS(EditorExportPlatfromSailfish, EditorExportPlatform)
 
-    GString arch; 
+    //GString arch; 
 public:
     EditorExportPlatfromSailfish() {
 

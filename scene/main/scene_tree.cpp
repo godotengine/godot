@@ -1135,6 +1135,14 @@ void SceneTree::_update_root_rect() {
 		root->set_attach_to_screen_rect(Rect2(Point2(), last_screen_size));
 		root->set_size_override_stretch(false);
 		root->set_size_override(false, Size2());
+
+		//landscape
+		Size2 n_screen_size(last_screen_size.y, last_screen_size.x);
+		root->set_size(( n_screen_size / stretch_shrink).floor());
+		root->set_attach_to_screen_rect(Rect2(Point2(), n_screen_size));
+		root->set_size_override_stretch(false);
+		root->set_size_override(false, Size2());
+
 		root->update_canvas_items();
 		return; //user will take care
 	}
@@ -1142,9 +1150,12 @@ void SceneTree::_update_root_rect() {
 	//actual screen video mode
 	Size2 video_mode = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 	Size2 desired_res = stretch_min;
-
 	Size2 viewport_size;
 	Size2 screen_size;
+	// landscape --------------- begin
+	video_mode = Size2(video_mode.height, video_mode.width);
+	// desired_res = Size2(stretch_min.height, stretch_min.width);
+	// landscape --------------- end 
 
 	float viewport_aspect = desired_res.aspect();
 	float video_mode_aspect = video_mode.aspect();
@@ -1161,12 +1172,13 @@ void SceneTree::_update_root_rect() {
 		// screen ratio is smaller vertically
 
 		if (stretch_aspect == STRETCH_ASPECT_KEEP_HEIGHT || stretch_aspect == STRETCH_ASPECT_EXPAND) {
-
 			//will stretch horizontally
 			viewport_size.x = desired_res.y * video_mode_aspect;
 			viewport_size.y = desired_res.y;
 			screen_size = video_mode;
-
+			//landscape 
+			viewport_size.x = desired_res.y / video_mode_aspect;
+			viewport_size.y = desired_res.y ;
 		} else {
 			//will need black bars
 			viewport_size = desired_res;
@@ -1176,12 +1188,14 @@ void SceneTree::_update_root_rect() {
 	} else {
 		//screen ratio is smaller horizontally
 		if (stretch_aspect == STRETCH_ASPECT_KEEP_WIDTH || stretch_aspect == STRETCH_ASPECT_EXPAND) {
-
 			//will stretch horizontally
 			viewport_size.x = desired_res.x;
 			viewport_size.y = desired_res.x / video_mode_aspect;
 			screen_size = video_mode;
-
+			// landscape 
+			// viewport_size = desired_res;
+			// screen_size.x = video_mode.x;
+			// screen_size.y = video_mode.x / viewport_aspect;
 		} else {
 			//will need black bars
 			viewport_size = desired_res;
@@ -1200,10 +1214,20 @@ void SceneTree::_update_root_rect() {
 		margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
 		VisualServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
 		offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
+		
+		// landscape 
+		VisualServer::get_singleton()->black_bars_set_margins( 0, margin.x, 0, margin.x);
+		offset.x = 0;
+		offset.y = Math::round(margin.x * viewport_size.y / screen_size.y);
 	} else if (stretch_aspect != STRETCH_ASPECT_EXPAND && screen_size.y < video_mode.y) {
 		margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
 		VisualServer::get_singleton()->black_bars_set_margins(0, margin.y, 0, margin.y);
 		offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
+		
+		// landscape
+		VisualServer::get_singleton()->black_bars_set_margins(margin.y, 0, margin.y, 0);
+		offset.y = 0;
+		offset.x = Math::round(margin.y * viewport_size.x / screen_size.x);
 	} else {
 		VisualServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
 	}
@@ -1214,14 +1238,19 @@ void SceneTree::_update_root_rect() {
 			_update_font_oversampling(1.0);
 		} break;
 		case STRETCH_MODE_2D: {
-
 			_update_font_oversampling(screen_size.x / viewport_size.x); //screen / viewport radio drives oversampling
-			root->set_size((screen_size / stretch_shrink).floor());
+			root->set_size(( screen_size / stretch_shrink).floor());
+			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
+			root->set_size_override_stretch(true);
+			root->set_size_override(true, (viewport_size / stretch_shrink).floor());
+			// landscape
+			screen_size = Size2( screen_size.y, screen_size.x );
+			margin = Size2(margin.y, margin.x);
+			root->set_size(( screen_size / stretch_shrink).floor());
 			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
 			root->set_size_override_stretch(true);
 			root->set_size_override(true, (viewport_size / stretch_shrink).floor());
 			root->update_canvas_items(); //force them to update just in case
-
 		} break;
 		case STRETCH_MODE_VIEWPORT: {
 
@@ -1236,6 +1265,14 @@ void SceneTree::_update_root_rect() {
 				WARN_PRINT("Font oversampling does not work in 'Viewport' stretch mode, only '2D'.");
 			}
 
+			// landscape (not finished)
+			// screen_size = Size2( screen_size.y, screen_size.x );
+			// viewport_size = Size2( viewpor/t_size.y, viewport_size.x );
+			//margin = Size2(margin.y, margin.x);
+			// root->set_size((viewport_size / stretch_shrink).floor());
+			// root->set_attach_to_screen_rect(Rect2(margin, screen_size));
+			// root->set_size_override_stretch(true);
+			// root->set_size_override(true, (viewport_size / stretch_shrink).floor());
 		} break;
 	}
 }
@@ -1244,6 +1281,7 @@ void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, c
 
 	stretch_mode = p_mode;
 	stretch_aspect = p_aspect;
+	// stretch_min = Size2( p_minsize.height, p_minsize.width ) ;
 	stretch_min = p_minsize;
 	stretch_shrink = p_shrink;
 	_update_root_rect();

@@ -30,12 +30,12 @@ def can_build():
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
         print("libaudioresource-devel not found. Install libaudioresource-devel on your target in MerSDK")
-        return False;
+        # return False;
 
     glib_error = os.system("pkg-config glib-2.0 --modversion > /dev/null")
     if(glib_error):
         print("glib2-devel not found. Install glib2-devel on your target in MerSDK")
-        return False;
+        # return False;
 
     vpx_error = os.system("pkg-config vpx --modversion > /dev/null")
     if(vpx_error):
@@ -141,8 +141,12 @@ def configure(env):
     ## Dependencies
 
     env.ParseConfig('pkg-config sdl2 --cflags --libs')
-    env.ParseConfig("pkg-config audioresource --cflags --libs")
-    env.ParseConfig("pkg-config glib-2.0 --cflags --libs")
+    ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
+    if(ar_error):
+        env.Prepend(CCFLAGS=['-DDISABLE_LIBAUDIORESOURCE'])
+    else:
+        env.ParseConfig("pkg-config audioresource --cflags --libs")
+        env.ParseConfig("pkg-config glib-2.0 --cflags --libs")
 
     if (env['touch']):
         env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])
