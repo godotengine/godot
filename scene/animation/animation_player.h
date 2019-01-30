@@ -114,10 +114,12 @@ private:
 			Variant value_accum;
 			uint64_t accum_pass;
 			Variant capture;
-			PropertyAnim() {
-				accum_pass = 0;
-				object = NULL;
-			}
+
+			PropertyAnim() :
+					owner(NULL),
+					special(SP_NONE),
+					object(NULL),
+					accum_pass(0) {}
 		};
 
 		Map<StringName, PropertyAnim> property_anim;
@@ -129,25 +131,28 @@ private:
 			float bezier_accum;
 			Object *object;
 			uint64_t accum_pass;
-			BezierAnim() {
-				accum_pass = 0;
-				bezier_accum = 0;
-				object = NULL;
-			}
+
+			BezierAnim() :
+					owner(NULL),
+					bezier_accum(0.0),
+					object(NULL),
+					accum_pass(0) {}
 		};
 
 		Map<StringName, BezierAnim> bezier_anim;
 
-		TrackNodeCache() {
-			skeleton = NULL;
-			spatial = NULL;
-			node = NULL;
-			accum_pass = 0;
-			bone_idx = -1;
-			node_2d = NULL;
-			audio_playing = false;
-			animation_playing = false;
-		}
+		TrackNodeCache() :
+				id(0),
+				node(NULL),
+				spatial(NULL),
+				node_2d(NULL),
+				skeleton(NULL),
+				bone_idx(-1),
+				accum_pass(0),
+				audio_playing(false),
+				audio_start(0.0),
+				audio_len(0.0),
+				animation_playing(false) {}
 	};
 
 	struct TrackNodeCacheKey {

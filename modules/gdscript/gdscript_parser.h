@@ -95,6 +95,7 @@ public:
 		}
 
 		DataType() :
+				kind(UNRESOLVED),
 				has_type(false),
 				is_constant(false),
 				is_meta_type(false),
@@ -168,6 +169,7 @@ public:
 			MultiplayerAPI::RPCMode rpc_mode;
 			int usages;
 		};
+
 		struct Constant {
 			Node *expression;
 			DataType type;
