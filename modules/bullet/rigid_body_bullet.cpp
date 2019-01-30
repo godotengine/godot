@@ -825,7 +825,8 @@ void RigidBodyBullet::reload_shapes() {
 		// shapes incorrectly do not set the vector in calculateLocalIntertia.
 		// Arbitrary zero is preferable to undefined behaviour.
 		btVector3 inertia(0, 0, 0);
-		mainShape->calculateLocalInertia(mass, inertia);
+		if (EMPTY_SHAPE_PROXYTYPE != mainShape->getShapeType()) // Necessary to avoid assertion of the empty shape
+			mainShape->calculateLocalInertia(mass, inertia);
 		btBody->setMassProps(mass, inertia);
 	}
 	btBody->updateInertiaTensor();
