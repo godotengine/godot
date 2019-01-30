@@ -393,16 +393,16 @@ Error OS::dialog_input_text(String p_title, String p_description, String p_parti
 	return OK;
 };
 
-int OS::get_static_memory_usage() const {
+uint64_t OS::get_static_memory_usage() const {
 
 	return Memory::get_mem_usage();
 }
-int OS::get_dynamic_memory_usage() const {
+uint64_t OS::get_dynamic_memory_usage() const {
 
 	return MemoryPool::total_memory;
 }
 
-int OS::get_static_memory_peak_usage() const {
+uint64_t OS::get_static_memory_peak_usage() const {
 
 	return Memory::get_mem_max_usage();
 }
@@ -418,7 +418,7 @@ bool OS::has_touchscreen_ui_hint() const {
 	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
-int OS::get_free_static_memory() const {
+uint64_t OS::get_free_static_memory() const {
 
 	return Memory::get_mem_available();
 }
