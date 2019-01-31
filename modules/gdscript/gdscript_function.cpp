@@ -1083,7 +1083,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						if (argc >= 1) {
 							methodstr = String(*argptrs[0]) + " (via call)";
 							if (err.error == Variant::CallError::CALL_ERROR_INVALID_ARGUMENT) {
-								err.argument -= 1;
+								err.argument += 1;
 							}
 						}
 					} else if (methodstr == "free") {
