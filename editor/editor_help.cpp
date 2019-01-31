@@ -1423,10 +1423,6 @@ EditorHelp::EditorHelp() {
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
-	find_bar = memnew(FindBar);
-	add_child(find_bar);
-	find_bar->hide();
-
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1434,6 +1430,10 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
 	class_desc->connect("gui_input", this, "_class_desc_input");
 
+	// Added second so it opens at the bottom so it won't offset the entire widget
+	find_bar = memnew(FindBar);
+	add_child(find_bar);
+	find_bar->hide();
 	find_bar->set_rich_text_label(class_desc);
 
 	class_desc->set_selection_enabled(true);
