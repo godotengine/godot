@@ -36,6 +36,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <GLES2/gl2.h>
+#include <EGL/egl.h>
+#include <qt5/QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
+#include <video/SDL_sysvideo.h>
+#include <video/wayland/SDL_waylandwindow.h>
+
 
 struct ContextGL_SDL_Private {
 	SDL_GLContext gl_context;
@@ -90,7 +95,11 @@ Error ContextGL_SDL::initialize() {
 		ERR_EXPLAIN("Could not obtain an OpenGL ES 2.0 context!");
 		ERR_FAIL_COND_V(p->gl_context == NULL, ERR_UNCONFIGURED);
 	}
+	//sdl_window.
 
+	SDL_WindowData* wdata = (SDL_WindowData*)sdl_window->driverdata;
+	// qt_extended_surface_set_content_orientation(wdata->extended_surface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
+	qt_extended_surface_set_content_orientation(wdata->extended_surface, QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION );
 	return OK;
 }
 
