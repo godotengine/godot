@@ -45,6 +45,7 @@
 #include "editor_settings.h"
 #include "editor_themes.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
@@ -1399,6 +1400,41 @@ void ProjectManager::_load_recent_projects() {
 		fpath->set_modulate(Color(1, 1, 1, 0.5));
 		fpath->add_color_override("font_color", font_color);
 		fpath->set_clip_text(true);
+
+		// indicate project compatibility via colored label
+		bool indicate_incompat = false;
+		if (FileAccess::exists(item.conf)) {
+			indicate_incompat = (item.config_version < ProjectSettings::CONFIG_VERSION || item.config_version > ProjectSettings::CONFIG_VERSION);
+		} else {
+			indicate_incompat = true;
+		}
+
+		// show warning if something is odd
+		if (indicate_incompat) {
+			Label *engine_version = memnew(Label);
+			engine_version->set_name("engine_version");
+			engine_version->set_h_size_flags(SIZE_EXPAND_FILL);
+			Color engine_color = get_color("error_color", "Editor");
+
+			// detailed check
+			if (FileAccess::exists(item.conf)) {
+				if (item.config_version < ProjectSettings::CONFIG_VERSION) {
+					engine_color = get_color("warning_color", "Editor");
+					engine_version->set_text(TTR("Older version project"));
+				}
+				if (item.config_version > ProjectSettings::CONFIG_VERSION) {
+					engine_version->set_text(TTR("Incompatible"));
+				}
+			} else {
+				engine_version->set_text(TTR("Deleted"));
+			}
+
+			engine_version->add_color_override("font_color", engine_color);
+			engine_version->set_clip_text(true);
+			engine_version->set_align(Label::ALIGN_LEFT);
+			path_hb->add_spacer();
+			path_hb->add_child(engine_version);
+		}
 
 		scroll_children->add_child(hb);
 	}
