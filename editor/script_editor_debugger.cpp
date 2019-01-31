@@ -261,7 +261,7 @@ void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
 		return;
 
 	ObjectID id = item->get_metadata(0);
-	if (item->is_collapsed()) {
+	if (unfold_cache.has(id)) {
 		unfold_cache.erase(id);
 	} else {
 		unfold_cache.insert(id);
