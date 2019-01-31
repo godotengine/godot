@@ -2320,6 +2320,25 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 
 ///////////////////////////////
 
+void Viewport::call_input(const Ref<InputEvent> &p_event) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+
+	if (!get_tree()->is_input_handled()) {
+		get_tree()->_call_input_pause(input_group, "_input", p_event); //not a bug, must happen before GUI, order is _input -> gui input -> _unhandled input
+	}
+
+}
+
+void Viewport::call_gui_input(const Ref<InputEvent> &p_event) {
+
+	ERR_FAIL_COND(!is_inside_tree());
+
+	if (!get_tree()->is_input_handled()) {
+		_gui_input_event(p_event);
+	}
+}
+
 void Viewport::input(const Ref<InputEvent> &p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());

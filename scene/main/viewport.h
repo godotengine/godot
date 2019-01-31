@@ -422,6 +422,9 @@ public:
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;
 
+	void call_input(const Ref<InputEvent> &p_event);
+	void call_gui_input(const Ref<InputEvent> &p_event);
+
 	void input(const Ref<InputEvent> &p_event);
 	void unhandled_input(const Ref<InputEvent> &p_event);
 
