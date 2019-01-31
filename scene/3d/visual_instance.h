@@ -137,6 +137,8 @@ public:
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
 
+	void set_custom_aabb(AABB aabb);
+
 	GeometryInstance();
 };
 

@@ -263,6 +263,11 @@ float GeometryInstance::get_extra_cull_margin() const {
 	return extra_cull_margin;
 }
 
+void GeometryInstance::set_custom_aabb(AABB aabb) {
+
+	VS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
+}
+
 void GeometryInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance::set_material_override);
@@ -288,6 +293,8 @@ void GeometryInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
+
+	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance::set_custom_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance::get_aabb);
 
