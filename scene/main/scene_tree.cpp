@@ -1176,9 +1176,9 @@ void SceneTree::_update_root_rect() {
 			viewport_size.x = desired_res.y * video_mode_aspect;
 			viewport_size.y = desired_res.y;
 			screen_size = video_mode;
-			//landscape 
-			viewport_size.x = desired_res.y / video_mode_aspect;
-			viewport_size.y = desired_res.y ;
+			//landscape (not need!)
+			//viewport_size.x = desired_res.y / video_mode_aspect;
+			// viewport_size.y = desired_res.y ;
 		} else {
 			//will need black bars
 			viewport_size = desired_res;
@@ -1266,11 +1266,11 @@ void SceneTree::_update_root_rect() {
 			}
 
 			// landscape (not finished)
-			// screen_size = Size2( screen_size.y, screen_size.x );
-			// viewport_size = Size2( viewpor/t_size.y, viewport_size.x );
-			//margin = Size2(margin.y, margin.x);
+			screen_size = Size2( screen_size.y, screen_size.x );
+			// viewport_size = Size2( viewport_size.y, viewport_size.x );
+			margin = Size2(margin.y, margin.x);
 			// root->set_size((viewport_size / stretch_shrink).floor());
-			// root->set_attach_to_screen_rect(Rect2(margin, screen_size));
+			root->set_attach_to_screen_rect(Rect2(margin, screen_size));
 			// root->set_size_override_stretch(true);
 			// root->set_size_override(true, (viewport_size / stretch_shrink).floor());
 		} break;
