@@ -39,6 +39,7 @@
 			</argument>
 			<description>
 				Executes the expression that was previously parsed by [method parse] and returns the result. Before you use the returned object, you should check if the method failed by calling [method has_execute_failed].
+				If you defined input variables in [method parse], you can specify their values in the inputs array, in the same order.
 			</description>
 		</method>
 		<method name="get_error_text" qualifiers="const">
@@ -64,6 +65,7 @@
 			</argument>
 			<description>
 				Parses the expression and returns a [enum @GlobalScope.Error].
+				You can optionally specify names of variables that may appear in the expression with [code]input_names[/code], so that you can bind them when it gets executed.
 			</description>
 		</method>
 	</methods>
