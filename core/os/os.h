@@ -382,10 +382,10 @@ public:
 	virtual void print_resources_in_use(bool p_short = false);
 	virtual void print_all_resources(String p_to_file = "");
 
-	virtual int get_static_memory_usage() const;
-	virtual int get_static_memory_peak_usage() const;
-	virtual int get_dynamic_memory_usage() const;
-	virtual int get_free_static_memory() const;
+	virtual uint64_t get_static_memory_usage() const;
+	virtual uint64_t get_static_memory_peak_usage() const;
+	virtual uint64_t get_dynamic_memory_usage() const;
+	virtual uint64_t get_free_static_memory() const;
 
 	RenderThreadMode get_render_thread_mode() const { return _render_thread_mode; }
 

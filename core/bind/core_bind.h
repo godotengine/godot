@@ -283,9 +283,9 @@ public:
 	uint64_t get_system_time_secs() const;
 	uint64_t get_system_time_msecs() const;
 
-	int get_static_memory_usage() const;
-	int get_static_memory_peak_usage() const;
-	int get_dynamic_memory_usage() const;
+	uint64_t get_static_memory_usage() const;
+	uint64_t get_static_memory_peak_usage() const;
+	uint64_t get_dynamic_memory_usage() const;
 
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
