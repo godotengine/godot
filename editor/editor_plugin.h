@@ -98,7 +98,7 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, int p_preview_size);
+	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_trnasforms, int p_preview_size);
 
 	EditorInterface();
 };

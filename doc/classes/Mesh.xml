@@ -82,6 +82,17 @@
 				Return a [Material] in a given surface. Surface is rendered using this material.
 			</description>
 		</method>
+		<method name="surface_set_material">
+			<return type="void">
+			</return>
+			<argument index="0" name="surf_idx" type="int">
+			</argument>
+			<argument index="1" name="material" type="Material">
+			</argument>
+			<description>
+				Set a [Material] for a given surface. Surface will be rendered using this material.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint">
