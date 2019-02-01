@@ -132,7 +132,6 @@ void EditorLog::_bind_methods() {
 EditorLog::EditorLog() {
 
 	VBoxContainer *vb = this;
-	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
@@ -162,6 +161,8 @@ EditorLog::EditorLog() {
 	add_error_handler(&eh);
 
 	current = Thread::get_caller_id();
+
+	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }
