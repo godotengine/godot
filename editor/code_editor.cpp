@@ -31,6 +31,7 @@
 #include "code_editor.h"
 
 #include "core/os/keyboard.h"
+#include "core/string_builder.h"
 #include "editor/editor_scale.h"
 #include "editor_node.h"
 #include "editor_settings.h"
@@ -673,18 +674,14 @@ void CodeTextEditor::_reset_zoom() {
 	if (font.is_valid()) {
 		EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
 		font->set_size(14);
-		font_size_nb->set_text("14 (100%)");
 	}
 }
 
 void CodeTextEditor::_line_col_changed() {
 
-	line_nb->set_text(itos(text_editor->cursor_get_line() + 1));
-
 	String line = text_editor->get_line(text_editor->cursor_get_line());
 
 	int positional_column = 0;
-
 	for (int i = 0; i < text_editor->cursor_get_column(); i++) {
 		if (line[i] == '\t') {
 			positional_column += text_editor->get_indent_size(); //tab size
@@ -693,7 +690,14 @@ void CodeTextEditor::_line_col_changed() {
 		}
 	}
 
-	col_nb->set_text(itos(positional_column + 1));
+	StringBuilder *sb = memnew(StringBuilder);
+	sb->append("(");
+	sb->append(itos(text_editor->cursor_get_line() + 1).lpad(3));
+	sb->append(",");
+	sb->append(itos(positional_column + 1).lpad(3));
+	sb->append(")");
+
+	line_and_col_txt->set_text(sb->as_string());
 }
 
 void CodeTextEditor::_text_changed() {
@@ -746,8 +750,6 @@ bool CodeTextEditor::_add_font_size(int p_delta) {
 
 	if (font.is_valid()) {
 		int new_size = CLAMP(font->get_size() + p_delta, 8 * EDSCALE, 96 * EDSCALE);
-
-		font_size_nb->set_text(itos(new_size) + " (" + itos(100 * new_size / (14 * EDSCALE)) + "%)");
 
 		if (new_size != font->get_size()) {
 			EditorSettings::get_singleton()->set("interface/editor/code_font_size", new_size / EDSCALE);
@@ -1167,7 +1169,6 @@ void CodeTextEditor::_on_settings_change() {
 	_update_font();
 
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
-	font_size_nb->set_text(itos(font_size) + " (" + itos(100 * font_size / (14 * EDSCALE)) + "%)");
 
 	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
@@ -1188,15 +1189,46 @@ void CodeTextEditor::_text_changed_idle_timeout() {
 	emit_signal("validate_script");
 }
 
+void CodeTextEditor::_warning_label_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		_warning_button_pressed();
+	}
+}
+
+void CodeTextEditor::_warning_button_pressed() {
+	emit_signal("warning_pressed");
+}
+
+void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		emit_signal("error_pressed");
+	}
+}
+
 void CodeTextEditor::_notification(int p_what) {
 
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		_load_theme_settings();
-		emit_signal("load_theme_settings");
+	switch (p_what) {
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_load_theme_settings();
+			emit_signal("load_theme_settings");
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			_update_font();
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			warning_button->set_icon(get_icon("NodeWarning", "EditorIcons"));
+		} break;
+		default:
+			break;
 	}
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-		_update_font();
-	}
+}
+
+void CodeTextEditor::set_warning_nb(int p_warning_nb) {
+	warning_count_label->set_text(itos(p_warning_nb));
+	warning_count_label->set_visible(p_warning_nb > 0);
+	warning_button->set_visible(p_warning_nb > 0);
 }
 
 void CodeTextEditor::_bind_methods() {
@@ -1209,9 +1241,14 @@ void CodeTextEditor::_bind_methods() {
 	ClassDB::bind_method("_code_complete_timer_timeout", &CodeTextEditor::_code_complete_timer_timeout);
 	ClassDB::bind_method("_complete_request", &CodeTextEditor::_complete_request);
 	ClassDB::bind_method("_font_resize_timeout", &CodeTextEditor::_font_resize_timeout);
+	ClassDB::bind_method("_error_pressed", &CodeTextEditor::_error_pressed);
+	ClassDB::bind_method("_warning_button_pressed", &CodeTextEditor::_warning_button_pressed);
+	ClassDB::bind_method("_warning_label_gui_input", &CodeTextEditor::_warning_label_gui_input);
 
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
+	ADD_SIGNAL(MethodInfo("warning_pressed"));
+	ADD_SIGNAL(MethodInfo("error_pressed"));
 }
 
 void CodeTextEditor::set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud) {
@@ -1258,95 +1295,50 @@ CodeTextEditor::CodeTextEditor() {
 	error_line = 0;
 	error_column = 0;
 
+	// Error
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll->set_h_size_flags(SIZE_EXPAND_FILL);
+	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll->set_enable_v_scroll(false);
+	status_bar->add_child(scroll);
+
 	error = memnew(Label);
-	status_bar->add_child(error);
-	error->set_autowrap(true);
-	error->set_valign(Label::VALIGN_CENTER);
-	error->set_h_size_flags(SIZE_EXPAND_FILL); //required for it to display, given now it's clipping contents, do not touch
+	scroll->add_child(error);
+	error->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 	error->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 	error->set_mouse_filter(MOUSE_FILTER_STOP);
+	error->connect("gui_input", this, "_error_pressed");
 	find_replace_bar->connect("error", error, "set_text");
 
-	status_bar->add_child(memnew(Label)); //to keep the height if the other labels are not visible
-
-	warning_label = memnew(Label);
-	status_bar->add_child(warning_label);
-	warning_label->set_align(Label::ALIGN_RIGHT);
-	warning_label->set_valign(Label::VALIGN_CENTER);
-	warning_label->set_v_size_flags(SIZE_FILL);
-	warning_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
-	warning_label->set_mouse_filter(MOUSE_FILTER_STOP);
-	warning_label->set_text(TTR("Warnings:"));
-	warning_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	// Warnings
+	warning_button = memnew(ToolButton);
+	status_bar->add_child(warning_button);
+	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
+	warning_button->connect("pressed", this, "_warning_button_pressed");
+	warning_button->set_tooltip(TTR("Warnings"));
 
 	warning_count_label = memnew(Label);
 	status_bar->add_child(warning_count_label);
-	warning_count_label->set_valign(Label::VALIGN_CENTER);
-	warning_count_label->set_v_size_flags(SIZE_FILL);
-	warning_count_label->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
-	warning_count_label->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
-	warning_count_label->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
+	warning_count_label->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_count_label->set_align(Label::ALIGN_RIGHT);
 	warning_count_label->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_count_label->set_mouse_filter(MOUSE_FILTER_STOP);
+	warning_count_label->set_tooltip(TTR("Warnings"));
+	warning_count_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor"));
 	warning_count_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-	warning_count_label->set_text("0");
+	warning_count_label->connect("gui_input", this, "_warning_label_gui_input");
 
-	Label *font_size_txt = memnew(Label);
-	status_bar->add_child(font_size_txt);
-	font_size_txt->set_align(Label::ALIGN_RIGHT);
-	font_size_txt->set_valign(Label::VALIGN_CENTER);
-	font_size_txt->set_v_size_flags(SIZE_FILL);
-	font_size_txt->set_text(TTR("Font Size:"));
-	font_size_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	set_warning_nb(0);
 
-	font_size_nb = memnew(Label);
-	status_bar->add_child(font_size_nb);
-	font_size_nb->set_valign(Label::VALIGN_CENTER);
-	font_size_nb->set_v_size_flags(SIZE_FILL);
-	font_size_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
-	font_size_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
-	font_size_nb->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
-	font_size_nb->set_align(Label::ALIGN_RIGHT);
-	font_size_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-
-	Label *line_txt = memnew(Label);
-	status_bar->add_child(line_txt);
-	line_txt->set_align(Label::ALIGN_RIGHT);
-	line_txt->set_valign(Label::VALIGN_CENTER);
-	line_txt->set_v_size_flags(SIZE_FILL);
-	line_txt->set_text(TTR("Line:"));
-	line_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-
-	line_nb = memnew(Label);
-	status_bar->add_child(line_nb);
-	line_nb->set_valign(Label::VALIGN_CENTER);
-	line_nb->set_v_size_flags(SIZE_FILL);
-	line_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
-	line_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
-	line_nb->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
-	line_nb->set_align(Label::ALIGN_RIGHT);
-	line_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-
-	Label *col_txt = memnew(Label);
-	status_bar->add_child(col_txt);
-	col_txt->set_align(Label::ALIGN_RIGHT);
-	col_txt->set_valign(Label::VALIGN_CENTER);
-	col_txt->set_v_size_flags(SIZE_FILL);
-	col_txt->set_text(TTR("Col:"));
-	col_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-
-	col_nb = memnew(Label);
-	status_bar->add_child(col_nb);
-	col_nb->set_valign(Label::VALIGN_CENTER);
-	col_nb->set_v_size_flags(SIZE_FILL);
-	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change, do not touch
-	col_nb->set_clip_text(true); // workaround to prevent resizing the label on each change, do not touch
-	col_nb->set_custom_minimum_size(Size2(40, 1) * EDSCALE);
-	col_nb->set_align(Label::ALIGN_RIGHT);
-	col_nb->set("custom_constants/margin_right", 0);
-	col_nb->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	// Line and column
+	line_and_col_txt = memnew(Label);
+	status_bar->add_child(line_and_col_txt);
+	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	line_and_col_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	line_and_col_txt->set_tooltip(TTR("Line and column numbers"));
+	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	text_editor->connect("gui_input", this, "_text_editor_gui_input");
 	text_editor->connect("cursor_changed", this, "_line_col_changed");
@@ -1365,7 +1357,6 @@ CodeTextEditor::CodeTextEditor() {
 
 	font_resize_val = 0;
 	font_size = EditorSettings::get_singleton()->get("interface/editor/code_font_size");
-	font_size_nb->set_text(itos(font_size) + " (" + itos(100 * font_size / (14 * EDSCALE)) + "%)");
 	font_resize_timer = memnew(Timer);
 	add_child(font_resize_timer);
 	font_resize_timer->set_one_shot(true);
