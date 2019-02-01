@@ -594,7 +594,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			if (restart_time >= prev_time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (1.0 - restart_time + time) * lifetime;
+					local_delta = (lifetime - restart_time + time) * lifetime;
 				}
 
 			} else if (restart_time < time) {
