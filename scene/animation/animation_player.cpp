@@ -344,10 +344,16 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
+		// If an animation changes this animation (or it animates itself)
+		// we need to recreate our animation cache
+		if (p_anim->node_cache.size() != a->get_track_count()) {
+			_ensure_node_caches(p_anim);
+		}
+
 		TrackNodeCache *nc = p_anim->node_cache[i];
 
-		if (!nc) // no node cache for this track, skip it
-			continue;
+		if (!nc)
+			continue; // no node cache for this track, skip it
 
 		if (!a->track_is_enabled(i))
 			continue; // do nothing if the track is disabled
