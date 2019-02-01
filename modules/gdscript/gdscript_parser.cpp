@@ -4724,6 +4724,25 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						_set_error("Type-less export needs a constant expression assigned to infer type.");
 						return;
 					}
+
+					if (member._export.type != Variant::NIL) {
+						IdentifierNode *id = alloc_node<IdentifierNode>();
+						id->name = member.identifier;
+
+						ConstantNode *cn = alloc_node<ConstantNode>();
+
+						Variant::CallError ce;
+						cn->value = Variant::construct(member._export.type, NULL, 0, ce);
+
+						OperatorNode *op = alloc_node<OperatorNode>();
+						op->op = OperatorNode::OP_INIT_ASSIGN;
+						op->arguments.push_back(id);
+						op->arguments.push_back(cn);
+
+						p_class->initializer->statements.push_back(op);
+
+						member.initial_assignment = op;
+					}
 				}
 
 				if (autoexport && member.data_type.has_type) {
