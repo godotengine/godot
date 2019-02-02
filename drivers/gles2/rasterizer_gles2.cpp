@@ -318,7 +318,10 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 	} else {
 		storage->frame.current_rt = NULL;
 		storage->frame.clear_request = false;
-		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+		// glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+		// begin ================ landscape
+		glViewport(0, 0, OS::get_singleton()->get_window_size().height, OS::get_singleton()->get_window_size().width);
+		// end ==================
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 	}
 }

@@ -169,6 +169,9 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		canvas_transform.scale(Vector3(2.0f / storage->frame.current_rt->width, csy * -2.0f / storage->frame.current_rt->height, 1.0f));
 	} else {
 		Vector2 ssize = OS::get_singleton()->get_window_size();
+		//begin ===== landscape 
+		ssize = Vector2(ssize.y,ssize.x);
+		// end 
 		canvas_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / ssize.width, -2.0f / ssize.height, 1.0f));
 	}
@@ -2032,11 +2035,22 @@ void RasterizerCanvasGLES2::draw_lens_distortion_rect(const Rect2 &p_rect, float
 void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_image) {
 
 	Vector2 window_size = OS::get_singleton()->get_window_size();
+	// begin ================  force landscape 
+	// window_size = Vector2(window_size.y,window_size.x);
+	// end ==================
 	int window_h = window_size.height;
 	int window_w = window_size.width;
-
+	// begin ================ force landscape 
+	 window_h = window_size.width;
+	 window_w = window_size.height;
+	// end ==================
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->system_fbo);
-	glViewport(0, 0, window_size.width, window_size.height);
+
+	// normal drawing 
+	// glViewport(0, 0, window_size.width, window_size.height);
+	// begin ================ force landscape 
+	glViewport(0, 0, window_size.height, window_size.width);
+	// end ==================
 	canvas_begin();
 
 	if (black_image[MARGIN_LEFT].is_valid()) {
