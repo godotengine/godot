@@ -59,10 +59,10 @@ void ContextGL_SDL::swap_buffers() {
 }
 
 Error ContextGL_SDL::initialize() {
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 1);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 1);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	 if (opengl_3_context == true) {

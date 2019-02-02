@@ -316,6 +316,14 @@ int OS_SDL::get_mouse_button_state() const {
 	return last_button_state;
 }
 
+bool OS_SDL::has_touchscreen_ui_hint() const {
+#ifdef TOUCH_ENABLED
+	return true;
+#else
+	return OS::has_touchscreen_ui_hint();
+#endif
+}
+
 Point2 OS_SDL::get_mouse_position() const {
 	return last_mouse_pos;
 }
@@ -435,8 +443,6 @@ Size2 OS_SDL::get_window_size() const {
 	int w, h;
 	SDL_GetWindowSize(sdl_window, &w, &h);
 
-	// FIXME: Should we use current_videomode here instead?
-	// FIXME: How should HIDPI be handled?
 	return Size2i(w, h);
 }
 
@@ -725,8 +731,19 @@ void OS_SDL::process_events() {
 			mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
-			Point2i pos = Point2i(event.tfinger.x, event.tfinger.y);
-
+			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
+			// begin landscape 
+			{// only for landscape mode 
+				int w,h;
+				SDL_GetWindowSize(sdl_window, &w, &h);
+				float coef = ((float)w)/((float)h);
+				/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
+				pos = Point2(pos.y, w - pos.x);
+				pos.x *= coef;
+				pos.y /= coef;
+				/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
+			}
+			// end landscape 
 			bool is_begin = event.type ==  SDL_FINGERDOWN;
 
 			bool translate = false;
@@ -792,8 +809,19 @@ void OS_SDL::process_events() {
 			mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
-			Point2i pos = Point2i(event.tfinger.x, event.tfinger.y);
-
+			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
+			// begin landscape 
+			{
+				int w,h;
+				SDL_GetWindowSize(sdl_window, &w, &h);
+				float coef = ((float)w)/((float)h);
+				/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
+				pos = Point2(pos.y, w - pos.x);
+				pos.x *= coef;
+				pos.y /= coef;
+				/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
+			}
+			// end landscape 
 			Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
 			if (!curr_pos_elem) 
 			// {// Defensive
