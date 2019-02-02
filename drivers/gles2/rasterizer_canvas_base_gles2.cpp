@@ -110,6 +110,9 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 		canvas_transform.scale(Vector3(2.0f / storage->frame.current_rt->width, csy * -2.0f / storage->frame.current_rt->height, 1.0f));
 	} else {
 		Vector2 ssize = OS::get_singleton()->get_window_size();
+		//begin ===== landscape 
+		ssize = Vector2(ssize.y,ssize.x);
+		// end 
 		canvas_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / ssize.width, -2.0f / ssize.height, 1.0f));
 	}
