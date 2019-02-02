@@ -141,6 +141,7 @@ def configure(env):
     ## Dependencies
 
     env.ParseConfig('pkg-config sdl2 --cflags --libs')
+    env.ParseConfig('pkg-config wayland-client --cflags --libs')
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
         env.Prepend(CCFLAGS=['-DDISABLE_LIBAUDIORESOURCE'])
@@ -259,6 +260,8 @@ def configure(env):
     env.Append(CPPPATH=['#platform/sailfish','#core', '#thirdparty/glad'])
     # env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-DGLES_OVER_GL'])
     env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED', '-Wno-strict-aliasing'])
+    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.i386/src/video/wayland','-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.i386/'])
+    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.arm/src/video/wayland/','-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.arm/src','-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.arm/include/'])
     # env.Append(LIBS=['GL', 'pthread'])
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 

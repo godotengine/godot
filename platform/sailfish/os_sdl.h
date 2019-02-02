@@ -189,6 +189,7 @@ public:
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
+	virtual bool has_touchscreen_ui_hint() const;
 	virtual void set_window_title(const String &p_title);
 
 	virtual void set_icon(const Ref<Image> &p_icon);
