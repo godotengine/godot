@@ -442,8 +442,7 @@ void OS_SDL::set_window_position(const Point2 &p_position) {
 Size2 OS_SDL::get_window_size() const {
 	int w, h;
 	SDL_GetWindowSize(sdl_window, &w, &h);
-
-	return Size2i(w, h);
+	return Size2i(h, w);
 }
 
 void OS_SDL::set_window_size(const Size2 p_size) {
