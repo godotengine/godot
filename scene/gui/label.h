@@ -96,6 +96,7 @@ private:
 
 	WordCache *word_cache;
 	int total_char_cache;
+	int page_chars;
 	int visible_chars;
 	int lines_skipped;
 	int max_lines_visible;
@@ -126,6 +127,7 @@ public:
 	void set_visible_characters(int p_amount);
 	int get_visible_characters() const;
 	int get_total_character_count() const;
+	int get_page_character_count() const;
 
 	void set_clip_text(bool p_clip);
 	bool is_clipping_text() const;

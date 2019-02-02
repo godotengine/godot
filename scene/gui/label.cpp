@@ -106,6 +106,7 @@ void Label::_notification(int p_what) {
 		// ceiling to ensure autowrapping does not cut text
 		int space_w = Math::ceil(font->get_char_size(' ').width);
 		int chars_total = 0;
+		page_chars = 0;
 
 		int vbegin = 0, vsep = 0;
 
@@ -271,6 +272,7 @@ void Label::_notification(int p_what) {
 						x_ofs += drawer.draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
 						chars_total++;
 					}
+					page_chars++;
 				}
 				from = from->next;
 			}
@@ -453,6 +455,7 @@ void Label::regenerate_word_cache() {
 			line_width += char_width;
 			total_char_cache++;
 		}
+		page_chars = total_char_cache;
 
 		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || separatable)) || insert_newline) {
 			if (separatable) {
@@ -564,8 +567,8 @@ String Label::get_text() const {
 void Label::set_visible_characters(int p_amount) {
 
 	visible_chars = p_amount;
-	if (get_total_character_count() > 0) {
-		percent_visible = (float)p_amount / (float)total_char_cache;
+	if (get_page_character_count() > 0) {
+		percent_visible = (float)p_amount / (float)page_chars;
 	}
 	_change_notify("percent_visible");
 	update();
@@ -585,7 +588,7 @@ void Label::set_percent_visible(float p_percent) {
 
 	} else {
 
-		visible_chars = get_total_character_count() * p_percent;
+		visible_chars = get_page_character_count() * p_percent;
 		percent_visible = p_percent;
 	}
 	_change_notify("visible_chars");
@@ -627,6 +630,17 @@ int Label::get_total_character_count() const {
 	return total_char_cache;
 }
 
+int Label::get_page_character_count() const {
+
+	// default to total_char_cache
+	// should be correct on the next draw
+	if (word_cache_dirty) {
+		const_cast<Label *>(this)->regenerate_word_cache();
+	}
+
+	return page_chars;
+}
+
 void Label::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_align", "align"), &Label::set_align);
@@ -645,6 +659,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_count"), &Label::get_line_count);
 	ClassDB::bind_method(D_METHOD("get_visible_line_count"), &Label::get_visible_line_count);
 	ClassDB::bind_method(D_METHOD("get_total_character_count"), &Label::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("get_page_character_count"), &Label::get_page_character_count);
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &Label::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &Label::get_visible_characters);
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &Label::set_percent_visible);

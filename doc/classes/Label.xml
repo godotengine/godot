@@ -31,6 +31,13 @@
 				Returns the total number of printable characters in the text (excluding spaces and newlines).
 			</description>
 		</method>
+		<method name="get_page_character_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of printable characters in the visible lines text (excluding spaces and newlines). Useful if the [code]Label[/code] 's height cannot currently display all lines.
+			</description>
+		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int">
 			</return>
