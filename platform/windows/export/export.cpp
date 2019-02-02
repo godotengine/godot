@@ -73,7 +73,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	}
 #endif
 
-	String icon_path = p_preset->get("application/icon");
+	String icon_path = ProjectSettings::get_singleton()->globalize_path(p_preset->get("application/icon"));
 	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
@@ -137,7 +137,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_GLOBAL_FILE, "*.ico"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.ico"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/file_version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/product_version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/company_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Company Name"), ""));
