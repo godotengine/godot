@@ -206,9 +206,10 @@ enum {
 
 // In the future we may force this if we want to ref return these structs
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
-// Sometimes clang-format can be an ass
-GD_STATIC_ASSERT(MATCHES_Vector2 &&MATCHES_Rect2 &&MATCHES_Transform2D &&MATCHES_Vector3 &&
-				MATCHES_Basis &&MATCHES_Quat &&MATCHES_Transform &&MATCHES_AABB &&MATCHES_Color &&MATCHES_Plane);
+/* clang-format off */
+GD_STATIC_ASSERT(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
+				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&MATCHES_Plane);
+/* clang-format on */
 #endif
 
 } // namespace InteropLayout

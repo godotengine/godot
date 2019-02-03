@@ -72,7 +72,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 void unhandled_exception(MonoException *p_exc) {
 	mono_unhandled_exception((MonoObject *)p_exc); // prints the exception as well
 	abort();
-	_UNREACHABLE_();
+	GD_UNREACHABLE();
 }
 
 } // namespace GDMonoInternals

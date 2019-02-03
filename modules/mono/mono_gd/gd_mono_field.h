@@ -35,7 +35,7 @@
 #include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
 
-class GDMonoField : public GDMonoClassMember {
+class GDMonoField : public IMonoClassMember {
 
 	GDMonoClass *owner;
 	MonoClassField *mono_field;
@@ -47,15 +47,15 @@ class GDMonoField : public GDMonoClassMember {
 	MonoCustomAttrInfo *attributes;
 
 public:
-	virtual MemberType get_member_type() { return MEMBER_TYPE_FIELD; }
+	virtual MemberType get_member_type() GD_FINAL { return MEMBER_TYPE_FIELD; }
 
-	virtual StringName get_name() { return name; }
+	virtual StringName get_name() GD_FINAL { return name; }
 
-	virtual bool is_static();
-	virtual Visibility get_visibility();
+	virtual bool is_static() GD_FINAL;
+	virtual Visibility get_visibility() GD_FINAL;
 
-	virtual bool has_attribute(GDMonoClass *p_attr_class);
-	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class);
+	virtual bool has_attribute(GDMonoClass *p_attr_class) GD_FINAL;
+	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) GD_FINAL;
 	void fetch_attributes();
 
 	_FORCE_INLINE_ ManagedType get_type() const { return type; }

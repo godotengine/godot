@@ -35,7 +35,7 @@
 
 class GDMonoAssembly;
 class GDMonoClass;
-class GDMonoClassMember;
+class IMonoClassMember;
 class GDMonoField;
 class GDMonoProperty;
 class GDMonoMethod;

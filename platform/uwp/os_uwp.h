@@ -213,6 +213,7 @@ public:
 
 	virtual bool has_environment(const String &p_var) const;
 	virtual String get_environment(const String &p_var) const;
+	virtual bool set_environment(const String &p_var, const String &p_value) const;
 
 	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
