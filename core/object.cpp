@@ -1924,6 +1924,11 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	return _script_instance_bindings[p_script_language_index];
 }
 
+bool Object::has_script_instance_binding(int p_script_language_index) {
+
+	return _script_instance_bindings[p_script_language_index] != NULL;
+}
+
 Object::Object() {
 
 	_class_ptr = NULL;

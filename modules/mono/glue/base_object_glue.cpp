@@ -65,9 +65,12 @@ void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr) {
 	void *data = p_ptr->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
 	if (data) {
-		Ref<MonoGCHandle> &gchandle = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get().gchandle;
-		if (gchandle.is_valid()) {
-			CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+		CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+		if (script_binding.inited) {
+			Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
+			if (gchandle.is_valid()) {
+				CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+			}
 		}
 	}
 }
@@ -85,11 +88,14 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(ref->get_script_instance());
 		if (cs_instance) {
 			if (!cs_instance->is_destructing_script_instance()) {
-				bool r_owner_deleted;
-				cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, r_owner_deleted);
-				if (!r_owner_deleted && !p_is_finalizer) {
-					// If the native instance is still alive and Dispose() was called
-					// (instead of the finalizer), then we remove the script instance.
+				bool delete_owner;
+				bool remove_script_instance;
+
+				cs_instance->mono_object_disposed_baseref(p_obj, p_is_finalizer, delete_owner, remove_script_instance);
+
+				if (delete_owner) {
+					memdelete(ref);
+				} else if (remove_script_instance) {
 					ref->set_script_instance(NULL);
 				}
 			}
@@ -105,9 +111,12 @@ void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_
 		void *data = ref->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
 		if (data) {
-			Ref<MonoGCHandle> &gchandle = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get().gchandle;
-			if (gchandle.is_valid()) {
-				CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->get();
+			if (script_binding.inited) {
+				Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
+				if (gchandle.is_valid()) {
+					CSharpLanguage::release_script_gchandle(p_obj, gchandle);
+				}
 			}
 		}
 	}
@@ -138,7 +147,7 @@ MonoObject *godot_icall_Object_weakref(Object *p_obj) {
 		wref->set_obj(p_obj);
 	}
 
-	return GDMonoUtils::create_managed_for_godot_object(CACHED_CLASS(WeakRef), Reference::get_class_static(), Object::cast_to<Object>(wref.ptr()));
+	return GDMonoUtils::unmanaged_get_managed(wref.ptr());
 }
 
 Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, Object *p_target, MonoObject *p_awaiter) {

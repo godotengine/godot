@@ -265,61 +265,70 @@ void clear_cache() {
 }
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
-	if (unmanaged) {
-		if (unmanaged->get_script_instance()) {
-			CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(unmanaged->get_script_instance());
 
-			if (cs_instance) {
-				return cs_instance->get_mono_object();
-			}
-		}
+	if (!unmanaged)
+		return NULL;
 
-		// If the owner does not have a CSharpInstance...
+	if (unmanaged->get_script_instance()) {
+		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(unmanaged->get_script_instance());
 
-		void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
-
-		if (data) {
-			CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
-
-			Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
-			ERR_FAIL_COND_V(gchandle.is_null(), NULL);
-
-			MonoObject *target = gchandle->get_target();
-
-			if (target)
-				return target;
-
-			CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
-
-			// Create a new one
-
-#ifdef DEBUG_ENABLED
-			CRASH_COND(script_binding.type_name == StringName());
-			CRASH_COND(script_binding.wrapper_class == NULL);
-#endif
-
-			MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(script_binding.wrapper_class, script_binding.type_name, unmanaged);
-			ERR_FAIL_NULL_V(mono_object, NULL);
-
-			gchandle->set_handle(MonoGCHandle::new_strong_handle(mono_object), MonoGCHandle::STRONG_HANDLE);
-
-			// Tie managed to unmanaged
-			Reference *ref = Object::cast_to<Reference>(unmanaged);
-
-			if (ref) {
-				// Unsafe refcount increment. The managed instance also counts as a reference.
-				// This way if the unmanaged world has no references to our owner
-				// but the managed instance is alive, the refcount will be 1 instead of 0.
-				// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
-
-				ref->reference();
-			}
-
-			return mono_object;
+		if (cs_instance) {
+			return cs_instance->get_mono_object();
 		}
 	}
 
-	return NULL;
+	// If the owner does not have a CSharpInstance...
+
+	void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
+
+	if (!data)
+		return NULL;
+
+	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
+
+	if (!script_binding.inited) {
+		// Already had a binding that needs to be setup
+		CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
+
+		if (!script_binding.inited)
+			return NULL;
+	}
+
+	Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
+	ERR_FAIL_COND_V(gchandle.is_null(), NULL);
+
+	MonoObject *target = gchandle->get_target();
+
+	if (target)
+		return target;
+
+	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
+
+	// Create a new one
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(script_binding.type_name == StringName());
+	CRASH_COND(script_binding.wrapper_class == NULL);
+#endif
+
+	MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(script_binding.wrapper_class, script_binding.type_name, unmanaged);
+	ERR_FAIL_NULL_V(mono_object, NULL);
+
+	gchandle->set_handle(MonoGCHandle::new_strong_handle(mono_object), MonoGCHandle::STRONG_HANDLE);
+
+	// Tie managed to unmanaged
+	Reference *ref = Object::cast_to<Reference>(unmanaged);
+
+	if (ref) {
+		// Unsafe refcount increment. The managed instance also counts as a reference.
+		// This way if the unmanaged world has no references to our owner
+		// but the managed instance is alive, the refcount will be 1 instead of 0.
+		// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+
+		ref->reference();
+	}
+
+	return mono_object;
 }
 
 void set_main_thread(MonoThread *p_thread) {
