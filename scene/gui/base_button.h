@@ -74,6 +74,8 @@ private:
 	void _pressed();
 	void _toggled(bool p_pressed);
 
+	void on_action_event(Ref<InputEvent> p_event);
+
 protected:
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
