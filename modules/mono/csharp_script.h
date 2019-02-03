@@ -206,8 +206,15 @@ class CSharpInstance : public ScriptInstance {
 	Ref<MonoGCHandle> gchandle;
 
 	bool _reference_owner_unsafe();
+
+	/*
+	 * If true is returned, the caller must memdelete the script instance's owner.
+	 */
 	bool _unreference_owner_unsafe();
 
+	/*
+	 * If NULL is returned, the caller must destroy the script instance by removing it from its owner.
+	 */
 	MonoObject *_internal_new_managed();
 
 	// Do not use unless you know what you are doing
@@ -223,6 +230,8 @@ public:
 
 	_FORCE_INLINE_ bool is_destructing_script_instance() { return destructing_script_instance; }
 
+	virtual Object *get_owner();
+
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
@@ -235,7 +244,12 @@ public:
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 
 	void mono_object_disposed(MonoObject *p_obj);
-	void mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_owner_deleted);
+
+	/*
+	 * If 'r_delete_owner' is set to true, the caller must memdelete the script instance's owner. Otherwise, if
+	 * 'r_remove_script_instance' is set to true, the caller must destroy the script instance by removing it from its owner.
+	 */
+	void mono_object_disposed_baseref(MonoObject *p_obj, bool p_is_finalizer, bool &r_delete_owner, bool &r_remove_script_instance);
 
 	virtual void refcount_incremented();
 	virtual bool refcount_decremented();
@@ -255,6 +269,7 @@ public:
 };
 
 struct CSharpScriptBinding {
+	bool inited;
 	StringName type_name;
 	GDMonoClass *wrapper_class;
 	Ref<MonoGCHandle> gchandle;
@@ -390,6 +405,8 @@ public:
 	virtual void free_instance_binding_data(void *p_data);
 	virtual void refcount_incremented_instance_binding(Object *p_object);
 	virtual bool refcount_decremented_instance_binding(Object *p_object);
+
+	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
 
 #ifdef DEBUG_ENABLED
 	Vector<StackInfo> stack_trace_get_info(MonoObject *p_stack_trace);

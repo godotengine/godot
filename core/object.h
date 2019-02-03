@@ -729,6 +729,7 @@ public:
 
 	//used by script languages to store binding data
 	void *get_script_instance_binding(int p_script_language_index);
+	bool has_script_instance_binding(int p_script_language_index);
 
 	void clear_internal_resource_paths();
 
