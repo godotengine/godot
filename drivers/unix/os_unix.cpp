@@ -471,7 +471,7 @@ String OS_Unix::get_environment(const String &p_var) const {
 
 bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
 
-	return setenv(p_var.utf8().get_data(), p_var.utf8().get_data(), /* overwrite: */ true) == 0;
+	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
 }
 
 int OS_Unix::get_processor_count() const {
