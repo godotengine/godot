@@ -34,6 +34,8 @@
 #include "../mono_gc_handle.h"
 #include "../utils/macros.h"
 #include "../utils/thread_local.h"
+#include "gd_mono_class.h"
+#include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
 
 #include <mono/metadata/exception.h>
@@ -55,10 +57,49 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	CRASH_COND(!klass);
 
+	GDMonoClass *native = GDMonoUtils::get_class_native_base(klass);
+
+	CRASH_COND(native == NULL);
+
+	if (native == klass) {
+		// If it's just a wrapper Godot class and not a custom inheriting class, then attach a
+		// script binding instead. One of the advantages of this is that if a script is attached
+		// later and it's not a C# script, then the managed object won't have to be disposed.
+		// Another reason for doing this is that this instance could outlive CSharpLanguage, which would
+		// be problematic when using a script. See: https://github.com/godotengine/godot/issues/25621
+
+		CSharpScriptBinding script_binding;
+
+		script_binding.inited = true;
+		script_binding.type_name = NATIVE_GDMONOCLASS_NAME(klass);
+		script_binding.wrapper_class = klass;
+		script_binding.gchandle = MonoGCHandle::create_strong(managed);
+
+		Reference *ref = Object::cast_to<Reference>(unmanaged);
+		if (ref) {
+			// Unsafe refcount increment. The managed instance also counts as a reference.
+			// This way if the unmanaged world has no references to our owner
+			// but the managed instance is alive, the refcount will be 1 instead of 0.
+			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
+
+			ref->reference();
+		}
+
+		// The object was just created, no script instance binding should have been attached
+		CRASH_COND(unmanaged->has_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index()));
+
+		void *data = (void *)CSharpLanguage::get_singleton()->insert_script_binding(unmanaged, script_binding);
+
+		// Should be thread safe because the object was just created and nothing else should be referencing it
+		unmanaged->set_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index(), data);
+
+		return;
+	}
+
 	Ref<MonoGCHandle> gchandle = ref ? MonoGCHandle::create_weak(managed) :
 									   MonoGCHandle::create_strong(managed);
 
-	Ref<CSharpScript> script = CSharpScript::create_for_managed_type(klass);
+	Ref<CSharpScript> script = CSharpScript::create_for_managed_type(klass, native);
 
 	CRASH_COND(script.is_null());
 

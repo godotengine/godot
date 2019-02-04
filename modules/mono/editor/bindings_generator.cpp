@@ -849,6 +849,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 	}
 
+	// TODO: BINDINGS_NATIVE_NAME_FIELD should be StringName, once we support it in C#
+
 	if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
 

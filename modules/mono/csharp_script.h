@@ -135,7 +135,7 @@ class CSharpScript : public Script {
 
 	// Do not use unless you know what you are doing
 	friend void GDMonoInternals::tie_managed_to_unmanaged(MonoObject *, Object *);
-	static Ref<CSharpScript> create_for_managed_type(GDMonoClass *p_class);
+	static Ref<CSharpScript> create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native);
 
 protected:
 	static void _bind_methods();
@@ -312,6 +312,8 @@ class CSharpLanguage : public ScriptLanguage {
 public:
 	StringNameCache string_names;
 
+	Mutex *get_language_bind_mutex() { return language_bind_mutex; }
+
 	_FORCE_INLINE_ int get_language_index() { return lang_idx; }
 	void set_language_index(int p_idx);
 
@@ -406,6 +408,7 @@ public:
 	virtual void refcount_incremented_instance_binding(Object *p_object);
 	virtual bool refcount_decremented_instance_binding(Object *p_object);
 
+	Map<Object *, CSharpScriptBinding>::Element *insert_script_binding(Object *p_object, const CSharpScriptBinding &p_script_binding);
 	bool setup_csharp_script_binding(CSharpScriptBinding &r_script_binding, Object *p_object);
 
 #ifdef DEBUG_ENABLED
