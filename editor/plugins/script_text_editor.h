@@ -136,6 +136,7 @@ protected:
 	void _change_syntax_highlighter(int p_idx);
 
 	void _edit_option(int p_op);
+	void _edit_option_toggle_inline_comment();
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
