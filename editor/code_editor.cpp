@@ -1132,7 +1132,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		}
 
 		// Adjust selection & cursor position.
-		int offset = is_commented ? -1 : 1;
+		int offset = (is_commented ? -1 : 1) * delimiter.length();
 		int col_from = text_editor->get_selection_from_column() > 0 ? text_editor->get_selection_from_column() + offset : 0;
 
 		if (is_commented && text_editor->cursor_get_column() == text_editor->get_line(text_editor->cursor_get_line()).length() + 1)
@@ -1150,14 +1150,15 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	} else {
 		int begin = text_editor->cursor_get_line();
 		String line_text = text_editor->get_line(begin);
+		int delimiter_length = delimiter.length();
 
 		int col = text_editor->cursor_get_column();
 		if (line_text.begins_with(delimiter)) {
-			line_text = line_text.substr(delimiter.length(), line_text.length());
-			col -= 1;
+			line_text = line_text.substr(delimiter_length, line_text.length());
+			col -= delimiter_length;
 		} else {
 			line_text = delimiter + line_text;
-			col += 1;
+			col += delimiter_length;
 		}
 
 		text_editor->set_line(begin, line_text);
