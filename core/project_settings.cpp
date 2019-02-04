@@ -1007,6 +1007,15 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
+	PoolStringArray extensions = PoolStringArray();
+	extensions.push_back("gd");
+	if (Engine::get_singleton()->has_singleton("GodotSharp"))
+		extensions.push_back("cs");
+	extensions.push_back("shader");
+
+	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
+	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::POOL_STRING_ARRAY, "editor/search_in_file_extensions");
+
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
