@@ -153,7 +153,7 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 		xform *= scale_xf;
 	}
 
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
+	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse() * xform);
 
 	for (int i = 0; i < get_child_count(); i++) {
 
@@ -178,7 +178,7 @@ void ViewportContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		xform *= scale_xf;
 	}
 
-	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
+	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse() * xform);
 
 	for (int i = 0; i < get_child_count(); i++) {
 
