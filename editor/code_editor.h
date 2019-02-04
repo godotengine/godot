@@ -211,6 +211,10 @@ public:
 	void delete_lines();
 	void clone_lines_down();
 
+	/// Toggle inline comment on currently selected lines, or on current line if nothing is selected,
+	/// by adding or removing comment delimiter
+	void toggle_inline_comment(const String &delimiter);
+
 	void goto_line(int p_line);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 
