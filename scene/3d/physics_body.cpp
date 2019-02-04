@@ -1283,6 +1283,7 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, true)) {
 		gt.origin += col.travel;
+		colliders.push_back(col)
 		if (p_floor_direction == Vector3()) {
 			//all is a wall
 			on_wall = true;
