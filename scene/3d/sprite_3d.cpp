@@ -382,36 +382,30 @@ void Sprite3D::_draw() {
 
 	VS::get_singleton()->immediate_clear(immediate);
 	if (!texture.is_valid())
-		return; //no texuture no life
+		return;
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0)
 		return;
 
-	Size2i s;
-	Rect2 src_rect;
+	Rect2 base_rect;
+	if (region)
+		base_rect = region_rect;
+	else
+		base_rect = Rect2(0, 0, texture->get_width(), texture->get_height());
 
-	if (region) {
+	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
+	Point2 frame_offset = Point2(frame % hframes, frame / hframes);
+	frame_offset *= frame_size;
 
-		s = region_rect.size;
-		src_rect = region_rect;
-	} else {
-		s = texture->get_size();
-		s = s / Size2(hframes, vframes);
-
-		src_rect.size = s;
-		src_rect.position.x += (frame % hframes) * s.x;
-		src_rect.position.y += (frame / hframes) * s.y;
-	}
-
-	Point2 ofs = get_offset();
+	Point2 dest_offset = get_offset();
 	if (is_centered())
-		ofs -= s / 2;
+		dest_offset -= frame_size / 2;
 
-	Rect2 dst_rect(ofs, s);
-
+	Rect2 src_rect(base_rect.position + frame_offset, frame_size);
+	Rect2 final_dst_rect(dest_offset, frame_size);
 	Rect2 final_rect;
 	Rect2 final_src_rect;
-	if (!texture->get_rect_region(dst_rect, src_rect, final_rect, final_src_rect))
+	if (!texture->get_rect_region(final_dst_rect, src_rect, final_rect, final_src_rect))
 		return;
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
