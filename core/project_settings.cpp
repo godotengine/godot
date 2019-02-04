@@ -1005,6 +1005,15 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
 
+	PoolStringArray extensions = PoolStringArray();
+	extensions.push_back("gd");
+	if (Engine::get_singleton()->has_singleton("GodotSharp"))
+		extensions.push_back("cs");
+	extensions.push_back("shader");
+
+	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
+	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::POOL_STRING_ARRAY, "editor/search_in_file_extensions");
+
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
