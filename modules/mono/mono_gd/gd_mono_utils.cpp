@@ -39,6 +39,7 @@
 
 #include "../csharp_script.h"
 #include "../utils/macros.h"
+#include "../utils/mutex_utils.h"
 #include "gd_mono.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
@@ -281,17 +282,19 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
-	if (!data)
-		return NULL;
+	ERR_FAIL_NULL_V(data, NULL);
 
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
 
 	if (!script_binding.inited) {
-		// Already had a binding that needs to be setup
-		CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
+		SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->get_language_bind_mutex());
 
-		if (!script_binding.inited)
-			return NULL;
+		if (!script_binding.inited) { // Other thread may have set it up
+			// Already had a binding that needs to be setup
+			CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
+
+			ERR_FAIL_COND_V(!script_binding.inited, NULL);
+		}
 	}
 
 	Ref<MonoGCHandle> &gchandle = script_binding.gchandle;

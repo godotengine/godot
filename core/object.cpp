@@ -1929,6 +1929,13 @@ bool Object::has_script_instance_binding(int p_script_language_index) {
 	return _script_instance_bindings[p_script_language_index] != NULL;
 }
 
+void Object::set_script_instance_binding(int p_script_language_index, void *p_data) {
+#ifdef DEBUG_ENABLED
+	CRASH_COND(_script_instance_bindings[p_script_language_index] != NULL);
+#endif
+	_script_instance_bindings[p_script_language_index] = p_data;
+}
+
 Object::Object() {
 
 	_class_ptr = NULL;
@@ -1992,9 +1999,11 @@ Object::~Object() {
 	_instance_ID = 0;
 	_predelete_ok = 2;
 
-	for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
-		if (_script_instance_bindings[i]) {
-			ScriptServer::get_language(i)->free_instance_binding_data(_script_instance_bindings[i]);
+	if (!ScriptServer::are_languages_finished()) {
+		for (int i = 0; i < MAX_SCRIPT_INSTANCE_BINDINGS; i++) {
+			if (_script_instance_bindings[i]) {
+				ScriptServer::get_language(i)->free_instance_binding_data(_script_instance_bindings[i]);
+			}
 		}
 	}
 }

@@ -37,6 +37,7 @@ int ScriptServer::_language_count = 0;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
+bool ScriptServer::languages_finished = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = NULL;
 
 void Script::_notification(int p_what) {
@@ -130,6 +131,7 @@ void ScriptServer::finish_languages() {
 		_languages[i]->finish();
 	}
 	global_classes_clear();
+	languages_finished = true;
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
