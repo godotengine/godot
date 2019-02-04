@@ -1270,9 +1270,11 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	bool was_on_floor = on_floor;
+	bool was_on_ceiling = on_ceiling
+	bool was_on_wall = on_wall
 
 	Vector3 ret = move_and_slide(p_linear_velocity, p_floor_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
-	if (!was_on_floor || p_snap == Vector3()) {
+	if ((!was_on_floor && !was_on_ceiling && !was_on_wall) || p_snap == Vector3()) {
 		return ret;
 	}
 
@@ -1281,10 +1283,19 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 
 	if (move_and_collide(p_snap, p_infinite_inertia, col, true)) {
 		gt.origin += col.travel;
-		if (p_floor_direction != Vector3() && Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
-			on_floor = true;
-			on_floor_body = col.collider_rid;
-			floor_velocity = col.collider_vel;
+		if (p_floor_direction == Vector3()) {
+			//all is a wall
+			on_wall = true;
+		} else {
+			if (col.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //floor
+				on_floor = true;
+				on_floor_body = col.collider_rid;
+				floor_velocity = col.collider_vel;
+			} else if (col.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
+				on_ceiling = true;
+			} else {
+				on_wall = true;
+			}
 		}
 		set_global_transform(gt);
 	}
