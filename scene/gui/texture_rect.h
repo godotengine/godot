@@ -53,6 +53,8 @@ public:
 
 private:
 	bool expand;
+	bool hflip;
+	bool vflip;
 	Ref<Texture> texture;
 	StretchMode stretch_mode;
 
@@ -70,6 +72,12 @@ public:
 
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const;
+
+	void set_flip_h(bool p_flip);
+	bool is_flipped_h() const;
+
+	void set_flip_v(bool p_flip);
+	bool is_flipped_v() const;
 
 	TextureRect();
 	~TextureRect();
