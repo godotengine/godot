@@ -22,6 +22,12 @@
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The node's [Texture] resource.
 		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
+			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
+			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
+		</member>
 	</members>
 	<constants>
 		<constant name="STRETCH_SCALE_ON_EXPAND" value="0" enum="StretchMode">

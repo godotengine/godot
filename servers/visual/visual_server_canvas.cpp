@@ -616,7 +616,7 @@ void VisualServerCanvas::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	if (p_tile) {
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_TILE;
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_REGION;
-		rect->source = Rect2(0, 0, p_rect.size.width, p_rect.size.height);
+		rect->source = Rect2(0, 0, fabsf(p_rect.size.width), fabsf(p_rect.size.height));
 	}
 
 	if (p_rect.size.x < 0) {
