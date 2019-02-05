@@ -46,6 +46,7 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_position"), &ARVRPositionalTracker::get_position);
 	ClassDB::bind_method(D_METHOD("get_hand"), &ARVRPositionalTracker::get_hand);
 	ClassDB::bind_method(D_METHOD("get_transform", "adjust_by_reference_frame"), &ARVRPositionalTracker::get_transform);
+	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRPositionalTracker::get_mesh);
 
 	// these functions we don't want to expose to normal users but do need to be callable from GDNative
 	ClassDB::bind_method(D_METHOD("_set_type", "type"), &ARVRPositionalTracker::set_type);
@@ -53,7 +54,7 @@ void ARVRPositionalTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_joy_id", "joy_id"), &ARVRPositionalTracker::set_joy_id);
 	ClassDB::bind_method(D_METHOD("_set_orientation", "orientation"), &ARVRPositionalTracker::set_orientation);
 	ClassDB::bind_method(D_METHOD("_set_rw_position", "rw_position"), &ARVRPositionalTracker::set_rw_position);
-
+	ClassDB::bind_method(D_METHOD("_set_mesh", "mesh"), &ARVRPositionalTracker::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRPositionalTracker::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRPositionalTracker::set_rumble);
 
@@ -152,6 +153,18 @@ Vector3 ARVRPositionalTracker::get_rw_position() const {
 	_THREAD_SAFE_METHOD_
 
 	return rw_position;
+};
+
+void ARVRPositionalTracker::set_mesh(const Ref<Mesh> &p_mesh) {
+	_THREAD_SAFE_METHOD_
+
+	mesh = p_mesh;
+};
+
+Ref<Mesh> ARVRPositionalTracker::get_mesh() const {
+	_THREAD_SAFE_METHOD_
+
+	return mesh;
 };
 
 ARVRPositionalTracker::TrackerHand ARVRPositionalTracker::get_hand() const {
