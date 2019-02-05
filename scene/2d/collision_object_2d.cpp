@@ -218,12 +218,13 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
+
 	sd.xform = p_transform;
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		if (area) {
-			Physics2DServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			Physics2DServer::get_singleton()->area_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
 		} else {
-			Physics2DServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, p_transform);
+			Physics2DServer::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
 		}
 	}
 }
@@ -387,7 +388,7 @@ String CollisionObject2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	if (shapes.empty()) {
-		if (warning == String()) {
+		if (!warning.empty()) {
 			warning += "\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape2D or CollisionPolygon2D as a child to define its shape.");
