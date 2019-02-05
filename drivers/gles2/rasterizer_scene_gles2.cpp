@@ -1564,6 +1564,8 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 					} else {
 						glVertexAttrib4fv(INSTANCE_ATTRIB_BASE + 3, buffer + color_ofs);
 					}
+				} else {
+					glVertexAttrib4f(INSTANCE_ATTRIB_BASE + 3, 1.0, 1.0, 1.0, 1.0);
 				}
 
 				if (multi_mesh->custom_data_floats) {
