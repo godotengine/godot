@@ -190,6 +190,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
+	if (!p_node->get_script().is_null()) {
+		item->set_custom_color(0, Color(1, 1, 0, 1));
+		// Experimental: Trying to get the script nodes to turn Yellow.
+		// TODO: Update the Attach and Remove scripts for the same.
+	}
+
 	if (part_of_subscene) {
 
 		//item->set_selectable(0,marked_selectable);
