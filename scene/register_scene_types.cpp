@@ -145,6 +145,7 @@
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/physics_material.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/polygon_path_finder.h"
 #include "scene/resources/primitive_meshes.h"
@@ -207,7 +208,6 @@
 #include "scene/3d/visibility_notifier.h"
 #include "scene/animation/skeleton_ik.h"
 #include "scene/resources/environment.h"
-#include "scene/resources/physics_material.h"
 #endif
 
 static Ref<ResourceFormatSaverText> resource_saver_text;
@@ -602,8 +602,8 @@ void register_scene_types() {
 
 	ClassDB::register_class<SpatialVelocityTracker>();
 
-	ClassDB::register_class<PhysicsMaterial>();
 #endif
+	ClassDB::register_class<PhysicsMaterial>();
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
 	ClassDB::register_class<World2D>();
