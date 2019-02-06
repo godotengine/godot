@@ -134,7 +134,7 @@ void CanvasItemMaterial::_update_shader() {
 		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
 		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
 		code += "\tif (particles_anim_loop) {\n";
-		code += "\t\tframe = abs(frame) % total_frames;\n";
+		code += "\t\tframe = int(abs(frame) % total_frames);\n";
 		code += "\t} else {\n";
 		code += "\t\tframe = clamp(frame, 0, total_frames - 1);\n";
 		code += "\t}\n";
