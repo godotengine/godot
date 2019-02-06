@@ -39,7 +39,8 @@
 			<argument index="0" name="margin" type="int" enum="Margin">
 			</argument>
 			<description>
-				Return the offset of margin "margin" (see MARGIN_* enum).
+				Return the content margin offset for the specified margin
+				Positive values reduce size inwards, unlike [Control]'s margin values.
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
@@ -70,12 +71,22 @@
 	</methods>
 	<members>
 		<member name="content_margin_bottom" type="float" setter="set_default_margin" getter="get_default_margin">
+			The bottom margin for the contents of this style box. Increasing this value reduces the space available to the contents from the bottom.
+			If this value is negative, it is ignored and a child-specific margin is used instead. For example for [StyleBoxFlat] the border thickness (if any) is used instead.
+			It is up to the code using this style box to decide what these contents are: for example, a [Button] respects this content margin for the textual contents of the button.
+			[method get_margin] should be used to fetch this value as consumer instead of reading these properties directly. This is because it correctly respects negative values and the fallback mentioned above.
 		</member>
 		<member name="content_margin_left" type="float" setter="set_default_margin" getter="get_default_margin">
+			The left margin for the contents of this style box.	Increasing this value reduces the space available to the contents from the left.
+			Refer to [member content_margin_bottom] for extra considerations.
 		</member>
 		<member name="content_margin_right" type="float" setter="set_default_margin" getter="get_default_margin">
+			The right margin for the contents of this style box. Increasing this value reduces the space available to the contents from the right.
+			Refer to [member content_margin_bottom] for extra considerations.
 		</member>
 		<member name="content_margin_top" type="float" setter="set_default_margin" getter="get_default_margin">
+			The top margin for the contents of this style box. Increasing this value reduces the space available to the contents from the top.
+			Refer to [member content_margin_bottom] for extra considerations.
 		</member>
 	</members>
 	<constants>
