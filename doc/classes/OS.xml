@@ -497,6 +497,50 @@
 				Returns unobscured area of the window where interactive controls should be rendered.
 			</description>
 		</method>
+		<method name="global_menu_add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="Variant">
+			</argument>
+			<argument index="3" name="meta" type="Variant">
+			</argument>
+			<description>
+				Add a new item with text "label" to global menu. Use "_dock" menu to add item to the macOS dock icon menu.
+			</description>
+		</method>
+		<method name="global_menu_add_separator">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<description>
+				Add a separator between items. Separators also occupy an index.
+			</description>
+		</method>
+		<method name="global_menu_clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<description>
+				Clear the global menu, in effect removing all items.
+			</description>
+		</method>
+		<method name="global_menu_remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+				Removes the item at index "idx" from the global menu. Note that the indexes of items after the removed item are going to be shifted by one.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool">
 			</return>

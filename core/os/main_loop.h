@@ -71,6 +71,7 @@ public:
 	virtual void finish();
 
 	virtual void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
+	virtual void global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void set_init_script(const Ref<Script> &p_init_script);
 
