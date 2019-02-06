@@ -3479,16 +3479,20 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					tokenizer->advance();
 
 					if ((tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING)) {
-						Variant constant = tokenizer->get_token_constant();
-						String icon_path = constant.operator String();
+#ifdef TOOLS_ENABLED
+						if (Engine::get_singleton()->is_editor_hint()) {
+							Variant constant = tokenizer->get_token_constant();
+							String icon_path = constant.operator String();
 
-						String abs_icon_path = icon_path.is_rel_path() ? self_path.get_base_dir().plus_file(icon_path).simplify_path() : icon_path;
-						if (!FileAccess::exists(abs_icon_path)) {
-							_set_error("No class icon found at: " + abs_icon_path);
-							return;
+							String abs_icon_path = icon_path.is_rel_path() ? self_path.get_base_dir().plus_file(icon_path).simplify_path() : icon_path;
+							if (!FileAccess::exists(abs_icon_path)) {
+								_set_error("No class icon found at: " + abs_icon_path);
+								return;
+							}
+
+							p_class->icon_path = icon_path;
 						}
-
-						p_class->icon_path = icon_path;
+#endif
 
 						tokenizer->advance();
 					} else {
