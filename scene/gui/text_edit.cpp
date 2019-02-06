@@ -2645,24 +2645,26 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			case KEY_UP: {
 
-				if (k->get_shift())
-					_pre_shift_selection();
 				if (k->get_alt()) {
 					scancode_handled = false;
 					break;
 				}
 #ifndef APPLE_STYLE_KEYS
 				if (k->get_command()) {
-					_scroll_lines_up();
-					break;
-				}
 #else
 				if (k->get_command() && k->get_alt()) {
+#endif
 					_scroll_lines_up();
 					break;
 				}
 
+				if (k->get_shift()) {
+					_pre_shift_selection();
+				}
+
+#ifdef APPLE_STYLE_KEYS
 				if (k->get_command()) {
+
 					cursor_set_line(0);
 				} else
 #endif
@@ -2696,24 +2698,24 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 			case KEY_DOWN: {
 
-				if (k->get_shift())
-					_pre_shift_selection();
 				if (k->get_alt()) {
 					scancode_handled = false;
 					break;
 				}
 #ifndef APPLE_STYLE_KEYS
 				if (k->get_command()) {
-					_scroll_lines_down();
-					break;
-				}
-
 #else
 				if (k->get_command() && k->get_alt()) {
+#endif
 					_scroll_lines_down();
 					break;
 				}
 
+				if (k->get_shift()) {
+					_pre_shift_selection();
+				}
+
+#ifdef APPLE_STYLE_KEYS
 				if (k->get_command()) {
 					cursor_set_line(get_last_unhidden_line(), true, false, 9999);
 				} else
