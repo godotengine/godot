@@ -1270,8 +1270,8 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	bool was_on_floor = on_floor;
-	bool was_on_ceiling = on_ceiling;
-	bool was_on_wall = on_wall;
+	bool was_on_ceiling = on_ceiling
+	bool was_on_wall = on_wall
 
 	Vector3 ret = move_and_slide(p_linear_velocity, p_floor_direction, p_stop_on_slope, p_max_slides, p_floor_max_angle, p_infinite_inertia);
 	if ((!was_on_floor && !was_on_ceiling && !was_on_wall) || p_snap == Vector3()) {
