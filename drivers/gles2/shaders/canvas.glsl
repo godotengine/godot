@@ -316,9 +316,35 @@ FRAGMENT_SHADER_GLOBALS
 
 /* clang-format on */
 
+void light_compute(
+		inout vec4 light,
+		inout vec2 light_vec,
+		inout float light_height,
+		inout vec4 light_color,
+		vec2 light_uv,
+		inout vec4 shadow_color,
+		vec3 normal,
+		vec2 uv,
+#if defined(SCREEN_UV_USED)
+		vec2 screen_uv,
+#endif
+		vec4 color) {
+
+#if defined(USE_LIGHT_SHADER_CODE)
+
+	/* clang-format off */
+
+LIGHT_SHADER_CODE
+
+	/* clang-format on */
+
+#endif
+}
+
 void main() {
 
 	vec4 color = color_interp;
+	vec2 uv = uv_interp;
 
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
