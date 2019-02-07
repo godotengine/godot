@@ -54,6 +54,7 @@
 		<member name="color" type="Color" setter="set_color" getter="get_color">
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
+			Each particle's vertex color will vary along this [GradientTexture].
 		</member>
 		<member name="damping" type="float" setter="set_param" getter="get_param">
 		</member>
