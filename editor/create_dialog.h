@@ -44,7 +44,34 @@
 
 class CreateDialog : public ConfirmationDialog {
 
-	GDCLASS(CreateDialog, ConfirmationDialog)
+	GDCLASS(CreateDialog, ConfirmationDialog);
+
+	enum {
+		CREATE_FILTER_GUI,
+		CREATE_FILTER_2D,
+		CREATE_FILTER_3D,
+		CREATE_FILTER_CUSTOM,
+		CREATE_FILTER_OTHER,
+	};
+
+	struct SearchFilter {
+		int id;
+		String constraint;
+		String key;
+		String label;
+		Ref<Texture> icon;
+		String tooltip;
+		SearchFilter(int p_id = -1, String p_constraint = "", String p_key = "", String p_label = "", Ref<Texture> p_icon = NULL, String p_tooltip = "") :
+				id(p_id),
+				constraint(p_constraint),
+				key(p_key),
+				label(p_label),
+				icon(p_icon),
+				tooltip(p_tooltip) {}
+	};
+
+	Vector<SearchFilter> filters;
+	Set<int> filter_set;
 
 	Vector<String> favorite_list;
 	Tree *favorites;
@@ -53,6 +80,9 @@ class CreateDialog : public ConfirmationDialog {
 	Button *favorite;
 	LineEdit *search_box;
 	Tree *search_options;
+	HBoxContainer *search_hb;
+	Button *filters_popup_button;
+	PopupMenu *filters_popup;
 	bool is_replace_mode;
 	String base_type;
 	String preferred_search_result_type;
@@ -61,6 +91,11 @@ class CreateDialog : public ConfirmationDialog {
 	Set<StringName> type_blacklist;
 
 	void _item_selected();
+
+	void _search_filter_selected(int p_id);
+	void _search_filter_button_toggled(bool p_pressed);
+	void _visibility_changed();
+	bool _filter(int p_filter, const String &p_type, const String &p_cpp_name);
 
 	void _update_search();
 	void _update_favorite_list();
@@ -78,7 +113,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
 
-	Ref<Texture> _get_editor_icon(const String &p_type) const;
+	void _update_filters();
 
 	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
 

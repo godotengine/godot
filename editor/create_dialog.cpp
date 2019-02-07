@@ -141,6 +141,23 @@ void CreateDialog::_text_changed(const String &p_newtext) {
 	_update_search();
 }
 
+void CreateDialog::_update_filters() {
+	filter_set.clear();
+	filters_popup->clear();
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	for (int i = 0; i < filters.size(); ++i) {
+		const SearchFilter &sf = filters[i];
+		if (ClassDB::is_parent_class(base_type, sf.constraint)) {
+			filters_popup->add_icon_check_item(sf.icon, sf.label, sf.id);
+			bool hide = ps->get(sf.key);
+			if (hide)
+				filter_set.insert(sf.id);
+			filters_popup->set_item_checked(filters_popup->get_item_index(sf.id), !hide);
+		}
+	}
+	_update_search();
+}
+
 void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 	Ref<InputEventKey> k = p_ie;
@@ -199,6 +216,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	bool can_instance = (cpp_type && ClassDB::can_instance(p_type)) || ScriptServer::is_global_class(p_type);
 
 	TreeItem *item = search_options->create_item(parent);
+	// metadata is to show that it's a user-defined type
 	if (cpp_type) {
 		item->set_text(0, p_type);
 	} else {
@@ -273,18 +291,55 @@ void CreateDialog::_update_search() {
 
 	TreeItem *to_select = search_box->get_text() == base_type ? root : NULL;
 
+	bool hide_other = ProjectSettings::get_singleton()->has_setting("_create_dialog_hide_other") ? ProjectSettings::get_singleton()->get("_create_dialog_hide_other").booleanize() : false;
+
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
 
 		String type = I->get();
 		bool cpp_type = ClassDB::class_exists(type);
 
-		if (base_type == "Node" && type.begins_with("Editor"))
-			continue; // do not show editor nodes
+		String cpp_name;
+		if (cpp_type)
+			cpp_name = type;
+		else {
+			if (ScriptServer::is_global_class(type))
+				cpp_name = ScriptServer::get_global_class_base(type);
+			else {
+				bool done = false;
+				Map<String, Vector<EditorData::CustomType> > custom_types = EditorNode::get_singleton()->get_editor_data().get_custom_types();
+				for (Map<String, Vector<EditorData::CustomType> >::Element *E = custom_types.front(); E && !done; E = E->next()) {
+					const Vector<EditorData::CustomType> &types = E->get();
+					for (int i = 0; i < types.size() && !done; ++i) {
+						const EditorData::CustomType &ct = types[i];
+						if (ct.script.is_valid() && ct.name == type) {
+							cpp_name = ct.script->get_instance_base_type();
+							done = true;
+						}
+					}
+				}
+			}
+		}
 
 		if (cpp_type && !ClassDB::can_instance(type))
 			continue; // can't create what can't be instanced
 
+		if (base_type == "Node" && type.begins_with("Editor"))
+			continue; // do not show editor nodes
+
 		bool skip = false;
+		for (int i = 0; i < filters.size(); ++i) {
+			const SearchFilter &sf = filters[i];
+			if (filter_set.has(sf.id) && _filter(sf.id, type, cpp_name)) {
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+			continue;
+		else if (hide_other)
+			continue;
+
+		skip = false;
 		if (cpp_type) {
 			for (Set<StringName>::Element *E = type_blacklist.front(); E && !skip; E = E->next()) {
 				if (ClassDB::is_parent_class(type, E->get()))
@@ -406,6 +461,20 @@ void CreateDialog::_notification(int p_what) {
 			search_box->set_clear_button_enabled(true);
 			favorite->set_icon(get_icon("Favorites", "EditorIcons"));
 		} break;
+		case NOTIFICATION_READY: {
+			filters.push_back(SearchFilter(CREATE_FILTER_GUI, "Node", "_create_dialog_hide_gui", TTR("User Interface"), EditorNode::get_singleton()->get_class_icon("Control"), "Show GUI nodes"));
+			filters.push_back(SearchFilter(CREATE_FILTER_2D, "Node", "_create_dialog_hide_2d", TTR("2D"), EditorNode::get_singleton()->get_class_icon("Node2D"), "Show 2D nodes"));
+			filters.push_back(SearchFilter(CREATE_FILTER_3D, "Node", "_create_dialog_hide_3d", TTR("3D"), EditorNode::get_singleton()->get_class_icon("Spatial"), "Show 3D nodes"));
+			filters.push_back(SearchFilter(CREATE_FILTER_CUSTOM, "Object", "_create_dialog_hide_custom", TTR("Custom"), EditorNode::get_singleton()->get_class_icon("Script"), "Show user-defined types"));
+			filters.push_back(SearchFilter(CREATE_FILTER_OTHER, "Object", "_create_dialog_hide_other", TTR("Other"), EditorNode::get_singleton()->get_class_icon("Object"), "Show types unrelated to other filters"));
+
+			for (int i = 0; i < filters.size(); ++i) {
+				GLOBAL_DEF(filters[i].key, false);
+			}
+
+			filters_popup_button->set_icon(get_icon("AnimationFilter", "EditorIcons"));
+			_update_filters();
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", this, "_confirmed");
 		} break;
@@ -429,6 +498,7 @@ void CreateDialog::set_base_type(const String &p_base) {
 	else
 		set_title(vformat(TTR("Create New %s"), p_base));
 
+	_update_filters();
 	_update_search();
 }
 
@@ -500,6 +570,56 @@ void CreateDialog::_item_selected() {
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
 
 	get_ok()->set_disabled(false);
+}
+
+void CreateDialog::_search_filter_selected(int p_id) {
+	bool checked = filters_popup->is_item_checked(p_id);
+
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	for (int i = 0; i < filters.size(); ++i) {
+		const SearchFilter &sf = filters[i];
+		if (sf.id == p_id) {
+			ps->set(sf.key, checked);
+			break;
+		}
+	}
+	ps->save();
+	_update_filters();
+}
+
+void CreateDialog::_search_filter_button_toggled(bool p_pressed) {
+	filters_popup->set_visible(p_pressed);
+	if (p_pressed) {
+		filters_popup->set_global_position(filters_popup_button->get_global_position() + Vector2(16, 16));
+		connect("visibility_changed", this, "_visibility_changed", Vector<Variant>(), CONNECT_ONESHOT | CONNECT_DEFERRED);
+	} else {
+		disconnect("visibility_changed", this, "_visibility_changed");
+	}
+}
+
+void CreateDialog::_visibility_changed() {
+	if (is_visible())
+		return;
+	filters_popup->set_visible(false);
+	filters_popup_button->set_pressed(false);
+}
+
+bool CreateDialog::_filter(int p_filter, const String &p_type, const String &p_cpp_name) {
+	switch (p_filter) {
+		case CREATE_FILTER_GUI: {
+			return ClassDB::is_parent_class(p_cpp_name, "Control");
+		}
+		case CREATE_FILTER_2D: {
+			return ClassDB::is_parent_class(p_cpp_name, "Node2D");
+		}
+		case CREATE_FILTER_3D: {
+			return ClassDB::is_parent_class(p_cpp_name, "Spatial");
+		}
+		case CREATE_FILTER_CUSTOM: {
+			return !ClassDB::class_exists(p_type);
+		}
+	}
+	return false;
 }
 
 void CreateDialog::_favorite_toggled() {
@@ -677,6 +797,10 @@ void CreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_favorite_activated"), &CreateDialog::_favorite_activated);
 	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
 
+	ClassDB::bind_method(D_METHOD("_search_filter_button_toggled"), &CreateDialog::_search_filter_button_toggled);
+	ClassDB::bind_method(D_METHOD("_search_filter_selected"), &CreateDialog::_search_filter_selected);
+	ClassDB::bind_method(D_METHOD("_visibility_changed"), &CreateDialog::_visibility_changed);
+
 	ClassDB::bind_method("get_drag_data_fw", &CreateDialog::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &CreateDialog::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw", &CreateDialog::drop_data_fw);
@@ -726,7 +850,8 @@ CreateDialog::CreateDialog() {
 	hsc->add_child(vbc);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
-	HBoxContainer *search_hb = memnew(HBoxContainer);
+
+	search_hb = memnew(HBoxContainer);
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_hb->add_child(search_box);
@@ -735,9 +860,20 @@ CreateDialog::CreateDialog() {
 	favorite->set_toggle_mode(true);
 	search_hb->add_child(favorite);
 	favorite->connect("pressed", this, "_favorite_toggled");
-	vbc->add_margin_child(TTR("Search:"), search_hb);
 	search_box->connect("text_changed", this, "_text_changed");
 	search_box->connect("gui_input", this, "_sbox_input");
+	filters_popup_button = memnew(Button);
+	filters_popup_button->set_flat(true);
+	filters_popup_button->set_toggle_mode(true);
+	filters_popup = memnew(PopupMenu);
+	filters_popup_button->connect("toggled", this, "_search_filter_button_toggled");
+	filters_popup->set_hide_on_checkable_item_selection(false);
+	filters_popup->set_exclusive(true);
+	filters_popup->connect("id_pressed", this, "_search_filter_selected");
+	filters_popup_button->add_child(filters_popup);
+	search_hb->add_child(filters_popup_button);
+	vbc->add_margin_child(TTR("Search:"), search_hb);
+
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_disabled(true);
