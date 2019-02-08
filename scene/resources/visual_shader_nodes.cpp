@@ -324,7 +324,7 @@ String VisualShaderNodeTexture::generate_global(Shader::Mode p_mode, VisualShade
 		String u = "uniform sampler2D " + make_unique_id(p_type, p_id, "tex");
 		switch (texture_type) {
 			case TYPE_DATA: break;
-			case TYPE_COLOR: u += " : hint_color"; break;
+			case TYPE_COLOR: u += " : hint_albedo"; break;
 			case TYPE_NORMALMAP: u += " : hint_normal"; break;
 		}
 		return u + ";";
@@ -554,7 +554,7 @@ String VisualShaderNodeCubeMap::generate_global(Shader::Mode p_mode, VisualShade
 	String u = "uniform sampler2DCube " + make_unique_id(p_type, p_id, "cube");
 	switch (texture_type) {
 		case TYPE_DATA: break;
-		case TYPE_COLOR: u += " : hint_color"; break;
+		case TYPE_COLOR: u += " : hint_albedo"; break;
 		case TYPE_NORMALMAP: u += " : hint_normal"; break;
 	}
 	return u + ";";
