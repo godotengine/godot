@@ -39,25 +39,25 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
-class SpriteFramesEditor : public PanelContainer {
+class SpriteFramesEditor : public HSplitContainer {
 
-	GDCLASS(SpriteFramesEditor, PanelContainer);
+	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
-	Button *load;
-	Button *_delete;
-	Button *copy;
-	Button *paste;
-	Button *empty;
-	Button *empty2;
-	Button *move_up;
-	Button *move_down;
+	ToolButton *load;
+	ToolButton *_delete;
+	ToolButton *copy;
+	ToolButton *paste;
+	ToolButton *empty;
+	ToolButton *empty2;
+	ToolButton *move_up;
+	ToolButton *move_down;
 	ItemList *tree;
 	bool loading_scene;
 	int sel;
 
 	HSplitContainer *split;
-	Button *new_anim;
-	Button *remove_anim;
+	ToolButton *new_anim;
+	ToolButton *remove_anim;
 
 	Tree *animations;
 	SpinBox *anim_speed;
