@@ -1590,6 +1590,7 @@ void ProjectSettingsEditor::_toggle_search_bar(bool p_pressed) {
 		search_box->select_all();
 	} else {
 
+		search_box->clear();
 		search_bar->hide();
 		add_prop_bar->show();
 	}
