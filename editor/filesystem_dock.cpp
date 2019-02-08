@@ -1335,8 +1335,18 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 		bool can_move = _check_existing();
 		if (!can_move) {
 			//ask to do something
-			overwrite_dialog->popup_centered_minsize();
-			overwrite_dialog->grab_focus();
+			bool same_localization = false;
+			for (int i = 0; i < to_move.size(); i++) {
+				String old_path = to_move[i].path.ends_with("/") ? to_move[i].path.substr(0, to_move[i].path.length() - 1) : to_move[i].path;
+				String new_path = p_to_path.plus_file(old_path.get_file());
+				if (old_path == new_path) {
+					same_localization = true;
+				}
+			}
+			if (!same_localization) {
+				overwrite_dialog->popup_centered_minsize();
+				overwrite_dialog->grab_focus();
+			}
 			return;
 		}
 	}
