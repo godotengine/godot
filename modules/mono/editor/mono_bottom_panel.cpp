@@ -156,9 +156,19 @@ void MonoBottomPanel::_build_project_pressed() {
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return; // No solution to build
 
-	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
-	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+	String scripts_metadata_path_editor = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
+	String scripts_metadata_path_player = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor_player");
+
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path_editor);
 	ERR_FAIL_COND(metadata_err != OK);
+
+	if (FileAccess::exists(scripts_metadata_path_editor)) {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Error copy_err = da->copy(scripts_metadata_path_editor, scripts_metadata_path_player);
+
+		ERR_EXPLAIN("Failed to copy scripts metadata file");
+		ERR_FAIL_COND(copy_err != OK);
+	}
 
 	bool build_success = GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 

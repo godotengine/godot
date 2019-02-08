@@ -8,6 +8,7 @@
     <RootNamespace>GodotSharpTools</RootNamespace>
     <AssemblyName>GodotSharpTools</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <BaseIntermediateOutputPath>obj</BaseIntermediateOutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
