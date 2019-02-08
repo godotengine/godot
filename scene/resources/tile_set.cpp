@@ -614,7 +614,7 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 	if (coords.size() == 0) {
 		return autotile_get_icon_coordinate(p_id);
 	} else {
-		return coords[Math::random(0, (int)coords.size())];
+		return coords[Math::rand() % coords.size()];
 	}
 }
 
