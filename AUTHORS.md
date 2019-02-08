@@ -140,3 +140,11 @@ name is available.
     Zher Huei Lee (leezh)
     ZuBsPaCe
     Дмитрий Сальников (DmitriySalnikov)
+	
+##CSE2410 Contributors
+	
+	
+	Amssatou Diagne
+	Matthew Intriago
+	Guillermo Segovia Marcos
+	Chuqiao Nie
