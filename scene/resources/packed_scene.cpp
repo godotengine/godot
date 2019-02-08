@@ -55,7 +55,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 	Node *p_name;                                    \
 	if (p_id & FLAG_ID_IS_PATH) {                    \
 		NodePath np = node_paths[p_id & FLAG_MASK];  \
-		p_name = ret_nodes[0]->_get_node(np);        \
+		p_name = ret_nodes[0]->get_node_or_null(np); \
 	} else {                                         \
 		ERR_FAIL_INDEX_V(p_id &FLAG_MASK, nc, NULL); \
 		p_name = ret_nodes[p_id & FLAG_MASK];        \
@@ -342,7 +342,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 	}
 
 	for (int i = 0; i < editable_instances.size(); i++) {
-		Node *ei = ret_nodes[0]->_get_node(editable_instances[i]);
+		Node *ei = ret_nodes[0]->get_node_or_null(editable_instances[i]);
 		if (ei) {
 			ret_nodes[0]->set_editable_instance(ei, true);
 		}
