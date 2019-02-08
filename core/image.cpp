@@ -1789,7 +1789,7 @@ Error Image::decompress() {
 		_image_decompress_pvrtc(this);
 	else if (format == FORMAT_ETC && _image_decompress_etc1)
 		_image_decompress_etc1(this);
-	else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RGB8A1 && _image_decompress_etc1)
+	else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RGB8A1 && _image_decompress_etc2)
 		_image_decompress_etc2(this);
 	else
 		return ERR_UNAVAILABLE;
