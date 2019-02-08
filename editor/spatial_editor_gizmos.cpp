@@ -2414,8 +2414,8 @@ void ParticlesGizmoPlugin::commit_handle(EditorSpatialGizmo *p_gizmo, int p_idx,
 
 	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Particles AABB"));
-	ur->add_do_method(particles, "set_custom_aabb", particles->get_visibility_aabb());
-	ur->add_undo_method(particles, "set_custom_aabb", p_restore);
+	ur->add_do_method(particles, "set_visibility_aabb", particles->get_visibility_aabb());
+	ur->add_undo_method(particles, "set_visibility_aabb", p_restore);
 	ur->commit_action();
 }
 
