@@ -282,7 +282,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	NSWindow *window = (NSWindow *)[notification object];
 	CGFloat newBackingScaleFactor = [window backingScaleFactor];
 	CGFloat oldBackingScaleFactor = [[[notification userInfo] objectForKey:@"NSBackingPropertyOldScaleFactorKey"] doubleValue];
-	[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+	if (OS_OSX::singleton->is_hidpi_allowed()) {
+		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+	}
 
 	if (newBackingScaleFactor != oldBackingScaleFactor) {
 		//Set new display scale and window size
