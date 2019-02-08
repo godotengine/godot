@@ -906,6 +906,8 @@ void Tree::update_cache() {
 	cache.relationship_line_color = get_color("relationship_line_color");
 	cache.scroll_border = get_constant("scroll_border");
 	cache.scroll_speed = get_constant("scroll_speed");
+	cache.highlight_scripted_nodes = get_constant("highlight_scripted_nodes");
+	cache.script_highlight_color = get_color("script_highlight_color");
 
 	cache.title_button = get_stylebox("title_button_normal");
 	cache.title_button_pressed = get_stylebox("title_button_pressed");
@@ -3768,6 +3770,14 @@ void Tree::set_allow_reselect(bool p_allow) {
 bool Tree::get_allow_reselect() const {
 
 	return allow_reselect;
+}
+
+bool Tree::allow_script_highlight() const {
+	return cache.highlight_scripted_nodes > 0;
+}
+
+Color Tree::get_script_color() const {
+	return cache.script_highlight_color;
 }
 
 void Tree::_bind_methods() {

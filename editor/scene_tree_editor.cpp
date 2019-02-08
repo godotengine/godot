@@ -190,12 +190,12 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
-	if (!p_node->get_script().is_null()) {
-		item->set_custom_color(0, Color(1, 1, 0, 1));
-		// Experimental: Trying to get the script nodes to turn Yellow.
-		// TODO: Update the Attach and Remove scripts for the same.
+	if (tree->allow_script_highlight()) {
+		if (!p_node->get_script().is_null()) {
+			item->set_custom_color(0, tree->get_script_color());
+		}
 	}
-
+	
 	if (part_of_subscene) {
 
 		//item->set_selectable(0,marked_selectable);
@@ -986,7 +986,9 @@ void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 
 void SceneTreeEditor::_editor_settings_changed() {
 	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+	bool enable_sh = EditorSettings::get_singleton()->get("docks/scene_tree/highlight_scripted_nodes");
 	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+	Color sh_color = EditorSettings::get_singleton()->get("docks/scene_tree/script_highlight_color");
 
 	if (enable_rl) {
 		tree->add_constant_override("draw_relationship_lines", 1);
@@ -995,6 +997,14 @@ void SceneTreeEditor::_editor_settings_changed() {
 	} else {
 		tree->add_constant_override("draw_relationship_lines", 0);
 		tree->add_constant_override("draw_guides", 1);
+	}
+
+	if (enable_sh) {
+		tree->add_constant_override("highlight_scripted_nodes", 1);
+		tree->add_color_override("script_highlight_color", sh_color);
+	} else {
+		tree->add_constant_override("highlight_scripted_nodes", 0);
+		tree->add_color_override("script_highlight_color", Color(1, 1, 1, 1));
 	}
 }
 

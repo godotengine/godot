@@ -46,9 +46,10 @@ void EditorHelpSearch::_update_icons() {
 }
 
 void EditorHelpSearch::_load_settings() {
-
 	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+	bool enable_sh = EditorSettings::get_singleton()->get("docks/scene_tree/highlight_scripted_nodes");
 	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+	Color sh_color = EditorSettings::get_singleton()->get("docks/scene_tree/script_highlight_color");
 
 	if (enable_rl) {
 		results_tree->add_constant_override("draw_relationship_lines", 1);
@@ -57,6 +58,14 @@ void EditorHelpSearch::_load_settings() {
 	} else {
 		results_tree->add_constant_override("draw_relationship_lines", 0);
 		results_tree->add_constant_override("draw_guides", 1);
+	}
+
+	if (enable_sh) {
+		results_tree->add_constant_override("highlight_scripted_nodes", 1);
+		results_tree->add_color_override("script_highlight_color", sh_color);
+	} else {
+		results_tree->add_constant_override("highlight_scripted_nodes", 0);
+		results_tree->add_color_override("script_highlight_color", Color(1, 1, 1, 1));
 	}
 }
 

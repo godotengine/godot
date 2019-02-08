@@ -387,6 +387,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
 	_initial_set("docks/scene_tree/draw_relationship_lines", true);
 	_initial_set("docks/scene_tree/relationship_line_color", Color::html("464646"));
+	_initial_set("docks/scene_tree/highlight_scripted_nodes", true);
+	_initial_set("docks/scene_tree/script_highlight_color", Color::html("ffff00"));
 
 	// FileSystem
 	_initial_set("docks/filesystem/display_mode", 0);

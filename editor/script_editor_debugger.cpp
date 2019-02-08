@@ -1041,7 +1041,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			reason->add_color_override("font_color", get_color("error_color", "Editor"));
 
 			bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+			bool enable_sh = EditorSettings::get_singleton()->get("docks/scene_tree/highlight_scripted_nodes");
 			Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+			Color sh_color = EditorSettings::get_singleton()->get("docks/scene_tree/script_highlight_color");
 
 			if (enable_rl) {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
@@ -1050,6 +1052,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			} else {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
 				inspect_scene_tree->add_constant_override("draw_guides", 1);
+			}
+
+			if (enable_sh) {
+				inspect_scene_tree->add_constant_override("highlight_scripted_nodes", 1);
+				inspect_scene_tree->add_color_override("script_highlight_color", sh_color);
+			} else {
+				inspect_scene_tree->add_constant_override("highlight_scripted_nodes", 0);
+				inspect_scene_tree->add_color_override("script_highlight_color", Color(1, 1, 1, 1));
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1236,13 +1246,26 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			tabs->set_margin(MARGIN_RIGHT, EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
 
 			bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
+			bool enable_sh = EditorSettings::get_singleton()->get("docks/scene_tree/highlight_scripted_nodes");
 			Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
+			Color sh_color = EditorSettings::get_singleton()->get("docks/scene_tree/script_highlight_color");
 
 			if (enable_rl) {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
 				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
-			} else
+				inspect_scene_tree->add_constant_override("draw_guides", 0);
+			} else {
 				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
+				inspect_scene_tree->add_constant_override("draw_guides", 1);
+			}
+
+			if (enable_sh) {
+				inspect_scene_tree->add_constant_override("highlight_scripted_nodes", 1);
+				inspect_scene_tree->add_color_override("script_highlight_color", sh_color);
+			} else {
+				inspect_scene_tree->add_constant_override("highlight_scripted_nodes", 0);
+				inspect_scene_tree->add_color_override("script_highlight_color", Color(1, 1, 1, 1));
+			}
 
 			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));

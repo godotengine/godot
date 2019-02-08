@@ -428,6 +428,7 @@ private:
 		Color drop_position_color;
 		Color relationship_line_color;
 		Color custom_button_font_highlight;
+		Color script_highlight_color;
 
 		int hseparation;
 		int vseparation;
@@ -439,6 +440,7 @@ private:
 		int draw_guides;
 		int scroll_border;
 		int scroll_speed;
+		int highlight_scripted_nodes;
 
 		enum ClickType {
 			CLICK_NONE,
@@ -601,6 +603,9 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
+
+	bool allow_script_highlight() const;
+	Color get_script_color() const;
 
 	Tree();
 	~Tree();
