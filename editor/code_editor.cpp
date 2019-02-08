@@ -1226,14 +1226,15 @@ CodeTextEditor::CodeTextEditor() {
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
 	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
 
+	text_editor = memnew(TextEdit);
+	add_child(text_editor);
+	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	// Added second to it opens at the bottom, so it won't shift the entire text editor when opening
 	find_replace_bar = memnew(FindReplaceBar);
 	add_child(find_replace_bar);
 	find_replace_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 	find_replace_bar->hide();
-
-	text_editor = memnew(TextEdit);
-	add_child(text_editor);
-	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	find_replace_bar->set_text_edit(text_editor);
 
