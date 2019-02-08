@@ -54,8 +54,9 @@ public:
 			struct {
 				uint32_t size : 16;
 				uint32_t outline_size : 8;
-				bool mipmaps : 1;
-				bool filter : 1;
+				uint32_t mipmaps : 1;
+				uint32_t filter : 1;
+				uint32_t unused : 6;
 			};
 			uint32_t key;
 		};
