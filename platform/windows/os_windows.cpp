@@ -2604,6 +2604,11 @@ String OS_Windows::get_environment(const String &p_var) const {
 	return "";
 }
 
+bool OS_Windows::set_environment(const String &p_var, const String &p_value) const {
+
+	return (bool)SetEnvironmentVariableW(p_var.c_str(), p_value.c_str());
+}
+
 String OS_Windows::get_stdin_string(bool p_block) {
 
 	if (p_block) {

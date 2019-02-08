@@ -156,9 +156,19 @@ void MonoBottomPanel::_build_project_pressed() {
 	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path()))
 		return; // No solution to build
 
-	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
-	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path);
+	String scripts_metadata_path_editor = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor");
+	String scripts_metadata_path_player = GodotSharpDirs::get_res_metadata_dir().plus_file("scripts_metadata.editor_player");
+
+	Error metadata_err = CSharpProject::generate_scripts_metadata(GodotSharpDirs::get_project_csproj_path(), scripts_metadata_path_editor);
 	ERR_FAIL_COND(metadata_err != OK);
+
+	if (FileAccess::exists(scripts_metadata_path_editor)) {
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Error copy_err = da->copy(scripts_metadata_path_editor, scripts_metadata_path_player);
+
+		ERR_EXPLAIN("Failed to copy scripts metadata file");
+		ERR_FAIL_COND(copy_err != OK);
+	}
 
 	bool build_success = GodotSharpBuilds::get_singleton()->build_project_blocking("Tools");
 
@@ -187,7 +197,7 @@ void MonoBottomPanel::_view_log_pressed() {
 
 		String log_dirpath = build_tab->get_build_info().get_log_dirpath();
 
-		OS::get_singleton()->shell_open(log_dirpath.plus_file("msbuild_log.txt"));
+		OS::get_singleton()->shell_open(log_dirpath.plus_file(GodotSharpBuilds::get_msbuild_log_filename()));
 	}
 }
 
@@ -421,7 +431,7 @@ void MonoBuildTab::on_build_exit(BuildResult result) {
 	build_exited = true;
 	build_result = result;
 
-	_load_issues_from_file(logs_dir.plus_file("msbuild_issues.csv"));
+	_load_issues_from_file(logs_dir.plus_file(GodotSharpBuilds::get_msbuild_issues_filename()));
 	_update_issues_list();
 
 	MonoBottomPanel::get_singleton()->raise_build_tab(this);

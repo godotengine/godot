@@ -134,13 +134,11 @@ class GDMono {
 	Error _load_tools_domain();
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
 	uint64_t api_core_hash;
 #ifdef TOOLS_ENABLED
 	uint64_t api_editor_hash;
 #endif
 	void _initialize_and_check_api_hashes();
-#endif
 
 	GDMonoLog *gdmono_log;
 
@@ -148,15 +146,23 @@ class GDMono {
 	MonoRegInfo mono_reg_info;
 #endif
 
+	void add_mono_shared_libs_dir_to_path();
+
 protected:
 	static GDMono *singleton;
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
-	uint64_t get_api_core_hash() { return api_core_hash; }
+	uint64_t get_api_core_hash() {
+		if (api_core_hash == 0)
+			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+		return api_core_hash;
+	}
 #ifdef TOOLS_ENABLED
-	uint64_t get_api_editor_hash() { return api_editor_hash; }
-#endif
+	uint64_t get_api_editor_hash() {
+		if (api_editor_hash == 0)
+			api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+		return api_editor_hash;
+	}
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -267,12 +273,6 @@ class _GodotSharp : public Object {
 
 	List<NodePath *> np_delete_queue;
 	List<RID *> rid_delete_queue;
-
-	bool queue_empty;
-
-#ifndef NO_THREADS
-	Mutex *queue_mutex;
-#endif
 
 protected:
 	static _GodotSharp *singleton;

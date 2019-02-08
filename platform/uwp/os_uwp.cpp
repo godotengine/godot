@@ -739,6 +739,11 @@ String OSUWP::get_environment(const String &p_var) const {
 	return "";
 };
 
+bool OSUWP::set_environment(const String &p_var, const String &p_value) const {
+
+	return false;
+}
+
 String OSUWP::get_stdin_string(bool p_block) {
 
 	return String();
