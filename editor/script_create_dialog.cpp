@@ -50,6 +50,22 @@ void ScriptCreateDialog::_notification(int p_what) {
 	}
 }
 
+void ScriptCreateDialog::_path_hbox_sorted() {
+	if (is_visible()) {
+		int filename_start_pos = initial_bp.find_last("/") + 1;
+		int filename_end_pos = initial_bp.length();
+
+		file_path->select(filename_start_pos, filename_end_pos);
+
+		// First set cursor to the end of line to scroll LineEdit view
+		// to the right and then set the actual cursor position.
+		file_path->set_cursor_position(file_path->get_text().length());
+		file_path->set_cursor_position(filename_start_pos);
+
+		file_path->grab_focus();
+	}
+}
+
 bool ScriptCreateDialog::_can_be_built_in() {
 	return (supports_built_in && built_in_enabled);
 }
@@ -586,6 +602,7 @@ void ScriptCreateDialog::_update_dialog() {
 
 void ScriptCreateDialog::_bind_methods() {
 
+	ClassDB::bind_method("_path_hbox_sorted", &ScriptCreateDialog::_path_hbox_sorted);
 	ClassDB::bind_method("_class_name_changed", &ScriptCreateDialog::_class_name_changed);
 	ClassDB::bind_method("_parent_name_changed", &ScriptCreateDialog::_parent_name_changed);
 	ClassDB::bind_method("_lang_changed", &ScriptCreateDialog::_lang_changed);
@@ -760,6 +777,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Path */
 
 	hb = memnew(HBoxContainer);
+	hb->connect("sort_children", this, "_path_hbox_sorted");
 	file_path = memnew(LineEdit);
 	file_path->connect("text_changed", this, "_path_changed");
 	file_path->connect("text_entered", this, "_path_entered");
