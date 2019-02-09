@@ -142,7 +142,7 @@ name is available.
     Дмитрий Сальников (DmitriySalnikov)
 	
 ##CSE2410 Contributors
-	
+	Team Name: Developer Dragons
 	
 	Amssatou Diagne
 	Matthew Intriago
