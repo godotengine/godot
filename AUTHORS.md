@@ -141,8 +141,7 @@ name is available.
     ZuBsPaCe
     Дмитрий Сальников (DmitriySalnikov)
 	
-##CSE2410 Contributors
-	Team Name: Developer Dragons
+##CSE2410 Contributors: Developer Dragons
 	
 	Amssatou Diagne
 	Matthew Intriago
