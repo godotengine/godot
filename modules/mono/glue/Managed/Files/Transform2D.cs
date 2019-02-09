@@ -13,12 +13,7 @@ namespace Godot
     {
         public Vector2 x;
         public Vector2 y;
-        public Vector2 o;
-
-        public Vector2 Origin
-        {
-            get { return o; }
-        }
+        public Vector2 origin;
 
         public real_t Rotation
         {
@@ -41,7 +36,7 @@ namespace Godot
                     case 1:
                         return y;
                     case 2:
-                        return o;
+                        return origin;
                     default:
                         throw new IndexOutOfRangeException();
                 }
@@ -57,7 +52,7 @@ namespace Godot
                         y = value;
                         return;
                     case 2:
-                        o = value;
+                        origin = value;
                         return;
                     default:
                         throw new IndexOutOfRangeException();
@@ -106,9 +101,9 @@ namespace Godot
             {
                 return new Transform2D
                 (
-                    float.NaN, float.NaN,
-                    float.NaN, float.NaN,
-                    float.NaN, float.NaN
+                    real_t.NaN, real_t.NaN,
+                    real_t.NaN, real_t.NaN,
+                    real_t.NaN, real_t.NaN
                 );
             }
 
@@ -168,8 +163,8 @@ namespace Godot
             }
 
             // Extract parameters
-            Vector2 p1 = Origin;
-            Vector2 p2 = m.Origin;
+            Vector2 p1 = origin;
+            Vector2 p2 = m.origin;
 
             // Construct matrix
             var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
@@ -189,7 +184,7 @@ namespace Godot
             inv.x.y = inv.y.x;
             inv.y.x = temp;
 
-            inv.o = inv.BasisXform(-inv.o);
+            inv.origin = inv.BasisXform(-inv.origin);
 
             return inv;
         }
@@ -221,7 +216,7 @@ namespace Godot
             var copy = this;
             copy.x *= scale;
             copy.y *= scale;
-            copy.o *= scale;
+            copy.origin *= scale;
             return copy;
         }
 
@@ -238,43 +233,43 @@ namespace Godot
         public Transform2D Translated(Vector2 offset)
         {
             var copy = this;
-            copy.o += copy.BasisXform(offset);
+            copy.origin += copy.BasisXform(offset);
             return copy;
         }
 
         public Vector2 Xform(Vector2 v)
         {
-            return new Vector2(Tdotx(v), Tdoty(v)) + o;
+            return new Vector2(Tdotx(v), Tdoty(v)) + origin;
         }
 
         public Vector2 XformInv(Vector2 v)
         {
-            Vector2 vInv = v - o;
+            Vector2 vInv = v - origin;
             return new Vector2(x.Dot(vInv), y.Dot(vInv));
         }
 
         // Constants
-        private static readonly Transform2D _identity = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
-        private static readonly Transform2D _flipX = new Transform2D(new Vector2(-1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
-        private static readonly Transform2D _flipY = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, -1f), Vector2.Zero);
+        private static readonly Transform2D _identity = new Transform2D(1, 0, 0, 1, 0, 0);
+        private static readonly Transform2D _flipX = new Transform2D(-1, 0, 0, 1, 0, 0);
+        private static readonly Transform2D _flipY = new Transform2D(1, 0, 0, -1, 0, 0);
 
         public static Transform2D Identity { get { return _identity; } }
         public static Transform2D FlipX { get { return _flipX; } }
         public static Transform2D FlipY { get { return _flipY; } }
 
         // Constructors
-        public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
+        public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 originPos)
         {
             x = xAxis;
             y = yAxis;
-            o = origin;
+            origin = originPos;
         }
 
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             x = new Vector2(xx, xy);
             y = new Vector2(yx, yy);
-            o = new Vector2(ox, oy);
+            origin = new Vector2(ox, oy);
         }
 
         public Transform2D(real_t rot, Vector2 pos)
@@ -282,15 +277,15 @@ namespace Godot
             real_t cr = Mathf.Cos(rot);
             real_t sr = Mathf.Sin(rot);
             x.x = cr;
-            y.y = cr;
             x.y = -sr;
             y.x = sr;
-            o = pos;
+            y.y = cr;
+            origin = pos;
         }
 
         public static Transform2D operator *(Transform2D left, Transform2D right)
         {
-            left.o = left.Xform(right.o);
+            left.origin = left.Xform(right.origin);
 
             real_t x0, x1, y0, y1;
 
@@ -329,12 +324,12 @@ namespace Godot
 
         public bool Equals(Transform2D other)
         {
-            return x.Equals(other.x) && y.Equals(other.y) && o.Equals(other.o);
+            return x.Equals(other.x) && y.Equals(other.y) && origin.Equals(other.origin);
         }
 
         public override int GetHashCode()
         {
-            return x.GetHashCode() ^ y.GetHashCode() ^ o.GetHashCode();
+            return x.GetHashCode() ^ y.GetHashCode() ^ origin.GetHashCode();
         }
 
         public override string ToString()
@@ -343,7 +338,7 @@ namespace Godot
             {
                 x.ToString(),
                 y.ToString(),
-                o.ToString()
+                origin.ToString()
             });
         }
 
@@ -353,7 +348,7 @@ namespace Godot
             {
                 x.ToString(format),
                 y.ToString(format),
-                o.ToString(format)
+                origin.ToString(format)
             });
         }
     }
