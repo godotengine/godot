@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  matrix3.h                                                            */
+/*  basis.h                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,8 +31,8 @@
 // Circular dependency between Vector3 and Basis :/
 #include "core/math/vector3.h"
 
-#ifndef MATRIX3_H
-#define MATRIX3_H
+#ifndef BASIS_H
+#define BASIS_H
 
 #include "core/math/quat.h"
 
@@ -341,4 +341,4 @@ real_t Basis::determinant() const {
 		   elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
 		   elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);
 }
-#endif
+#endif // BASIS_H

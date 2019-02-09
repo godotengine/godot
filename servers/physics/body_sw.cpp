@@ -652,7 +652,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 	linear_velocity=(p_xform.origin - get_transform().origin)/p_step;
 
 	//compute a FAKE angular velocity, not so easy
-	Matrix3 rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
+	Basis rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
 	Vector3 axis;
 	real_t angle;
 

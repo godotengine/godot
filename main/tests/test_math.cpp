@@ -30,9 +30,9 @@
 
 #include "test_math.h"
 
+#include "core/math/basis.h"
 #include "core/math/camera_matrix.h"
 #include "core/math/math_funcs.h"
-#include "core/math/matrix3.h"
 #include "core/math/transform.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
