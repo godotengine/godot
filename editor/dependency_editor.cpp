@@ -475,7 +475,6 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	Vector<RemovedDependency> removed_deps;
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
 	removed_deps.sort();
-
 	if (removed_deps.empty()) {
 		owners->hide();
 		text->set_text(TTR("Remove selected files from the project? (no undo)"));
@@ -486,6 +485,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 		text->set_text(TTR("The files being removed are required by other resources in order for them to work.\nRemove them anyway? (no undo)"));
 		popup_centered_minsize(Size2(500, 350));
 	}
+	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void DependencyRemoveDialog::ok_pressed() {
