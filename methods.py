@@ -61,14 +61,22 @@ def update_version(module_version_string=""):
     # NOTE: It is safe to generate this file here, since this is still executed serially
     fhash = open("core/version_hash.gen.h", "w")
     githash = ""
-    if os.path.isfile(".git/HEAD"):
-        head = open(".git/HEAD", "r").readline().strip()
+    gitfolder = ".git"
+
+    if os.path.isfile(".git"):
+        module_folder = open(".git", "r").readline().strip()
+        if module_folder.startswith("gitdir: "):
+            gitfolder = module_folder[8:]
+
+    if os.path.isfile(os.path.join(gitfolder, "HEAD")):
+        head = open(os.path.join(gitfolder, "HEAD"), "r").readline().strip()
         if head.startswith("ref: "):
-            head = ".git/" + head[5:]
+            head = os.path.join(gitfolder, head[5:])
             if os.path.isfile(head):
                 githash = open(head, "r").readline().strip()
         else:
             githash = head
+
     fhash.write("#define VERSION_HASH \"" + githash + "\"")
     fhash.close()
 
