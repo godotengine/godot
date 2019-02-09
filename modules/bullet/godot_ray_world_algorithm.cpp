@@ -35,8 +35,6 @@
 
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h>
 
-#define RAY_STABILITY_MARGIN 0.1
-
 /**
 	@author AndreaCatania
 */
@@ -102,7 +100,7 @@ void GodotRayWorldAlgorithm::processCollision(const btCollisionObjectWrapper *bo
 
 		btScalar depth(ray_shape->getScaledLength() * (btResult.m_closestHitFraction - 1));
 
-		if (depth >= -RAY_STABILITY_MARGIN)
+		if (depth >= -ray_shape->getMargin())
 			depth = 0;
 
 		if (ray_shape->getSlipsOnSlope())

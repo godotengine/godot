@@ -337,13 +337,15 @@ void RigidCollisionObjectBullet::reload_shapes() {
 
 	// Try to optimize by not using compound
 	if (1 == shape_count) {
-		shpWrapper = &shapes.write[0];
-		if (shpWrapper->transform.getOrigin().isZero() && shpWrapper->transform.getBasis() == shpWrapper->transform.getBasis().getIdentity()) {
-			shpWrapper->claim_bt_shape(body_scale);
-			mainShape = shpWrapper->bt_shape;
-			main_shape_changed();
-			return;
-		}
+		// This breaks RayShape collision for some reason (probably other collision shapes too), so let's disable it for now.
+		// It seems that the cause is that it gives false positives (shape wrapper has an identity transform, but actual shape doesn't).
+		//shpWrapper = &shapes.write[0];
+		//if (shpWrapper->transform.getOrigin().isZero() && shpWrapper->transform.getBasis() == shpWrapper->transform.getBasis().getIdentity()) {
+		//	shpWrapper->claim_bt_shape(body_scale);
+		//	mainShape = shpWrapper->bt_shape;
+		//	main_shape_changed();
+		//	return;
+		//}
 	}
 
 	// Optimization not possible use a compound shape
