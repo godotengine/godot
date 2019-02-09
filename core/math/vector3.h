@@ -151,7 +151,7 @@ struct Vector3 {
 };
 
 // Should be included after class definition, otherwise we get circular refs
-#include "core/math/matrix3.h"
+#include "core/math/basis.h"
 
 Vector3 Vector3::cross(const Vector3 &p_b) const {
 
