@@ -30,6 +30,7 @@
 
 #include "particles_2d.h"
 
+#include "core/os/os.h"
 #include "scene/resources/particles_material.h"
 #include "scene/scene_string_names.h"
 
@@ -212,6 +213,10 @@ bool Particles2D::get_fractional_delta() const {
 }
 
 String Particles2D::get_configuration_warning() const {
+
+	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
+	}
 
 	String warnings;
 
