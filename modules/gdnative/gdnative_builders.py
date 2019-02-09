@@ -213,7 +213,7 @@ def _build_gdnative_api_struct_source(api):
         'extern const godot_gdnative_core_api_struct api_struct = {',
         '\tGDNATIVE_' + api['core']['type'] + ',',
         '\t{' + str(api['core']['version']['major']) + ', ' + str(api['core']['version']['minor']) + '},',
-        '\tNULL,',
+        '\t(const godot_gdnative_api_struct *)&api_1_1,',
         '\t' + str(len(api['extensions'])) + ',',
         '\tgdnative_extensions_pointers,',
     ]
