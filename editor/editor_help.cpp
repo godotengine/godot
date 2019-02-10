@@ -1430,7 +1430,7 @@ EditorHelp::EditorHelp() {
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
 	class_desc->connect("gui_input", this, "_class_desc_input");
 
-	// Added second so it opens at the bottom so it won't offset the entire widget
+	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
 	add_child(find_bar);
 	find_bar->hide();
@@ -1440,7 +1440,6 @@ EditorHelp::EditorHelp() {
 
 	scroll_locked = false;
 	select_locked = false;
-	//set_process_unhandled_key_input(true);
 	class_desc->hide();
 }
 
@@ -1509,47 +1508,32 @@ EditorHelpBit::EditorHelpBit() {
 
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
-	//rich_text->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 	rich_text->set_override_selected_font_color(false);
-	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
 
 FindBar::FindBar() {
 
-	container = memnew(Control);
-	add_child(container);
-
-	container->set_clip_contents(true);
-	container->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	hbc = memnew(HBoxContainer);
-	container->add_child(hbc);
-
-	vbc_search_text = memnew(VBoxContainer);
-	hbc->add_child(vbc_search_text);
-	vbc_search_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc->set_anchor_and_margin(MARGIN_RIGHT, 1, 0);
-
 	search_text = memnew(LineEdit);
-	vbc_search_text->add_child(search_text);
+	add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
 
 	find_prev = memnew(ToolButton);
-	hbc->add_child(find_prev);
+	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect("pressed", this, "_search_prev");
 
 	find_next = memnew(ToolButton);
-	hbc->add_child(find_next);
+	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", this, "_search_next");
 
 	error_label = memnew(Label);
-	hbc->add_child(error_label);
+	add_child(error_label);
 	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 
 	hide_button = memnew(TextureButton);
@@ -1576,13 +1560,6 @@ void FindBar::popup_search() {
 			_search();
 		}
 	}
-
-	call_deferred("_update_size");
-}
-
-void FindBar::_update_size() {
-
-	container->set_custom_minimum_size(Size2(0, hbc->get_size().height));
 }
 
 void FindBar::_notification(int p_what) {
@@ -1618,7 +1595,6 @@ void FindBar::_bind_methods() {
 	ClassDB::bind_method("_search_next", &FindBar::search_next);
 	ClassDB::bind_method("_search_prev", &FindBar::search_prev);
 	ClassDB::bind_method("_hide_pressed", &FindBar::_hide_bar);
-	ClassDB::bind_method("_update_size", &FindBar::_update_size);
 
 	ADD_SIGNAL(MethodInfo("search"));
 }
@@ -1677,7 +1653,7 @@ void FindBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 
-		if (k->is_pressed() && (rich_text_label->has_focus() || hbc->is_a_parent_of(get_focus_owner()))) {
+		if (k->is_pressed() && (rich_text_label->has_focus() || is_a_parent_of(get_focus_owner()))) {
 
 			bool accepted = true;
 

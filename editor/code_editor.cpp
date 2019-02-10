@@ -99,9 +99,6 @@ void FindReplaceBar::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		set_process_unhandled_input(is_visible_in_tree());
-		if (is_visible_in_tree()) {
-			_update_size();
-		}
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
@@ -390,7 +387,6 @@ void FindReplaceBar::_show_search() {
 		search_text->set_cursor_position(search_text->get_text().length());
 		search_current();
 	}
-	call_deferred("_update_size");
 }
 
 void FindReplaceBar::popup_search() {
@@ -483,11 +479,6 @@ void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 	text_edit->connect("text_changed", this, "_editor_text_changed");
 }
 
-void FindReplaceBar::_update_size() {
-
-	container->set_size(Size2(hbc->get_size().width, 1));
-}
-
 void FindReplaceBar::_bind_methods() {
 
 	ClassDB::bind_method("_unhandled_input", &FindReplaceBar::_unhandled_input);
@@ -503,7 +494,6 @@ void FindReplaceBar::_bind_methods() {
 	ClassDB::bind_method("_replace_all_pressed", &FindReplaceBar::_replace_all);
 	ClassDB::bind_method("_search_options_changed", &FindReplaceBar::_search_options_changed);
 	ClassDB::bind_method("_hide_pressed", &FindReplaceBar::_hide_bar);
-	ClassDB::bind_method("_update_size", &FindReplaceBar::_update_size);
 
 	ADD_SIGNAL(MethodInfo("search"));
 	ADD_SIGNAL(MethodInfo("error"));
@@ -511,26 +501,16 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 
-	container = memnew(MarginContainer);
-	container->add_constant_override("margin_bottom", 5 * EDSCALE);
-	add_child(container);
-	container->set_clip_contents(true);
-	container->set_h_size_flags(SIZE_EXPAND_FILL);
-
 	replace_all_mode = false;
 	preserve_cursor = false;
 
-	hbc = memnew(HBoxContainer);
-	container->add_child(hbc);
-	hbc->set_anchor_and_margin(MARGIN_RIGHT, 1, 0);
-
 	vbc_lineedit = memnew(VBoxContainer);
-	hbc->add_child(vbc_lineedit);
+	add_child(vbc_lineedit);
 	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *vbc_button = memnew(VBoxContainer);
-	hbc->add_child(vbc_button);
+	add_child(vbc_button);
 	VBoxContainer *vbc_option = memnew(VBoxContainer);
-	hbc->add_child(vbc_option);
+	add_child(vbc_option);
 
 	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_search);
@@ -1219,6 +1199,7 @@ void CodeTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			warning_button->set_icon(get_icon("NodeWarning", "EditorIcons"));
+			add_constant_override("separation", 4 * EDSCALE);
 		} break;
 		default:
 			break;
@@ -1267,7 +1248,7 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	// Added second to it opens at the bottom, so it won't shift the entire text editor when opening
+	// Added second so it opens at the bottom, so it won't shift the entire text editor when opening.
 	find_replace_bar = memnew(FindReplaceBar);
 	add_child(find_replace_bar);
 	find_replace_bar->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1282,6 +1263,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar = memnew(HBoxContainer);
 	add_child(status_bar);
 	status_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE)); // Adjust for the height of the warning icon.
 
 	idle = memnew(Timer);
 	add_child(idle);
@@ -1338,7 +1320,7 @@ CodeTextEditor::CodeTextEditor() {
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	line_and_col_txt->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
-	line_and_col_txt->set_tooltip(TTR("Line and column numbers"));
+	line_and_col_txt->set_tooltip(TTR("Line and column numbers."));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	text_editor->connect("gui_input", this, "_text_editor_gui_input");
