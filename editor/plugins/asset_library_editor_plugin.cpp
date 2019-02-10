@@ -745,8 +745,8 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		if (!image->empty()) {
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
-
-					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_CUBIC);
+					image->generate_mipmaps();
+					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_TRILINEAR);
 
 					break;
 				case IMAGE_QUEUE_THUMBNAIL: {
@@ -754,7 +754,8 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->generate_mipmaps();
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_TRILINEAR);
 					}
 				} break;
 				case IMAGE_QUEUE_SCREENSHOT: {
@@ -762,7 +763,8 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->generate_mipmaps();
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_TRILINEAR);
 					}
 				} break;
 			}

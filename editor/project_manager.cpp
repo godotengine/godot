@@ -1321,7 +1321,8 @@ void ProjectManager::_load_recent_projects() {
 				if (err == OK) {
 
 					Ref<Texture> default_icon = get_icon("DefaultProjectIcon", "EditorIcons");
-					img->resize(default_icon->get_width(), default_icon->get_height());
+					img->generate_mipmaps();
+					img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_TRILINEAR);
 					Ref<ImageTexture> it = memnew(ImageTexture);
 					it->create_from_image(img);
 					icon = it;
