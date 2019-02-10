@@ -57,8 +57,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: Rémi Bintein <reminus5@hotmail.fr>\n"
+"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -3396,17 +3396,19 @@ msgstr "Ré-importer"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Sauvegarde des scènes, réimportation et redémarrage"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Changer le pilote vidéo nécessite le redémarrage de l'éditeur."
+msgstr ""
+"Changer le type d'un fichier importé nécessite un redémarrage de l'éditeur."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"AVERTISSEMENT : Il existe des éléments qui utilisent cette ressource, ils "
+"pourraient cesser de charger correctement."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -7228,12 +7230,13 @@ msgid "Browse"
 msgstr "Parcourir"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Renderer:"
-msgstr ""
+msgstr "Moteur de rendu:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7242,10 +7245,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Meilleure qualité visuelle\n"
+"Toutes les fonctions disponibles\n"
+"Incompatible avec du matériel plus ancien\n"
+"Non recommandé pour les jeux web"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7254,10 +7261,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Qualité visuelle inférieure\n"
+"Certaines fonctions ne sont pas disponibles\n"
+"Fonctionne sur la plupart du matériel\n"
+"Recommandé pour les jeux en ligne"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Le rendu peut être modifié ultérieurement, mais les scènes peuvent avoir "
+"besoin d'être ajustées."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7989,6 +8002,8 @@ msgstr "Dupliquer le(s) nœud(s)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"Impossible de reparenter les nœuds dans les scènes héritées, l'ordre des "
+"nœuds ne peut pas changer."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."

@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 # Giorgi Beriashvili <giorgi.beriashvili@outlook.com>, 2018.
 # George Dzavashvili <dzavashviligeorge@gmail.com>, 2018.
+# დემეტრე შონია <blender.animation.maker@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:41+0100\n"
-"Last-Translator: George Dzavashvili <dzavashviligeorge@gmail.com>\n"
+"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"Last-Translator: დემეტრე შონია <blender.animation.maker@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
 "Language: ka\n"
@@ -17,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -69,7 +70,7 @@ msgstr ""
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "სარკე"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -79,7 +80,7 @@ msgstr "ანიმ გასაღების ჩაყენება"
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "მონიშვნის ასლის შექმნა"
+msgstr "მონიშნული გასაღებ(ებ)ის ასლის შექმნა"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -100,7 +101,7 @@ msgstr "ანიმაციის გასაღებური კადრ�
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "ანიმაციის გარდამამვლობის ცვლილება"
+msgstr "ანიმაციის გარდამამვლობის შეცვლა"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -115,16 +116,19 @@ msgid "Anim Change Call"
 msgstr "ანიმაციის ძახილის ცვლილება"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Property Track"
-msgstr ""
+msgstr "ობიექტზე დაკვირვება"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "3D Transform Track"
-msgstr ""
+msgstr "3D გარდაქმნის დაკვირვება"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Call Method Track"
-msgstr ""
+msgstr "მეთოდის გამოძახების დაკვირვება"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
@@ -139,7 +143,6 @@ msgid "Animation Playback Track"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
 msgstr "ანიმაციის თრექის დამატება"
 
@@ -151,32 +154,35 @@ msgstr "ანიმაციის ხანგრძლივობა (წა
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Animation Looping"
-msgstr "ანიმაციის ზუმი."
+msgstr "ანიმაციის ბრუნვა"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "ფუნქციები:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "ხმოვანი მონაკვეთები:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "ანიმაციის მონაკვეთები:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "ჩანაწერის ჩართვა / გამორთვა"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "განახლების რეჟიმი (როგორაც ეს პარამეტრია დაყენებული)"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Interpolation Mode"
-msgstr ""
+msgstr "ინტერპოლაციის რეჟიმი"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
@@ -185,12 +191,12 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Remove this track."
-msgstr "მონიშნული თრექის წაშლა."
+msgstr "მონიშნული ჩანაწერის წაშლა."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Time (s): "
-msgstr "ნაბიჯი (წამი):"
+msgstr "დრო (წამი): "
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -206,11 +212,11 @@ msgstr "სასხლეტი"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
-msgstr ""
+msgstr "გადაღება"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "უახლოესი"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -219,7 +225,7 @@ msgstr "წრფივი"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "კუბური"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -232,7 +238,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "ჩასვით გასაღები"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -249,12 +255,13 @@ msgid "Remove Anim Track"
 msgstr "ანიმაციის თრექის წაშლა"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Create NEW track for %s and insert key?"
-msgstr "ახალი თრექის შექმნა %s სთვის და გასაღების ჩასმა?"
+msgstr "შევქმნა ახალი მონაკვეთი %s-თვის და ჩავსვა გასაღები?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "ახალი %d თრექების შექმნა და გასაღებების ჩასმა?"
+msgstr "ახალი %d ჩანაწერების შექმნა და გასაღებების ჩასმა?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
@@ -270,8 +277,11 @@ msgid "Anim Insert"
 msgstr "ანიმ ჩაყენება"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr ""
+"ანიმაციის გამშვები ვერ ჩაატარებს ცდებს საკუთარ თავზე, მხოლოდ სხვა "
+"მოთამაშეებზე."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -279,7 +289,7 @@ msgstr "ანიმ შექმნა & ჩაყენება"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "ანიმაციის თრექის და გასაღების ჩამატება"
+msgstr "ანიმაციის ჩანაწერის და გასაღების ჩამატება"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
@@ -307,35 +317,39 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "შეუძლებელია დაამატო ახალი ჩანაწერი ფესვის გარეშე"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "ჩანაწერის მისამართი არასწორია, ასე რომ შეუძლებელია გასაღების დამატება"
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "ჩანაწერი არ არის სივრცის სახის, ვერ ჩასვამთ გასაღებს"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
+"ჩანაწერის მისამართი არასწორია, ასე რომ შეუძლებელია მეთოდური გასაღების "
+"დამატება."
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "მეთოდი ვერ მოიძებნა ობიექტში: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "ანიმაციის გასაღებების გადაადგილება"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Clipboard is empty"
-msgstr ""
+msgstr "ბუფერი ცარიელია"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
-msgstr "ანიმ გასაღებების შკალირება"
+msgstr "ანიმ გასაღებების ზომის შეცვლა"
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -344,21 +358,19 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "მხოლოდ აჩვენე ჩანაწერები კვანძებიდან მონიშნული ხეში."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "დააჯგუფე ჩანაწერები კვანძების მიხედვით ან აჩვენე როგორც უბრალო სია."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap (s): "
-msgstr "ნაბიჯი (წამი):"
+msgstr "ნაბიჯი (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "ანიმაციის ზუმი."
+msgstr "ანიმაციის ნაბიჯის ღირებულება."
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -367,12 +379,11 @@ msgstr "ანიმაციის ზუმი."
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "შეცვლა"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "ანიმაციის ზუმი."
+msgstr "ანიმაციის . პარამეტრები."
 
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"

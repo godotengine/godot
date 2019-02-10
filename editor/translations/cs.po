@@ -5,7 +5,7 @@
 # Fadex <vitekpaulik@gmail.com>, 2017.
 # Jan 'spl!te' Kondelík <j.kondelik@centrum.cz>, 2016, 2018.
 # Jiri Hysek <contact@jirihysek.com>, 2017.
-# Josef Kuchař <josef.kuchar267@gmail.com>, 2018.
+# Josef Kuchař <josef.kuchar267@gmail.com>, 2018, 2019.
 # Luděk Novotný <gladosicek@gmail.com>, 2016, 2018.
 # Martin Novák <maidx@seznam.cz>, 2017.
 # zxey <r.hozak@seznam.cz>, 2018.
@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:38+0100\n"
-"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
+"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"Last-Translator: Josef Kuchař <josef.kuchar267@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -39,7 +39,7 @@ msgstr "Nedostatek bytů pro dekódování bytů, nebo špatný formát."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Neplatný vstup %i (neprošel) ve výrazu"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -73,7 +73,7 @@ msgstr "Uvolnit"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Vyvážený"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -304,7 +304,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "Stopa animae může odkazovat pouze na uzly AnimationPlayer."
+msgstr "Stopa animace může odkazovat pouze na uzly AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -1457,7 +1457,7 @@ msgstr "(Re)Importování assetů"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr ""
+msgstr "Horní"
 
 #: editor/editor_help.cpp
 msgid "Class:"
@@ -1629,7 +1629,7 @@ msgstr "Nastavit"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "Nastavit více:"
 
 #: editor/editor_log.cpp
 msgid "Output:"

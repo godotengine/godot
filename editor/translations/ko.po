@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"PO-Revision-Date: 2019-02-07 15:09+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -49,23 +49,23 @@ msgstr "인스턴스가 비어있기 때문에 Self를 사용할 수 없습니�
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "연산자 %s, %s 및 %s 의 연산 대상이 유효하지 않습니다."
+msgstr "연산자 %s, %s 그리고 %s의 연산 대상이 유효하지 않습니다."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "베이스 타입 %s 에 유효하지 않은 인덱스 타입 %s"
+msgstr "베이스 타입 %s에 유효하지 않은 인덱스 타입 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "베이스 타입 %s 에 유효하지 않은 인덱스 이름 %s"
+msgstr "베이스 타입 %s에 유효하지 않은 인덱스 이름 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "'%s' 을 구성하기에 유효하지 않은 인수"
+msgstr "'%s'을(를) 구성하기에 유효하지 않은 인수"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "'%s' 를 호출 시:"
+msgstr "'%s'을(를) 호출 시:"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -249,7 +249,7 @@ msgstr "애니메이션 트랙 삭제"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "%s (을)를 위해 새 트랙을 만들고 키를 삽입하시겠습니까?"
+msgstr "%s을(를) 위해 새 트랙을 만들고 키를 삽입하시겠습니까?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -639,11 +639,11 @@ msgstr "연결"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "'%s'를 '%s'에 연결"
+msgstr "'%s'을(를) '%s'에 연결"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "'%s'와 '%s'의 연결 해제"
+msgstr "'%s'와(과) '%s'의 연결 해제"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
@@ -672,7 +672,7 @@ msgstr "\"%s\" 시그널에서 모든 연결을 삭제하시겠습니까?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "시그널(Signal)"
+msgstr "시그널"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -692,7 +692,7 @@ msgstr "메서드로 이동"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "%s로 타입 변경"
+msgstr "%s(으)로 타입 변경"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -744,7 +744,7 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
-"씬 '%s'(이)가 현재 편집 중입니다.\n"
+"씬 '%s'이(가) 현재 편집 중입니다.\n"
 "다시 불러올 때 변경 사항이 적용됩니다."
 
 #: editor/dependency_editor.cpp
@@ -818,7 +818,7 @@ msgstr "삭제할 수 없습니다:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr "불러오기 중 에러:"
+msgstr "불러오기 중 오류:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
@@ -838,7 +838,7 @@ msgstr "종속 관계 수정"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr "불러오기 중 에러 발생!"
+msgstr "불러오기 중 오류 발생!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
@@ -1641,7 +1641,7 @@ msgstr "프로젝트 내보내기가 오류 코드 %d 로 실패했습니다."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr "리소스 저장 중 에러!"
+msgstr "리소스 저장 중 오류!"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -1662,27 +1662,27 @@ msgstr "요청한 파일 형식을 알 수 없음:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr "저장 중 에러."
+msgstr "저장 중 오류."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr "'%s' 를 열 수 없습니다. 파일이 존재하지 않습니다."
+msgstr "'%s'을(를) 열 수 없습니다. 파일이 존재하지 않습니다."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
-msgstr "'%s' 파싱 중 에러."
+msgstr "'%s' 구문 분석 중 오류."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr "예상치 못한 파일의 끝 '%s' 입니다..."
+msgstr "예상치 못한 '%s' 파일의 끝."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr "'%s' 없거나 종속 항목이 없습니다."
+msgstr "'%s'이(가) 없거나 종속 항목이 없습니다."
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr "'%s' 로딩 중 에러."
+msgstr "'%s' 로딩 중 오류."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -1726,7 +1726,7 @@ msgstr "병합할 메시 라이브러리를 불러올 수 없습니다!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr "메시 라이브러리 저장 중 에러!"
+msgstr "메시 라이브러리 저장 중 오류!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
@@ -1734,11 +1734,11 @@ msgstr "병합할 타일셋을 불러올 수 없습니다!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr "타일셋 저장 중 에러!"
+msgstr "타일셋 저장 중 오류!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr "레이아웃 저장 시도 중 에러!"
+msgstr "레이아웃 저장 시도 중 오류!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
@@ -1861,7 +1861,7 @@ msgstr "저장 및 닫기"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr "닫기 전에 '%s' 에 변경사항을 저장하시겠습니까?"
+msgstr "닫기 전에 '%s'에 변경사항을 저장하시겠습니까?"
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -1957,35 +1957,35 @@ msgstr "메인 씬 선택"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr "애드온 플러그인을 활성화할 수 없습니다: '%s' 설정 해석 실패."
+msgstr "애드온 플러그인을 활성화할 수 없습니다: '%s' 구성 구문 분석 실패."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr "애드온 플러그인을 찾을 수 없습니다: 'res://addons/%s'."
+msgstr "다음 경로에서 애드온 플러그인을 찾을 수 없습니다: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr "애드온 스크립트를 불러올 수 없습니다: '%s'."
+msgstr "다음 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"해당 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s' 코드에 오류가 있는 "
+"다음 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s' 코드에 오류가 있는 "
 "것 같습니다, 구문을 확인해 보십시오."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"해당 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s' 기본 타입이 "
+"다음 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s' 기본 타입이 "
 "EditorPlugin이 아닙니다."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"해당 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s' 스크립트가 tool 모드"
+"다음 경로에서 애드온 스크립트를 불러올 수 없습니다: '%s' 스크립트가 tool 모드"
 "가 아닙니다."
 
 #: editor/editor_node.cpp
@@ -2001,12 +2001,12 @@ msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-"씬 로딩 중 에러가 발생했습니다. 프로젝트 경로 안에 존재해야 합니다. '가져오"
+"씬 로딩 중 오류가 발생했습니다. 프로젝트 경로 안에 존재해야 합니다. '가져오"
 "기'로 씬을 연 후에, 프로젝트 경로 안에 저장하세요."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr "'%s' 씬의 종속 항목이 깨져있습니다:"
+msgstr "'%s' 씬의 종속 항목이 깨져 있습니다:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
@@ -2457,7 +2457,7 @@ msgstr "새 상속 씬"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr "불러오기 에러"
+msgstr "불러오기 오류"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
@@ -2601,7 +2601,7 @@ msgstr "유효하지 않은 RID"
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
-msgstr "선택된 리소스(%s)가 이 속성(%s)에 알맞은 타입이 아닙니다."
+msgstr "선택된 리소스 (%s)가 이 속성 (%s)에 알맞은 타입이 아닙니다."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -2743,7 +2743,7 @@ msgstr "노드에서 가져오기:"
 
 #: editor/export_template_manager.cpp
 msgid "Re-Download"
-msgstr "다시 다운불러오기"
+msgstr "다시 다운로드"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
@@ -2788,7 +2788,7 @@ msgstr "템플릿에 version.txt를 찾을 수 없습니다."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
-msgstr "템플릿 경로 생성 에러:"
+msgstr "템플릿 경로 생성 오류:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2850,7 +2850,7 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting url: "
-msgstr "url 요청 에러: "
+msgstr "url 요청 오류: "
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
@@ -2892,11 +2892,11 @@ msgstr "다운로드 중"
 
 #: editor/export_template_manager.cpp
 msgid "Connection Error"
-msgstr "연결 에러"
+msgstr "연결 오류"
 
 #: editor/export_template_manager.cpp
 msgid "SSL Handshake Error"
-msgstr "SSL 핸드쉐이크 에러"
+msgstr "SSL 핸드쉐이크 오류"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -2940,7 +2940,7 @@ msgstr "즐겨찾기"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr "파일 시스템에서 '%s'를 찾을 수 없습니다!"
+msgstr "파일 시스템에서 '%s'을(를) 찾을 수 없습니다!"
 
 #: editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -2965,11 +2965,11 @@ msgstr "폴더를 자신의 하위로 이동할 수 없습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "Error moving:"
-msgstr "이동 에러:"
+msgstr "이동 오류:"
 
 #: editor/filesystem_dock.cpp
 msgid "Error duplicating:"
-msgstr "복제 중 에러:"
+msgstr "복제 중 오류:"
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:"
@@ -3173,7 +3173,7 @@ msgstr "그룹 이름이 잘못되었습니다."
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr "그룹(Groups)"
+msgstr "그룹"
 
 #: editor/groups_editor.cpp
 msgid "Nodes not in Group"
@@ -3209,7 +3209,7 @@ msgstr "애니메이션을 분리시켜 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr "머터리얼을 분리해서 가져오기"
+msgstr "머티리얼을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
@@ -3217,7 +3217,7 @@ msgstr "오브젝트를 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr "오브젝트와 머터리얼을 분리해서 가져오기"
+msgstr "오브젝트와 머티리얼을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
@@ -3225,11 +3225,11 @@ msgstr "오브젝트와 애니메이션을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr "머터리얼과 애니메이션을 분리해서 가져오기"
+msgstr "머티리얼과 애니메이션을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr "오브젝트, 머터리얼, 애니메이션을 분리해서 가져오기"
+msgstr "오브젝트, 머티리얼, 애니메이션을 분리해서 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
@@ -3237,7 +3237,7 @@ msgstr "여러개의 씬으로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr "여러 개의 씬과 머터리얼로 가져오기"
+msgstr "여러 개의 씬과 머티리얼로 가져오기"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -3271,7 +3271,7 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr "가져오기 후 실행할 스크립트 실행 중 에러:"
+msgstr "가져오기 후 실행할 스크립트 실행 중 오류:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
@@ -3279,11 +3279,11 @@ msgstr "저장 중..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "'%s'를 기본으로 지정"
+msgstr "'%s'을(를) 기본으로 지정"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr "'%s'에 대해 기본값으로 지정 해제"
+msgstr "'%s'을(를) 기본에서 해제"
 
 #: editor/import_dock.cpp
 msgid " Files"
@@ -3303,17 +3303,18 @@ msgstr "다시 가져오기"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "씬 저장, 다시 가져오기 및 다시 시작"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "비디오 드라이버를 변경하려면 에디터를 다시 시작해야 합니다."
+msgstr "가져온 파일의 타입을 변경하려면 에디터를 다시 시작해야 합니다."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"경고: 이 리소스를 사용하는 에셋이 존재합니다, 에셋을 불러오지 못할 수 있습니"
+"다."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3718,7 +3719,7 @@ msgstr "애니메이션 도구"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Animation"
-msgstr "애니메이션"
+msgstr "애니메이션(Animation)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New"
@@ -3806,7 +3807,7 @@ msgstr "애니메이션 이름:"
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Error!"
-msgstr "에러!"
+msgstr "오류!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Times:"
@@ -3822,7 +3823,7 @@ msgstr "교차-애니메이션 블렌드 시간"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
-msgstr "끝"
+msgstr "End"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Immediate"
@@ -3846,7 +3847,7 @@ msgstr "하위 전환에 시작과 끝 노드가 필요합니다."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
-msgstr "경로에 설정된 재생 리소스 설정이 없습니다: %s."
+msgstr "다음 경로에 설정된 재생 리소스가 없습니다: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4037,7 +4038,7 @@ msgstr "호스트명을 찾을 수 없음:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
-msgstr "연결 에러, 다시 시도해 주세요."
+msgstr "연결 오류, 다시 시도해 주세요."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't connect to host:"
@@ -4073,7 +4074,7 @@ msgstr "sha256 해시 확인 실패"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr "에셋 다운로드 에러:"
+msgstr "에셋 다운로드 오류:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
@@ -4089,7 +4090,7 @@ msgstr "해결 중..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Error making request"
-msgstr "요청 에러"
+msgstr "요청 오류"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Idle"
@@ -4101,7 +4102,7 @@ msgstr "다시 시도"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download Error"
-msgstr "다운로드 에러"
+msgstr "다운로드 오류"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -4525,7 +4526,7 @@ msgstr "%s 추가"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr "%s 추가중..."
+msgstr "%s 추가 중..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Cannot instantiate multiple nodes without root."
@@ -4539,7 +4540,7 @@ msgstr "노드 만들기"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
-msgstr "'%s' 로부터 씬 인스턴스 중 에러"
+msgstr "'%s'에서 씬 인스턴스 중 오류"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
@@ -4912,7 +4913,7 @@ msgstr "오직 ParticlesMaterial 프로세스 메테리얼 안의 포인트만 �
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Error loading image:"
-msgstr "이미지 불러오기 에러:"
+msgstr "이미지 불러오기 오류:"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
@@ -5003,7 +5004,7 @@ msgstr "에미션 소스: "
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
-msgstr "'ParticlesMaterial' 타입의 프로세서 머터리얼이 필요합니다."
+msgstr "'ParticlesMaterial' 타입의 프로세서 머티리얼이 필요합니다."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Generating AABB"
@@ -5337,7 +5338,7 @@ msgstr "본을 폴리곤에 동기화"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
-msgstr "에러: 리소스를 불러올 수 없습니다!"
+msgstr "오류: 리소스를 불러올 수 없습니다!"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Add Resource"
@@ -5403,19 +5404,19 @@ msgstr "변경사항을 저장하고 닫겠습니까?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error writing TextFile:"
-msgstr "텍스트 파일 쓰기 에러:"
+msgstr "텍스트 파일 쓰기 오류:"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error: could not load file."
-msgstr "에러: 파일을 불러올 수 없음."
+msgstr "오류: 파일을 불러올 수 없음."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error could not load file."
-msgstr "에러로 파일을 불러올 수 없음."
+msgstr "오류로 파일을 불러올 수 없음."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving file!"
-msgstr "파일 저장 중 에러!"
+msgstr "파일 저장 중 오류!"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme."
@@ -5451,11 +5452,11 @@ msgstr "테마 가져오기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
-msgstr "테마 저장 중 에러"
+msgstr "테마 저장 중 오류"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving"
-msgstr "저장 중 에러"
+msgstr "저장 중 오류"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -5806,7 +5807,7 @@ msgstr "물리적 본 만들기"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Skeleton"
-msgstr "스켈레톤"
+msgstr "스켈레톤(Skeleton)"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical skeleton"
@@ -5878,7 +5879,7 @@ msgstr "그려진 오브젝트"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Material Changes"
-msgstr "머터리얼 변경"
+msgstr "머티리얼 변경"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Shader Changes"
@@ -6305,7 +6306,7 @@ msgstr "설정:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "에러: 프레임 리소스를 불러올 수 없습니다!"
+msgstr "오류: 프레임 리소스를 불러올 수 없습니다!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
@@ -6848,7 +6849,7 @@ msgstr "실행가능"
 
 #: editor/project_export.cpp
 msgid "Delete patch '%s' from list?"
-msgstr "'%s'를 패치 목록에서 삭제하시겠습니까?"
+msgstr "'%s'을(를) 패치 목록에서 삭제하시겠습니까?"
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -7030,7 +7031,7 @@ msgid ""
 "Couldn't load project.godot in project path (error %d). It may be missing or "
 "corrupted."
 msgstr ""
-"프로젝트 경로로부터 project.godot 파일을 불러올 수 없습니다 (에러 %d). 존재하"
+"프로젝트 경로로부터 project.godot 파일을 불러올 수 없습니다 (오류 %d). 존재하"
 "지 않거나 손상되었을 수 있습니다."
 
 #: editor/project_manager.cpp
@@ -7099,11 +7100,11 @@ msgstr "찾아보기"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "렌더러:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7112,10 +7113,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"높은 시각적 품질\n"
+"모든 기능 사용 가능\n"
+"오래된 하드웨어에는 호환하지 않음\n"
+"웹 게임에는 비 추천"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7124,10 +7129,14 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"낮은 시각적 품질\n"
+"일부 기능은 사용할 수 없음\n"
+"대부분의 하드웨어에서 작동함\n"
+"웹 게임에 추천"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
-msgstr ""
+msgstr "렌더러는 나중에 바꿀 수 있지만, 씬을 조정해야 할 수도 있습니다."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7152,13 +7161,13 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"다음의 프로젝트 설정 파일은 예전 버전에서 생성된 것으로, 이 버전에 맞게 전환"
-"해야 합니다:\n"
+"다음의 프로젝트 설정 파일은 이전 버전에서 생성된 것으로, 다음 버전에 맞게 변"
+"환해야 합니다:\n"
 "\n"
 "%s\n"
 "\n"
-"전환하시겠습니까?\n"
-"경고: 더 이상 이 프로젝트를 과거 버전의 것으로 열 수 없게 됩니다."
+"변환하시겠습니까?\n"
+"경고: 더 이상 이 프로젝트를 이전 버전에서 열 수 없게 됩니다."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7207,7 +7216,7 @@ msgstr ""
 msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
-msgstr "%s 에서 기존 Godot 프로젝트들을 스캔하려고 합니다. 진행하시겠습니까?"
+msgstr "%s에서 기존 Godot 프로젝트들을 스캔하려고 합니다. 진행하시겠습니까?"
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
@@ -7279,7 +7288,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Action '%s' already exists!"
-msgstr "'%s' 액션이 이미 존재합니다!"
+msgstr "액션 '%s'이(가) 이미 존재합니다!"
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -7419,7 +7428,7 @@ msgstr "'%s' 속성이 존재하지 않습니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr "'%s' 설정은 내부적인 것입니다, 삭제가 불가합니다."
+msgstr "'%s' 설정은 내부적인 것입니다, 삭제할 수 없습니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Delete Item"
@@ -7443,7 +7452,7 @@ msgstr "입력 액션 추가"
 
 #: editor/project_settings_editor.cpp
 msgid "Error saving settings."
-msgstr "설정 저장 중 에러."
+msgstr "설정 저장 중 오류."
 
 #: editor/project_settings_editor.cpp
 msgid "Settings saved OK."
@@ -7619,7 +7628,7 @@ msgstr "노드 선택"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
-msgstr "파일 불러오기 에러: 리소스가 아닙니다!"
+msgstr "파일 불러오기 오류: 리소스가 아닙니다!"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
@@ -7767,15 +7776,15 @@ msgstr "리셋"
 
 #: editor/rename_dialog.cpp
 msgid "Error"
-msgstr "에러"
+msgstr "오류"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
-msgstr "부모노드 재지정"
+msgstr "부모 노드 재지정"
 
 #: editor/reparent_dialog.cpp
 msgid "Reparent Location (Select new Parent):"
-msgstr "부모노드 재지정 위치 (새 부모 노드를 선택):"
+msgstr "부모 노드 재지정 위치 (새 부모 노드를 선택):"
 
 #: editor/reparent_dialog.cpp
 msgid "Keep Global Transform"
@@ -7783,7 +7792,7 @@ msgstr "글로벌 변형 유지"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr "부모노드 재지정"
+msgstr "부모 재지정"
 
 #: editor/run_settings_dialog.cpp
 msgid "Run Mode:"
@@ -7811,13 +7820,14 @@ msgstr "씬을 인스턴스할 수 있는 부모가 없습니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error loading scene from %s"
-msgstr "'%s' 로부터 씬 로딩 중 에러"
+msgstr "%s에서 씬 로딩 중 오류"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
 "Cannot instance the scene '%s' because the current scene exists within one "
 "of its nodes."
-msgstr "노드중에 현재 씬이 존재하기 때문에, '%s' 씬을 인스턴스 할 수 없습니다."
+msgstr ""
+"한 노드에 현재 씬이 존재하기 때문에, '%s' 씬을 인스턴스 할 수 없습니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
@@ -7850,6 +7860,8 @@ msgstr "노드 복제"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"상속된 씬에서 부모 노드를 다시 지정할 수 없습니다, 노드의 순서는 바꿀 수 없습"
+"니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -7940,11 +7952,11 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
-msgstr "씬 저장 중 에러."
+msgstr "씬 저장 중 오류."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
-msgstr "저장하기 위해 씬을 복제하는 중에 에러가 발생했습니다."
+msgstr "저장하기 위해 씬을 복제하는 중에 오류가 발생했습니다."
 
 #: editor/scene_tree_dock.cpp
 msgid "Sub-Resources"
@@ -8111,15 +8123,15 @@ msgstr "노드 선택"
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"
-msgstr "'%s' 템플릿 불러오기 에러"
+msgstr "'%s' 템플릿 불러오기 오류"
 
 #: editor/script_create_dialog.cpp
 msgid "Error - Could not create script in filesystem."
-msgstr "에러 - 파일 시스템에 스크립트를 생성할 수 없습니다."
+msgstr "오류 - 파일 시스템에 스크립트를 생성할 수 없습니다."
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
-msgstr "'%s' 스크립트 로딩 중 에러"
+msgstr "'%s' 스크립트 로딩 중 오류"
 
 #: editor/script_create_dialog.cpp
 msgid "N/A"
@@ -8235,7 +8247,7 @@ msgstr "목록에서 한 개 혹은 여러 개의 항목을 집어 그래프로 
 
 #: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
 msgid "Errors"
-msgstr "에러"
+msgstr "오류"
 
 #: editor/script_editor_debugger.cpp
 msgid "Child Process Connected"
@@ -8243,7 +8255,7 @@ msgstr "자식 프로세스 연결됨"
 
 #: editor/script_editor_debugger.cpp
 msgid "Copy Error"
-msgstr "복사 에러"
+msgstr "복사 오류"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -8847,8 +8859,8 @@ msgstr "비주얼 스크립트 노드 복제"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"%s 를 누르고 있으면 Getter를 드롭합니다. Shift를 누르고 있으면 일반적인 시그"
-"니처를 드롭합니다."
+"%s을(를) 누르고 있으면 Getter를 드롭합니다. Shift을(를) 누르고 있으면 일반적"
+"인 시그니처를 드롭합니다."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
@@ -8858,7 +8870,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a simple reference to the node."
-msgstr "%s 를 누르고 있으면 노드에 대한 간단한 참조를 드롭합니다."
+msgstr "%s을(를) 누르고 있으면 노드에 대한 간단한 참조를 드롭합니다."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
@@ -8866,7 +8878,7 @@ msgstr "Ctrl을 누르고 있으면 노드에 대한 간단한 참조를 드롭�
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Variable Setter."
-msgstr "%s를 누르고 있르면 변수 Setter를 드롭합니다."
+msgstr "%s을(를) 누르고 있르면 변수 Setter를 드롭합니다."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
@@ -9026,7 +9038,7 @@ msgstr "노드를 지칭하는 경로가 아닙니다!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "노드 %s 안에 인덱스 속성 이름 '%s' 는 유효하지 않습니다."
+msgstr "노드 %s 안에 인덱스 속성 이름 '%s'은(는) 유효하지 않습니다."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -9079,7 +9091,8 @@ msgstr "패키지 세그먼트는 길이가 0이 아니어야 합니다."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr "문자 '%s' 는 안드로이드 애플리케이션 패키지 이름으로 쓸 수 없습니다."
+msgstr ""
+"문자 '%s'은(는) 안드로이드 애플리케이션 패키지 이름으로 쓸 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
@@ -9087,7 +9100,7 @@ msgstr "숫자는 패키지 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr "문자 '%s' 는 패키지 세그먼트의 첫 문자가 될 수 없습니다."
+msgstr "문자 '%s'은(는) 패키지 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
@@ -9123,7 +9136,7 @@ msgstr "식별자 세그먼트는 길이가 0이 아니어야 합니다."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "문자 '%s' 는 식별자에 쓸 수 없습니다."
+msgstr "문자 '%s'은(는) 식별자에 쓸 수 없습니다."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
@@ -9132,7 +9145,7 @@ msgstr "숫자는 식별자 세그먼트의 첫 문자가 될 수 없습니다."
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
-msgstr "문자 '%s' 는 식별자 세그먼트의 첫 문자가 될 수 없습니다."
+msgstr "문자 '%s'은(는) 식별자 세그먼트의 첫 문자가 될 수 없습니다."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
@@ -9601,7 +9614,7 @@ msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
-msgstr "BlendTree 노드 '%s' 에서, 애니메이션을 찾을 수 없음: '%s'"
+msgstr "BlendTree 노드 '%s'에서, 애니메이션을 찾을 수 없음: '%s'"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Animation not found: '%s'"
@@ -9609,7 +9622,7 @@ msgstr "애니메이션을 찾을 수 없음: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
-msgstr "노드 '%s' 에서, 유효하지 않은 애니메이션: '%s'."
+msgstr "노드 '%s'에서, 유효하지 않은 애니메이션: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Invalid animation: '%s'."
@@ -9617,7 +9630,7 @@ msgstr "유효하지 않은 애니메이션: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "노드 '%s' 의 '%s' 입력에 아무것도 연결되지 않음."
+msgstr "노드 '%s'의 '%s' 입력에 아무것도 연결되지 않음."
 
 #: scene/animation/animation_tree.cpp
 msgid "A root AnimationNode for the graph is not set."
@@ -9708,7 +9721,7 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr "FreeType 초기화 에러."
+msgstr "FreeType 초기화 오류."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
@@ -9716,7 +9729,7 @@ msgstr "알 수 없는 폰트 형식."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr "폰트 로딩 에러."
+msgstr "폰트 로딩 오류."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."

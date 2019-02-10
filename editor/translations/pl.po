@@ -29,11 +29,12 @@
 # Dariusz Siek <dariuszynski@gmail.com>, 2018.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
 # Nie Powiem <blazek10@tlen.pl>, 2019.
+# Sebastian Hojka <sibibibi1@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-19 19:22+0000\n"
+"PO-Revision-Date: 2019-02-06 01:09+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1039,7 +1040,6 @@ msgid "Toggle Audio Bus Bypass Effects"
 msgstr "Przełącz ominięcie efektów w magistrali audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Select Audio Bus Send"
 msgstr "Wybierz szynę wysyłki audio"
 
@@ -1308,7 +1308,7 @@ msgstr "Zapisywanie pliku:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Nie znaleziono szablonu eksportu w przewidywanej lokalizacji:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1317,15 +1317,14 @@ msgstr "Pakowanie"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Nie znaleziono pliku szablonu:"
+msgstr "Nie znaleziono własnego szablonu debugowania."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Nie znaleziono własnego szablonu wydania."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1727,6 +1726,8 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Ta scena nie może zostać zapisana, ponieważ istnieje cykliczna inkluzja.\n"
+"Rozwiąż to i spróbuj zapisać ponownie."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2618,15 +2619,16 @@ msgid "Assign..."
 msgstr "Przypisz..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr "Nieprawidłowa ścieżka"
+msgstr "Nieprawidłowy RID"
 
 #: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
+"Wybrany zasób (%s) nie zgadza się z żadnym rodzajem przewidywanym dla tego "
+"użycia (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3197,7 +3199,6 @@ msgid "Group name already exists."
 msgstr "Nazwa grupy już istnieje."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Invalid group name."
 msgstr "Niewłaściwa nazwa grupy."
 
@@ -3334,17 +3335,18 @@ msgstr "Importuj ponownie"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Zapisz sceny, re-importuj i zrestartuj"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Zmiana sterownika grafiki wymaga restartu edytora."
+msgstr "Zmiana rodzaju importowanego pliku wymaga restartu edytora."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"OSTRZEŻENIE: Istnieje zawartość używająca tego zasobu, która może przestać "
+"działać prawidłowo."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3469,7 +3471,6 @@ msgid "Create Polygon"
 msgstr "Utwórz wielokąt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon"
 msgstr "Edytuj wielokąt"
 
@@ -3478,12 +3479,10 @@ msgid "Insert Point"
 msgstr "Wstaw punkt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon (Remove Point)"
-msgstr "Edytuj wielokąt (usuń punkty)"
+msgstr "Edytuj wielokąt (usuń punkt)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Remove Polygon And Point"
 msgstr "Usuń wielokąt i punkt"
 
@@ -3494,7 +3493,6 @@ msgid "Create points."
 msgstr "Utwórz punkty."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
@@ -9771,7 +9769,7 @@ msgstr "Korzeń AnimationPlayer nie jest poprawnym węzłem."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
-msgstr ""
+msgstr "Ten węzeł jest przestarzały. Zamiast tego użyj AnimationTree."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"

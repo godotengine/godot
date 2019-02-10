@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"PO-Revision-Date: 2019-02-09 18:11+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -3310,17 +3310,20 @@ msgstr "Tuo uudelleen"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Tallenna skenet, tuo uudelleen ja käynnistä uudelleen"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Näyttöajurin vaihtaminen edellyttää editorin uudelleenkäynnistystä."
+msgstr ""
+"Tuodun tiedoston tyypin muuttaminen edellyttää editorin "
+"uudelleenkäynnistystä."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"VAROITUS: Tällä resurssilla on sitä käyttäviä assetteja, ne voivat lakata "
+"latautumasta kunnolla."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -6229,7 +6232,7 @@ msgstr "Siirrettäessä:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Snap (deg.):"
-msgstr "Käännettäessä (aste):"
+msgstr "Käännettäessä (asteina):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Snap (%):"
@@ -6241,7 +6244,7 @@ msgstr "Näyttöruudun asetukset"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective FOV (deg.):"
-msgstr "Näkökentän perspektiivi (ast.):"
+msgstr "Näkökentän perspektiivi (asteina):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Z-Near:"
@@ -6261,7 +6264,7 @@ msgstr "Siirrä:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate (deg.):"
-msgstr "Kierrä (ast.):"
+msgstr "Kierrä (asteina):"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale (ratio):"
@@ -7123,11 +7126,11 @@ msgstr "Selaa"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderöijä:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7136,10 +7139,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Korkea visuaalinen laatu\n"
+"Kaikki ominaisuudet käytettävissä\n"
+"Epäyhteensopiva vanhojen laitteiden kanssa\n"
+"Ei suositeltu web-peleille"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7148,10 +7155,15 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Matalampi visuaalinen laatu\n"
+"Jotkin ominaisuudet eivät ole käytettävissä\n"
+"Toimii useimmilla laitteilla\n"
+"Suositeltu web-peleille"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Renderöijä voidaan vaihtaa myöhemmin, mutta skenejä voi joutua mukauttamaan."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7876,6 +7888,8 @@ msgstr "Kahdenna solmu(t)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"Perittyjen skenejen solmujen isäntää ei voi vaihtaa, solmujen järjestys ei "
+"voi muuttua."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."

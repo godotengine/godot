@@ -5,7 +5,7 @@
 # Allan Nordhøy <epost@anotheragency.no>, 2017-2018.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # Elias <eliasnykrem@gmail.com>, 2018.
-# flesk <eivindkn@gmail.com>, 2017.
+# flesk <eivindkn@gmail.com>, 2017, 2019.
 # Frank T. Rambol <frank@d-fect.com>, 2018.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
 # NicolaiF <nico-fre@hotmail.com>, 2017-2018.
@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:41+0100\n"
-"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"Last-Translator: flesk <eivindkn@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -126,24 +126,29 @@ msgid "Anim Change Call"
 msgstr "Anim Forandre Kall"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Property Track"
-msgstr ""
+msgstr "Egenskapsspor"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "3D Transform Track"
-msgstr ""
+msgstr "3D transformasjonsspor"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Call Method Track"
-msgstr ""
+msgstr "Kall metode-spor"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier-kurvespor"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Lydavspillingsspor"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -172,11 +177,12 @@ msgstr "Funksjoner:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Lydklipp:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Anim-klipp:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -185,7 +191,7 @@ msgstr "Vis/skjul distraksjonsfri modus."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Oppdateringsmodus (Hvordan denne egenskapen settes)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -225,7 +231,7 @@ msgstr "Framtid"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Nærmeste"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -301,8 +307,9 @@ msgid "Anim Insert Key"
 msgstr "Anim Sett Inn Nøkkel"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "Transformasjonsspor kan kun brukes på Spatial-baserte noder."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -311,34 +318,43 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Lydspor kan kun peke på noder av type:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animasjonsspor kan kun peke på AnimationPlayer-noder."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Ikke mulig å legge til et nytt spor uten en rot"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Sporsti er ugyldig, så kan ikke legge til en nøkkel."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "Spor er ikke av type Spatial, kan ikke legge til nøkkel"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "Sporsti er ugyldig, så kan ikke legge til metodenøkkel."
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "Metode ikke funnet i objekt: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -354,17 +370,20 @@ msgid "Anim Scale Keys"
 msgstr "Anim Skalér Nøkler"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Dette valget virker ikke på Bezier-redigering, siden det kun er ett enkelt "
+"spor."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Vis kun spor fra noder valgt i treet."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "Grupper spor etter node eller vis dem i en enkel liste."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -441,11 +460,11 @@ msgstr "Rydd-Opp-Animasjon"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Velg noden som skal animeres:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Bruk Bezier-kurver"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -493,7 +512,7 @@ msgstr "Skaler Størrelsesforhold:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Velg spor å kopiere:"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -569,7 +588,7 @@ msgstr "Nullstill Zoom"
 
 #: editor/code_editor.cpp
 msgid "Warnings:"
-msgstr ""
+msgstr "Advarsler:"
 
 #: editor/code_editor.cpp
 #, fuzzy
@@ -701,6 +720,7 @@ msgstr "Signaler"
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
+"Er du sikker på at du ønsker å fjerne alle koblinger fra dette signalet?"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -1320,8 +1340,9 @@ msgid "Storing File:"
 msgstr "Lagrer Fil:"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Ingen eksportmal funnet på forventet søkesti:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1337,8 +1358,9 @@ msgstr "Malfil ble ikke funnet:"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Tilpasset utgivelsesmal ikke funnet."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1506,7 +1528,7 @@ msgstr "Egenskaper"
 
 #: editor/editor_help.cpp
 msgid "Properties:"
-msgstr ""
+msgstr "Egenskaper:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
@@ -1663,15 +1685,16 @@ msgstr "Klasse:"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
-msgstr ""
+msgstr "Egenskap:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
 msgstr "Sett"
 
 #: editor/editor_inspector.cpp
+#, fuzzy
 msgid "Set Multiple:"
-msgstr ""
+msgstr "Sett Mange:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -1702,7 +1725,7 @@ msgstr "Feil ved lagring av ressurs!"
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -1722,7 +1745,7 @@ msgstr "Feil under lagring."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr ""
+msgstr "Kan ikke åpne '%s'. Filen kan ha blitt flyttet eller slettet."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
@@ -1757,10 +1780,14 @@ msgid "This operation can't be done without a tree root."
 msgstr "Denne operasjonen kan ikke gjennomføres uten en trerot."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Denne scenen kan ikke lagres fordi det er en sirkulær "
+"instansieringsinklusjon.\n"
+"Vennligst løs feilen og forsøk å lagre igjen."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1772,7 +1799,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "Kan ikke overskrive en scene som fortsatt er åpen!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
@@ -2446,8 +2473,9 @@ msgid "Play Custom Scene"
 msgstr "Spill av Tilpasset Scene"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "Endring av videodriver krever omstart av redigeringsverktøyet."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -2659,23 +2687,23 @@ msgstr "Ring"
 
 #: editor/editor_properties.cpp
 msgid "On"
-msgstr ""
+msgstr "På"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr ""
+msgstr "Lag"
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
-msgstr ""
+msgstr "Bit %d, verdi %d"
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
-msgstr ""
+msgstr "[Tom]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr ""
+msgstr "Tilordne..."
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -2683,16 +2711,22 @@ msgid "Invalid RID"
 msgstr ": Ugyldige argumenter: "
 
 #: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
+"Den valgte ressursen (%s) svarer ikke til noen forventede verdier for denne "
+"egenskapen (%s)."
 
 #: editor/editor_properties.cpp
+#, fuzzy
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
 "Resource needs to belong to a scene."
 msgstr ""
+"Kan ikke opprette en ViewportTexture på ressurser lagret som fil.\n"
+"Ressurser må tilhøre en scene."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -4640,7 +4674,7 @@ msgstr "Fjern Ben"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr "Vis"
+msgstr "Visning"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
