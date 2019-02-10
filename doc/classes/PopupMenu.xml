@@ -378,7 +378,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Mark the item at index "idx" as a separator, which means that it would be displayed as a mere line.
+				Mark the item at index "idx" as a separator, which means that it would be displayed as a line.
 			</description>
 		</method>
 		<method name="set_item_checked">
