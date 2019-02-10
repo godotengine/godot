@@ -737,7 +737,7 @@ ColorPicker::ColorPicker() :
 
 	bt_add_preset = memnew(Button);
 	bbc->add_child(bt_add_preset);
-	bt_add_preset->set_tooltip(TTR("Add current color as a preset"));
+	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
 }
 

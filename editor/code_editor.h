@@ -63,7 +63,6 @@ class FindReplaceBar : public HBoxContainer {
 
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
-	MarginContainer *container;
 	LineEdit *search_text;
 	ToolButton *find_prev;
 	ToolButton *find_next;
@@ -76,7 +75,6 @@ class FindReplaceBar : public HBoxContainer {
 	Button *replace_all;
 	CheckBox *selection_only;
 
-	HBoxContainer *hbc;
 	VBoxContainer *vbc_lineedit;
 	HBoxContainer *hbc_button_replace;
 	HBoxContainer *hbc_option_replace;
