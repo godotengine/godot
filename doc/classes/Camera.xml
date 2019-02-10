@@ -35,6 +35,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_frustum" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_position_behind" qualifiers="const">
 			<return type="bool">
 			</return>

@@ -29,6 +29,12 @@
 				Returns an individual bit on the collision mask.
 			</description>
 		</method>
+		<method name="get_meshes" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_root_shape" qualifiers="const">
 			<return type="bool">
 			</return>
