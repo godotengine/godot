@@ -1562,7 +1562,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			break; //save as a scene
 
 		if (main) {
-			f->store_line("[resource]\n");
+			f->store_line("[resource]");
 		} else {
 			String line = "[sub_resource ";
 			if (res->get_subindex() == 0) {
@@ -1577,7 +1577,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 			int idx = res->get_subindex();
 			line += "type=\"" + res->get_class() + "\" id=" + itos(idx);
-			f->store_line(line + "]\n");
+			f->store_line(line + "]");
 			if (takeover_paths) {
 				res->set_path(p_path + "::" + itos(idx), true);
 			}
