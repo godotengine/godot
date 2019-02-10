@@ -30,7 +30,7 @@
 
 #include "gdnative/basis.h"
 
-#include "core/math/matrix3.h"
+#include "core/math/basis.h"
 #include "core/variant.h"
 
 #ifdef __cplusplus
