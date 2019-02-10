@@ -531,6 +531,13 @@ void CSGShape::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (parent) {
+			parent->_make_dirty();
+		}
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		if (parent)
