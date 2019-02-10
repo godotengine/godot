@@ -911,11 +911,14 @@ MainLoop *test(TestType p_type) {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
-		//try editor!
 		return NULL;
 	}
 
 	String test = cmdlargs.back()->get();
+	if (!test.ends_with(".gd") && !test.ends_with(".gdc")) {
+		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
+		return NULL;
+	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
 
