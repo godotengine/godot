@@ -86,13 +86,6 @@ env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
-# To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
-# http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
-env_base.Decider('MD5-timestamp')
-# Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
-# http://scons.org/doc/production/HTML/scons-user/ch06s04.html
-env_base.SetOption('implicit_cache', 1)
-
 env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
 env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
 env_base.__class__.android_add_dependency = methods.android_add_dependency
@@ -232,6 +225,16 @@ env_base.platform_apis = platform_apis
 
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
+
+    # The two options below speed up incremental builds, but reduce the certainty that all files
+    # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
+
+    # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
+    # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+    env_base.Decider('MD5-timestamp')
+    # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
+    # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+    env_base.SetOption('implicit_cache', 1)
 
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
