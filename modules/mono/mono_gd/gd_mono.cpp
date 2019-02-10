@@ -253,6 +253,29 @@ void GDMono::initialize() {
 
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
 
+#ifdef TOOLS_ENABLED
+	if (!DirAccess::exists("res://.mono")) {
+		// 'res://.mono/' is missing so there is nothing to load. We don't need to initialize mono, but
+		// we still do so unless mscorlib is missing (which is the case for projects that don't use C#).
+
+		String mscorlib_fname("mscorlib.dll");
+
+		Vector<String> search_dirs;
+		GDMonoAssembly::fill_search_dirs(search_dirs);
+
+		bool found = false;
+		for (int i = 0; i < search_dirs.size(); i++) {
+			if (FileAccess::exists(search_dirs[i].plus_file(mscorlib_fname))) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+			return; // mscorlib is missing, do not initialize mono
+	}
+#endif
+
 	root_domain = mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
 
 	ERR_EXPLAIN("Mono: Failed to initialize runtime");
