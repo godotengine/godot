@@ -57,7 +57,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"PO-Revision-Date: 2019-02-10 13:16+0100\n"
 "Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -66,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -598,21 +598,13 @@ msgstr "Dézoomer"
 msgid "Reset Zoom"
 msgstr "Réinitialiser le zoom"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "Avertissements :"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr "Avertissements"
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
-msgstr "Taille de police :"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Ligne :"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "Colonne :"
+msgid "Line and column numbers"
+msgstr "Numéros de ligne et de colonne"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -915,8 +907,8 @@ msgstr "Supprimer les fichiers sélectionnés ?"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -4379,6 +4371,18 @@ msgid "Move CanvasItem"
 msgstr "Déplacer l'élément de canevas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr "Préréglages pour les ancres et les marges d'un nœud Control."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+"Les nœuds enfants de conteneurs ont leurs ancres et marges redéfinies par "
+"leur parent."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Uniquement les ancres"
 
@@ -4684,7 +4688,7 @@ msgstr "Définir la poignée"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
-msgstr "ParticulesCPU"
+msgstr "CPUParticles"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5053,7 +5057,7 @@ msgstr "Effacer Masque d'Émission"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
-msgstr "Convertir en ParticulesCPU"
+msgstr "Convertir en CPUParticles"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6383,7 +6387,7 @@ msgid "Post"
 msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr "Gadget sans nom"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6461,8 +6465,12 @@ msgid "(empty)"
 msgstr "(vide)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
-msgstr "Animations"
+msgid "Animations:"
+msgstr "Animations :"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "New Animation"
+msgstr "Nouvelle animation"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6473,8 +6481,8 @@ msgid "Loop"
 msgstr "Boucle"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
-msgstr "Trames d'animation"
+msgid "Animation Frames:"
+msgstr "Trames d'animation :"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7230,9 +7238,8 @@ msgid "Browse"
 msgstr "Parcourir"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Renderer:"
-msgstr "Moteur de rendu:"
+msgstr "Moteur de rendu :"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
@@ -7283,6 +7290,28 @@ msgstr "Impossible d'ouvrir le projet à \"%s\"."
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Voulez-vous vraiment ouvrir plus d'un projet à la fois ?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+"Le fichier de configuration de projet ci-dessous n'indique pas par quelle "
+"version de Godot il a été généré.\n"
+"\n"
+"%s\n"
+"\n"
+"Si vous choisissez de l'ouvrir, il sera converti vers l'actuel format de "
+"fichier de configuration de Godot.\n"
+"Attention : Il ne sera plus possible d'ouvrir ce projet avec les précédentes "
+"versions du moteur."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8824,10 +8853,6 @@ msgid "Build Project"
 msgstr "Compiler le projet"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr "Avertissements"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr "Voir les fichiers log"
 
@@ -9270,7 +9295,6 @@ msgstr ""
 "OpenJDK jarsigner n'est pas configuré dans les paramètres de l'éditeur."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 "Debug keystore n'est pas configuré dans les paramètres de l'éditeur ni dans "
@@ -9479,7 +9503,7 @@ msgid ""
 "\"Particles Animation\" enabled."
 msgstr ""
 "L'animation de CPUParticles2D a besoin d'un CanvasItemMaterial avec "
-"\"Animation de Particules\" activé."
+"\"Particles Animation\" activé."
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -9525,6 +9549,17 @@ msgid ""
 msgstr ""
 "Le nœud ParallaxLayer ne fonctionne que s'il est défini en tant qu'enfant "
 "d'un nœud de type ParallaxBackground."
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+"Les particules de type GPU ne sont pas supportées par le pilote graphique "
+"GLES2.\n"
+"Utilisez le nœud CPUParticles2D à la place. Vous pouvez utiliser l'option « "
+"Convertir en CPUParticles » pour ce faire."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9718,6 +9753,17 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+"Les particules de type GPU ne sont pas supportées par le pilote graphique "
+"GLES2.\n"
+"Utilisez le nœud CPUParticles à la place. Vous pouvez utiliser l'option « "
+"Convertir en CPUParticles » pour ce faire."
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Rien n'est visible car les maillages n'ont pas été assignés au tirage des "
@@ -9854,8 +9900,16 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Ce nœud est désormais déprécié. Utilisez AnimationTree à la place."
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr "Échantillonner une couleur depuis l'écran."
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Mode brut"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr "Alterner entre les valeurs hexadécimales ou brutes."
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -9954,6 +10008,18 @@ msgstr "Affectation à l'uniforme."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
+
+#~ msgid "Warnings:"
+#~ msgstr "Avertissements :"
+
+#~ msgid "Font Size:"
+#~ msgstr "Taille de police :"
+
+#~ msgid "Line:"
+#~ msgstr "Ligne :"
+
+#~ msgid "Col:"
+#~ msgstr "Colonne :"
 
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""

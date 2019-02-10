@@ -574,21 +574,13 @@ msgstr "缩小"
 msgid "Reset Zoom"
 msgstr "重置缩放"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "警告："
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr "警告"
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
-msgstr "字体大小:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "行:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "列:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -881,8 +873,8 @@ msgstr "删除选中的文件？"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "删除"
 
@@ -4241,6 +4233,17 @@ msgid "Move CanvasItem"
 msgstr "移动 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr "警告：容器子级的位置与大小只能由它的父级确定。"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "仅锚点"
 
@@ -6229,7 +6232,7 @@ msgid "Post"
 msgstr "发布(Post)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6305,7 +6308,13 @@ msgid "(empty)"
 msgstr "（空）"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
+msgstr "动画"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
 msgstr "动画"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -6317,7 +6326,8 @@ msgid "Loop"
 msgstr "循环"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "动画帧"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7136,6 +7146,24 @@ msgstr "无法打开位于“%s”的相应项目."
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "您确定要打开多个项目吗？"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+"以下项目设置文件是由旧的引擎版本生成的，需要为此版本转换：\n"
+"%s\n"
+"是否要转换它？\n"
+"警告：您将无法再使用以前版本的引擎打开项目。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8646,10 +8674,6 @@ msgid "Build Project"
 msgstr "构建项目"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr "警告"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr "查看日志"
 
@@ -9295,6 +9319,13 @@ msgid ""
 msgstr ""
 "ParallaxLayer类型的节点必须作为ParallaxBackground的子节点才能正常工作。"
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -9463,6 +9494,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr "粒子不可见，因为没有网格(meshe)指定到绘制通道(draw passes)。"
 
@@ -9584,8 +9622,16 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "这个节点已被弃用。请使用Animation Tree代替。"
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Raw 模式"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -9677,6 +9723,18 @@ msgstr "对uniform的赋值。"
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
+
+#~ msgid "Warnings:"
+#~ msgstr "警告："
+
+#~ msgid "Font Size:"
+#~ msgstr "字体大小:"
+
+#~ msgid "Line:"
+#~ msgstr "行:"
+
+#~ msgid "Col:"
+#~ msgstr "列:"
 
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""

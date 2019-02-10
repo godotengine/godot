@@ -552,21 +552,13 @@ msgstr "Зменшення"
 msgid "Reset Zoom"
 msgstr "Скинути масштаб"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "Попередження:"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr "Попередження"
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
-msgstr "Розмір шрифту:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Рядок:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "Колонка:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -868,8 +860,8 @@ msgstr "Видалити вибрані файли?"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Вилучити"
 
@@ -4305,6 +4297,19 @@ msgid "Move CanvasItem"
 msgstr "Пересунути CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+"Попередження: дані щодо розташування та розміру дочірніх об'єктів "
+"визначаються лише їхнім батьківським об'єктом."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Тільки прив'язки"
 
@@ -6301,7 +6306,8 @@ msgid "Post"
 msgstr "Після"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+#, fuzzy
+msgid "Nameless gizmo"
 msgstr "Штука без назви"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6379,8 +6385,14 @@ msgid "(empty)"
 msgstr "(порожньо)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
 msgstr "Анімації"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
+msgstr "Анімація"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6391,7 +6403,8 @@ msgid "Loop"
 msgstr "Зациклити"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "Кадри анімації"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7200,6 +7213,28 @@ msgstr "Не вдалося відкрити проект у «%s»."
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Ви справді хочете відкрити декілька проектів одразу?"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+"Вказаний нижче файл параметрів проекту було створено у застарілій версії "
+"рушія. Його доведеться перетворити до поточної версії:\n"
+"\n"
+"%s\n"
+"\n"
+"Хочете виконати таке перетворення?\n"
+"Попередження: у результаті перетворення ви втратите можливість відкриття "
+"проекту у застарілих версіях рушія."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8736,10 +8771,6 @@ msgid "Build Project"
 msgstr "Зібрати проект"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr "Попередження"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr "Переглянути журнал"
 
@@ -9424,6 +9455,13 @@ msgstr ""
 "Вузол ParallaxLayer працює, лише якщо його встановлено як дочірній для вузла "
 "ParallaxBackground."
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -9614,6 +9652,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Нічого не видно, оскільки сітки не було пов'язано із проходами малювання."
@@ -9746,8 +9791,16 @@ msgstr ""
 "Цей вузол вважається застарілим. Скористайтеся замість нього AnimationTree."
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Raw (сирий) режим"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -9845,6 +9898,18 @@ msgstr "Призначення однорідного."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
+
+#~ msgid "Warnings:"
+#~ msgstr "Попередження:"
+
+#~ msgid "Font Size:"
+#~ msgstr "Розмір шрифту:"
+
+#~ msgid "Line:"
+#~ msgstr "Рядок:"
+
+#~ msgid "Col:"
+#~ msgstr "Колонка:"
 
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr "OrientedPathFollow працюватиме лише як дочірній елемент вузла Path."
