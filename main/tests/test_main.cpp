@@ -36,7 +36,6 @@
 #include "test_astar.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
-#include "test_image.h"
 #include "test_math.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
@@ -61,7 +60,6 @@ const char **tests_get_names() {
 		"gd_parser",
 		"gd_compiler",
 		"gd_bytecode",
-		"image",
 		"ordered_hash_map",
 		"astar",
 		NULL
@@ -134,11 +132,6 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 		return TestGDScript::test(TestGDScript::TEST_BYTECODE);
 	}
 
-	if (p_test == "image") {
-
-		return TestImage::test();
-	}
-
 	if (p_test == "ordered_hash_map") {
 
 		return TestOrderedHashMap::test();
@@ -149,6 +142,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 		return TestAStar::test();
 	}
 
+	print_line("Unknown test: " + p_test);
 	return NULL;
 }
 

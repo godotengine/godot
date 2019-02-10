@@ -56,7 +56,7 @@ Remote filesystem (<host/IP>[:<port>] address).
 Password for remote filesystem.
 .TP
 \fB\-\-audio\-driver\fR <driver>
-Audio driver ('PulseAudio', 'ALSA').
+Audio driver ('PulseAudio', 'ALSA', 'Dummy').
 .TP
 \fB\-\-video\-driver\fR <driver>
 Video driver ('GLES3', 'GLES2').
@@ -133,7 +133,7 @@ Only parse for errors and quit (use with --script).
 \fB\-\-export\fR <target>
 Export the project using the given export target. Export only main pack if path ends with .pck or .zip.
 .TP
-\fB\-\-export\-debug\fR
+\fB\-\-export\-debug\fR <target>
 Like \-\-export, but use debug template.
 .TP
 \fB\-\-doctool\fR <path>
@@ -149,7 +149,7 @@ Build the scripting solutions (e.g. for C# projects).
 Generate JSON dump of the Godot API for GDNative bindings.
 .TP
 \fB\-\-test\fR <test>
-Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'image', 'ordered_hash_map').
+Run a unit test ('string', 'math', 'physics', 'physics_2d', 'render', 'oa_hash_map', 'gui', 'shaderlang', 'gd_tokenizer', 'gd_parser', 'gd_compiler', 'gd_bytecode', 'ordered_hash_map', 'astar').
 .SH FILES
 XDG_DATA_CONFIG/godot/ or ~/.config/godot/
 .RS
