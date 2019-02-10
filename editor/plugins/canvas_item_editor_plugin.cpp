@@ -3288,7 +3288,7 @@ void CanvasItemEditor::_notification(int p_what) {
 				Control *control = Object::cast_to<Control>(E->get());
 				if (!control || Object::cast_to<Container>(control->get_parent())) {
 					presets_menu->set_disabled(true);
-					presets_menu->set_tooltip(TTR("A child of a container gets its anchors and margins values overriden by its parent."));
+					presets_menu->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
 					break;
 				}
 			}

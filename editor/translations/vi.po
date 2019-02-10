@@ -557,22 +557,13 @@ msgstr "Thu nhỏ"
 msgid "Reset Zoom"
 msgstr "Đặt lại phóng"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
 msgstr ""
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
+msgid "Line and column numbers"
 msgstr ""
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Dòng:"
-
-#: editor/code_editor.cpp
-#, fuzzy
-msgid "Col:"
-msgstr "Col:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -876,8 +867,8 @@ msgstr ""
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Xóa"
 
@@ -4263,6 +4254,16 @@ msgid "Move CanvasItem"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr ""
 
@@ -6270,7 +6271,7 @@ msgid "Post"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6347,8 +6348,14 @@ msgid "(empty)"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
-msgstr ""
+#, fuzzy
+msgid "Animations:"
+msgstr "Các Công cụ Animation"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
+msgstr "Tạo Animation mới"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6359,8 +6366,9 @@ msgid "Loop"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
-msgstr ""
+#, fuzzy
+msgid "Animation Frames:"
+msgstr "Tên Animation:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7161,6 +7169,19 @@ msgstr "Không thể chạy project"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
+msgstr ""
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -8658,10 +8679,6 @@ msgid "Build Project"
 msgstr ""
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr ""
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr ""
 
@@ -9295,6 +9312,13 @@ msgid ""
 "ParallaxLayer node only works when set as child of a ParallaxBackground node."
 msgstr ""
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -9450,6 +9474,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 
@@ -9560,7 +9591,15 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
+msgstr ""
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
@@ -9649,6 +9688,13 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Line:"
+#~ msgstr "Dòng:"
+
+#, fuzzy
+#~ msgid "Col:"
+#~ msgstr "Col:"
 
 #, fuzzy
 #~ msgid "Remove Split"

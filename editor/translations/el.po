@@ -546,22 +546,13 @@ msgstr "Σμύκρινση"
 msgid "Reset Zoom"
 msgstr "Επαναφορά μεγέθυνσης"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "Προειδοποιήσεις:"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr "Προειδοποιήσεις"
 
 #: editor/code_editor.cpp
-#, fuzzy
-msgid "Font Size:"
-msgstr "Μέγεθος πηγαίας γραμματοσειράς:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Γραμμή:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "Στήλη:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -866,8 +857,8 @@ msgstr "Διαγραφή επιλεγμένων αρχείων;"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Διαγραφή"
 
@@ -4360,6 +4351,16 @@ msgid "Move CanvasItem"
 msgstr "Μετακίνηση CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Μόνο άγκυρες"
 
@@ -6416,7 +6417,7 @@ msgid "Post"
 msgstr "Μετά"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6499,8 +6500,14 @@ msgid "(empty)"
 msgstr "(άδειο)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
 msgstr "Κινήσεις"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
+msgstr "Κίνηση"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6511,7 +6518,8 @@ msgid "Loop"
 msgstr "Επανάληψη"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "Καρέ κίνησης"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7354,6 +7362,19 @@ msgstr "Δεν ήταν δυνατό το άνοιγμα του έργου"
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Είστε σίγουροι πως θέλετε να ανοίξετε περισσότερα από ένα έργα;"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8923,10 +8944,6 @@ msgid "Build Project"
 msgstr "Δόμηση έργου"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr "Προειδοποιήσεις"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr "Προβολή αρχείου καταγραφής"
 
@@ -9607,6 +9624,13 @@ msgstr ""
 "Ένας κόμβος ParallaxLayer δουλεύει μόνο όταν κληρονομεί έναν κόμβο τύπου "
 "ParallaxBackground."
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -9796,6 +9820,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Τίποτα δεν είναι ορατό, επειδή δεν έχουν οριστεί περάσματα για τα πλέγματα."
@@ -9931,8 +9962,16 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Ωμή λειτουργία"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -10032,6 +10071,19 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Warnings:"
+#~ msgstr "Προειδοποιήσεις:"
+
+#, fuzzy
+#~ msgid "Font Size:"
+#~ msgstr "Μέγεθος πηγαίας γραμματοσειράς:"
+
+#~ msgid "Line:"
+#~ msgstr "Γραμμή:"
+
+#~ msgid "Col:"
+#~ msgstr "Στήλη:"
 
 #, fuzzy
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
