@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are always passed by reference.
+		Erasing elements while iterating over them [b]is not supported[/b].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -38,7 +39,7 @@
 			<argument index="0" name="key" type="Variant">
 			</argument>
 			<description>
-				Erase a dictionary key/value pair by key.
+				Erase a dictionary key/value pair by key. Do not erase elements while iterating over the dictionary.
 			</description>
 		</method>
 		<method name="get">
