@@ -124,7 +124,7 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 			ERR_FAIL_COND(!load_success);
 
 			Vector<String> search_dirs;
-			GDMonoAssembly::fill_search_dirs(search_dirs);
+			GDMonoAssembly::fill_search_dirs(search_dirs, build_config);
 			Error depend_error = _get_assembly_dependencies(scripts_assembly, search_dirs, dependencies);
 			ERR_FAIL_COND(depend_error != OK);
 		}
