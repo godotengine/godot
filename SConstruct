@@ -2,11 +2,13 @@
 
 EnsureSConsVersion(0, 98, 1)
 
-import string
-import os
-import os.path
+# System
 import glob
+import os
+import string
 import sys
+
+# Local
 import methods
 import gles_builders
 from platform_methods import run_in_subprocess
@@ -27,7 +29,7 @@ for x in sorted(glob.glob("platform/*")):
         continue
     tmppath = "./" + x
 
-    sys.path.append(tmppath)
+    sys.path.insert(0, tmppath)
     import detect
 
     if (os.path.exists(x + "/export/export.cpp")):
@@ -130,7 +132,6 @@ customs = ['custom.py']
 
 profile = ARGUMENTS.get("profile", False)
 if profile:
-    import os.path
     if os.path.isfile(profile):
         customs.append(profile)
     elif os.path.isfile(profile + ".py"):
@@ -210,7 +211,7 @@ for k in platform_opts.keys():
 for x in module_list:
     module_enabled = True
     tmppath = "./modules/" + x
-    sys.path.append(tmppath)
+    sys.path.insert(0, tmppath)
     import config
     enabled_attr = getattr(config, "is_enabled", None)
     if (callable(enabled_attr) and not config.is_enabled()):
@@ -250,8 +251,8 @@ elif env_base['p'] != "":
     env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
-
-    sys.path.append("./platform/" + selected_platform)
+    tmppath = "./platform/" + selected_platform
+    sys.path.insert(0, tmppath)
     import detect
     if "create" in dir(detect):
         env = detect.create(env_base)
@@ -377,7 +378,7 @@ if selected_platform in platform_list:
 
     suffix += env.extra_suffix
 
-    sys.path.remove("./platform/" + selected_platform)
+    sys.path.remove(tmppath)
     sys.modules.pop('detect')
 
     env.module_list = []
@@ -387,7 +388,7 @@ if selected_platform in platform_list:
         if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
-        sys.path.append(tmppath)
+        sys.path.insert(0, tmppath)
         env.current_module = x
         import config
         # can_build changed number of arguments between 3.0 (1) and 3.1 (2),
