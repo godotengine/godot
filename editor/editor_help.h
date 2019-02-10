@@ -34,6 +34,7 @@
 #include "editor/code_editor.h"
 #include "editor/doc/doc_data.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -51,10 +52,6 @@ class FindBar : public HBoxContainer {
 	Label *error_label;
 	TextureButton *hide_button;
 	String prev_search;
-
-	Control *container;
-	HBoxContainer *hbc;
-	VBoxContainer *vbc_search_text;
 
 	RichTextLabel *rich_text_label;
 
@@ -191,9 +188,9 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public PanelContainer {
+class EditorHelpBit : public MarginContainer {
 
-	GDCLASS(EditorHelpBit, PanelContainer);
+	GDCLASS(EditorHelpBit, MarginContainer);
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
