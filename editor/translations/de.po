@@ -36,12 +36,13 @@
 # asyncial <mahlburg@posteo.de>, 2018.
 # ssantos <ssantos@web.de>, 2018.
 # Rémi Verschelde <akien@godotengine.org>, 2019.
+# Martin <martinreininger@gmx.net>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"Last-Translator: Martin <martinreininger@gmx.net>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -1007,7 +1008,7 @@ msgstr "Inhalte werden entpackt"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
-msgstr "Paket erfolgreich installiert!"
+msgstr "Paket wurde erfolgreich installiert!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2648,7 +2649,7 @@ msgstr "[leer]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr "Zuweisen.."
+msgstr "Zuweisen..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
@@ -3368,17 +3369,20 @@ msgstr "Neuimport"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Szenen speichern, reimportieren und neu starten"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Das Ändern des Video-Treibers erfordert einen Neustart des Editors."
+msgstr ""
+"Den Typ einer importierten Datei zu ändern erfordert einen Neustart des "
+"Editors."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"ACHTUNG: Es existieren Inhalte die diese Ressource nutzen und nachher "
+"möglicherweise nicht mehr ordnungsgemäß laden können."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -6763,7 +6767,7 @@ msgstr "Keine Textur zum Entfernen ausgewählt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "Aus Szene erstellen? Alle gegenwärtigen Kacheln werden überschrieben."
+msgstr "Aus Szene erstellen? Alle aktuellen Kacheln werden überschrieben!"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
@@ -6849,7 +6853,7 @@ msgstr "Kachel erstellen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr "Kachel-Icon setzen"
+msgstr "Kachel Icon zuweisen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Bitmask"
@@ -6873,7 +6877,7 @@ msgstr "Kachel-Bitmaske einfügen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr "Kachel-Bitmaske leeren"
+msgstr "Kachel Bitmaske löschen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -7188,15 +7192,15 @@ msgstr "Projektinstallationspfad:"
 
 #: editor/project_manager.cpp
 msgid "Browse"
-msgstr "Durchstöbern"
+msgstr "Durchsuchen"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderer:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7205,10 +7209,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Höhere Grafikqualität\n"
+"Alle Funktionen verfügbar\n"
+"Inkompatibel mit älterer Hardware\n"
+"Nicht empfohlen für Webanwendungen"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7217,10 +7225,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Geringere Grafikqualität\n"
+"Einige Funktionen sind nicht vorhanden\n"
+"Läuft auf fast jeder Hardware\n"
+"Empfohlen für Webanwendungen"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Der Renderer kann auch später noch ausgetauscht werden, allerdings kann es "
+"sein, dass dann manche Szenen angepasst werden müssen."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7245,14 +7259,14 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"Die folgende Projekteinstellungsdatei wurde mit einer älteren Godot-Version "
-"erzeugt und muss für die gegenwärtige Version angepasst werden:\n"
+"Die Projekteinstellungsdatei ist mit einer älteren Version erstellt worden "
+"und muss in die  folgende Version konvertiert werden:\n"
 "\n"
 "%s\n"
 "\n"
-"Sollen die Anpassungen vorgenommen werden?\n"
-"Achtung: Das Projekt kann nach der Anpassung nicht mehr mit einer älteren "
-"Godot-Version geöffnet werden."
+"Möchten Sie die Konvertierung durchführen?\n"
+"Warnung: Das Projekt kann nach der Konvertierung nicht mehr mit einer "
+"älteren Version geöffnet werden."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7953,6 +7967,7 @@ msgstr "Dupliziere Node(s)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"Nodes in geerbtet Szenen können nicht umgehängt oder umgeordnet werden."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."

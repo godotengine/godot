@@ -33,12 +33,14 @@
 # Аслан Снупов <aslan170505@gmail.com>, 2018.
 # Alexandr Eremeev <ae125529@gmail.com>, 2019.
 # Ruaguzov Michael <miha890r@gmail.com>, 2019.
+# Alexander Danilov <modos189@protonmail.com>, 2019.
+# Sergey Nakhov <true.stalin.exe@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: Ruaguzov Michael <miha890r@gmail.com>\n"
+"PO-Revision-Date: 2019-02-04 17:09+0000\n"
+"Last-Translator: Sergey Nakhov <true.stalin.exe@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -3347,14 +3349,15 @@ msgid "Save scenes, re-import and restart"
 msgstr ""
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Для изменения видеодрайвера необходим перезапуск редактора."
+msgstr "Изменение типа импортированного файла потребует перезапуск редактора."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"Предупреждение: существуют объекты, которые используют этот ресурс, они "
+"могут перестать загружаться должным образом."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -7157,7 +7160,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""

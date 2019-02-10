@@ -34,7 +34,7 @@
 # Bruno Miranda Da Silva <brunofreezee@gmail.com>, 2018.
 # Marcos Roberto Rodrigues Marques <contato.mroberto@gmail.com>, 2018.
 # Dyefferson Azevedo <gamecanalbrasil@gmail.com>, 2018.
-# LucasSouza6 <lucasosouza66@gmail.com>, 2018.
+# LucasSouza6 <lucasosouza66@gmail.com>, 2018, 2019.
 # Pedro Pacheco <pedroxixipa@hotmail.com>, 2018, 2019.
 # Bruno Henrique <nimbusdroid@gmail.com>, 2018, 2019.
 # Luciano Scilletta <lucianoscilletta@gmail.com>, 2018.
@@ -48,12 +48,15 @@
 # joel silva <joelgbsilva@gmail.com>, 2019.
 # Heitor Novais Pereira <heitornovais394@outlook.com>, 2019.
 # Joel Landgraf Filho <joel.landgraf@gmail.com>, 2019.
+# Alan Valmorbida <alanvalmorbida@gmail.com>, 2019.
+# João Vitor Ferreira Cavalcante <jvfecav@gmail.com>, 2019.
+# Thiago Amendola <amendolathiago@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: Eduardo Abreu <eduo.abreu@gmail.com>\n"
+"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"Last-Translator: Alan Valmorbida <alanvalmorbida@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -3359,17 +3362,19 @@ msgstr "Reimportar"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Salvar cenas, reimportar e reiniciar"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Mudar o driver de vídeo necessita reinicializar o editor."
+msgstr ""
+"Mudar o tipo de um arquivo importado necessita a reinicialização do editor."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"AVISO: Existem objetos que utilizam esse recurso, eles podem parar de "
+"carregar apropriadamente."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3572,7 +3577,7 @@ msgstr "Definir posição de mescla dentro do espaço"
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Select and move points, create points with RMB."
-msgstr "Selecione e mova pontos, crie pontos com o Botão Direito do Mouse."
+msgstr "Selecionar e mover pontos, criar pontos com o botão direito do mouse."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
@@ -6909,7 +6914,7 @@ msgstr "Fragmento"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
-msgstr "Leve"
+msgstr "Luz"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -7178,11 +7183,11 @@ msgstr "Navegar"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderizador:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7191,10 +7196,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Maior qualidade visual\n"
+"Todas as funções disponíveis\n"
+"Incompatível com hardware antigo\n"
+"Não recomendado para jogos web"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7203,10 +7212,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Menor qualidade visual\n"
+"Algumas funções não disponíveis\n"
+"Funciona na maioria dos hardwares\n"
+"Recomendado para jogos web"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Renderizador pode ser alterado posteriormente, porém, cenas poderão "
+"necessitar de ajustes."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7932,11 +7947,13 @@ msgid "Duplicate Node(s)"
 msgstr "Duplicar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"Não é possível re-hierarquizar nós em cenas herdadas, a ordem dos nós não "
+"pode ser alterada."
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Node must belong to the edited scene to become root."
 msgstr "Node necessita pertencer à cena editada para se tornar raiz."
 
@@ -9157,12 +9174,10 @@ msgid "Set %s"
 msgstr "Conjunto %s"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Package name is missing."
 msgstr "Nome do pacote está faltando."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Package segments must be of non-zero length."
 msgstr "Seguimentos de pacote necessitam ser de tamanho diferente de zero."
 
@@ -9179,70 +9194,76 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
+"O caractere '%s' não pode ser o primeiro caractere em um segmento de pacote."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "O pacote deve ter pelo menos um separador '.'."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "Executável ADB não configurado nas opções do Editor."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "OpenJDK jarsigner não configurado nas opções do Editor."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Chave pública inválida para expansão de APK."
 
 #: platform/android/export/export.cpp
 #, fuzzy
 msgid "Invalid package name:"
-msgstr "Nome de classe inválido"
+msgstr "Nome de pacote inválido:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
-
-#: platform/iphone/export/export.cpp
-msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "Identificador está ausente."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
+msgid "Identifier segments must be of non-zero length."
+msgstr "O identificador deve ter comprimento diferente de zero."
+
+#: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "O nome não é um identificador valido:"
+msgstr "O caractere '%s' não é permitido no identificador."
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "Um digito não pode ser o primeiro caractere de um identificador."
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
+"O caractere '%s' não pode ser o primeiro caractere de um identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "O identificador deve ter pelo menos um separador '.'."
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
+"App Store Team ID não especificado - não é possível configurar o projeto."
+
+#: platform/iphone/export/export.cpp
+msgid "Invalid Identifier:"
+msgstr "O nome não é um identificador válido:"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
-msgid "Invalid Identifier:"
-msgstr "O nome não é um identificador valido:"
-
-#: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "Ícone necessário não especificado na predefinição."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -9277,43 +9298,46 @@ msgid "Using default boot splash image."
 msgstr "Usando imagem boot splash padrão."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "Nome único inválido."
+msgstr "Nome único de pacote inválido."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Tamanho de fonte inválido."
+msgstr "GUID de produto inválido."
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "Caminho base inválido"
+msgstr "GUID do editor inválido."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid background color."
 msgstr "Cor de fundo inválida."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Dimensões inválidas do logo da loja (deve ser 50x50)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Dimensões inválidas do logo quadrado de 44x44 (deve ser 44x44)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Dimensões inválidas do logo quadrado de 71x71 (deve ser 71x71)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Dimensões inválidas do logo quadrado de 150x150 (deve ser 150x150)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Dimensões inválidas do logo quadrado de 310x310 (deve ser 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."

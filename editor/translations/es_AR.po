@@ -8,12 +8,13 @@
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 # Jose Luis Bossio <joseluisbossio@gmail.com>, 2018.
 # Reynaldo Cruz <rcruz60@gmail.com>, 2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019.
+# Andrés S <andres.segovia.dev@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"PO-Revision-Date: 2019-02-10 12:02+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -3334,17 +3335,20 @@ msgstr "Reimportar"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Guardar escenas, reimportar y reiniciá"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Cambiar el driver de video requiere reiniciar el editor."
+msgstr ""
+"Para cambiar el tipo de un archivo importado es necesario reiniciar el "
+"editor."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"ADVERTENCIA: Existen elementos que utilizan este recurso, podrían dejar de "
+"cargar correctamente."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4497,7 +4501,7 @@ msgstr "Restablecer Huesos Personalizados"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr "Ver"
+msgstr "Vista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5894,15 +5898,15 @@ msgstr "Ver Transformación en Plano."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
-msgstr "Escalado: "
+msgstr "Escalando: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Traducciones: "
+msgstr "Trasladando: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
-msgstr "Torando %s grados."
+msgstr "Rotando %s grados."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
@@ -6116,7 +6120,7 @@ msgstr "Modo Rotar (E)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
-msgstr "Modo de Escalado (R)"
+msgstr "Modo Escalar (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
@@ -6204,7 +6208,7 @@ msgstr "Ajustar objeto al suelo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr "Dialogo de Transformación..."
+msgstr "Cuadro de diálogo de Transform..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -7152,11 +7156,11 @@ msgstr "Examinar"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderizador:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7165,10 +7169,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Mayor calidad visual\n"
+"Todas las características disponibles\n"
+"Incompatible con hardware antiguo\n"
+"No recomendado para juegos web"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7177,10 +7185,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Baja calidad visual\n"
+"Algunas características no disponibles\n"
+"Funciona en la mayoría de hardware\n"
+"Recomendado para juegos web"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"El renderizador se puede cambiar luego, pero es posible que sea necesario "
+"ajustar las escenas."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7912,6 +7926,8 @@ msgstr "Duplicar Nodo(s)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"No se puede reemparentar nodos en escenas heredadas, el orden de nodos no "
+"puede cambiar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -9311,7 +9327,7 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr "Dimensiones de la imagen del splash inválidas (debería ser 620x400)."
+msgstr "Dimensiones de la imagen del splash inválidas (debería ser 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""

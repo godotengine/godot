@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"PO-Revision-Date: 2019-02-01 12:10+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -3326,17 +3326,18 @@ msgstr "Переімпортувати"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Зберегти сцени, повторно імпортувати і перезапустити"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Зміна відеодрайвера потребує перезапуску редактора."
+msgstr "Зміна типу імпортованого файла потребує перезапуску редактора."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"Увага: ісують об'єкти, які використовують цей ресурс, — вони можуть "
+"припинити завантажуватися належним чином."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -7148,11 +7149,11 @@ msgstr "Вибрати"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Обробник:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7161,10 +7162,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Висока якість зображення\n"
+"Доступні усі можливості\n"
+"Несумісний із застарілим обладнанням\n"
+"Не рекомендовано для інтернет-ігор"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7173,10 +7178,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Нижча якість зображення\n"
+"Деякі можливості є недоступними\n"
+"Працює майже всюди\n"
+"Рекомендовано для інтернет-ігор"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Обробник можна змінити пізніше, але, можливо, виникне потреба у коригуванні "
+"сцен."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7907,6 +7918,8 @@ msgstr "Дублювати вузли"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"Не можна змінювати батьківський об'єкт вузлів в успадкованих сценах — "
+"порядок вузлів не можна змінювати."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."

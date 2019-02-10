@@ -12,12 +12,13 @@
 # Qing <icinriiq@gmail.com>, 2018.
 # Sam Pan <sampan66@gmail.com>, 2016.
 # ken l <macauhome@gmail.com>, 2018.
+# Eric K <eric900601@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:44+0100\n"
-"Last-Translator: ken l <macauhome@gmail.com>\n"
+"PO-Revision-Date: 2019-02-01 12:09+0000\n"
+"Last-Translator: Eric K <eric900601@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -25,34 +26,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Convert()函數所收到的參數錯誤，請試著以 TYPE_ 作為開頭。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "解碼字節位元不足，或為無效格式。"
+msgstr "輸入的解碼字節不足、或為無效格式。"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "所輸入的 %i 於表現式中無效"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "因該實例(instance)為空，self 無法被使用"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "此數值無法被 %s、%s 和 %s 運算。"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "無效的內存地址類型 %s，基礎型式 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
@@ -80,47 +82,44 @@ msgid "Mirror"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "動畫新增按鍵"
+msgstr "在此插入畫格"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "複製所選"
+msgstr "複製所選畫格"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "確定刪除所選擇的檔案嗎?"
+msgstr "刪除所選畫格"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "複製動畫關鍵畫格"
+msgstr "複製關鍵畫格"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "刪除動畫關鍵畫格"
+msgstr "刪除關鍵畫格"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "動畫更改關鍵幀時間"
+msgstr "變更關鍵畫格的時間"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "動畫更改轉場效果"
+msgstr "變更轉場效果"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "動畫更改座標"
+msgstr "變更動畫變換"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "動畫更改關鍵幀數值"
+msgstr "變更關鍵畫格的數值"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "動畫更改呼叫"
+msgstr "更改回調"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -152,9 +151,8 @@ msgid "Add Track"
 msgstr "添加動畫軌"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "動畫長度 (秒)。"
+msgstr "動畫長度（秒）"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -258,11 +256,11 @@ msgstr "刪除動畫軌"
 
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr "%s 新增新軌並插入畫格?"
+msgstr "為 %s 新增動畫軌並插入畫格？"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "創建 %d 個新軌並插入畫格?"
+msgstr "創建 %d 個動畫軌並插入畫格？"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
@@ -283,7 +281,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "動畫建立與插入"
+msgstr "新增/插入動畫"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -292,7 +290,7 @@ msgstr "動畫新增軌跡與按鍵"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr "動畫新增按鍵"
+msgstr "新增關鍵畫格"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -336,7 +334,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr "移動動畫畫格"
+msgstr "移動關鍵畫格"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -399,7 +397,7 @@ msgstr "縮放所選"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale From Cursor"
-msgstr "由游標位置縮放"
+msgstr "由游標縮放"
 
 #: editor/animation_track_editor.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Duplicate Selection"
@@ -407,7 +405,7 @@ msgstr "複製所選"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "重複轉置"
+msgstr "複製並轉置"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -426,7 +424,7 @@ msgstr "往上一步"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr "最佳化動畫"
+msgstr "動畫最佳化"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
@@ -463,11 +461,11 @@ msgstr "最佳化"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "移除無效按鍵"
+msgstr "移除無效的關鍵畫格"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
-msgstr "刪除未解決或是空的軌道"
+msgstr "刪除未處理的空白軌道"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -475,7 +473,7 @@ msgstr "清除所有動畫"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "清除動畫 (無法復原!)"
+msgstr "永久刪除動畫（無法復原！）"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
@@ -523,7 +521,7 @@ msgstr "無符合條件"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr "取代了 %d 個"
+msgstr "取代了 %d 個。"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -531,7 +529,7 @@ msgstr "符合大小寫"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr "整個字"
+msgstr "符合完整單字"
 
 #: editor/code_editor.cpp editor/rename_dialog.cpp
 msgid "Replace"
@@ -579,13 +577,13 @@ msgstr "列:"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "需指定在目標節點上的方法!"
+msgstr "必須指定對目標節點的行為！"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
-msgstr "找不到目標方法! 指定一個對的方法或附加一個腳本到目標的節點上。"
+msgstr "找不到目標方法！請指定有效方法、或將腳本附加至目標節點上。"
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -1869,7 +1867,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr "請先存檔才能執行該場景"
+msgstr "在運行場景前，請先存檔。"
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
@@ -1906,7 +1904,7 @@ msgstr "另存場景為..."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "不是"
 
 #: editor/editor_node.cpp
 msgid "Yes"
@@ -1918,7 +1916,7 @@ msgstr "此場景尚未存檔, 執行前請先存檔"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "在設置場景前，無法完成該指定操作。"
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
@@ -1926,20 +1924,19 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr "此操作無法在沒有根節點的情況下進行。"
+msgstr "在設置根節點(root node)前，無法完成該指定操作。"
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
 msgstr ""
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "This operation can't be done without a selected node."
-msgstr "此操作需要有選擇著節點才能進行。"
+msgstr "在設置著節點(selected node)前，無法完成該指定操作。"
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr "目前的場景尚未存檔, 依然要開啟嗎?"
+msgstr "目前的場景尚未存檔，仍要開啟嗎？"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
@@ -1950,12 +1947,13 @@ msgid "Revert"
 msgstr "還原"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "This action cannot be undone. Revert anyway?"
-msgstr "此操作無法復原, 確定要還原嗎?"
+msgstr "此操作無法被, 確定要還原嗎？"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr "快速執行場景..."
+msgstr "快速執行場景…"
 
 #: editor/editor_node.cpp
 msgid "Quit"
@@ -1963,89 +1961,93 @@ msgstr "離開"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr "離開編輯器嗎?"
+msgstr "要結束編輯器嗎？"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "要開啟專案管理嗎？"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
-msgstr ""
+msgstr "儲存並離開"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "關閉前，要儲存修改的場景嗎？"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
-msgstr ""
+msgstr "開啟專案管理前，要儲存修改的場景嗎？"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
-msgstr ""
+msgstr "不推薦此選項。被強制重新整理的情形，可能是因程式錯誤導致。請回報。"
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr "挑一個主要場景"
+msgstr "選取一個主要場景"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
-msgstr ""
+msgstr "無法在: \"%s\" 上啟動擴充功能，設定解析失敗。"
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
-msgstr ""
+msgstr "在插件目錄 'res://addons/%s' 中，找不到腳本。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr ""
+msgstr "無法從 '%s' 中順利讀取腳本。"
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
-msgstr ""
+msgstr "無法從 '%s' 中順利讀取腳本。可能出自編碼錯誤，請檢察語法是否正確。"
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
-msgstr ""
+msgstr "無法從 '%s' 中順利讀取腳本。基本類型 的腳本並不屬於 編輯類插件。"
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
-msgstr ""
+msgstr "無法從 '%s' 中順利讀取腳本。此腳本並不處於工具模式下。"
 
 #: editor/editor_node.cpp
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"場景\"%s\"為自動導入，並不能被修改。\n"
+"若要進行更改，請建立新的場景。"
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Scene '%s' has broken dependencies:"
-msgstr ""
+"讀取場景時發生錯誤，場景必須放置於專案資料夾內。請用「導入」開啟該場景後，再"
+"儲存於專案資料夾。"
 
 #: editor/editor_node.cpp
 #, fuzzy
+msgid "Scene '%s' has broken dependencies:"
+msgstr "場景 '%s' 的依存關係已被破壞。"
+
+#: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr "關閉場景"
+msgstr "清除最近開啟的場景"
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr ""
+msgstr "儲存佈局"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr ""
+msgstr "刪除佈局"
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
@@ -2054,28 +2056,24 @@ msgstr "預設"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "Show in FileSystem"
-msgstr "在檔案管理員內顯示"
+msgstr "在檔案系統中顯示"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Play This Scene"
-msgstr "暫停場景"
+msgstr "運行此場景"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close Tab"
-msgstr "關閉"
+msgstr "關閉分頁"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
 msgstr "切換場景分頁"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files or folders"
-msgstr "還有 %d 個檔案或資料夾"
+msgstr "還有 %d 個檔案/資料夾"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2083,26 +2081,24 @@ msgid "%d more folders"
 msgstr "還有 %d 個檔案"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more files"
 msgstr "還有 %d 個檔案"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "版面位置"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "無干擾模式"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr ""
+msgstr "切換為無干擾模式。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Add a new scene."
-msgstr "更新場景中..."
+msgstr "新增場景。"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2111,35 +2107,35 @@ msgstr "場景"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr ""
+msgstr "前往上次開啟的場景。"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr "下個分頁"
+msgstr "下一個分頁"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr "上個分頁"
+msgstr "上一個分頁"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr "過濾檔案..."
+msgstr "篩選檔案..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr ""
+msgstr "操作場景文件。"
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "新場景"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr ""
+msgstr "從現有場景中建立…"
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr "開啟場景..."
+msgstr "開啟場景…"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
@@ -2156,42 +2152,41 @@ msgstr "關閉場景"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr "開啟最近存取"
+msgstr "最近開啟的場景"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "轉換成..."
+msgstr "轉換成…"
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr ""
+msgstr "網狀資料庫(MeshLibrary)…"
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr ""
+msgstr "區塊素材…"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Undo"
-msgstr "復原"
+msgstr "還原"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr "取消「復原」"
+msgstr "重作"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr ""
+msgstr "恢復場景"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr ""
+msgstr "其他專案或全螢幕工具。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Project"
-msgstr "專案設定"
+msgstr "專案"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
@@ -2206,32 +2201,31 @@ msgid "Tools"
 msgstr "工具"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "專案創始人"
+msgstr "開啟專案資料夾"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "退出到專案列表"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr ""
+msgstr "偵錯"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr ""
+msgstr "使用遠端偵錯"
 
 #: editor/editor_node.cpp
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
-msgstr ""
+msgstr "當輸出或發布專案後，可執行文件(exe)將會嘗試連結本機ＩＰ，以進行偵錯。"
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "小型部屬 & 網路文件系統(NFS)"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2242,30 +2236,34 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This "
 "option speeds up testing for games with a large footprint."
 msgstr ""
+"啟用此選項後，在輸出/發布項目時，執行檔會壓縮至最小。\n"
+"至於文件系統，則以網路與編輯器的連結來供給。\n"
+"在Android平台，透過USB發布能獲得更快的效率。\n"
+"此選項用於加速遊戲(尤其是檔案繁多)的測試。"
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "碰撞區域的顯示"
 
 #: editor/editor_node.cpp
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
-msgstr ""
+msgstr "啟用此選項後，碰撞區域/射線節點 將會於遊戲中顯示。"
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr ""
+msgstr "導航的顯示"
 
 #: editor/editor_node.cpp
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
-msgstr ""
+msgstr "啟用此選項後，導航所用的網線/多邊形 將會於遊戲中顯示。"
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "同步場景的變更"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2274,10 +2272,12 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"啟用此選項後，編輯器中的所有修改，都會立即反映於運行中的遊戲。\n"
+"在遠端裝置測試時，配合網路文件系統(NFS)使用能更提高效率。"
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr ""
+msgstr "同步腳本的變更"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2286,42 +2286,44 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"啟用此選項後，腳本的所有修改，都會立即反映於運行中的遊戲。\n"
+"在遠端裝置測試時，配合網路文件系統(NFS)使用能更提高效率。"
 
 #: editor/editor_node.cpp
 msgid "Editor"
-msgstr ""
+msgstr "編輯器"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr ""
+msgstr "編輯器設定"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr ""
+msgstr "編輯器佈局"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr ""
+msgstr "全螢幕顯示"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr ""
+msgstr "開啟 編輯器數據/設定 資料夾"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "開啟 編輯器數據 資料夾"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr ""
+msgstr "開啟 編輯器設定 資料夾"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr ""
+msgstr "管理輸出模板"
 
 #: editor/editor_node.cpp
 msgid "Help"
-msgstr ""
+msgstr "幫助"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2333,15 +2335,16 @@ msgstr "搜尋"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "線上文件"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "Q&A"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Issue Tracker"
-msgstr ""
+msgstr "問題追蹤器"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -2353,11 +2356,11 @@ msgstr "關於"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "遊玩此專案"
+msgstr "運行此專案。"
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr "開始"
+msgstr "運行"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
@@ -2377,58 +2380,57 @@ msgstr "停止"
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "運行編輯過的場景。"
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "運行場景"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "運行自定義場景"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "運行自定義場景"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "在更動顯示驅動後，必須重新開啟編輯器。"
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Save & Restart"
-msgstr "另存新檔"
+msgstr "儲存並重啟"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window repaints!"
-msgstr ""
+msgstr "在重新繪製(repaint)編輯器視窗時，來個旋轉！"
 
 #: editor/editor_node.cpp
 msgid "Update Always"
-msgstr ""
+msgstr "總是自動更新"
 
 #: editor/editor_node.cpp
 msgid "Update Changes"
-msgstr ""
+msgstr "有更動時自動更新"
 
 #: editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "禁止自動更新"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "導入"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "文件系統"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr ""
+msgstr "屬性面板"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2437,96 +2439,95 @@ msgstr "節點"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr ""
+msgstr "展開底部面板"
 
 #: editor/editor_node.cpp scene/resources/visual_shader.cpp
 msgid "Output"
-msgstr ""
+msgstr "輸出(output)"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
+msgstr "不要儲存"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "導入模板（透過ZIP檔案）"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export Project"
-msgstr ""
+msgstr "輸出專案"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "輸出函式庫"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr ""
+msgstr "與現有函式庫合併"
 
 #: editor/editor_node.cpp
 msgid "Password:"
-msgstr ""
+msgstr "密碼:"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr ""
+msgstr "開啟並運行腳本"
 
 #: editor/editor_node.cpp
 msgid "New Inherited"
-msgstr ""
+msgstr "從現有場景中建立"
 
 #: editor/editor_node.cpp
 msgid "Load Errors"
-msgstr ""
+msgstr "讀取時出現錯誤"
 
 #: editor/editor_node.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Select"
-msgstr ""
+msgstr "選擇"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr ""
+msgstr "開啟2D編輯器"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr ""
+msgstr "開啟3D編輯器"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr ""
+msgstr "開啟腳本編輯器"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr ""
+msgstr "開啟素材倉庫"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open the next Editor"
-msgstr "離開編輯器嗎?"
+msgstr "開啟下一個編輯器"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr ""
+msgstr "開啟上一個編輯器"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
-msgstr ""
+msgstr "創建網格預覽"
 
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
-msgstr ""
+msgstr "縮圖…"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
-msgstr ""
+msgstr "編輯擴充功能"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
-msgstr ""
+msgstr "已安裝的擴充功能:"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Update"
-msgstr ""
+msgstr "更新"
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp

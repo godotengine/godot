@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2019-02-01 12:09+0000\n"
+"Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
 "Language: pt_PT\n"
@@ -3327,17 +3327,18 @@ msgstr "Reimportar"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Guardar cenas, reimportar e reiniciar"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Alterar o driver de vídeo requer reiniciar o editor."
+msgstr "Alterar o tipo de um ficheiro importado requer reiniciar o editor."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"AVISO: Existem Ativos que usam este recurso, podendo não ser carregados "
+"corretamente."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -7134,11 +7135,11 @@ msgstr "Navegar"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderizador:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7147,10 +7148,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Qualidade visual superior\n"
+"Todas as características disponíveis\n"
+"Incompatível com hardware antigo\n"
+"Não recomendado para jogos Web"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7159,10 +7164,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Qualidade visual inferior\n"
+"Algumas características indisponíveis\n"
+"Funciona na maioria do hardware\n"
+"Recomendado para jogos Web"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"O Renderizador pode ser alterado mais tarde, mas as cenas poderão ter de ser "
+"ajustadas."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7888,7 +7899,7 @@ msgstr "Duplicar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
-msgstr ""
+msgstr "Impossível mudar nó em cenas herdadas, a ordem dos nós não pode mudar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -9119,16 +9130,15 @@ msgstr "Os segmentos de pacote devem ser de comprimento diferente de zero."
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
-"O caractere '%s' não é permitido em nomes de pacotes de aplicativos Android."
+"O caráter '%s' não é permitido em nomes de pacotes de aplicações Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr "Um dígito não pode ser o primeiro caractere num segmento de pacote."
+msgstr "Um dígito não pode ser o primeiro caráter num segmento de pacote."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
-"O caractere '%s' não pode ser o primeiro caractere num segmento de pacote."
+msgstr "O caráter '%s' não pode ser o primeiro caráter num segmento de pacote."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
@@ -9166,18 +9176,18 @@ msgstr "Identificador de segmentos devem ser de comprimento diferente de zero."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "O caractere \"%s\" não é permitido no Identificador."
+msgstr "O caráter \"%s\" não é permitido no Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
 msgstr ""
-"Um dígito não pode ser o primeiro caractere em um segmento de Identificador."
+"Um dígito não pode ser o primeiro caráter num segmento de Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
-"O caractere \"%s\" não pode ser o primeiro caractere num segmento de "
+"O caráter \"%s\" não pode ser o primeiro caráter num segmento de "
 "Identificador."
 
 #: platform/iphone/export/export.cpp
@@ -9600,8 +9610,8 @@ msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"PathFollow ROTATION_ORIENTED requer \"Up Vector\" habilitado em seu recurso "
-"de Curva do caminho pai."
+"PathFollow ROTATION_ORIENTED requer \"Up Vector\" habilitado no recurso de "
+"Curva do Caminho do seu pai."
 
 #: scene/3d/physics_body.cpp
 msgid ""

@@ -40,12 +40,13 @@
 # Jsheng <yangea@outlook.com>, 2019.
 # Zhang Zhibo <zzhibo98@gmail.com>, 2019.
 # ws00010203 <ws00010203@hotmail.com>, 2019.
+# Song DongHui <14729626293@163.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: ws00010203 <ws00010203@hotmail.com>\n"
+"PO-Revision-Date: 2019-02-03 21:20+0000\n"
+"Last-Translator: Song DongHui <14729626293@163.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -3282,17 +3283,16 @@ msgstr "重新导入"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "保存场景，重新导入，从头开始"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "改变视频驱动需要重启编辑器。"
+msgstr "改变这个导入的文件类型后需要重启编辑器．"
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr ""
+msgstr "警告：资源使用冲突，将会停止加载．"
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -5194,9 +5194,8 @@ msgid "Points"
 msgstr "点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "多边形->UV"
+msgstr "多边形-"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -6737,7 +6736,7 @@ msgstr "新建目录"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
-msgstr ""
+msgstr "设置纹理图标"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6766,7 +6765,7 @@ msgstr "粘贴位掩码。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
-msgstr ""
+msgstr "清除位掩码"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6795,7 +6794,7 @@ msgstr "编辑筛选器"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
-msgstr ""
+msgstr "编辑纹理的Z坐标"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -6945,7 +6944,7 @@ msgstr "使用下列密码加密"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "无效的加密密钥（长度必须为64个字符）"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
@@ -7088,11 +7087,11 @@ msgstr "浏览"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "渲染器："
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7101,6 +7100,10 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"更高的视觉质量\n"
+"所有可用功能\n"
+"与旧硬件不兼容\n"
+"不推荐用于网络游戏"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
@@ -7113,19 +7116,22 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"较低的视觉质量\n"
+"某些功能不可用\n"
+"适用于大多数硬件\n"
+"推荐用于网络游戏"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
-msgstr ""
+msgstr "渲染器可以稍后更改，但可能需要调整场景。"
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "未命名项目"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "无法打开项目"
+msgstr "无法打开位于“%s”的相应项目."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7142,12 +7148,16 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
+"以下项目设置文件是由旧的引擎版本生成的，需要为此版本转换：\n"
+"%s\n"
+"是否要转换它？\n"
+"警告：您将无法再使用以前版本的引擎打开项目。"
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
-msgstr ""
+msgstr "项目设置是由更新的引擎版本创建的，其设置与此版本不兼容。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7824,16 +7834,18 @@ msgid "Duplicate Node(s)"
 msgstr "复制节点"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
-msgstr ""
+msgstr "无法重新设置继承场景中的节点，节点顺序无法更改。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
-msgstr ""
+msgstr "节点必须属于已编辑的场景才能成为根节点。"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Instantiated scenes can't become root"
-msgstr ""
+msgstr "实例化的场景不能成为根节点"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -9028,43 +9040,43 @@ msgstr "设值 %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "缺包名．"
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "包段的长度必须为非零。"
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
+msgstr "Android应用程序包名称中不允许使用字符“%s”。"
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "包段中的第一个字符不能是数字。"
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
+msgstr "包段中的第一个字符不能是“%s”。"
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "包必须至少有一个“.”分隔符。"
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr ""
+msgstr "未在编辑器设置中配置ADB可执行文件。"
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "未在编辑器设置中配置OpenJDK Jarsigner。"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr ""
+msgstr "未在编辑器设置或预设中配置调试密钥库。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "APK扩展的公钥无效。"
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -9073,11 +9085,11 @@ msgstr "类名非法"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "缺少标识符。"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "标识符字段不能为空."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -9086,20 +9098,20 @@ msgstr "名称不是有效的标识符："
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "标识符段中的第一个字符不能是数字。"
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "标识符段中的第一个字符不能是\"%s\"。"
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "标识符必须至少有一个“.”分隔符。"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
+msgstr "未指定应用商店团队ID-无法配置项目。"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -9108,7 +9120,7 @@ msgstr "名称不是有效的标识符："
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "预设中未指定必需的图标。"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
