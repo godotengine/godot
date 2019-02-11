@@ -319,10 +319,13 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 		storage->frame.current_rt = NULL;
 		storage->frame.clear_request = false;
 #ifdef SAILFISH_FORCE_LANDSCAPE
-		glViewport(0, 0, OS::get_singleton()->get_window_size().height, OS::get_singleton()->get_window_size().width);
-#else
-		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+		if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
+			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
+			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE)
+				glViewport(0, 0, OS::get_singleton()->get_window_size().height, OS::get_singleton()->get_window_size().width);
+		else
 #endif
+			glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 	}
 }

@@ -169,6 +169,11 @@ protected:
 
 	bool is_window_maximize_allowed();
 
+			
+#ifdef SAILFISH_FORCE_LANDSCAPE	
+	void fix_touch_position(Vector2 &pos);
+#endif
+
 public:
 #if defined(PULSEAUDIO_ENABLED) 
 #  if !defined(DISABLE_LIBAUDIORESOURCE) 
