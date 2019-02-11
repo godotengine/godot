@@ -100,22 +100,24 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 			if (msbuild_tools_path.empty() || !FileAccess::exists(msbuild_tools_path)) {
 				// Try to search it again if it wasn't found last time or if it was removed from its location
 				msbuild_tools_path = MonoRegUtils::find_msbuild_tools_path();
+
+				if (msbuild_tools_path.empty()) {
+					ERR_PRINTS("Cannot find executable for '" PROP_NAME_MSBUILD_VS "'. Tried with path: " + msbuild_tools_path);
+					return NULL;
+				}
 			}
 
-			if (msbuild_tools_path.length()) {
-				if (!msbuild_tools_path.ends_with("\\"))
-					msbuild_tools_path += "\\";
+			if (!msbuild_tools_path.ends_with("\\"))
+				msbuild_tools_path += "\\";
 
-				return GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
-			}
-
-			print_verbose("Cannot find executable for '" PROP_NAME_MSBUILD_VS "'. Trying with '" PROP_NAME_MSBUILD_MONO "'...");
-		} // FALL THROUGH
+			return GDMonoMarshal::mono_string_from_godot(msbuild_tools_path + "MSBuild.exe");
+		} break;
 		case GodotSharpBuilds::MSBUILD_MONO: {
 			String msbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("msbuild.bat");
 
 			if (!FileAccess::exists(msbuild_path)) {
-				WARN_PRINTS("Cannot find executable for '" PROP_NAME_MSBUILD_MONO "'. Tried with path: " + msbuild_path);
+				ERR_PRINTS("Cannot find executable for '" PROP_NAME_MSBUILD_MONO "'. Tried with path: " + msbuild_path);
+				return NULL;
 			}
 
 			return GDMonoMarshal::mono_string_from_godot(msbuild_path);
@@ -124,7 +126,8 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 			String xbuild_path = GDMono::get_singleton()->get_mono_reg_info().bin_dir.plus_file("xbuild.bat");
 
 			if (!FileAccess::exists(xbuild_path)) {
-				WARN_PRINTS("Cannot find executable for '" PROP_NAME_XBUILD "'. Tried with path: " + xbuild_path);
+				ERR_PRINTS("Cannot find executable for '" PROP_NAME_XBUILD "'. Tried with path: " + xbuild_path);
+				return NULL;
 			}
 
 			return GDMonoMarshal::mono_string_from_godot(xbuild_path);
@@ -144,7 +147,7 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 		}
 
 		if (xbuild_path.empty()) {
-			WARN_PRINT("Cannot find binary for '" PROP_NAME_XBUILD "'");
+			ERR_PRINT("Cannot find binary for '" PROP_NAME_XBUILD "'");
 			return NULL;
 		}
 	} else {
@@ -154,7 +157,7 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 		}
 
 		if (msbuild_path.empty()) {
-			WARN_PRINT("Cannot find binary for '" PROP_NAME_MSBUILD_MONO "'");
+			ERR_PRINT("Cannot find binary for '" PROP_NAME_MSBUILD_MONO "'");
 			return NULL;
 		}
 	}
@@ -165,22 +168,6 @@ MonoString *godot_icall_BuildInstance_get_MSBuildPath() {
 
 	ERR_EXPLAIN("Not implemented on this platform");
 	ERR_FAIL_V(NULL);
-#endif
-}
-
-MonoString *godot_icall_BuildInstance_get_FrameworkPath() {
-
-#if defined(WINDOWS_ENABLED)
-	const MonoRegInfo &mono_reg_info = GDMono::get_singleton()->get_mono_reg_info();
-	if (mono_reg_info.assembly_dir.length()) {
-		String framework_path = path_join(mono_reg_info.assembly_dir, "mono", "4.5");
-		return GDMonoMarshal::mono_string_from_godot(framework_path);
-	}
-
-	ERR_EXPLAIN("Cannot find Mono's assemblies directory in the registry");
-	ERR_FAIL_V(NULL);
-#else
-	return NULL;
 #endif
 }
 
@@ -216,7 +203,6 @@ void GodotSharpBuilds::register_internal_calls() {
 
 	mono_add_internal_call("GodotSharpTools.Build.BuildSystem::godot_icall_BuildInstance_ExitCallback", (void *)godot_icall_BuildInstance_ExitCallback);
 	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MSBuildPath", (void *)godot_icall_BuildInstance_get_MSBuildPath);
-	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_FrameworkPath", (void *)godot_icall_BuildInstance_get_FrameworkPath);
 	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MonoWindowsBinDir", (void *)godot_icall_BuildInstance_get_MonoWindowsBinDir);
 	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows", (void *)godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows);
 }
@@ -459,7 +445,11 @@ GodotSharpBuilds::GodotSharpBuilds() {
 	// Build tool settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
 
+#ifdef WINDOWS_ENABLED
+	EDITOR_DEF("mono/builds/build_tool", MSBUILD_VS);
+#else
 	EDITOR_DEF("mono/builds/build_tool", MSBUILD_MONO);
+#endif
 
 	ed_settings->add_property_hint(PropertyInfo(Variant::INT, "mono/builds/build_tool", PROPERTY_HINT_ENUM,
 			PROP_NAME_MSBUILD_MONO
