@@ -273,12 +273,14 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 
 			if (vscode_path.empty() || !FileAccess::exists(vscode_path)) {
 				static List<String> vscode_name;
-				vscode_name.push_back("code");
-				vscode_name.push_back("code-oss");
-				vscode_name.push_back("vscode");
-				vscode_name.push_back("vscode-oss");
-				vscode_name.push_back("visual-studio-code");
-				vscode_name.push_back("visual-studio-code-oss");
+				if (vscode_name.empty()) {
+					vscode_name.push_back("code");
+					vscode_name.push_back("code-oss");
+					vscode_name.push_back("vscode");
+					vscode_name.push_back("vscode-oss");
+					vscode_name.push_back("visual-studio-code");
+					vscode_name.push_back("visual-studio-code-oss");
+				}
 				// Try to search it again if it wasn't found last time or if it was removed from its location
 				for (int i = 0; i < vscode_name.size(); i++) {
 					vscode_path = path_which(vscode_name[i]);

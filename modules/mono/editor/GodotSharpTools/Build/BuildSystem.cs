@@ -18,8 +18,6 @@ namespace GodotSharpTools.Build
         [MethodImpl(MethodImplOptions.InternalCall)]
         private extern static string godot_icall_BuildInstance_get_MSBuildPath();
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private extern static string godot_icall_BuildInstance_get_FrameworkPath();
-        [MethodImpl(MethodImplOptions.InternalCall)]
         private extern static string godot_icall_BuildInstance_get_MonoWindowsBinDir();
         [MethodImpl(MethodImplOptions.InternalCall)]
         private extern static bool godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows();
@@ -32,11 +30,6 @@ namespace GodotSharpTools.Build
                 throw new FileNotFoundException("Cannot find the MSBuild executable.");
 
             return msbuildPath;
-        }
-
-        private static string GetFrameworkPath()
-        {
-            return godot_icall_BuildInstance_get_FrameworkPath();
         }
 
         private static string MonoWindowsBinDir
@@ -84,11 +77,6 @@ namespace GodotSharpTools.Build
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
-
-            string frameworkPath = GetFrameworkPath();
-
-            if (!string.IsNullOrEmpty(frameworkPath))
-                customPropertiesList.Add("FrameworkPathOverride=" + frameworkPath);
 
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
@@ -144,11 +132,6 @@ namespace GodotSharpTools.Build
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
-
-            string frameworkPath = GetFrameworkPath();
-
-            if (!string.IsNullOrEmpty(frameworkPath))
-                customPropertiesList.Add("FrameworkPathOverride=" + frameworkPath);
 
             string compilerArgs = BuildArguments(loggerAssemblyPath, loggerOutputDir, customPropertiesList);
 
