@@ -137,6 +137,7 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	context_gl = memnew(ContextGL_SDL(sdl_display_mode, current_videomode, true));
 	context_gl->initialize();
+	context_gl->set_screen_orientation(get_screen_orientation());
 	sdl_window = context_gl->get_window_pointer();
 
 	if (RasterizerGLES2::is_viable() == OK) {
@@ -442,7 +443,13 @@ void OS_SDL::set_window_position(const Point2 &p_position) {
 Size2 OS_SDL::get_window_size() const {
 	int w, h;
 	SDL_GetWindowSize(sdl_window, &w, &h);
-	return Size2i(h, w);
+#ifdef SAILFISH_FORCE_LANDSCAPE
+	if (get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
+		get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
+		get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE )
+		return Size2i(h, w);
+#endif
+	return Size2i(w, h);
 }
 
 void OS_SDL::set_window_size(const Size2 p_size) {
@@ -629,17 +636,26 @@ void OS_SDL::process_events() {
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 					// FIXME: Mot sure if we should handle the mouse grabbing manually or if SDL will handle it. Test.
 					break;
+				case SDL_WINDOWEVENT_RESIZED:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_RESIZED;\n");
+					break;
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
 					if(OS::get_singleton()->is_stdout_verbose())
 						OS::get_singleton()->print("SDL_WINDOWEVENT_SIZE_CHANGED;\n");
 					window_size = get_window_size();
 					current_videomode.width = window_size.x;
 					current_videomode.height = window_size.y;
+					// main_loop->notification(MainLoop::NOTIFICATION_);
 					break;
 				case SDL_WINDOWEVENT_CLOSE:
 					if(OS::get_singleton()->is_stdout_verbose())
 						OS::get_singleton()->print("SDL_WINDOWEVENT_CLOSE;\n");
 					main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+					break;
+				default:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("Window %d got unknown event %d;\n",event.window.windowID, event.window.event);
 					break;
 			}
 
@@ -738,9 +754,11 @@ void OS_SDL::process_events() {
 				float coef = ((float)w)/((float)h);
 				/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
 				pos = Point2(pos.y, w - pos.x);
+				/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
+				// pos = Point2(h - pos.y,pos.x);
+				/// coefficient correction
 				pos.x *= coef;
 				pos.y /= coef;
-				/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
 			}
 			// end landscape 
 			bool is_begin = event.type ==  SDL_FINGERDOWN;
@@ -1066,7 +1084,7 @@ String OS_SDL::get_clipboard() const {
 }
 
 String OS_SDL::get_name() {
-	return "SDL";
+	return "Sailfish";
 }
 
 Error OS_SDL::shell_open(String p_uri) {
@@ -1082,6 +1100,12 @@ Error OS_SDL::shell_open(String p_uri) {
 		return OK;
 	ok = execute("kde-open", args, false);
 	return ok;
+}
+
+void OS_SDL::set_screen_orientation(ScreenOrientation p_orientation) {
+	OS::set_screen_orientation(p_orientation);
+	if(context_gl)
+		context_gl->set_screen_orientation(p_orientation);
 }
 
 bool OS_SDL::_check_internal_feature_support(const String &p_feature) {
@@ -1560,7 +1584,7 @@ static void on_audio_resource_acquired(audioresource_t* audio_resource, bool acq
 #endif
 
 OS_SDL::OS_SDL() {
-
+	context_gl = NULL;
 #if defined(PULSEAUDIO_ENABLED)
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #  if !defined(DISABLE_LIBAUDIORESOURCE)

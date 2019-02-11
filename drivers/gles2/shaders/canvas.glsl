@@ -319,8 +319,9 @@ const bool at_light_pass = true;
 #else
 const bool at_light_pass = false;
 #endif
-
-uniform bool force_landscape;
+#ifdef USE_FORCE_LANDSCAPE
+uniform int  force_landscape; 
+#endif
 uniform bool use_default_normal;
 
 /* clang-format off */
@@ -366,13 +367,24 @@ void main() {
 
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
-	// landscape leftside - is down
-	if ( force_landscape ) {
+#if defined(USE_FORCE_LANDSCAPE)
+	if ( force_landscape == 1 ) {
+	// inverted landscape
 		vec2 canvas_uv = vec2(1.0 - uv.y, uv.x);
 		color *= texture2D(color_texture, canvas_uv);
+	} 
+	else if( force_landscape == 2 ) {
+	// landscape
+		vec2 canvas_uv = vec2(uv.y, 1.0 - uv.x);
+		color *= texture2D(color_texture, canvas_uv);
 	}
-	else
+	else if( force_landscape == 0 ) {
+	// normal portrait
 		color *= texture2D(color_texture, uv);
+	}
+#else
+	color *= texture2D(color_texture, uv);
+#endif
 #endif
 
 #ifdef SCREEN_UV_USED

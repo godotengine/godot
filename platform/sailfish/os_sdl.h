@@ -189,7 +189,6 @@ public:
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
-	virtual bool has_touchscreen_ui_hint() const;
 	virtual void set_window_title(const String &p_title);
 
 	virtual void set_icon(const Ref<Image> &p_icon);
@@ -211,7 +210,10 @@ public:
 
 	virtual String get_system_dir(SystemDir p_dir) const;
 
+	virtual bool has_touchscreen_ui_hint() const;
 	virtual Error shell_open(String p_uri);
+
+	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
