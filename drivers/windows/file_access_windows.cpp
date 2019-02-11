@@ -43,6 +43,8 @@
 #include <tchar.h>
 #include <wchar.h>
 
+#include <io.h>
+
 #ifdef _MSC_VER
 #define S_ISREG(m) ((m)&_S_IFREG)
 #endif
@@ -118,12 +120,22 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 
 	if (f == NULL) {
 		last_error = ERR_FILE_CANT_OPEN;
-		return ERR_FILE_CANT_OPEN;
 	} else {
-		last_error = OK;
-		flags = p_mode_flags;
-		return OK;
+		const int fno = _fileno(f);
+		const HANDLE h = (HANDLE)_get_osfhandle(_fileno(f));
+		const DWORD type = GetFileType(h);
+
+		if (type == FILE_TYPE_CHAR) {
+			last_error = ERR_FILE_CANT_OPEN;
+			fclose(f);
+			f = NULL;
+		} else {
+			last_error = OK;
+			flags = p_mode_flags;
+		}
 	}
+
+	return last_error;
 }
 void FileAccessWindows::close() {
 
