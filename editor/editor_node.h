@@ -200,7 +200,6 @@ private:
 	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	PanelContainer *play_button_panel;
 	OptionButton *video_driver;
 
 	ConfirmationDialog *video_restart_dialog;
