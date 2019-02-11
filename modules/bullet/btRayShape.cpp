@@ -79,7 +79,7 @@ void btRayShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVecto
 void btRayShape::getAabb(const btTransform &t, btVector3 &aabbMin, btVector3 &aabbMax) const {
 #define MARGIN_BROADPHASE 0.1
 	btVector3 localAabbMin(0, 0, 0);
-	btVector3 localAabbMax(m_shapeAxis * m_length);
+	btVector3 localAabbMax(m_shapeAxis * (m_cacheScaledLength + m_collisionMargin));
 	btTransformAabb(localAabbMin, localAabbMax, MARGIN_BROADPHASE, t, aabbMin, aabbMax);
 }
 
@@ -97,8 +97,8 @@ void btRayShape::getPreferredPenetrationDirection(int index, btVector3 &penetrat
 
 void btRayShape::reload_cache() {
 
-	m_cacheScaledLength = m_length * m_localScaling[2] + m_collisionMargin;
+	m_cacheScaledLength = m_length * m_localScaling[2];
 
 	m_cacheSupportPoint.setIdentity();
-	m_cacheSupportPoint.setOrigin(m_shapeAxis * m_cacheScaledLength);
+	m_cacheSupportPoint.setOrigin(m_shapeAxis * (m_cacheScaledLength + m_collisionMargin));
 }
