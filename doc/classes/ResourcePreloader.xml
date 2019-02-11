@@ -4,7 +4,7 @@
 		Resource Preloader Node.
 	</brief_description>
 	<description>
-		Resource Preloader Node. This node is used to preload sub-resources inside a scene, so when the scene is loaded all the resources are ready to use and be retrieved from here.
+		This node is used to preload sub-resources inside a scene, so when the scene is loaded, all the resources are ready to use and can be retrieved from the preloader.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,6 +19,7 @@
 			<argument index="1" name="resource" type="Resource">
 			</argument>
 			<description>
+				Adds a resource to the preloader with the given [code]name[/code]. If a resource with the given [code]name[/code] already exists, the new resource will be renamed to "[code]name[/code] N" where N is an incrementing number starting from 2.
 			</description>
 		</method>
 		<method name="get_resource" qualifiers="const">
@@ -27,14 +28,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return the resource given a text-id.
+				Returns the resource associated to [code]name[/code].
 			</description>
 		</method>
 		<method name="get_resource_list" qualifiers="const">
 			<return type="PoolStringArray">
 			</return>
 			<description>
-				Return the list of resources inside the preloader.
+				Returns the list of resources inside the preloader.
 			</description>
 		</method>
 		<method name="has_resource" qualifiers="const">
@@ -43,7 +44,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return true if the preloader has a given resource.
+				Returns true if the preloader contains a resource associated to [code]name[/code].
 			</description>
 		</method>
 		<method name="remove_resource">
@@ -52,7 +53,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Remove a resource from the preloader by text id.
+				Removes the resource associated to [code]name[/code] from the preloader.
 			</description>
 		</method>
 		<method name="rename_resource">
@@ -63,7 +64,7 @@
 			<argument index="1" name="newname" type="String">
 			</argument>
 			<description>
-				Rename a resource inside the preloader, from a text-id to a new text-id.
+				Renames a resource inside the preloader from [code]name[/code] to [code]newname[/code].
 			</description>
 		</method>
 	</methods>

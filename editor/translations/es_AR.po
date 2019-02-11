@@ -8,12 +8,13 @@
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 # Jose Luis Bossio <joseluisbossio@gmail.com>, 2018.
 # Reynaldo Cruz <rcruz60@gmail.com>, 2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019.
+# Andrés S <andres.segovia.dev@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
+"PO-Revision-Date: 2019-02-10 12:02+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -549,21 +550,13 @@ msgstr "Zoom Out"
 msgid "Reset Zoom"
 msgstr "Resetear el Zoom"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "Advertencias:"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr "Advertencias"
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
-msgstr "Tamaño de Tipografía:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Linea:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "Col:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -864,8 +857,8 @@ msgstr "Eliminar archivos seleccionados?"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Eliminar"
 
@@ -3334,17 +3327,20 @@ msgstr "Reimportar"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Guardar escenas, reimportar y reiniciá"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Cambiar el driver de video requiere reiniciar el editor."
+msgstr ""
+"Para cambiar el tipo de un archivo importado es necesario reiniciar el "
+"editor."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"ADVERTENCIA: Existen elementos que utilizan este recurso, podrían dejar de "
+"cargar correctamente."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4311,6 +4307,19 @@ msgid "Move CanvasItem"
 msgstr "Mover CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+"Advertencia: El tamaño y posición de los hijos de un contenedor es "
+"determinado solo por su padre."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Solo anclas"
 
@@ -4497,7 +4506,7 @@ msgstr "Restablecer Huesos Personalizados"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View"
-msgstr "Ver"
+msgstr "Vista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5894,15 +5903,15 @@ msgstr "Ver Transformación en Plano."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scaling: "
-msgstr "Escalado: "
+msgstr "Escalando: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Traducciones: "
+msgstr "Trasladando: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
-msgstr "Torando %s grados."
+msgstr "Rotando %s grados."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Keying is disabled (no key inserted)."
@@ -6116,7 +6125,7 @@ msgstr "Modo Rotar (E)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
-msgstr "Modo de Escalado (R)"
+msgstr "Modo Escalar (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
@@ -6204,7 +6213,7 @@ msgstr "Ajustar objeto al suelo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Transform Dialog..."
-msgstr "Dialogo de Transformación..."
+msgstr "Cuadro de diálogo de Transform..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
@@ -6308,7 +6317,8 @@ msgid "Post"
 msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+#, fuzzy
+msgid "Nameless gizmo"
 msgstr "Gizmo sin nombre"
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6384,8 +6394,14 @@ msgid "(empty)"
 msgstr "(vacío)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
 msgstr "Animaciones"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
+msgstr "Animación"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6396,7 +6412,8 @@ msgid "Loop"
 msgstr "Loop"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "Cuadros de Animación"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7152,11 +7169,11 @@ msgstr "Examinar"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderizador:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7165,10 +7182,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Mayor calidad visual\n"
+"Todas las características disponibles\n"
+"Incompatible con hardware antiguo\n"
+"No recomendado para juegos web"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7177,10 +7198,16 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Baja calidad visual\n"
+"Algunas características no disponibles\n"
+"Funciona en la mayoría de hardware\n"
+"Recomendado para juegos web"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"El renderizador se puede cambiar luego, pero es posible que sea necesario "
+"ajustar las escenas."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
@@ -7193,6 +7220,28 @@ msgstr "No se puede abrir el proyecto en '%s'."
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "¿Estás seguro/a que quieres abrir más de un proyecto?"
+
+#: editor/project_manager.cpp
+#, fuzzy
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
+"Las siguientes configuraciones de proyecto fueron generadas para una versión "
+"anterior del motor, y deben ser convertidas para esta versión:\n"
+"\n"
+"%s\n"
+"\n"
+"¿Querés convertirlas?\n"
+"Advertencia: No vas a poder volver a abrir el proyecto con versiones "
+"anteriores del motor."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7912,6 +7961,8 @@ msgstr "Duplicar Nodo(s)"
 #: editor/scene_tree_dock.cpp
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"No se puede reemparentar nodos en escenas heredadas, el orden de nodos no "
+"puede cambiar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -8731,10 +8782,6 @@ msgid "Build Project"
 msgstr "Construir Proyecto"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr "Advertencias"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr "Ver registro"
 
@@ -9311,7 +9358,7 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr "Dimensiones de la imagen del splash inválidas (debería ser 620x400)."
+msgstr "Dimensiones de la imagen del splash inválidas (debería ser 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9421,6 +9468,13 @@ msgid ""
 msgstr ""
 "El nodo ParallaxLayer sólo funciona cuando está seteado como hijo de un nodo "
 "ParallaxBackground."
+
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9611,6 +9665,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr "Nada visible ya que no se asigno pasadas de dibujado a los meshes."
 
@@ -9743,8 +9804,16 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr "Este nodo ha sido deprecado. Usá AnimationTree."
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Modo Raw"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -9841,6 +9910,18 @@ msgstr "Asignación a uniform."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Solo se pueden asignar variaciones en funciones de vértice."
+
+#~ msgid "Warnings:"
+#~ msgstr "Advertencias:"
+
+#~ msgid "Font Size:"
+#~ msgstr "Tamaño de Tipografía:"
+
+#~ msgid "Line:"
+#~ msgstr "Linea:"
+
+#~ msgid "Col:"
+#~ msgstr "Col:"
 
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr ""

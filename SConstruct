@@ -2,11 +2,13 @@
 
 EnsureSConsVersion(0, 98, 1)
 
-import string
-import os
-import os.path
+# System
 import glob
+import os
+import string
 import sys
+
+# Local
 import methods
 import gles_builders
 from platform_methods import run_in_subprocess
@@ -27,7 +29,7 @@ for x in sorted(glob.glob("platform/*")):
         continue
     tmppath = "./" + x
 
-    sys.path.append(tmppath)
+    sys.path.insert(0, tmppath)
     import detect
 
     if (os.path.exists(x + "/export/export.cpp")):
@@ -86,13 +88,6 @@ env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
-# To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
-# http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
-env_base.Decider('MD5-timestamp')
-# Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
-# http://scons.org/doc/production/HTML/scons-user/ch06s04.html
-env_base.SetOption('implicit_cache', 1)
-
 env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
 env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
 env_base.__class__.android_add_dependency = methods.android_add_dependency
@@ -130,7 +125,6 @@ customs = ['custom.py']
 
 profile = ARGUMENTS.get("profile", False)
 if profile:
-    import os.path
     if os.path.isfile(profile):
         customs.append(profile)
     elif os.path.isfile(profile + ".py"):
@@ -210,7 +204,7 @@ for k in platform_opts.keys():
 for x in module_list:
     module_enabled = True
     tmppath = "./modules/" + x
-    sys.path.append(tmppath)
+    sys.path.insert(0, tmppath)
     import config
     enabled_attr = getattr(config, "is_enabled", None)
     if (callable(enabled_attr) and not config.is_enabled()):
@@ -233,6 +227,16 @@ env_base.platform_apis = platform_apis
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
 
+    # The two options below speed up incremental builds, but reduce the certainty that all files
+    # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
+
+    # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
+    # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+    env_base.Decider('MD5-timestamp')
+    # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
+    # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+    env_base.SetOption('implicit_cache', 1)
+
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
 
@@ -250,8 +254,8 @@ elif env_base['p'] != "":
     env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
-
-    sys.path.append("./platform/" + selected_platform)
+    tmppath = "./platform/" + selected_platform
+    sys.path.insert(0, tmppath)
     import detect
     if "create" in dir(detect):
         env = detect.create(env_base)
@@ -377,7 +381,7 @@ if selected_platform in platform_list:
 
     suffix += env.extra_suffix
 
-    sys.path.remove("./platform/" + selected_platform)
+    sys.path.remove(tmppath)
     sys.modules.pop('detect')
 
     env.module_list = []
@@ -387,7 +391,7 @@ if selected_platform in platform_list:
         if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
-        sys.path.append(tmppath)
+        sys.path.insert(0, tmppath)
         env.current_module = x
         import config
         # can_build changed number of arguments between 3.0 (1) and 3.1 (2),

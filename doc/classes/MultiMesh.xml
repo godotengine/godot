@@ -4,8 +4,8 @@
 		Provides high performance mesh instancing.
 	</brief_description>
 	<description>
-		MultiMesh provides low level mesh instancing. If the amount of [Mesh] instances needed goes from hundreds to thousands (and most need to be visible at close proximity) creating such a large amount of [MeshInstance] nodes may affect performance by using too much CPU or video memory.
-		For this case a MultiMesh becomes very useful, as it can draw thousands of instances with little API overhead.
+		MultiMesh provides low level mesh instancing. Drawing thousands of [MeshInstance] nodes can be slow because each object is submitted to the GPU to be drawn individually.
+		MultiMesh is much faster because it can draw thousands of instances with a single draw call, resulting in less API overhead.
 		As a drawback, if the instances are too far away of each other, performance may be reduced as every single instance will always rendered (they are spatially indexed as one, for the whole object).
 		Since instances may have any behavior, the AABB used for visibility must be provided by the user.
 	</description>
@@ -36,6 +36,7 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
+				Return the custom data that has been set for a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform" qualifiers="const">
@@ -66,6 +67,7 @@
 			<argument index="1" name="custom_data" type="Color">
 			</argument>
 			<description>
+				Set custom data for a specific instance. Although [Color] is used, it is just a container for 4 numbers.
 			</description>
 		</method>
 		<method name="set_instance_transform">
@@ -82,32 +84,45 @@
 	</methods>
 	<members>
 		<member name="color_format" type="int" setter="set_color_format" getter="get_color_format" enum="MultiMesh.ColorFormat">
+			Format of colors in color array that gets passed to shader.
 		</member>
 		<member name="custom_data_format" type="int" setter="set_custom_data_format" getter="get_custom_data_format" enum="MultiMesh.CustomDataFormat">
+			Format of custom data in custom data array that gets passed to shader.
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count">
+			Number of instances that will get drawn.
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			Mesh to be drawn.
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat">
+			Format of transform used to transform mesh, either 2D or 3D.
 		</member>
 	</members>
 	<constants>
 		<constant name="TRANSFORM_2D" value="0" enum="TransformFormat">
+			Use this when using 2D transforms.
 		</constant>
 		<constant name="TRANSFORM_3D" value="1" enum="TransformFormat">
+			Use this when using 3D transforms.
 		</constant>
 		<constant name="COLOR_NONE" value="0" enum="ColorFormat">
+			Use when you are not using per-instance [Color]s.
 		</constant>
 		<constant name="COLOR_8BIT" value="1" enum="ColorFormat">
+			Compress [Color] data into 8 bits when passing to shader. This uses less memory and can be faster, but the [Color] loses precision.
 		</constant>
 		<constant name="COLOR_FLOAT" value="2" enum="ColorFormat">
+			The [Color] passed into [method set_instance_color] will use 4 floats. Use this for highest precision [Color].
 		</constant>
 		<constant name="CUSTOM_DATA_NONE" value="0" enum="CustomDataFormat">
+			Use when you are not using per-instance custom data.
 		</constant>
 		<constant name="CUSTOM_DATA_8BIT" value="1" enum="CustomDataFormat">
+			Compress custom_data into 8 bits when passing to shader. This uses less memory and can be faster, but loses precision.
 		</constant>
 		<constant name="CUSTOM_DATA_FLOAT" value="2" enum="CustomDataFormat">
+			The [Color] passed into [method set_instance_custom_data] will use 4 floats. Use this for highest precision.
 		</constant>
 	</constants>
 </class>

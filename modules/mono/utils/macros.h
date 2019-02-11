@@ -31,10 +31,6 @@
 #ifndef UTIL_MACROS_H
 #define UTIL_MACROS_H
 
-#ifndef __has_cpp_attribute
-#define __has_cpp_attribute(attr_token) 0
-#endif
-
 #define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
 #define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)
 #define _GD_VARNAME_CONCAT_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c)
@@ -61,7 +57,7 @@
 // noreturn
 // TODO: Get rid of this macro once we upgrade to C++11
 
-#if __has_cpp_attribute(deprecated)
+#if (__cplusplus >= 201103L)
 #define GD_NORETURN [[noreturn]]
 #elif defined(__GNUC__)
 #define GD_NORETURN __attribute__((noreturn))

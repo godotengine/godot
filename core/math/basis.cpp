@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  matrix3.cpp                                                          */
+/*  basis.cpp                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "matrix3.h"
+#include "basis.h"
 
 #include "core/math/math_funcs.h"
 #include "core/os/copymem.h"

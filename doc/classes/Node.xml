@@ -269,6 +269,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_node_or_null" qualifiers="const">
+			<return type="Node">
+			</return>
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+				Similar to [method get_node], but does not raise an error when [code]path[/code] does not point to a valid [code]Node[/code].
+			</description>
+		</method>
 		<method name="get_parent" qualifiers="const">
 			<return type="Node">
 			</return>

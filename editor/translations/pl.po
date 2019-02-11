@@ -29,11 +29,12 @@
 # Dariusz Siek <dariuszynski@gmail.com>, 2018.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
 # Nie Powiem <blazek10@tlen.pl>, 2019.
+# Sebastian Hojka <sibibibi1@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-19 19:22+0000\n"
+"PO-Revision-Date: 2019-02-06 01:09+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -568,21 +569,13 @@ msgstr "Oddal"
 msgid "Reset Zoom"
 msgstr "Wyzeruj przybliżenie"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "Ostrzeżenia:"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr "Ostrzeżenia"
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
-msgstr "Rozmiar czcionki:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Linia:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "Kolumna:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -883,8 +876,8 @@ msgstr "Usunąć zaznaczone pliki?"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Usuń"
 
@@ -1039,7 +1032,6 @@ msgid "Toggle Audio Bus Bypass Effects"
 msgstr "Przełącz ominięcie efektów w magistrali audio"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Select Audio Bus Send"
 msgstr "Wybierz szynę wysyłki audio"
 
@@ -1308,7 +1300,7 @@ msgstr "Zapisywanie pliku:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "Nie znaleziono szablonu eksportu w przewidywanej lokalizacji:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1317,15 +1309,14 @@ msgstr "Pakowanie"
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "Nie znaleziono pliku szablonu:"
+msgstr "Nie znaleziono własnego szablonu debugowania."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Nie znaleziono własnego szablonu wydania."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -1727,6 +1718,8 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Ta scena nie może zostać zapisana, ponieważ istnieje cykliczna inkluzja.\n"
+"Rozwiąż to i spróbuj zapisać ponownie."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2618,15 +2611,16 @@ msgid "Assign..."
 msgstr "Przypisz..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr "Nieprawidłowa ścieżka"
+msgstr "Nieprawidłowy RID"
 
 #: editor/editor_properties.cpp
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
+"Wybrany zasób (%s) nie zgadza się z żadnym rodzajem przewidywanym dla tego "
+"użycia (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3197,7 +3191,6 @@ msgid "Group name already exists."
 msgstr "Nazwa grupy już istnieje."
 
 #: editor/groups_editor.cpp
-#, fuzzy
 msgid "Invalid group name."
 msgstr "Niewłaściwa nazwa grupy."
 
@@ -3334,17 +3327,18 @@ msgstr "Importuj ponownie"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "Zapisz sceny, re-importuj i zrestartuj"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "Zmiana sterownika grafiki wymaga restartu edytora."
+msgstr "Zmiana rodzaju importowanego pliku wymaga restartu edytora."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
+"OSTRZEŻENIE: Istnieje zawartość używająca tego zasobu, która może przestać "
+"działać prawidłowo."
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -3469,7 +3463,6 @@ msgid "Create Polygon"
 msgstr "Utwórz wielokąt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon"
 msgstr "Edytuj wielokąt"
 
@@ -3478,12 +3471,10 @@ msgid "Insert Point"
 msgstr "Wstaw punkt"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Edit Polygon (Remove Point)"
-msgstr "Edytuj wielokąt (usuń punkty)"
+msgstr "Edytuj wielokąt (usuń punkt)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid "Remove Polygon And Point"
 msgstr "Usuń wielokąt i punkt"
 
@@ -3494,7 +3485,6 @@ msgid "Create points."
 msgstr "Utwórz punkty."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
@@ -4314,6 +4304,16 @@ msgstr "Skaluj CanvasItem"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move CanvasItem"
 msgstr "Przesuń CanvasItem"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6336,7 +6336,7 @@ msgid "Post"
 msgstr "Po"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6413,7 +6413,13 @@ msgid "(empty)"
 msgstr "(pusty)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
+msgstr "Animacje"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
 msgstr "Animacje"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -6425,7 +6431,8 @@ msgid "Loop"
 msgstr "Pętla"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "Klatki animacji"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7241,6 +7248,19 @@ msgstr "Nie można otworzyć projektu w '%s'."
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Czy jesteś pewny że chcesz otworzyć więcej niż jeden projekt?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8764,10 +8784,6 @@ msgid "Build Project"
 msgstr "Zbuduj projekt"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr "Ostrzeżenia"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 msgid "View log"
 msgstr "Pokaż logi"
 
@@ -9450,6 +9466,13 @@ msgstr ""
 "Węzeł typu ParallaxLayer zadziała, jeśli będzie dzieckiem węzła "
 "ParallaxBackground."
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -9643,6 +9666,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Nic nie jest widoczne, bo siatki nie zostały przypisane do kolejki rysowania."
@@ -9771,11 +9801,19 @@ msgstr "Korzeń AnimationPlayer nie jest poprawnym węzłem."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
+msgstr "Ten węzeł jest przestarzały. Zamiast tego użyj AnimationTree."
+
+#: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Trybie RAW"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -9873,6 +9911,18 @@ msgstr "Przypisanie do uniformu."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varying może być przypisane tylko w funkcji wierzchołków."
+
+#~ msgid "Warnings:"
+#~ msgstr "Ostrzeżenia:"
+
+#~ msgid "Font Size:"
+#~ msgstr "Rozmiar czcionki:"
+
+#~ msgid "Line:"
+#~ msgstr "Linia:"
+
+#~ msgid "Col:"
+#~ msgstr "Kolumna:"
 
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
 #~ msgstr "OrientedPathFollow działa tylko, gdy jest węzłem podrzędnym Path."

@@ -572,21 +572,13 @@ msgstr "Uitzoomen"
 msgid "Reset Zoom"
 msgstr "Initialiseer Zoom"
 
-#: editor/code_editor.cpp
-msgid "Warnings:"
-msgstr "Waarschuwingen:"
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+msgid "Warnings"
+msgstr ""
 
 #: editor/code_editor.cpp
-msgid "Font Size:"
-msgstr "Lettertypegrootte:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "Regel:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "Kolom:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -895,8 +887,8 @@ msgstr "Verwijder geselecteerde bestanden?"
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Verwijder"
 
@@ -4348,6 +4340,19 @@ msgid "Move CanvasItem"
 msgstr "Verplaats CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+"Waarschuwing: De positie en grootte van de kinderen van een houder worden "
+"alleen door hun ouder bepaald."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
 msgstr "Alleen Ankers"
 
@@ -6418,7 +6423,7 @@ msgid "Post"
 msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6500,8 +6505,14 @@ msgid "(empty)"
 msgstr "(leeg)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
 msgstr "Animaties"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
+msgstr "Animatie"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6512,7 +6523,8 @@ msgid "Loop"
 msgstr "Lus"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "Animatie Frames"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7338,6 +7350,19 @@ msgstr "Kan project niet openen"
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "Weet je zeker dat je meer dan één project wilt openen?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8881,10 +8906,6 @@ msgid "Build Project"
 msgstr "Project"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Warnings"
-msgstr ""
-
-#: modules/mono/editor/mono_bottom_panel.cpp
 #, fuzzy
 msgid "View log"
 msgstr "Bekijk Bestanden"
@@ -9591,6 +9612,13 @@ msgstr ""
 "ParallaxLayer node werkt alleen wanneer het een kind is van een "
 "ParallaxBackground node."
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -9761,6 +9789,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 
@@ -9882,8 +9917,16 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 msgid "Raw Mode"
 msgstr "Raw-modus"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -9978,6 +10021,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Warnings:"
+#~ msgstr "Waarschuwingen:"
+
+#~ msgid "Font Size:"
+#~ msgstr "Lettertypegrootte:"
+
+#~ msgid "Line:"
+#~ msgstr "Regel:"
+
+#~ msgid "Col:"
+#~ msgstr "Kolom:"
 
 #, fuzzy
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."

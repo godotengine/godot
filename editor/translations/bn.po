@@ -570,23 +570,14 @@ msgstr "সংকুচিত করুন (জুম্ আউট)"
 msgid "Reset Zoom"
 msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
 
-#: editor/code_editor.cpp
+#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
 #, fuzzy
-msgid "Warnings:"
+msgid "Warnings"
 msgstr "সতর্কতা"
 
 #: editor/code_editor.cpp
-#, fuzzy
-msgid "Font Size:"
-msgstr "উৎস ফন্টের আকার:"
-
-#: editor/code_editor.cpp
-msgid "Line:"
-msgstr "লাইন:"
-
-#: editor/code_editor.cpp
-msgid "Col:"
-msgstr "কলাম:"
+msgid "Line and column numbers"
+msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -900,8 +891,8 @@ msgstr "নির্বাচিত ফাইলসমূহ অপসারণ 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
-#: editor/project_export.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "অপসারণ করুন"
 
@@ -4544,6 +4535,16 @@ msgid "Move CanvasItem"
 msgstr "CanvasItem সম্পাদন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Presets for the anchors and margins values of a Control node."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Anchors only"
 msgstr "অ্যাংকর"
@@ -6677,7 +6678,7 @@ msgid "Post"
 msgstr "পরবর্তী (Post)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Name-less gizmo"
+msgid "Nameless gizmo"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
@@ -6760,8 +6761,14 @@ msgid "(empty)"
 msgstr "(খালি/শূন্য)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animations"
+#, fuzzy
+msgid "Animations:"
 msgstr "অ্যানিমেশনসমূহ"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
+msgid "New Animation"
+msgstr "অ্যানিমেশন"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6772,7 +6779,8 @@ msgid "Loop"
 msgstr "লুপ"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Animation Frames"
+#, fuzzy
+msgid "Animation Frames:"
 msgstr "অ্যানিমেশনের ফ্রেমসমূহ"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -7642,6 +7650,19 @@ msgstr "সংযোগ..."
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
 msgstr "একধিক প্রকল্প খোলায় আপনি সুনিশ্চিত?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The following project settings file does not specify the version of Godot "
+"through which it was created.\n"
+"\n"
+"%s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"Warning: You will not be able to open the project with previous versions of "
+"the engine anymore."
+msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9261,11 +9282,6 @@ msgstr "নতুন প্রকল্প"
 
 #: modules/mono/editor/mono_bottom_panel.cpp
 #, fuzzy
-msgid "Warnings"
-msgstr "সতর্কতা"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
 msgid "View log"
 msgstr "ফাইল"
 
@@ -9966,6 +9982,13 @@ msgid ""
 msgstr ""
 "ParallaxLayer একমাত্র ParallaxBackground এর অংশ হিসেবে নির্ধারন করলেই কাজ করে।"
 
+#: scene/2d/particles_2d.cpp
+msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles2D node instead. You can use the \"Convert to "
+"CPUParticles\" option for this purpose."
+msgstr ""
+
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
@@ -10139,6 +10162,13 @@ msgstr ""
 
 #: scene/3d/particles.cpp
 msgid ""
+"GPU-based particles are not supported by the GLES2 video driver.\n"
+"Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
+"\" option for this purpose."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 
@@ -10259,9 +10289,17 @@ msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
+msgid "Pick a color from the screen."
+msgstr ""
+
+#: scene/gui/color_picker.cpp
 #, fuzzy
 msgid "Raw Mode"
 msgstr "প্যান মোড"
+
+#: scene/gui/color_picker.cpp
+msgid "Switch between hexadecimal and code values."
+msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
@@ -10355,6 +10393,20 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Warnings:"
+#~ msgstr "সতর্কতা"
+
+#, fuzzy
+#~ msgid "Font Size:"
+#~ msgstr "উৎস ফন্টের আকার:"
+
+#~ msgid "Line:"
+#~ msgstr "লাইন:"
+
+#~ msgid "Col:"
+#~ msgstr "কলাম:"
 
 #, fuzzy
 #~ msgid "OrientedPathFollow only works when set as a child of a Path node."
