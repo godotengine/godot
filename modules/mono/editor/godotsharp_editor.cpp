@@ -272,19 +272,50 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 			static String vscode_path;
 
 			if (vscode_path.empty() || !FileAccess::exists(vscode_path)) {
-				static List<String> vscode_name;
-				vscode_name.push_back("code");
-				vscode_name.push_back("code-oss");
-				vscode_name.push_back("vscode");
-				vscode_name.push_back("vscode-oss");
-				vscode_name.push_back("visual-studio-code");
-				vscode_name.push_back("visual-studio-code-oss");
 				// Try to search it again if it wasn't found last time or if it was removed from its location
-				for (int i = 0; i < vscode_name.size(); i++) {
-					vscode_path = path_which(vscode_name[i]);
-					if (!vscode_path.empty() || FileAccess::exists(vscode_path))
-						break;
+				bool found = false;
+
+				// TODO: Use initializer lists once C++11 is allowed
+
+				// Try with hint paths
+				static Vector<String> hint_paths;
+#ifdef WINDOWS_ENABLED
+				if (hint_paths.empty()) {
+					hint_paths.push_back(OS::get_singleton()->get_environment("ProgramFiles") + "\\Microsoft VS Code\\Code.exe");
+					if (sizeof(size_t) == 8) {
+						hint_paths.push_back(OS::get_singleton()->get_environment("ProgramFiles(x86)") + "\\Microsoft VS Code\\Code.exe");
+					}
 				}
+#endif
+				for (int i = 0; i < hint_paths.size(); i++) {
+					vscode_path = hint_paths[i];
+					if (FileAccess::exists(vscode_path)) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					static Vector<String> vscode_names;
+					if (vscode_names.empty()) {
+						vscode_names.push_back("code");
+						vscode_names.push_back("code-oss");
+						vscode_names.push_back("vscode");
+						vscode_names.push_back("vscode-oss");
+						vscode_names.push_back("visual-studio-code");
+						vscode_names.push_back("visual-studio-code-oss");
+					}
+					for (int i = 0; i < vscode_names.size(); i++) {
+						vscode_path = path_which(vscode_names[i]);
+						if (!vscode_path.empty()) {
+							found = true;
+							break;
+						}
+					}
+				}
+
+				if (!found)
+					vscode_path.clear(); // Not found, clear so next time the empty() check is enough
 			}
 
 			List<String> args;
