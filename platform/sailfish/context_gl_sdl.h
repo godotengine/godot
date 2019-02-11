@@ -42,6 +42,7 @@
 #include "drivers/gl_context/context_gl.h"
 #include "os/os.h"
 #include <SDL.h>
+#include <qt5/QtWaylandClient/5.4.0/QtWaylandClient/private/wayland-surface-extension-client-protocol.h>
 
 struct ContextGL_SDL_Private;
 
@@ -54,6 +55,7 @@ class ContextGL_SDL : public ContextGL {
 	bool opengl_3_context;
 	bool use_vsync;
 
+	friend struct ContextGL_SDL_Private;
 public:
 	virtual void release_current();
 	virtual void make_current();
@@ -66,6 +68,8 @@ public:
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
 	virtual SDL_Window* get_window_pointer();
+	
+	void set_screen_orientation(OS::ScreenOrientation p_orientation);
 
 	ContextGL_SDL(::SDL_DisplayMode *p_sdl_display_mode, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context);
 	~ContextGL_SDL();
