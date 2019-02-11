@@ -45,6 +45,7 @@ class ProjectManager : public Control {
 	GDCLASS(ProjectManager, Control);
 
 	Button *erase_btn;
+	Button *erase_missing_btn;
 	Button *open_btn;
 	Button *rename_btn;
 	Button *run_btn;
@@ -57,6 +58,7 @@ class ProjectManager : public Control {
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
 	ConfirmationDialog *erase_ask;
+	ConfirmationDialog *erase_missing_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
@@ -89,7 +91,9 @@ class ProjectManager : public Control {
 	void _new_project();
 	void _rename_project();
 	void _erase_project();
+	void _erase_missing_projects();
 	void _erase_project_confirm();
+	void _erase_missing_projects_confirm();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();

@@ -987,6 +987,24 @@ void ProjectManager::_update_project_buttons() {
 	open_btn->set_disabled(empty_selection);
 	rename_btn->set_disabled(empty_selection);
 	run_btn->set_disabled(empty_selection);
+
+	bool missing_projects = false;
+	Map<String, String> list_all_projects;
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
+		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
+		if (hb) {
+			list_all_projects.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+		}
+	}
+	for (Map<String, String>::Element *E = list_all_projects.front(); E; E = E->next()) {
+		String project_name = E->key().replace("::", "/") + "/project.godot";
+		if (!FileAccess::exists(project_name)) {
+			missing_projects = true;
+			break;
+		}
+	}
+
+	erase_missing_btn->set_visible(missing_projects);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
@@ -1700,6 +1718,39 @@ void ProjectManager::_erase_project_confirm() {
 	_load_recent_projects();
 }
 
+void ProjectManager::_erase_missing_projects_confirm() {
+
+	Map<String, String> list_all_projects;
+	for (int i = 0; i < scroll_children->get_child_count(); i++) {
+		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
+		if (hb) {
+			list_all_projects.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+		}
+	}
+
+	if (list_all_projects.size() == 0) {
+		return;
+	}
+
+	int deleted_projects = 0;
+	int remaining_projects = 0;
+	for (Map<String, String>::Element *E = list_all_projects.front(); E; E = E->next()) {
+		String project_name = E->key().replace("::", "/") + "/project.godot";
+		if (!FileAccess::exists(project_name)) {
+			deleted_projects++;
+			EditorSettings::get_singleton()->erase("projects/" + E->key());
+			EditorSettings::get_singleton()->erase("favorite_projects/" + E->key());
+		} else {
+			remaining_projects++;
+		}
+	}
+	print_line("Deleted " + itos(deleted_projects) + " projects, remaining " + itos(remaining_projects) + " projects");
+	EditorSettings::get_singleton()->save();
+	selected_list.clear();
+	last_clicked = "";
+	_load_recent_projects();
+}
+
 void ProjectManager::_erase_project() {
 
 	if (selected_list.size() == 0)
@@ -1714,6 +1765,12 @@ void ProjectManager::_erase_project() {
 
 	erase_ask->set_text(confirm_message);
 	erase_ask->popup_centered_minsize();
+}
+
+void ProjectManager::_erase_missing_projects() {
+
+	erase_missing_ask->set_text(TTR("Remove all missing projects from the list? (Folders contents will not be modified)"));
+	erase_missing_ask->popup_centered_minsize();
 }
 
 void ProjectManager::_language_selected(int p_id) {
@@ -1812,7 +1869,9 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_new_project", &ProjectManager::_new_project);
 	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
+	ClassDB::bind_method("_erase_missing_projects", &ProjectManager::_erase_missing_projects);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
+	ClassDB::bind_method("_erase_missing_projects_confirm", &ProjectManager::_erase_missing_projects_confirm);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
@@ -2050,6 +2109,12 @@ ProjectManager::ProjectManager() {
 	erase->connect("pressed", this, "_erase_project");
 	erase_btn = erase;
 
+	Button *erase_missing = memnew(Button);
+	erase_missing->set_text(TTR("Remove Missing"));
+	tree_vb->add_child(erase_missing);
+	erase_missing->connect("pressed", this, "_erase_missing_projects");
+	erase_missing_btn = erase_missing;
+
 	tree_vb->add_spacer();
 
 	if (StreamPeerSSL::is_available()) {
@@ -2112,6 +2177,11 @@ ProjectManager::ProjectManager() {
 	language_restart_ask->get_ok()->connect("pressed", this, "_restart_confirm");
 	language_restart_ask->get_cancel()->set_text(TTR("Continue"));
 	gui_base->add_child(language_restart_ask);
+
+	erase_missing_ask = memnew(ConfirmationDialog);
+	erase_missing_ask->get_ok()->set_text(TTR("Remove All"));
+	erase_missing_ask->get_ok()->connect("pressed", this, "_erase_missing_projects_confirm");
+	gui_base->add_child(erase_missing_ask);
 
 	erase_ask = memnew(ConfirmationDialog);
 	erase_ask->get_ok()->set_text(TTR("Remove"));
