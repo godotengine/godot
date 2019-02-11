@@ -568,6 +568,30 @@ unsigned int OS_SDL::get_mouse_button_state(uint32_t button_mask, bool refresh) 
 	return state;
 }
 
+void OS_SDL::fix_touch_position(Vector2 &pos) {
+		if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
+				OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE) { 
+			// only for landscape mode
+			int w, h;
+			SDL_GetWindowSize(sdl_window, &w, &h);
+			float coef = ((float)w) / ((float)h);
+			/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
+			pos = Point2(pos.y, w - pos.x);
+			/// coefficient correction
+			pos.x *= coef;
+			pos.y /= coef;
+		} else if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE) {
+			int w, h;
+			SDL_GetWindowSize(sdl_window, &w, &h);
+			float coef = ((float)w) / ((float)h);
+			/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
+			pos = Point2(h - pos.y, pos.x);
+			/// coefficient correction
+			pos.x *= coef;
+			pos.y /= coef;
+		}
+	}
+
 void OS_SDL::process_events() {
 	SDL_Event event;
 
@@ -740,26 +764,16 @@ void OS_SDL::process_events() {
 			//input_event.ID = ++event_id;
 			input_event->set_device(0);
 
-			Ref<InputEventMouseButton> mouse_event;
-			mouse_event.instance();
-			//mouse_event.ID = ++event_id;
-			mouse_event->set_device(0);
+			// Ref<InputEventMouseButton> mouse_event;
+			// mouse_event.instance();
+			// mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
-			// begin landscape 
-			{// only for landscape mode 
-				int w,h;
-				SDL_GetWindowSize(sdl_window, &w, &h);
-				float coef = ((float)w)/((float)h);
-				/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
-				pos = Point2(pos.y, w - pos.x);
-				/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
-				// pos = Point2(h - pos.y,pos.x);
-				/// coefficient correction
-				pos.x *= coef;
-				pos.y /= coef;
-			}
+			
+#ifdef SAILFISH_FORCE_LANDSCAPE	
+			fix_touch_position(pos);
+#endif
 			// end landscape 
 			bool is_begin = event.type ==  SDL_FINGERDOWN;
 
@@ -785,28 +799,28 @@ void OS_SDL::process_events() {
 			input_event->set_position(pos);
 			input_event->set_pressed(is_begin);
 
-			if (translate) {
-				//mouse_event.type = InputEvent::MOUSE_BUTTON;
-				mouse_event->set_position(pos);
-				mouse_event->set_global_position(pos);
-				input->set_mouse_position(pos);
-				mouse_event->set_button_index(1);
-				mouse_event->set_pressed(is_begin);
-				last_mouse_pos = pos;
-			}
+			// if (translate) {
+			// 	//mouse_event.type = InputEvent::MOUSE_BUTTON;
+			// 	mouse_event->set_position(pos);
+			// 	mouse_event->set_global_position(pos);
+			// 	input->set_mouse_position(pos);
+			// 	mouse_event->set_button_index(1);
+			// 	mouse_event->set_pressed(is_begin);
+			// 	last_mouse_pos = pos;
+			// }
 
 			if (is_begin) {
 				if (touch.state.has(index)) // Defensive
 					break;
 				touch.state[index] = pos;
 				input->parse_input_event(input_event);
-				input->parse_input_event(mouse_event);
+				// input->parse_input_event(mouse_event);
 			} else {
 				if (!touch.state.has(index)) // Defensive
 					break;
 				touch.state.erase(index);
 				input->parse_input_event(input_event);
-				input->parse_input_event(mouse_event);
+				// input->parse_input_event(mouse_event);
 			}
 		}
 
@@ -820,25 +834,16 @@ void OS_SDL::process_events() {
 			//input_event.ID = ++event_id;
 			input_event->set_device(0);
 
-			Ref<InputEventMouseMotion> mouse_event;
-			mouse_event.instance();
+			// Ref<InputEventMouseMotion> mouse_event;
+			// mouse_event.instance();
 			//mouse_event.ID = ++event_id;
-			mouse_event->set_device(0);
+			// mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
-			// begin landscape 
-			{
-				int w,h;
-				SDL_GetWindowSize(sdl_window, &w, &h);
-				float coef = ((float)w)/((float)h);
-				/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
-				pos = Point2(pos.y, w - pos.x);
-				pos.x *= coef;
-				pos.y /= coef;
-				/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
-			}
-			// end landscape 
+#ifdef SAILFISH_FORCE_LANDSCAPE	
+			fix_touch_position(pos);
+#endif 
 			Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
 			if (!curr_pos_elem) 
 			// {// Defensive
@@ -855,16 +860,16 @@ void OS_SDL::process_events() {
 				input_event->set_relative(pos - curr_pos_elem->value());
 				input->parse_input_event(input_event);
 
-				if (index == touch_mouse_index) 
-				{
-					//mouse_event.type = InputEvent::MOUSE_MOTION;
-					mouse_event->set_position(pos);
-					mouse_event->set_global_position(pos);
-					input->set_mouse_position(pos);
-					mouse_event->set_relative(pos - last_mouse_pos);
-					last_mouse_pos = pos;
-					input->parse_input_event(mouse_event);
-				}
+				// if (index == touch_mouse_index) 
+				// {
+				// 	//mouse_event.type = InputEvent::MOUSE_MOTION;
+				// 	mouse_event->set_position(pos);
+				// 	mouse_event->set_global_position(pos);
+				// 	input->set_mouse_position(pos);
+				// 	mouse_event->set_relative(pos - last_mouse_pos);
+				// 	last_mouse_pos = pos;
+				// 	input->parse_input_event(mouse_event);
+				// }
 
 				curr_pos_elem->value() = pos;
 			}
