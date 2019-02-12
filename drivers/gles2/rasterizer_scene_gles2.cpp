@@ -3041,7 +3041,9 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 		}
 	}
 
-	glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+	if (storage->frame.current_rt) {
+		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+	}
 	glColorMask(1, 1, 1, 1);
 }
 
