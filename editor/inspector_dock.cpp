@@ -372,6 +372,10 @@ void InspectorDock::_bind_methods() {
 }
 
 void InspectorDock::edit_resource(const Ref<Resource> &p_resource) {
+	if (EDITOR_GET("interface/inspector/save_resources_upon_reload") && current) {
+		_save_resource(false);
+	}
+
 	_resource_selected(p_resource, "");
 }
 
@@ -608,6 +612,8 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 
 	inspector->connect("resource_selected", this, "_resource_selected");
 	inspector->connect("property_keyed", this, "_property_keyed");
+
+	EDITOR_DEF("interface/inspector/save_resources_upon_reload", true);
 }
 
 InspectorDock::~InspectorDock() {
