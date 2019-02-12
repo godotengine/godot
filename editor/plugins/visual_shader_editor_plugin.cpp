@@ -1116,8 +1116,8 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 
 		VisualShader::Type type = VisualShader::Type(i);
 		Vector<int> nodes = visual_shader->get_node_list(type);
-		for (int i = 0; i < nodes.size(); i++) {
-			Ref<VisualShaderNodeInput> input = visual_shader->get_node(type, nodes[i]);
+		for (int j = 0; j < nodes.size(); j++) {
+			Ref<VisualShaderNodeInput> input = visual_shader->get_node(type, nodes[j]);
 			if (!input.is_valid()) {
 				continue;
 			}

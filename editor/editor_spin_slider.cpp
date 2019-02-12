@@ -213,14 +213,14 @@ void EditorSpinSlider::_notification(int p_what) {
 		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
-			Ref<Texture> updown = get_icon("updown", "SpinBox");
-			int updown_vofs = (get_size().height - updown->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown->get_width();
+			Ref<Texture> updown2 = get_icon("updown", "SpinBox");
+			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
+			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
 			Color c(1, 1, 1);
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
 			}
-			draw_texture(updown, Vector2(updown_offset, updown_vofs), c);
+			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
 			if (grabber->is_visible()) {
 				grabber->hide();
 			}

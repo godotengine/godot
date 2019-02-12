@@ -109,9 +109,9 @@ int LWSServer::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			if (_peer_map.has(id)) {
 				int code;
 				Ref<LWSPeer> peer = _peer_map[id];
-				String reason = peer->get_close_reason(in, len, code);
+				String reason2 = peer->get_close_reason(in, len, code);
 				peer_data->clean_close = true;
-				_on_close_request(id, code, reason);
+				_on_close_request(id, code, reason2);
 			}
 			return 0;
 		}

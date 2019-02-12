@@ -385,9 +385,9 @@ void EditorAudioBus::_effect_selected() {
 	if (effect->get_metadata(0) != Variant()) {
 
 		int index = effect->get_metadata(0);
-		Ref<AudioEffect> effect = AudioServer::get_singleton()->get_bus_effect(get_index(), index);
-		if (effect.is_valid()) {
-			EditorNode::get_singleton()->push_item(effect.ptr());
+		Ref<AudioEffect> effect2 = AudioServer::get_singleton()->get_bus_effect(get_index(), index);
+		if (effect2.is_valid()) {
+			EditorNode::get_singleton()->push_item(effect2.ptr());
 		}
 	}
 

@@ -299,15 +299,15 @@ void CreateDialog::_update_search() {
 		} else {
 
 			bool found = false;
-			String type = I->get();
-			while (type != "" && (cpp_type ? ClassDB::is_parent_class(type, base_type) : ed.script_class_is_parent(type, base_type)) && type != base_type) {
-				if (search_box->get_text().is_subsequence_ofi(type)) {
+			String type2 = I->get();
+			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
+				if (search_box->get_text().is_subsequence_ofi(type2)) {
 
 					found = true;
 					break;
 				}
 
-				type = cpp_type ? ClassDB::get_parent_class(type) : ed.script_class_get_base(type);
+				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
 			}
 
 			if (found)

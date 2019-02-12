@@ -785,12 +785,12 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 								if (mb && mb->is_const()) {
 									bool all_is_const = true;
 									Vector<Variant> args;
-									GDScriptCompletionContext c = p_context;
-									c.line = op->line;
+									GDScriptCompletionContext c2 = p_context;
+									c2.line = op->line;
 									for (int i = 2; all_is_const && i < op->arguments.size(); i++) {
 										GDScriptCompletionIdentifier arg;
 
-										if (_guess_expression_type(c, op->arguments[i], arg)) {
+										if (_guess_expression_type(c2, op->arguments[i], arg)) {
 											if (arg.type.has_type && arg.type.is_constant && arg.value.get_type() != Variant::OBJECT) {
 												args.push_back(arg.value);
 											} else {
@@ -1282,9 +1282,9 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 					for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
 						if (E->get().name == p_context.function->name) {
 							MethodInfo &mi = E->get();
-							for (List<PropertyInfo>::Element *E = mi.arguments.front(); E; E = E->next()) {
-								if (E->get().name == p_identifier) {
-									r_type = _type_from_property(E->get());
+							for (List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next()) {
+								if (F->get().name == p_identifier) {
+									r_type = _type_from_property(F->get());
 									return true;
 								}
 							}
@@ -2237,8 +2237,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 							if (obj) {
 								List<String> options;
 								obj->get_argument_options(p_method, p_argidx, &options);
-								for (List<String>::Element *E = options.front(); E; E = E->next()) {
-									r_result.insert(E->get());
+								for (List<String>::Element *F = options.front(); F; F = F->next()) {
+									r_result.insert(F->get());
 								}
 							}
 						}
@@ -2806,12 +2806,12 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 						if (base_type.class_type) {
 							for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = base_type.class_type->constant_expressions.front(); E; E = E->next()) {
 								GDScriptCompletionIdentifier constant;
-								GDScriptCompletionContext c = context;
-								c._class = base_type.class_type;
-								c.function = NULL;
-								c.block = NULL;
-								c.line = E->value().expression->line;
-								if (_guess_expression_type(c, E->value().expression, constant)) {
+								GDScriptCompletionContext c2 = context;
+								c2._class = base_type.class_type;
+								c2.function = NULL;
+								c2.block = NULL;
+								c2.line = E->value().expression->line;
+								if (_guess_expression_type(c2, E->value().expression, constant)) {
 									if (constant.type.has_type && constant.type.is_meta_type) {
 										options.insert(E->key().operator String());
 									}

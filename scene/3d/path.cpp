@@ -126,7 +126,6 @@ void PathFollow::_update_transform() {
 
 	if (rotation_mode == ROTATION_ORIENTED) {
 
-		Vector3 pos = c->interpolate_baked(o, cubic);
 		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
 
 		if (forward.length_squared() < CMP_EPSILON2)

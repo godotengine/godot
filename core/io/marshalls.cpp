@@ -889,11 +889,11 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			if (buf) {
 				encode_uint32(uint32_t(np.get_name_count()) | 0x80000000, buf); //for compatibility with the old format
 				encode_uint32(np.get_subname_count(), buf + 4);
-				uint32_t flags = 0;
+				uint32_t np_flags = 0;
 				if (np.is_absolute())
-					flags |= 1;
+					np_flags |= 1;
 
-				encode_uint32(flags, buf + 8);
+				encode_uint32(np_flags, buf + 8);
 
 				buf += 12;
 			}

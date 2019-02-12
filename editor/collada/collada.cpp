@@ -2071,17 +2071,17 @@ void Collada::_parse_library(XMLParser &parser) {
 			} else if (name == "geometry") {
 
 				String id = parser.get_attribute_value("id");
-				String name = parser.get_attribute_value_safe("name");
+				String name2 = parser.get_attribute_value_safe("name");
 				while (parser.read() == OK) {
 
 					if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {
 
 						if (parser.get_node_name() == "mesh") {
-							state.mesh_name_map[id] = (name != "") ? name : id;
-							_parse_mesh_geometry(parser, id, name);
+							state.mesh_name_map[id] = (name2 != "") ? name2 : id;
+							_parse_mesh_geometry(parser, id, name2);
 						} else if (parser.get_node_name() == "spline") {
-							state.mesh_name_map[id] = (name != "") ? name : id;
-							_parse_curve_geometry(parser, id, name);
+							state.mesh_name_map[id] = (name2 != "") ? name2 : id;
+							_parse_curve_geometry(parser, id, name2);
 						} else if (!parser.is_empty())
 							parser.skip_section();
 					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name() == "geometry")

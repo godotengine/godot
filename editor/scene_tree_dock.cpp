@@ -1152,17 +1152,17 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 				if (p.get_type() == Variant::NODE_PATH) {
 
 					// Goes through all paths to check if its matching
-					for (List<Pair<NodePath, NodePath> >::Element *E = p_renames->front(); E; E = E->next()) {
+					for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
 
 						NodePath root_path = p_base->get_path();
 
-						NodePath rel_path_old = root_path.rel_path_to(E->get().first);
+						NodePath rel_path_old = root_path.rel_path_to(F->get().first);
 
-						NodePath rel_path_new = E->get().second;
+						NodePath rel_path_new = F->get().second;
 
 						// if not empty, get new relative path
-						if (E->get().second != NodePath()) {
-							rel_path_new = root_path.rel_path_to(E->get().second);
+						if (F->get().second != NodePath()) {
+							rel_path_new = root_path.rel_path_to(F->get().second);
 						}
 
 						// if old path detected, then it needs to be replaced with the new one
@@ -1233,11 +1233,11 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 						if (!ran.has(i))
 							continue; //channel was removed
 
-						for (List<Pair<NodePath, NodePath> >::Element *E = p_renames->front(); E; E = E->next()) {
+						for (List<Pair<NodePath, NodePath> >::Element *F = p_renames->front(); F; F = F->next()) {
 
-							if (E->get().first == old_np) {
+							if (F->get().first == old_np) {
 
-								if (E->get().second == NodePath()) {
+								if (F->get().second == NodePath()) {
 									//will be erased
 
 									int idx = 0;
@@ -1262,7 +1262,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, List<Pair<NodePath, NodeP
 
 								} else {
 									//will be renamed
-									NodePath rel_path = new_root_path.rel_path_to(E->get().second);
+									NodePath rel_path = new_root_path.rel_path_to(F->get().second);
 
 									NodePath new_path = NodePath(rel_path.get_names(), track_np.get_subnames(), false);
 									if (new_path == track_np)
@@ -1602,9 +1602,9 @@ void SceneTreeDock::_delete_confirm() {
 			List<Node *> owned;
 			n->get_owned_by(n->get_owner(), &owned);
 			Array owners;
-			for (List<Node *>::Element *E = owned.front(); E; E = E->next()) {
+			for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 
-				owners.push_back(E->get());
+				owners.push_back(F->get());
 			}
 
 			editor_data->get_undo_redo().add_do_method(n->get_parent(), "remove_child", n);

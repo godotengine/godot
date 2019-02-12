@@ -1165,9 +1165,9 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 
 		Array nodes = func["nodes"];
 
-		for (int i = 0; i < nodes.size(); i += 3) {
+		for (int j = 0; j < nodes.size(); j += 3) {
 
-			add_node(name, nodes[i], nodes[i + 2], nodes[i + 1]);
+			add_node(name, nodes[j], nodes[j + 2], nodes[j + 1]);
 		}
 
 		Array sequence_connections = func["sequence_connections"];

@@ -621,8 +621,8 @@ void Theme::clear() {
 
 void Theme::copy_default_theme() {
 
-	Ref<Theme> default_theme = get_default();
-	copy_theme(default_theme);
+	Ref<Theme> default_theme2 = get_default();
+	copy_theme(default_theme2);
 }
 
 void Theme::copy_theme(const Ref<Theme> &p_other) {

@@ -434,22 +434,22 @@ private:
 
 		if (mode == MODE_RENAME) {
 
-			String dir = _test_path();
-			if (dir == "") {
+			String dir2 = _test_path();
+			if (dir2 == "") {
 				set_message(TTR("Invalid project path (changed anything?)."), MESSAGE_ERROR);
 				return;
 			}
 
 			ProjectSettings *current = memnew(ProjectSettings);
 
-			int err = current->setup(dir, "");
+			int err = current->setup(dir2, "");
 			if (err != OK) {
 				set_message(vformat(TTR("Couldn't load project.godot in project path (error %d). It may be missing or corrupted."), err), MESSAGE_ERROR);
 			} else {
 				ProjectSettings::CustomMap edited_settings;
 				edited_settings["application/config/name"] = project_name->get_text();
 
-				if (current->save_custom(dir.plus_file("project.godot"), edited_settings, Vector<String>(), true) != OK) {
+				if (current->save_custom(dir2.plus_file("project.godot"), edited_settings, Vector<String>(), true) != OK) {
 					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
 				}
 			}

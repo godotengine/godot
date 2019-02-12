@@ -374,14 +374,14 @@ PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	{
 		PoolVector<Vector3>::Write w = path.write();
 
-		Point *p = end_point;
+		Point *p2 = end_point;
 		int idx = pc - 1;
-		while (p != begin_point) {
-			w[idx--] = p->pos;
-			p = p->prev_point;
+		while (p2 != begin_point) {
+			w[idx--] = p2->pos;
+			p2 = p2->prev_point;
 		}
 
-		w[0] = p->pos; // Assign first
+		w[0] = p2->pos; // Assign first
 	}
 
 	return path;

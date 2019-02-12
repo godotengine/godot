@@ -194,8 +194,8 @@ Error GodotSharpExport::_get_assembly_dependencies(GDMonoAssembly *p_assembly, c
 		String path;
 		bool has_extension = ref_name.ends_with(".dll") || ref_name.ends_with(".exe");
 
-		for (int i = 0; i < p_search_dirs.size(); i++) {
-			const String &search_dir = p_search_dirs[i];
+		for (int j = 0; j < p_search_dirs.size(); j++) {
+			const String &search_dir = p_search_dirs[j];
 
 			if (has_extension) {
 				path = search_dir.plus_file(ref_name);

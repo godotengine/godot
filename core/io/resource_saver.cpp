@@ -233,9 +233,9 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 
 void ResourceSaver::remove_custom_resource_format_saver(String script_path) {
 
-	Ref<ResourceFormatSaver> saver = _find_custom_resource_format_saver(script_path);
-	if (saver.is_valid())
-		remove_resource_format_saver(saver);
+	Ref<ResourceFormatSaver> custom_saver = _find_custom_resource_format_saver(script_path);
+	if (custom_saver.is_valid())
+		remove_resource_format_saver(custom_saver);
 }
 
 void ResourceSaver::add_custom_savers() {

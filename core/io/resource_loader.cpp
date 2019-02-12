@@ -905,9 +905,9 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 
 void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
 
-	Ref<ResourceFormatLoader> loader = _find_custom_resource_format_loader(script_path);
-	if (loader.is_valid())
-		remove_resource_format_loader(loader);
+	Ref<ResourceFormatLoader> custom_loader = _find_custom_resource_format_loader(script_path);
+	if (custom_loader.is_valid())
+		remove_resource_format_loader(custom_loader);
 }
 
 void ResourceLoader::add_custom_loaders() {

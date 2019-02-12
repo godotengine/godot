@@ -2,7 +2,7 @@ import os
 import platform
 import sys
 from compat import decode_utf8
-
+from methods import get_compiler_version
 
 def is_active():
     return True
@@ -161,18 +161,11 @@ def configure(env):
     env.Append(CCFLAGS=['-pipe'])
     env.Append(LINKFLAGS=['-pipe'])
 
-    # Check for gcc version > 5 before adding -no-pie
-    import re
-    import subprocess
-    proc = subprocess.Popen([env['CXX'], '--version'], stdout=subprocess.PIPE)
-    (stdout, _) = proc.communicate()
-    stdout = decode_utf8(stdout)
-    match = re.search('[0-9][0-9.]*', stdout)
-    if match is not None:
-        version = match.group().split('.')
-        if (version[0] > '5'):
-            env.Append(CCFLAGS=['-fpie'])
-            env.Append(LINKFLAGS=['-no-pie'])
+    # Check for gcc version >= 6 before adding -no-pie
+    version = get_compiler_version(env)
+    if version != None and version[0] > '6':
+        env.Append(CCFLAGS=['-fpie'])
+        env.Append(LINKFLAGS=['-no-pie'])
 
     ## Dependencies
 

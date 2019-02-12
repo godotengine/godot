@@ -244,8 +244,8 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 
 		if (n.has("children")) {
 			Array children = n["children"];
-			for (int i = 0; i < children.size(); i++) {
-				node->children.push_back(children[i]);
+			for (int j = 0; j < children.size(); j++) {
+				node->children.push_back(children[j]);
 			}
 		}
 
@@ -879,7 +879,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			if (p.has("mode")) {
 				int mode = p["mode"];
 				ERR_FAIL_INDEX_V(mode, 7, ERR_FILE_CORRUPT);
-				static const Mesh::PrimitiveType primitives[7] = {
+				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS,
 					Mesh::PRIMITIVE_LINES,
 					Mesh::PRIMITIVE_LINE_LOOP,
@@ -889,7 +889,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					Mesh::PRIMITIVE_TRIANGLE_FAN,
 				};
 
-				primitive = primitives[mode];
+				primitive = primitives2[mode];
 			}
 
 			if (a.has("POSITION")) {
@@ -922,17 +922,17 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 					//PoolVector<int> v = array[Mesh::ARRAY_BONES];
 					//PoolVector<int>::Read r = v.read();
 
-					for (int j = 0; j < wc; j += 4) {
+					for (int k = 0; k < wc; k += 4) {
 						float total = 0.0;
-						total += w[j + 0];
-						total += w[j + 1];
-						total += w[j + 2];
-						total += w[j + 3];
+						total += w[k + 0];
+						total += w[k + 1];
+						total += w[k + 2];
+						total += w[k + 3];
 						if (total > 0.0) {
-							w[j + 0] /= total;
-							w[j + 1] /= total;
-							w[j + 2] /= total;
-							w[j + 3] /= total;
+							w[k + 0] /= total;
+							w[k + 1] /= total;
+							w[k + 2] /= total;
+							w[k + 3] /= total;
 						}
 
 						//print_verbose(itos(j / 4) + ": " + itos(r[j + 0]) + ":" + rtos(w[j + 0]) + ", " + itos(r[j + 1]) + ":" + rtos(w[j + 1]) + ", " + itos(r[j + 2]) + ":" + rtos(w[j + 2]) + ", " + itos(r[j + 3]) + ":" + rtos(w[j + 3]));
@@ -950,8 +950,8 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 
 					int is = indices.size();
 					PoolVector<int>::Write w = indices.write();
-					for (int i = 0; i < is; i += 3) {
-						SWAP(w[i + 1], w[i + 2]);
+					for (int k = 0; k < is; k += 3) {
+						SWAP(w[k + 1], w[k + 2]);
 					}
 				}
 				array[Mesh::ARRAY_INDEX] = indices;
@@ -964,10 +964,10 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				indices.resize(vs);
 				{
 					PoolVector<int>::Write w = indices.write();
-					for (int i = 0; i < vs; i += 3) {
-						w[i] = i;
-						w[i + 1] = i + 2;
-						w[i + 2] = i + 1;
+					for (int k = 0; k < vs; k += 3) {
+						w[k] = k;
+						w[k + 1] = k + 2;
+						w[k + 2] = k + 1;
 					}
 				}
 				array[Mesh::ARRAY_INDEX] = indices;

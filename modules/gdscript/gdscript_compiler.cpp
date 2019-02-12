@@ -1360,15 +1360,15 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							// jump unconditionally
 							// continue address
 							// compile the condition
-							int ret = _parse_expression(codegen, branch.compiled_pattern, p_stack_level);
-							if (ret < 0) {
+							int ret2 = _parse_expression(codegen, branch.compiled_pattern, p_stack_level);
+							if (ret2 < 0) {
 								memdelete(id);
 								memdelete(op);
 								return ERR_PARSE_ERROR;
 							}
 
 							codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_IF);
-							codegen.opcodes.push_back(ret);
+							codegen.opcodes.push_back(ret2);
 							codegen.opcodes.push_back(codegen.opcodes.size() + 3);
 							int continue_addr = codegen.opcodes.size();
 							codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
@@ -1401,12 +1401,12 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 						codegen.opcodes.push_back(cf->line);
 						codegen.current_line = cf->line;
 #endif
-						int ret = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
-						if (ret < 0)
+						int ret2 = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
+						if (ret2 < 0)
 							return ERR_PARSE_ERROR;
 
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_IF_NOT);
-						codegen.opcodes.push_back(ret);
+						codegen.opcodes.push_back(ret2);
 						int else_addr = codegen.opcodes.size();
 						codegen.opcodes.push_back(0); //temporary
 
@@ -1421,9 +1421,9 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							codegen.opcodes.push_back(0);
 							codegen.opcodes.write[else_addr] = codegen.opcodes.size();
 
-							Error err = _parse_block(codegen, cf->body_else, p_stack_level, p_break_addr, p_continue_addr);
-							if (err)
-								return err;
+							Error err2 = _parse_block(codegen, cf->body_else, p_stack_level, p_break_addr, p_continue_addr);
+							if (err2)
+								return err2;
 
 							codegen.opcodes.write[end_addr] = codegen.opcodes.size();
 						} else {
@@ -1444,14 +1444,14 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 						codegen.push_stack_identifiers();
 						codegen.add_stack_identifier(static_cast<const GDScriptParser::IdentifierNode *>(cf->arguments[0])->name, iter_stack_pos);
 
-						int ret = _parse_expression(codegen, cf->arguments[1], slevel, false);
-						if (ret < 0)
+						int ret2 = _parse_expression(codegen, cf->arguments[1], slevel, false);
+						if (ret2 < 0)
 							return ERR_COMPILATION_FAILED;
 
 						//assign container
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN);
 						codegen.opcodes.push_back(container_pos);
-						codegen.opcodes.push_back(ret);
+						codegen.opcodes.push_back(ret2);
 
 						//begin loop
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_ITERATE_BEGIN);
@@ -1493,11 +1493,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 						codegen.opcodes.push_back(0);
 						int continue_addr = codegen.opcodes.size();
 
-						int ret = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
-						if (ret < 0)
+						int ret2 = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
+						if (ret2 < 0)
 							return ERR_PARSE_ERROR;
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_IF_NOT);
-						codegen.opcodes.push_back(ret);
+						codegen.opcodes.push_back(ret2);
 						codegen.opcodes.push_back(break_addr);
 						Error err = _parse_block(codegen, cf->body, p_stack_level, break_addr, continue_addr);
 						if (err)
@@ -1533,21 +1533,21 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_RETURN: {
 
-						int ret;
+						int ret2;
 
 						if (cf->arguments.size()) {
 
-							ret = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
-							if (ret < 0)
+							ret2 = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
+							if (ret2 < 0)
 								return ERR_PARSE_ERROR;
 
 						} else {
 
-							ret = GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
+							ret2 = GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
 						}
 
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_RETURN);
-						codegen.opcodes.push_back(ret);
+						codegen.opcodes.push_back(ret2);
 
 					} break;
 				}
@@ -1558,12 +1558,12 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 				const GDScriptParser::AssertNode *as = static_cast<const GDScriptParser::AssertNode *>(s);
 
-				int ret = _parse_expression(codegen, as->condition, p_stack_level, false);
-				if (ret < 0)
+				int ret2 = _parse_expression(codegen, as->condition, p_stack_level, false);
+				if (ret2 < 0)
 					return ERR_PARSE_ERROR;
 
 				codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSERT);
-				codegen.opcodes.push_back(ret);
+				codegen.opcodes.push_back(ret2);
 #endif
 			} break;
 			case GDScriptParser::Node::TYPE_BREAKPOINT: {
@@ -1590,8 +1590,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 			} break;
 			default: {
 				//expression
-				int ret = _parse_expression(codegen, s, p_stack_level, true);
-				if (ret < 0)
+				int ret2 = _parse_expression(codegen, s, p_stack_level, true);
+				if (ret2 < 0)
 					return ERR_PARSE_ERROR;
 			} break;
 		}
@@ -2116,8 +2116,8 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 					instance->owner = E->get();
 
 					//needed for hot reloading
-					for (Map<StringName, GDScript::MemberInfo>::Element *E = p_script->member_indices.front(); E; E = E->next()) {
-						instance->member_indices_cache[E->key()] = E->get().index;
+					for (Map<StringName, GDScript::MemberInfo>::Element *F = p_script->member_indices.front(); F; F = F->next()) {
+						instance->member_indices_cache[F->key()] = F->get().index;
 					}
 					instance->owner->set_script_instance(instance);
 

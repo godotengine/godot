@@ -205,9 +205,9 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 
 	// Twist limits
 	if (m_twistSpan >= real_t(0.)) {
-		Vector3 b2Axis2 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(1));
+		Vector3 b2Axis22 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(1));
 		Quat rotationArc = Quat(b2Axis1, b1Axis1);
-		Vector3 TwistRef = rotationArc.xform(b2Axis2);
+		Vector3 TwistRef = rotationArc.xform(b2Axis22);
 		real_t twist = atan2fast(TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2));
 
 		real_t lockedFreeFactor = (m_twistSpan > real_t(0.05f)) ? m_limitSoftness : real_t(0.);

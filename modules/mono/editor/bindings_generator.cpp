@@ -365,8 +365,8 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 		p_output.push_back(enum_proxy_name);
 		p_output.push_back("\n" INDENT1 OPEN_BLOCK);
 
-		for (const List<ConstantInterface>::Element *E = ienum.constants.front(); E; E = E->next()) {
-			const ConstantInterface &iconstant = E->get();
+		for (const List<ConstantInterface>::Element *F = ienum.constants.front(); F; F = F->next()) {
+			const ConstantInterface &iconstant = F->get();
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				p_output.push_back(INDENT2 "/// <summary>\n");
@@ -389,7 +389,7 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 			p_output.push_back(iconstant.proxy_name);
 			p_output.push_back(" = ");
 			p_output.push_back(itos(iconstant.value));
-			p_output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
+			p_output.push_back(F != ienum.constants.back() ? ",\n" : "\n");
 		}
 
 		p_output.push_back(INDENT1 CLOSE_BLOCK);
@@ -472,8 +472,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 		String output_dir = output_file.get_base_dir();
 
 		if (!DirAccess::exists(output_dir)) {
-			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-			ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 			Error err = da->make_dir_recursive(ProjectSettings::get_singleton()->globalize_path(output_dir));
 			ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 		}
@@ -806,8 +804,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.push_back(ienum.cname.operator String());
 			output.push_back(MEMBER_BEGIN OPEN_BLOCK);
 
-			for (const List<ConstantInterface>::Element *E = ienum.constants.front(); E; E = E->next()) {
-				const ConstantInterface &iconstant = E->get();
+			for (const List<ConstantInterface>::Element *F = ienum.constants.front(); F; F = F->next()) {
+				const ConstantInterface &iconstant = F->get();
 
 				if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 					output.push_back(INDENT3 "/// <summary>\n");
@@ -830,7 +828,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				output.push_back(iconstant.proxy_name);
 				output.push_back(" = ");
 				output.push_back(itos(iconstant.value));
-				output.push_back(E != ienum.constants.back() ? ",\n" : "\n");
+				output.push_back(F != ienum.constants.back() ? ",\n" : "\n");
 			}
 
 			output.push_back(INDENT2 CLOSE_BLOCK);
@@ -1889,8 +1887,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			}
 
 			if (!imethod.is_virtual && imethod.name[0] == '_') {
-				for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
-					const PropertyInterface &iprop = E->get();
+				for (const List<PropertyInterface>::Element *F = itype.properties.front(); F; F = F->next()) {
+					const PropertyInterface &iprop = F->get();
 
 					if (iprop.setter == imethod.name || iprop.getter == imethod.name) {
 						imethod.is_internal = true;
@@ -2352,9 +2350,9 @@ void BindingsGenerator::_populate_global_constants() {
 
 			if (enum_name != StringName()) {
 				EnumInterface ienum(enum_name);
-				List<EnumInterface>::Element *match = global_enums.find(ienum);
-				if (match) {
-					match->get().constants.push_back(iconstant);
+				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
+				if (enum_match) {
+					enum_match->get().constants.push_back(iconstant);
 				} else {
 					ienum.constants.push_back(iconstant);
 					global_enums.push_back(ienum);

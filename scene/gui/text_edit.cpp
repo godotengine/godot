@@ -1384,8 +1384,8 @@ void TextEdit::_notification(int p_what) {
 					}
 				}
 
-				Size2 size = Size2(max_w, sc * font->get_height() + spacing);
-				Size2 minsize = size + sb->get_minimum_size();
+				Size2 size2 = Size2(max_w, sc * font->get_height() + spacing);
+				Size2 minsize = size2 + sb->get_minimum_size();
 
 				if (completion_hint_offset == -0xFFFF) {
 					completion_hint_offset = cursor_pos.x - offset;
@@ -1717,10 +1717,10 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 		col = get_char_pos_for_line(colx, row, wrap_index);
 		if (is_wrap_enabled() && wrap_index < times_line_wraps(row)) {
 			// move back one if we are at the end of the row
-			Vector<String> rows = get_wrap_rows_text(row);
+			Vector<String> rows2 = get_wrap_rows_text(row);
 			int row_end_col = 0;
 			for (int i = 0; i < wrap_index + 1; i++) {
-				row_end_col += rows[i].length();
+				row_end_col += rows2[i].length();
 			}
 			if (col >= row_end_col)
 				col -= 1;
@@ -3375,20 +3375,20 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	String preinsert_text = text[p_line].substr(0, p_char);
 	String postinsert_text = text[p_line].substr(p_char, text[p_line].size());
 
-	for (int i = 0; i < substrings.size(); i++) {
+	for (int j = 0; j < substrings.size(); j++) {
 		//insert the substrings
 
-		if (i == 0) {
+		if (j == 0) {
 
-			text.set(p_line, preinsert_text + substrings[i]);
+			text.set(p_line, preinsert_text + substrings[j]);
 		} else {
 
-			text.insert(p_line + i, substrings[i]);
+			text.insert(p_line + j, substrings[j]);
 		}
 
-		if (i == substrings.size() - 1) {
+		if (j == substrings.size() - 1) {
 
-			text.set(p_line + i, text[p_line + i] + postinsert_text);
+			text.set(p_line + j, text[p_line + j] + postinsert_text);
 		}
 	}
 

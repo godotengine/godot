@@ -398,10 +398,10 @@ Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(List<CanvasItem *> p_li
 
 	// Expand with the other ones
 	for (List<CanvasItem *>::Element *E = p_list.front(); E; E = E->next()) {
-		CanvasItem *canvas_item = E->get();
-		Transform2D xform = canvas_item->get_global_transform_with_canvas();
+		CanvasItem *canvas_item2 = E->get();
+		Transform2D xform = canvas_item2->get_global_transform_with_canvas();
 
-		Rect2 current_rect = canvas_item->_edit_get_rect();
+		Rect2 current_rect = canvas_item2->_edit_get_rect();
 		rect.expand_to(xform.xform(current_rect.position));
 		rect.expand_to(xform.xform(current_rect.position + Vector2(current_rect.size.x, 0)));
 		rect.expand_to(xform.xform(current_rect.position + current_rect.size));
@@ -816,10 +816,10 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 		undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
 		undo_redo->add_undo_method(canvas_item, "_edit_set_state", se->undo_state);
 		if (commit_bones) {
-			for (List<Dictionary>::Element *E = se->pre_drag_bones_undo_state.front(); E; E = E->next()) {
+			for (List<Dictionary>::Element *F = se->pre_drag_bones_undo_state.front(); F; F = F->next()) {
 				canvas_item = Object::cast_to<CanvasItem>(canvas_item->get_parent());
 				undo_redo->add_do_method(canvas_item, "_edit_set_state", canvas_item->_edit_get_state());
-				undo_redo->add_undo_method(canvas_item, "_edit_set_state", E->get());
+				undo_redo->add_undo_method(canvas_item, "_edit_set_state", F->get());
 			}
 		}
 	}
@@ -1921,9 +1921,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if (drag_selection.size() == 1) {
 				Node2D *node_2d = Object::cast_to<Node2D>(drag_selection[0]);
 				if (node_2d && move_local_base_rotated) {
-					Transform2D m;
-					m.rotate(node_2d->get_rotation());
-					new_pos += m.xform(drag_to);
+					Transform2D m2;
+					m2.rotate(node_2d->get_rotation());
+					new_pos += m2.xform(drag_to);
 				} else if (move_local_base) {
 					new_pos += drag_to;
 				} else {
@@ -2065,18 +2065,18 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				// Start dragging
 				if (still_selected) {
 					// Drag the node(s) if requested
-					List<CanvasItem *> selection = _get_edited_canvas_items();
+					List<CanvasItem *> selection2 = _get_edited_canvas_items();
 
 					// Remove not movable nodes
-					for (int i = 0; i < selection.size(); i++) {
-						if (!_is_node_movable(selection[i], true)) {
-							selection.erase(selection[i]);
+					for (int i = 0; i < selection2.size(); i++) {
+						if (!_is_node_movable(selection2[i], true)) {
+							selection2.erase(selection2[i]);
 						}
 					}
 
-					if (selection.size() > 0) {
+					if (selection2.size() > 0) {
 						drag_type = DRAG_MOVE;
-						drag_selection = selection;
+						drag_selection = selection2;
 						drag_from = click;
 						_save_canvas_item_state(drag_selection);
 					}

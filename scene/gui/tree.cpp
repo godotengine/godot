@@ -1071,11 +1071,11 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		int font_ascent = font->get_ascent();
 
 		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
-		int skip = 0;
+		int skip2 = 0;
 		for (int i = 0; i < columns.size(); i++) {
 
-			if (skip) {
-				skip--;
+			if (skip2) {
+				skip2--;
 				continue;
 			}
 
@@ -1102,7 +1102,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text == "" && p_item->cells[i + plus].icon.is_null()) {
 					w += get_column_width(i + plus);
 					plus++;
-					skip++;
+					skip2++;
 				}
 			}
 
@@ -1165,8 +1165,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					cache.selected->draw(ci, r);
 				}
 				if (text_editor->is_visible_in_tree()) {
-					Vector2 ofs(0, (text_editor->get_size().height - r.size.height) / 2);
-					text_editor->set_position(get_global_position() + r.position - ofs);
+					Vector2 ofs2(0, (text_editor->get_size().height - r.size.height) / 2);
+					text_editor->set_position(get_global_position() + r.position - ofs2);
 				}
 			}
 
@@ -2698,8 +2698,8 @@ bool Tree::edit_selected() {
 		popup_menu->clear();
 		for (int i = 0; i < c.text.get_slice_count(","); i++) {
 
-			String s = c.text.get_slicec(',', i);
-			popup_menu->add_item(s.get_slicec(':', 0), s.get_slicec(':', 1).empty() ? i : s.get_slicec(':', 1).to_int());
+			String s2 = c.text.get_slicec(',', i);
+			popup_menu->add_item(s2.get_slicec(':', 0), s2.get_slicec(':', 1).empty() ? i : s2.get_slicec(':', 1).to_int());
 		}
 
 		popup_menu->set_size(Size2(rect.size.width, 0));
@@ -2951,14 +2951,14 @@ void Tree::_notification(int p_what) {
 		if (show_column_titles) {
 
 			//title buttons
-			int ofs = cache.bg->get_margin(MARGIN_LEFT);
+			int ofs2 = cache.bg->get_margin(MARGIN_LEFT);
 			for (int i = 0; i < columns.size(); i++) {
 
 				Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? cache.title_button_hover : cache.title_button);
 				Ref<Font> f = cache.tb_font;
-				Rect2 tbrect = Rect2(ofs - cache.offset.x, bg->get_margin(MARGIN_TOP), get_column_width(i), tbh);
+				Rect2 tbrect = Rect2(ofs2 - cache.offset.x, bg->get_margin(MARGIN_TOP), get_column_width(i), tbh);
 				sb->draw(ci, tbrect);
-				ofs += tbrect.size.width;
+				ofs2 += tbrect.size.width;
 				//text
 				int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 				f->draw_halign(ci, tbrect.position + Point2i(sb->get_offset().x, (tbrect.size.height - f->get_height()) / 2 + f->get_ascent()), HALIGN_CENTER, clip_w, columns[i].title, cache.title_button_color);

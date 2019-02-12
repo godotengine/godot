@@ -1041,10 +1041,10 @@ MainLoop *test(TestType p_type) {
 
 	} else if (p_type == TEST_BYTECODE) {
 
-		Vector<uint8_t> buf = GDScriptTokenizerBuffer::parse_code_string(code);
+		Vector<uint8_t> buf2 = GDScriptTokenizerBuffer::parse_code_string(code);
 		String dst = test.get_basename() + ".gdc";
 		FileAccess *fw = FileAccess::open(dst, FileAccess::WRITE);
-		fw->store_buffer(buf.ptr(), buf.size());
+		fw->store_buffer(buf2.ptr(), buf2.size());
 		memdelete(fw);
 	}
 

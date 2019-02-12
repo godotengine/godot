@@ -1264,10 +1264,10 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
-					dn->dict.push_back(expr);
+					dn->dict.push_back(subexpr);
 
 					_get_token(tk);
 					if (tk.type != TK_COLON) {
@@ -1275,11 +1275,11 @@ Expression::ENode *Expression::_parse_expression() {
 						return NULL;
 					}
 
-					expr = _parse_expression();
-					if (!expr)
+					subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
 
-					dn->dict.push_back(expr);
+					dn->dict.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1308,10 +1308,10 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
-					an->array.push_back(expr);
+					an->array.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1355,25 +1355,25 @@ Expression::ENode *Expression::_parse_expression() {
 
 					while (true) {
 
-						int cofs = str_ofs;
+						int cofs2 = str_ofs;
 						_get_token(tk);
 						if (tk.type == TK_PARENTHESIS_CLOSE) {
 							break;
 						}
-						str_ofs = cofs; //revert
+						str_ofs = cofs2; //revert
 						//parse an expression
-						ENode *expr = _parse_expression();
-						if (!expr)
+						ENode *subexpr = _parse_expression();
+						if (!subexpr)
 							return NULL;
 
-						func_call->arguments.push_back(expr);
+						func_call->arguments.push_back(subexpr);
 
-						cofs = str_ofs;
+						cofs2 = str_ofs;
 						_get_token(tk);
 						if (tk.type == TK_COMMA) {
 							//all good
 						} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-							str_ofs = cofs;
+							str_ofs = cofs2;
 						} else {
 							_set_error("Expected ',' or ')'");
 						}
@@ -1444,11 +1444,11 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
 
-					constructor->arguments.push_back(expr);
+					constructor->arguments.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1485,11 +1485,11 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
 
-					bifunc->arguments.push_back(expr);
+					bifunc->arguments.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1584,25 +1584,25 @@ Expression::ENode *Expression::_parse_expression() {
 
 						while (true) {
 
-							int cofs = str_ofs;
+							int cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_PARENTHESIS_CLOSE) {
 								break;
 							}
-							str_ofs = cofs; //revert
+							str_ofs = cofs3; //revert
 							//parse an expression
-							ENode *expr = _parse_expression();
-							if (!expr)
+							ENode *subexpr = _parse_expression();
+							if (!subexpr)
 								return NULL;
 
-							func_call->arguments.push_back(expr);
+							func_call->arguments.push_back(subexpr);
 
-							cofs = str_ofs;
+							cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_COMMA) {
 								//all good
 							} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-								str_ofs = cofs;
+								str_ofs = cofs3;
 							} else {
 								_set_error("Expected ',' or ')'");
 							}
@@ -1902,7 +1902,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Variant b;
 
 			if (op->nodes[1]) {
-				bool ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
+				ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
 				if (ret)
 					return true;
 			}
@@ -2070,7 +2070,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			for (int i = 0; i < call->arguments.size(); i++) {
 
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
+				ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
 
 				if (ret)
 					return true;

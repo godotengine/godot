@@ -1092,10 +1092,10 @@ void Polygon2DEditor::_uv_draw() {
 
 		PoolVector<int> points = polygons[i];
 		Vector<Vector2> polypoints;
-		for (int i = 0; i < points.size(); i++) {
-			int next = (i + 1) % points.size();
+		for (int j = 0; j < points.size(); j++) {
+			int next = (j + 1) % points.size();
 
-			int idx = points[i];
+			int idx = points[j];
 			int idx_next = points[next];
 			if (idx < 0 || idx >= uvs.size())
 				continue;

@@ -441,9 +441,9 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 
 		PoolVector<float> penalties = p_data["penalties"];
 		if (penalties.size() == pc) {
-			PoolVector<float>::Read pr = penalties.read();
+			PoolVector<float>::Read pr2 = penalties.read();
 			for (int i = 0; i < pc; i++) {
-				points.write[i].penalty = pr[i];
+				points.write[i].penalty = pr2[i];
 			}
 		}
 	}

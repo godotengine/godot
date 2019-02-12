@@ -236,8 +236,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 										} else {
 											//for instances, a copy must be made
-											Node *base = i == 0 ? node : ret_nodes[0];
-											Ref<Resource> local_dupe = res->duplicate_for_local_scene(base, resources_local_to_scene);
+											Node *base2 = i == 0 ? node : ret_nodes[0];
+											Ref<Resource> local_dupe = res->duplicate_for_local_scene(base2, resources_local_to_scene);
 											resources_local_to_scene[res] = local_dupe;
 											res = local_dupe;
 											value = local_dupe;
@@ -296,8 +296,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 		ret_nodes[i] = node;
 
 		if (node && gen_node_path_cache && ret_nodes[0]) {
-			NodePath n = ret_nodes[0]->get_path_to(node);
-			node_path_cache[n] = i;
+			NodePath n2 = ret_nodes[0]->get_path_to(node);
+			node_path_cache[n2] = i;
 		}
 	}
 
@@ -749,7 +749,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 			{
 				Node *nl = p_node;
 
-				bool exists = false;
+				bool exists2 = false;
 
 				while (nl) {
 
@@ -763,7 +763,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 							if (from_node >= 0 && to_node >= 0) {
 								//this one has state for this node, save
 								if (state->is_connection(from_node, c.signal, to_node, c.method)) {
-									exists = true;
+									exists2 = true;
 									break;
 								}
 							}
@@ -781,7 +781,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 								if (from_node >= 0 && to_node >= 0) {
 									//this one has state for this node, save
 									if (state->is_connection(from_node, c.signal, to_node, c.method)) {
-										exists = true;
+										exists2 = true;
 										break;
 									}
 								}
@@ -791,7 +791,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, Map<StringName
 					}
 				}
 
-				if (exists) {
+				if (exists2) {
 					continue;
 				}
 			}

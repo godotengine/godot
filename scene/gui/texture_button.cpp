@@ -206,8 +206,8 @@ void TextureButton::_notification(int p_what) {
 							Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
 							float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
 							Size2 scaledTexSize = tex_size * scale;
-							Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
-							_texture_region = Rect2(ofs, size / scale);
+							Point2 ofs2 = ((scaledTexSize - size) / scale).abs() / 2.0f;
+							_texture_region = Rect2(ofs2, size / scale);
 						} break;
 					}
 				}

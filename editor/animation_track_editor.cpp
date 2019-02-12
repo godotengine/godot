@@ -132,7 +132,7 @@ public:
 
 			if (existing != -1) {
 				Variant v = animation->track_get_key_value(track, existing);
-				float trans = animation->track_get_key_transition(track, existing);
+				trans = animation->track_get_key_transition(track, existing);
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, new_time, v, trans);
 			}
 
@@ -384,12 +384,12 @@ public:
 
 				if (name == "animation") {
 
-					StringName name = p_value;
+					StringName anim_name = p_value;
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
 					StringName prev = animation->animation_track_get_key_animation(track, key);
-					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_animation", track, key, name);
+					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_animation", track, key, anim_name);
 					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_animation", track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
@@ -2833,9 +2833,9 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			if (animation->track_get_path(i) == np) {
 				value = p_value; //all good
 			} else {
-				String path = animation->track_get_path(i);
-				if (NodePath(path.get_basename()) == np) {
-					String subindex = path.get_extension();
+				String tpath = animation->track_get_path(i);
+				if (NodePath(tpath.get_basename()) == np) {
+					String subindex = tpath.get_extension();
 					value = p_value.get(subindex);
 				} else {
 					continue;
@@ -2928,9 +2928,9 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			if (animation->track_get_path(i) == np) {
 				value = p_value; //all good
 			} else {
-				String path = animation->track_get_path(i);
-				if (NodePath(path.get_basename()) == np) {
-					String subindex = path.get_extension();
+				String tpath = animation->track_get_path(i);
+				if (NodePath(tpath.get_basename()) == np) {
+					String subindex = tpath.get_extension();
 					value = p_value.get(subindex);
 				} else {
 					continue;
@@ -4329,9 +4329,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 					text = node->get_name();
 					Vector<StringName> sn = path.get_subnames();
-					for (int i = 0; i < sn.size(); i++) {
+					for (int j = 0; j < sn.size(); j++) {
 						text += ".";
-						text += sn[i];
+						text += sn[j];
 					}
 
 					path = NodePath(node->get_path().get_names(), path.get_subnames(), true); //store full path instead for copying

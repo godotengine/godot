@@ -221,8 +221,8 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	}
 	int first_not_comment = 0;
 	for (int i = 0; i < get_child_count(); i++) {
-		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (gn && !gn->is_comment()) {
+		GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
+		if (gn2 && !gn2->is_comment()) {
 			first_not_comment = i;
 			break;
 		}
@@ -958,33 +958,33 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
-						GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-						if (!gn || !gn->is_selected())
+						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
+						if (!gn2 || !gn2->is_selected())
 							continue;
 
-						previus_selected.push_back(gn);
+						previus_selected.push_back(gn2);
 					}
 				} else if (b->get_shift()) {
 					box_selection_mode_aditive = false;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
-						GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-						if (!gn || !gn->is_selected())
+						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
+						if (!gn2 || !gn2->is_selected())
 							continue;
 
-						previus_selected.push_back(gn);
+						previus_selected.push_back(gn2);
 					}
 				} else {
 					box_selection_mode_aditive = true;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
-						GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-						if (!gn)
+						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
+						if (!gn2)
 							continue;
 
-						gn->set_selected(false);
+						gn2->set_selected(false);
 					}
 				}
 			}

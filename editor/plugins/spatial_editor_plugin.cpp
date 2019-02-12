@@ -4695,10 +4695,10 @@ void SpatialEditor::_init_indicators() {
 				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-				Color col;
-				col[i] = 1.0;
-				col.a = gizmo_alph;
-				plane_mat->set_albedo(col);
+				Color col2;
+				col2[i] = 1.0;
+				col2.a = gizmo_alph;
+				plane_mat->set_albedo(col2);
 				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
 				surftool->set_material(plane_mat);
 				surftool->commit(move_plane_gizmo[i]);
@@ -4824,10 +4824,10 @@ void SpatialEditor::_init_indicators() {
 				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-				Color col;
-				col[i] = 1.0;
-				col.a = gizmo_alph;
-				plane_mat->set_albedo(col);
+				Color col2;
+				col2[i] = 1.0;
+				col2.a = gizmo_alph;
+				plane_mat->set_albedo(col2);
 				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
 				surftool->set_material(plane_mat);
 				surftool->commit(scale_plane_gizmo[i]);

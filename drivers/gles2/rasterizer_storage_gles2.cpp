@@ -4283,7 +4283,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		glClearColor(0, 0, 0, 0);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE) {
 			_render_target_clear(rt);
 			ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);

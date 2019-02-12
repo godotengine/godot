@@ -2916,7 +2916,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 
 				uint32_t idx = level_cells[j];
 
-				uint32_t r = (uint32_t(local_data[idx].energy[0]) / probe_data->dynamic.bake_dynamic_range) >> 2;
+				uint32_t r2 = (uint32_t(local_data[idx].energy[0]) / probe_data->dynamic.bake_dynamic_range) >> 2;
 				uint32_t g = (uint32_t(local_data[idx].energy[1]) / probe_data->dynamic.bake_dynamic_range) >> 2;
 				uint32_t b = (uint32_t(local_data[idx].energy[2]) / probe_data->dynamic.bake_dynamic_range) >> 2;
 				uint32_t a = (cells[idx].level_alpha >> 8) & 0xFF;
@@ -2924,7 +2924,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 				uint32_t mm_ofs = sizes[0] * sizes[1] * (local_data[idx].pos[2]) + sizes[0] * (local_data[idx].pos[1]) + (local_data[idx].pos[0]);
 				mm_ofs *= 4; //for RGBA (4 bytes)
 
-				mipmapw[mm_ofs + 0] = uint8_t(CLAMP(r, 0, 255));
+				mipmapw[mm_ofs + 0] = uint8_t(CLAMP(r2, 0, 255));
 				mipmapw[mm_ofs + 1] = uint8_t(CLAMP(g, 0, 255));
 				mipmapw[mm_ofs + 2] = uint8_t(CLAMP(b, 0, 255));
 				mipmapw[mm_ofs + 3] = uint8_t(CLAMP(a, 0, 255));

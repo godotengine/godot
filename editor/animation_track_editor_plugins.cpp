@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation_track_editor_plugins.h"
+
 #include "editor/audio_stream_preview.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
@@ -37,6 +38,7 @@
 #include "scene/3d/sprite_3d.h"
 #include "scene/animation/animation_player.h"
 #include "servers/audio/audio_stream.h"
+
 /// BOOL ///
 int AnimationTrackEditBool::get_key_height() const {
 
@@ -247,9 +249,6 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		return;
 	}
 
-	Ref<Font> font = get_font("font", "Label");
-	float fh = int(font->get_height() * 1.5);
-
 	bool play = get_animation()->track_get_key_value(get_track(), p_index);
 	if (play) {
 		float len = stream->get_length();
@@ -285,8 +284,9 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		if (to_x <= from_x)
 			return;
 
-		int h = get_size().height;
-		Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
+		Ref<Font> font = get_font("font", "Label");
+		float fh = int(font->get_height() * 1.5);
+		Rect2 rect = Rect2(from_x, (get_size().height - fh) / 2, to_x - from_x, fh);
 		draw_rect(rect, Color(0.25, 0.25, 0.25));
 
 		Vector<Vector2> lines;
@@ -439,12 +439,12 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		return;
 	}
 
-	int frame = get_animation()->track_get_key_value(get_track(), p_index);
-
 	Ref<Texture> texture;
 	Rect2 region;
 
 	if (Object::cast_to<Sprite>(object) || Object::cast_to<Sprite3D>(object)) {
+
+		int frame = get_animation()->track_get_key_value(get_track(), p_index);
 
 		texture = object->call("get_texture");
 		if (!texture.is_valid()) {

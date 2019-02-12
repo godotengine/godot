@@ -851,11 +851,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				int indices[num_points * 3];
 
-				for (int i = 0; i < num_points; i++) {
-					points[i] = circle->pos + Vector2(Math::sin(i * Math_PI * 2.0 / num_points), Math::cos(i * Math_PI * 2.0 / num_points)) * circle->radius;
-					indices[i * 3 + 0] = i;
-					indices[i * 3 + 1] = (i + 1) % num_points;
-					indices[i * 3 + 2] = num_points;
+				for (int j = 0; j < num_points; j++) {
+					points[j] = circle->pos + Vector2(Math::sin(j * Math_PI * 2.0 / num_points), Math::cos(j * Math_PI * 2.0 / num_points)) * circle->radius;
+					indices[j * 3 + 0] = j;
+					indices[j * 3 + 1] = (j + 1) % num_points;
+					indices[j * 3 + 2] = num_points;
 				}
 
 				_bind_canvas_texture(RID(), RID());
@@ -913,13 +913,13 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 							glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 						}
 
-						for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-							if (s->attribs[i].enabled) {
-								glEnableVertexAttribArray(i);
-								glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, (uint8_t *)0 + s->attribs[i].offset);
+						for (int k = 0; k < VS::ARRAY_MAX - 1; k++) {
+							if (s->attribs[k].enabled) {
+								glEnableVertexAttribArray(k);
+								glVertexAttribPointer(s->attribs[k].index, s->attribs[k].size, s->attribs[k].type, s->attribs[k].normalized, s->attribs[k].stride, (uint8_t *)0 + s->attribs[k].offset);
 							} else {
-								glDisableVertexAttribArray(i);
-								switch (i) {
+								glDisableVertexAttribArray(k);
+								switch (k) {
 									case VS::ARRAY_NORMAL: {
 										glVertexAttrib4f(VS::ARRAY_NORMAL, 0.0, 0.0, 1, 1);
 									} break;
@@ -939,8 +939,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						}
 					}
 
-					for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
-						glDisableVertexAttribArray(i);
+					for (int j = 1; j < VS::ARRAY_MAX - 1; j++) {
+						glDisableVertexAttribArray(j);
 					}
 				}
 
@@ -1002,13 +1002,13 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 					}
 
-					for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
-						if (s->attribs[i].enabled) {
-							glEnableVertexAttribArray(i);
-							glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, (uint8_t *)0 + s->attribs[i].offset);
+					for (int k = 0; k < VS::ARRAY_MAX - 1; k++) {
+						if (s->attribs[k].enabled) {
+							glEnableVertexAttribArray(k);
+							glVertexAttribPointer(s->attribs[k].index, s->attribs[k].size, s->attribs[k].type, s->attribs[k].normalized, s->attribs[k].stride, (uint8_t *)0 + s->attribs[k].offset);
 						} else {
-							glDisableVertexAttribArray(i);
-							switch (i) {
+							glDisableVertexAttribArray(k);
+							switch (k) {
 								case VS::ARRAY_NORMAL: {
 									glVertexAttrib4f(VS::ARRAY_NORMAL, 0.0, 0.0, 1, 1);
 								} break;
@@ -1021,8 +1021,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						}
 					}
 
-					for (int i = 0; i < amount; i++) {
-						const float *buffer = base_buffer + i * stride;
+					for (int k = 0; k < amount; k++) {
+						const float *buffer = base_buffer + k * stride;
 
 						{
 

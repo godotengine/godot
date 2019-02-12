@@ -1227,15 +1227,15 @@ bool Variant::has_method(const StringName &p_method) const {
 #endif
 	}
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[type];
-	return fd.functions.has(p_method);
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
+	return tf.functions.has(p_method);
 }
 
 Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type, const StringName &p_method) {
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
-	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 	if (!E)
 		return Vector<Variant::Type>();
 
@@ -1244,9 +1244,9 @@ Vector<Variant::Type> Variant::get_method_argument_types(Variant::Type p_type, c
 
 bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) {
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
-	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 	if (!E)
 		return false;
 
@@ -1255,9 +1255,9 @@ bool Variant::is_method_const(Variant::Type p_type, const StringName &p_method) 
 
 Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type, const StringName &p_method) {
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
-	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 	if (!E)
 		return Vector<StringName>();
 
@@ -1266,9 +1266,9 @@ Vector<StringName> Variant::get_method_argument_names(Variant::Type p_type, cons
 
 Variant::Type Variant::get_method_return_type(Variant::Type p_type, const StringName &p_method, bool *r_has_return) {
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
-	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 	if (!E)
 		return Variant::NIL;
 
@@ -1280,9 +1280,9 @@ Variant::Type Variant::get_method_return_type(Variant::Type p_type, const String
 
 Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[p_type];
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[p_type];
 
-	const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.find(p_method);
+	const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.find(p_method);
 	if (!E)
 		return Vector<Variant>();
 
@@ -1291,9 +1291,9 @@ Vector<Variant> Variant::get_method_default_arguments(Variant::Type p_type, cons
 
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
 
-	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[type];
+	const _VariantCall::TypeFunc &tf = _VariantCall::type_funcs[type];
 
-	for (const Map<StringName, _VariantCall::FuncData>::Element *E = fd.functions.front(); E; E = E->next()) {
+	for (const Map<StringName, _VariantCall::FuncData>::Element *E = tf.functions.front(); E; E = E->next()) {
 
 		const _VariantCall::FuncData &fd = E->get();
 
@@ -1405,11 +1405,11 @@ Variant Variant::get_constant_value(Variant::Type p_type, const StringName &p_va
 
 	Map<StringName, int>::Element *E = cd.value.find(p_value);
 	if (!E) {
-		Map<StringName, Variant>::Element *E = cd.variant_value.find(p_value);
-		if (E) {
+		Map<StringName, Variant>::Element *F = cd.variant_value.find(p_value);
+		if (F) {
 			if (r_valid)
 				*r_valid = true;
-			return E->get();
+			return F->get();
 		} else {
 			return -1;
 		}

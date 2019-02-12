@@ -581,10 +581,10 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 #ifdef GLES_OVER_GL
 					if (line->antialiased) {
 						glEnable(GL_LINE_SMOOTH);
-						for (int i = 0; i < 4; i++) {
+						for (int j = 0; j < 4; j++) {
 							Vector2 vertsl[2] = {
-								verts[i],
-								verts[(i + 1) % 4],
+								verts[j],
+								verts[(j + 1) % 4],
 							};
 							_draw_gui_primitive(2, vertsl, NULL, NULL);
 						}
@@ -782,8 +782,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				}
 				if (primitive->colors.size() == 1 && primitive->points.size() > 1) {
 
-					Color c = primitive->colors[0];
-					glVertexAttrib4f(VS::ARRAY_COLOR, c.r, c.g, c.b, c.a);
+					Color col = primitive->colors[0];
+					glVertexAttrib4f(VS::ARRAY_COLOR, col.r, col.g, col.b, col.a);
 
 				} else if (primitive->colors.empty()) {
 					glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
@@ -1035,8 +1035,6 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount);
 				} else {
 					//split
-
-					int stride = sizeof(float) * 4 * 6;
 					int split = int(Math::ceil(particles->phase * particles->amount));
 
 					if (amount - split > 0) {
@@ -1099,12 +1097,12 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 				points[numpoints] = circle->pos;
 				int indices[numpoints * 3];
 
-				for (int i = 0; i < numpoints; i++) {
+				for (int j = 0; j < numpoints; j++) {
 
-					points[i] = circle->pos + Vector2(Math::sin(i * Math_PI * 2.0 / numpoints), Math::cos(i * Math_PI * 2.0 / numpoints)) * circle->radius;
-					indices[i * 3 + 0] = i;
-					indices[i * 3 + 1] = (i + 1) % numpoints;
-					indices[i * 3 + 2] = numpoints;
+					points[j] = circle->pos + Vector2(Math::sin(j * Math_PI * 2.0 / numpoints), Math::cos(j * Math_PI * 2.0 / numpoints)) * circle->radius;
+					indices[j * 3 + 0] = j;
+					indices[j * 3 + 1] = (j + 1) % numpoints;
+					indices[j * 3 + 2] = numpoints;
 				}
 
 				_bind_canvas_texture(RID(), RID());

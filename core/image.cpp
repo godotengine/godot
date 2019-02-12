@@ -2901,15 +2901,15 @@ void Image::fix_alpha_edges() {
 					if (dist >= closest_dist)
 						continue;
 
-					const uint8_t *rp = &srcptr[(k * width + l) << 2];
+					const uint8_t *rp2 = &srcptr[(k * width + l) << 2];
 
-					if (rp[3] < alpha_threshold)
+					if (rp2[3] < alpha_threshold)
 						continue;
 
 					closest_dist = dist;
-					closest_color[0] = rp[0];
-					closest_color[1] = rp[1];
-					closest_color[2] = rp[2];
+					closest_color[0] = rp2[0];
+					closest_color[1] = rp2[1];
+					closest_color[2] = rp2[2];
 				}
 			}
 

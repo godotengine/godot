@@ -438,12 +438,12 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 				}
 
 				// remove all edge connections to this face
-				for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
-					if (E->get().left == O)
-						E->get().left = NULL;
+				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
+					if (G->get().left == O)
+						G->get().left = NULL;
 
-					if (E->get().right == O)
-						E->get().right = NULL;
+					if (G->get().right == O)
+						G->get().right = NULL;
 				}
 
 				ret_edges.erase(F); //remove the edge

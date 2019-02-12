@@ -940,9 +940,8 @@ public:
 
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
 						r.position = primitive->points[0];
-						for (int i = 1; i < primitive->points.size(); i++) {
-
-							r.expand_to(primitive->points[i]);
+						for (int j = 1; j < primitive->points.size(); j++) {
+							r.expand_to(primitive->points[j]);
 						}
 					} break;
 					case Item::Command::TYPE_POLYGON: {
@@ -951,9 +950,8 @@ public:
 						int l = polygon->points.size();
 						const Point2 *pp = &polygon->points[0];
 						r.position = pp[0];
-						for (int i = 1; i < l; i++) {
-
-							r.expand_to(pp[i]);
+						for (int j = 1; j < l; j++) {
+							r.expand_to(pp[j]);
 						}
 					} break;
 					case Item::Command::TYPE_MESH: {

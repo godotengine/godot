@@ -3496,15 +3496,15 @@ void Variant::blend(const Variant &a, const Variant &b, float c, Variant &r_dst)
 		case COLOR: {
 			const Color *ca = reinterpret_cast<const Color *>(a._data._mem);
 			const Color *cb = reinterpret_cast<const Color *>(b._data._mem);
-			float r = ca->r + cb->r * c;
-			float g = ca->g + cb->g * c;
-			float b = ca->b + cb->b * c;
-			float a = ca->a + cb->a * c;
-			r = r > 1.0 ? 1.0 : r;
-			g = g > 1.0 ? 1.0 : g;
-			b = b > 1.0 ? 1.0 : b;
-			a = a > 1.0 ? 1.0 : a;
-			r_dst = Color(r, g, b, a);
+			float new_r = ca->r + cb->r * c;
+			float new_g = ca->g + cb->g * c;
+			float new_b = ca->b + cb->b * c;
+			float new_a = ca->a + cb->a * c;
+			new_r = new_r > 1.0 ? 1.0 : new_r;
+			new_g = new_g > 1.0 ? 1.0 : new_g;
+			new_b = new_b > 1.0 ? 1.0 : new_b;
+			new_a = new_a > 1.0 ? 1.0 : new_a;
+			r_dst = Color(new_r, new_g, new_b, new_a);
 		}
 			return;
 		default: {

@@ -1120,10 +1120,10 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				int num_surfaces = mesh->surfaces.size();
 
-				for (int i = 0; i < num_surfaces; i++) {
-					int material_index = instance->materials[i].is_valid() ? i : -1;
+				for (int j = 0; j < num_surfaces; j++) {
+					int material_index = instance->materials[j].is_valid() ? j : -1;
 
-					RasterizerStorageGLES2::Surface *surface = mesh->surfaces[i];
+					RasterizerStorageGLES2::Surface *surface = mesh->surfaces[j];
 
 					_add_geometry(surface, instance, NULL, material_index, p_depth_pass, p_shadow_pass);
 				}
@@ -1143,8 +1143,8 @@ void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				int ssize = mesh->surfaces.size();
 
-				for (int i = 0; i < ssize; i++) {
-					RasterizerStorageGLES2::Surface *s = mesh->surfaces[i];
+				for (int j = 0; j < ssize; j++) {
+					RasterizerStorageGLES2::Surface *s = mesh->surfaces[j];
 					_add_geometry(s, instance, multi_mesh, -1, p_depth_pass, p_shadow_pass);
 				}
 			} break;

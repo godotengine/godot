@@ -766,9 +766,9 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 			if (!item->is_checked(0))
 				continue;
 
-			Map<TreeItem *, Result>::Element *E = _result_items.find(item);
-			ERR_FAIL_COND(E == NULL);
-			locations.push_back(E->value());
+			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
+			ERR_FAIL_COND(F == NULL);
+			locations.push_back(F->value());
 		}
 
 		if (locations.size() != 0) {

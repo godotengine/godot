@@ -665,10 +665,10 @@ public:
 
 					uint32_t idx = i * 10 + j;
 					bool on = value & (1 << idx);
-					Rect2 rect = Rect2(o, Size2(bsize, bsize));
+					Rect2 rect2 = Rect2(o, Size2(bsize, bsize));
 					color.a = on ? 0.6 : 0.2;
-					draw_rect(rect, color);
-					flag_rects.push_back(rect);
+					draw_rect(rect2, color);
+					flag_rects.push_back(rect2);
 				}
 			}
 		}
@@ -2277,8 +2277,8 @@ void EditorPropertyResource::_update_menu_items() {
 			List<StringName> inheritors;
 			ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
 
-			for (int i = 0; i < custom_resources.size(); i++) {
-				inheritors.push_back(custom_resources[i].name);
+			for (int j = 0; j < custom_resources.size(); j++) {
+				inheritors.push_back(custom_resources[j].name);
 			}
 
 			List<StringName>::Element *E = inheritors.front();
@@ -2287,17 +2287,17 @@ void EditorPropertyResource::_update_menu_items() {
 				E = E->next();
 			}
 
-			for (Set<String>::Element *E = valid_inheritors.front(); E; E = E->next()) {
-				String t = E->get();
+			for (Set<String>::Element *F = valid_inheritors.front(); F; F = F->next()) {
+				String t = F->get();
 
 				bool is_custom_resource = false;
 				Ref<Texture> icon;
 				if (!custom_resources.empty()) {
-					for (int i = 0; i < custom_resources.size(); i++) {
-						if (custom_resources[i].name == t) {
+					for (int j = 0; j < custom_resources.size(); j++) {
+						if (custom_resources[j].name == t) {
 							is_custom_resource = true;
-							if (custom_resources[i].icon.is_valid())
-								icon = custom_resources[i].icon;
+							if (custom_resources[j].icon.is_valid())
+								icon = custom_resources[j].icon;
 							break;
 						}
 					}

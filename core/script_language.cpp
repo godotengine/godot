@@ -527,8 +527,8 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		}
 
 		bool found = false;
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (E->get().name == p_name) {
+		for (const List<PropertyInfo>::Element *F = properties.front(); F; F = F->next()) {
+			if (F->get().name == p_name) {
 				found = true;
 				break;
 			}

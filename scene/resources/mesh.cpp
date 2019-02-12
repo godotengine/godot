@@ -84,15 +84,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			PoolVector<int> indices = a[ARRAY_INDEX];
 			PoolVector<int>::Read ir = indices.read();
 
-			for (int i = 0; i < ic; i++) {
-				int index = ir[i];
+			for (int j = 0; j < ic; j++) {
+				int index = ir[j];
 				facesw[widx++] = vr[index];
 			}
 
 		} else {
 
-			for (int i = 0; i < vc; i++)
-				facesw[widx++] = vr[i];
+			for (int j = 0; j < vc; j++)
+				facesw[widx++] = vr[j];
 		}
 	}
 

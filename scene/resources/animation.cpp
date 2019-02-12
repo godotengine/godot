@@ -269,19 +269,19 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 
 					for (int i = 0; i < valcount; i++) {
 
-						Dictionary d = clips[i];
-						if (!d.has("start_offset"))
+						Dictionary d2 = clips[i];
+						if (!d2.has("start_offset"))
 							continue;
-						if (!d.has("end_offset"))
+						if (!d2.has("end_offset"))
 							continue;
-						if (!d.has("stream"))
+						if (!d2.has("stream"))
 							continue;
 
 						TKey<AudioKey> ak;
 						ak.time = rt[i];
-						ak.value.start_offset = d["start_offset"];
-						ak.value.end_offset = d["end_offset"];
-						ak.value.stream = d["stream"];
+						ak.value.start_offset = d2["start_offset"];
+						ak.value.end_offset = d2["end_offset"];
+						ak.value.stream = d2["stream"];
 
 						ad->values.push_back(ak);
 					}
