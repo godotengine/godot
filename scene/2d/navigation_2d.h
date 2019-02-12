@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation2d.h                                                       */
+/*  navigation_2d.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -171,4 +171,4 @@ public:
 	Navigation2D();
 };
 
-#endif // Navigation2D2D_H
+#endif // NAVIGATION_2D_H

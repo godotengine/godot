@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_player.h                                                       */
+/*  audio_stream_player.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOPLAYER_H
-#define AUDIOPLAYER_H
+#ifndef AUDIO_STREAM_PLAYER_H
+#define AUDIO_STREAM_PLAYER_H
 
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
@@ -110,4 +110,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(AudioStreamPlayer::MixTarget)
-#endif // AUDIOPLAYER_H
+
+#endif // AUDIO_STREAM_PLAYER_H

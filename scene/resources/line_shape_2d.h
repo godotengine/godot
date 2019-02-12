@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shape_line_2d.h                                                      */
+/*  line_shape_2d.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SHAPE_LINE_2D_H
-#define SHAPE_LINE_2D_H
+#ifndef LINE_SHAPE_2D_H
+#define LINE_SHAPE_2D_H
 
 #include "scene/resources/shape_2d.h"
 
@@ -59,4 +59,4 @@ public:
 	LineShape2D();
 };
 
-#endif // SHAPE_LINE_2D_H
+#endif // LINE_SHAPE_2D_H

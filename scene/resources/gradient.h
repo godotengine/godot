@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bit_mask.h                                                           */
+/*  gradient.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,102 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BIT_MASK_H
-#define BIT_MASK_H
+#ifndef GRADIENT_H
+#define GRADIENT_H
 
-#include "core/image.h"
-#include "core/io/resource_loader.h"
 #include "core/resource.h"
 
-class BitMap : public Resource {
+class Gradient : public Resource {
+	GDCLASS(Gradient, Resource);
+	OBJ_SAVE_TYPE(Gradient);
 
-	GDCLASS(BitMap, Resource);
-	OBJ_SAVE_TYPE(BitMap);
+public:
+	struct Point {
 
-	Vector<uint8_t> bitmask;
-	int width;
-	int height;
+		float offset;
+		Color color;
+		bool operator<(const Point &p_ponit) const {
+			return offset < p_ponit.offset;
+		}
+	};
 
-	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
-
-	Array _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
+private:
+	Vector<Point> points;
+	bool is_sorted;
 
 protected:
-	void _set_data(const Dictionary &p_d);
-	Dictionary _get_data() const;
-
 	static void _bind_methods();
 
 public:
-	void create(const Size2 &p_size);
-	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
+	Gradient();
+	virtual ~Gradient();
 
-	void set_bit(const Point2 &p_pos, bool p_value);
-	bool get_bit(const Point2 &p_pos) const;
-	void set_bit_rect(const Rect2 &p_rect, bool p_value);
-	int get_true_bit_count() const;
+	void add_point(float p_offset, const Color &p_color);
+	void remove_point(int p_index);
 
-	Size2 get_size() const;
+	void set_points(Vector<Point> &p_points);
+	Vector<Point> &get_points();
 
-	void grow_mask(int p_pixels, const Rect2 &p_rect);
+	void set_offset(int pos, const float offset);
+	float get_offset(int pos) const;
 
-	Vector<Vector<Vector2> > clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon = 2.0) const;
+	void set_color(int pos, const Color &color);
+	Color get_color(int pos) const;
 
-	BitMap();
+	void set_offsets(const Vector<float> &p_offsets);
+	Vector<float> get_offsets() const;
+
+	void set_colors(const Vector<Color> &p_colors);
+	Vector<Color> get_colors() const;
+
+	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
+
+		if (points.empty())
+			return Color(0, 0, 0, 1);
+
+		if (!is_sorted) {
+			points.sort();
+			is_sorted = true;
+		}
+
+		//binary search
+		int low = 0;
+		int high = points.size() - 1;
+		int middle = 0;
+
+#if DEBUG_ENABLED
+		if (low > high)
+			ERR_PRINT("low > high, this may be a bug");
+#endif
+
+		while (low <= high) {
+			middle = (low + high) / 2;
+			const Point &point = points[middle];
+			if (point.offset > p_offset) {
+				high = middle - 1; //search low end of array
+			} else if (point.offset < p_offset) {
+				low = middle + 1; //search high end of array
+			} else {
+				return point.color;
+			}
+		}
+
+		//return interpolated value
+		if (points[middle].offset > p_offset) {
+			middle--;
+		}
+		int first = middle;
+		int second = middle + 1;
+		if (second >= points.size())
+			return points[points.size() - 1].color;
+		if (first < 0)
+			return points[0].color;
+		const Point &pointFirst = points[first];
+		const Point &pointSecond = points[second];
+		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
+	}
+
+	int get_points_count() const;
 };
 
-#endif // BIT_MASK_H
+#endif // GRADIENT_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  shape_line_2d.cpp                                                    */
+/*  line_shape_2d.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "shape_line_2d.h"
+#include "line_shape_2d.h"
+
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
 

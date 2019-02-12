@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  screen_button.cpp                                                    */
+/*  touch_screen_button.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "screen_button.h"
+#include "touch_screen_button.h"
+
 #include "core/input_map.h"
 #include "core/os/input.h"
 #include "core/os/os.h"

@@ -33,7 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/audio/audio_player.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/resources/texture.h"
 

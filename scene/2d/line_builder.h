@@ -34,7 +34,7 @@
 #include "core/color.h"
 #include "core/math/vector2.h"
 #include "line_2d.h"
-#include "scene/resources/color_ramp.h"
+#include "scene/resources/gradient.h"
 
 class LineBuilder {
 public:

@@ -34,7 +34,7 @@
 #include "core/io/image_loader.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
-#include "scene/resources/bit_mask.h"
+#include "scene/resources/bit_map.h"
 
 Size2 Texture::get_size() const {
 

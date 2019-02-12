@@ -46,7 +46,7 @@
 #include "scene/resources/box_shape.h"
 #include "scene/resources/plane_shape.h"
 #include "scene/resources/ray_shape.h"
-#include "scene/resources/scene_format_text.h"
+#include "scene/resources/resource_format_text.h"
 #include "scene/resources/sphere_shape.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {

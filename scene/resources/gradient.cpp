@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  color_ramp.cpp                                                       */
+/*  gradient.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "color_ramp.h"
+#include "gradient.h"
+
 #include "core/core_string_names.h"
 
 //setter and getter names for property serialization

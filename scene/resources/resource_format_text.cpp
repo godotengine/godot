@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_format_text.cpp                                                */
+/*  resource_format_text.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene_format_text.h"
+#include "resource_format_text.h"
+
 #include "core/io/resource_format_binary.h"
 #include "core/os/dir_access.h"
 #include "core/project_settings.h"

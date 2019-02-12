@@ -33,7 +33,7 @@
 
 #include "core/self_list.h"
 #include "core/vset.h"
-#include "scene/2d/navigation2d.h"
+#include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
 

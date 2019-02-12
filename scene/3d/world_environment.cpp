@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scenario_fx.cpp                                                      */
+/*  world_environment.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scenario_fx.h"
+#include "world_environment.h"
 #include "scene/main/viewport.h"
 
 void WorldEnvironment::_notification(int p_what) {

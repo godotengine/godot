@@ -32,7 +32,7 @@
 #define ENVIRONMENT_H
 
 #include "core/resource.h"
-#include "scene/resources/sky_box.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 

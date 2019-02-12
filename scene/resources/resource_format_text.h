@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scene_format_text.h                                                  */
+/*  resource_format_text.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_FORMAT_TEXT_H
-#define SCENE_FORMAT_TEXT_H
+#ifndef RESOURCE_FORMAT_TEXT_H
+#define RESOURCE_FORMAT_TEXT_H
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -180,4 +180,4 @@ public:
 	ResourceFormatSaverText();
 };
 
-#endif // SCENE_FORMAT_TEXT_H
+#endif // RESOURCE_FORMAT_TEXT_H

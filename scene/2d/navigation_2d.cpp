@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation2d.cpp                                                     */
+/*  navigation_2d.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "navigation2d.h"
+#include "navigation_2d.h"
 
 #define USE_ENTRY_POINT
 
