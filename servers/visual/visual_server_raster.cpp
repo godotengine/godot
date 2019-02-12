@@ -35,7 +35,7 @@
 #include "core/project_settings.h"
 #include "core/sort_array.h"
 #include "visual_server_canvas.h"
-#include "visual_server_global.h"
+#include "visual_server_globals.h"
 #include "visual_server_scene.h"
 
 // careful, these may run in different threads than the visual server

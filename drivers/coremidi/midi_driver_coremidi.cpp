@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  core_midi.cpp                                                        */
+/*  midi_driver_coremidi.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #ifdef COREMIDI_ENABLED
 
-#include "core_midi.h"
+#include "midi_driver_coremidi.h"
 
 #include "core/print_string.h"
 
@@ -120,4 +120,4 @@ MIDIDriverCoreMidi::~MIDIDriverCoreMidi() {
 	close();
 }
 
-#endif
+#endif // COREMIDI_ENABLED

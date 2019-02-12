@@ -31,7 +31,7 @@
 #include "arvr_interface_gdnative.h"
 #include "main/input_default.h"
 #include "servers/arvr/arvr_positional_tracker.h"
-#include "servers/visual/visual_server_global.h"
+#include "servers/visual/visual_server_globals.h"
 
 ARVRInterfaceGDNative::ARVRInterfaceGDNative() {
 	// testing

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  win_midi.cpp                                                         */
+/*  midi_driver_coremidi.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,80 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef WINMIDI_ENABLED
+#ifdef COREMIDI_ENABLED
 
-#include "win_midi.h"
+#ifndef MIDI_DRIVER_COREMIDI_H
+#define MIDI_DRIVER_COREMIDI_H
 
-#include "core/print_string.h"
+#include "core/os/midi_driver.h"
+#include "core/vector.h"
 
-void MIDIDriverWinMidi::read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
+#include <CoreMIDI/CoreMIDI.h>
+#include <stdio.h>
 
-	if (wMsg == MIM_DATA) {
-		receive_input_packet((uint64_t)dwParam2, (uint8_t *)&dwParam1, 3);
-	}
-}
+class MIDIDriverCoreMidi : public MIDIDriver {
 
-Error MIDIDriverWinMidi::open() {
+	MIDIClientRef client;
+	MIDIPortRef port_in;
 
-	for (UINT i = 0; i < midiInGetNumDevs(); i++) {
-		HMIDIIN midi_in;
+	Vector<MIDIEndpointRef> connected_sources;
 
-		MMRESULT res = midiInOpen(&midi_in, i, (DWORD_PTR)read, (DWORD_PTR)this, CALLBACK_FUNCTION);
-		if (res == MMSYSERR_NOERROR) {
-			midiInStart(midi_in);
-			connected_sources.insert(i, midi_in);
-		} else {
-			char err[256];
-			midiInGetErrorText(res, err, 256);
-			ERR_PRINTS("midiInOpen error: " + String(err));
+	static void read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con);
 
-			MIDIINCAPS caps;
-			res = midiInGetDevCaps(i, &caps, sizeof(MIDIINCAPS));
-			if (res == MMSYSERR_NOERROR) {
-				ERR_PRINTS("Can't open MIDI device \"" + String(caps.szPname) + "\", is it being used by another application?");
-			}
-		}
-	}
+public:
+	virtual Error open();
+	virtual void close();
 
-	return OK;
-}
+	PoolStringArray get_connected_inputs();
 
-PoolStringArray MIDIDriverWinMidi::get_connected_inputs() {
+	MIDIDriverCoreMidi();
+	virtual ~MIDIDriverCoreMidi();
+};
 
-	PoolStringArray list;
-
-	for (int i = 0; i < connected_sources.size(); i++) {
-		HMIDIIN midi_in = connected_sources[i];
-		UINT id = 0;
-		MMRESULT res = midiInGetID(midi_in, &id);
-		if (res == MMSYSERR_NOERROR) {
-			MIDIINCAPS caps;
-			res = midiInGetDevCaps(i, &caps, sizeof(MIDIINCAPS));
-			if (res == MMSYSERR_NOERROR) {
-				list.push_back(caps.szPname);
-			}
-		}
-	}
-
-	return list;
-}
-
-void MIDIDriverWinMidi::close() {
-
-	for (int i = 0; i < connected_sources.size(); i++) {
-		HMIDIIN midi_in = connected_sources[i];
-		midiInStop(midi_in);
-		midiInClose(midi_in);
-	}
-	connected_sources.clear();
-}
-
-MIDIDriverWinMidi::MIDIDriverWinMidi() {
-}
-
-MIDIDriverWinMidi::~MIDIDriverWinMidi() {
-
-	close();
-}
-
-#endif
+#endif // MIDI_DRIVER_COREMIDI_H
+#endif // COREMIDI_ENABLED

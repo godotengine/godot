@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  alsa_midi.cpp                                                        */
+/*  midi_driver_alsamidi.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #ifdef ALSAMIDI_ENABLED
 
-#include "alsa_midi.h"
+#include "midi_driver_alsamidi.h"
 
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -199,4 +199,4 @@ MIDIDriverALSAMidi::~MIDIDriverALSAMidi() {
 	close();
 }
 
-#endif
+#endif // ALSAMIDI_ENABLED

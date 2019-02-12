@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  timer_sync.cpp                                                       */
+/*  main_timer_sync.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "timer_sync.h"
+#include "main_timer_sync.h"
 
 void MainFrameTime::clamp_idle(float min_idle_step, float max_idle_step) {
 	if (idle_step < min_idle_step) {
