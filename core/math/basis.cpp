@@ -258,7 +258,7 @@ Vector3 Basis::get_scale_abs() const {
 }
 
 Vector3 Basis::get_scale_local() const {
-	real_t det_sign = determinant() > 0 ? 1 : -1;
+	real_t det_sign = SGN(determinant());
 	return det_sign * Vector3(elements[0].length(), elements[1].length(), elements[2].length());
 }
 
@@ -284,7 +284,7 @@ Vector3 Basis::get_scale() const {
 	// matrix elements.
 	//
 	// The rotation part of this decomposition is returned by get_rotation* functions.
-	real_t det_sign = determinant() > 0 ? 1 : -1;
+	real_t det_sign = SGN(determinant());
 	return det_sign * Vector3(
 							  Vector3(elements[0][0], elements[1][0], elements[2][0]).length(),
 							  Vector3(elements[0][1], elements[1][1], elements[2][1]).length(),
