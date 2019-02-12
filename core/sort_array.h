@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sort.h                                                               */
+/*  sort_array.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SORT_H
-#define SORT_H
+#ifndef SORT_ARRAY_H
+#define SORT_ARRAY_H
 
 #include "core/typedefs.h"
 
@@ -327,4 +327,4 @@ public:
 	}
 };
 
-#endif
+#endif // SORT_ARRAY_H

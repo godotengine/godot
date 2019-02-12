@@ -31,7 +31,7 @@
 #include "gdnative/pool_arrays.h"
 
 #include "core/array.h"
-#include "core/dvector.h"
+#include "core/pool_vector.h"
 #include "core/variant.h"
 
 #include "core/color.h"

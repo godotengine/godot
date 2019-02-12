@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  string_db.cpp                                                        */
+/*  string_name.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "string_db.h"
+#include "string_name.h"
 
 #include "core/os/os.h"
 #include "core/print_string.h"

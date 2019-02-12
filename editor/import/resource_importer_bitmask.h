@@ -32,7 +32,7 @@
 #define RESOURCE_IMPORTER_BITMASK_H
 
 #include "core/image.h"
-#include "core/io/resource_import.h"
+#include "core/io/resource_importer.h"
 
 class StreamBitMap;
 

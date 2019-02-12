@@ -33,7 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "core/sort.h"
+#include "core/sort_array.h"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
 #include "visual_server_scene.h"

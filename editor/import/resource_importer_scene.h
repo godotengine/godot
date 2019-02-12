@@ -31,7 +31,7 @@
 #ifndef RESOURCEIMPORTERSCENE_H
 #define RESOURCEIMPORTERSCENE_H
 
-#include "core/io/resource_import.h"
+#include "core/io/resource_importer.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape.h"

@@ -33,7 +33,7 @@
 
 #include "core/list.h"
 #include "core/map.h"
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
 #include "core/variant.h"

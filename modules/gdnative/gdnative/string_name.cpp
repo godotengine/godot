@@ -30,7 +30,7 @@
 
 #include "gdnative/string_name.h"
 
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/ustring.h"
 
 #include <string.h>

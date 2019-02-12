@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dvector.cpp                                                          */
+/*  pool_vector.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "dvector.h"
+#include "pool_vector.h"
 
-Mutex *dvector_lock = NULL;
+Mutex *pool_vector_lock = NULL;
 
 PoolAllocator *MemoryPool::memory_pool = NULL;
 uint8_t *MemoryPool::pool_memory = NULL;

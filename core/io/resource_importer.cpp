@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_import.cpp                                                  */
+/*  resource_importer.cpp                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "resource_import.h"
+#include "resource_importer.h"
 
 #include "core/os/os.h"
 #include "core/variant_parser.h"

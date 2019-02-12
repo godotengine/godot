@@ -36,7 +36,7 @@
 #include "core/reference.h"
 #include "core/script_language.h"
 #include "core/self_list.h"
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/variant.h"
 
 class GDScriptInstance;

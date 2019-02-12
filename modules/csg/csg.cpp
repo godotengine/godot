@@ -32,7 +32,7 @@
 #include "core/math/face3.h"
 #include "core/math/geometry.h"
 #include "core/os/os.h"
-#include "core/sort.h"
+#include "core/sort_array.h"
 #include "thirdparty/misc/triangulator.h"
 
 void CSGBrush::clear() {

@@ -30,7 +30,7 @@
 
 #include "resource_loader.h"
 
-#include "core/io/resource_import.h"
+#include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/path_remap.h"

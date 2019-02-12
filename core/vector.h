@@ -40,7 +40,7 @@
 #include "core/cowdata.h"
 #include "core/error_macros.h"
 #include "core/os/memory.h"
-#include "core/sort.h"
+#include "core/sort_array.h"
 
 template <class T>
 class VectorWriteProxy {
