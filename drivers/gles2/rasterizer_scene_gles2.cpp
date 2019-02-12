@@ -1200,9 +1200,6 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		} break;
 	}
 
-	// TODO whyyyyy????
-	p_reverse_cull = true;
-
 	switch (p_material->shader->spatial.cull_mode) {
 		case RasterizerStorageGLES2::Shader::Spatial::CULL_MODE_DISABLED: {
 			glDisable(GL_CULL_FACE);
@@ -2557,11 +2554,19 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 
 void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
+	Transform cam_transform = p_cam_transform;
+
 	GLuint current_fb = 0;
 	Environment *env = NULL;
 
 	int viewport_width, viewport_height;
 	bool probe_interior = false;
+	bool reverse_cull = false;
+
+	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
+		cam_transform.basis.set_axis(1, -cam_transform.basis.get_axis(1));
+		reverse_cull = true;
+	}
 
 	if (p_reflection_probe.is_valid()) {
 		ReflectionProbeInstance *probe = reflection_probe_instance_owner.getornull(p_reflection_probe);
@@ -2711,7 +2716,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT])) {
 
 		if (sky && sky->panorama.is_valid()) {
-			_draw_sky(sky, p_cam_projection, p_cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
+			_draw_sky(sky, p_cam_projection, cam_transform, false, env->sky_custom_fov, env->bg_energy, env->sky_orientation);
 		}
 	}
 
@@ -2721,7 +2726,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	// render opaque things first
 	render_list.sort_by_key(false);
-	_render_render_list(render_list.elements, render_list.element_count, p_cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, false, false, false);
+	_render_render_list(render_list.elements, render_list.element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, false, false);
 
 	// alpha pass
 
@@ -2730,7 +2735,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	render_list.sort_by_depth(true);
 
-	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, p_cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, false, true, false);
+	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, true, false);
 
 	glDisable(GL_DEPTH_TEST);
 
@@ -3228,6 +3233,8 @@ void RasterizerSceneGLES2::initialize() {
 	}
 
 	shadow_filter_mode = SHADOW_FILTER_NEAREST;
+
+	glFrontFace(GL_CW);
 }
 
 void RasterizerSceneGLES2::iteration() {
