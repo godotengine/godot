@@ -1878,6 +1878,8 @@ void RasterizerCanvasGLES2::draw_window_margins(int *black_margin, RID *black_im
 
 		draw_generic_textured_rect(Rect2(0, window_h - black_margin[MARGIN_BOTTOM], window_w, black_margin[MARGIN_BOTTOM]), Rect2(0, 0, 1, 1));
 	}
+
+	canvas_end();
 }
 
 void RasterizerCanvasGLES2::initialize() {
