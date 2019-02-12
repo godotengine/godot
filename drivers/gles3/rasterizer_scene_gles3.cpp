@@ -2343,6 +2343,10 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		state.used_screen_texture = true;
 	}
 
+	if (p_material->shader->spatial.uses_depth_texture) {
+		state.used_depth_texture = true;
+	}
+
 	if (p_depth_pass) {
 
 		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
@@ -3159,6 +3163,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 	current_material_index = 0;
 	state.used_sss = false;
 	state.used_screen_texture = false;
+	state.used_depth_texture = false;
 	//fill list
 
 	for (int i = 0; i < p_cull_count; i++) {
@@ -4169,7 +4174,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		glColorMask(1, 1, 1, 1);
 
-		if (state.used_contact_shadows) {
+		if (state.used_contact_shadows || state.used_depth_texture) {
 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
