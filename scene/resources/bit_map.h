@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scenario_fx.h                                                        */
+/*  bit_map.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENARIO_FX_H
-#define SCENARIO_FX_H
+#ifndef BIT_MAP_H
+#define BIT_MAP_H
 
-#include "scene/3d/spatial.h"
+#include "core/image.h"
+#include "core/io/resource_loader.h"
+#include "core/resource.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+class BitMap : public Resource {
 
-class WorldEnvironment : public Node {
+	GDCLASS(BitMap, Resource);
+	OBJ_SAVE_TYPE(BitMap);
 
-	GDCLASS(WorldEnvironment, Node);
+	Vector<uint8_t> bitmask;
+	int width;
+	int height;
 
-	Ref<Environment> environment;
+	Vector<Vector2> _march_square(const Rect2i &rect, const Point2i &start) const;
+
+	Array _opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const;
 
 protected:
-	void _notification(int p_what);
+	void _set_data(const Dictionary &p_d);
+	Dictionary _get_data() const;
+
 	static void _bind_methods();
 
 public:
-	void set_environment(const Ref<Environment> &p_environment);
-	Ref<Environment> get_environment() const;
+	void create(const Size2 &p_size);
+	void create_from_image_alpha(const Ref<Image> &p_image, float p_threshold = 0.1);
 
-	String get_configuration_warning() const;
+	void set_bit(const Point2 &p_pos, bool p_value);
+	bool get_bit(const Point2 &p_pos) const;
+	void set_bit_rect(const Rect2 &p_rect, bool p_value);
+	int get_true_bit_count() const;
 
-	WorldEnvironment();
+	Size2 get_size() const;
+
+	void grow_mask(int p_pixels, const Rect2 &p_rect);
+
+	Vector<Vector<Vector2> > clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon = 2.0) const;
+
+	BitMap();
 };
 
-#endif
+#endif // BIT_MAP_H

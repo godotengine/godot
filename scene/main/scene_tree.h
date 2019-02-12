@@ -43,7 +43,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class SceneTree;
 class PackedScene;
 class Node;
 class Viewport;

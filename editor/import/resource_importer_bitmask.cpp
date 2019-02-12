@@ -34,7 +34,7 @@
 #include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "scene/resources/bit_mask.h"
+#include "scene/resources/bit_map.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterBitMap::get_importer_name() const {

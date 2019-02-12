@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bounds.h                                                             */
+/*  world_environment.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BOUNDS_H
-#define BOUNDS_H
+#ifndef SCENARIO_FX_H
+#define SCENARIO_FX_H
 
-#include "core/math/bsp_tree.h"
-#include "core/resource.h"
+#include "scene/3d/spatial.h"
 
-class Bounds : public Resource {
+/**
+	@author Juan Linietsky <reduzio@gmail.com>
+*/
 
-	GDCLASS(Bounds, Resource);
-	BSP_Tree bsp_tree;
+class WorldEnvironment : public Node {
+
+	GDCLASS(WorldEnvironment, Node);
+
+	Ref<Environment> environment;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_bsp_tree(const BSP_Tree &p_bsp_tree);
-	BSP_Tree get_bsp_tree() const;
+	void set_environment(const Ref<Environment> &p_environment);
+	Ref<Environment> get_environment() const;
 
-	Bounds();
+	String get_configuration_warning() const;
+
+	WorldEnvironment();
 };
 
-#endif // BOUNDS_H
+#endif

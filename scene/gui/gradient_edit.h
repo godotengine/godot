@@ -33,8 +33,8 @@
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/popup.h"
-#include "scene/resources/color_ramp.h"
 #include "scene/resources/default_theme/theme_data.h"
+#include "scene/resources/gradient.h"
 
 #define POINT_WIDTH (8 * EDSCALE)
 

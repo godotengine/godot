@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
-#include "navigation2d.h"
+#include "navigation_2d.h"
 
 #include "thirdparty/misc/triangulator.h"
 

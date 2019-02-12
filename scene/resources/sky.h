@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sky_box.h                                                            */
+/*  sky.h                                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SKY_BOX_H
-#define SKY_BOX_H
+#ifndef SKY_H
+#define SKY_H
 
 #include "core/os/thread.h"
 #include "scene/resources/texture.h"
+
 class Sky : public Resource {
 	GDCLASS(Sky, Resource);
 
@@ -196,4 +197,4 @@ public:
 
 VARIANT_ENUM_CAST(ProceduralSky::TextureSize)
 
-#endif // SKY_BOX_H
+#endif // SKY_H

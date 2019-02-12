@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_player.cpp                                                     */
+/*  audio_stream_player.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "audio_player.h"
+#include "audio_stream_player.h"
 
 #include "core/engine.h"
 

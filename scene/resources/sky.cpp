@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sky_box.cpp                                                          */
+/*  sky.cpp                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "sky_box.h"
+#include "sky.h"
+
 #include "core/io/image_loader.h"
 
 void Sky::set_radiance_size(RadianceSize p_size) {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  bit_mask.cpp                                                         */
+/*  bit_map.cpp                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "bit_mask.h"
+#include "bit_map.h"
 
 #include "core/io/image_loader.h"
 

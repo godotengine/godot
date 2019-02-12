@@ -39,7 +39,7 @@
 #include "core/project_settings.h"
 
 #include "scene/main/scene_tree.h"
-#include "scene/resources/scene_format_text.h"
+#include "scene/resources/resource_format_text.h"
 
 #include <stdlib.h>
 

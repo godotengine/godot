@@ -37,8 +37,8 @@
 #include "core/os/rw_lock.h"
 #include "core/os/thread_safe.h"
 #include "core/resource.h"
-#include "scene/resources/color_ramp.h"
 #include "scene/resources/curve.h"
+#include "scene/resources/gradient.h"
 #include "servers/visual_server.h"
 
 /**

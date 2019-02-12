@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  color_ramp.h                                                         */
+/*  touch_screen_button.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,102 +28,88 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SCENE_RESOURCES_COLOR_RAMP_H_
-#define SCENE_RESOURCES_COLOR_RAMP_H_
+#ifndef TOUCH_SCREEN_BUTTON_H
+#define TOUCH_SCREEN_BUTTON_H
 
-#include "core/resource.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/bit_map.h"
+#include "scene/resources/rectangle_shape_2d.h"
+#include "scene/resources/texture.h"
 
-class Gradient : public Resource {
-	GDCLASS(Gradient, Resource);
-	OBJ_SAVE_TYPE(Gradient);
+class TouchScreenButton : public Node2D {
+
+	GDCLASS(TouchScreenButton, Node2D);
 
 public:
-	struct Point {
-
-		float offset;
-		Color color;
-		bool operator<(const Point &p_ponit) const {
-			return offset < p_ponit.offset;
-		}
+	enum VisibilityMode {
+		VISIBILITY_ALWAYS,
+		VISIBILITY_TOUCHSCREEN_ONLY
 	};
 
 private:
-	Vector<Point> points;
-	bool is_sorted;
+	Ref<Texture> texture;
+	Ref<Texture> texture_pressed;
+	Ref<BitMap> bitmask;
+	Ref<Shape2D> shape;
+	bool shape_centered;
+	bool shape_visible;
+
+	Ref<RectangleShape2D> unit_rect;
+
+	StringName action;
+	bool passby_press;
+	int finger_pressed;
+
+	VisibilityMode visibility;
+
+	void _input(const Ref<InputEvent> &p_event);
+
+	bool _is_point_inside(const Point2 &p_point);
+
+	void _press(int p_finger_pressed);
+	void _release(bool p_exiting_tree = false);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	Gradient();
-	virtual ~Gradient();
+	void set_texture(const Ref<Texture> &p_texture);
+	Ref<Texture> get_texture() const;
 
-	void add_point(float p_offset, const Color &p_color);
-	void remove_point(int p_index);
+	void set_texture_pressed(const Ref<Texture> &p_texture_pressed);
+	Ref<Texture> get_texture_pressed() const;
 
-	void set_points(Vector<Point> &p_points);
-	Vector<Point> &get_points();
+	void set_bitmask(const Ref<BitMap> &p_bitmask);
+	Ref<BitMap> get_bitmask() const;
 
-	void set_offset(int pos, const float offset);
-	float get_offset(int pos) const;
+	void set_shape(const Ref<Shape2D> &p_shape);
+	Ref<Shape2D> get_shape() const;
 
-	void set_color(int pos, const Color &color);
-	Color get_color(int pos) const;
+	void set_shape_centered(bool p_shape_centered);
+	bool is_shape_centered() const;
 
-	void set_offsets(const Vector<float> &p_offsets);
-	Vector<float> get_offsets() const;
+	void set_shape_visible(bool p_shape_visible);
+	bool is_shape_visible() const;
 
-	void set_colors(const Vector<Color> &p_colors);
-	Vector<Color> get_colors() const;
+	void set_action(const String &p_action);
+	String get_action() const;
 
-	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
+	void set_passby_press(bool p_enable);
+	bool is_passby_press_enabled() const;
 
-		if (points.empty())
-			return Color(0, 0, 0, 1);
+	void set_visibility_mode(VisibilityMode p_mode);
+	VisibilityMode get_visibility_mode() const;
 
-		if (!is_sorted) {
-			points.sort();
-			is_sorted = true;
-		}
+	bool is_pressed() const;
 
-		//binary search
-		int low = 0;
-		int high = points.size() - 1;
-		int middle = 0;
+	virtual Rect2 _edit_get_rect() const;
+	virtual bool _edit_use_rect() const;
+	virtual Rect2 get_anchorable_rect() const;
 
-#if DEBUG_ENABLED
-		if (low > high)
-			ERR_PRINT("low > high, this may be a bug");
-#endif
-
-		while (low <= high) {
-			middle = (low + high) / 2;
-			const Point &point = points[middle];
-			if (point.offset > p_offset) {
-				high = middle - 1; //search low end of array
-			} else if (point.offset < p_offset) {
-				low = middle + 1; //search high end of array
-			} else {
-				return point.color;
-			}
-		}
-
-		//return interpolated value
-		if (points[middle].offset > p_offset) {
-			middle--;
-		}
-		int first = middle;
-		int second = middle + 1;
-		if (second >= points.size())
-			return points[points.size() - 1].color;
-		if (first < 0)
-			return points[0].color;
-		const Point &pointFirst = points[first];
-		const Point &pointSecond = points[second];
-		return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));
-	}
-
-	int get_points_count() const;
+	TouchScreenButton();
 };
 
-#endif /* SCENE_RESOURCES_COLOR_RAMP_H_ */
+VARIANT_ENUM_CAST(TouchScreenButton::VisibilityMode);
+
+#endif // TOUCH_SCREEN_BUTTON_H
