@@ -2049,7 +2049,13 @@ FRAGMENT_SHADER_CODE
 
 #if defined(USE_VERTEX_LIGHTING)
 
+#if defined(BASE_PASS)
 	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_interp.rgb, fog_interp.a);
+#else
+	gl_FragColor.rgb *= (1.0 - fog_interp.a);
+#endif // BASE_PASS
+
+
 #else //pixel based fog
 	float fog_amount = 0.0;
 
@@ -2083,7 +2089,11 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#if defined(BASE_PASS)
 	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_color, fog_amount);
+#else
+	gl_FragColor.rgb *= (1.0 - fog_amount);
+#endif // BASE_PASS
 
 #endif //use vertex lit
 
