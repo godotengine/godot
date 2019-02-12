@@ -120,6 +120,10 @@ void PluginConfigDialog::_notification(int p_what) {
 			connect("confirmed", this, "_on_confirmed");
 			get_cancel()->connect("pressed", this, "_on_cancelled");
 		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			name_edit->grab_focus();
+		} break;
 	}
 }
 
@@ -215,11 +219,15 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_option_lb);
 
 	script_option_edit = memnew(OptionButton);
+	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptLanguage *lang = ScriptServer::get_language(i);
 		script_option_edit->add_item(lang->get_name());
+		if (lang == GDScriptLanguage::get_singleton()) {
+			default_lang = i;
+		}
 	}
-	script_option_edit->select(0);
+	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);
 
 	Label *script_lb = memnew(Label);
