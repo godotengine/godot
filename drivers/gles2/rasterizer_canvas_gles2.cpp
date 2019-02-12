@@ -1172,7 +1172,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 	}
 }
 
-void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
+void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 
 	if (storage->frame.current_rt->copy_screen_effect.color == 0) {
 		ERR_EXPLAIN("Can't use screen texture copying in a render target configured without copy buffers");
@@ -1180,8 +1180,6 @@ void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
 	}
 
 	glDisable(GL_BLEND);
-
-	state.canvas_texscreen_used = true;
 
 	Vector2 wh(storage->frame.current_rt->width, storage->frame.current_rt->height);
 
@@ -1194,9 +1192,6 @@ void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->copy_screen_effect.fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
-
-	glClearColor(1, 0, 1, 1);
-	glClear(GL_COLOR_BUFFER_BIT);
 
 	storage->shaders.copy.bind();
 	storage->shaders.copy.set_uniform(CopyShaderGLES2::COPY_SECTION, copy_section);
@@ -1225,14 +1220,20 @@ void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //back to front
+	glEnable(GL_BLEND);
+}
+
+void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
+
+	state.canvas_texscreen_used = true;
+
+	_copy_texscreen(p_rect);
 
 	// back to canvas, force rebind
 	state.using_texture_rect = false;
 	state.canvas_shader.bind();
 	_bind_canvas_texture(state.current_tex, state.current_normal);
 	_set_uniforms();
-
-	glEnable(GL_BLEND);
 }
 
 void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
