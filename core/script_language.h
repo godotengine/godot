@@ -54,6 +54,7 @@ class ScriptServer {
 	static int _language_count;
 	static bool scripting_enabled;
 	static bool reload_scripts_on_save;
+	static bool languages_finished;
 
 	struct GlobalScriptClass {
 		StringName language;
@@ -91,6 +92,8 @@ public:
 
 	static void init_languages();
 	static void finish_languages();
+
+	static bool are_languages_finished() { return languages_finished; }
 };
 
 class ScriptInstance;
