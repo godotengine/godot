@@ -17,7 +17,7 @@ namespace Godot
 
         public real_t Rotation
         {
-            get { return Mathf.Atan2(y.x, o.y); }
+            get { return Mathf.Atan2(y.x, origin.y); }
         }
 
         public Vector2 Scale
