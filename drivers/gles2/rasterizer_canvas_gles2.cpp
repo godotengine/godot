@@ -1227,7 +1227,7 @@ void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
 
 	state.canvas_texscreen_used = true;
 
-	_copy_texscreen(p_rect);
+	_copy_screen(p_rect);
 
 	// back to canvas, force rebind
 	state.using_texture_rect = false;
