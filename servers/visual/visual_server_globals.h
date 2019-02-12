@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  alsa_midi.h                                                          */
+/*  visual_server_globals.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,42 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef ALSAMIDI_ENABLED
+#ifndef VISUAL_SERVER_GLOBALS_H
+#define VISUAL_SERVER_GLOBALS_H
 
-#ifndef ALSA_MIDI_H
-#define ALSA_MIDI_H
+#include "rasterizer.h"
 
-#include "core/os/midi_driver.h"
-#include "core/os/mutex.h"
-#include "core/os/thread.h"
-#include "core/vector.h"
+class VisualServerCanvas;
+class VisualServerViewport;
+class VisualServerScene;
 
-#include <alsa/asoundlib.h>
-#include <stdio.h>
-
-class MIDIDriverALSAMidi : public MIDIDriver {
-
-	Thread *thread;
-	Mutex *mutex;
-
-	Vector<snd_rawmidi_t *> connected_inputs;
-
-	bool exit_thread;
-
-	static void thread_func(void *p_udata);
-
-	void lock() const;
-	void unlock() const;
-
+class VisualServerGlobals {
 public:
-	virtual Error open();
-	virtual void close();
+	static RasterizerStorage *storage;
+	static RasterizerCanvas *canvas_render;
+	static RasterizerScene *scene_render;
+	static Rasterizer *rasterizer;
 
-	virtual PoolStringArray get_connected_inputs();
-
-	MIDIDriverALSAMidi();
-	virtual ~MIDIDriverALSAMidi();
+	static VisualServerCanvas *canvas;
+	static VisualServerViewport *viewport;
+	static VisualServerScene *scene;
 };
 
-#endif
-#endif
+#define VSG VisualServerGlobals
+
+#endif // VISUAL_SERVER_GLOBALS_H

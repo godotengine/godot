@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  timer_sync.h                                                         */
+/*  main_timer_sync.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TIMER_SYNC_H
-#define TIMER_SYNC_H
+#ifndef MAIN_TIMER_SYNC_H
+#define MAIN_TIMER_SYNC_H
 
 #include "core/engine.h"
 
@@ -98,4 +98,4 @@ public:
 	MainFrameTime advance(float p_frame_slice, int p_iterations_per_second);
 };
 
-#endif // TIMER_SYNC_H
+#endif // MAIN_TIMER_SYNC_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  visual_server_global.cpp                                             */
+/*  midi_driver_winmidi.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "visual_server_global.h"
+#ifdef WINMIDI_ENABLED
 
-RasterizerStorage *VisualServerGlobals::storage = NULL;
-RasterizerCanvas *VisualServerGlobals::canvas_render = NULL;
-RasterizerScene *VisualServerGlobals::scene_render = NULL;
-Rasterizer *VisualServerGlobals::rasterizer = NULL;
+#ifndef MIDI_DRIVER_WINMIDI_H
+#define MIDI_DRIVER_WINMIDI_H
 
-VisualServerCanvas *VisualServerGlobals::canvas = NULL;
-VisualServerViewport *VisualServerGlobals::viewport = NULL;
-VisualServerScene *VisualServerGlobals::scene = NULL;
+#include "core/os/midi_driver.h"
+#include "core/vector.h"
+
+#include <stdio.h>
+#include <windows.h>
+
+#include <mmsystem.h>
+
+class MIDIDriverWinMidi : public MIDIDriver {
+
+	Vector<HMIDIIN> connected_sources;
+
+	static void CALLBACK read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
+
+public:
+	virtual Error open();
+	virtual void close();
+
+	virtual PoolStringArray get_connected_inputs();
+
+	MIDIDriverWinMidi();
+	virtual ~MIDIDriverWinMidi();
+};
+
+#endif // MIDI_DRIVER_WINMIDI_H
+#endif // WINMIDI_ENABLED

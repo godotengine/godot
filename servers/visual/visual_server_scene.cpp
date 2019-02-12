@@ -30,7 +30,7 @@
 
 #include "visual_server_scene.h"
 #include "core/os/os.h"
-#include "visual_server_global.h"
+#include "visual_server_globals.h"
 #include "visual_server_raster.h"
 #include <new>
 /* CAMERA API */
