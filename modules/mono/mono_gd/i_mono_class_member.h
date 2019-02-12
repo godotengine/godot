@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_class_member.h                                               */
+/*  i_mono_class_member.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_CLASS_MEMBER_H
-#define GD_MONO_CLASS_MEMBER_H
+#ifndef I_MONO_CLASS_MEMBER_H
+#define I_MONO_CLASS_MEMBER_H
 
 #include "gd_mono_header.h"
 
@@ -65,4 +65,4 @@ public:
 	virtual MonoObject *get_attribute(GDMonoClass *p_attr_class) = 0;
 };
 
-#endif // GD_MONO_CLASS_MEMBER_H
+#endif // I_MONO_CLASS_MEMBER_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  upnpdevice.cpp                                                       */
+/*  upnp_device.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "upnpdevice.h"
+#include "upnp_device.h"
 
 #include "upnp.h"
 

@@ -32,8 +32,8 @@
 #define GD_MONO_METHOD_H
 
 #include "gd_mono.h"
-#include "gd_mono_class_member.h"
 #include "gd_mono_header.h"
+#include "i_mono_class_member.h"
 
 class GDMonoMethod : public IMonoClassMember {
 
