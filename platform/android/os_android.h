@@ -134,7 +134,7 @@ private:
 	SetKeepScreenOnFunc set_keep_screen_on_func;
 	AlertFunc alert_func;
 
-	//power_android *power_manager;
+	//PowerAndroid *power_manager;
 	int video_driver_index;
 
 public:

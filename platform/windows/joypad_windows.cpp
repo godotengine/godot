@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad.cpp                                                           */
+/*  joypad_windows.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "joypad.h"
+#include "joypad_windows.h"
 
 #include <oleauto.h>
 #include <wbemidl.h>

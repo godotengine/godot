@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  context_gl_win.h                                                     */
+/*  semaphore_osx.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+#ifndef SEMAPHORE_OSX_H
+#define SEMAPHORE_OSX_H
 
-// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
-
-#ifndef CONTEXT_GL_WIN_H
-#define CONTEXT_GL_WIN_H
-
-#include "core/error_list.h"
-#include "core/os/os.h"
-#include "drivers/gl_context/context_gl.h"
-
-#include <windows.h>
-
-typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
-
-class ContextGL_Win : public ContextGL {
-
-	HDC hDC;
-	HGLRC hRC;
-	unsigned int pixel_format;
-	HWND hWnd;
-	bool opengl_3_context;
-	bool use_vsync;
-
-	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
-
-public:
-	virtual void release_current();
-
-	virtual void make_current();
-
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
-
-	virtual Error initialize();
-
-	virtual void set_use_vsync(bool p_use);
-	virtual bool is_using_vsync() const;
-
-	ContextGL_Win(HWND hwnd, bool p_opengl_3_context);
-	virtual ~ContextGL_Win();
+struct cgsem {
+	int pipefd[2];
 };
 
-#endif
-#endif
+typedef struct cgsem cgsem_t;
+
+#include "core/os/semaphore.h"
+
+class SemaphoreOSX : public Semaphore {
+
+	mutable cgsem_t sem;
+
+	static Semaphore *create_semaphore_osx();
+
+public:
+	virtual Error wait();
+	virtual Error post();
+	virtual int get() const;
+
+	static void make_default();
+	SemaphoreOSX();
+
+	~SemaphoreOSX();
+};
+
+#endif // SEMAPHORE_OSX_H

@@ -175,7 +175,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
 
-	//power_manager = memnew(power_android);
+	//power_manager = memnew(PowerAndroid);
 
 	return OK;
 }

@@ -37,7 +37,7 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "main/main.h"
-#include "sem_osx.h"
+#include "semaphore_osx.h"
 #include "servers/visual/visual_server_raster.h"
 
 #include <mach-o/dyld.h>
@@ -1461,7 +1461,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	input = memnew(InputDefault);
 	joypad_osx = memnew(JoypadOSX);
 
-	power_manager = memnew(power_osx);
+	power_manager = memnew(PowerOSX);
 
 	_ensure_user_data_dir();
 

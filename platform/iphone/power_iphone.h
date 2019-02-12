@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLATFORM_IPHONE_POWER_IPHONE_H_
-#define PLATFORM_IPHONE_POWER_IPHONE_H_
+#ifndef POWER_IPHONE_H
+#define POWER_IPHONE_H
 
 #include <os/os.h>
 
@@ -50,4 +50,4 @@ public:
 	int get_power_percent_left();
 };
 
-#endif /* PLATFORM_IPHONE_POWER_IPHONE_H_ */
+#endif // POWER_IPHONE_H

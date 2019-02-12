@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLATFORM_WINDOWS_POWER_WINDOWS_H_
-#define PLATFORM_WINDOWS_POWER_WINDOWS_H_
+#ifndef POWER_WINDOWS_H
+#define POWER_WINDOWS_H
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -55,4 +55,4 @@ public:
 	int get_power_percent_left();
 };
 
-#endif /* PLATFORM_WINDOWS_POWER_WINDOWS_H_ */
+#endif // POWER_WINDOWS_H

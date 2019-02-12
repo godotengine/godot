@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sem_iphone.h                                                         */
+/*  context_egl_uwp.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEM_IPHONE_H
-#define SEM_IPHONE_H
+#ifndef CONTEXT_EGL_UWP_H
+#define CONTEXT_EGL_UWP_H
 
-struct cgsem {
-	int pipefd[2];
-};
+#include <wrl.h>
 
-typedef struct cgsem cgsem_t;
+#include <EGL/egl.h>
 
-#include "core/os/semaphore.h"
+#include "core/error_list.h"
+#include "core/os/os.h"
+#include "drivers/gl_context/context_gl.h"
 
-class SemaphoreIphone : public Semaphore {
+using namespace Windows::UI::Core;
 
-	mutable cgsem_t sem;
-
-	static Semaphore *create_semaphore_iphone();
+class ContextEGL_UWP : public ContextGL {
 
 public:
-	virtual Error wait();
-	virtual Error post();
-	virtual int get() const;
+	enum Driver {
+		GLES_2_0,
+		GLES_3_0,
+	};
 
-	static void make_default();
-	SemaphoreIphone();
+private:
+	CoreWindow ^ window;
 
-	~SemaphoreIphone();
+	EGLDisplay mEglDisplay;
+	EGLContext mEglContext;
+	EGLSurface mEglSurface;
+
+	EGLint width;
+	EGLint height;
+
+	bool vsync;
+
+	Driver driver;
+
+public:
+	virtual void release_current();
+
+	virtual void make_current();
+
+	virtual int get_window_width();
+	virtual int get_window_height();
+	virtual void swap_buffers();
+
+	virtual void set_use_vsync(bool use) { vsync = use; }
+	virtual bool is_using_vsync() const { return vsync; }
+
+	virtual Error initialize();
+	void reset();
+
+	void cleanup();
+
+	ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver);
+	virtual ~ContextEGL_UWP();
 };
 
-#endif
+#endif // CONTEXT_EGL_UWP_H

@@ -43,6 +43,7 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
+
 #include <AppKit/AppKit.h>
 #include <AppKit/NSCursor.h>
 #include <ApplicationServices/ApplicationServices.h>
@@ -132,7 +133,7 @@ public:
 	String im_text;
 	Point2 im_selection;
 
-	power_osx *power_manager;
+	PowerOSX *power_manager;
 
 	CrashHandler crash_handler;
 

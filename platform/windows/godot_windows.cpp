@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_win.cpp                                                        */
+/*  godot_windows.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,6 +30,7 @@
 
 #include "main/main.h"
 #include "os_windows.h"
+
 #include <locale.h>
 #include <stdio.h>
 

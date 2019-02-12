@@ -7,13 +7,12 @@ from platform_methods import run_in_subprocess
 import platform_windows_builders
 
 common_win = [
-    "godot_win.cpp",
-    "context_gl_win.cpp",
-    "crash_handler_win.cpp",
+    "godot_windows.cpp",
+    "context_gl_windows.cpp",
+    "crash_handler_windows.cpp",
     "os_windows.cpp",
-    "ctxgl_procaddr.cpp",
-    "key_mapping_win.cpp",
-    "joypad.cpp",
+    "key_mapping_windows.cpp",
+    "joypad_windows.cpp",
     "power_windows.cpp",
     "windows_terminal_logger.cpp"
 ]

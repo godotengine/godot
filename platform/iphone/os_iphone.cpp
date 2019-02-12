@@ -45,9 +45,10 @@
 #include "core/project_settings.h"
 #include "drivers/unix/syslog_logger.h"
 
-#include "sem_iphone.h"
+#include "semaphore_iphone.h"
 
 #include "ios.h"
+
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {

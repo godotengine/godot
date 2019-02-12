@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "crash_handler_osx.h"
+
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "main/main.h"
-#include "os_osx.h"
 
 #include <string.h>
 #include <unistd.h>
