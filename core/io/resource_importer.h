@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  resource_import.h                                                    */
+/*  resource_importer.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RESOURCE_IMPORT_H
-#define RESOURCE_IMPORT_H
+#ifndef RESOURCE_IMPORTER_H
+#define RESOURCE_IMPORTER_H
 
 #include "core/io/resource_loader.h"
 
@@ -110,4 +110,4 @@ public:
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL) = 0;
 };
 
-#endif // RESOURCE_IMPORT_H
+#endif // RESOURCE_IMPORTER_H

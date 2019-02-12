@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  string_db.h                                                          */
+/*  string_name.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STRING_DB_H
-#define STRING_DB_H
+#ifndef STRING_NAME_H
+#define STRING_NAME_H
 
 #include "core/os/mutex.h"
 #include "core/safe_refcount.h"
@@ -169,4 +169,4 @@ public:
 
 StringName _scs_create(const char *p_chr);
 
-#endif
+#endif // STRING_NAME_H

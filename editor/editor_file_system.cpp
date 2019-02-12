@@ -30,7 +30,7 @@
 
 #include "editor_file_system.h"
 
-#include "core/io/resource_import.h"
+#include "core/io/resource_importer.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"

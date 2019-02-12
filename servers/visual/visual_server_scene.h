@@ -33,7 +33,6 @@
 
 #include "servers/visual/rasterizer.h"
 
-#include "core/allocators.h"
 #include "core/math/geometry.h"
 #include "core/math/octree.h"
 #include "core/os/semaphore.h"
@@ -120,7 +119,6 @@ public:
 
 		VS::ScenarioDebugMode debug;
 		RID self;
-		// well wtf, balloon allocator is slower?
 
 		Octree<Instance, true> octree;
 

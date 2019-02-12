@@ -32,8 +32,8 @@
 #define IMAGE_H
 
 #include "core/color.h"
-#include "core/dvector.h"
 #include "core/math/rect2.h"
+#include "core/pool_vector.h"
 #include "core/resource.h"
 
 /**

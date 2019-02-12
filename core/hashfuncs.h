@@ -34,7 +34,7 @@
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/node_path.h"
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
 

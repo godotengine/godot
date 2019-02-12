@@ -31,7 +31,7 @@
 #ifndef NODE_PATH_H
 #define NODE_PATH_H
 
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/ustring.h"
 
 /**

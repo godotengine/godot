@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  dvector.h                                                            */
+/*  pool_vector.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DVECTOR_H
-#define DVECTOR_H
+#ifndef POOL_VECTOR_H
+#define POOL_VECTOR_H
 
 #include "core/os/copymem.h"
 #include "core/os/memory.h"
@@ -188,19 +188,19 @@ class PoolVector {
 		}
 	}
 
-	void _reference(const PoolVector &p_dvector) {
+	void _reference(const PoolVector &p_pool_vector) {
 
-		if (alloc == p_dvector.alloc)
+		if (alloc == p_pool_vector.alloc)
 			return;
 
 		_unreference();
 
-		if (!p_dvector.alloc) {
+		if (!p_pool_vector.alloc) {
 			return;
 		}
 
-		if (p_dvector.alloc->refcount.ref()) {
-			alloc = p_dvector.alloc;
+		if (p_pool_vector.alloc->refcount.ref()) {
+			alloc = p_pool_vector.alloc;
 		}
 	}
 
@@ -460,11 +460,11 @@ public:
 
 	void invert();
 
-	void operator=(const PoolVector &p_dvector) { _reference(p_dvector); }
+	void operator=(const PoolVector &p_pool_vector) { _reference(p_pool_vector); }
 	PoolVector() { alloc = NULL; }
-	PoolVector(const PoolVector &p_dvector) {
+	PoolVector(const PoolVector &p_pool_vector) {
 		alloc = NULL;
-		_reference(p_dvector);
+		_reference(p_pool_vector);
 	}
 	~PoolVector() { _unreference(); }
 };
@@ -640,4 +640,4 @@ void PoolVector<T>::invert() {
 	}
 }
 
-#endif
+#endif // POOL_VECTOR_H

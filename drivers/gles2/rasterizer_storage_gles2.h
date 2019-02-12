@@ -31,7 +31,7 @@
 #ifndef RASTERIZERSTORAGEGLES2_H
 #define RASTERIZERSTORAGEGLES2_H
 
-#include "core/dvector.h"
+#include "core/pool_vector.h"
 #include "core/self_list.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"

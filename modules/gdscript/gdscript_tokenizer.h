@@ -32,7 +32,7 @@
 #define GDSCRIPT_TOKENIZER_H
 
 #include "core/pair.h"
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/ustring.h"
 #include "core/variant.h"
 #include "core/vmap.h"

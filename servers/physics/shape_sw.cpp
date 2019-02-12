@@ -32,7 +32,7 @@
 
 #include "core/math/geometry.h"
 #include "core/math/quick_hull.h"
-#include "core/sort.h"
+#include "core/sort_array.h"
 
 #define _POINT_SNAP 0.001953125
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
