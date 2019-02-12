@@ -91,6 +91,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_transform(particles->get_transform());
 			cpu_particles->set_visible(particles->is_visible());
 			cpu_particles->set_pause_mode(particles->get_pause_mode());
+			cpu_particles->set_z_index(particles->get_z_index());
 
 			EditorNode::get_singleton()->get_scene_tree_dock()->replace_node(particles, cpu_particles, false);
 
