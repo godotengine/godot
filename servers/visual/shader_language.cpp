@@ -4113,7 +4113,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						uniform.order = uniforms++;
 					}
 					uniform.type = type;
-					uniform.precission = precision;
+					uniform.precision = precision;
 
 					//todo parse default value
 
@@ -4264,7 +4264,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					ShaderNode::Varying varying;
 					varying.type = type;
-					varying.precission = precision;
+					varying.precision = precision;
 					varying.interpolation = interpolation;
 					shader->varyings[name] = varying;
 
