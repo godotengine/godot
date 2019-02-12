@@ -32,7 +32,7 @@
 #define WEBSOCKET_H
 
 #include "core/reference.h"
-#include "websocket_multiplayer.h"
+#include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 
 class WebSocketServer : public WebSocketMultiplayerPeer {

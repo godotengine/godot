@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  websocket_multiplayer.cpp                                            */
+/*  websocket_multiplayer_peer.cpp                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "websocket_multiplayer.h"
+#include "websocket_multiplayer_peer.h"
+
 #include "core/os/os.h"
 
 WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {

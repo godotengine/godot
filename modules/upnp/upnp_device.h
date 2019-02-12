@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  upnpdevice.h                                                         */
+/*  upnp_device.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_UPNPDEVICE_H
-#define GODOT_UPNPDEVICE_H
+#ifndef GODOT_UPNP_DEVICE_H
+#define GODOT_UPNP_DEVICE_H
 
 #include "core/reference.h"
 
@@ -92,4 +92,4 @@ private:
 
 VARIANT_ENUM_CAST(UPNPDevice::IGDStatus)
 
-#endif // GODOT_UPNPDEVICE_H
+#endif // GODOT_UPNP_DEVICE_H

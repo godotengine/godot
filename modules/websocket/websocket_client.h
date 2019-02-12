@@ -32,7 +32,7 @@
 #define WEBSOCKET_CLIENT_H
 
 #include "core/error_list.h"
-#include "websocket_multiplayer.h"
+#include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 
 class WebSocketClient : public WebSocketMultiplayerPeer {
