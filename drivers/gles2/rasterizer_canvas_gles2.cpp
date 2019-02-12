@@ -576,8 +576,15 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 						}
 					} else {
+						static const Vector2 uvs[4] = {
+							Vector2(0.0, 0.0),
+							Vector2(0.0, 1.0),
+							Vector2(1.0, 1.0),
+							Vector2(1.0, 0.0),
+						};
+
 						state.canvas_shader.set_uniform(CanvasShaderGLES2::COLOR_TEXPIXEL_SIZE, Vector2());
-						_draw_gui_primitive(4, points, NULL, NULL);
+						_draw_gui_primitive(4, points, NULL, uvs);
 					}
 
 				} else {
