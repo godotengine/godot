@@ -481,6 +481,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_unselected->set_bg_color(dark_color_1);
 	style_tab_unselected->set_border_color_all(dark_color_2);
 
+	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
+	style_tab_disabled->set_bg_color(color_disabled_bg);
+	style_tab_disabled->set_border_color_all(color_disabled);
+
 	// Editor background
 	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
 
@@ -742,8 +746,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Tabs & TabContainer
 	theme->set_stylebox("tab_fg", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_bg", "TabContainer", style_tab_unselected);
+	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
 	theme->set_stylebox("tab_fg", "Tabs", style_tab_selected);
 	theme->set_stylebox("tab_bg", "Tabs", style_tab_unselected);
+	theme->set_stylebox("tab_disabled", "Tabs", style_tab_disabled);
 	theme->set_color("font_color_fg", "TabContainer", font_color);
 	theme->set_color("font_color_bg", "TabContainer", font_color_disabled);
 	theme->set_color("font_color_fg", "Tabs", font_color);
