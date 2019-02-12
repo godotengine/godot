@@ -1009,10 +1009,10 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						a->method_track_get_key_indices(i, time, delta, &indices);
 
-						for (List<int>::Element *E = indices.front(); E; E = E->next()) {
+						for (List<int>::Element *F = indices.front(); F; F = F->next()) {
 
-							StringName method = a->method_track_get_name(i, E->get());
-							Vector<Variant> params = a->method_track_get_params(i, E->get());
+							StringName method = a->method_track_get_name(i, F->get());
+							Vector<Variant> params = a->method_track_get_params(i, F->get());
 
 							int s = params.size();
 
@@ -1151,9 +1151,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
-						AnimationPlayer *player = Object::cast_to<AnimationPlayer>(t->object);
+						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
 
-						if (!player)
+						if (!player2)
 							continue;
 
 						if (delta == 0 || seeked) {
@@ -1165,10 +1165,10 @@ void AnimationTree::_process_graph(float p_delta) {
 							float pos = a->track_get_key_time(i, idx);
 
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
-							if (String(anim_name) == "[stop]" || !player->has_animation(anim_name))
+							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name))
 								continue;
 
-							Ref<Animation> anim = player->get_animation(anim_name);
+							Ref<Animation> anim = player2->get_animation(anim_name);
 
 							float at_anim_pos;
 
@@ -1178,14 +1178,14 @@ void AnimationTree::_process_graph(float p_delta) {
 								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
 							}
 
-							if (player->is_playing() || seeked) {
-								player->play(anim_name);
-								player->seek(at_anim_pos);
+							if (player2->is_playing() || seeked) {
+								player2->play(anim_name);
+								player2->seek(at_anim_pos);
 								t->playing = true;
 								playing_caches.insert(t);
 							} else {
-								player->set_assigned_animation(anim_name);
-								player->seek(at_anim_pos, true);
+								player2->set_assigned_animation(anim_name);
+								player2->seek(at_anim_pos, true);
 							}
 						} else {
 							//find stuff to play
@@ -1195,15 +1195,15 @@ void AnimationTree::_process_graph(float p_delta) {
 								int idx = to_play.back()->get();
 
 								StringName anim_name = a->animation_track_get_key_animation(i, idx);
-								if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
+								if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 
 									if (playing_caches.has(t)) {
 										playing_caches.erase(t);
-										player->stop();
+										player2->stop();
 										t->playing = false;
 									}
 								} else {
-									player->play(anim_name);
+									player2->play(anim_name);
 									t->playing = true;
 									playing_caches.insert(t);
 								}

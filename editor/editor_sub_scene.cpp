@@ -187,8 +187,8 @@ void EditorSubScene::move(Node *p_new_parent, Node *p_new_owner) {
 		}
 
 		p_new_parent->add_child(selnode);
-		for (List<Node *>::Element *E = to_reown.front(); E; E = E->next()) {
-			E->get()->set_owner(p_new_owner);
+		for (List<Node *>::Element *F = to_reown.front(); F; F = F->next()) {
+			F->get()->set_owner(p_new_owner);
 		}
 	}
 	if (!is_root) {

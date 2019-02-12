@@ -540,12 +540,12 @@ void Viewport::_notification(int p_what) {
 									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
 									if (co) {
 
-										Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.find(res[i].collider_id);
-										if (!E) {
-											E = physics_2d_mouseover.insert(res[i].collider_id, frame);
+										Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
+										if (!F) {
+											F = physics_2d_mouseover.insert(res[i].collider_id, frame);
 											co->_mouse_enter();
 										} else {
-											E->get() = frame;
+											F->get() = frame;
 										}
 
 										co->_input_event(this, ev, res[i].shape);
@@ -1747,8 +1747,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				while (!gui.modal_stack.empty()) {
 
 					Control *top = gui.modal_stack.back()->get();
-					Vector2 pos = top->get_global_transform_with_canvas().affine_inverse().xform(mpos);
-					if (!top->has_point(pos)) {
+					Vector2 pos2 = top->get_global_transform_with_canvas().affine_inverse().xform(mpos);
+					if (!top->has_point(pos2)) {
 
 						if (top->data.modal_exclusive || top->data.modal_frame == Engine::get_singleton()->get_frames_drawn()) {
 							//cancel event, sorry, modal exclusive EATS UP ALL

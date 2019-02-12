@@ -267,24 +267,24 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 
 		for (int i = 0; i < l; i++) {
 
-			const Canvas::ChildItem &ci = p_canvas->child_items[i];
-			_render_canvas_item_tree(ci.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
+			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
+			_render_canvas_item_tree(ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
-			if (ci.mirror.x != 0) {
+			if (ci2.mirror.x != 0) {
 
-				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci.mirror.x, 0));
-				_render_canvas_item_tree(ci.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
+				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
-			if (ci.mirror.y != 0) {
+			if (ci2.mirror.y != 0) {
 
-				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci.mirror.y));
-				_render_canvas_item_tree(ci.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				Transform2D xform2 = p_transform * Transform2D(0, Vector2(0, ci2.mirror.y));
+				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
-			if (ci.mirror.y != 0 && ci.mirror.x != 0) {
+			if (ci2.mirror.y != 0 && ci2.mirror.x != 0) {
 
-				Transform2D xform2 = p_transform * Transform2D(0, ci.mirror);
-				_render_canvas_item_tree(ci.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
+				Transform2D xform2 = p_transform * Transform2D(0, ci2.mirror);
+				_render_canvas_item_tree(ci2.item, xform2, p_clip_rect, p_canvas->modulate, p_lights);
 			}
 		}
 	}

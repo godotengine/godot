@@ -132,9 +132,9 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 				int mmc = image->get_mipmap_count() + 1;
 				f->store_32(mmc);
 
-				for (int i = 0; i < mmc; i++) {
+				for (int j = 0; j < mmc; j++) {
 
-					if (i > 0) {
+					if (j > 0) {
 						image->shrink_x2();
 					}
 

@@ -3178,10 +3178,10 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				int ssize = mesh->surfaces.size();
 
-				for (int i = 0; i < ssize; i++) {
+				for (int j = 0; j < ssize; j++) {
 
-					int mat_idx = inst->materials[i].is_valid() ? i : -1;
-					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
+					int mat_idx = inst->materials[j].is_valid() ? j : -1;
+					RasterizerStorageGLES3::Surface *s = mesh->surfaces[j];
 					_add_geometry(s, inst, NULL, mat_idx, p_depth_pass, p_shadow_pass);
 				}
 
@@ -3202,9 +3202,9 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 				int ssize = mesh->surfaces.size();
 
-				for (int i = 0; i < ssize; i++) {
+				for (int j = 0; j < ssize; j++) {
 
-					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
+					RasterizerStorageGLES3::Surface *s = mesh->surfaces[j];
 					_add_geometry(s, inst, multi_mesh, -1, p_depth_pass, p_shadow_pass);
 				}
 
@@ -3222,9 +3222,9 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getptr(inst->base);
 				ERR_CONTINUE(!particles);
 
-				for (int i = 0; i < particles->draw_passes.size(); i++) {
+				for (int j = 0; j < particles->draw_passes.size(); j++) {
 
-					RID pmesh = particles->draw_passes[i];
+					RID pmesh = particles->draw_passes[j];
 					if (!pmesh.is_valid())
 						continue;
 					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.get(pmesh);
@@ -3233,9 +3233,9 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 					int ssize = mesh->surfaces.size();
 
-					for (int j = 0; j < ssize; j++) {
+					for (int k = 0; k < ssize; k++) {
 
-						RasterizerStorageGLES3::Surface *s = mesh->surfaces[j];
+						RasterizerStorageGLES3::Surface *s = mesh->surfaces[k];
 						_add_geometry(s, inst, particles, -1, p_depth_pass, p_shadow_pass);
 					}
 				}
@@ -5059,7 +5059,7 @@ void RasterizerSceneGLES3::initialize() {
 	{ //reflection cubemaps
 		int max_reflection_cubemap_sampler_size = 512;
 
-		int cube_size = max_reflection_cubemap_sampler_size;
+		int rcube_size = max_reflection_cubemap_sampler_size;
 
 		glActiveTexture(GL_TEXTURE0);
 
@@ -5069,10 +5069,10 @@ void RasterizerSceneGLES3::initialize() {
 		GLenum format = GL_RGBA;
 		GLenum type = use_float ? GL_HALF_FLOAT : GL_UNSIGNED_INT_2_10_10_10_REV;
 
-		while (cube_size >= 32) {
+		while (rcube_size >= 32) {
 
 			ReflectionCubeMap cube;
-			cube.size = cube_size;
+			cube.size = rcube_size;
 
 			glGenTextures(1, &cube.depth);
 			glBindTexture(GL_TEXTURE_2D, cube.depth);
@@ -5111,7 +5111,7 @@ void RasterizerSceneGLES3::initialize() {
 
 			reflection_cubemaps.push_back(cube);
 
-			cube_size >>= 1;
+			rcube_size >>= 1;
 		}
 	}
 

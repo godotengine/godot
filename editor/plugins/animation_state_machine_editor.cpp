@@ -714,12 +714,12 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 			tl.to += offset;
 		}
 
-		for (int i = 0; i < node_rects.size(); i++) {
-			if (node_rects[i].node_name == tl.from_node) {
-				_clip_src_line_to_rect(tl.from, tl.to, node_rects[i].node);
+		for (int j = 0; j < node_rects.size(); j++) {
+			if (node_rects[j].node_name == tl.from_node) {
+				_clip_src_line_to_rect(tl.from, tl.to, node_rects[j].node);
 			}
-			if (node_rects[i].node_name == tl.to_node) {
-				_clip_dst_line_to_rect(tl.from, tl.to, node_rects[i].node);
+			if (node_rects[j].node_name == tl.to_node) {
+				_clip_dst_line_to_rect(tl.from, tl.to, node_rects[j].node);
 			}
 		}
 

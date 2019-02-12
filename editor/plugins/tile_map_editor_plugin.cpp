@@ -477,17 +477,17 @@ void TileMapEditor::_update_palette() {
 	if (sel_tile != TileMap::INVALID_CELL) {
 		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE) {
 
-			const Map<Vector2, uint16_t> &tiles = tileset->autotile_get_bitmask_map(sel_tile);
+			const Map<Vector2, uint16_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
-			Vector<Vector2> entries;
-			for (const Map<Vector2, uint16_t>::Element *E = tiles.front(); E; E = E->next()) {
-				entries.push_back(E->key());
+			Vector<Vector2> entries2;
+			for (const Map<Vector2, uint16_t>::Element *E = tiles2.front(); E; E = E->next()) {
+				entries2.push_back(E->key());
 			}
-			entries.sort();
+			entries2.sort();
 
 			Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
 
-			for (int i = 0; i < entries.size(); i++) {
+			for (int i = 0; i < entries2.size(); i++) {
 
 				manual_palette->add_item(String());
 
@@ -496,7 +496,7 @@ void TileMapEditor::_update_palette() {
 					Rect2 region = tileset->tile_get_region(sel_tile);
 					int spacing = tileset->autotile_get_spacing(sel_tile);
 					region.size = tileset->autotile_get_size(sel_tile); // !!
-					region.position += (region.size + Vector2(spacing, spacing)) * entries[i];
+					region.position += (region.size + Vector2(spacing, spacing)) * entries2[i];
 
 					if (!region.has_no_area())
 						manual_palette->set_item_icon_region(manual_palette->get_item_count() - 1, region);
@@ -504,16 +504,16 @@ void TileMapEditor::_update_palette() {
 					manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
 				}
 
-				manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries[i]);
+				manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries2[i]);
 			}
 		}
 	}
 
 	if (manual_palette->get_item_count() > 0) {
 		// Only show the manual palette if at least tile exists in it
-		int selected = manual_palette->get_current();
-		if (selected == -1) selected = 0;
-		manual_palette->set_current(selected);
+		int selected2 = manual_palette->get_current();
+		if (selected2 == -1) selected2 = 0;
+		manual_palette->set_current(selected2);
 		manual_palette->show();
 	}
 

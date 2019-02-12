@@ -880,9 +880,9 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 				Dictionary d = obj->get(E->get().name);
 				List<Variant> keys;
 				d.get_key_list(&keys);
-				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+				for (List<Variant>::Element *F = keys.front(); F; F = F->next()) {
 
-					Variant v = d[E->get()];
+					Variant v = d[F->get()];
 					RES res = v;
 					if (_find_and_save_resource(res, processed, flags))
 						ret_changed = true;
@@ -4900,9 +4900,9 @@ EditorNode::EditorNode() {
 			import_collada.instance();
 			import_scene->add_importer(import_collada);
 
-			Ref<EditorOBJImporter> import_obj;
-			import_obj.instance();
-			import_scene->add_importer(import_obj);
+			Ref<EditorOBJImporter> import_obj2;
+			import_obj2.instance();
+			import_scene->add_importer(import_obj2);
 
 			Ref<EditorSceneImporterGLTF> import_gltf;
 			import_gltf.instance();

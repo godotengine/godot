@@ -662,16 +662,16 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			int sw = tw;
 			int sh = th;
 
-			int mipmaps = Image::get_image_required_mipmaps(tw, th, format);
+			int mipmaps2 = Image::get_image_required_mipmaps(tw, th, format);
 			int total_size = Image::get_image_data_size(tw, th, format, true);
 			int idx = 0;
 			int ofs = 0;
 
-			while (mipmaps > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
+			while (mipmaps2 > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
 
 				sw = MAX(sw >> 1, 1);
 				sh = MAX(sh >> 1, 1);
-				mipmaps--;
+				mipmaps2--;
 				idx++;
 			}
 
@@ -698,7 +698,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 
 				int expected = total_size - ofs;
 				if (bytes < expected) {
-					//this is a compatibility workaround for older format, which saved less mipmaps. It is still recommended the image is reimported.
+					//this is a compatibility workaround for older format, which saved less mipmaps2. It is still recommended the image is reimported.
 					zeromem(w.ptr() + bytes, (expected - bytes));
 				} else if (bytes != expected) {
 					ERR_FAIL_V(ERR_FILE_CORRUPT);

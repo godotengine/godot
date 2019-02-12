@@ -785,8 +785,8 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	for (int i = 0; i < visible_properties.size(); i++) {
 		String pname = visible_properties[i]->get_edited_property().operator String();
 		if (pname.begins_with(base_path + prev_name)) {
-			String new_name = pname.replace_first(base_path + prev_name, base_path + name);
-			visible_properties[i]->set_object_and_property(visible_properties[i]->get_edited_object(), new_name);
+			String new_name2 = pname.replace_first(base_path + prev_name, base_path + name);
+			visible_properties[i]->set_object_and_property(visible_properties[i]->get_edited_object(), new_name2);
 		}
 	}
 

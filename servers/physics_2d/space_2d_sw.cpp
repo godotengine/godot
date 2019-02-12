@@ -280,7 +280,7 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transfor
 		real_t hi = 1;
 		Vector2 mnormal = p_motion.normalized();
 
-		for (int i = 0; i < 8; i++) { //steps should be customizable..
+		for (int j = 0; j < 8; j++) { //steps should be customizable..
 
 			real_t ofs = (low + hi) * 0.5;
 

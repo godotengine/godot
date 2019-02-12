@@ -80,9 +80,9 @@ void EditorFileServer::_subthread_start(void *s) {
 			ERR_FAIL_COND(err != OK);
 		}
 		passutf8.write[passlen] = 0;
-		String s;
-		s.parse_utf8(passutf8.ptr());
-		if (s != cd->efs->password) {
+		String s2;
+		s2.parse_utf8(passutf8.ptr());
+		if (s2 != cd->efs->password) {
 			encode_uint32(ERR_INVALID_DATA, buf4);
 			cd->connection->put_data(buf4, 4);
 			OS::get_singleton()->delay_usec(1000000);
@@ -146,23 +146,23 @@ void EditorFileServer::_subthread_start(void *s) {
 					ERR_FAIL_COND(err != OK);
 				}
 				fileutf8.write[namelen] = 0;
-				String s;
-				s.parse_utf8(fileutf8.ptr());
+				String s2;
+				s2.parse_utf8(fileutf8.ptr());
 
 				if (cmd == FileAccessNetwork::COMMAND_FILE_EXISTS) {
-					print_verbose("FILE EXISTS: " + s);
+					print_verbose("FILE EXISTS: " + s2);
 				}
 				if (cmd == FileAccessNetwork::COMMAND_GET_MODTIME) {
-					print_verbose("MOD TIME: " + s);
+					print_verbose("MOD TIME: " + s2);
 				}
 				if (cmd == FileAccessNetwork::COMMAND_OPEN_FILE) {
-					print_verbose("OPEN: " + s);
+					print_verbose("OPEN: " + s2);
 				}
 
-				if (!s.begins_with("res://")) {
+				if (!s2.begins_with("res://")) {
 
 					_close_client(cd);
-					ERR_FAIL_COND(!s.begins_with("res://"));
+					ERR_FAIL_COND(!s2.begins_with("res://"));
 				}
 				ERR_CONTINUE(cd->files.has(id));
 
@@ -172,7 +172,7 @@ void EditorFileServer::_subthread_start(void *s) {
 					cd->connection->put_data(buf4, 4);
 					encode_uint32(FileAccessNetwork::RESPONSE_FILE_EXISTS, buf4);
 					cd->connection->put_data(buf4, 4);
-					encode_uint32(FileAccess::exists(s), buf4);
+					encode_uint32(FileAccess::exists(s2), buf4);
 					cd->connection->put_data(buf4, 4);
 					DEBUG_TIME("open_file_end")
 					break;
@@ -184,13 +184,13 @@ void EditorFileServer::_subthread_start(void *s) {
 					cd->connection->put_data(buf4, 4);
 					encode_uint32(FileAccessNetwork::RESPONSE_GET_MODTIME, buf4);
 					cd->connection->put_data(buf4, 4);
-					encode_uint64(FileAccess::get_modified_time(s), buf4);
+					encode_uint64(FileAccess::get_modified_time(s2), buf4);
 					cd->connection->put_data(buf4, 8);
 					DEBUG_TIME("open_file_end")
 					break;
 				}
 
-				FileAccess *fa = FileAccess::open(s, FileAccess::READ);
+				FileAccess *fa = FileAccess::open(s2, FileAccess::READ);
 				if (!fa) {
 					//not found, continue
 					encode_uint32(id, buf4);

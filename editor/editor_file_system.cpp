@@ -260,12 +260,12 @@ void EditorFileSystem::_scan_filesystem() {
 
 	if (FileAccess::exists(update_cache)) {
 		{
-			FileAccessRef f = FileAccess::open(update_cache, FileAccess::READ);
-			String l = f->get_line().strip_edges();
+			FileAccessRef f2 = FileAccess::open(update_cache, FileAccess::READ);
+			String l = f2->get_line().strip_edges();
 			while (l != String()) {
 
 				file_cache.erase(l); //erase cache for this, so it gets updated
-				l = f->get_line().strip_edges();
+				l = f2->get_line().strip_edges();
 			}
 		}
 
@@ -686,17 +686,17 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 				_scan_new_dir(efd, da, p_progress.get_sub(idx, total));
 
-				int idx = 0;
+				int idx2 = 0;
 				for (int i = 0; i < p_dir->subdirs.size(); i++) {
 
 					if (efd->name < p_dir->subdirs[i]->name)
 						break;
-					idx++;
+					idx2++;
 				}
-				if (idx == p_dir->subdirs.size()) {
+				if (idx2 == p_dir->subdirs.size()) {
 					p_dir->subdirs.push_back(efd);
 				} else {
-					p_dir->subdirs.insert(idx, efd);
+					p_dir->subdirs.insert(idx2, efd);
 				}
 
 				da->change_dir("..");

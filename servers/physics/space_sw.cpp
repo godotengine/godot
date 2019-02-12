@@ -277,7 +277,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 		real_t hi = 1;
 		Vector3 mnormal = p_motion.normalized();
 
-		for (int i = 0; i < 8; i++) { //steps should be customizable..
+		for (int j = 0; j < 8; j++) { //steps should be customizable..
 
 			real_t ofs = (low + hi) * 0.5;
 
@@ -872,7 +872,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				real_t hi = 1;
 				Vector3 mnormal = p_motion.normalized();
 
-				for (int i = 0; i < 8; i++) { //steps should be customizable..
+				for (int k = 0; k < 8; k++) { //steps should be customizable..
 
 					real_t ofs = (low + hi) * 0.5;
 

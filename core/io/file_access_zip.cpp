@@ -168,10 +168,10 @@ bool ZipArchive::try_open_pack(const String &p_path) {
 
 	zlib_filefunc_def io;
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	if (!f)
+	FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
+	if (!fa)
 		return false;
-	io.opaque = f;
+	io.opaque = fa;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
 	io.zwrite_file = godot_write;

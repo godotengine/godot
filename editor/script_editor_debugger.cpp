@@ -777,7 +777,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		for (int i = 0; i < scc; i += 3) {
 			String script = p_data[2 + i];
-			String method = p_data[3 + i];
+			String method2 = p_data[3 + i];
 			int line = p_data[4 + i];
 			TreeItem *stack_trace = error_tree->create_item(error);
 
@@ -791,7 +791,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				stack_trace->set_text_align(0, TreeItem::ALIGN_LEFT);
 				error->set_metadata(0, meta);
 			}
-			stack_trace->set_text(1, script.get_file() + ":" + itos(line) + " @ " + method + "()");
+			stack_trace->set_text(1, script.get_file() + ":" + itos(line) + " @ " + method2 + "()");
 		}
 
 		if (warning)
@@ -859,18 +859,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			c.items.resize(values.size() / 2);
 			c.total_time = 0;
 			c.signature = "categ::" + name;
-			for (int i = 0; i < values.size(); i += 2) {
+			for (int j = 0; j < values.size(); j += 2) {
 
 				EditorProfiler::Metric::Category::Item item;
 				item.calls = 1;
 				item.line = 0;
-				item.name = values[i];
-				item.self = values[i + 1];
+				item.name = values[j];
+				item.self = values[j + 1];
 				item.total = item.self;
 				item.signature = "categ::" + name + "::" + item.name;
 				item.name = item.name.capitalize();
 				c.total_time += item.total;
-				c.items.write[i / 2] = item;
+				c.items.write[j / 2] = item;
 			}
 			metric.categories.push_back(c);
 		}
@@ -1002,13 +1002,13 @@ void ScriptEditorDebugger::_performance_draw() {
 			float m = perf_max[pi];
 			if (m == 0)
 				m = 0.00001;
-			float h = E->get()[pi] / m;
-			h = (1.0 - h) * r.size.y;
+			float h2 = E->get()[pi] / m;
+			h2 = (1.0 - h2) * r.size.y;
 
 			c.a = 0.7;
 			if (E != perf_history.front())
-				perf_draw->draw_line(r.position + Point2(from, h), r.position + Point2(from + spacing, prev), c, 2.0);
-			prev = h;
+				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, 2.0);
+			prev = h2;
 			E = E->next();
 			from -= spacing;
 		}
@@ -1536,14 +1536,14 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 		int pathid = _get_res_path_cache(respath);
 
 		if (p_value.is_ref()) {
-			Ref<Resource> res = p_value;
-			if (res.is_valid() && res->get_path() != String()) {
+			Ref<Resource> res2 = p_value;
+			if (res2.is_valid() && res2->get_path() != String()) {
 
 				Array msg;
 				msg.push_back("live_res_prop_res");
 				msg.push_back(pathid);
 				msg.push_back(p_property);
-				msg.push_back(res->get_path());
+				msg.push_back(res2->get_path());
 				ppeer->put_var(msg);
 			}
 		} else {

@@ -821,9 +821,9 @@ static void _collision_box_capsule(const ShapeSW *p_a, const Transform &p_transf
 
 		// test edges of A
 
-		for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
 
-			Vector3 axis = point_axis.cross(p_transform_a.basis.get_axis(i)).cross(p_transform_a.basis.get_axis(i)).normalized();
+			Vector3 axis = point_axis.cross(p_transform_a.basis.get_axis(j)).cross(p_transform_a.basis.get_axis(j)).normalized();
 
 			if (!separator.test_axis(axis))
 				return;

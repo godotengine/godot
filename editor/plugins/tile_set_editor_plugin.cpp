@@ -2573,20 +2573,20 @@ bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value
 		tileset_editor->_set_snap_sep(snap);
 		return true;
 	} else if (p_name.operator String().left(5) == "tile_") {
-		String name = p_name.operator String().right(5);
+		String name2 = p_name.operator String().right(5);
 		bool v = false;
 
 		if (tileset_editor->get_current_tile() < 0 || tileset.is_null())
 			return false;
 
-		if (name == "autotile_bitmask_mode") {
+		if (name2 == "autotile_bitmask_mode") {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/bitmask_mode", p_value, &v);
-		} else if (name == "subtile_size") {
+		} else if (name2 == "subtile_size") {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/tile_size", p_value, &v);
-		} else if (name == "subtile_spacing") {
+		} else if (name2 == "subtile_spacing") {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/spacing", p_value, &v);
 		} else {
-			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/" + name, p_value, &v);
+			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/" + name2, p_value, &v);
 		}
 		if (v) {
 			tileset->_change_notify("");

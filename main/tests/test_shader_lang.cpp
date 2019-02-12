@@ -149,11 +149,11 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 				String header;
 				header = _typestr(fnode->return_type) + " " + fnode->name + "(";
-				for (int i = 0; i < fnode->arguments.size(); i++) {
+				for (int j = 0; j < fnode->arguments.size(); j++) {
 
-					if (i > 0)
+					if (j > 0)
 						header += ", ";
-					header += _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + fnode->arguments[i].name;
+					header += _prestr(fnode->arguments[j].precision) + _typestr(fnode->arguments[j].type) + " " + fnode->arguments[j].name;
 				}
 
 				header += ")\n";
@@ -336,9 +336,9 @@ MainLoop *test() {
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
 		return NULL;
 	} else {
-		String code;
-		recreate_code(&code, sl.get_shader());
-		print_line("code:\n\n" + code);
+		String code2;
+		recreate_code(&code2, sl.get_shader());
+		print_line("code:\n\n" + code2);
 	}
 
 	return NULL;

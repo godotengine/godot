@@ -296,9 +296,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 		case VARIANT_OBJECT: {
 
-			uint32_t type = f->get_32();
+			uint32_t objtype = f->get_32();
 
-			switch (type) {
+			switch (objtype) {
 
 				case OBJECT_EMPTY: {
 					//do none
@@ -317,7 +317,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				case OBJECT_EXTERNAL_RESOURCE: {
 					//old file format, still around for compatibility
 
-					String type = get_unicode_string();
+					String exttype = get_unicode_string();
 					String path = get_unicode_string();
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
@@ -329,7 +329,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						path = remaps[path];
 					}
 
-					RES res = ResourceLoader::load(path, type);
+					RES res = ResourceLoader::load(path, exttype);
 
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -346,7 +346,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						r_v = Variant();
 					} else {
 
-						String type = external_resources[erindex].type;
+						String exttype = external_resources[erindex].type;
 						String path = external_resources[erindex].path;
 
 						if (path.find("://") == -1 && path.is_rel_path()) {
@@ -354,7 +354,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 						}
 
-						RES res = ResourceLoader::load(path, type);
+						RES res = ResourceLoader::load(path, exttype);
 
 						if (res.is_null()) {
 							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -1314,8 +1314,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 			} else {
 				f->store_32(VARIANT_INT);
-				int val = p_property;
-				f->store_32(int32_t(val));
+				f->store_32(int32_t(p_property));
 			}
 
 		} break;

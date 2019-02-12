@@ -420,7 +420,7 @@ void AudioDriverPulseAudio::thread_func(void *p_udata) {
 				pa_operation *pa_op = pa_context_get_server_info(ad->pa_ctx, &AudioDriverPulseAudio::pa_server_info_cb, (void *)ad);
 				if (pa_op) {
 					while (ad->pa_status == 0) {
-						int ret = pa_mainloop_iterate(ad->pa_ml, 1, NULL);
+						ret = pa_mainloop_iterate(ad->pa_ml, 1, NULL);
 						if (ret < 0) {
 							ERR_PRINT("pa_mainloop_iterate error");
 						}

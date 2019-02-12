@@ -724,13 +724,13 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		int _prim_ofs = 0;
 		int vertidx = 0;
-		for (int p_i = 0; p_i < p.count; p_i++) {
+		for (int p_j = 0; p_j < p.count; p_j++) {
 
 			int amount;
 			if (p.polygons.size()) {
 
-				ERR_FAIL_INDEX_V(p_i, p.polygons.size(), ERR_INVALID_DATA);
-				amount = p.polygons[p_i];
+				ERR_FAIL_INDEX_V(p_j, p.polygons.size(), ERR_INVALID_DATA);
+				amount = p.polygons[p_j];
 			} else {
 				amount = 3; //triangles;
 			}
@@ -1100,7 +1100,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 		if (Object::cast_to<MeshInstance>(node)) {
 
-			Collada::NodeGeometry *ng = static_cast<Collada::NodeGeometry *>(p_node);
+			Collada::NodeGeometry *ng2 = static_cast<Collada::NodeGeometry *>(p_node);
 
 			MeshInstance *mi = Object::cast_to<MeshInstance>(node);
 
@@ -1113,16 +1113,16 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 			Vector<int> bone_remap;
 			Vector<Ref<ArrayMesh> > morphs;
 
-			if (ng->controller) {
+			if (ng2->controller) {
 
-				String ngsource = ng->source;
+				String ngsource = ng2->source;
 
 				if (collada.state.skin_controller_data_map.has(ngsource)) {
 
 					ERR_FAIL_COND_V(!collada.state.skin_controller_data_map.has(ngsource), ERR_INVALID_DATA);
 					skin = &collada.state.skin_controller_data_map[ngsource];
 
-					Vector<String> skeletons = ng->skeletons;
+					Vector<String> skeletons = ng2->skeletons;
 
 					ERR_FAIL_COND_V(skeletons.empty(), ERR_INVALID_DATA);
 
@@ -1185,12 +1185,12 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 						Vector<String> names = morph->sources[target].sarray;
 						for (int i = 0; i < names.size(); i++) {
 
-							String meshid = names[i];
-							if (collada.state.mesh_data_map.has(meshid)) {
+							String meshid2 = names[i];
+							if (collada.state.mesh_data_map.has(meshid2)) {
 								Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
+								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
 								mesh->set_name(meshdata.name);
-								Error err = _create_mesh_surfaces(false, mesh, ng->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
+								Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
 								ERR_FAIL_COND_V(err, err);
 
 								morphs.push_back(mesh);
@@ -1212,7 +1212,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 				}
 
 			} else {
-				meshid = ng->source;
+				meshid = ng2->source;
 			}
 
 			Ref<ArrayMesh> mesh;
@@ -1226,7 +1226,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					mesh->set_name(meshdata.name);
-					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
+					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
 					ERR_FAIL_COND_V(err, err);
 
 					mesh_cache[meshid] = mesh;
@@ -1246,8 +1246,8 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 						String matname = meshdata.primitives[i].material;
 
-						if (ng->material_map.has(matname)) {
-							String target = ng->material_map[matname].target;
+						if (ng2->material_map.has(matname)) {
+							String target = ng2->material_map[matname].target;
 
 							Ref<Material> material;
 							if (!material_cache.has(target)) {
@@ -1296,25 +1296,25 @@ Error ColladaImport::load(const String &p_path, int p_flags, bool p_force_make_t
 
 	for (int i = 0; i < vs.root_nodes.size(); i++) {
 
-		Error err = _create_scene_skeletons(vs.root_nodes[i]);
-		if (err != OK) {
+		Error err2 = _create_scene_skeletons(vs.root_nodes[i]);
+		if (err2 != OK) {
 			memdelete(scene);
-			ERR_FAIL_COND_V(err, err);
+			ERR_FAIL_COND_V(err2, err2);
 		}
 	}
 
 	for (int i = 0; i < vs.root_nodes.size(); i++) {
 
-		Error err = _create_scene(vs.root_nodes[i], scene);
-		if (err != OK) {
-			memdelete(scene);
-			ERR_FAIL_COND_V(err, err);
-		}
-
-		Error err2 = _create_resources(vs.root_nodes[i], p_use_compression);
+		Error err2 = _create_scene(vs.root_nodes[i], scene);
 		if (err2 != OK) {
 			memdelete(scene);
 			ERR_FAIL_COND_V(err2, err2);
+		}
+
+		Error err3 = _create_resources(vs.root_nodes[i], p_use_compression);
+		if (err3 != OK) {
+			memdelete(scene);
+			ERR_FAIL_COND_V(err3, err3);
 		}
 	}
 
@@ -1627,10 +1627,10 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					ERR_CONTINUE(xf.data.size() < 4);
 					xf.data.write[3] = data[0];
 				} else if (at.component == "X" || at.component == "Y" || at.component == "Z") {
-					int cn = at.component[0] - 'X';
-					ERR_CONTINUE(cn >= xf.data.size());
+					int cn2 = at.component[0] - 'X';
+					ERR_CONTINUE(cn2 >= xf.data.size());
 					ERR_CONTINUE(data.size() > 1);
-					xf.data.write[cn] = data[0];
+					xf.data.write[cn2] = data[0];
 				} else if (data.size() == xf.data.size()) {
 					xf.data = data;
 				} else {
@@ -1747,11 +1747,11 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			animation->track_set_path(track, path);
 			animation->track_set_imported(track, true); //helps merging later
 
-			for (int i = 0; i < at.keys.size(); i++) {
+			for (int j = 0; j < at.keys.size(); j++) {
 
-				float time = at.keys[i].time;
+				float time = at.keys[j].time;
 				Variant value;
-				Vector<float> data = at.keys[i].data;
+				Vector<float> data = at.keys[j].data;
 				if (data.size() == 1) {
 					//push a float
 					value = data[0];

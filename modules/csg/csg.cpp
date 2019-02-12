@@ -666,14 +666,14 @@ void CSGBrushOperation::_add_poly_points(const BuildPoly &p_poly, int p_edge, in
 				if (opposite_point == prev_point)
 					continue; //not going back
 
-				EdgeSort e;
+				EdgeSort e2;
 				Vector2 local_vec = t2d.xform(p_poly.points[opposite_point].point);
-				e.angle = -local_vec.angle(); //negate so we can sort by minimum angle
-				e.edge = edge;
-				e.edge_point = opposite_point;
-				e.prev_point = to_point;
+				e2.angle = -local_vec.angle(); //negate so we can sort by minimum angle
+				e2.edge = edge;
+				e2.edge_point = opposite_point;
+				e2.prev_point = to_point;
 
-				next_edges.push_back(e);
+				next_edges.push_back(e2);
 			}
 
 			//finally, sort by minimum angle
