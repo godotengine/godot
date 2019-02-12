@@ -104,8 +104,10 @@ void OptionButton::_selected(int p_which) {
 void OptionButton::pressed() {
 
 	Size2 size = get_size();
-	popup->set_global_position(get_global_position() + Size2(0, size.height));
+	Vector2 scale = get_scale();
+	popup->set_global_position(get_global_position() + Size2(0, size.height * scale.y));
 	popup->set_size(Size2(size.width, 0));
+	popup->set_scale(scale);
 
 	popup->popup();
 }
