@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  crash_handler_win.h                                                  */
+/*  context_gl_windows.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,30 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CRASH_HANDLER_WIN_H
-#define CRASH_HANDLER_WIN_H
+#if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
+
+// Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
+
+#ifndef CONTEXT_GL_WIN_H
+#define CONTEXT_GL_WIN_H
+
+#include "core/error_list.h"
+#include "core/os/os.h"
+#include "drivers/gl_context/context_gl.h"
 
 #include <windows.h>
 
-// Crash handler exception only enabled with MSVC
-#if defined(DEBUG_ENABLED) && defined(MSVC)
-#define CRASH_HANDLER_EXCEPTION 1
+typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 
-extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
-#endif
+class ContextGL_Windows : public ContextGL {
 
-class CrashHandler {
+	HDC hDC;
+	HGLRC hRC;
+	unsigned int pixel_format;
+	HWND hWnd;
+	bool opengl_3_context;
+	bool use_vsync;
 
-	bool disabled;
+	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 
 public:
-	void initialize();
+	virtual void release_current();
 
-	void disable();
-	bool is_disabled() const { return disabled; };
+	virtual void make_current();
 
-	CrashHandler();
-	~CrashHandler();
+	virtual int get_window_width();
+	virtual int get_window_height();
+	virtual void swap_buffers();
+
+	virtual Error initialize();
+
+	virtual void set_use_vsync(bool p_use);
+	virtual bool is_using_vsync() const;
+
+	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
+	virtual ~ContextGL_Windows();
 };
 
+#endif
 #endif

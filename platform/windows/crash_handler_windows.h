@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_context_egl.h                                                     */
+/*  crash_handler_windows.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,59 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CONTEXT_EGL_H
-#define CONTEXT_EGL_H
+#ifndef CRASH_HANDLER_WINDOWS_H
+#define CRASH_HANDLER_WINDOWS_H
 
-#include <wrl.h>
+#include <windows.h>
 
-#include "EGL/egl.h"
-#include "core/error_list.h"
-#include "core/os/os.h"
-#include "drivers/gl_context/context_gl.h"
+// Crash handler exception only enabled with MSVC
+#if defined(DEBUG_ENABLED) && defined(MSVC)
+#define CRASH_HANDLER_EXCEPTION 1
 
-using namespace Windows::UI::Core;
+extern DWORD CrashHandlerException(EXCEPTION_POINTERS *ep);
+#endif
 
-class ContextEGL : public ContextGL {
+class CrashHandler {
 
-public:
-	enum Driver {
-		GLES_2_0,
-		GLES_3_0,
-	};
-
-private:
-	CoreWindow ^ window;
-
-	EGLDisplay mEglDisplay;
-	EGLContext mEglContext;
-	EGLSurface mEglSurface;
-
-	EGLint width;
-	EGLint height;
-
-	bool vsync;
-
-	Driver driver;
+	bool disabled;
 
 public:
-	virtual void release_current();
+	void initialize();
 
-	virtual void make_current();
+	void disable();
+	bool is_disabled() const { return disabled; };
 
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
-
-	virtual void set_use_vsync(bool use) { vsync = use; }
-	virtual bool is_using_vsync() const { return vsync; }
-
-	virtual Error initialize();
-	void reset();
-
-	void cleanup();
-
-	ContextEGL(CoreWindow ^ p_window, Driver p_driver);
-	virtual ~ContextEGL();
+	CrashHandler();
+	~CrashHandler();
 };
 
-#endif
+#endif // CRASH_HANDLER_WINDOWS_H

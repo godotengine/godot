@@ -103,7 +103,7 @@ namespace GodotUWP
 		EGLSurface mEglSurface;
 
 		CoreWindow^ window;
-		OSUWP* os;
+		OS_UWP* os;
 
 		int last_touch_x[32]; // 20 fingers, index 31 reserved for the mouse
 		int last_touch_y[32];

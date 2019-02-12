@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OSUWP_H
-#define OSUWP_H
+#ifndef OS_UWP_H
+#define OS_UWP_H
 
+#include "context_egl_uwp.h"
 #include "core/math/transform_2d.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
-#include "gl_context_egl.h"
 #include "joypad_uwp.h"
 #include "main/input_default.h"
 #include "power_uwp.h"
@@ -52,7 +52,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class OSUWP : public OS {
+class OS_UWP : public OS {
 
 public:
 	struct KeyEvent {
@@ -95,7 +95,7 @@ private:
 	VisualServer *visual_server;
 	int pressrc;
 
-	ContextEGL *gl_context;
+	ContextEGL_UWP *gl_context;
 	Windows::UI::Core::CoreWindow ^ window;
 
 	VideoMode video_mode;
@@ -144,7 +144,7 @@ private:
 		/* clang-format off */
 	internal:
 		ManagedType() { alert_close_handle = false; }
-		property OSUWP* os;
+		property OS_UWP* os;
 		/* clang-format on */
 	};
 	ManagedType ^ managed_object;
@@ -262,8 +262,8 @@ public:
 
 	void queue_key_event(KeyEvent &p_event);
 
-	OSUWP();
-	~OSUWP();
+	OS_UWP();
+	~OS_UWP();
 };
 
 #endif

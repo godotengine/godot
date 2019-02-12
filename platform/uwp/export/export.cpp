@@ -646,9 +646,9 @@ AppxPackager::~AppxPackager() {}
 
 ////////////////////////////////////////////////////////////////////
 
-class EditorExportUWP : public EditorExportPlatform {
+class EditorExportPlatformUWP : public EditorExportPlatform {
 
-	GDCLASS(EditorExportUWP, EditorExportPlatform);
+	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 
@@ -1035,13 +1035,13 @@ public:
 		r_features->push_back("s3tc");
 		r_features->push_back("etc");
 		switch ((int)p_preset->get("architecture/target")) {
-			case EditorExportUWP::ARM: {
+			case EditorExportPlatformUWP::ARM: {
 				r_features->push_back("arm");
 			} break;
-			case EditorExportUWP::X86: {
+			case EditorExportPlatformUWP::X86: {
 				r_features->push_back("32");
 			} break;
-			case EditorExportUWP::X64: {
+			case EditorExportPlatformUWP::X64: {
 				r_features->push_back("64");
 			} break;
 		}
@@ -1123,13 +1123,13 @@ public:
 		String platform_infix;
 
 		switch (arch) {
-			case EditorExportUWP::ARM: {
+			case EditorExportPlatformUWP::ARM: {
 				platform_infix = "arm";
 			} break;
-			case EditorExportUWP::X86: {
+			case EditorExportPlatformUWP::X86: {
 				platform_infix = "x86";
 			} break;
-			case EditorExportUWP::X64: {
+			case EditorExportPlatformUWP::X64: {
 				platform_infix = "x64";
 			} break;
 		}
@@ -1459,7 +1459,7 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
 	}
 
-	EditorExportUWP() {
+	EditorExportPlatformUWP() {
 		Ref<Image> img = memnew(Image(_uwp_logo));
 		logo.instance();
 		logo->create_from_image(img);
@@ -1478,7 +1478,7 @@ void register_uwp_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/uwp/debug_algorithm", PROPERTY_HINT_ENUM, "MD5,SHA1,SHA256"));
 #endif // WINDOWS_ENABLED
 
-	Ref<EditorExportUWP> exporter;
+	Ref<EditorExportPlatformUWP> exporter;
 	exporter.instance();
 	EditorExport::get_singleton()->add_export_platform(exporter);
 }

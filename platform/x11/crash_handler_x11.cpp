@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef DEBUG_ENABLED
-#define CRASH_HANDLER_ENABLED 1
-#endif
-
 #include "crash_handler_x11.h"
+
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "main/main.h"
+
+#ifdef DEBUG_ENABLED
+#define CRASH_HANDLER_ENABLED 1
+#endif
 
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>

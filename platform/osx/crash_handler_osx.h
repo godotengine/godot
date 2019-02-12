@@ -45,4 +45,4 @@ public:
 	~CrashHandler();
 };
 
-#endif
+#endif // CRASH_HANDLER_OSX_H

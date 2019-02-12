@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ctxgl_procaddr.h                                                     */
+/*  semaphore_osx.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,80 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CTXGL_PROCADDR_H
-#define CTXGL_PROCADDR_H
+#include "semaphore_osx.h"
 
-#ifdef OPENGL_ENABLED
-#include <windows.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-PROC get_gl_proc_address(const char *p_address);
-#endif
-#endif // CTXGL_PROCADDR_H
+void cgsem_init(cgsem_t *cgsem) {
+	int flags, fd, i;
+
+	pipe(cgsem->pipefd);
+
+	/* Make the pipes FD_CLOEXEC to allow them to close should we call
+	 * execv on restart. */
+	for (i = 0; i < 2; i++) {
+		fd = cgsem->pipefd[i];
+		flags = fcntl(fd, F_GETFD, 0);
+		flags |= FD_CLOEXEC;
+		fcntl(fd, F_SETFD, flags);
+	}
+}
+
+void cgsem_post(cgsem_t *cgsem) {
+	const char buf = 1;
+
+	write(cgsem->pipefd[1], &buf, 1);
+}
+
+void cgsem_wait(cgsem_t *cgsem) {
+	char buf;
+
+	read(cgsem->pipefd[0], &buf, 1);
+}
+
+void cgsem_destroy(cgsem_t *cgsem) {
+	close(cgsem->pipefd[1]);
+	close(cgsem->pipefd[0]);
+}
+
+#include "core/os/memory.h"
+
+#include <errno.h>
+
+Error SemaphoreOSX::wait() {
+
+	cgsem_wait(&sem);
+	return OK;
+}
+
+Error SemaphoreOSX::post() {
+
+	cgsem_post(&sem);
+
+	return OK;
+}
+int SemaphoreOSX::get() const {
+
+	return 0;
+}
+
+Semaphore *SemaphoreOSX::create_semaphore_osx() {
+
+	return memnew(SemaphoreOSX);
+}
+
+void SemaphoreOSX::make_default() {
+
+	create_func = create_semaphore_osx;
+}
+
+SemaphoreOSX::SemaphoreOSX() {
+
+	cgsem_init(&sem);
+}
+
+SemaphoreOSX::~SemaphoreOSX() {
+
+	cgsem_destroy(&sem);
+}

@@ -43,15 +43,15 @@
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/thread_windows.h"
-#include "joypad.h"
+#include "joypad_windows.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "windows_terminal_logger.h"
-#include <avrt.h>
 
+#include <avrt.h>
 #include <process.h>
 #include <regstr.h>
 #include <shlobj.h>
@@ -1273,7 +1273,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	gl_context = NULL;
 	while (!gl_context) {
-		gl_context = memnew(ContextGL_Win(hWnd, gles3_context));
+		gl_context = memnew(ContextGL_Windows(hWnd, gles3_context));
 
 		if (gl_context->initialize() != OK) {
 			memdelete(gl_context);

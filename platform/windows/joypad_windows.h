@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad.h                                                             */
+/*  joypad_windows.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JOYPAD_H
-#define JOYPAD_H
+#ifndef JOYPAD_WINDOWS_H
+#define JOYPAD_WINDOWS_H
 
 #include "os_windows.h"
+
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 #include <xinput.h> // on unix the file is called "xinput.h", on windows I'm sure it won't mind
@@ -145,4 +146,4 @@ private:
 	XInputSetState_t xinput_set_state;
 };
 
-#endif
+#endif // JOYPAD_WINDOWS_H

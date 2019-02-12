@@ -39,7 +39,7 @@
 #include "core/os/keyboard.h"
 #include "main/main.h"
 
-#include "platform/windows/key_mapping_win.h"
+#include "platform/windows/key_mapping_windows.h"
 
 #include <collection.h>
 
@@ -99,7 +99,7 @@ void App::Initialize(CoreApplicationView ^ applicationView) {
 	// Information about the Suspending and Resuming event handlers can be found here:
 	// http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh994930.aspx
 
-	os = new OSUWP;
+	os = new OS_UWP;
 }
 
 // Called when the CoreWindow object is created (or re-created).
@@ -398,7 +398,7 @@ void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 
 void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Windows::UI::Core::KeyEventArgs ^ key_args, Windows::UI::Core::CharacterReceivedEventArgs ^ char_args) {
 
-	OSUWP::KeyEvent ke;
+	OS_UWP::KeyEvent ke;
 
 	ke.control = sender->GetAsyncKeyState(VirtualKey::Control) == CoreVirtualKeyStates::Down;
 	ke.alt = sender->GetAsyncKeyState(VirtualKey::Menu) == CoreVirtualKeyStates::Down;
@@ -408,14 +408,14 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 
 	if (key_args != nullptr) {
 
-		ke.type = OSUWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
+		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
 		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
 
-		ke.type = OSUWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
+		ke.type = OS_UWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
 		ke.scancode = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);

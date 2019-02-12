@@ -7,7 +7,7 @@ import os
 iphone_lib = [
     'godot_iphone.cpp',
     'os_iphone.cpp',
-    'sem_iphone.cpp',
+    'semaphore_iphone.cpp',
     'gl_view.mm',
     'main.m',
     'app_delegate.mm',

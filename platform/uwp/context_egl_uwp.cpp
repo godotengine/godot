@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gl_context_egl.cpp                                                   */
+/*  context_egl_uwp.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,33 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gl_context_egl.h"
+#include "context_egl_uwp.h"
 
 #include "EGL/eglext.h"
 
 using Platform::Exception;
 
-void ContextEGL::release_current() {
+void ContextEGL_UWP::release_current() {
 
 	eglMakeCurrent(mEglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, mEglContext);
 };
 
-void ContextEGL::make_current() {
+void ContextEGL_UWP::make_current() {
 
 	eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext);
 };
 
-int ContextEGL::get_window_width() {
+int ContextEGL_UWP::get_window_width() {
 
 	return width;
 };
 
-int ContextEGL::get_window_height() {
+int ContextEGL_UWP::get_window_height() {
 
 	return height;
 };
 
-void ContextEGL::reset() {
+void ContextEGL_UWP::reset() {
 
 	cleanup();
 
@@ -62,7 +62,7 @@ void ContextEGL::reset() {
 	initialize();
 };
 
-void ContextEGL::swap_buffers() {
+void ContextEGL_UWP::swap_buffers() {
 
 	if (eglSwapBuffers(mEglDisplay, mEglSurface) != EGL_TRUE) {
 		cleanup();
@@ -74,7 +74,7 @@ void ContextEGL::swap_buffers() {
 	}
 };
 
-Error ContextEGL::initialize() {
+Error ContextEGL_UWP::initialize() {
 
 	EGLint configAttribList[] = {
 		EGL_RED_SIZE, 8,
@@ -190,7 +190,7 @@ Error ContextEGL::initialize() {
 	return OK;
 };
 
-void ContextEGL::cleanup() {
+void ContextEGL_UWP::cleanup() {
 
 	if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE) {
 		eglDestroySurface(mEglDisplay, mEglSurface);
@@ -208,14 +208,14 @@ void ContextEGL::cleanup() {
 	}
 };
 
-ContextEGL::ContextEGL(CoreWindow ^ p_window, Driver p_driver) :
+ContextEGL_UWP::ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver) :
 		mEglDisplay(EGL_NO_DISPLAY),
 		mEglContext(EGL_NO_CONTEXT),
 		mEglSurface(EGL_NO_SURFACE),
 		driver(p_driver),
 		window(p_window) {}
 
-ContextEGL::~ContextEGL() {
+ContextEGL_UWP::~ContextEGL_UWP() {
 
 	cleanup();
 };

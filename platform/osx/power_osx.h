@@ -28,15 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PLATFORM_OSX_POWER_OSX_H_
-#define PLATFORM_OSX_POWER_OSX_H_
+#ifndef POWER_OSX_H
+#define POWER_OSX_H
 
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "dir_access_osx.h"
+
 #include <CoreFoundation/CoreFoundation.h>
 
-class power_osx {
+class PowerOSX {
 
 private:
 	int nsecs_left;
@@ -47,12 +48,12 @@ private:
 	bool UpdatePowerInfo();
 
 public:
-	power_osx();
-	virtual ~power_osx();
+	PowerOSX();
+	virtual ~PowerOSX();
 
 	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };
 
-#endif /* PLATFORM_OSX_POWER_OSX_H_ */
+#endif // POWER_OSX_H

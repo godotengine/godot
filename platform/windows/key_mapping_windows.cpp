@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  key_mapping_win.cpp                                                  */
+/*  key_mapping_windows.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "key_mapping_win.h"
+#include "key_mapping_windows.h"
 
 #include <stdio.h>
 

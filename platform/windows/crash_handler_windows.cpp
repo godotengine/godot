@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  crash_handler_win.cpp                                                */
+/*  crash_handler_windows.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include "crash_handler_windows.h"
 
 #include "core/project_settings.h"
 #include "main/main.h"

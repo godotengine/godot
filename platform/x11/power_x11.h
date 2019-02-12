@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef X11_POWER_H_
-#define X11_POWER_H_
+#ifndef POWER_X11_H
+#define POWER_X11_H
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -63,4 +63,4 @@ public:
 	int get_power_percent_left();
 };
 
-#endif /* X11_POWER_H_ */
+#endif // POWER_X11_H

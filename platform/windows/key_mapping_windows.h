@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sem_osx.h                                                            */
+/*  key_mapping_windows.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SEM_OSX_H
-#define SEM_OSX_H
+#ifndef KEY_MAPPING_WINDOWS_H
+#define KEY_MAPPING_WINDOWS_H
 
-struct cgsem {
-	int pipefd[2];
-};
+#include "core/os/keyboard.h"
 
-typedef struct cgsem cgsem_t;
+#include <windows.h>
 
-#include "core/os/semaphore.h"
+#include <winuser.h>
 
-class SemaphoreOSX : public Semaphore {
+class KeyMappingWindows {
 
-	mutable cgsem_t sem;
-
-	static Semaphore *create_semaphore_osx();
+	KeyMappingWindows(){};
 
 public:
-	virtual Error wait();
-	virtual Error post();
-	virtual int get() const;
-
-	static void make_default();
-	SemaphoreOSX();
-
-	~SemaphoreOSX();
+	static unsigned int get_keysym(unsigned int p_code);
 };
 
-#endif
+#endif // KEY_MAPPING_WINDOWS_H

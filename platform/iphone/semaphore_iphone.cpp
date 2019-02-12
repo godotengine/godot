@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sem_osx.cpp                                                          */
+/*  semaphore_iphone.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "sem_osx.h"
+#include "semaphore_iphone.h"
 
 #include <fcntl.h>
 #include <unistd.h>
+
+void cgsem_init(cgsem_t *);
+void cgsem_post(cgsem_t *);
+void cgsem_wait(cgsem_t *);
+void cgsem_destroy(cgsem_t *);
 
 void cgsem_init(cgsem_t *cgsem) {
 	int flags, fd, i;
@@ -66,41 +71,42 @@ void cgsem_destroy(cgsem_t *cgsem) {
 }
 
 #include "core/os/memory.h"
+
 #include <errno.h>
 
-Error SemaphoreOSX::wait() {
+Error SemaphoreIphone::wait() {
 
 	cgsem_wait(&sem);
 	return OK;
 }
 
-Error SemaphoreOSX::post() {
+Error SemaphoreIphone::post() {
 
 	cgsem_post(&sem);
 
 	return OK;
 }
-int SemaphoreOSX::get() const {
+int SemaphoreIphone::get() const {
 
 	return 0;
 }
 
-Semaphore *SemaphoreOSX::create_semaphore_osx() {
+Semaphore *SemaphoreIphone::create_semaphore_iphone() {
 
-	return memnew(SemaphoreOSX);
+	return memnew(SemaphoreIphone);
 }
 
-void SemaphoreOSX::make_default() {
+void SemaphoreIphone::make_default() {
 
-	create_func = create_semaphore_osx;
+	create_func = create_semaphore_iphone;
 }
 
-SemaphoreOSX::SemaphoreOSX() {
+SemaphoreIphone::SemaphoreIphone() {
 
 	cgsem_init(&sem);
 }
 
-SemaphoreOSX::~SemaphoreOSX() {
+SemaphoreIphone::~SemaphoreIphone() {
 
 	cgsem_destroy(&sem);
 }

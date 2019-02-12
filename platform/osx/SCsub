@@ -10,7 +10,7 @@ files = [
     'crash_handler_osx.mm',
     'os_osx.mm',
     'godot_main_osx.mm',
-    'sem_osx.cpp',
+    'semaphore_osx.cpp',
     'dir_access_osx.mm',
     'joypad_osx.cpp',
     'power_osx.cpp',

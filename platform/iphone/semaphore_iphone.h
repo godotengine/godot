@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  sem_iphone.cpp                                                       */
+/*  semaphore_iphone.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,84 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "sem_iphone.h"
+#ifndef SEMAPHORE_IPHONE_H
+#define SEMAPHORE_IPHONE_H
 
-#include <fcntl.h>
-#include <unistd.h>
+struct cgsem {
+	int pipefd[2];
+};
 
-void cgsem_init(cgsem_t *);
-void cgsem_post(cgsem_t *);
-void cgsem_wait(cgsem_t *);
-void cgsem_destroy(cgsem_t *);
+typedef struct cgsem cgsem_t;
 
-void cgsem_init(cgsem_t *cgsem) {
-	int flags, fd, i;
+#include "core/os/semaphore.h"
 
-	pipe(cgsem->pipefd);
+class SemaphoreIphone : public Semaphore {
 
-	/* Make the pipes FD_CLOEXEC to allow them to close should we call
-	 * execv on restart. */
-	for (i = 0; i < 2; i++) {
-		fd = cgsem->pipefd[i];
-		flags = fcntl(fd, F_GETFD, 0);
-		flags |= FD_CLOEXEC;
-		fcntl(fd, F_SETFD, flags);
-	}
-}
+	mutable cgsem_t sem;
 
-void cgsem_post(cgsem_t *cgsem) {
-	const char buf = 1;
+	static Semaphore *create_semaphore_iphone();
 
-	write(cgsem->pipefd[1], &buf, 1);
-}
+public:
+	virtual Error wait();
+	virtual Error post();
+	virtual int get() const;
 
-void cgsem_wait(cgsem_t *cgsem) {
-	char buf;
+	static void make_default();
+	SemaphoreIphone();
 
-	read(cgsem->pipefd[0], &buf, 1);
-}
+	~SemaphoreIphone();
+};
 
-void cgsem_destroy(cgsem_t *cgsem) {
-	close(cgsem->pipefd[1]);
-	close(cgsem->pipefd[0]);
-}
-
-#include "core/os/memory.h"
-#include <errno.h>
-
-Error SemaphoreIphone::wait() {
-
-	cgsem_wait(&sem);
-	return OK;
-}
-
-Error SemaphoreIphone::post() {
-
-	cgsem_post(&sem);
-
-	return OK;
-}
-int SemaphoreIphone::get() const {
-
-	return 0;
-}
-
-Semaphore *SemaphoreIphone::create_semaphore_iphone() {
-
-	return memnew(SemaphoreIphone);
-}
-
-void SemaphoreIphone::make_default() {
-
-	create_func = create_semaphore_iphone;
-}
-
-SemaphoreIphone::SemaphoreIphone() {
-
-	cgsem_init(&sem);
-}
-
-SemaphoreIphone::~SemaphoreIphone() {
-
-	cgsem_destroy(&sem);
-}
+#endif // SEMAPHORE_IPHONE_H
