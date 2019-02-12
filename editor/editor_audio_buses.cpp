@@ -1165,7 +1165,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add = memnew(Button);
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
-	add->set_tooltip(TTR("Create a new Bus Layout."));
+	add->set_tooltip(TTR("Add a new Audio Bus to this layout."));
 
 	add->connect("pressed", this, "_add_bus");
 
