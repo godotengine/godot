@@ -79,7 +79,8 @@ Size2 PopupMenu::get_minimum_size() const {
 			size.width += check_w + hseparation;
 		}
 
-		String text = items[i].shortcut.is_valid() ? String(tr(items[i].shortcut->get_name())) : items[i].xl_text;
+		String text = items[i].xl_text;
+
 		size.width += font->get_string_size(text).width;
 		if (i > 0)
 			size.height += vseparation;
@@ -467,7 +468,7 @@ void PopupMenu::_notification(int p_what) {
 					hover->draw(ci, Rect2(item_ofs + Point2(-hseparation, -vseparation / 2), Size2(get_size().width - style->get_minimum_size().width + hseparation * 2, h + vseparation)));
 				}
 
-				String text = items[i].shortcut.is_valid() ? String(tr(items[i].shortcut->get_name())) : items[i].xl_text;
+				String text = items[i].xl_text;
 
 				item_ofs.x += items[i].h_ofs;
 				if (items[i].separator) {
