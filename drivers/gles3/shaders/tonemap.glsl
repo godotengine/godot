@@ -124,7 +124,7 @@ vec4 texture2D_bicubic(sampler2D tex, vec2 uv, int p_lod) {
 #endif
 
 vec3 tonemap_filmic(vec3 color, float white) {
-	// exposure bias: input scale (color *= bias, white *= bias) to make the brighness consistent with other tonemappers
+	// exposure bias: input scale (color *= bias, white *= bias) to make the brightness consistent with other tonemappers
 	// also useful to scale the input to the range that the tonemapper is designed for (some require very high input values)
 	// has no effect on the curve's general shape or visual properties
 	const float exposure_bias = 2.0f;

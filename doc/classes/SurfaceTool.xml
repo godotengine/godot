@@ -78,7 +78,7 @@
 		<method name="add_triangle_fan">
 			<return type="void">
 			</return>
-			<argument index="0" name="vertexes" type="PoolVector3Array">
+			<argument index="0" name="vertices" type="PoolVector3Array">
 			</argument>
 			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
 			</argument>

@@ -941,10 +941,10 @@
 			The control will grow to the left or top to make up if its minimum size is changed to be greater than its current size on the respective axis.
 		</constant>
 		<constant name="GROW_DIRECTION_END" value="1" enum="GrowDirection">
-			The control wil grow to the right or bottom to make up if its minimum size is changed to be greater than its current size on the respective axis.
+			The control will grow to the right or bottom to make up if its minimum size is changed to be greater than its current size on the respective axis.
 		</constant>
 		<constant name="GROW_DIRECTION_BOTH" value="2" enum="GrowDirection">
-			The control wil grow in both directions equally to make up if its minimum size is changed to be greater than its current size.
+			The control will grow in both directions equally to make up if its minimum size is changed to be greater than its current size.
 		</constant>
 		<constant name="ANCHOR_BEGIN" value="0" enum="Anchor">
 			Snaps one of the 4 anchor's sides to the origin of the node's [code]Rect[/code], in the top left. Use it with one of the [code]anchor_*[/code] member variables, like [member anchor_left]. To change all 4 anchors at once, use [method set_anchors_preset].

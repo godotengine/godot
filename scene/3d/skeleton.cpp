@@ -232,7 +232,7 @@ void Skeleton::_notification(int p_what) {
 			Bone *bonesptr = bones.ptrw();
 			int len = bones.size();
 
-			vs->skeleton_allocate(skeleton, len); // if same size, nothin really happens
+			vs->skeleton_allocate(skeleton, len); // if same size, nothing really happens
 
 			_update_process_order();
 

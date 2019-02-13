@@ -90,7 +90,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 			if (searched_string.length() > 0) {
 				if (file_name.to_lower().find(searched_string) < 0) {
-					// The seached string is not in the file name, we skip it
+					// The searched string is not in the file name, we skip it
 					continue;
 				} else {
 					// We expand all parents
@@ -375,7 +375,7 @@ void FileSystemDock::_notification(int p_what) {
 			// Update display of files in tree
 			display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 
-			// Update allways showfolders
+			// Update always showfolders
 			bool new_always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
@@ -1855,7 +1855,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 			// Drop on the favorite folder
 			drop_position = 0;
 		} else if (ti == resources_item) {
-			// Drop on the resouce item
+			// Drop on the resource item
 			drop_position = dirs.size();
 		} else {
 			// Drop in the list
@@ -2157,7 +2157,7 @@ void FileSystemDock::select_file(const String &p_file) {
 
 void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 
-	// Set the path to the current focussed item
+	// Set the path to the current focused item
 	int current = files->get_current();
 	if (current == p_index) {
 		String fpath = files->get_item_metadata(current);

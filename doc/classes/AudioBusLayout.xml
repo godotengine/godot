@@ -4,7 +4,7 @@
 		Stores information about the audiobusses.
 	</brief_description>
 	<description>
-		Stores position, muting, solo, bypass, effects, effect position, volume, and the connections between busses. See [AudioServer] for usage.
+		Stores position, muting, solo, bypass, effects, effect position, volume, and the connections between buses. See [AudioServer] for usage.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -58,7 +58,7 @@
 			<return type="AudioBusLayout">
 			</return>
 			<description>
-				Generates an [AudioBusLayout] using the available busses and effects.
+				Generates an [AudioBusLayout] using the available buses and effects.
 			</description>
 		</method>
 		<method name="get_bus_channels" qualifiers="const">
@@ -74,7 +74,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of available busses.
+				Returns the number of available buses.
 			</description>
 		</method>
 		<method name="get_bus_effect">
@@ -274,7 +274,7 @@
 			<argument index="0" name="amount" type="int">
 			</argument>
 			<description>
-				Adds and removes busses to make the number of busses match [code]amount[/code].
+				Adds and removes buses to make the number of buses match [code]amount[/code].
 			</description>
 		</method>
 		<method name="set_bus_effect_enabled">

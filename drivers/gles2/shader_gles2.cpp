@@ -199,7 +199,7 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 static String _mkid(const String &p_id) {
 
 	String id = "m_" + p_id;
-	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
+	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
 ShaderGLES2::Version *ShaderGLES2::get_current_version() {

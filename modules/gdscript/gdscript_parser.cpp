@@ -6822,7 +6822,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 				return_type = original_type;
 				return_type.is_meta_type = false;
 
-				valid = true; // There's always an initializer, we can asume this is true
+				valid = true; // There's always an initializer, we can assume this is true
 			}
 
 			if (!valid) {

@@ -1453,7 +1453,7 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 	}
 
 	// Account for precision errors on the border (GH-23250).
-	// 0.00005 is 5*CMP_EPSILON, results would start being unpredictible if
+	// 0.00005 is 5*CMP_EPSILON, results would start being unpredictable if
 	// cell size is > 15,000, but we can hardly have more precision anyway with
 	// floating point.
 	ret += Vector2(0.00005, 0.00005);

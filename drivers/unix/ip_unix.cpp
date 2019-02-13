@@ -50,7 +50,7 @@
 #define _WIN32_WINNT 0x0501 // Windows XP, disable Vista API
 #include <iphlpapi.h>
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600 // Reenable Vista API
+#define _WIN32_WINNT 0x0600 // Re-enable Vista API
 #else
 #include <iphlpapi.h>
 #endif // MINGW hack

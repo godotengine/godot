@@ -190,10 +190,10 @@ void SurfaceTool::add_smooth_group(bool p_smooth) {
 	}
 }
 
-void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertexes, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
+void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
-	ERR_FAIL_COND(p_vertexes.size() < 3);
+	ERR_FAIL_COND(p_vertices.size() < 3);
 
 #define ADD_POINT(n)                    \
 	{                                   \
@@ -207,10 +207,10 @@ void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertexes, const Vect
 			add_normal(p_normals[n]);   \
 		if (p_tangents.size() > n)      \
 			add_tangent(p_tangents[n]); \
-		add_vertex(p_vertexes[n]);      \
+		add_vertex(p_vertices[n]);      \
 	}
 
-	for (int i = 0; i < p_vertexes.size() - 2; i++) {
+	for (int i = 0; i < p_vertices.size() - 2; i++) {
 		ADD_POINT(0);
 		ADD_POINT(i + 1);
 		ADD_POINT(i + 2);
@@ -1012,7 +1012,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_weights", "weights"), &SurfaceTool::add_weights);
 	ClassDB::bind_method(D_METHOD("add_smooth_group", "smooth"), &SurfaceTool::add_smooth_group);
 
-	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertexes", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
+	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
 
 	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
 

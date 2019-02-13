@@ -2356,9 +2356,8 @@ bool Collada::_optimize_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, List<Node *> *p_mgeom) {
 
-	// bind shape matrix escala los huesos y los hace gigantes, asi la matriz despues achica
-	// al modelo?
-	// solucion: aplicarle la bind shape matrix a los VERTICES, y si el objeto viene con escala, se la dejo me parece!
+	// Bind Shape Matrix scales the bones and makes them gigantic, so the matrix then shrinks the model?
+	// Solution: apply the Bind Shape Matrix to the VERTICES, and if the object comes scaled, it seems to be left alone!
 
 	if (p_node->type == Node::TYPE_GEOMETRY) {
 
