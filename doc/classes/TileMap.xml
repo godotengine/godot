@@ -34,7 +34,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the tile index of the given cell.
+				Returns the tile index of the given cell. If no tile exists in the cell, returns [constant INVALID_CELL].
 			</description>
 		</method>
 		<method name="get_cell_autotile_coord" qualifiers="const">
@@ -53,7 +53,7 @@
 			<argument index="0" name="position" type="Vector2">
 			</argument>
 			<description>
-				Returns the tile index of the cell given by a Vector2.
+				Returns the tile index of the cell given by a Vector2. If no tile exists in the cell, returns [constant INVALID_CELL].
 			</description>
 		</method>
 		<method name="get_collision_layer_bit" qualifiers="const">
