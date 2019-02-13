@@ -118,6 +118,9 @@ public:
 	String get_current_action_name() const;
 	void clear_history(bool p_increase_version = true);
 
+	bool has_undo();
+	bool has_redo();
+
 	uint64_t get_version() const;
 
 	void set_commit_notify_callback(CommitNotifyCallback p_callback, void *p_ud);

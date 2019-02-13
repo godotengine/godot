@@ -141,6 +141,20 @@
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
+		<method name="has_redo">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if an 'redo' action is available.
+			</description>
+		</method>
+		<method name="has_undo">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if an 'undo' action is available.
+			</description>
+		</method>
 		<method name="is_commiting_action" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -162,6 +176,13 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="version_changed">
+			<description>
+				Called when [method undo] or [method redo] was called.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="MERGE_DISABLE" value="0" enum="MergeMode">
 			Makes [code]do[/code]/[code]undo[/code] operations stay in separate actions.
