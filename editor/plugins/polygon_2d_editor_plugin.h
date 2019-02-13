@@ -152,6 +152,7 @@ protected:
 	virtual void _set_node(Node *p_polygon);
 
 	virtual Vector2 _get_offset(int p_idx) const;
+	virtual String _why_cant_edit_polygon() const;
 
 	virtual bool _has_uv() const { return true; };
 	virtual void _commit_action();
