@@ -1028,6 +1028,9 @@ void Polygon2DEditor::_uv_draw() {
 	Ref<Texture> internal_handle = get_icon("EditorInternalHandle", "EditorIcons");
 
 	Color poly_line_color = Color(0.9, 0.5, 0.5);
+	if (polygons.size() || polygon_create.size()) {
+		poly_line_color.a *= 0.25;
+	}
 	Color polygon_line_color = Color(0.5, 0.5, 0.9);
 	Vector<Color> polygon_fill_color;
 	{
@@ -1040,6 +1043,30 @@ void Polygon2DEditor::_uv_draw() {
 	rect.expand_to(mtx.basis_xform(uv_edit_draw->get_size()));
 
 	int uv_draw_max = uvs.size();
+
+	uv_draw_max -= node->get_internal_vertex_count();
+	if (uv_draw_max < 0) {
+		uv_draw_max = 0;
+	}
+
+	for (int i = 0; i < uvs.size(); i++) {
+
+		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
+
+		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_DEF("editors/poly_editor/show_previous_outline", true)) {
+			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, 2 * EDSCALE);
+		}
+
+		Vector2 next_point = uvs[next];
+		if (uv_create && i == uvs.size() - 1) {
+			next_point = uv_create_to;
+		}
+		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
+			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, 2 * EDSCALE);
+		}
+
+		rect.expand_to(mtx.basis_xform(uvs[i]));
+	}
 
 	for (int i = 0; i < polygons.size(); i++) {
 
@@ -1063,26 +1090,7 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	uv_draw_max -= node->get_internal_vertex_count();
-	if (uv_draw_max < 0) {
-		uv_draw_max = 0;
-	}
-
 	for (int i = 0; i < uvs.size(); i++) {
-
-		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
-
-		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_DEF("editors/poly_editor/show_previous_outline", true)) {
-			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, 2 * EDSCALE);
-		}
-
-		Vector2 next_point = uvs[next];
-		if (uv_create && i == uvs.size() - 1) {
-			next_point = uv_create_to;
-		}
-		if (i < uv_draw_max && polygons.size() == 0 && polygon_create.size() == 0) { //if using or creating polygons, do not show outline (will show polygons instead)
-			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, 2 * EDSCALE);
-		}
 
 		if (weight_r.ptr()) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
@@ -1095,14 +1103,13 @@ void Polygon2DEditor::_uv_draw() {
 				uv_edit_draw->draw_texture(internal_handle, mtx.xform(uvs[i]) - internal_handle->get_size() * 0.5);
 			}
 		}
-		rect.expand_to(mtx.basis_xform(uvs[i]));
 	}
 
 	if (polygon_create.size()) {
 		for (int i = 0; i < polygon_create.size(); i++) {
 			Vector2 from = uvs[polygon_create[i]];
 			Vector2 to = (i + 1) < polygon_create.size() ? uvs[polygon_create[i + 1]] : uv_create_to;
-			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), poly_line_color, 2);
+			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, 2);
 		}
 	}
 
