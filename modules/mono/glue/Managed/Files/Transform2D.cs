@@ -17,12 +17,40 @@ namespace Godot
 
         public real_t Rotation
         {
-            get { return Mathf.Atan2(y.x, origin.y); }
+            get
+            {
+                real_t det = BasisDeterminant();
+                Transform2D t = Orthonormalized();
+                if (det < 0)
+                {
+                    t.ScaleBasis(new Vector2(1, -1));
+                }
+                return Mathf.Atan2(t.x.y, t.x.x);
+            }
+            set
+            {
+                Vector2 scale = Scale;
+                x.x = y.y = Mathf.Cos(value);
+                x.y = y.x = Mathf.Sin(value);
+                y.x *= -1;
+                Scale = scale;
+            }
         }
 
         public Vector2 Scale
         {
-            get { return new Vector2(x.Length(), y.Length()); }
+            get
+            {
+                real_t detSign = Mathf.Sign(BasisDeterminant());
+                return new Vector2(x.Length(), detSign * y.Length());
+            }
+            set
+            {
+                x = x.Normalized();
+                y = y.Normalized();
+                x *= value.x;
+                y *= value.y;
+            }
         }
 
         public Vector2 this[int index]
@@ -95,7 +123,7 @@ namespace Godot
         {
             var inv = this;
 
-            real_t det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
+            real_t det = BasisDeterminant();
 
             if (det == 0)
             {
@@ -107,18 +135,23 @@ namespace Godot
                 );
             }
 
-            real_t idet = 1.0f / det;
+            real_t detInv = 1.0f / det;
 
             real_t temp = this[0, 0];
             this[0, 0] = this[1, 1];
             this[1, 1] = temp;
 
-            this[0] *= new Vector2(idet, -idet);
-            this[1] *= new Vector2(-idet, idet);
+            this[0] *= new Vector2(detInv, -detInv);
+            this[1] *= new Vector2(-detInv, detInv);
 
             this[2] = BasisXform(-this[2]);
 
             return inv;
+        }
+
+        private real_t BasisDeterminant()
+        {
+            return x.x * y.y - x.y * y.x;
         }
 
         public Vector2 BasisXform(Vector2 v)
@@ -220,6 +253,14 @@ namespace Godot
             return copy;
         }
 
+        private void ScaleBasis(Vector2 scale)
+        {
+            x.x *= scale.x;
+            x.y *= scale.y;
+            y.x *= scale.x;
+            y.y *= scale.y;
+        }
+
         private real_t Tdotx(Vector2 with)
         {
             return this[0, 0] * with[0] + this[1, 0] * with[1];
@@ -274,12 +315,9 @@ namespace Godot
 
         public Transform2D(real_t rot, Vector2 pos)
         {
-            real_t cr = Mathf.Cos(rot);
-            real_t sr = Mathf.Sin(rot);
-            x.x = cr;
-            x.y = -sr;
-            y.x = sr;
-            y.y = cr;
+            x.x = y.y = Mathf.Cos(rot);
+            x.y = y.x = Mathf.Sin(rot);
+            y.x *= -1;
             origin = pos;
         }
 
