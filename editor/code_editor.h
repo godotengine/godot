@@ -176,6 +176,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _warning_label_gui_input(const Ref<InputEvent> &p_event);
 	void _warning_button_pressed();
+	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
 protected:
@@ -189,6 +190,8 @@ protected:
 	void _line_col_changed();
 	void _notification(int);
 	static void _bind_methods();
+
+	bool is_warnings_panel_opened;
 
 public:
 	void trim_trailing_whitespace();

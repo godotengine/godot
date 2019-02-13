@@ -1177,7 +1177,12 @@ void CodeTextEditor::_warning_label_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void CodeTextEditor::_warning_button_pressed() {
-	emit_signal("warning_pressed");
+	_set_show_warnings_panel(!is_warnings_panel_opened);
+}
+
+void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
+	is_warnings_panel_opened = p_show;
+	emit_signal("show_warnings_panel", p_show);
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
@@ -1210,6 +1215,8 @@ void CodeTextEditor::set_warning_nb(int p_warning_nb) {
 	warning_count_label->set_text(itos(p_warning_nb));
 	warning_count_label->set_visible(p_warning_nb > 0);
 	warning_button->set_visible(p_warning_nb > 0);
+	if (!p_warning_nb)
+		_set_show_warnings_panel(false);
 }
 
 void CodeTextEditor::_bind_methods() {
@@ -1228,7 +1235,7 @@ void CodeTextEditor::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("validate_script"));
 	ADD_SIGNAL(MethodInfo("load_theme_settings"));
-	ADD_SIGNAL(MethodInfo("warning_pressed"));
+	ADD_SIGNAL(MethodInfo("show_warnings_panel"));
 	ADD_SIGNAL(MethodInfo("error_pressed"));
 }
 
@@ -1313,6 +1320,7 @@ CodeTextEditor::CodeTextEditor() {
 	warning_count_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
 	warning_count_label->connect("gui_input", this, "_warning_label_gui_input");
 
+	is_warnings_panel_opened = false;
 	set_warning_nb(0);
 
 	// Line and column
