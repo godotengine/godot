@@ -82,11 +82,11 @@ public:
 		bool etc2_supported;
 		bool pvrtc_supported;
 
-		bool hdr_supported;
-
 		bool srgb_decode_supported;
 
 		bool texture_float_linear_supported;
+		bool framebuffer_float_supported;
+		bool framebuffer_half_float_supported;
 
 		bool use_rgba_2d_shadows;
 
