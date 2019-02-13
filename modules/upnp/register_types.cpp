@@ -33,7 +33,7 @@
 #include "core/error_macros.h"
 
 #include "upnp.h"
-#include "upnpdevice.h"
+#include "upnp_device.h"
 
 void register_upnp_types() {
 

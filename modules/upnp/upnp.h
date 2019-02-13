@@ -33,7 +33,7 @@
 
 #include "core/reference.h"
 
-#include "upnpdevice.h"
+#include "upnp_device.h"
 
 #include <miniupnpc/miniupnpc.h>
 

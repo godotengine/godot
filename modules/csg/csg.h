@@ -31,7 +31,6 @@
 #ifndef CSG_H
 #define CSG_H
 
-#include "core/dvector.h"
 #include "core/map.h"
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
@@ -39,6 +38,7 @@
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
 #include "core/oa_hash_map.h"
+#include "core/pool_vector.h"
 #include "scene/resources/material.h"
 
 struct CSGBrush {

@@ -206,9 +206,9 @@ static const LauncherIcon launcher_icons[] = {
 	{ "launcher_icons/mdpi_48x48", "res/drawable-mdpi-v4/icon.png" }
 };
 
-class EditorExportAndroid : public EditorExportPlatform {
+class EditorExportPlatformAndroid : public EditorExportPlatform {
 
-	GDCLASS(EditorExportAndroid, EditorExportPlatform)
+	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform)
 
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;
@@ -235,7 +235,7 @@ class EditorExportAndroid : public EditorExportPlatform {
 
 	static void _device_poll_thread(void *ud) {
 
-		EditorExportAndroid *ea = (EditorExportAndroid *)ud;
+		EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
 		while (!ea->quit_request) {
 
@@ -1925,7 +1925,7 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
 	}
 
-	EditorExportAndroid() {
+	EditorExportPlatformAndroid() {
 
 		Ref<Image> img = memnew(Image(_android_logo));
 		logo.instance();
@@ -1941,7 +1941,7 @@ public:
 		device_thread = Thread::create(_device_poll_thread, this);
 	}
 
-	~EditorExportAndroid() {
+	~EditorExportPlatformAndroid() {
 		quit_request = true;
 		Thread::wait_to_finish(device_thread);
 		memdelete(device_lock);
@@ -1969,6 +1969,6 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/timestamping_authority_url", "");
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
-	Ref<EditorExportAndroid> exporter = Ref<EditorExportAndroid>(memnew(EditorExportAndroid));
+	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));
 	EditorExport::get_singleton()->add_export_platform(exporter);
 }

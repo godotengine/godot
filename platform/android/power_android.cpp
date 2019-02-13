@@ -190,7 +190,7 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 	return 0;
 }
 
-bool power_android::GetPowerInfo_Android() {
+bool PowerAndroid::GetPowerInfo_Android() {
 	int battery;
 	int plugged;
 	int charged;
@@ -218,7 +218,7 @@ bool power_android::GetPowerInfo_Android() {
 	return true;
 }
 
-OS::PowerState power_android::get_power_state() {
+OS::PowerState PowerAndroid::get_power_state() {
 	if (GetPowerInfo_Android()) {
 		return power_state;
 	} else {
@@ -227,7 +227,7 @@ OS::PowerState power_android::get_power_state() {
 	}
 }
 
-int power_android::get_power_seconds_left() {
+int PowerAndroid::get_power_seconds_left() {
 	if (GetPowerInfo_Android()) {
 		return nsecs_left;
 	} else {
@@ -236,7 +236,7 @@ int power_android::get_power_seconds_left() {
 	}
 }
 
-int power_android::get_power_percent_left() {
+int PowerAndroid::get_power_percent_left() {
 	if (GetPowerInfo_Android()) {
 		return percent_left;
 	} else {
@@ -245,11 +245,11 @@ int power_android::get_power_percent_left() {
 	}
 }
 
-power_android::power_android() :
+PowerAndroid::PowerAndroid() :
 		nsecs_left(-1),
 		percent_left(-1),
 		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
-power_android::~power_android() {
+PowerAndroid::~PowerAndroid() {
 }

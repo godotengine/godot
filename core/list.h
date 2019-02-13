@@ -32,7 +32,7 @@
 #define GLOBALS_LIST_H
 
 #include "core/os/memory.h"
-#include "core/sort.h"
+#include "core/sort_array.h"
 
 /**
  * Generic Templatized Linked List Implementation.

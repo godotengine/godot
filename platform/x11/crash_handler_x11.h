@@ -45,4 +45,4 @@ public:
 	~CrashHandler();
 };
 
-#endif
+#endif // CRASH_HANDLER_X11_H

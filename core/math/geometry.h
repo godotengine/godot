@@ -31,12 +31,12 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include "core/dvector.h"
 #include "core/math/face3.h"
 #include "core/math/rect2.h"
 #include "core/math/triangulate.h"
 #include "core/math/vector3.h"
 #include "core/object.h"
+#include "core/pool_vector.h"
 #include "core/print_string.h"
 #include "core/vector.h"
 

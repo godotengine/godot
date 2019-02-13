@@ -30,14 +30,18 @@
 
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
-#include "context_gl_win.h"
+
+#include "context_gl_windows.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "crash_handler_win.h"
+#include "crash_handler_windows.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
-#include "drivers/winmidi/win_midi.h"
+#include "drivers/winmidi/midi_driver_winmidi.h"
+#include "key_mapping_windows.h"
+#include "main/input_default.h"
 #include "power_windows.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -45,9 +49,6 @@
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
-#include "drivers/unix/ip_unix.h"
-#include "key_mapping_win.h"
-#include "main/input_default.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -86,7 +87,7 @@ class OS_Windows : public OS {
 	int old_x, old_y;
 	Point2i center;
 #if defined(OPENGL_ENABLED)
-	ContextGL_Win *gl_context;
+	ContextGL_Windows *gl_context;
 #endif
 	VisualServer *visual_server;
 	int pressrc;

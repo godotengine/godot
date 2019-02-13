@@ -93,7 +93,7 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	input = memnew(InputDefault);
 
 #ifdef __APPLE__
-	power_manager = memnew(power_osx);
+	power_manager = memnew(PowerOSX);
 #else
 	power_manager = memnew(PowerX11);
 #endif

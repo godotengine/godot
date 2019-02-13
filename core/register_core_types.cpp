@@ -47,7 +47,7 @@
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
-#include "core/io/resource_import.h"
+#include "core/io/resource_importer.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
