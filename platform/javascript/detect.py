@@ -130,7 +130,7 @@ def configure(env):
     env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
 
     # Since we use both memory growth and MEMFS preloading,
-    # this avoids unecessary copying on start-up.
+    # this avoids unnecessary copying on start-up.
     env.Append(LINKFLAGS=['--no-heap-copy'])
 
     # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.

@@ -122,7 +122,7 @@ void PathFollow::_update_transform() {
 	Vector3 pos = c->interpolate_baked(o, cubic);
 	Transform t = get_transform();
 	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
-	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formely used
+	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
 

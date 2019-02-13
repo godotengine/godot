@@ -569,7 +569,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		String mode = name.get_slicec('/', 1);
 		int value = p_value;
 		if (value == 0) {
-			modes.erase(mode); //means its default anyway, so dont store it
+			modes.erase(mode); //means it's default anyway, so don't store it
 		} else {
 			modes[mode] = value;
 		}

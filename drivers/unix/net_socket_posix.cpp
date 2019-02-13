@@ -543,7 +543,7 @@ void NetSocketPosix::set_blocking_enabled(bool p_enabled) {
 
 void NetSocketPosix::set_ipv6_only_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
-	// This option is only avaiable in IPv6 sockets.
+	// This option is only available in IPv6 sockets.
 	ERR_FAIL_COND(_ip_type == IP::TYPE_IPV4);
 
 	int par = p_enabled ? 1 : 0;

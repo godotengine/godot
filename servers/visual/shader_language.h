@@ -646,7 +646,7 @@ private:
 		const DataType args[MAX_ARGS];
 	};
 
-	struct BuiltinFuncOutArgs { //arguments used as out in built in funcions
+	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
 		const char *name;
 		int argument;
 	};

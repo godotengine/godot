@@ -977,7 +977,7 @@ void AudioServer::update() {
 		uint64_t driver_time = AudioDriver::get_singleton()->get_profiling_time();
 		uint64_t server_time = prof_time;
 
-		// Substract the server time from the driver time
+		// Subtract the server time from the driver time
 		if (driver_time > server_time)
 			driver_time -= server_time;
 
@@ -995,7 +995,7 @@ void AudioServer::update() {
 				values.push_back(String(bus->name) + bus->effects[j].effect->get_name());
 				values.push_back(USEC_TO_SEC(bus->effects[j].prof_time));
 
-				// Substract the effect time from the driver and server times
+				// Subtract the effect time from the driver and server times
 				if (driver_time > bus->effects[j].prof_time)
 					driver_time -= bus->effects[j].prof_time;
 				if (server_time > bus->effects[j].prof_time)

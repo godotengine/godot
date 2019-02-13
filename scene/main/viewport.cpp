@@ -239,7 +239,7 @@ void Viewport::_collision_object_input_event(CollisionObject *p_object, Camera *
 	ObjectID id = p_object->get_instance_id();
 
 	if (p_discard_empty_motion) {
-		//avoid sending the event unnecesarily if nothing really changed in the context
+		//avoid sending the event unnecessarily if nothing really changed in the context
 		Ref<InputEventMouseMotion> mm = p_input_event;
 		if (mm.is_valid() && object_transform == physics_last_object_transform && camera_transform == physics_last_camera_transform && physics_last_id == id) {
 			return; //discarded
@@ -425,7 +425,7 @@ void Viewport::_notification(int p_what) {
 				bool discard_empty_motion = false;
 
 				{ // if no motion event exists, create a new one. This is necessary because objects or camera may have moved.
-					// while this extra event is sent, it is checked if both camera and last object and last ID did not move. If nothing changed, the event is discarded to avoid flooding with unnecesary motion events every frame
+					// while this extra event is sent, it is checked if both camera and last object and last ID did not move. If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame
 					bool has_mouse_motion = false;
 					for (List<Ref<InputEvent> >::Element *E = physics_picking_events.front(); E; E = E->next()) {
 						Ref<InputEventMouseMotion> mm = E->get();

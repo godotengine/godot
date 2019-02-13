@@ -1337,7 +1337,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a, const T
 					return;
 			}
 		}
-		//edge-vertex( hsell)
+		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count_A; i++) {
 
@@ -1438,7 +1438,7 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a, const Transform &
 					return;
 			}
 		}
-		//edge-vertex( hsell)
+		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count; i++) {
 

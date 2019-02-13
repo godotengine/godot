@@ -321,7 +321,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_search_text_line_edit->connect("text_entered", this, "_on_search_text_entered");
 	gc->add_child(_search_text_line_edit);
 
-	gc->add_child(memnew(Control)); // Space to mantain the grid aligned.
+	gc->add_child(memnew(Control)); // Space to maintain the grid aligned.
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);

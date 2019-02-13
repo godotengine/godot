@@ -1247,7 +1247,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		bool disconnect = c.flags & CONNECT_ONESHOT;
 #ifdef TOOLS_ENABLED
 		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-			//this signal was connected from the editor, and is being edited. just dont disconnect for now
+			//this signal was connected from the editor, and is being edited. just don't disconnect for now
 			disconnect = false;
 		}
 #endif

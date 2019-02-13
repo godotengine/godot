@@ -313,7 +313,7 @@ void StreamPeerMbedTLS::disconnect_from_stream() {
 
 	Ref<StreamPeerTCP> tcp = base;
 	if (tcp.is_valid() && tcp->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
-		// We are still connected on the socket, try to send close notity.
+		// We are still connected on the socket, try to send close notify.
 		mbedtls_ssl_close_notify(&ssl);
 	}
 

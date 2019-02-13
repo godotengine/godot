@@ -1094,7 +1094,7 @@ void ItemList::_notification(int p_what) {
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
-				// If the icon is transposed, we have to swith the size so that it is drawn correctly
+				// If the icon is transposed, we have to switch the size so that it is drawn correctly
 				if (items[i].icon_transposed) {
 					Size2 size_tmp = draw_rect.size;
 					draw_rect.size.x = size_tmp.y;
