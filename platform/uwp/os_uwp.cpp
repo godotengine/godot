@@ -579,7 +579,9 @@ OS::TimeZoneInfo OSUWP::get_time_zone_info() const {
 		ret.name = info.StandardName;
 	}
 
-	ret.bias = info.Bias;
+	// Bias value returned by GetTimeZoneInformation is inverted of what we expect
+	// For example on GMT-3 GetTimeZoneInformation return a Bias of 180, so invert the value to get -180
+	ret.bias = -info.Bias;
 	return ret;
 }
 
