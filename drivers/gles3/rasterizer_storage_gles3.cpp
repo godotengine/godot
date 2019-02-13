@@ -1539,7 +1539,7 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source, int p_
 	ERR_FAIL_COND_V(!texture, RID());
 	ERR_FAIL_COND_V(texture->type != VS::TEXTURE_TYPE_CUBEMAP, RID());
 
-	bool use_float = config.hdr_supported;
+	bool use_float = config.framebuffer_half_float_supported;
 
 	if (p_resolution < 0) {
 		p_resolution = texture->width;
@@ -1787,7 +1787,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		int array_level = 6;
 
-		bool use_float = config.hdr_supported;
+		bool use_float = config.framebuffer_half_float_supported;
 
 		GLenum internal_format = use_float ? GL_RGBA16F : GL_RGB10_A2;
 		GLenum format = GL_RGBA;
@@ -1899,7 +1899,7 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 		int mm_level = mipmaps;
 
-		bool use_float = config.hdr_supported;
+		bool use_float = config.framebuffer_half_float_supported;
 
 		GLenum internal_format = use_float ? GL_RGBA16F : GL_RGB10_A2;
 		GLenum format = GL_RGBA;
@@ -6800,7 +6800,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 	GLuint color_type;
 	Image::Format image_format;
 
-	bool hdr = rt->flags[RENDER_TARGET_HDR] && config.hdr_supported;
+	bool hdr = rt->flags[RENDER_TARGET_HDR] && config.framebuffer_half_float_supported;
 	//hdr = false;
 
 	if (!hdr || rt->flags[RENDER_TARGET_NO_3D]) {
@@ -7054,7 +7054,14 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 			glGenTextures(1, &rt->exposure.color);
 			glBindTexture(GL_TEXTURE_2D, rt->exposure.color);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT, NULL);
+			if (config.framebuffer_float_supported) {
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT, NULL);
+			} else if (config.framebuffer_half_float_supported) {
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, 1, 1, 0, GL_RED, GL_HALF_FLOAT, NULL);
+			} else {
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB10_A2, 1, 1, 0, GL_RGBA, GL_UNSIGNED_INT_2_10_10_10_REV, NULL);
+			}
+
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->exposure.color, 0);
 
 			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -7809,17 +7816,21 @@ void RasterizerStorageGLES3::initialize() {
 	config.latc_supported = config.extensions.has("GL_EXT_texture_compression_latc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
 #ifdef GLES_OVER_GL
-	config.hdr_supported = true;
 	config.etc2_supported = false;
 	config.s3tc_supported = true;
 	config.rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 	config.texture_float_linear_supported = true;
+	config.framebuffer_float_supported = true;
+	config.framebuffer_half_float_supported = true;
+
 #else
 	config.etc2_supported = true;
-	config.hdr_supported = false;
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_dxt1") || config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 	config.texture_float_linear_supported = config.extensions.has("GL_OES_texture_float_linear");
+	config.framebuffer_float_supported = config.extensions.has("GL_EXT_color_buffer_float");
+	config.framebuffer_half_float_supported = config.extensions.has("GL_EXT_color_buffer_half_float") || config.framebuffer_float_supported;
+
 #endif
 
 	config.pvrtc_supported = config.extensions.has("GL_IMG_texture_compression_pvrtc");
@@ -7912,11 +7923,7 @@ void RasterizerStorageGLES3::initialize() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 
-#ifdef GLES_OVER_GL
-	config.use_rgba_2d_shadows = false;
-#else
-	config.use_rgba_2d_shadows = true;
-#endif
+	config.use_rgba_2d_shadows = config.framebuffer_float_supported;
 
 	//generic quadie for copying
 
