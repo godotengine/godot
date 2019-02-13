@@ -145,6 +145,7 @@
 			</argument>
 			<description>
 				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the animation backwards.
+				If the animation has been paused by [code]stop(true)[/code] it will be resumed. Calling [code]play()[/code] without arguments will also resume the animation.
 			</description>
 		</method>
 		<method name="play_backwards">
@@ -156,6 +157,7 @@
 			</argument>
 			<description>
 				Play the animation with key [code]name[/code] in reverse.
+				If the animation has been paused by [code]stop(true)[/code] it will be resumed backwards. Calling [code]play_backwards()[/code] without arguments will also resume the animation backwards.
 			</description>
 		</method>
 		<method name="queue">
@@ -217,7 +219,8 @@
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
-				Stop the currently playing animation. If [code]reset[/code] is [code]true[/code], the anim position is reset to [code]0[/code].
+				Stop the currently playing animation. If [code]reset[/code] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
+				If [code]reset[/code] is [code]false[/code], then calling [code]play()[/code] without arguments or [code]play("same_as_before")[/code] will resume the animation. Works the same for the [code]play_backwards()[/code] method.
 			</description>
 		</method>
 	</methods>

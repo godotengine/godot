@@ -1205,9 +1205,16 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	_stop_playing_caches();
 
 	c.current.from = &animation_set[name];
-	c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
+
+	if (c.assigned != name) { // reset
+		c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
+	} else if (p_from_end && c.current.pos == 0) {
+		// Animation reset BUT played backwards, set position to the end
+		c.current.pos = c.current.from->animation->get_length();
+	}
+
 	c.current.speed_scale = p_custom_scale;
-	c.assigned = p_name;
+	c.assigned = name;
 	c.seeked = false;
 	c.started = true;
 
@@ -1286,6 +1293,7 @@ void AnimationPlayer::stop(bool p_reset) {
 	if (p_reset) {
 		c.current.from = NULL;
 		c.current.speed_scale = 1;
+		c.current.pos = 0;
 	}
 	_set_process(false);
 	queued.clear();
