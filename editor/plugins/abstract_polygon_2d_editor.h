@@ -134,6 +134,8 @@ protected:
 	virtual bool _has_resource() const;
 	virtual void _create_resource();
 
+	virtual String _why_cant_edit_polygon() const { return String(); }
+
 public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
