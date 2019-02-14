@@ -4066,7 +4066,9 @@ void AnimationTrackEditor::_move_selection_commit() {
 		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
 	}
 
+	block_animation_update = true; //animation will change and this is triggered from a signal, so block updates
 	undo_redo->commit_action();
+	block_animation_update = false;
 
 	moving_selection = false;
 	for (int i = 0; i < track_edits.size(); i++) {
