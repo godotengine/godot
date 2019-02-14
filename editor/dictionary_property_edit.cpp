@@ -102,12 +102,17 @@ Node *DictionaryPropertyEdit::get_node() {
 	return cast_to<Node>(o);
 }
 
+bool DictionaryPropertyEdit::_dont_undo_redo() {
+	return true;
+}
+
 void DictionaryPropertyEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_key"), &DictionaryPropertyEdit::_set_key);
 	ClassDB::bind_method(D_METHOD("_set_value"), &DictionaryPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &DictionaryPropertyEdit::_notif_change);
 	ClassDB::bind_method(D_METHOD("_notif_changev"), &DictionaryPropertyEdit::_notif_changev);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &DictionaryPropertyEdit::_dont_undo_redo);
 }
 
 bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {

@@ -52,6 +52,8 @@ class ArrayPropertyEdit : public Reference {
 	void _set_size(int p_size);
 	void _set_value(int p_idx, const Variant &p_value);
 
+	bool _dont_undo_redo();
+
 protected:
 	static void _bind_methods();
 	bool _set(const StringName &p_name, const Variant &p_value);

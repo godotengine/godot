@@ -234,7 +234,9 @@ void UndoRedo::_pop_history_tail() {
 	}
 
 	actions.remove(0);
-	current_action--;
+	if (current_action >= 0) {
+		current_action--;
+	}
 }
 
 void UndoRedo::commit_action() {
@@ -258,11 +260,8 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 		Operation &op = E->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
-		if (!obj) {
-			//corruption
-			clear_history();
-			ERR_FAIL_COND(!obj);
-		}
+		if (!obj) //may have been deleted and this is fine
+			continue;
 
 		switch (op.type) {
 

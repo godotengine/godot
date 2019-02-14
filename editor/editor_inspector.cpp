@@ -1937,7 +1937,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
-	if (!undo_redo || Object::cast_to<ArrayPropertyEdit>(object) || Object::cast_to<DictionaryPropertyEdit>(object)) { //kind of hacky
+	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
 
 		object->set(p_name, p_value);
 		if (p_refresh_all)

@@ -181,8 +181,6 @@ private:
 	int cache_update_bezier_size;
 	Set<TrackNodeCache *> playing_caches;
 
-	Map<Ref<Animation>, int> used_anims;
-
 	uint64_t accum_pass;
 	float speed_scale;
 	float default_blend_time;
