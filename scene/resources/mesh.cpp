@@ -787,7 +787,6 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 	Surface s;
 
 	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_flags);
-	surfaces.push_back(s);
 
 	/* make aABB? */ {
 
@@ -808,8 +807,9 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 				aabb.expand_to(vtx[i]);
 		}
 
-		surfaces.write[surfaces.size() - 1].aabb = aabb;
-		surfaces.write[surfaces.size() - 1].is_2d = arr.get_type() == Variant::POOL_VECTOR2_ARRAY;
+		s.aabb = aabb;
+		s.is_2d = arr.get_type() == Variant::POOL_VECTOR2_ARRAY;
+		surfaces.push_back(s);
 
 		_recompute_aabb();
 	}
