@@ -45,9 +45,12 @@ class AnimationTrackKeyEdit : public Object {
 
 public:
 	bool setting;
-	bool hidden;
 
 	bool _hide_script_from_inspector() {
+		return true;
+	}
+
+	bool _dont_undo_redo() {
 		return true;
 	}
 
@@ -57,6 +60,7 @@ public:
 		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
 		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
 		ClassDB::bind_method("get_root_path", &AnimationTrackKeyEdit::get_root_path);
+		ClassDB::bind_method("_dont_undo_redo", &AnimationTrackKeyEdit::_dont_undo_redo);
 	}
 
 	//PopupDialog *ke_dialog;
@@ -82,16 +86,13 @@ public:
 	void _update_obj(const Ref<Animation> &p_anim) {
 		if (setting)
 			return;
-		if (hidden)
-			return;
 		if (!(animation == p_anim))
 			return;
+
 		notify_change();
 	}
 
 	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to) {
-		if (hidden)
-			return;
 		if (!(animation == p_anim))
 			return;
 		if (from != key_ofs)
@@ -168,6 +169,7 @@ public:
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
 				undo_redo->commit_action();
+
 				setting = false;
 				return true;
 
@@ -191,6 +193,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -267,6 +270,7 @@ public:
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
 				undo_redo->commit_action();
+
 				setting = false;
 				if (change_notify_deserved)
 					notify_change();
@@ -286,6 +290,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -301,6 +306,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -316,6 +322,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -335,6 +342,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -350,6 +358,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -365,6 +374,7 @@ public:
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
+
 					setting = false;
 					return true;
 				}
@@ -639,6 +649,8 @@ public:
 	PropertyInfo hint;
 	NodePath base;
 
+	AnimationTrackEditor *track_editor;
+
 	void notify_change() {
 
 		_change_notify();
@@ -649,11 +661,11 @@ public:
 	}
 
 	AnimationTrackKeyEdit() {
-		hidden = true;
 		key_ofs = 0;
 		track = -1;
 		setting = false;
 		root_path = NULL;
+		track_editor = NULL;
 	}
 };
 
@@ -3414,6 +3426,14 @@ void AnimationTrackEditor::_update_tracks() {
 
 void AnimationTrackEditor::_animation_changed() {
 
+	if (key_edit && key_edit->setting) {
+		//if editing a key, just update the edited track, makes refresh less costly
+		if (key_edit->track < track_edits.size()) {
+			track_edits[key_edit->track]->update();
+		}
+		return;
+	}
+
 	timeline->update();
 	timeline->update_values();
 	if (block_animation_update) {
@@ -3944,6 +3964,7 @@ void AnimationTrackEditor::_update_key_edit() {
 	key_edit = memnew(AnimationTrackKeyEdit);
 	key_edit->animation = animation;
 	key_edit->track = selection.front()->key().track;
+	key_edit->track_editor = this;
 
 	float ofs = animation->track_get_key_time(key_edit->track, selection.front()->key().key);
 	key_edit->key_ofs = ofs;

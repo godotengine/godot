@@ -205,6 +205,8 @@ public:
 
 	StringName parameters_base_path;
 
+	StringName tracks_changed;
+
 	enum {
 		MAX_MATERIALS = 32
 	};

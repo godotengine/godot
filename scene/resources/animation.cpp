@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation.h"
+#include "scene/scene_string_names.h"
 
 #include "core/math/geometry.h"
 
@@ -668,6 +669,7 @@ int Animation::add_track(TrackType p_type, int p_at_pos) {
 		}
 	}
 	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 	return p_at_pos;
 }
 
@@ -719,6 +721,7 @@ void Animation::remove_track(int p_track) {
 	memdelete(t);
 	tracks.remove(p_track);
 	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 int Animation::get_track_count() const {
@@ -737,6 +740,7 @@ void Animation::track_set_path(int p_track, const NodePath &p_path) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	tracks[p_track]->path = p_path;
 	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 NodePath Animation::track_get_path(int p_track) const {
@@ -1410,6 +1414,8 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 
 		} break;
 	}
+
+	emit_changed();
 }
 
 void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_transition) {
@@ -1445,6 +1451,8 @@ void Animation::track_set_key_transition(int p_track, int p_key_idx, float p_tra
 			// they don't use transition
 		} break;
 	}
+
+	emit_changed();
 }
 
 template <class K>
@@ -2554,6 +2562,7 @@ void Animation::track_move_up(int p_track) {
 	}
 
 	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::track_set_imported(int p_track, bool p_imported) {
@@ -2588,6 +2597,7 @@ void Animation::track_move_down(int p_track) {
 		SWAP(tracks.write[p_track], tracks.write[p_track - 1]);
 	}
 	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::track_swap(int p_track, int p_with_track) {
@@ -2598,6 +2608,7 @@ void Animation::track_swap(int p_track, int p_with_track) {
 		return;
 	SWAP(tracks.write[p_track], tracks.write[p_with_track]);
 	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 void Animation::set_step(float p_step) {
@@ -2716,6 +2727,8 @@ void Animation::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step", PROPERTY_HINT_RANGE, "0,4096,0.001"), "set_step", "get_step");
 
+	ADD_SIGNAL(MethodInfo("tracks_changed"));
+
 	BIND_ENUM_CONSTANT(TYPE_VALUE);
 	BIND_ENUM_CONSTANT(TYPE_TRANSFORM);
 	BIND_ENUM_CONSTANT(TYPE_METHOD);
@@ -2740,6 +2753,8 @@ void Animation::clear() {
 	tracks.clear();
 	loop = false;
 	length = 1;
+	emit_changed();
+	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
 bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err, float p_alowed_angular_err, float p_max_optimizable_angle, const Vector3 &p_norm) {
