@@ -483,7 +483,7 @@ bool GDScript::_update_exports() {
 			placeholder_fallback_enabled = true;
 			return false;
 		}
-	} else if (!valid || placeholder_fallback_enabled) {
+	} else if (placeholder_fallback_enabled) {
 		return false;
 	}
 
