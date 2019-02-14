@@ -938,6 +938,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
 			} else {
 				//stop();
 				playing = false;
+				playback.current.pos = 0;
 				_set_process(false);
 				if (end_notify)
 					emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
