@@ -48,6 +48,9 @@ class ProjectManager : public Control {
 	Button *open_btn;
 	Button *rename_btn;
 	Button *run_btn;
+	Button *clear_project_data_btn;
+	Button *clear_project_import_btn;
+	Button *clear_project_cache_btn;
 
 	EditorAssetLibrary *asset_library;
 
@@ -57,6 +60,9 @@ class ProjectManager : public Control {
 	FileDialog *scan_dir;
 	ConfirmationDialog *language_restart_ask;
 	ConfirmationDialog *erase_ask;
+	ConfirmationDialog *clear_project_data_ask;
+	ConfirmationDialog *clear_project_cache_ask;
+	ConfirmationDialog *clear_project_import_ask;
 	ConfirmationDialog *multi_open_ask;
 	ConfirmationDialog *multi_run_ask;
 	ConfirmationDialog *multi_scan_ask;
@@ -90,6 +96,12 @@ class ProjectManager : public Control {
 	void _rename_project();
 	void _erase_project();
 	void _erase_project_confirm();
+	void _clear_project_data();
+	void _clear_project_data_confirm();
+	void _clear_project_cache();
+	void _clear_project_cache_confirm();
+	void _clear_project_import();
+	void _clear_project_import_confirm();
 	void _update_project_buttons();
 	void _language_selected(int p_id);
 	void _restart_confirm();

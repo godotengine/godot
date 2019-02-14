@@ -987,6 +987,10 @@ void ProjectManager::_update_project_buttons() {
 	open_btn->set_disabled(empty_selection);
 	rename_btn->set_disabled(empty_selection);
 	run_btn->set_disabled(empty_selection);
+
+	clear_project_data_btn->set_disabled(empty_selection);
+	clear_project_cache_btn->set_disabled(empty_selection);
+	clear_project_import_btn->set_disabled(empty_selection);
 }
 
 void ProjectManager::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
@@ -1506,6 +1510,7 @@ void ProjectManager::_open_selected_projects_ask() {
 
 	if (selected_list.size() > 1) {
 		multi_open_ask->set_text(TTR("Are you sure to open more than one project?"));
+		multi_open_ask->get_label()->set_align(Label::ALIGN_CENTER);
 		multi_open_ask->popup_centered_minsize();
 		return;
 	}
@@ -1597,6 +1602,7 @@ void ProjectManager::_run_project() {
 
 	if (selected_list.size() > 1) {
 		multi_run_ask->set_text(TTR("Are you sure to run more than one project?"));
+		multi_run_ask->get_label()->set_align(Label::ALIGN_CENTER);
 		multi_run_ask->popup_centered_minsize();
 	} else {
 		_run_project_confirm();
@@ -1705,7 +1711,118 @@ void ProjectManager::_erase_project() {
 		return;
 
 	erase_ask->set_text(TTR("Remove project from the list? (Folder contents will not be modified)"));
+	erase_ask->get_label()->set_align(Label::ALIGN_CENTER);
 	erase_ask->popup_centered_minsize();
+}
+
+void ProjectManager::_clear_project_cache_confirm() {
+
+	if (selected_list.size() == 0) {
+		return;
+	}
+
+	DirAccess *d;
+	String cache_dir = EditorSettings::get_singleton()->get_cache_dir();
+	String temp_dir = EditorSettings::get_singleton()->get_settings_dir() + String("/projects");
+
+	if (DirAccess::exists(cache_dir)) { //Clear editor cache
+		print_line("Cleared cache from: " + cache_dir);
+		d = DirAccess::open(cache_dir);
+		d->erase_contents_recursive();
+	}
+
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		String project_file = E->key().replace("::", "/") + "/project.godot";
+		String project_name = E->key().substr(E->key().find_last("::") + 2, E->key().length());
+
+		if (FileAccess::exists(project_file) && DirAccess::exists(temp_dir)) {
+			d = DirAccess::open(temp_dir);
+			d->list_dir_begin();
+			String n = d->get_next();
+			while (n != String()) {
+				if (d->current_is_dir() && n.length() == (project_name.length() + 32 + 1) && n.begins_with(project_name)) {
+					DirAccess *da = DirAccess::open(d->get_current_dir() + "/" + n);
+					da->erase_contents_recursive();
+					da->remove(d->get_current_dir() + "/" + n);
+					print_verbose("Cleared cache from: " + d->get_current_dir() + "/" + n);
+					break;
+				}
+				n = d->get_next();
+			}
+		}
+	}
+}
+
+void ProjectManager::_clear_project_cache() {
+
+	clear_project_cache_ask->set_text(TTR("Clear cache of selected projects?"));
+	clear_project_cache_ask->get_label()->set_align(Label::ALIGN_CENTER);
+	clear_project_cache_ask->popup_centered_minsize();
+}
+
+void ProjectManager::_clear_project_import_confirm() {
+
+	if (selected_list.size() == 0) {
+		return;
+	}
+
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		String project_file = E->key().replace("::", "/") + "/project.godot";
+		String import_folder = E->key().replace("::", "/") + "/.import";
+		if (FileAccess::exists(project_file)) {
+			if (DirAccess::exists(import_folder)) {
+				DirAccess *d = DirAccess::open(import_folder);
+				d->erase_contents_recursive();
+				d->remove(import_folder);
+				print_verbose("Cleared .import from: " + import_folder);
+			}
+		}
+	}
+}
+
+void ProjectManager::_clear_project_import() {
+
+	clear_project_import_ask->set_text(TTR("Clear .import folder from this projects?\nYou will need to import all resources again after opening the project.\nAfter clearing .import folder, you wouldn't able to run project from project manager."));
+	clear_project_import_ask->get_label()->set_align(Label::ALIGN_CENTER);
+	clear_project_import_ask->popup_centered_minsize();
+}
+
+void ProjectManager::_clear_project_data_confirm() {
+
+	if (selected_list.size() == 0) {
+		return;
+	}
+
+	DirAccess *d;
+	String user_data_dir = EditorSettings::get_singleton()->get_data_dir() + String("/app_userdata");
+
+	for (Map<String, String>::Element *E = selected_list.front(); E; E = E->next()) {
+		String project_file = E->key().replace("::", "/") + "/project.godot";
+		String project_name = E->key().substr(E->key().find_last("::") + 2, E->key().length());
+
+		if (FileAccess::exists(project_file) && DirAccess::exists(user_data_dir)) {
+			d = DirAccess::open(user_data_dir);
+
+			d->list_dir_begin();
+			String n = d->get_next();
+			while (n != String()) {
+				if (d->current_is_dir() && n == project_name) {
+					DirAccess *da = DirAccess::open(d->get_current_dir() + "/" + n);
+					da->erase_contents_recursive();
+					da->remove(d->get_current_dir() + "/" + n);
+					print_verbose("Clear user data(user://) from: " + d->get_current_dir() + "/" + n);
+				}
+				n = d->get_next();
+			}
+		}
+	}
+}
+
+void ProjectManager::_clear_project_data() {
+
+	clear_project_data_ask->set_text(TTR("Clear user data from this project?\nIt will delete all files stored in user://."));
+	clear_project_data_ask->get_label()->set_align(Label::ALIGN_CENTER);
+	clear_project_data_ask->popup_centered_minsize();
 }
 
 void ProjectManager::_language_selected(int p_id) {
@@ -1777,6 +1894,7 @@ void ProjectManager::_files_dropped(PoolStringArray p_files, int p_screen) {
 			multi_scan_ask->get_ok()->disconnect("pressed", this, "_scan_multiple_folders");
 			multi_scan_ask->get_ok()->connect("pressed", this, "_scan_multiple_folders", varray(folders));
 			multi_scan_ask->set_text(vformat(TTR("You are about the scan %s folders for existing Godot projects. Do you confirm?"), folders.size()));
+			multi_scan_ask->get_label()->set_align(Label::ALIGN_CENTER);
 			multi_scan_ask->popup_centered_minsize();
 		} else {
 			_scan_multiple_folders(folders);
@@ -1804,6 +1922,12 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
+	ClassDB::bind_method("_clear_project_data", &ProjectManager::_clear_project_data);
+	ClassDB::bind_method("_clear_project_data_confirm", &ProjectManager::_clear_project_data_confirm);
+	ClassDB::bind_method("_clear_project_cache", &ProjectManager::_clear_project_cache);
+	ClassDB::bind_method("_clear_project_cache_confirm", &ProjectManager::_clear_project_cache_confirm);
+	ClassDB::bind_method("_clear_project_import", &ProjectManager::_clear_project_import);
+	ClassDB::bind_method("_clear_project_import_confirm", &ProjectManager::_clear_project_import_confirm);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
@@ -2040,6 +2164,26 @@ ProjectManager::ProjectManager() {
 	erase->connect("pressed", this, "_erase_project");
 	erase_btn = erase;
 
+	tree_vb->add_child(memnew(HSeparator));
+
+	Button *clear_data = memnew(Button);
+	clear_data->set_text(TTR("Clear data"));
+	tree_vb->add_child(clear_data);
+	clear_data->connect("pressed", this, "_clear_project_data");
+	clear_project_data_btn = clear_data;
+
+	Button *clear_cache = memnew(Button);
+	clear_cache->set_text(TTR("Clear cache"));
+	tree_vb->add_child(clear_cache);
+	clear_cache->connect("pressed", this, "_clear_project_cache");
+	clear_project_cache_btn = clear_cache;
+
+	Button *clear_import = memnew(Button);
+	clear_import->set_text(TTR("Clear .import"));
+	tree_vb->add_child(clear_import);
+	clear_import->connect("pressed", this, "_clear_project_import");
+	clear_project_import_btn = clear_import;
+
 	tree_vb->add_spacer();
 
 	if (StreamPeerSSL::is_available()) {
@@ -2112,6 +2256,21 @@ ProjectManager::ProjectManager() {
 	multi_open_ask->get_ok()->set_text(TTR("Edit"));
 	multi_open_ask->get_ok()->connect("pressed", this, "_open_selected_projects");
 	gui_base->add_child(multi_open_ask);
+
+	clear_project_cache_ask = memnew(ConfirmationDialog);
+	clear_project_cache_ask->get_ok()->set_text(TTR("Clear"));
+	clear_project_cache_ask->get_ok()->connect("pressed", this, "_clear_project_cache_confirm");
+	gui_base->add_child(clear_project_cache_ask);
+
+	clear_project_import_ask = memnew(ConfirmationDialog);
+	clear_project_import_ask->get_ok()->set_text(TTR("Clear"));
+	clear_project_import_ask->get_ok()->connect("pressed", this, "_clear_project_import_confirm");
+	gui_base->add_child(clear_project_import_ask);
+
+	clear_project_data_ask = memnew(ConfirmationDialog);
+	clear_project_data_ask->get_ok()->set_text(TTR("Clear"));
+	clear_project_data_ask->get_ok()->connect("pressed", this, "_clear_project_data_confirm");
+	gui_base->add_child(clear_project_data_ask);
 
 	multi_run_ask = memnew(ConfirmationDialog);
 	multi_run_ask->get_ok()->set_text(TTR("Run"));
