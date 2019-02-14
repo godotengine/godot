@@ -649,8 +649,6 @@ public:
 	PropertyInfo hint;
 	NodePath base;
 
-	AnimationTrackEditor *track_editor;
-
 	void notify_change() {
 
 		_change_notify();
@@ -665,7 +663,6 @@ public:
 		track = -1;
 		setting = false;
 		root_path = NULL;
-		track_editor = NULL;
 	}
 };
 
@@ -3221,14 +3218,6 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 		}
 	}
 
-	/*
-	undo_redo->add_do_method(this, "update_tracks");
-	undo_redo->add_undo_method(this, "update");
-	undo_redo->add_do_method(track_editor, "update");
-	undo_redo->add_undo_method(track_editor, "update");
-	undo_redo->add_do_method(track_pos, "update");
-	undo_redo->add_undo_method(track_pos, "update");
-*/
 	undo_redo->commit_action();
 
 	return p_last_track;
@@ -3964,7 +3953,6 @@ void AnimationTrackEditor::_update_key_edit() {
 	key_edit = memnew(AnimationTrackKeyEdit);
 	key_edit->animation = animation;
 	key_edit->track = selection.front()->key().track;
-	key_edit->track_editor = this;
 
 	float ofs = animation->track_get_key_time(key_edit->track, selection.front()->key().key);
 	key_edit->key_ofs = ofs;
