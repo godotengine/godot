@@ -4559,6 +4559,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_grid = true;
 	snap_guides = true;
 	snap_rotation = false;
+	snap_relative = false;
 	snap_pixel = false;
 
 	skeleton_show_bones = true;
