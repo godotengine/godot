@@ -157,7 +157,17 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 	path_value += ';';
 
 	String bundled_bin_dir = GodotSharpDirs::get_data_mono_bin_dir();
-	path_value += DirAccess::exists(bundled_bin_dir) ? bundled_bin_dir : mono_reg_info.bin_dir;
+#ifdef TOOLS_ENABLED
+	if (DirAccess::exists(bundled_bin_dir)) {
+		path_value += bundled_bin_dir;
+	} else {
+		path_value += mono_reg_info.bin_dir;
+	}
+#else
+	if (DirAccess::exists(bundled_bin_dir))
+		path_value += bundled_bin_dir;
+#endif // TOOLS_ENABLED
+
 #else
 	path_value += ':';
 
@@ -167,10 +177,10 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 	} else {
 		// TODO: Do we need to add the lib dir when using the system installed Mono on Unix platforms?
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	OS::get_singleton()->set_environment(path_var, path_value);
-#endif
+#endif // WINDOWS_ENABLED || UNIX_ENABLED
 }
 
 void GDMono::initialize() {
@@ -231,11 +241,21 @@ void GDMono::initialize() {
 		assembly_rootdir = bundled_assembly_rootdir;
 		config_dir = bundled_config_dir;
 	}
+
+#ifdef WINDOWS_ENABLED
+	if (assembly_rootdir.empty() || config_dir.empty()) {
+		// Assertion: if they are not set, then they weren't found in the registry
+		CRASH_COND(mono_reg_info.assembly_dir.length() > 0 || mono_reg_info.config_dir.length() > 0);
+
+		ERR_PRINT("Cannot find Mono in the registry");
+	}
+#endif // WINDOWS_ENABLED
+
 #else
 	// These are always the directories in export templates
 	assembly_rootdir = bundled_assembly_rootdir;
 	config_dir = bundled_config_dir;
-#endif
+#endif // TOOLS_ENABLED
 
 	// Leak if we call mono_set_dirs more than once
 	mono_set_dirs(assembly_rootdir.length() ? assembly_rootdir.utf8().get_data() : NULL,
