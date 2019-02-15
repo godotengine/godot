@@ -157,7 +157,17 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 	path_value += ';';
 
 	String bundled_bin_dir = GodotSharpDirs::get_data_mono_bin_dir();
-	path_value += DirAccess::exists(bundled_bin_dir) ? bundled_bin_dir : mono_reg_info.bin_dir;
+#ifdef TOOLS_ENABLED
+	if (DirAccess::exists(bundled_bin_dir)) {
+		path_value += bundled_bin_dir;
+	} else {
+		path_value += mono_reg_info.bin_dir;
+	}
+#else
+	if (DirAccess::exists(bundled_bin_dir))
+		path_value += bundled_bin_dir;
+#endif // TOOLS_ENABLED
+
 #else
 	path_value += ':';
 
@@ -167,10 +177,10 @@ void GDMono::add_mono_shared_libs_dir_to_path() {
 	} else {
 		// TODO: Do we need to add the lib dir when using the system installed Mono on Unix platforms?
 	}
-#endif
+#endif // WINDOWS_ENABLED
 
 	OS::get_singleton()->set_environment(path_var, path_value);
-#endif
+#endif // WINDOWS_ENABLED || UNIX_ENABLED
 }
 
 void GDMono::initialize() {

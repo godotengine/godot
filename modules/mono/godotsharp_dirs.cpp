@@ -99,13 +99,16 @@ public:
 	String sln_filepath;
 	String csproj_filepath;
 
-	String data_mono_bin_dir;
 	String data_editor_tools_dir;
 	String data_editor_prebuilt_api_dir;
 #endif
 
 	String data_mono_etc_dir;
 	String data_mono_lib_dir;
+
+#ifdef WINDOWS_ENABLED
+	String data_mono_bin_dir;
+#endif
 
 private:
 	_GodotSharpDirs() {
@@ -146,9 +149,12 @@ private:
 		data_editor_prebuilt_api_dir = data_dir_root.plus_file("Api");
 
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
-		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
+
+#ifdef WINDOWS_ENABLED
+		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
+#endif
 
 #ifdef OSX_ENABLED
 		if (!DirAccess::exists(data_editor_tools_dir)) {
@@ -160,7 +166,6 @@ private:
 		}
 
 		if (!DirAccess::exists(data_mono_root_dir)) {
-			data_mono_bin_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Mono/bin");
 			data_mono_etc_dir = exe_dir.plus_file("../Resources/GodotSharp/Mono/etc");
 			data_mono_lib_dir = exe_dir.plus_file("../Frameworks/GodotSharp/Mono/lib");
 		}
@@ -177,6 +182,10 @@ private:
 		String data_mono_root_dir = data_dir_root.plus_file("Mono");
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
+
+#ifdef WINDOWS_ENABLED
+		data_mono_bin_dir = data_mono_root_dir.plus_file("bin");
+#endif
 
 #ifdef OSX_ENABLED
 		if (!DirAccess::exists(data_mono_root_dir)) {
@@ -251,10 +260,6 @@ String get_project_csproj_path() {
 	return _GodotSharpDirs::get_singleton().csproj_filepath;
 }
 
-String get_data_mono_bin_dir() {
-	return _GodotSharpDirs::get_singleton().data_mono_bin_dir;
-}
-
 String get_data_editor_tools_dir() {
 	return _GodotSharpDirs::get_singleton().data_editor_tools_dir;
 }
@@ -271,5 +276,11 @@ String get_data_mono_etc_dir() {
 String get_data_mono_lib_dir() {
 	return _GodotSharpDirs::get_singleton().data_mono_lib_dir;
 }
+
+#ifdef WINDOWS_ENABLED
+String get_data_mono_bin_dir() {
+	return _GodotSharpDirs::get_singleton().data_mono_bin_dir;
+}
+#endif
 
 } // namespace GodotSharpDirs
