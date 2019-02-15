@@ -749,6 +749,15 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 	return match;
 }
 
+bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) const {
+
+	Ref<InputEventJoypadButton> button = p_event;
+	if (button.is_null())
+		return false;
+
+	return button_index == button->button_index;
+}
+
 String InputEventJoypadButton::as_text() const {
 
 	return "InputEventJoypadButton : button_index=" + itos(button_index) + ", pressed=" + (pressed ? "true" : "false") + ", pressure=" + String(Variant(pressure));
@@ -950,11 +959,10 @@ bool InputEventAction::is_pressed() const {
 }
 
 bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
-	Ref<InputEventKey> event = p_event;
-	if (event.is_null())
+	if (p_event.is_null())
 		return false;
 
-	return event->is_action(action);
+	return p_event->is_action(action);
 }
 
 bool InputEventAction::is_action(const StringName &p_action) const {
