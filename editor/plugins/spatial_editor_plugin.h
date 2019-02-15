@@ -618,6 +618,7 @@ private:
 	void _instance_scene();
 	void _init_indicators();
 	void _update_gizmos_menu();
+	void _update_gizmos_menu_theme();
 	void _init_grid();
 	void _finish_indicators();
 	void _finish_grid();
