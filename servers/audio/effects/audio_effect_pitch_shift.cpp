@@ -74,7 +74,7 @@
 *
 *****************************************************************************/
 
-void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata,int stride) {
+void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata,int stride, float pitchMix) {
 
 
 	/*
@@ -103,7 +103,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 		/* As long as we have not yet collected enough data just read in */
 		gInFIFO[gRover] = indata[i*stride];
-		outdata[i*stride] = gOutFIFO[gRover-inFifoLatency];
+		outdata[i*stride] = pitchMix * gOutFIFO[gRover-inFifoLatency] + indata[i*stride] * (1.0 - pitchMix);
 		gRover++;
 
 		/* now we have enough data for processing */
@@ -293,8 +293,8 @@ void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, Audi
 	float *out_l = (float *)p_dst_frames;
 	float *out_r = out_l + 1;
 
-	shift_l.PitchShift(base->pitch_scale, p_frame_count, 2048, 4, sample_rate, in_l, out_l, 2);
-	shift_r.PitchShift(base->pitch_scale, p_frame_count, 2048, 4, sample_rate, in_r, out_r, 2);
+	shift_l.PitchShift(base->pitch_scale, p_frame_count, 2048, 4, sample_rate, in_l, out_l, 2, base->pitch_mix);
+	shift_r.PitchShift(base->pitch_scale, p_frame_count, 2048, 4, sample_rate, in_r, out_r, 2, base->pitch_mix);
 }
 
 Ref<AudioEffectInstance> AudioEffectPitchShift::instance() {
@@ -315,14 +315,29 @@ float AudioEffectPitchShift::get_pitch_scale() const {
 	return pitch_scale;
 }
 
+void AudioEffectPitchShift::set_pitch_mix(float p_pitch_mix) {
+	ERR_FAIL_COND(p_pitch_mix < 0.0);
+	pitch_mix = p_pitch_mix;
+}
+
+float AudioEffectPitchShift::get_pitch_mix() const {
+
+	return pitch_mix;
+}
+
 void AudioEffectPitchShift::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "rate"), &AudioEffectPitchShift::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioEffectPitchShift::get_pitch_scale);
 
+	ClassDB::bind_method(D_METHOD("set_pitch_mix", "amount"), &AudioEffectPitchShift::set_pitch_mix);
+	ClassDB::bind_method(D_METHOD("get_pitch_mix"), &AudioEffectPitchShift::get_pitch_mix);
+
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_pitch_scale", "get_pitch_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_pitch_mix", "get_pitch_mix");
 }
 
 AudioEffectPitchShift::AudioEffectPitchShift() {
 	pitch_scale = 1.0;
+	pitch_mix = 1.0;
 }

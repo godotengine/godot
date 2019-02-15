@@ -54,7 +54,7 @@ class SMBPitchShift {
 	void smbFft(float *fftBuffer, long fftFrameSize, long sign);
 
 public:
-	void PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata, int stride);
+	void PitchShift(float pitchShift, long numSampsToProcess, long fftFrameSize, long osamp, float sampleRate, float *indata, float *outdata, int stride, float pitchMix);
 
 	SMBPitchShift() {
 		gRover = 0;
@@ -92,6 +92,7 @@ class AudioEffectPitchShift : public AudioEffect {
 	int window_size;
 	float wet;
 	float dry;
+	float pitch_mix;
 	bool filter;
 
 protected:
@@ -102,6 +103,9 @@ public:
 
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
+
+	void set_pitch_mix(float p_pitch_mix);
+	float get_pitch_mix() const;
 
 	AudioEffectPitchShift();
 };
