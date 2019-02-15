@@ -158,8 +158,6 @@ MonoRegInfo find_mono() {
 	if (_find_mono_in_reg_old("Software\\Novell\\Mono", info) == ERROR_SUCCESS)
 		return info;
 
-	ERR_PRINT("Cannot find mono in the registry");
-
 	return MonoRegInfo();
 }
 
