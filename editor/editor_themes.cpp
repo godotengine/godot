@@ -286,7 +286,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	} else if (preset == "Solarized (Dark)") {
 		preset_accent_color = Color::html("#268bd2");
 		preset_base_color = Color::html("#073642");
-		preset_contrast = 0.15;
+		preset_contrast = 0.23;
 	} else if (preset == "Solarized (Light)") {
 		preset_accent_color = Color::html("#268bd2");
 		preset_base_color = Color::html("#fdf6e3");
