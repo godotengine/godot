@@ -2496,6 +2496,9 @@ void Viewport::_gui_remove_control(Control *p_control) {
 		gui.mouse_focus = NULL;
 		gui.mouse_focus_mask = 0;
 	}
+	if (gui.last_mouse_focus == p_control) {
+		gui.last_mouse_focus = NULL;
+	}
 	if (gui.key_focus == p_control)
 		gui.key_focus = NULL;
 	if (gui.mouse_over == p_control)
