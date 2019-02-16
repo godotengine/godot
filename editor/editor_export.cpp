@@ -858,7 +858,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<uint8_t> array = FileAccess::get_file_as_array(icon);
 		p_func(p_udata, icon, array, idx, total);
 	}
-	if (splash != String() && FileAccess::exists(splash)) {
+	if (splash != String() && FileAccess::exists(splash) && icon != splash) {
 		Vector<uint8_t> array = FileAccess::get_file_as_array(splash);
 		p_func(p_udata, splash, array, idx, total);
 	}
