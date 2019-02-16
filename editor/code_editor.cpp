@@ -1042,35 +1042,43 @@ void CodeTextEditor::delete_lines() {
 }
 
 void CodeTextEditor::clone_lines_down() {
+	const int cursor_column = text_editor->cursor_get_column();
 	int from_line = text_editor->cursor_get_line();
 	int to_line = text_editor->cursor_get_line();
-	int column = text_editor->cursor_get_column();
+	int from_column = 0;
+	int to_column = 0;
+	int cursor_new_line = to_line + 1;
+	int cursor_new_column = text_editor->cursor_get_column();
+	String new_text = "\n" + text_editor->get_line(from_line);
+	bool selection_active = false;
 
+	text_editor->cursor_set_column(text_editor->get_line(from_line).length());
 	if (text_editor->is_selection_active()) {
+		from_column = text_editor->get_selection_from_column();
+		to_column = text_editor->get_selection_to_column();
+
 		from_line = text_editor->get_selection_from_line();
 		to_line = text_editor->get_selection_to_line();
-		column = text_editor->cursor_get_column();
-	}
-	int next_line = to_line + 1;
+		cursor_new_line = to_line + text_editor->cursor_get_line() - from_line;
+		cursor_new_column = to_column == cursor_column ? 2 * to_column - from_column : to_column;
+		new_text = text_editor->get_selection_text();
+		selection_active = true;
 
-	bool caret_at_start = text_editor->cursor_get_line() == from_line;
+		text_editor->cursor_set_line(to_line);
+		text_editor->cursor_set_column(to_column);
+	}
+
 	text_editor->begin_complex_operation();
+
 	for (int i = from_line; i <= to_line; i++) {
 		text_editor->unfold_line(i);
-		text_editor->set_line(next_line - 1, text_editor->get_line(next_line - 1) + "\n");
-		text_editor->set_line(next_line, text_editor->get_line(i));
-		next_line++;
 	}
-
-	if (caret_at_start) {
-		text_editor->cursor_set_line(to_line + 1);
-	} else {
-		text_editor->cursor_set_line(next_line - 1);
-	}
-
-	text_editor->cursor_set_column(column);
-	if (text_editor->is_selection_active()) {
-		text_editor->select(to_line + 1, text_editor->get_selection_from_column(), next_line - 1, text_editor->get_selection_to_column());
+	text_editor->deselect();
+	text_editor->insert_text_at_cursor(new_text);
+	text_editor->cursor_set_line(cursor_new_line);
+	text_editor->cursor_set_column(cursor_new_column);
+	if (selection_active) {
+		text_editor->select(to_line, to_column, 2 * to_line - from_line, 2 * to_column - from_column);
 	}
 
 	text_editor->end_complex_operation();
