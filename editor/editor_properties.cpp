@@ -115,8 +115,8 @@ void EditorPropertyMultilineText::_open_big_text() {
 		add_child(big_text_dialog);
 	}
 
-	big_text->set_text(text->get_text());
 	big_text_dialog->popup_centered_ratio();
+	big_text->set_text(text->get_text());
 }
 
 void EditorPropertyMultilineText::update_property() {
