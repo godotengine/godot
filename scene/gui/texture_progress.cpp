@@ -160,23 +160,27 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 		if (edge == 0) {
 			if (dir.x > 0)
 				continue;
-			cp = -dir.x;
 			cq = -(edgeLeft - p.x);
+			dir.x *= 2.0 * cq;
+			cp = -dir.x;
 		} else if (edge == 1) {
 			if (dir.x < 0)
 				continue;
-			cp = dir.x;
 			cq = (edgeRight - p.x);
+			dir.x *= 2.0 * cq;
+			cp = dir.x;
 		} else if (edge == 2) {
 			if (dir.y > 0)
 				continue;
-			cp = -dir.y;
 			cq = -(edgeBottom - p.y);
+			dir.y *= 2.0 * cq;
+			cp = -dir.y;
 		} else if (edge == 3) {
 			if (dir.y < 0)
 				continue;
-			cp = dir.y;
 			cq = (edgeTop - p.y);
+			dir.y *= 2.0 * cq;
+			cp = dir.y;
 		}
 		cr = cq / cp;
 		if (cr >= 0 && cr < t1)
