@@ -587,6 +587,10 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 
 					Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
+					/*
+ * There is no point in supporting one way collisions with ray shapes, as they will always collide in the desired
+ * direction. Use a short ray shape if you want to achieve a similar effect.
+ *
 					if (col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 
 						cbk.valid_dir = col_obj_shape_xform.get_axis(1).normalized();
@@ -594,10 +598,15 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 						cbk.invalid_by_dir = 0;
 
 					} else {
-						cbk.valid_dir = Vector2();
-						cbk.valid_depth = 0;
-						cbk.invalid_by_dir = 0;
+*/
+
+					cbk.valid_dir = Vector2();
+					cbk.valid_depth = 0;
+					cbk.invalid_by_dir = 0;
+
+					/*
 					}
+					*/
 
 					Shape2DSW *against_shape = col_obj->get_shape(shape_idx);
 					if (CollisionSolver2DSW::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, NULL, p_margin)) {
