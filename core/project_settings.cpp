@@ -963,6 +963,41 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
+ProjectSettings::CustomMap ProjectSettings::get_default_settings(const String &project_name, const String &driver) {
+	ProjectSettings::CustomMap initial_settings;
+
+	if (driver == "GLES3") {
+		initial_settings["rendering/quality/driver/driver_name"] = "GLES3";
+	} else {
+		initial_settings["rendering/quality/driver/driver_name"] = "GLES2";
+		initial_settings["rendering/vram_compression/import_etc2"] = false;
+		initial_settings["rendering/vram_compression/import_etc"] = true;
+	}
+	initial_settings["application/config/name"] = project_name;
+	initial_settings["application/config/icon"] = "res://" + get_default_icon_name();
+	initial_settings["rendering/environment/default_environment"] = "res://" + get_default_env_name();
+
+	return initial_settings;
+}
+
+String ProjectSettings::get_default_env_content() {
+	String default_env_str;
+	default_env_str += "[gd_resource type=\"Environment\" load_steps=2 format=2]\n";
+	default_env_str += "[sub_resource type=\"ProceduralSky\" id=1]\n";
+	default_env_str += "[resource]\n";
+	default_env_str += "background_mode = 2\n";
+	default_env_str += "background_sky = SubResource( 1 )\n";
+	return default_env_str;
+}
+
+String ProjectSettings::get_default_icon_name() {
+	return "icon.png";
+}
+
+String ProjectSettings::get_default_env_name() {
+	return "default_env.tres";
+}
+
 void ProjectSettings::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);

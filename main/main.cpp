@@ -276,6 +276,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("\n");
 
 	OS::get_singleton()->print("Standalone tools:\n");
+	OS::get_singleton()->print("  -i, --init <name> [<path>]       Create a new project.\n");
 	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
 	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
@@ -425,6 +426,55 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--version") {
 
 			print_line(get_full_version_string());
+			goto error;
+
+		} else if (I->get() == "-i" || I->get() == "--init") { // Init new project
+
+			String dir = ".";
+			String project_name;
+
+			if (I->next()) {
+				project_name = I->next()->get();
+				N = I->next()->next();
+
+				// Parse the optional argument: the path of the project.
+				if (N && !N->get().begins_with("-")) {
+					String arg_str = N->get();
+					DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					Error err = d->make_dir_recursive(arg_str);
+
+					if (err == OK) {
+						dir = arg_str;
+						N = N->next();
+					} else {
+						OS::get_singleton()->print("Error attempting to create dir: %s.\n", arg_str.utf8().get_data());
+						goto error;
+					}
+					memdelete(d);
+				}
+			} else {
+				OS::get_singleton()->print("Missing init argument, aborting.\n");
+				goto error;
+			}
+			ProjectSettings::CustomMap initial_settings = ProjectSettings::get_default_settings(project_name);
+
+			if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
+
+				OS::get_singleton()->print("Couldn't create project.godot in project path.\n");
+
+			} else {
+
+				Ref<Image> icon = memnew(Image(app_icon_png));
+				icon->save_png(dir.plus_file(ProjectSettings::get_default_icon_name()));
+
+				FileAccess *f = FileAccess::open(dir.plus_file(ProjectSettings::get_default_env_name()), FileAccess::WRITE);
+				if (!f) {
+					OS::get_singleton()->print("Couldn't create project.godot in project path.\n");
+				} else {
+					f->store_line(ProjectSettings::get_default_env_content());
+					memdelete(f);
+				}
+			}
 			goto error;
 
 		} else if (I->get() == "--resolution") { // force resolution

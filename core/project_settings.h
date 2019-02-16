@@ -120,6 +120,11 @@ protected:
 public:
 	static const int CONFIG_VERSION = 4;
 
+	static CustomMap get_default_settings(const String &project_name, const String &driver = "GLES3");
+	static String get_default_env_content();
+	static String get_default_icon_name();
+	static String get_default_env_name();
+
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
 
