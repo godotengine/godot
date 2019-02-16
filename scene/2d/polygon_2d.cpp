@@ -88,6 +88,10 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 	return Geometry::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
 
+void Polygon2D::_skeleton_bone_setup_changed() {
+	update();
+}
+
 void Polygon2D::_notification(int p_what) {
 
 	switch (p_what) {
@@ -102,10 +106,27 @@ void Polygon2D::_notification(int p_what) {
 				skeleton_node = Object::cast_to<Skeleton2D>(get_node(skeleton));
 			}
 
-			if (skeleton_node)
+			ObjectID new_skeleton_id = 0;
+
+			if (skeleton_node) {
 				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), skeleton_node->get_skeleton());
-			else
+				new_skeleton_id = skeleton_node->get_instance_id();
+			} else {
 				VS::get_singleton()->canvas_item_attach_skeleton(get_canvas_item(), RID());
+			}
+
+			if (new_skeleton_id != current_skeleton_id) {
+				Object *old_skeleton = ObjectDB::get_instance(current_skeleton_id);
+				if (old_skeleton) {
+					old_skeleton->disconnect("bone_setup_changed", this, "_skeleton_bone_setup_changed");
+				}
+
+				if (skeleton_node) {
+					skeleton_node->connect("bone_setup_changed", this, "_skeleton_bone_setup_changed");
+				}
+
+				current_skeleton_id = new_skeleton_id;
+			}
 
 			Vector<Vector2> points;
 			Vector<Vector2> uvs;
@@ -809,6 +830,8 @@ void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_bones", "bones"), &Polygon2D::_set_bones);
 	ClassDB::bind_method(D_METHOD("_get_bones"), &Polygon2D::_get_bones);
 
+	ClassDB::bind_method(D_METHOD("_skeleton_bone_setup_changed"), &Polygon2D::_skeleton_bone_setup_changed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiased"), "set_antialiased", "get_antialiased");
@@ -846,4 +869,5 @@ Polygon2D::Polygon2D() {
 	color = Color(1, 1, 1);
 	rect_cache_dirty = true;
 	internal_vertices = 0;
+	current_skeleton_id = 0;
 }

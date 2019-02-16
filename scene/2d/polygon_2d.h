@@ -65,9 +65,12 @@ class Polygon2D : public Node2D {
 	mutable Rect2 item_rect;
 
 	NodePath skeleton;
+	ObjectID current_skeleton_id;
 
 	Array _get_bones() const;
 	void _set_bones(const Array &p_bones);
+
+	void _skeleton_bone_setup_changed();
 
 protected:
 	void _notification(int p_what);
