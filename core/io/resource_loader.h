@@ -31,8 +31,8 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include "core/os/thread.h"
 #include "core/resource.h"
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -42,6 +42,7 @@ class ResourceInteractiveLoader : public Reference {
 	GDCLASS(ResourceInteractiveLoader, Reference);
 	friend class ResourceLoader;
 	String path_loading;
+	Thread::ID path_loading_thread;
 
 protected:
 	static void _bind_methods();
@@ -121,10 +122,25 @@ class ResourceLoader {
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
 	static Mutex *loading_map_mutex;
-	static HashMap<String, int> loading_map;
+
+	//used to track paths being loaded in a thread, avoids cyclic recursion
+	struct LoadingMapKey {
+		String path;
+		Thread::ID thread;
+		bool operator==(const LoadingMapKey &p_key) const {
+			return (thread == p_key.thread && path == p_key.path);
+		}
+	};
+	struct LoadingMapKeyHasher {
+
+		static _FORCE_INLINE_ uint32_t hash(const LoadingMapKey &p_key) { return p_key.path.hash() + HashMapHasherDefault::hash(p_key.thread); }
+	};
+
+	static HashMap<LoadingMapKey, int, LoadingMapKeyHasher> loading_map;
 
 	static bool _add_to_loading_map(const String &p_path);
 	static void _remove_from_loading_map(const String &p_path);
+	static void _remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread);
 
 public:
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);

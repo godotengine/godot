@@ -55,7 +55,7 @@ Error ResourceInteractiveLoader::wait() {
 
 ResourceInteractiveLoader::~ResourceInteractiveLoader() {
 	if (path_loading != String()) {
-		ResourceLoader::_remove_from_loading_map(path_loading);
+		ResourceLoader::_remove_from_loading_map_and_thread(path_loading, path_loading_thread);
 	}
 }
 
@@ -293,10 +293,14 @@ bool ResourceLoader::_add_to_loading_map(const String &p_path) {
 		loading_map_mutex->lock();
 	}
 
-	if (loading_map.has(p_path)) {
+	LoadingMapKey key;
+	key.path = p_path;
+	key.thread = Thread::get_caller_id();
+
+	if (loading_map.has(key)) {
 		success = false;
 	} else {
-		loading_map[p_path] = true;
+		loading_map[key] = true;
 		success = true;
 	}
 
@@ -312,7 +316,27 @@ void ResourceLoader::_remove_from_loading_map(const String &p_path) {
 		loading_map_mutex->lock();
 	}
 
-	loading_map.erase(p_path);
+	LoadingMapKey key;
+	key.path = p_path;
+	key.thread = Thread::get_caller_id();
+
+	loading_map.erase(key);
+
+	if (loading_map_mutex) {
+		loading_map_mutex->unlock();
+	}
+}
+
+void ResourceLoader::_remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread) {
+	if (loading_map_mutex) {
+		loading_map_mutex->lock();
+	}
+
+	LoadingMapKey key;
+	key.path = p_path;
+	key.thread = p_thread;
+
+	loading_map.erase(key);
 
 	if (loading_map_mutex) {
 		loading_map_mutex->unlock();
@@ -471,6 +495,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 
 			ril->resource = res_cached;
 			ril->path_loading = local_path;
+			ril->path_loading_thread = Thread::get_caller_id();
 			return ril;
 		}
 	}
@@ -499,6 +524,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		if (!p_no_cache) {
 			ril->set_local_path(local_path);
 			ril->path_loading = local_path;
+			ril->path_loading_thread = Thread::get_caller_id();
 		}
 
 		if (xl_remapped)
@@ -919,7 +945,7 @@ void ResourceLoader::remove_custom_loaders() {
 }
 
 Mutex *ResourceLoader::loading_map_mutex = NULL;
-HashMap<String, int> ResourceLoader::loading_map;
+HashMap<ResourceLoader::LoadingMapKey, int, ResourceLoader::LoadingMapKeyHasher> ResourceLoader::loading_map;
 
 void ResourceLoader::initialize() {
 #ifndef NO_THREADS
@@ -929,9 +955,9 @@ void ResourceLoader::initialize() {
 
 void ResourceLoader::finalize() {
 #ifndef NO_THREADS
-	const String *K = NULL;
+	const LoadingMapKey *K = NULL;
 	while ((K = loading_map.next(K))) {
-		ERR_PRINTS("Exited while resource is being loaded: " + *K);
+		ERR_PRINTS("Exited while resource is being loaded: " + K->path);
 	}
 	loading_map.clear();
 	memdelete(loading_map_mutex);
