@@ -203,6 +203,7 @@ void Skeleton2D::_update_bone_setup() {
 
 	transform_dirty = true;
 	_update_transform();
+	emit_signal("bone_setup_changed");
 }
 
 void Skeleton2D::_make_transform_dirty() {
@@ -291,6 +292,8 @@ void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone", "idx"), &Skeleton2D::get_bone);
 
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &Skeleton2D::get_skeleton);
+
+	ADD_SIGNAL(MethodInfo("bone_setup_changed"));
 }
 
 Skeleton2D::Skeleton2D() {
