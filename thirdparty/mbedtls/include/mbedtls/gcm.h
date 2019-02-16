@@ -41,7 +41,10 @@
 #define MBEDTLS_GCM_DECRYPT     0
 
 #define MBEDTLS_ERR_GCM_AUTH_FAILED                       -0x0012  /**< Authenticated decryption failed. */
+
+/* MBEDTLS_ERR_GCM_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_GCM_HW_ACCEL_FAILED                   -0x0013  /**< GCM hardware accelerator failed. */
+
 #define MBEDTLS_ERR_GCM_BAD_INPUT                         -0x0014  /**< Bad input parameters to function. */
 
 #ifdef __cplusplus
@@ -53,7 +56,8 @@ extern "C" {
 /**
  * \brief          The GCM context structure.
  */
-typedef struct {
+typedef struct mbedtls_gcm_context
+{
     mbedtls_cipher_context_t cipher_ctx;  /*!< The cipher context used. */
     uint64_t HL[16];                      /*!< Precalculated HTable low. */
     uint64_t HH[16];                      /*!< Precalculated HTable high. */
@@ -81,7 +85,7 @@ mbedtls_gcm_context;
  *                  cipher, nor set the key. For this purpose, use
  *                  mbedtls_gcm_setkey().
  *
- * \param ctx       The GCM context to initialize.
+ * \param ctx       The GCM context to initialize. This must not be \c NULL.
  */
 void mbedtls_gcm_init( mbedtls_gcm_context *ctx );
 
@@ -89,9 +93,10 @@ void mbedtls_gcm_init( mbedtls_gcm_context *ctx );
  * \brief           This function associates a GCM context with a
  *                  cipher algorithm and a key.
  *
- * \param ctx       The GCM context to initialize.
+ * \param ctx       The GCM context. This must be initialized.
  * \param cipher    The 128-bit block cipher to use.
- * \param key       The encryption key.
+ * \param key       The encryption key. This must be a readable buffer of at
+ *                  least \p keybits bits.
  * \param keybits   The key size in bits. Valid options are:
  *                  <ul><li>128 bits</li>
  *                  <li>192 bits</li>
@@ -118,7 +123,8 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
  *                  authentic. You should use this function to perform encryption
  *                  only. For decryption, use mbedtls_gcm_auth_decrypt() instead.
  *
- * \param ctx       The GCM context to use for encryption or decryption.
+ * \param ctx       The GCM context to use for encryption or decryption. This
+ *                  must be initialized.
  * \param mode      The operation to perform:
  *                  - #MBEDTLS_GCM_ENCRYPT to perform authenticated encryption.
  *                    The ciphertext is written to \p output and the
@@ -132,22 +138,28 @@ int mbedtls_gcm_setkey( mbedtls_gcm_context *ctx,
  *                    calling this function in decryption mode.
  * \param length    The length of the input data, which is equal to the length
  *                  of the output data.
- * \param iv        The initialization vector.
+ * \param iv        The initialization vector. This must be a readable buffer of
+ *                  at least \p iv_len Bytes.
  * \param iv_len    The length of the IV.
- * \param add       The buffer holding the additional data.
+ * \param add       The buffer holding the additional data. This must be of at
+ *                  least that size in Bytes.
  * \param add_len   The length of the additional data.
- * \param input     The buffer holding the input data. Its size is \b length.
- * \param output    The buffer for holding the output data. It must have room
- *                  for \b length bytes.
+ * \param input     The buffer holding the input data. If \p length is greater
+ *                  than zero, this must be a readable buffer of at least that
+ *                  size in Bytes.
+ * \param output    The buffer for holding the output data. If \p length is greater
+ *                  than zero, this must be a writable buffer of at least that
+ *                  size in Bytes.
  * \param tag_len   The length of the tag to generate.
- * \param tag       The buffer for holding the tag.
+ * \param tag       The buffer for holding the tag. This must be a readable
+ *                  buffer of at least \p tag_len Bytes.
  *
  * \return          \c 0 if the encryption or decryption was performed
  *                  successfully. Note that in #MBEDTLS_GCM_DECRYPT mode,
  *                  this does not indicate that the data is authentic.
- * \return          #MBEDTLS_ERR_GCM_BAD_INPUT if the lengths are not valid.
- * \return          #MBEDTLS_ERR_GCM_HW_ACCEL_FAILED or a cipher-specific
- *                  error code if the encryption or decryption failed.
+ * \return          #MBEDTLS_ERR_GCM_BAD_INPUT if the lengths or pointers are
+ *                  not valid or a cipher-specific error code if the encryption
+ *                  or decryption failed.
  */
 int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
                        int mode,
@@ -169,24 +181,30 @@ int mbedtls_gcm_crypt_and_tag( mbedtls_gcm_context *ctx,
  *                  input buffer. If the buffers overlap, the output buffer
  *                  must trail at least 8 Bytes behind the input buffer.
  *
- * \param ctx       The GCM context.
+ * \param ctx       The GCM context. This must be initialized.
  * \param length    The length of the ciphertext to decrypt, which is also
  *                  the length of the decrypted plaintext.
- * \param iv        The initialization vector.
+ * \param iv        The initialization vector. This must be a readable buffer
+ *                  of at least \p iv_len Bytes.
  * \param iv_len    The length of the IV.
- * \param add       The buffer holding the additional data.
+ * \param add       The buffer holding the additional data. This must be of at
+ *                  least that size in Bytes.
  * \param add_len   The length of the additional data.
- * \param tag       The buffer holding the tag to verify.
+ * \param tag       The buffer holding the tag to verify. This must be a
+ *                  readable buffer of at least \p tag_len Bytes.
  * \param tag_len   The length of the tag to verify.
- * \param input     The buffer holding the ciphertext. Its size is \b length.
- * \param output    The buffer for holding the decrypted plaintext. It must
- *                  have room for \b length bytes.
+ * \param input     The buffer holding the ciphertext. If \p length is greater
+ *                  than zero, this must be a readable buffer of at least that
+ *                  size.
+ * \param output    The buffer for holding the decrypted plaintext. If \p length
+ *                  is greater than zero, this must be a writable buffer of at
+ *                  least that size.
  *
  * \return          \c 0 if successful and authenticated.
  * \return          #MBEDTLS_ERR_GCM_AUTH_FAILED if the tag does not match.
- * \return          #MBEDTLS_ERR_GCM_BAD_INPUT if the lengths are not valid.
- * \return          #MBEDTLS_ERR_GCM_HW_ACCEL_FAILED or a cipher-specific
- *                  error code if the decryption failed.
+ * \return          #MBEDTLS_ERR_GCM_BAD_INPUT if the lengths or pointers are
+ *                  not valid or a cipher-specific error code if the decryption
+ *                  failed.
  */
 int mbedtls_gcm_auth_decrypt( mbedtls_gcm_context *ctx,
                       size_t length,
@@ -203,15 +221,16 @@ int mbedtls_gcm_auth_decrypt( mbedtls_gcm_context *ctx,
  * \brief           This function starts a GCM encryption or decryption
  *                  operation.
  *
- * \param ctx       The GCM context.
+ * \param ctx       The GCM context. This must be initialized.
  * \param mode      The operation to perform: #MBEDTLS_GCM_ENCRYPT or
  *                  #MBEDTLS_GCM_DECRYPT.
- * \param iv        The initialization vector.
+ * \param iv        The initialization vector. This must be a readable buffer of
+ *                  at least \p iv_len Bytes.
  * \param iv_len    The length of the IV.
- * \param add       The buffer holding the additional data, or NULL
- *                  if \p add_len is 0.
- * \param add_len   The length of the additional data. If 0,
- *                  \p add is NULL.
+ * \param add       The buffer holding the additional data, or \c NULL
+ *                  if \p add_len is \c 0.
+ * \param add_len   The length of the additional data. If \c 0,
+ *                  \p add may be \c NULL.
  *
  * \return          \c 0 on success.
  */
@@ -234,11 +253,15 @@ int mbedtls_gcm_starts( mbedtls_gcm_context *ctx,
  *                  input buffer. If the buffers overlap, the output buffer
  *                  must trail at least 8 Bytes behind the input buffer.
  *
- * \param ctx       The GCM context.
+ * \param ctx       The GCM context. This must be initialized.
  * \param length    The length of the input data. This must be a multiple of
  *                  16 except in the last call before mbedtls_gcm_finish().
- * \param input     The buffer holding the input data.
- * \param output    The buffer for holding the output data.
+ * \param input     The buffer holding the input data. If \p length is greater
+ *                  than zero, this must be a readable buffer of at least that
+ *                  size in Bytes.
+ * \param output    The buffer for holding the output data. If \p length is
+ *                  greater than zero, this must be a writable buffer of at
+ *                  least that size in Bytes.
  *
  * \return         \c 0 on success.
  * \return         #MBEDTLS_ERR_GCM_BAD_INPUT on failure.
@@ -255,9 +278,11 @@ int mbedtls_gcm_update( mbedtls_gcm_context *ctx,
  *                  It wraps up the GCM stream, and generates the
  *                  tag. The tag can have a maximum length of 16 Bytes.
  *
- * \param ctx       The GCM context.
- * \param tag       The buffer for holding the tag.
- * \param tag_len   The length of the tag to generate. Must be at least four.
+ * \param ctx       The GCM context. This must be initialized.
+ * \param tag       The buffer for holding the tag. This must be a readable
+ *                  buffer of at least \p tag_len Bytes.
+ * \param tag_len   The length of the tag to generate. This must be at least
+ *                  four.
  *
  * \return          \c 0 on success.
  * \return          #MBEDTLS_ERR_GCM_BAD_INPUT on failure.
@@ -270,7 +295,8 @@ int mbedtls_gcm_finish( mbedtls_gcm_context *ctx,
  * \brief           This function clears a GCM context and the underlying
  *                  cipher sub-context.
  *
- * \param ctx       The GCM context to clear.
+ * \param ctx       The GCM context to clear. If this is \c NULL, the call has
+ *                  no effect. Otherwise, this must be initialized.
  */
 void mbedtls_gcm_free( mbedtls_gcm_context *ctx );
 

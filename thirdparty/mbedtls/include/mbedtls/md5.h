@@ -37,6 +37,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* MBEDTLS_ERR_MD5_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_MD5_HW_ACCEL_FAILED                   -0x002F  /**< MD5 hardware accelerator failed */
 
 #ifdef __cplusplus
@@ -55,7 +56,7 @@ extern "C" {
  *                 stronger message digests instead.
  *
  */
-typedef struct
+typedef struct mbedtls_md5_context
 {
     uint32_t total[2];          /*!< number of bytes processed  */
     uint32_t state[4];          /*!< intermediate digest state  */

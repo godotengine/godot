@@ -55,6 +55,10 @@
 #endif /* MBEDTLS_PLATFORM_C */
 #endif /* MBEDTLS_SELF_TEST */
 
+#define SHA512_VALIDATE_RET(cond)                           \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_SHA512_BAD_INPUT_DATA )
+#define SHA512_VALIDATE(cond)  MBEDTLS_INTERNAL_VALIDATE( cond )
+
 #if !defined(MBEDTLS_SHA512_ALT)
 
 /*
@@ -90,6 +94,8 @@
 
 void mbedtls_sha512_init( mbedtls_sha512_context *ctx )
 {
+    SHA512_VALIDATE( ctx != NULL );
+
     memset( ctx, 0, sizeof( mbedtls_sha512_context ) );
 }
 
@@ -104,6 +110,9 @@ void mbedtls_sha512_free( mbedtls_sha512_context *ctx )
 void mbedtls_sha512_clone( mbedtls_sha512_context *dst,
                            const mbedtls_sha512_context *src )
 {
+    SHA512_VALIDATE( dst != NULL );
+    SHA512_VALIDATE( src != NULL );
+
     *dst = *src;
 }
 
@@ -112,6 +121,9 @@ void mbedtls_sha512_clone( mbedtls_sha512_context *dst,
  */
 int mbedtls_sha512_starts_ret( mbedtls_sha512_context *ctx, int is384 )
 {
+    SHA512_VALIDATE_RET( ctx != NULL );
+    SHA512_VALIDATE_RET( is384 == 0 || is384 == 1 );
+
     ctx->total[0] = 0;
     ctx->total[1] = 0;
 
@@ -209,6 +221,9 @@ int mbedtls_internal_sha512_process( mbedtls_sha512_context *ctx,
     uint64_t temp1, temp2, W[80];
     uint64_t A, B, C, D, E, F, G, H;
 
+    SHA512_VALIDATE_RET( ctx != NULL );
+    SHA512_VALIDATE_RET( (const unsigned char *)data != NULL );
+
 #define  SHR(x,n) (x >> n)
 #define ROTR(x,n) (SHR(x,n) | (x << (64 - n)))
 
@@ -294,6 +309,9 @@ int mbedtls_sha512_update_ret( mbedtls_sha512_context *ctx,
     size_t fill;
     unsigned int left;
 
+    SHA512_VALIDATE_RET( ctx != NULL );
+    SHA512_VALIDATE_RET( ilen == 0 || input != NULL );
+
     if( ilen == 0 )
         return( 0 );
 
@@ -350,6 +368,9 @@ int mbedtls_sha512_finish_ret( mbedtls_sha512_context *ctx,
     int ret;
     unsigned used;
     uint64_t high, low;
+
+    SHA512_VALIDATE_RET( ctx != NULL );
+    SHA512_VALIDATE_RET( (unsigned char *)output != NULL );
 
     /*
      * Add padding: 0x80 then 0x00 until 16 bytes remain for the length
@@ -426,6 +447,10 @@ int mbedtls_sha512_ret( const unsigned char *input,
 {
     int ret;
     mbedtls_sha512_context ctx;
+
+    SHA512_VALIDATE_RET( is384 == 0 || is384 == 1 );
+    SHA512_VALIDATE_RET( ilen == 0 || input != NULL );
+    SHA512_VALIDATE_RET( (unsigned char *)output != NULL );
 
     mbedtls_sha512_init( &ctx );
 

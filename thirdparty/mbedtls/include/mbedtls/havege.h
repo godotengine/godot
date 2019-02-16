@@ -35,7 +35,7 @@ extern "C" {
 /**
  * \brief          HAVEGE state structure
  */
-typedef struct
+typedef struct mbedtls_havege_state
 {
     int PT1, PT2, offset[2];
     int pool[MBEDTLS_HAVEGE_COLLECT_SIZE];

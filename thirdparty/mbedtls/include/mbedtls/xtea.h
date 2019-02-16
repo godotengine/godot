@@ -37,6 +37,8 @@
 #define MBEDTLS_XTEA_DECRYPT     0
 
 #define MBEDTLS_ERR_XTEA_INVALID_INPUT_LENGTH             -0x0028  /**< The data input has an invalid length. */
+
+/* MBEDTLS_ERR_XTEA_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_XTEA_HW_ACCEL_FAILED                  -0x0029  /**< XTEA hardware accelerator failed. */
 
 #ifdef __cplusplus
@@ -50,7 +52,7 @@ extern "C" {
 /**
  * \brief          XTEA context structure
  */
-typedef struct
+typedef struct mbedtls_xtea_context
 {
     uint32_t k[4];       /*!< key */
 }
