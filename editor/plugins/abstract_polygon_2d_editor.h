@@ -81,6 +81,8 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	bool wip_active;
 	bool wip_destructive;
 
+	bool _polygon_editing_enabled;
+
 	CanvasItemEditor *canvas_item_editor;
 	EditorNode *editor;
 	Panel *panel;
@@ -135,6 +137,8 @@ protected:
 	virtual void _create_resource();
 
 public:
+	void disable_polygon_editing(bool p_disable, String p_reason);
+
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
