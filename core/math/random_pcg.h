@@ -45,7 +45,10 @@ public:
 
 	RandomPCG(uint64_t seed = DEFAULT_SEED, uint64_t inc = PCG_DEFAULT_INC_64);
 
-	_FORCE_INLINE_ void seed(uint64_t seed) { pcg.state = seed; }
+	_FORCE_INLINE_ void seed(uint64_t seed) {
+		pcg.state = seed;
+		pcg32_random_r(&pcg); // Force changing internal state to avoid initial 0
+	}
 	_FORCE_INLINE_ uint64_t get_seed() { return pcg.state; }
 
 	void randomize();
