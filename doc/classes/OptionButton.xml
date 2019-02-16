@@ -74,15 +74,15 @@
 				Return the ID of the item at index [code]idx[/code].
 			</description>
 		</method>
-                <method name="get_item_index" qualifiers="const">
-                        <return type="int">
-                        </return>
-                        <argument index="0" name="id" type="int">
-                        </argument>
-                        <description>
-                                Return the index of the item with the given [code]id[/code].
-                        </description>
-                </method>
+		<method name="get_item_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Return the index of the item with the given [code]id[/code].
+			</description>
+		</method>
 		<method name="get_item_metadata" qualifiers="const">
 			<return type="Variant">
 			</return>

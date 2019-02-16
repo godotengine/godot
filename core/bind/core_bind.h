@@ -103,6 +103,11 @@ protected:
 	static _OS *singleton;
 
 public:
+	enum VideoDriver {
+		VIDEO_DRIVER_GLES3,
+		VIDEO_DRIVER_GLES2,
+	};
+
 	enum PowerState {
 		POWERSTATE_UNKNOWN, /**< cannot determine power status */
 		POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
@@ -152,7 +157,8 @@ public:
 	Array get_fullscreen_mode_list(int p_screen = 0) const;
 
 	virtual int get_video_driver_count() const;
-	virtual String get_video_driver_name(int p_driver) const;
+	virtual String get_video_driver_name(VideoDriver p_driver) const;
+	virtual VideoDriver get_current_video_driver() const;
 
 	virtual int get_audio_driver_count() const;
 	virtual String get_audio_driver_name(int p_driver) const;
@@ -355,6 +361,7 @@ public:
 	_OS();
 };
 
+VARIANT_ENUM_CAST(_OS::VideoDriver);
 VARIANT_ENUM_CAST(_OS::PowerState);
 VARIANT_ENUM_CAST(_OS::Weekday);
 VARIANT_ENUM_CAST(_OS::Month);

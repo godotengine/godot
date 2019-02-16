@@ -648,6 +648,12 @@
 			The animation step value.
 		</member>
 	</members>
+	<signals>
+		<signal name="tracks_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="TYPE_VALUE" value="0" enum="TrackType">
 			Value tracks set values in node properties, but only those which can be Interpolated.

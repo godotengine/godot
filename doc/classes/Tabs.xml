@@ -279,6 +279,8 @@
 		</theme_item>
 		<theme_item name="tab_bg" type="StyleBox">
 		</theme_item>
+		<theme_item name="tab_disabled" type="StyleBox">
+		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
 		</theme_item>
 		<theme_item name="top_margin" type="int">
