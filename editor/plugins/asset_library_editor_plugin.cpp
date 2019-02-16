@@ -1338,6 +1338,7 @@ void EditorAssetLibrary::_bind_methods() {
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
+	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);

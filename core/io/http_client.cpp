@@ -426,11 +426,10 @@ Error HTTPClient::poll() {
 					response_headers.clear();
 					response_num = RESPONSE_OK;
 
-					// Per the HTTP 1.1 spec, keep-alive is the default, but in practice
-					// it's safe to assume it only if the explicit header is found, allowing
-					// to handle body-up-to-EOF responses on naive servers; that's what Curl
-					// and browsers do
-					bool keep_alive = false;
+					// Per the HTTP 1.1 spec, keep-alive is the default.
+					// Not following that specification breaks standard implemetations.
+					// Broken web servers should be fixed.
+					bool keep_alive = true;
 
 					for (int i = 0; i < responses.size(); i++) {
 
@@ -447,8 +446,8 @@ Error HTTPClient::poll() {
 							if (encoding == "chunked") {
 								chunked = true;
 							}
-						} else if (s.begins_with("connection: keep-alive")) {
-							keep_alive = true;
+						} else if (s.begins_with("connection: close")) {
+							keep_alive = false;
 						}
 
 						if (i == 0 && responses[i].begins_with("HTTP")) {
