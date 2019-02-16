@@ -1222,7 +1222,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if (Vector3() == lv_n + p_floor_direction) {
+							if ((lv_n + p_floor_direction).length() < 0.01) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel;
 								set_global_transform(gt);
