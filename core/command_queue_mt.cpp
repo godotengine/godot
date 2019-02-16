@@ -97,7 +97,7 @@ tryagain:
 		return false;
 	}
 
-	dealloc_ptr += (size >> 1) + sizeof(uint32_t);
+	dealloc_ptr += (size >> 1) + 8;
 	return true;
 }
 
@@ -107,6 +107,7 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	write_ptr = 0;
 	dealloc_ptr = 0;
 	mutex = Mutex::create();
+	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
 
 	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
@@ -128,4 +129,5 @@ CommandQueueMT::~CommandQueueMT() {
 
 		memdelete(sync_sems[i].sem);
 	}
+	memfree(command_mem);
 }
