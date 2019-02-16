@@ -809,7 +809,7 @@
 			<argument index="1" name="to" type="float">
 			</argument>
 			<description>
-				Random range, any floating point value between [code]from[/code] and [code]to[/code].
+				Random range, any floating point value in the interval [[code]from[/code], [code]to[/code]].
 				[codeblock]
 				prints(rand_range(0, 1), rand_range(0, 1)) # prints 0.135591 0.405263
 				[/codeblock]
@@ -828,7 +828,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns a random floating point value between 0 and 1.
+				Returns a random floating point value on the interval [0, 1].
 				[codeblock]
 				randf() # returns 0.375671
 				[/codeblock]
@@ -838,7 +838,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a random 32 bit integer. Use remainder to obtain a random value between 0 and N (where N is smaller than 2^32 -1).
+				Returns a random 32 bit integer. Use remainder to obtain a random value in the interval [0, N] (where N is smaller than 2^32 -1).
 				[codeblock]
 				randi() % 20      # returns random number between 0 and 19
 				randi() % 100     # returns random number between 0 and 99
