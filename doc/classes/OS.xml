@@ -159,6 +159,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_current_video_driver" qualifiers="const">
+			<return type="int" enum="OS.VideoDriver">
+			</return>
+			<description>
+				Returns the currently used video driver, using one of the values from [enum OS.VideoDriver].
+			</description>
+		</method>
 		<method name="get_date" qualifiers="const">
 			<return type="Dictionary">
 			</return>
@@ -459,14 +466,16 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of video drivers supported on the current platform.
 			</description>
 		</method>
 		<method name="get_video_driver_name" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="driver" type="int">
+			<argument index="0" name="driver" type="int" enum="OS.VideoDriver">
 			</argument>
 			<description>
+				Returns the name of the video driver matching the given [code]driver[/code] index. This index is a value from [enum OS.VideoDriver], and you can use [method get_current_video_driver] to get the current backend's index.
 			</description>
 		</method>
 		<method name="get_virtual_keyboard_height">
@@ -806,6 +815,12 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="VIDEO_DRIVER_GLES2" value="1" enum="VideoDriver">
+			The GLES2 rendering backend. It uses OpenGL ES 2.0 on mobile devices, OpenGL 2.1 on desktop platforms and WebGL 1.0 on the web.
+		</constant>
+		<constant name="VIDEO_DRIVER_GLES3" value="0" enum="VideoDriver">
+			The GLES3 rendering backend. It uses OpenGL ES 3.0 on mobile devices, OpenGL 3.3 on desktop platforms and WebGL 2.0 on the web.
+		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.
 		</constant>

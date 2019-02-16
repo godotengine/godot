@@ -48,6 +48,14 @@
 				Return the transform of a specific instance.
 			</description>
 		</method>
+		<method name="get_instance_transform_2d" qualifiers="const">
+			<return type="Transform2D">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_instance_color">
 			<return type="void">
 			</return>
@@ -79,6 +87,16 @@
 			</argument>
 			<description>
 				Set the transform for a specific instance.
+			</description>
+		</method>
+		<method name="set_instance_transform_2d">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance" type="int">
+			</argument>
+			<argument index="1" name="transform" type="Transform2D">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
