@@ -52,16 +52,6 @@ Vector2 Polygon2DEditor::_get_offset(int p_idx) const {
 	return node->get_offset();
 }
 
-String Polygon2DEditor::_why_cant_edit_polygon() const {
-
-	if (node->get_internal_vertex_count() > 0) {
-
-		return TTR("Polygon 2D has internal vertices, so it can no longer be edited in the viewport.");
-	}
-
-	return String();
-}
-
 int Polygon2DEditor::_get_polygon_count() const {
 	if (node->get_internal_vertex_count() > 0) {
 		return 0; //do not edit if internal vertices exist

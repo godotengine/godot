@@ -297,12 +297,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 	if (mb.is_valid()) {
 
-		String cant_edit = _why_cant_edit_polygon();
-		if (cant_edit != String()) {
-			EditorNode::get_singleton()->show_warning(cant_edit);
-			return true;
-		}
-
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 
 		Vector2 gpoint = mb->get_position();
