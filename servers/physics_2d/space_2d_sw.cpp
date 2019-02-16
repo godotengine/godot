@@ -561,7 +561,6 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 			bool collided = false;
 
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
-			int ray_index = 0;
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
 				if (p_body->is_shape_set_as_disabled(j))
@@ -620,7 +619,19 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 							collided = true;
 						}
 
-						if (ray_index < p_result_max) {
+						int ray_index = -1; //reuse shape
+						for (int k = 0; k < rays_found; k++) {
+							if (r_results[ray_index].collision_local_shape == j) {
+								ray_index = k;
+							}
+						}
+
+						if (ray_index == -1 && rays_found < p_result_max) {
+							ray_index = rays_found;
+							rays_found++;
+						}
+
+						if (ray_index != -1) {
 							Physics2DServer::SeparationResult &result = r_results[ray_index];
 
 							for (int k = 0; k < cbk.amount; k++) {
@@ -635,7 +646,8 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 									result.collision_depth = depth;
 									result.collision_point = b;
 									result.collision_normal = (b - a).normalized();
-									result.collision_local_shape = shape_idx;
+									result.collision_local_shape = j;
+									result.collider_shape = shape_idx;
 									result.collider = col_obj->get_self();
 									result.collider_id = col_obj->get_instance_id();
 									result.collider_metadata = col_obj->get_shape_metadata(shape_idx);
@@ -650,11 +662,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 						}
 					}
 				}
-
-				ray_index++;
 			}
-
-			rays_found = MAX(ray_index, rays_found);
 
 			if (!collided || recover_motion == Vector2()) {
 				break;
