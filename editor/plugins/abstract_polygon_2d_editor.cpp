@@ -201,6 +201,8 @@ void AbstractPolygon2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
+			disable_polygon_editing(false, String());
+
 			button_create->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveCreate", "EditorIcons"));
 			button_edit->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveEdit", "EditorIcons"));
 			button_delete->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("CurveDelete", "EditorIcons"));
@@ -796,8 +798,6 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	hover_point = Vertex();
 	selected_point = Vertex();
 	edge_point = PosVertex();
-
-	disable_polygon_editing(false, String());
 
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);
