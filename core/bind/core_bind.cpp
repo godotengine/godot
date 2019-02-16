@@ -225,8 +225,12 @@ int _OS::get_video_driver_count() const {
 	return OS::get_singleton()->get_video_driver_count();
 }
 
-String _OS::get_video_driver_name(int p_driver) const {
-	return OS::get_singleton()->get_video_driver_name(p_driver);
+String _OS::get_video_driver_name(VideoDriver p_driver) const {
+	return OS::get_singleton()->get_video_driver_name((int)p_driver);
+}
+
+_OS::VideoDriver _OS::get_current_video_driver() const {
+	return (VideoDriver)OS::get_singleton()->get_current_video_driver();
 }
 
 int _OS::get_audio_driver_count() const {
@@ -1108,6 +1112,8 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_video_driver_count"), &_OS::get_video_driver_count);
 	ClassDB::bind_method(D_METHOD("get_video_driver_name", "driver"), &_OS::get_video_driver_name);
+	ClassDB::bind_method(D_METHOD("get_current_video_driver"), &_OS::get_current_video_driver);
+
 	ClassDB::bind_method(D_METHOD("get_audio_driver_count"), &_OS::get_audio_driver_count);
 	ClassDB::bind_method(D_METHOD("get_audio_driver_name", "driver"), &_OS::get_audio_driver_name);
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_OS::get_connected_midi_inputs);
@@ -1275,6 +1281,9 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_resizable"), "set_window_resizable", "is_window_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_position"), "set_window_position", "get_window_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_size"), "set_window_size", "get_window_size");
+
+	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES2);
+	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES3);
 
 	BIND_ENUM_CONSTANT(DAY_SUNDAY);
 	BIND_ENUM_CONSTANT(DAY_MONDAY);
