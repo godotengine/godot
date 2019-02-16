@@ -479,12 +479,15 @@ struct GDScriptCompletionContext {
 	Object *base;
 	String base_path;
 	int line;
+	uint32_t depth;
 
 	GDScriptCompletionContext() :
 			_class(NULL),
 			function(NULL),
 			block(NULL),
-			base(NULL) {}
+			base(NULL),
+			line(0),
+			depth(0) {}
 };
 
 struct GDScriptCompletionIdentifier {
@@ -634,12 +637,18 @@ static GDScriptCompletionIdentifier _type_from_gdtype(const GDScriptDataType &p_
 	return ci;
 }
 
-static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
-static bool _guess_identifier_type_from_base(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
-static bool _guess_method_return_type_from_base(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type);
+static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
+static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
+static bool _guess_method_return_type_from_base(GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type);
 
-static bool _guess_expression_type(const GDScriptCompletionContext &p_context, const GDScriptParser::Node *p_expression, GDScriptCompletionIdentifier &r_type) {
+static bool _guess_expression_type(GDScriptCompletionContext &p_context, const GDScriptParser::Node *p_expression, GDScriptCompletionIdentifier &r_type) {
 	bool found = false;
+
+	if (++p_context.depth > 100) {
+		print_error("Maximum _guess_expression_type depth limit reached. Please file a bugreport.");
+		return false;
+	}
+
 	switch (p_expression->type) {
 		case GDScriptParser::Node::TYPE_CONSTANT: {
 			const GDScriptParser::ConstantNode *cn = static_cast<const GDScriptParser::ConstantNode *>(p_expression);
@@ -1128,7 +1137,7 @@ static bool _guess_expression_type(const GDScriptCompletionContext &p_context, c
 	return found;
 }
 
-static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
+static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
 
 	// Look in blocks first
 	const GDScriptParser::BlockNode *blk = p_context.block;
@@ -1358,7 +1367,7 @@ static bool _guess_identifier_type(const GDScriptCompletionContext &p_context, c
 	return false;
 }
 
-static bool _guess_identifier_type_from_base(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
+static bool _guess_identifier_type_from_base(GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
 	GDScriptParser::DataType base_type = p_base.type;
 	bool _static = base_type.is_meta_type;
 	while (base_type.has_type) {
@@ -1547,7 +1556,7 @@ static bool _find_last_return_in_block(const GDScriptCompletionContext &p_contex
 	return false;
 }
 
-static bool _guess_method_return_type_from_base(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type) {
+static bool _guess_method_return_type_from_base(GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type) {
 	GDScriptParser::DataType base_type = p_base.type;
 	bool _static = base_type.is_meta_type;
 
@@ -2312,7 +2321,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 	}
 }
 
-static void _find_call_arguments(const GDScriptCompletionContext &p_context, const GDScriptParser::Node *p_node, int p_argidx, Set<String> &r_result, bool &r_forced, String &r_arghint) {
+static void _find_call_arguments(GDScriptCompletionContext &p_context, const GDScriptParser::Node *p_node, int p_argidx, Set<String> &r_result, bool &r_forced, String &r_arghint) {
 
 	if (!p_node || p_node->type != GDScriptParser::Node::TYPE_OPERATOR) {
 		return;
