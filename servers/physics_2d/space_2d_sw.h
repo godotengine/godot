@@ -104,6 +104,7 @@ private:
 	real_t contact_max_separation;
 	real_t contact_max_allowed_penetration;
 	real_t constraint_bias;
+	real_t test_motion_min_contact_depth;
 
 	enum {
 

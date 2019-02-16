@@ -1243,6 +1243,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					motion = motion.slide(p_floor_direction);
 					lv = lv.slide(p_floor_direction);
 				} else {
+
 					Vector3 n = collision.normal;
 					motion = motion.slide(n);
 					lv = lv.slide(n);
