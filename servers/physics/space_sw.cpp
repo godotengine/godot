@@ -717,6 +717,11 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	}
 
 	if (!shapes_found) {
+		if (r_result) {
+			*r_result = PhysicsServer::MotionResult();
+			r_result->motion = p_motion;
+		}
+
 		return false;
 	}
 

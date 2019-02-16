@@ -704,6 +704,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	}
 
 	if (!shapes_found) {
+		if (r_result) {
+			*r_result = Physics2DServer::MotionResult();
+			r_result->motion = p_motion;
+		}
 		return false;
 	}
 
