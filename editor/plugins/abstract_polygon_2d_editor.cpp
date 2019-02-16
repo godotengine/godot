@@ -275,9 +275,30 @@ void AbstractPolygon2DEditor::_wip_close() {
 	selected_point = Vertex();
 }
 
+void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_reason) {
+
+	_polygon_editing_enabled = !p_disable;
+
+	button_create->set_disabled(p_disable);
+	button_edit->set_disabled(p_disable);
+	button_delete->set_disabled(p_disable);
+
+	if (p_disable) {
+
+		button_create->set_tooltip(p_reason);
+		button_edit->set_tooltip(p_reason);
+		button_delete->set_tooltip(p_reason);
+	} else {
+
+		button_create->set_tooltip(TTR("Create points."));
+		button_edit->set_tooltip(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
+		button_delete->set_tooltip(TTR("Erase points."));
+	}
+}
+
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (!_get_node())
+	if (!_get_node() || !_polygon_editing_enabled)
 		return false;
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -296,12 +317,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		return false;
 
 	if (mb.is_valid()) {
-
-		String cant_edit = _why_cant_edit_polygon();
-		if (cant_edit != String()) {
-			EditorNode::get_singleton()->show_warning(cant_edit);
-			return true;
-		}
 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_global_transform();
 
@@ -633,9 +648,8 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 
-	if (!canvas_item_editor) {
+	if (!canvas_item_editor)
 		canvas_item_editor = CanvasItemEditor::get_singleton();
-	}
 
 	if (p_polygon) {
 
@@ -654,7 +668,6 @@ void AbstractPolygon2DEditor::edit(Node *p_polygon) {
 		selected_point = Vertex();
 
 		canvas_item_editor->update_viewport();
-
 	} else {
 
 		_set_node(NULL);
@@ -784,24 +797,23 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	selected_point = Vertex();
 	edge_point = PosVertex();
 
+	disable_polygon_editing(false, String());
+
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);
 	add_child(button_create);
 	button_create->connect("pressed", this, "_menu_option", varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
-	button_create->set_tooltip(TTR("Create points."));
 
 	button_edit = memnew(ToolButton);
 	add_child(button_edit);
 	button_edit->connect("pressed", this, "_menu_option", varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
-	button_edit->set_tooltip(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
 
 	button_delete = memnew(ToolButton);
 	add_child(button_delete);
 	button_delete->connect("pressed", this, "_menu_option", varray(MODE_DELETE));
 	button_delete->set_toggle_mode(true);
-	button_delete->set_tooltip(TTR("Erase points."));
 
 	create_resource = memnew(ConfirmationDialog);
 	add_child(create_resource);

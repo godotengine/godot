@@ -45,6 +45,7 @@ Node2D *Polygon2DEditor::_get_node() const {
 void Polygon2DEditor::_set_node(Node *p_polygon) {
 
 	node = Object::cast_to<Polygon2D>(p_polygon);
+	_update_polygon_editing_state();
 }
 
 Vector2 Polygon2DEditor::_get_offset(int p_idx) const {
@@ -52,17 +53,8 @@ Vector2 Polygon2DEditor::_get_offset(int p_idx) const {
 	return node->get_offset();
 }
 
-String Polygon2DEditor::_why_cant_edit_polygon() const {
-
-	if (node->get_internal_vertex_count() > 0) {
-
-		return TTR("Polygon 2D has internal vertices, so it can no longer be edited in the viewport.");
-	}
-
-	return String();
-}
-
 int Polygon2DEditor::_get_polygon_count() const {
+
 	if (node->get_internal_vertex_count() > 0) {
 		return 0; //do not edit if internal vertices exist
 	} else {
@@ -375,6 +367,8 @@ void Polygon2DEditor::_cancel_editing() {
 		node->set_vertex_colors(uv_create_colors_prev);
 		node->call("_set_bones", uv_create_bones_prev);
 		node->set_polygons(polygons_prev);
+
+		_update_polygon_editing_state();
 	} else if (uv_drag) {
 		uv_drag = false;
 		if (uv_edit_mode[0]->is_pressed()) { // Edit UV.
@@ -387,9 +381,20 @@ void Polygon2DEditor::_cancel_editing() {
 	polygon_create.clear();
 }
 
+void Polygon2DEditor::_update_polygon_editing_state() {
+
+	if (!_get_node())
+		return;
+
+	if (node->get_internal_vertex_count() > 0)
+		disable_polygon_editing(true, TTR("Polygon 2D has internal vertices, so it can no longer be edited in the viewport."));
+	else
+		disable_polygon_editing(false, String());
+}
+
 void Polygon2DEditor::_commit_action() {
 
-	// Makes that undo/redoing actions made outside of the UV editor still affects its polygon.
+	// Makes that undo/redoing actions made outside of the UV editor still affect its polygon.
 	undo_redo->add_do_method(uv_edit_draw, "update");
 	undo_redo->add_undo_method(uv_edit_draw, "update");
 	undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "update_viewport");
@@ -490,6 +495,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_create_colors_prev = node->get_vertex_colors();
 						uv_create_bones_prev = node->call("_get_bones");
 						polygons_prev = node->get_polygons();
+						disable_polygon_editing(false, String());
 						node->set_polygon(points_prev);
 						node->set_uv(points_prev);
 						node->set_internal_vertex_count(0);
@@ -511,6 +517,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 							undo_redo->add_undo_method(node, "set_vertex_colors", uv_create_colors_prev);
 							undo_redo->add_do_method(node, "clear_bones");
 							undo_redo->add_undo_method(node, "_set_bones", uv_create_bones_prev);
+							undo_redo->add_do_method(this, "_update_polygon_editing_state");
+							undo_redo->add_undo_method(this, "_update_polygon_editing_state");
 							undo_redo->add_do_method(uv_edit_draw, "update");
 							undo_redo->add_undo_method(uv_edit_draw, "update");
 							undo_redo->commit_action();
@@ -562,7 +570,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					}
 					undo_redo->add_do_method(node, "set_internal_vertex_count", internal_vertices + 1);
 					undo_redo->add_undo_method(node, "set_internal_vertex_count", internal_vertices);
-
+					undo_redo->add_do_method(this, "_update_polygon_editing_state");
+					undo_redo->add_undo_method(this, "_update_polygon_editing_state");
 					undo_redo->add_do_method(uv_edit_draw, "update");
 					undo_redo->add_undo_method(uv_edit_draw, "update");
 					undo_redo->commit_action();
@@ -616,7 +625,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					}
 					undo_redo->add_do_method(node, "set_internal_vertex_count", internal_vertices - 1);
 					undo_redo->add_undo_method(node, "set_internal_vertex_count", internal_vertices);
-
+					undo_redo->add_do_method(this, "_update_polygon_editing_state");
+					undo_redo->add_undo_method(this, "_update_polygon_editing_state");
 					undo_redo->add_do_method(uv_edit_draw, "update");
 					undo_redo->add_undo_method(uv_edit_draw, "update");
 					undo_redo->commit_action();
@@ -1233,6 +1243,7 @@ void Polygon2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_uv_edit_popup_hide"), &Polygon2DEditor::_uv_edit_popup_hide);
 	ClassDB::bind_method(D_METHOD("_sync_bones"), &Polygon2DEditor::_sync_bones);
 	ClassDB::bind_method(D_METHOD("_update_bone_list"), &Polygon2DEditor::_update_bone_list);
+	ClassDB::bind_method(D_METHOD("_update_polygon_editing_state"), &Polygon2DEditor::_update_polygon_editing_state);
 	ClassDB::bind_method(D_METHOD("_bone_paint_selected"), &Polygon2DEditor::_bone_paint_selected);
 }
 
