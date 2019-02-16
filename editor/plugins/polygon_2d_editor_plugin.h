@@ -128,6 +128,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	virtual void _menu_option(int p_option);
 
 	void _cancel_editing();
+	void _update_polygon_editing_state();
 
 	void _uv_scroll_changed(float);
 	void _uv_input(const Ref<InputEvent> &p_input);
