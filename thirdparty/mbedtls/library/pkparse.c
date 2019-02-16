@@ -61,6 +61,12 @@
 #define mbedtls_free       free
 #endif
 
+/* Parameter validation macros based on platform_util.h */
+#define PK_VALIDATE_RET( cond )    \
+    MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_PK_BAD_INPUT_DATA )
+#define PK_VALIDATE( cond )        \
+    MBEDTLS_INTERNAL_VALIDATE( cond )
+
 #if defined(MBEDTLS_FS_IO)
 /*
  * Load all data from a file into a given buffer.
@@ -73,6 +79,10 @@ int mbedtls_pk_load_file( const char *path, unsigned char **buf, size_t *n )
 {
     FILE *f;
     long size;
+
+    PK_VALIDATE_RET( path != NULL );
+    PK_VALIDATE_RET( buf != NULL );
+    PK_VALIDATE_RET( n != NULL );
 
     if( ( f = fopen( path, "rb" ) ) == NULL )
         return( MBEDTLS_ERR_PK_FILE_IO_ERROR );
@@ -124,6 +134,9 @@ int mbedtls_pk_parse_keyfile( mbedtls_pk_context *ctx,
     size_t n;
     unsigned char *buf;
 
+    PK_VALIDATE_RET( ctx != NULL );
+    PK_VALIDATE_RET( path != NULL );
+
     if( ( ret = mbedtls_pk_load_file( path, &buf, &n ) ) != 0 )
         return( ret );
 
@@ -147,6 +160,9 @@ int mbedtls_pk_parse_public_keyfile( mbedtls_pk_context *ctx, const char *path )
     int ret;
     size_t n;
     unsigned char *buf;
+
+    PK_VALIDATE_RET( ctx != NULL );
+    PK_VALIDATE_RET( path != NULL );
 
     if( ( ret = mbedtls_pk_load_file( path, &buf, &n ) ) != 0 )
         return( ret );
@@ -604,6 +620,11 @@ int mbedtls_pk_parse_subpubkey( unsigned char **p, const unsigned char *end,
     mbedtls_asn1_buf alg_params;
     mbedtls_pk_type_t pk_alg = MBEDTLS_PK_NONE;
     const mbedtls_pk_info_t *pk_info;
+
+    PK_VALIDATE_RET( p != NULL );
+    PK_VALIDATE_RET( *p != NULL );
+    PK_VALIDATE_RET( end != NULL );
+    PK_VALIDATE_RET( pk != NULL );
 
     if( ( ret = mbedtls_asn1_get_tag( p, end, &len,
                     MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE ) ) != 0 )
@@ -1145,16 +1166,22 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
 {
     int ret;
     const mbedtls_pk_info_t *pk_info;
-
 #if defined(MBEDTLS_PEM_PARSE_C)
     size_t len;
     mbedtls_pem_context pem;
+#endif
 
-    mbedtls_pem_init( &pem );
+    PK_VALIDATE_RET( pk != NULL );
+    if( keylen == 0 )
+        return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT );
+    PK_VALIDATE_RET( key != NULL );
+
+#if defined(MBEDTLS_PEM_PARSE_C)
+   mbedtls_pem_init( &pem );
 
 #if defined(MBEDTLS_RSA_C)
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
-    if( keylen == 0 || key[keylen - 1] != '\0' )
+    if( key[keylen - 1] != '\0' )
         ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
     else
         ret = mbedtls_pem_read_buffer( &pem,
@@ -1185,7 +1212,7 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
 
 #if defined(MBEDTLS_ECP_C)
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
-    if( keylen == 0 || key[keylen - 1] != '\0' )
+    if( key[keylen - 1] != '\0' )
         ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
     else
         ret = mbedtls_pem_read_buffer( &pem,
@@ -1215,7 +1242,7 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
 #endif /* MBEDTLS_ECP_C */
 
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
-    if( keylen == 0 || key[keylen - 1] != '\0' )
+    if( key[keylen - 1] != '\0' )
         ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
     else
         ret = mbedtls_pem_read_buffer( &pem,
@@ -1238,7 +1265,7 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
 
 #if defined(MBEDTLS_PKCS12_C) || defined(MBEDTLS_PKCS5_C)
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
-    if( keylen == 0 || key[keylen - 1] != '\0' )
+    if( key[keylen - 1] != '\0' )
         ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
     else
         ret = mbedtls_pem_read_buffer( &pem,
@@ -1276,9 +1303,6 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
     {
         unsigned char *key_copy;
 
-        if( keylen == 0 )
-            return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT );
-
         if( ( key_copy = mbedtls_calloc( 1, keylen ) ) == NULL )
             return( MBEDTLS_ERR_PK_ALLOC_FAILED );
 
@@ -1295,6 +1319,7 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
         return( 0 );
 
     mbedtls_pk_free( pk );
+    mbedtls_pk_init( pk );
 
     if( ret == MBEDTLS_ERR_PK_PASSWORD_MISMATCH )
     {
@@ -1306,38 +1331,41 @@ int mbedtls_pk_parse_key( mbedtls_pk_context *pk,
         return( 0 );
 
     mbedtls_pk_free( pk );
+    mbedtls_pk_init( pk );
 
 #if defined(MBEDTLS_RSA_C)
 
     pk_info = mbedtls_pk_info_from_type( MBEDTLS_PK_RSA );
-    if( ( ret = mbedtls_pk_setup( pk, pk_info ) ) != 0 ||
-        ( ret = pk_parse_key_pkcs1_der( mbedtls_pk_rsa( *pk ),
-                                        key, keylen ) ) != 0 )
-    {
-        mbedtls_pk_free( pk );
-    }
-    else
+    if( mbedtls_pk_setup( pk, pk_info ) == 0 &&
+        pk_parse_key_pkcs1_der( mbedtls_pk_rsa( *pk ), key, keylen ) == 0 )
     {
         return( 0 );
     }
 
+    mbedtls_pk_free( pk );
+    mbedtls_pk_init( pk );
 #endif /* MBEDTLS_RSA_C */
 
 #if defined(MBEDTLS_ECP_C)
-
     pk_info = mbedtls_pk_info_from_type( MBEDTLS_PK_ECKEY );
-    if( ( ret = mbedtls_pk_setup( pk, pk_info ) ) != 0 ||
-        ( ret = pk_parse_key_sec1_der( mbedtls_pk_ec( *pk ),
-                                       key, keylen ) ) != 0 )
-    {
-        mbedtls_pk_free( pk );
-    }
-    else
+    if( mbedtls_pk_setup( pk, pk_info ) == 0 &&
+        pk_parse_key_sec1_der( mbedtls_pk_ec( *pk ),
+                               key, keylen ) == 0 )
     {
         return( 0 );
     }
-
+    mbedtls_pk_free( pk );
 #endif /* MBEDTLS_ECP_C */
+
+    /* If MBEDTLS_RSA_C is defined but MBEDTLS_ECP_C isn't,
+     * it is ok to leave the PK context initialized but not
+     * freed: It is the caller's responsibility to call pk_init()
+     * before calling this function, and to call pk_free()
+     * when it fails. If MBEDTLS_ECP_C is defined but MBEDTLS_RSA_C
+     * isn't, this leads to mbedtls_pk_free() being called
+     * twice, once here and once by the caller, but this is
+     * also ok and in line with the mbedtls_pk_free() calls
+     * on failed PEM parsing attempts. */
 
     return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT );
 }
@@ -1356,11 +1384,18 @@ int mbedtls_pk_parse_public_key( mbedtls_pk_context *ctx,
 #if defined(MBEDTLS_PEM_PARSE_C)
     size_t len;
     mbedtls_pem_context pem;
+#endif
 
+    PK_VALIDATE_RET( ctx != NULL );
+    if( keylen == 0 )
+        return( MBEDTLS_ERR_PK_KEY_INVALID_FORMAT );
+    PK_VALIDATE_RET( key != NULL || keylen == 0 );
+
+#if defined(MBEDTLS_PEM_PARSE_C)
     mbedtls_pem_init( &pem );
 #if defined(MBEDTLS_RSA_C)
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
-    if( keylen == 0 || key[keylen - 1] != '\0' )
+    if( key[keylen - 1] != '\0' )
         ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
     else
         ret = mbedtls_pem_read_buffer( &pem,
@@ -1391,7 +1426,7 @@ int mbedtls_pk_parse_public_key( mbedtls_pk_context *ctx,
 #endif /* MBEDTLS_RSA_C */
 
     /* Avoid calling mbedtls_pem_read_buffer() on non-null-terminated string */
-    if( keylen == 0 || key[keylen - 1] != '\0' )
+    if( key[keylen - 1] != '\0' )
         ret = MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT;
     else
         ret = mbedtls_pem_read_buffer( &pem,
