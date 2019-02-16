@@ -1290,7 +1290,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if (Vector2() == lv_n + p_floor_direction && collision.travel.length() < 1) {
+							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform2D gt = get_global_transform();
 								gt.elements[2] -= collision.travel.project(p_floor_direction.tangent());
 								set_global_transform(gt);
