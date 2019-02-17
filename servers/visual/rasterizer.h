@@ -870,7 +870,7 @@ public:
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || !rect_dirty)
+			if (custom_rect || (!rect_dirty && !update_when_visible))
 				return rect;
 
 			//must update rect
