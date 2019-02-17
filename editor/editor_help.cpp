@@ -1511,6 +1511,7 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
 	rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 	rich_text->set_override_selected_font_color(false);
+	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
 
 FindBar::FindBar() {
