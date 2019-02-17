@@ -40,7 +40,7 @@ WebSocketClient::WebSocketClient() {
 WebSocketClient::~WebSocketClient() {
 }
 
-Error WebSocketClient::connect_to_url(String p_url, PoolVector<String> p_protocols, bool gd_mp_api) {
+Error WebSocketClient::connect_to_url(String p_url, PoolVector<String> p_protocols, bool gd_mp_api, Dictionary http_headers) {
 	_is_multiplayer = gd_mp_api;
 
 	String host = p_url;
@@ -72,7 +72,7 @@ Error WebSocketClient::connect_to_url(String p_url, PoolVector<String> p_protoco
 		host = host.substr(0, p_len);
 	}
 
-	return connect_to_host(host, path, port, ssl, p_protocols);
+	return connect_to_host(host, path, port, ssl, p_protocols, http_headers);
 }
 
 void WebSocketClient::set_verify_ssl_enabled(bool p_verify_ssl) {

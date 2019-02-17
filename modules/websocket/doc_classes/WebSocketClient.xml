@@ -23,8 +23,10 @@
 			</argument>
 			<argument index="2" name="gd_mp_api" type="bool" default="false">
 			</argument>
+			<argument index="3" name="http_headers" type="Dictionary" default="Dictionary(  )">
+			</argument>
 			<description>
-				Connect to the given URL requesting one of the given [code]protocols[/code] as sub-protocol.
+				Connect to the given URL requesting one of the given [code]protocols[/code] as sub-protocol. Custom HTTP headers can be specified using [code]http_headers[/code].
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
 			</description>

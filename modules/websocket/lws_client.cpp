@@ -36,9 +36,29 @@
 #include "core/project_settings.h"
 #include "tls/mbedtls/wrapper/include/openssl/ssl.h"
 
-Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
+Dictionary http_headers;
+
+Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols, Dictionary headers) {
 
 	ERR_FAIL_COND_V(context != NULL, FAILED);
+
+	// Ensure http header key and values are strings
+	for (int i = 0; i < headers.size(); i++) {
+		Variant key = headers.get_key_at_index(i);
+		Variant value = headers[key];
+		if (key.get_type() != Variant::STRING ||
+				value.get_type() != Variant::STRING) {
+			print_error("WebSocket header dictionary must contain key and value of type String");
+			return ERR_INVALID_PARAMETER;
+		}
+
+		// Add ':' to the end of keys for convenience
+		String new_key = ((String)key).utf8() + ":";
+		headers[new_key] = value;
+		headers.erase(key);
+	}
+
+	http_headers = headers;
 
 	IP_Address addr;
 
@@ -160,6 +180,21 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			peer->read_wsi(in, len);
 			if (peer->get_available_packet_count() > 0)
 				_on_peer_packet();
+			break;
+
+		case LWS_CALLBACK_CLIENT_APPEND_HANDSHAKE_HEADER:
+			// Add HTTP headers to client handshake
+			for (int i = 0; i < http_headers.size(); i++) {
+				unsigned char **p = (unsigned char **)in, *end = (*p) + len;
+				String key = (String)http_headers.get_key_at_index(i);
+				String val = (String)http_headers[key];
+				if (lws_add_http_header_by_name(wsi,
+							(unsigned char *)key.utf8().get_data(),
+							(unsigned char *)val.utf8().get_data(),
+							val.size() - 1, p, end))
+					return -1;
+			}
+
 			break;
 
 		case LWS_CALLBACK_CLIENT_WRITEABLE:

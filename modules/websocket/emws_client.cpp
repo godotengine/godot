@@ -64,10 +64,16 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int 
 }
 }
 
-Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
+Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols, Dictionary http_headers) {
 
 	String proto_string = p_protocols.join(",");
 	String str = "ws://";
+
+	// We don't currently support custom WebSocket headers here
+	if (!http_headers.empty()) {
+		print_error("Custom WebSocket HTTP headers are not supported with Emscripten");
+		return ERR_UNAVAILABLE;
+	}
 
 	if (p_ssl)
 		str = "wss://";
