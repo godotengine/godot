@@ -73,8 +73,9 @@ private:
 	float pitch_scale;
 	bool autoplay;
 	bool stream_paused;
-	bool stream_paused_fade_in;
-	bool stream_paused_fade_out;
+	bool stream_fade_in;
+	bool stream_fade_out;
+	bool stream_stop;
 	StringName bus;
 
 	void _mix_audio();

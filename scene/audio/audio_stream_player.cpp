@@ -94,10 +94,14 @@ void AudioStreamPlayer::_mix_audio() {
 	if (!stream_playback.is_valid() || !active)
 		return;
 
-	if (stream_paused) {
-		if (stream_paused_fade) {
-			_mix_internal(true);
-			stream_paused_fade = false;
+	if (stream_fade) {
+		_mix_internal(true);
+		stream_fade = false;
+
+		if (stream_stop) {
+			stream_playback->stop();
+			active = false;
+			set_process_internal(false);
 		}
 		return;
 	}
@@ -203,6 +207,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
+		stream_stop = false;
 		setseek = p_from_pos;
 		active = true;
 		set_process_internal(true);
@@ -219,9 +224,8 @@ void AudioStreamPlayer::seek(float p_seconds) {
 void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid()) {
-		stream_playback->stop();
-		active = false;
-		set_process_internal(false);
+		stream_stop = true;
+		stream_fade = true;
 	}
 }
 
@@ -295,7 +299,7 @@ void AudioStreamPlayer::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade = p_pause ? true : false;
+		stream_fade = p_pause ? true : false;
 	}
 }
 
@@ -385,7 +389,8 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	setseek = -1;
 	active = false;
 	stream_paused = false;
-	stream_paused_fade = false;
+	stream_fade = false;
+	stream_stop = false;
 	mix_target = MIX_TARGET_STEREO;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
