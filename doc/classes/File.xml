@@ -38,7 +38,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the file cursor has reached the end of the file.
+				Returns [code]true[/code] if the file cursor has read past the end of the file. Note that this function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low level file access works in all operating systems. There is always [method get_len] and [method get_position] to implement a custom logic.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
