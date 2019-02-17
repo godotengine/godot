@@ -58,7 +58,8 @@ private:
 	float volume_db;
 	bool autoplay;
 	bool stream_paused;
-	bool stream_paused_fade;
+	bool stream_fade;
+	bool stream_stop;
 	StringName bus;
 
 	MixTarget mix_target;
