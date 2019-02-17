@@ -143,6 +143,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
+	// be sure we are not stuck with a full screen game
+	OS::get_singleton()->set_window_minimized(true);
+
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);
