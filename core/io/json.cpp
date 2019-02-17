@@ -123,9 +123,9 @@ String JSON::print(const Variant &p_var, const String &p_indent, bool p_sort_key
 	return _print_var(p_var, p_indent, 0, p_sort_keys);
 }
 
-Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str) {
+Error JSON::_get_token(const CharType *p_str, int &index, Token &r_token, int &line, String &r_err_str) {
 
-	while (p_len > 0) {
+	while (true) {
 		switch (p_str[index]) {
 
 			case '\n': {
@@ -301,12 +301,12 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int &line, String &r_err_str) {
 
 	if (token.type == TK_CURLY_BRACKET_OPEN) {
 
 		Dictionary d;
-		Error err = _parse_object(d, p_str, index, p_len, line, r_err_str);
+		Error err = _parse_object(d, p_str, index, line, r_err_str);
 		if (err)
 			return err;
 		value = d;
@@ -314,7 +314,7 @@ Error JSON::_parse_value(Variant &value, Token &token, const CharType *p_str, in
 	} else if (token.type == TK_BRACKET_OPEN) {
 
 		Array a;
-		Error err = _parse_array(a, p_str, index, p_len, line, r_err_str);
+		Error err = _parse_array(a, p_str, index, line, r_err_str);
 		if (err)
 			return err;
 		value = a;
@@ -351,14 +351,14 @@ Error JSON::_parse_value(Variant &value, Token &token, const CharType *p_str, in
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_array(Array &array, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_array(Array &array, const CharType *p_str, int &index, int &line, String &r_err_str) {
 
 	Token token;
 	bool need_comma = false;
 
-	while (index < p_len) {
+	while (true) {
 
-		Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
+		Error err = _get_token(p_str, index, token, line, r_err_str);
 		if (err != OK)
 			return err;
 
@@ -380,7 +380,7 @@ Error JSON::_parse_array(Array &array, const CharType *p_str, int &index, int p_
 		}
 
 		Variant v;
-		err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
+		err = _parse_value(v, token, p_str, index, line, r_err_str);
 		if (err)
 			return err;
 
@@ -391,18 +391,18 @@ Error JSON::_parse_array(Array &array, const CharType *p_str, int &index, int p_
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index, int &line, String &r_err_str) {
 
 	bool at_key = true;
 	String key;
 	Token token;
 	bool need_comma = false;
 
-	while (index < p_len) {
+	while (true) {
 
 		if (at_key) {
 
-			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
+			Error err = _get_token(p_str, index, token, line, r_err_str);
 			if (err != OK)
 				return err;
 
@@ -430,7 +430,7 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 			}
 
 			key = token.value;
-			err = _get_token(p_str, index, p_len, token, line, r_err_str);
+			err = _get_token(p_str, index, token, line, r_err_str);
 			if (err != OK)
 				return err;
 			if (token.type != TK_COLON) {
@@ -441,12 +441,12 @@ Error JSON::_parse_object(Dictionary &object, const CharType *p_str, int &index,
 			at_key = false;
 		} else {
 
-			Error err = _get_token(p_str, index, p_len, token, line, r_err_str);
+			Error err = _get_token(p_str, index, token, line, r_err_str);
 			if (err != OK)
 				return err;
 
 			Variant v;
-			err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
+			err = _parse_value(v, token, p_str, index, line, r_err_str);
 			if (err)
 				return err;
 			object[key] = v;
@@ -462,16 +462,23 @@ Error JSON::parse(const String &p_json, Variant &r_ret, String &r_err_str, int &
 
 	const CharType *str = p_json.ptr();
 	int idx = 0;
-	int len = p_json.length();
 	Token token;
 	r_err_line = 0;
 	String aux_key;
 
-	Error err = _get_token(str, idx, len, token, r_err_line, r_err_str);
+	Error err = _get_token(str, idx, token, r_err_line, r_err_str);
 	if (err)
 		return err;
 
-	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
+	err = _parse_value(r_ret, token, str, idx, r_err_line, r_err_str);
+
+	if (!err) {
+		err = _get_token(str, idx, token, r_err_line, r_err_str);
+		if (err != OK || token.type != TK_EOF) {
+			r_err_str = "Extra tokens or garbage found after expression";
+			return ERR_PARSE_ERROR;
+		}
+	}
 
 	return err;
 }
