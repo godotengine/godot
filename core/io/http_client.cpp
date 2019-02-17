@@ -634,7 +634,18 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 		} else {
 			if (err == ERR_FILE_EOF) {
 				err = OK; // EOF is expected here
-				close();
+
+				// if response header contains 'text/event-stream',
+				// client status should be remained as STATUS_BODY
+				// to keep reading incoming body
+				bool is_stream = false;
+				for (int i = 0; i < response_headers.size(); i++) {
+					if (response_headers[i].to_lower().find("text/event-stream") >= 0) {
+						is_stream = true;
+						break;
+					}
+				}
+				if (!is_stream) close();
 				return ret;
 			}
 		}
