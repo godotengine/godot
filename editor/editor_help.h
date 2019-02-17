@@ -188,9 +188,9 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public MarginContainer {
+class EditorHelpBit : public PanelContainer {
 
-	GDCLASS(EditorHelpBit, MarginContainer);
+	GDCLASS(EditorHelpBit, PanelContainer);
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
