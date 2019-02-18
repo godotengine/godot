@@ -686,7 +686,7 @@ void SpaceBullet::check_ghost_overlaps() {
 			btVector3 other_body_scale(otherObject->get_bt_body_scale());
 
 			if (!area->is_transform_changed() && !otherObject->is_transform_changed()) {
-				hasOverlap = true;
+				hasOverlap = -1 != area->find_overlapping_object(otherObject);
 				goto collision_found;
 			}
 
@@ -714,6 +714,9 @@ void SpaceBullet::check_ghost_overlaps() {
 				for (z = otherObject->get_shape_count() - 1; 0 <= z; --z) {
 
 					other_body_shape = static_cast<btCollisionShape *>(otherObject->get_bt_shape(z));
+
+					if (other_body_shape->isConcave())
+						continue;
 
 					btTransform other_shape_transform(otherObject->get_bt_shape_transform(z));
 					other_shape_transform.getOrigin() *= other_body_scale;
