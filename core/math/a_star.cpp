@@ -97,11 +97,14 @@ void AStar::remove_point(int p_id) {
 
 	Point *p = points[p_id];
 
-	for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
-
-		Segment s(p_id, E->get()->id);
-		segments.erase(s);
-		E->get()->neighbours.erase(p);
+	Map<int, Point *>::Element *PE = points.front();
+	while (PE) {
+		for (Set<Point *>::Element *E = PE->get()->neighbours.front(); E; E = E->next()) {
+			Segment s(p_id, E->get()->id);
+			segments.erase(s);
+			E->get()->neighbours.erase(p);
+		}
+		PE = PE->next();
 	}
 
 	memdelete(p);
