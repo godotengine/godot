@@ -119,6 +119,12 @@ RID ViewportTexture::get_rid() const {
 	return proxy;
 }
 
+RID ViewportTexture::get_viewport_texture_rid() const {
+
+	ERR_FAIL_COND_V(!vp, RID());
+	return vp->texture_rid;
+}
+
 bool ViewportTexture::has_alpha() const {
 
 	return false;

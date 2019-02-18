@@ -77,6 +77,7 @@ public:
 	virtual int get_height() const;
 	virtual Size2 get_size() const;
 	virtual RID get_rid() const;
+	virtual RID get_viewport_texture_rid() const;
 
 	virtual bool has_alpha() const;
 
