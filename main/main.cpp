@@ -394,7 +394,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	Vector<String> breakpoints;
 	bool use_custom_res = true;
 	bool force_res = false;
+#ifdef TOOLS_ENABLED
 	bool found_project = false;
+#endif
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data)
@@ -746,7 +748,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (globals->setup(project_path, main_pack, upwards) == OK) {
+#ifdef TOOLS_ENABLED
 		found_project = true;
+#endif
 	} else {
 
 #ifdef TOOLS_ENABLED
@@ -1273,7 +1277,9 @@ bool Main::start() {
 	bool hasicon = false;
 	String doc_tool;
 	List<String> removal_docs;
+#ifdef TOOLS_ENABLED
 	bool doc_base = true;
+#endif
 	String game_path;
 	String script;
 	String test;
@@ -1286,9 +1292,11 @@ bool Main::start() {
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i = 0; i < args.size(); i++) {
 		//parameters that do not have an argument to the right
-		if (args[i] == "--no-docbase") {
-			doc_base = false;
+		if (args[i] == "--check-only") {
+			check_only = true;
 #ifdef TOOLS_ENABLED
+		} else if (args[i] == "--no-docbase") {
+			doc_base = false;
 		} else if (args[i] == "-e" || args[i] == "--editor") {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
@@ -1296,8 +1304,6 @@ bool Main::start() {
 #endif
 		} else if (args[i].length() && args[i][0] != '-' && game_path == "") {
 			game_path = args[i];
-		} else if (args[i] == "--check-only") {
-			check_only = true;
 		}
 		//parameters that have an argument to the right
 		else if (i < (args.size() - 1)) {

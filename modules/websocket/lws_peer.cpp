@@ -102,7 +102,7 @@ Error LWSPeer::write_wsi() {
 		return OK;
 
 	int read = 0;
-	uint8_t is_string;
+	uint8_t is_string = 0;
 	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
 	_out_buffer.read_packet(&(rw[LWS_PRE]), _packet_buffer.size() - LWS_PRE, &is_string, read);
 

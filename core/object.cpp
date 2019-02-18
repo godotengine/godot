@@ -703,40 +703,38 @@ Variant Object::_call_deferred_bind(const Variant **p_args, int p_argcount, Vari
 }
 
 #ifdef DEBUG_ENABLED
-static bool _test_call_error(const StringName &p_func, const Variant::CallError &error) {
+static void _test_call_error(const StringName &p_func, const Variant::CallError &error) {
 
 	switch (error.error) {
 
 		case Variant::CallError::CALL_OK:
-			return true;
 		case Variant::CallError::CALL_ERROR_INVALID_METHOD:
-			return false;
+			break;
 		case Variant::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 
 			ERR_EXPLAIN("Error Calling Function: " + String(p_func) + " - Invalid type for argument " + itos(error.argument) + ", expected " + Variant::get_type_name(error.expected));
-			ERR_FAIL_V(true);
-		} break;
+			ERR_FAIL();
+			break;
+		}
 		case Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
 
 			ERR_EXPLAIN("Error Calling Function: " + String(p_func) + " - Too many arguments, expected " + itos(error.argument));
-			ERR_FAIL_V(true);
-
-		} break;
+			ERR_FAIL();
+			break;
+		}
 		case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
 
 			ERR_EXPLAIN("Error Calling Function: " + String(p_func) + " - Too few arguments, expected " + itos(error.argument));
-			ERR_FAIL_V(true);
-
-		} break;
-		case Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
-		} //?
+			ERR_FAIL();
+			break;
+		}
+		case Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+			break;
 	}
-
-	return true;
 }
 #else
 
-#define _test_call_error(m_str, m_err) ((m_err.error == Variant::CallError::CALL_ERROR_INVALID_METHOD) ? false : true)
+#define _test_call_error(m_str, m_err)
 
 #endif
 
