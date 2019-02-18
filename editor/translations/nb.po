@@ -8,7 +8,7 @@
 # flesk <eivindkn@gmail.com>, 2017, 2019.
 # Frank T. Rambol <frank@d-fect.com>, 2018.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
-# NicolaiF <nico-fre@hotmail.com>, 2017-2018.
+# NicolaiF <nico-fre@hotmail.com>, 2017-2018, 2019.
 # Norwegian Disaster <stian.furu.overbye@gmail.com>, 2017.
 # passeride <lukas@passeride.com>, 2017.
 # Byzantin <kasper-hoel@hotmail.com>, 2018.
@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-10 12:01+0000\n"
-"Last-Translator: flesk <eivindkn@gmail.com>\n"
+"PO-Revision-Date: 2019-02-13 16:10+0000\n"
+"Last-Translator: NicolaiF <nico-fre@hotmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -240,7 +240,7 @@ msgstr "Lineær"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubisk"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -292,7 +292,7 @@ msgstr "Anim Sett inn"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "AnimasjonAvspiller kan ikke animere seg selv, kun andre avspillere."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -331,6 +331,7 @@ msgstr "Animasjonsspor kan kun peke på AnimationPlayer-noder."
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
 msgstr ""
+"En animansjonsavspiller kan ikke animere seg selv, kun andre avspillere."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -588,7 +589,7 @@ msgstr "Nullstill Zoom"
 
 #: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Advarsler"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
@@ -2733,15 +2734,15 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
-msgstr ""
+msgstr "Nytt Skript"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "Ny %s"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Make Unique"
-msgstr ""
+msgstr "Gjør Unik"
 
 #: editor/editor_properties.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -2759,7 +2760,7 @@ msgstr "Lim inn"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Convert To %s"
-msgstr ""
+msgstr "Konverter Til %s"
 
 #: editor/editor_properties.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -2775,11 +2776,11 @@ msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
-msgstr ""
+msgstr "Størrelse: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
-msgstr ""
+msgstr "Side: "
 
 #: editor/editor_properties_array_dict.cpp
 #, fuzzy
@@ -3587,7 +3588,7 @@ msgstr ""
 
 #: editor/plugin_config_dialog.cpp
 msgid "Language:"
-msgstr ""
+msgstr "Språk:"
 
 #: editor/plugin_config_dialog.cpp
 #, fuzzy
@@ -3596,7 +3597,7 @@ msgstr "Prosjektnavn:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
-msgstr ""
+msgstr "Aktiver nå?"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -4322,7 +4323,7 @@ msgstr "Neste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Last"
-msgstr ""
+msgstr "Siste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -5531,7 +5532,7 @@ msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Radius:"
-msgstr ""
+msgstr "Radius:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon->UV"

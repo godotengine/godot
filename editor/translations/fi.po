@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-09 18:11+0000\n"
+"PO-Revision-Date: 2019-02-13 07:10+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -549,7 +549,7 @@ msgstr "Varoitukset"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "Rivi- ja sarakenumerot"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -4279,16 +4279,15 @@ msgstr "Siirrä CanvasItemiä"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "Control solmun ankkureiden ja marginaalien arvojen esiasetukset."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Varoitus: Säilön alisolmujen sijainti ja koko määrittyy vain niiden "
-"isäntäsolmun perusteella."
+"Säilön alisolmujen ankkurien ja marginaalien arvot ylikirjoittuvat niiden "
+"isäntäsolmun toimesta."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6288,7 +6287,6 @@ msgid "Post"
 msgstr "Jälki"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Nameless gizmo"
 msgstr "Nimetön muokkain"
 
@@ -6365,14 +6363,12 @@ msgid "(empty)"
 msgstr "(tyhjä)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "Animaatiot"
+msgstr "Animaatiot:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "Animaatio"
+msgstr "Uusi animaatio"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6383,9 +6379,8 @@ msgid "Loop"
 msgstr "Toista"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "Animaatioruudut"
+msgstr "Animaatioruudut:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7191,7 +7186,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "Haluatko varmasti avata useamman kuin yhden projektin?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -7203,12 +7197,13 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"Seuraava projektin asetustiedosto on luotu vanhemmalla versiolla ja täytyy "
-"muuntaa tätä versiota varten:\n"
+"Seuraava projektin asetustiedosto ei määrittele Godotin versiota, jolla se "
+"on luotu.\n"
 "\n"
 "%s\n"
 "\n"
-"Haluatko muuntaa sen?\n"
+"Jos haluat jatkaa sen avaamista, se muunnetaan nykyiseen Godotin "
+"asetustiedostomuotoon.\n"
 "Varoitus: et voi avata projektia tämän jälkeen enää vanhemmilla versioilla."
 
 #: editor/project_manager.cpp
@@ -9419,6 +9414,9 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"GPU-pohjaiset partikkelit eivät ole tuettuja GLES2 näyttöajurilla.\n"
+"Käytä sen sijaan CPUParticles2D solmua. Voit käyttää \"Muunna "
+"CPUPartikkeleiksi\" toimintoa tähän tarkoitukseen."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9615,6 +9613,9 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"GPU-pohjaiset partikkelit eivät ole tuettuja GLES2 näyttöajurilla.\n"
+"Käytä sen sijaan CPUParticles solmua. Voit käyttää \"Muunna CPUPartikkeleiksi"
+"\" toimintoa tähän tarkoitukseen."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -9750,7 +9751,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "Valitse väri ruudulta."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9758,7 +9759,7 @@ msgstr "Raakatila"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"

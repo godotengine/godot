@@ -20,12 +20,13 @@
 # Onur Sanır <onursanir@gmail.com>, 2018.
 # Oğuzhan Özdemir <ozdemiroguzhan0@gmail.com>, 2018.
 # Alper Çitmen <alper.citmen@gmail.com>, 2019.
+# ege1212 <owlphp@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-19 19:22+0000\n"
-"Last-Translator: Alper Çitmen <alper.citmen@gmail.com>\n"
+"PO-Revision-Date: 2019-02-13 07:10+0000\n"
+"Last-Translator: ege1212 <owlphp@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -33,7 +34,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -49,7 +50,7 @@ msgstr "Byte kodu çözmek için yetersiz byte, ya da Geçersiz format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Geçersiz girdi, ifadede %i (geçirilmedi)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"

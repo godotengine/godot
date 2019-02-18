@@ -14,7 +14,7 @@
 # omar anwar aglan <omar.aglan91@yahoo.com>, 2017-2018.
 # OWs Tetra <owstetra@gmail.com>, 2017.
 # Rached Noureddine <rached.noureddine@gmail.com>, 2018.
-# Rex_sa <asd1234567890m@gmail.com>, 2017, 2018.
+# Rex_sa <asd1234567890m@gmail.com>, 2017, 2018, 2019.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
 # Omar Aglan <omar.aglan91@yahoo.com>, 2018, 2019.
 # Codes Otaku <ilyas.gamerz@gmail.com>, 2018.
@@ -22,12 +22,13 @@
 # Mohamed El-Baz <albaz2000eg@gmail.com>, 2018.
 # عاصم شكر - Aasem shokr <aasemshokr@gmail.com>, 2018.
 # Mohammad Fares <mhdchehade@gmail.com>, 2018.
+# NewFriskFan26 <newfriskfan26@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-21 19:30+0000\n"
-"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
+"PO-Revision-Date: 2019-02-18 08:54+0000\n"
+"Last-Translator: Rex_sa <asd1234567890m@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -51,7 +52,7 @@ msgstr "لا يوجد ما يكفي من البايتات من أجل فك ال�
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "مُدخل غير صالح \"i%\" (لم يتم تمريره) في السطر"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -141,11 +142,11 @@ msgstr "خط التحريك ثلاثي الأبعاد"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "استدعاء أسلوب المسار"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "مسار منحنى بيزيه"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
@@ -186,7 +187,7 @@ msgstr "تمكين/إيقاف هذا المسار."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "وضع التحديث (كيف يتم تعيين هذه الخاصية)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -226,7 +227,7 @@ msgstr "المستقبل"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "أقرب"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -235,7 +236,7 @@ msgstr "خطي"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "مكعب"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"

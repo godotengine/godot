@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-07 15:09+0000\n"
+"PO-Revision-Date: 2019-02-18 08:54+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -554,7 +554,7 @@ msgstr "경고"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "라인 및 컬럼 번호"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -4264,14 +4264,13 @@ msgstr "CanvasItem 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "Control 노드의 앵커와 여백 값의 프리셋."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
-msgstr "경고: 컨테이너의 자식은 부모에 의해 결정된 위치와 규모를 갖습니다."
+msgstr "컨테이너의 자녀는 부모에 의해 그들의 앵커와 여백 값이 재정의됩니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4279,7 +4278,7 @@ msgstr "앵커만"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors and Margins"
-msgstr "앵커와 마진 변경"
+msgstr "앵커와 여백 변경"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Anchors"
@@ -6264,9 +6263,8 @@ msgid "Post"
 msgstr "Post"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Nameless gizmo"
-msgstr "이름없는 기즈모"
+msgstr "이름없는 오브젝트의 중심점"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6341,14 +6339,12 @@ msgid "(empty)"
 msgstr "(비었음)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "애니메이션(Animations)"
+msgstr "애니메이션:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "애니메이션(Animation)"
+msgstr "새로운 애니메이션"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6359,9 +6355,8 @@ msgid "Loop"
 msgstr "루프"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "애니메이션 프레임"
+msgstr "애니메이션 프레임:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7162,7 +7157,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "두개 이상의 프로젝트를 열려는 것이 확실합니까?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -7174,13 +7168,12 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"다음의 프로젝트 설정 파일은 이전 버전에서 생성된 것으로, 다음 버전에 맞게 변"
-"환해야 합니다:\n"
-"\n"
-"%s\n"
-"\n"
-"변환하시겠습니까?\n"
-"경고: 더 이상 이 프로젝트를 이전 버전에서 열 수 없게 됩니다."
+"다음 프로젝트 설정 파일은 이 버전의 Godot로 생성되지 않았습니다.\n"
+"↵\n"
+"%s↵\n"
+"↵\n"
+"파일을 연다면, 현재 Godot의 구성 파일 형식으로 변환됩니다.\n"
+"경고: 이전 버전의 엔진으로 더 이상 열 수 없게 될 것입니다."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9379,6 +9372,9 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"GPU 기반 파티클은 GLES2 비디오 드라이버에서 지원하지 않습니다.\n"
+"CPUParticles2D 노드를 사용하세요. 이 경우 \"CPU파티클로 변환\" 옵션을 사용할 "
+"수 있습니다."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9568,6 +9564,9 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"GPU 기반 파티클은 GLES2 비디오 드라이버에서 지원하지 않습니다.\n"
+"CPUParticles 노드를 사용하세요. 이 경우 \"CPU파티클로 변환\" 옵션을 사용할 "
+"수 있습니다."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -9700,7 +9699,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "화면에서 색상을 선택하세요."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9708,7 +9707,7 @@ msgstr "Raw 모드"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "16 진수나 코드 값으로 전환합니다."
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"

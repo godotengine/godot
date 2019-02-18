@@ -41,7 +41,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"PO-Revision-Date: 2019-02-13 23:10+0000\n"
 "Last-Translator: Martin <martinreininger@gmx.net>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -583,7 +583,7 @@ msgstr "Warnungen"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "Zeilen- und Spaltennummern"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -626,7 +626,7 @@ msgstr "Zusätzliche Aufrufparameter:"
 
 #: editor/connections_dialog.cpp
 msgid "Path to Node:"
-msgstr "Pfad zur Node:"
+msgstr "Pfad zum Node:"
 
 #: editor/connections_dialog.cpp
 msgid "Make Function"
@@ -1005,7 +1005,7 @@ msgstr "Paket wurde erfolgreich installiert!"
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr "Erfolgreich!"
+msgstr "Geschafft!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -4339,16 +4339,15 @@ msgstr "CanvasItem verschieben"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "Voreinstellungen für die Anker- und Ränderwerte eines Kontroll-Nodes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Warnung: Position und Größe der Kinder eines Containers werden nur von ihren "
-"Eltern bestimmt."
+"Bei Containern für Kinder werden die Anker- und Randwerte von ihren Eltern "
+"überschrieben."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6354,7 +6353,6 @@ msgid "Post"
 msgstr "Nachher"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Nameless gizmo"
 msgstr "Namenloser Anfasser"
 
@@ -6433,14 +6431,12 @@ msgid "(empty)"
 msgstr "(leer)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "Animationen"
+msgstr "Animationen:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "Animation"
+msgstr "Neue Animation"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6451,9 +6447,8 @@ msgid "Loop"
 msgstr "Wiederholung"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "Animationsframes"
+msgstr "Animationsbilder:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7262,7 +7257,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "Sollen wirklich mehrere Projekte geöffnet werden?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -7274,12 +7268,13 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"Die Projekteinstellungsdatei ist mit einer älteren Version erstellt worden "
-"und muss in die  folgende Version konvertiert werden:\n"
+"Die folgenden Projekteinstellungsdatei enthält keine Information darüber, "
+"mit welcher Version von Godot sie erstellt wurde.\n"
 "\n"
 "%s\n"
 "\n"
-"Möchten Sie die Konvertierung durchführen?\n"
+"Wenn Sie mit dem Öffnen fortfahren, wird die Datei in das aktuelle "
+"Konfigurationsdateiformat von Godot konvertiert.\n"
 "Warnung: Das Projekt kann nach der Konvertierung nicht mehr mit einer "
 "älteren Version geöffnet werden."
 
@@ -7529,7 +7524,7 @@ msgstr "Ereignis hinzufügen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Knopf"
+msgstr "Button"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -9509,6 +9504,9 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"GPU-basierte Partikel werden vom GLES2-Grafiktreiber nicht unterstützt.\n"
+"Verwenden Sie stattdessen den CPUParticles2D Node. Sie können dazu die "
+"Option \"In CPUPartikel konvertieren\" verwenden."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9709,6 +9707,9 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"GPU-basierte Partikel werden vom GLES2-Grafiktreiber nicht unterstützt.\n"
+"Verwenden Sie stattdessen den CPUParticles Knoten. Sie können dazu die "
+"Option \"In CPUPartikel konvertieren\" verwenden."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -9853,7 +9854,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "Wählt eine Farbe vom Bildschirm aus."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9861,7 +9862,7 @@ msgstr "Rohdatenmodus"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "Wechselt zwischen Hexadezimal- und Zahlenwerten."
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"
