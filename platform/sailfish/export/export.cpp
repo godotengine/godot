@@ -44,14 +44,14 @@ void register_sailfish_exporter() {
 	logo.instance();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
-	platform->set_name("Linux/SDL");
-	platform->set_extension("x86");
-	platform->set_extension("x86_64", "binary_format/64_bits");
-	platform->set_release_32("linux_sdl_32_release");
-	platform->set_debug_32("linux_sdl_32_debug");
-	platform->set_release_64("linux_sdl_64_release");
-	platform->set_debug_64("linux_sdl_64_debug");
-	platform->set_os_name("SDL");
+	platform->set_name("SailfishOS/SDL");
+	platform->set_extension("arm");
+	platform->set_extension("x86", "binary_format/i486");
+	platform->set_release_32("godot.sailfish.opt.arm");
+	platform->set_debug_32("godot.sailfish.opt.debug.arm");
+	platform->set_release_64("godot.sailfish.opt.x86");
+	platform->set_debug_64("godot.sailfish.opt.debug.x86");
+	platform->set_os_name("SailfishOS");
 	platform->set_chmod_flags(0755);
 
 	EditorExport::get_singleton()->add_export_platform(platform);

@@ -349,8 +349,23 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	if (p_image.is_null() || p_image->empty())
 		return;
 
+#ifdef SAILFISH_FORCE_LANDSCAPE
+	int window_w = OS::get_singleton()->get_window_size().width;
+	int window_h = OS::get_singleton()->get_window_size().height;
+
+	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
+			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE ||
+			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE)
+	{
+		int tmp = window_w;
+		window_w = window_h;
+		window_h = tmp;
+	}
+	p_scale = true;
+#else
 	int window_w = OS::get_singleton()->get_video_mode(0).width;
 	int window_h = OS::get_singleton()->get_video_mode(0).height;
+#endif
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, window_w, window_h);
@@ -381,12 +396,15 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 		} else {
 			//scale vertically
+			OS::get_singleton()->print("Resolution is: %ix%i\n", window_w, window_h );
 			screenrect.size.x = window_w;
 			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
 			screenrect.position.y = (window_h - screenrect.size.y) / 2;
+			OS::get_singleton()->print("ScreenRect pos( %4.2fx%4.2f ) and size ( %4.2fx%4.2f)\n", 
+				screenrect.position.x, screenrect.position.y, screenrect.size.x, screenrect.size.y );
 		}
 	} else {
-
+		
 		screenrect = imgrect;
 		screenrect.position += ((Size2(window_w, window_h) - screenrect.size) / 2.0).floor();
 	}

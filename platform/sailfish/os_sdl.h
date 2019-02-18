@@ -56,6 +56,8 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+#define MAX_TOUCHES 20
+
 class OS_SDL : public OS_Unix {
 
 #if defined(GLES_ENABLED)
@@ -90,10 +92,12 @@ class OS_SDL : public OS_Unix {
 		Vector<int> devices;
 		// XIEventMask event_mask;
 		Map<int, Vector2> state;
+		// Map<int, int> index;
+		long long index[MAX_TOUCHES];
 	} touch;
 
 	int num_touches;
-	int touch_mouse_index;
+	// int touch_mouse_index;
 #endif
 
 	unsigned int get_mouse_button_state(uint32_t button_mask, bool refresh);
