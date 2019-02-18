@@ -44,6 +44,7 @@ class btGhostObject;
 
 class AreaBullet : public RigidCollisionObjectBullet {
 	friend void SpaceBullet::check_ghost_overlaps();
+	friend class BulletPhysicsServer;
 
 public:
 	struct InOutEventCallback {
@@ -64,19 +65,34 @@ public:
 	struct OverlappingObjectData {
 		CollisionObjectBullet *object;
 		OverlapState state;
+		btVector3 normal;
+		btVector3 world_position;
 
 		OverlappingObjectData() :
 				object(NULL),
-				state(OVERLAP_STATE_ENTER) {}
-		OverlappingObjectData(CollisionObjectBullet *p_object, OverlapState p_state) :
+				state(OVERLAP_STATE_ENTER),
+				normal(0, 0, 0),
+				world_position(0, 0, 0) {}
+
+		OverlappingObjectData(
+				CollisionObjectBullet *p_object,
+				OverlapState p_state,
+				btVector3 p_normal,
+				btVector3 p_world_position) :
 				object(p_object),
-				state(p_state) {}
+				state(p_state),
+				normal(p_normal),
+				world_position(p_world_position) {}
+
 		OverlappingObjectData(const OverlappingObjectData &other) {
 			operator=(other);
 		}
+
 		void operator=(const OverlappingObjectData &other) {
 			object = other.object;
 			state = other.state;
+			normal = other.normal;
+			world_position = other.world_position;
 		}
 	};
 
@@ -159,9 +175,15 @@ public:
 	virtual void on_collision_checker_start() {}
 	virtual void on_collision_checker_end() { isTransformChanged = false; }
 
-	void add_overlap(CollisionObjectBullet *p_otherObject);
+	void add_overlap(
+			CollisionObjectBullet *p_otherObject,
+			const btVector3 &p_normal,
+			const btVector3 &p_world_position);
 	void put_overlap_as_exit(int p_index);
-	void put_overlap_as_inside(int p_index);
+	void put_overlap_as_inside(
+			int p_index,
+			const btVector3 &p_normal,
+			const btVector3 &p_world_position);
 
 	void set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value);
 	Variant get_param(PhysicsServer::AreaParameter p_param) const;

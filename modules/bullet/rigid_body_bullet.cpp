@@ -30,6 +30,7 @@
 
 #include "rigid_body_bullet.h"
 
+#include "area_bullet.h"
 #include "btRayShape.h"
 #include "bullet_physics_server.h"
 #include "bullet_types_converter.h"

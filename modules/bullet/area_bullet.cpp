@@ -200,9 +200,17 @@ void AreaBullet::on_collision_filters_change() {
 	}
 }
 
-void AreaBullet::add_overlap(CollisionObjectBullet *p_otherObject) {
+void AreaBullet::add_overlap(
+		CollisionObjectBullet *p_otherObject,
+		const btVector3 &p_normal,
+		const btVector3 &p_world_position) {
 	scratch();
-	overlappingObjects.push_back(OverlappingObjectData(p_otherObject, OVERLAP_STATE_ENTER));
+	overlappingObjects.push_back(
+			OverlappingObjectData(
+					p_otherObject,
+					OVERLAP_STATE_ENTER,
+					p_normal,
+					p_world_position));
 	p_otherObject->notify_new_overlap(this);
 }
 
@@ -211,11 +219,16 @@ void AreaBullet::put_overlap_as_exit(int p_index) {
 	overlappingObjects.write[p_index].state = OVERLAP_STATE_EXIT;
 }
 
-void AreaBullet::put_overlap_as_inside(int p_index) {
+void AreaBullet::put_overlap_as_inside(
+		int p_index,
+		const btVector3 &p_normal,
+		const btVector3 &p_world_position) {
 	// This check is required to be sure this body was inside
 	if (OVERLAP_STATE_DIRTY == overlappingObjects[p_index].state) {
 		overlappingObjects.write[p_index].state = OVERLAP_STATE_INSIDE;
 	}
+	overlappingObjects.write[p_index].normal = p_normal;
+	overlappingObjects.write[p_index].world_position = p_world_position;
 }
 
 void AreaBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {

@@ -457,6 +457,11 @@ void PhysicsServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_ray_pickable", "area", "enable"), &PhysicsServer::area_set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("area_is_ray_pickable", "area"), &PhysicsServer::area_is_ray_pickable);
 
+	ClassDB::bind_method(D_METHOD("area_find_overlap", "area", "collision_object"), &PhysicsServer::area_find_overlap);
+	ClassDB::bind_method(D_METHOD("area_get_overlapping_count", "area"), &PhysicsServer::area_get_overlapping_count);
+	ClassDB::bind_method(D_METHOD("area_get_overlapping_normal", "area", "overlapping_idx"), &PhysicsServer::area_get_overlapping_normal);
+	ClassDB::bind_method(D_METHOD("area_get_overlapping_position", "area", "overlapping_idx"), &PhysicsServer::area_get_overlapping_position);
+
 	ClassDB::bind_method(D_METHOD("body_create", "mode", "init_sleeping"), &PhysicsServer::body_create, DEFVAL(BODY_MODE_RIGID), DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("body_set_space", "body", "space"), &PhysicsServer::body_set_space);

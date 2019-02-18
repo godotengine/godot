@@ -164,6 +164,11 @@ public:
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
+	virtual int area_find_overlap(RID p_area, RID p_collision_object) const;
+	virtual int area_get_overlapping_count(RID p_area) const;
+	virtual Vector3 area_get_overlapping_position(RID p_area, int p_overlapping_idx) const;
+	virtual Vector3 area_get_overlapping_normal(RID p_area, int p_overlapping_idx) const;
+
 	/* RIGID BODY API */
 
 	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false);

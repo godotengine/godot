@@ -683,6 +683,9 @@ void SpaceBullet::check_ghost_overlaps() {
 			bool hasOverlap = false;
 			btCollisionObject *overlapped_bt_co = ghostOverlaps[i];
 			RigidCollisionObjectBullet *otherObject = static_cast<RigidCollisionObjectBullet *>(overlapped_bt_co->getUserPointer());
+
+			btVector3 normal;
+			btVector3 world_position;
 			btVector3 other_body_scale(otherObject->get_bt_body_scale());
 
 			if (!area->is_transform_changed() && !otherObject->is_transform_changed()) {
@@ -734,6 +737,8 @@ void SpaceBullet::check_ghost_overlaps() {
 
 						if (0 >= result.m_distance) {
 							hasOverlap = true;
+							normal = result.m_normalOnBInWorld;
+							world_position = result.m_pointInWorld;
 							goto collision_found;
 						}
 
@@ -755,6 +760,8 @@ void SpaceBullet::check_ghost_overlaps() {
 
 						if (contactPointResult.hasHit()) {
 							hasOverlap = true;
+							normal = contactPointResult.m_pointNormalWorld;
+							world_position = contactPointResult.m_pointWorld;
 							goto collision_found;
 						}
 					}
@@ -769,10 +776,10 @@ void SpaceBullet::check_ghost_overlaps() {
 			indexOverlap = area->find_overlapping_object(otherObject);
 			if (-1 == indexOverlap) {
 				// Not found
-				area->add_overlap(otherObject);
+				area->add_overlap(otherObject, normal, world_position);
 			} else {
 				// Found
-				area->put_overlap_as_inside(indexOverlap);
+				area->put_overlap_as_inside(indexOverlap, normal, world_position);
 			}
 		}
 

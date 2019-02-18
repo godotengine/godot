@@ -30,6 +30,7 @@
 
 #include "bullet_physics_server.h"
 
+#include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "cone_twist_joint_bullet.h"
 #include "core/class_db.h"
@@ -448,6 +449,45 @@ bool BulletPhysicsServer::area_is_ray_pickable(RID p_area) const {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND_V(!area, false);
 	return area->is_ray_pickable();
+}
+
+int BulletPhysicsServer::area_find_overlap(RID p_area, RID p_collision_object) const {
+	AreaBullet *area = area_owner.get(p_area);
+	ERR_FAIL_COND_V(!area, -1);
+
+	RigidCollisionObjectBullet *otherObject = NULL;
+	otherObject = rigid_body_owner.get(p_collision_object);
+	if (!otherObject) {
+		otherObject = area_owner.get(p_collision_object);
+	}
+	ERR_FAIL_COND_V(!otherObject, -1);
+	return area->find_overlapping_object(otherObject);
+}
+
+int BulletPhysicsServer::area_get_overlapping_count(RID p_area) const {
+	AreaBullet *area = area_owner.get(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+	return area->overlappingObjects.size();
+}
+
+Vector3 BulletPhysicsServer::area_get_overlapping_position(RID p_area, int p_overlapping_idx) const {
+	AreaBullet *area = area_owner.get(p_area);
+	ERR_FAIL_COND_V(!area, Vector3());
+	ERR_FAIL_INDEX_V(p_overlapping_idx, area->overlappingObjects.size(), Vector3());
+
+	Vector3 r;
+	B_TO_G(area->overlappingObjects[p_overlapping_idx].world_position, r);
+	return r;
+}
+
+Vector3 BulletPhysicsServer::area_get_overlapping_normal(RID p_area, int p_overlapping_idx) const {
+	AreaBullet *area = area_owner.get(p_area);
+	ERR_FAIL_COND_V(!area, Vector3());
+	ERR_FAIL_INDEX_V(p_overlapping_idx, area->overlappingObjects.size(), Vector3());
+
+	Vector3 r;
+	B_TO_G(area->overlappingObjects[p_overlapping_idx].normal, r);
+	return r;
 }
 
 RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {

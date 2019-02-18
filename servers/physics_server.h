@@ -353,6 +353,11 @@ public:
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) = 0;
 	virtual bool area_is_ray_pickable(RID p_area) const = 0;
 
+	virtual int area_find_overlap(RID p_area, RID p_collision_object) const = 0;
+	virtual int area_get_overlapping_count(RID p_area) const = 0;
+	virtual Vector3 area_get_overlapping_position(RID p_area, int p_overlapping_idx) const = 0;
+	virtual Vector3 area_get_overlapping_normal(RID p_area, int p_overlapping_idx) const = 0;
+
 	/* BODY API */
 
 	//missing ccd?
