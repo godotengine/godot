@@ -2579,6 +2579,20 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 	Ref<ConfigFile> cf;
 	cf.instance();
 	String addon_path = "res://addons/" + p_addon + "/plugin.cfg";
+	if (!DirAccess::exists(addon_path.get_base_dir())) {
+		ProjectSettings *ps = ProjectSettings::get_singleton();
+		PoolStringArray enabled_plugins = ps->get("editor_plugins/enabled");
+		for (int i = 0; i < enabled_plugins.size(); ++i) {
+			if (enabled_plugins.get(i) == p_addon) {
+				enabled_plugins.remove(i);
+				break;
+			}
+		}
+		ps->set("editor_plugins/enabled", enabled_plugins);
+		ps->save();
+		WARN_PRINTS("Addon '" + p_addon + "' failed to load. No directory found. Removing from enabled plugins.");
+		return;
+	}
 	Error err = cf->load(addon_path);
 	if (err != OK) {
 		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
