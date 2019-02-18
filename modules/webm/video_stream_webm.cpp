@@ -32,6 +32,7 @@
 
 #include "OpusVorbisDecoder.hpp"
 #include "VPXDecoder.hpp"
+#include <vpx/vpx_image.h>
 
 #include "mkvparser/mkvparser.h"
 
@@ -314,19 +315,37 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 						PoolVector<uint8_t>::Write w = frame_data.write();
 						bool converted = false;
 
-						if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
+						if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) {
 
-							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							uint8_t *wp = w.ptr();
+							unsigned char *rRow = image.planes[2];
+							unsigned char *gRow = image.planes[0];
+							unsigned char *bRow = image.planes[1];
+							for (size_t i = 0; i < image.h; i++) {
+								for (size_t j = 0; j < image.w; j++) {
+									*wp++ = rRow[j];
+									*wp++ = gRow[j];
+									*wp++ = bRow[j];
+									*wp++ = 255;
+								}
+								rRow += image.linesize[2];
+								gRow += image.linesize[0];
+								bRow += image.linesize[1];
+							}
+							converted = true;
+						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
+
+							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
-							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
-							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
+							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
