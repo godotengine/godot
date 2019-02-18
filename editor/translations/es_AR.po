@@ -555,7 +555,8 @@ msgid "Warnings"
 msgstr "Advertencias"
 
 #: editor/code_editor.cpp
-msgid "Line and column numbers"
+#, fuzzy
+msgid "Line and column numbers."
 msgstr "Números de línea y columna"
 
 #: editor/connections_dialog.cpp
@@ -1114,8 +1115,9 @@ msgid "Add Bus"
 msgstr "Agregar Bus"
 
 #: editor/editor_audio_buses.cpp
-msgid "Create a new Bus Layout."
-msgstr "Crear un nuevo Layout Bus."
+#, fuzzy
+msgid "Add a new Audio Bus to this layout."
+msgstr "Guardar Layout de Bus de Audio Como..."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1142,6 +1144,10 @@ msgstr "Cargar Valores por Defecto"
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
 msgstr "Cargar el Bus Layout predeterminado."
+
+#: editor/editor_audio_buses.cpp
+msgid "Create a new Bus Layout."
+msgstr "Crear un nuevo Layout Bus."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2399,7 +2405,8 @@ msgid "Save & Restart"
 msgstr "Guardar y Reiniciar"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window repaints!"
+#, fuzzy
+msgid "Spins when the editor window redraws."
 msgstr "Gira cuando la ventana del editor repinta!"
 
 #: editor/editor_node.cpp
@@ -3465,22 +3472,6 @@ msgid "Create Polygon"
 msgstr "Crear Polígono"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Edit Polygon"
-msgstr "Editar Polígono"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Insert Point"
-msgstr "Insertar Punto"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Edit Polygon (Remove Point)"
-msgstr "Editar Polígono (Remover Punto)"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Polygon And Point"
-msgstr "Remover Polígono y Punto"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create points."
@@ -3500,6 +3491,22 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Erase points."
 msgstr "Borrar puntos."
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Edit Polygon"
+msgstr "Editar Polígono"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Insert Point"
+msgstr "Insertar Punto"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Edit Polygon (Remove Point)"
+msgstr "Editar Polígono (Remover Punto)"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Remove Polygon And Point"
+msgstr "Remover Polígono y Punto"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -5224,6 +5231,12 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
 msgstr "Crear Mapa UV"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"Polygon 2D has internal vertices, so it can no longer be edited in the "
+"viewport."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -9714,26 +9727,6 @@ msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
 "La propiedad Path debe apuntar a un nodo Spatial valido para funcionar."
 
-#: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment necesita un recurso Environment."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-"Solo se permite un WorldEnvironment por escena (o conjunto de escenas "
-"instanciadas)."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
-msgstr ""
-"Este WorldEnvironment esta siendo ignorado. Agregá un nodo Camera (para "
-"escenas 3D) o configurá el Background Mode de este entorno en modo Canvas "
-"(para escenas 2D)."
-
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh"
 msgstr "Este cuerpo sera ignorado hasta que le asignes un mesh"
@@ -9763,6 +9756,26 @@ msgid ""
 msgstr ""
 "VehicleWheel sirve para proveer un sistema de ruedas a VehicleBody. Por "
 "favor usálo como hijo de VehicleBody."
+
+#: scene/3d/world_environment.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr "WorldEnvironment necesita un recurso Environment."
+
+#: scene/3d/world_environment.cpp
+msgid ""
+"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+"Solo se permite un WorldEnvironment por escena (o conjunto de escenas "
+"instanciadas)."
+
+#: scene/3d/world_environment.cpp
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
+"Este WorldEnvironment esta siendo ignorado. Agregá un nodo Camera (para "
+"escenas 3D) o configurá el Background Mode de este entorno en modo Canvas "
+"(para escenas 2D)."
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
@@ -9819,7 +9832,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "Cambiar entre valores hexadecimales y de código."
 
 #: scene/gui/color_picker.cpp
-msgid "Add current color as a preset"
+#, fuzzy
+msgid "Add current color as a preset."
 msgstr "Agregar color actual como preset"
 
 #: scene/gui/dialogs.cpp

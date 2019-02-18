@@ -565,7 +565,8 @@ msgid "Warnings"
 msgstr "警告"
 
 #: editor/code_editor.cpp
-msgid "Line and column numbers"
+#, fuzzy
+msgid "Line and column numbers."
 msgstr "行及び列番号"
 
 #: editor/connections_dialog.cpp
@@ -1123,8 +1124,9 @@ msgid "Add Bus"
 msgstr "バスを追加"
 
 #: editor/editor_audio_buses.cpp
-msgid "Create a new Bus Layout."
-msgstr "新規バスレイアウトを作成。"
+#, fuzzy
+msgid "Add a new Audio Bus to this layout."
+msgstr "オーディオバスのレイアウトを別名で保存..."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1151,6 +1153,10 @@ msgstr "デフォルトを読込む"
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
 msgstr "デフォルトのバスレイアウトを読込みます。"
+
+#: editor/editor_audio_buses.cpp
+msgid "Create a new Bus Layout."
+msgstr "新規バスレイアウトを作成。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2388,7 +2394,8 @@ msgid "Save & Restart"
 msgstr "保存して再起動"
 
 #: editor/editor_node.cpp
-msgid "Spins when the editor window repaints!"
+#, fuzzy
+msgid "Spins when the editor window redraws."
 msgstr "エディタウィンドウの再描画時にスピンします！"
 
 #: editor/editor_node.cpp
@@ -3442,22 +3449,6 @@ msgid "Create Polygon"
 msgstr "ポリゴンを生成"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Edit Polygon"
-msgstr "ポリゴンを編集"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Insert Point"
-msgstr "ポイント挿入"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Edit Polygon (Remove Point)"
-msgstr "ポリゴンを編集（点を除去）"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
-msgid "Remove Polygon And Point"
-msgstr "ポリゴンと点を除去"
-
-#: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create points."
@@ -3477,6 +3468,22 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Erase points."
 msgstr "点を消す。"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Edit Polygon"
+msgstr "ポリゴンを編集"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Insert Point"
+msgstr "ポイント挿入"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Edit Polygon (Remove Point)"
+msgstr "ポリゴンを編集（点を除去）"
+
+#: editor/plugins/abstract_polygon_2d_editor.cpp
+msgid "Remove Polygon And Point"
+msgstr "ポリゴンと点を除去"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -5245,6 +5252,12 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create UV Map"
 msgstr "UVマップを生成"
+
+#: editor/plugins/polygon_2d_editor_plugin.cpp
+msgid ""
+"Polygon 2D has internal vertices, so it can no longer be edited in the "
+"viewport."
+msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -9882,27 +9895,6 @@ msgstr ""
 "Path プロパティは、動作するように有効な Particles2D ノードを示す必要がありま"
 "す。"
 
-#: scene/3d/scenario_fx.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr ""
-
-#: scene/3d/scenario_fx.cpp
-#, fuzzy
-msgid ""
-"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-"WorldEnvironment は、シーン (またはインスタンス化されたシーンのセット) ごとに"
-"1つだけ許可されます。"
-
-#: scene/3d/scenario_fx.cpp
-#, fuzzy
-msgid ""
-"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
-"this environment's Background Mode to Canvas (for 2D scenes)."
-msgstr ""
-"このWorldEnvironmentは無視されました。カメラを追加するか(3Dシーンの場合)、こ"
-"のEnvironmentの Backgroundモード を Canvas に設定します(2Dシーンの場合)。"
-
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh"
 msgstr ""
@@ -9927,6 +9919,27 @@ msgid ""
 "VehicleWheel serves to provide a wheel system to a VehicleBody. Please use "
 "it as a child of a VehicleBody."
 msgstr ""
+
+#: scene/3d/world_environment.cpp
+msgid "WorldEnvironment needs an Environment resource."
+msgstr ""
+
+#: scene/3d/world_environment.cpp
+#, fuzzy
+msgid ""
+"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+"WorldEnvironment は、シーン (またはインスタンス化されたシーンのセット) ごとに"
+"1つだけ許可されます。"
+
+#: scene/3d/world_environment.cpp
+#, fuzzy
+msgid ""
+"This WorldEnvironment is ignored. Either add a Camera (for 3D scenes) or set "
+"this environment's Background Mode to Canvas (for 2D scenes)."
+msgstr ""
+"このWorldEnvironmentは無視されました。カメラを追加するか(3Dシーンの場合)、こ"
+"のEnvironmentの Backgroundモード を Canvas に設定します(2Dシーンの場合)。"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "On BlendTree node '%s', animation not found: '%s'"
@@ -9986,7 +9999,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr ""
 
 #: scene/gui/color_picker.cpp
-msgid "Add current color as a preset"
+#, fuzzy
+msgid "Add current color as a preset."
 msgstr "現在の色をプリセットとして追加"
 
 #: scene/gui/dialogs.cpp
