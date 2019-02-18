@@ -148,6 +148,10 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		return ERR_UNAVAILABLE;
 	}
 
+	// // fix resolution in video mode, becuse SailfishOS has only fullscreen resolution
+	// current_videomode.width = context_gl->get_window_width();
+	// current_videomode.height = context_gl->get_window_height();
+
 	context_gl->set_use_vsync(current_videomode.use_vsync);
 
 	//#endif
@@ -768,7 +772,7 @@ void OS_SDL::process_events() {
 			// mouse_event.instance();
 			// mouse_event->set_device(0);
 
-			int index = (int)event.tfinger.fingerId;
+			long long index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
 			
 #ifdef SAILFISH_FORCE_LANDSCAPE	
@@ -777,67 +781,68 @@ void OS_SDL::process_events() {
 			// end landscape 
 			bool is_begin = event.type ==  SDL_FINGERDOWN;
 
-			bool translate = false;
-			if (is_begin) {
-				++num_touches;
-				if (num_touches == 1) {
-					touch_mouse_index = index;
-					translate = true;
-				}
-			} else {
-				--num_touches;
-				if (num_touches == 0) {
-					translate = true;
-				} else if (num_touches < 0) { // Defensive
-					num_touches = 0;
-				}
-				touch_mouse_index = -1;
-			}
-
-			//input_event.type = InputEvent::SCREEN_TOUCH;
-			input_event->set_index(index);
+			// if (is_begin) {
+			// 	++num_touches;
+			// 	if( num_touches > MAX_TOUCHES )
+			// 		num_touches = MAX_TOUCHES
+			// }
+			// else {
+			// 	--num_touches;
+			// 	if (num_touches < 0) // Defensive
+			// 		num_touches = 0;
+			// }
+			
+			// input_event->set_index(index);
 			input_event->set_position(pos);
 			input_event->set_pressed(is_begin);
-
-			// if (translate) {
-			// 	//mouse_event.type = InputEvent::MOUSE_BUTTON;
-			// 	mouse_event->set_position(pos);
-			// 	mouse_event->set_global_position(pos);
-			// 	input->set_mouse_position(pos);
-			// 	mouse_event->set_button_index(1);
-			// 	mouse_event->set_pressed(is_begin);
-			// 	last_mouse_pos = pos;
-			// }
-
+			
 			if (is_begin) {
 				if (touch.state.has(index)) // Defensive
 					break;
+				//-----
+				int get_index = MAX_TOUCHES;
+				for(int i = 0; i < MAX_TOUCHES; i++)
+				{
+					if( touch.index[i] == -1 && get_index > i )
+						get_index = i;
+					else if( touch.index[i] == index )
+						if( get_index != MAX_TOUCHES - 1 )
+							touch.index[i] = -1;
+				}
+				if ( get_index ==  MAX_TOUCHES )
+					break;
+				//-----
+				input_event->set_index(get_index);
+				touch.index[get_index] = index;
 				touch.state[index] = pos;
 				input->parse_input_event(input_event);
-				// input->parse_input_event(mouse_event);
 			} else {
 				if (!touch.state.has(index)) // Defensive
 					break;
+				int get_index = MAX_TOUCHES;
+				for(int i = 0; i < MAX_TOUCHES; i++)
+				{
+					if( touch.index[i] == index )
+					{
+						get_index = i;
+						break;
+					}
+				}
+				if ( get_index == MAX_TOUCHES )
+					break;
+				input_event->set_index(get_index);
 				touch.state.erase(index);
+				touch.index[get_index] = -1;
 				input->parse_input_event(input_event);
-				// input->parse_input_event(mouse_event);
 			}
 		}
 
 		if( event.type ==  SDL_FINGERMOTION )
 		{
-			// if(OS::get_singleton()->is_stdout_verbose())
-				// print_line("SDL_FINGERMOTION");
-
 			Ref<InputEventScreenDrag> input_event;
 			input_event.instance();
 			//input_event.ID = ++event_id;
 			input_event->set_device(0);
-
-			// Ref<InputEventMouseMotion> mouse_event;
-			// mouse_event.instance();
-			//mouse_event.ID = ++event_id;
-			// mouse_event->set_device(0);
 
 			int index = (int)event.tfinger.fingerId;
 			Point2 pos = Point2(event.tfinger.x, event.tfinger.y);
@@ -845,32 +850,26 @@ void OS_SDL::process_events() {
 			fix_touch_position(pos);
 #endif 
 			Map<int, Vector2>::Element *curr_pos_elem = touch.state.find(index);
-			if (!curr_pos_elem) 
-			// {// Defensive
-				//if( OS::get_singleton()->is_stdout_verbose() )
-				//	print_line("Cant drag!");
+
+			int get_index = MAX_TOUCHES;
+			for(int i = 0; i < MAX_TOUCHES; i++)
+			{
+				if( touch.index[i] == index )
+				{
+					get_index = i;
+					break;
+				}
+			}
+			
+			if (!curr_pos_elem || get_index == MAX_TOUCHES ) 
 				break;
-			// }
 
 			if (curr_pos_elem->value() != pos) 
 			{
-				//input_event.type = InputEvent::SCREEN_DRAG;
-				input_event->set_index(index);
+				input_event->set_index(get_index);
 				input_event->set_position(pos);
 				input_event->set_relative(pos - curr_pos_elem->value());
 				input->parse_input_event(input_event);
-
-				// if (index == touch_mouse_index) 
-				// {
-				// 	//mouse_event.type = InputEvent::MOUSE_MOTION;
-				// 	mouse_event->set_position(pos);
-				// 	mouse_event->set_global_position(pos);
-				// 	input->set_mouse_position(pos);
-				// 	mouse_event->set_relative(pos - last_mouse_pos);
-				// 	last_mouse_pos = pos;
-				// 	input->parse_input_event(mouse_event);
-				// }
-
 				curr_pos_elem->value() = pos;
 			}
 		}//*/
@@ -1115,7 +1114,23 @@ void OS_SDL::set_screen_orientation(ScreenOrientation p_orientation) {
 
 bool OS_SDL::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc";
+	if (p_feature == "mobile" || p_feature == "etc" || p_feature == "s3tc" ) {
+		return true;
+	}
+#if defined(__aarch64__)
+	if (p_feature == "arm64-v8a") {
+		return true;
+	}
+#elif defined(__ARM_ARCH_7A__)
+	if (p_feature == "armeabi-v7a" || p_feature == "armeabi") {
+		return true;
+	}
+#elif defined(__arm__)
+	if (p_feature == "armeabi") {
+		return true;
+	}
+#endif
+	return false;
 }
 
 String OS_SDL::get_config_path() const {
@@ -1605,4 +1620,8 @@ OS_SDL::OS_SDL() {
 	minimized = false;
 	// xim_style = 0L;
 	mouse_mode = MOUSE_MODE_VISIBLE;
+#if defined(TOUCH_ENABLED)
+	for(int i = 0; i < MAX_TOUCHES; i ++ )
+		touch.index[i] = - 1;
+#endif
 }
