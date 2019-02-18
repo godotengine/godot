@@ -658,6 +658,8 @@ void SpaceBullet::check_ghost_overlaps() {
 	for (x = areas.size() - 1; 0 <= x; --x) {
 		area = areas[x];
 
+		btVector3 area_scale(area->get_bt_body_scale());
+
 		if (!area->is_monitoring())
 			continue;
 
@@ -681,6 +683,7 @@ void SpaceBullet::check_ghost_overlaps() {
 			bool hasOverlap = false;
 			btCollisionObject *overlapped_bt_co = ghostOverlaps[i];
 			RigidCollisionObjectBullet *otherObject = static_cast<RigidCollisionObjectBullet *>(overlapped_bt_co->getUserPointer());
+			btVector3 other_body_scale(otherObject->get_bt_body_scale());
 
 			if (!area->is_transform_changed() && !otherObject->is_transform_changed()) {
 				hasOverlap = true;
@@ -698,19 +701,35 @@ void SpaceBullet::check_ghost_overlaps() {
 				if (!area->get_bt_shape(y)->isConvex())
 					continue;
 
-				gjk_input.m_transformA = area->get_transform__bullet() * area->get_bt_shape_transform(y);
+				btTransform area_shape_treansform(area->get_bt_shape_transform(y));
+				area_shape_treansform.getOrigin() *= area_scale;
+
+				gjk_input.m_transformA =
+						area->get_transform__bullet() *
+						area_shape_treansform;
+
 				area_shape = static_cast<btConvexShape *>(area->get_bt_shape(y));
 
 				// For each other object shape
 				for (z = otherObject->get_shape_count() - 1; 0 <= z; --z) {
 
 					other_body_shape = static_cast<btCollisionShape *>(otherObject->get_bt_shape(z));
-					gjk_input.m_transformB = otherObject->get_transform__bullet() * otherObject->get_bt_shape_transform(z);
+
+					btTransform other_shape_transform(otherObject->get_bt_shape_transform(z));
+					other_shape_transform.getOrigin() *= other_body_scale;
+
+					gjk_input.m_transformB =
+							otherObject->get_transform__bullet() *
+							other_shape_transform;
 
 					if (other_body_shape->isConvex()) {
 
 						btPointCollector result;
-						btGjkPairDetector gjk_pair_detector(area_shape, static_cast<btConvexShape *>(other_body_shape), gjk_simplex_solver, gjk_epa_pen_solver);
+						btGjkPairDetector gjk_pair_detector(
+								area_shape,
+								static_cast<btConvexShape *>(other_body_shape),
+								gjk_simplex_solver,
+								gjk_epa_pen_solver);
 						gjk_pair_detector.getClosestPoints(gjk_input, result, 0);
 
 						if (0 >= result.m_distance) {
