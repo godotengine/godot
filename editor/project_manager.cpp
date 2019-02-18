@@ -1422,6 +1422,7 @@ void ProjectManager::_on_projects_updated() {
 }
 
 void ProjectManager::_on_project_created(const String &dir) {
+	project_filter->clear();
 	bool has_already = false;
 	for (int i = 0; i < scroll_children->get_child_count(); i++) {
 		HBoxContainer *hb = Object::cast_to<HBoxContainer>(scroll_children->get_child(i));
@@ -2234,4 +2235,10 @@ ProjectListFilter::ProjectListFilter() {
 	add_child(filter_option);
 
 	has_search_box = false;
+}
+
+void ProjectListFilter::clear() {
+	if (has_search_box) {
+		search_box->clear();
+	}
 }

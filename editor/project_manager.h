@@ -154,6 +154,7 @@ public:
 	FilterOption get_filter_option();
 	void set_filter_option(FilterOption);
 	ProjectListFilter();
+	void clear();
 };
 
 #endif // PROJECT_MANAGER_H
