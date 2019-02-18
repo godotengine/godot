@@ -347,9 +347,9 @@ namespace Godot
 
         public override bool Equals(object obj)
         {
-            if (obj is Vector2)
+            if (obj is Quat)
             {
-                return Equals((Vector2)obj);
+                return Equals((Quat)obj);
             }
 
             return false;
