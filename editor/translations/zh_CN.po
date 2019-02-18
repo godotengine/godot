@@ -34,7 +34,7 @@
 # 刘庆文 <liuqingwen@163.com>, 2018.
 # Haowen Liu <liu.haowen.andy@gmail.com>, 2018.
 # tangdou1 <1093505442@qq.com>, 2018.
-# yzt <834950797@qq.com>, 2018.
+# yzt <834950797@qq.com>, 2018, 2019.
 # DKLost <514dklost@gmail.com>, 2018.
 # thanksshu <hezihanshangyuan@gmail.com>, 2018.
 # Jsheng <yangea@outlook.com>, 2019.
@@ -45,8 +45,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-02-03 21:20+0000\n"
-"Last-Translator: Song DongHui <14729626293@163.com>\n"
+"PO-Revision-Date: 2019-02-18 08:54+0000\n"
+"Last-Translator: yzt <834950797@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -580,7 +580,7 @@ msgstr "警告"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "行号和列号"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -3279,12 +3279,12 @@ msgstr "保存场景，重新导入，从头开始"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "改变这个导入的文件类型后需要重启编辑器．"
+msgstr "改变这个导入的文件类型后需要重启编辑器。"
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
-msgstr "警告：资源使用冲突，将会停止加载．"
+msgstr "警告：资源使用冲突，将会停止加载。"
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
@@ -4234,14 +4234,13 @@ msgstr "移动 CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "控件节点的定位点和边距值的预设。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
-msgstr "警告：容器子级的位置与大小只能由它的父级确定。"
+msgstr "容器的子级的锚点和边距值被其父容器重写。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4905,7 +4904,7 @@ msgstr "清除Emission Mask（发射屏蔽）"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
-msgstr "转换为 CPU 粒子"
+msgstr "转换为 CPU粒子"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5149,12 +5148,10 @@ msgid "Create Internal Vertex"
 msgstr "创建内部顶点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Internal Vertex"
 msgstr "移除曲线内控制点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Invalid Polygon (need 3 different vertices)"
 msgstr "无效的多边形（需要三个控制点）"
 
@@ -5163,9 +5160,8 @@ msgid "Add Custom Polygon"
 msgstr "添加自定义多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Polygon"
-msgstr "移除多边形及顶点"
+msgstr "删除自定义多边形"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
@@ -5192,7 +5188,6 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Points"
 msgstr "点"
 
@@ -5247,7 +5242,6 @@ msgid "Paint weights with specified intensity."
 msgstr "使用指定的强度进行权重绘制。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Unpaint weights with specified intensity."
 msgstr "使用指定强度清除权重绘制。"
 
@@ -6233,7 +6227,7 @@ msgstr "发布(Post)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Nameless gizmo"
-msgstr ""
+msgstr "未命名的Gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -6308,14 +6302,12 @@ msgid "(empty)"
 msgstr "（空）"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "动画"
+msgstr "动画："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "动画"
+msgstr "新建动画"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6326,9 +6318,8 @@ msgid "Loop"
 msgstr "循环"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "动画帧"
+msgstr "动画帧："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -6355,9 +6346,8 @@ msgid "Set Region Rect"
 msgstr "设置纹理区域"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
-#, fuzzy
 msgid "Set Margin"
-msgstr "设置处理程序"
+msgstr "设置边距"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Snap Mode:"
@@ -6601,14 +6591,12 @@ msgid "Clear transform"
 msgstr "清除变换"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Add Texture(s) to TileSet."
-msgstr "添加纹理到磁贴集"
+msgstr "添加纹理到磁贴集。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected Texture from TileSet."
-msgstr "从磁贴集中删除当前纹理"
+msgstr "从磁贴集中删除当前纹理。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -6649,27 +6637,24 @@ msgid "Display Tile Names (Hold Alt Key)"
 msgstr "显示磁贴的名字（按住 Alt 键）"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected texture? This will remove all tiles which use it."
-msgstr "确定移除选中的纹理以及【所有】使用它的【磁贴集】吗？"
+msgstr "删除选定的纹理？这将删除使用它的所有磁贴。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "You haven't selected a texture to remove."
 msgstr "请先选择要移除的纹理。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create from scene? This will overwrite all current tiles."
-msgstr "从场景创建？这将覆盖所有当前标题。"
+msgstr "从场景创建？这将覆盖所有当前磁贴。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Merge from scene?"
 msgstr "确定要合并场景？"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Texture"
-msgstr "移除模板"
+msgstr "删除纹理"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "%s file(s) were not added because was already on the list."
@@ -6735,95 +6720,80 @@ msgstr ""
 "点击选择另一个磁贴进行编辑。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Set Tile Region"
-msgstr "设置纹理区域"
+msgstr "设置磁贴区域"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Tile"
-msgstr "新建目录"
+msgstr "创建磁贴"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Icon"
 msgstr "设置纹理图标"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Bitmask"
-msgstr "编辑筛选器"
+msgstr "编辑磁贴位掩码"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Collision Polygon"
-msgstr "编辑已存在的多边形:"
+msgstr "编辑碰撞多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Occlusion Polygon"
-msgstr "编辑多边形"
+msgstr "编辑遮挡多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Navigation Polygon"
-msgstr "创建导航多边形"
+msgstr "编辑导航多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Paste Tile Bitmask"
-msgstr "粘贴位掩码。"
+msgstr "粘贴磁贴位掩码"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Clear Tile Bitmask"
 msgstr "清除位掩码"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Tile"
-msgstr "移除模板"
+msgstr "移除磁贴"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Collision Polygon"
-msgstr "移除多边形及顶点"
+msgstr "删除碰撞多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Occlusion Polygon"
-msgstr "添加遮光多边形"
+msgstr "删除遮挡多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Navigation Polygon"
-msgstr "创建导航多边形"
+msgstr "删除导航多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Tile Priority"
-msgstr "编辑筛选器"
+msgstr "编辑磁贴优先级"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Edit Tile Z Index"
 msgstr "编辑纹理的Z坐标"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Collision Polygon"
-msgstr "创建导航多边形"
+msgstr "创建碰撞多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create Occlusion Polygon"
-msgstr "添加遮光多边形"
+msgstr "创建遮挡多边形"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "This property can't be changed."
 msgstr "不能修改该属性。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "TileSet"
-msgstr "砖块集"
+msgstr "瓦片集"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -6932,9 +6902,8 @@ msgid "Feature List:"
 msgstr "功能列表："
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "新建脚本"
+msgstr "脚本"
 
 #: editor/project_export.cpp
 msgid "Script Export Mode:"
@@ -7117,7 +7086,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7148,7 +7117,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "您确定要打开多个项目吗？"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -7160,9 +7128,11 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"以下项目设置文件是由旧的引擎版本生成的，需要为此版本转换：\n"
+"以下项目设置文件没有指定创建它的Godot版本：\n"
+"\n"
 "%s\n"
-"是否要转换它？\n"
+"\n"
+"如果你继续打开它，它将被转换为Godot的当前配置文件格式。\n"
 "警告：您将无法再使用以前版本的引擎打开项目。"
 
 #: editor/project_manager.cpp
@@ -7862,7 +7832,6 @@ msgid "Duplicate Node(s)"
 msgstr "复制节点"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr "无法重新设置继承场景中的节点，节点顺序无法更改。"
 
@@ -7871,7 +7840,6 @@ msgid "Node must belong to the edited scene to become root."
 msgstr "节点必须属于已编辑的场景才能成为根节点。"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Instantiated scenes can't become root"
 msgstr "实例化的场景不能成为根节点"
 
@@ -9064,7 +9032,7 @@ msgstr "设值 %s"
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr "缺包名．"
+msgstr "缺包名。"
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
@@ -9103,9 +9071,8 @@ msgid "Invalid public key for APK expansion."
 msgstr "APK扩展的公钥无效。"
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
-msgstr "类名非法"
+msgstr "无效的包名称："
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -9116,9 +9083,8 @@ msgid "Identifier segments must be of non-zero length."
 msgstr "标识符字段不能为空."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "名称不是有效的标识符："
+msgstr "标识符中不允许使用字符 '% s' 。"
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
@@ -9138,9 +9104,8 @@ msgid "App Store Team ID not specified - cannot configure the project."
 msgstr "未指定应用商店团队ID-无法配置项目。"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Invalid Identifier:"
-msgstr "名称不是有效的标识符："
+msgstr "无效的标识符："
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
@@ -9179,9 +9144,8 @@ msgid "Using default boot splash image."
 msgstr "使用默认启动图片。"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid package unique name."
-msgstr "名称非法。"
+msgstr "包名唯一性无效。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -9325,6 +9289,8 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"基于GPU的粒子不受GLES2视频驱动程序的支持。\n"
+"改为使用CPUParticles2D节点。为此，您可以使用“转换为 CPU粒子”选项。"
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9498,6 +9464,8 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"基于GPU的粒子不受GLES2视频驱动程序的支持。\n"
+"改为使用CPUParticles节点。为此，您可以使用“转换为 CPU粒子”选项。"
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -9515,11 +9483,11 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow类型的节点只有作为Path类型节点的子节点才能正常工作。"
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
-msgstr "OrientedPathFollow 需要在其父路径中启用“Up Vectors”。"
+msgstr ""
+"PathFollow ROTATION_ORIENTED需要在其父路径的曲线资源中启用“Up Vector”。"
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9623,7 +9591,7 @@ msgstr "这个节点已被弃用。请使用Animation Tree代替。"
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "从屏幕中选择一种颜色。"
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9631,7 +9599,7 @@ msgstr "Raw 模式"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "在十六进制值和代码值之间切换。"
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"

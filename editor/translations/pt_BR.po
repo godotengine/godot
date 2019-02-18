@@ -55,7 +55,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-02-10 12:01+0000\n"
+"PO-Revision-Date: 2019-02-14 02:10+0000\n"
 "Last-Translator: Alan Valmorbida <alanvalmorbida@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
@@ -594,7 +594,7 @@ msgstr "Avisos"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "Números de linha e coluna"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -4342,8 +4342,8 @@ msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Aviso: Filhos de um container tem sua posição e tamanho determinados apenas "
-"pelo pai."
+"Filhos de contêineres tem suas posições e tamanhos sobrescritos pelos seus "
+"pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6422,14 +6422,12 @@ msgid "(empty)"
 msgstr "(vazio)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "Animações"
+msgstr "Animações:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "Animação"
+msgstr "Nova animação"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6440,9 +6438,8 @@ msgid "Loop"
 msgstr "Repetir"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "Quadros da Animação"
+msgstr "Quadros da Animação:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -9249,7 +9246,6 @@ msgid "Invalid public key for APK expansion."
 msgstr "Chave pública inválida para expansão de APK."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid package name:"
 msgstr "Nome de pacote inválido:"
 
@@ -9267,16 +9263,16 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "O caractere '%s' não é permitido no identificador."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "A digit cannot be the first character in a Identifier segment."
-msgstr "Um digito não pode ser o primeiro caractere de um identificador."
+msgstr ""
+"Um digito não pode ser o primeiro caractere de um segmento identificador."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
-"O caractere '%s' não pode ser o primeiro caractere de um identificador."
+"O caractere '%s' não pode ser o primeiro caractere de um segmento "
+"identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."

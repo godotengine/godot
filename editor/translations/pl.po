@@ -16,7 +16,7 @@
 # Karol Walasek <coreconviction@gmail.com>, 2016.
 # Maksymilian Świąć <maksymilian.swiac@gmail.com>, 2017-2018.
 # Mietek Szcześniak <ravaging@go2.pl>, 2016.
-# NeverK <neverkoxu@gmail.com>, 2018.
+# NeverK <neverkoxu@gmail.com>, 2018, 2019.
 # Rafal Brozio <rafal.brozio@gmail.com>, 2016.
 # Rafał Ziemniak <synaptykq@gmail.com>, 2017.
 # RM <synaptykq@gmail.com>, 2018.
@@ -34,7 +34,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-06 01:09+0000\n"
+"PO-Revision-Date: 2019-02-18 08:54+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -575,7 +575,7 @@ msgstr "Ostrzeżenia"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "Numery linii i kolumn"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -8810,7 +8810,7 @@ msgstr "Obliczanie wielkości siatki..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Creating heightfield..."
-msgstr ""
+msgstr "Tworzenie pola wysokości..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Marking walkable triangles..."
@@ -8818,7 +8818,7 @@ msgstr "Zaznaczanie możliwych do przejścia trójkątów ..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Constructing compact heightfield..."
-msgstr ""
+msgstr "Konstruowanie zwartego pola wysokości..."
 
 #: modules/recast/navigation_mesh_generator.cpp
 msgid "Eroding walkable area..."
@@ -8970,7 +8970,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Przytrzymaj Ctrl, by upuścić prostą referencję do węzła."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold %s to drop a Variable Setter."

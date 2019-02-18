@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-01 12:10+0000\n"
+"PO-Revision-Date: 2019-02-13 07:10+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -558,7 +558,7 @@ msgstr "Попередження"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers"
-msgstr ""
+msgstr "Номери рядків і позицій"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -4298,16 +4298,15 @@ msgstr "Пересунути CanvasItem"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "Шаблони для прив'язок та значення полів вузла керування."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Попередження: дані щодо розташування та розміру дочірніх об'єктів "
-"визначаються лише їхнім батьківським об'єктом."
+"Дані щодо прив'язок та значень полів дочірніх об'єктів перевизначаються "
+"їхніми батьківськими об'єктами."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -6306,7 +6305,6 @@ msgid "Post"
 msgstr "Після"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Nameless gizmo"
 msgstr "Штука без назви"
 
@@ -6385,14 +6383,12 @@ msgid "(empty)"
 msgstr "(порожньо)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "Анімації"
+msgstr "Анімації:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "Анімація"
+msgstr "Нова анімація"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6403,9 +6399,8 @@ msgid "Loop"
 msgstr "Зациклити"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "Кадри анімації"
+msgstr "Кадри анімації:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7215,7 +7210,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "Ви справді хочете відкрити декілька проектів одразу?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -7227,12 +7221,13 @@ msgid ""
 "Warning: You will not be able to open the project with previous versions of "
 "the engine anymore."
 msgstr ""
-"Вказаний нижче файл параметрів проекту було створено у застарілій версії "
-"рушія. Його доведеться перетворити до поточної версії:\n"
+"У вказаному нижче файлі параметрів проекту не вказано версію Godot, за "
+"допомогою якої його було створено.\n"
 "\n"
 "%s\n"
 "\n"
-"Хочете виконати таке перетворення?\n"
+"Якщо ви продовжите процедуру його відкриття, дані буде перетворено до "
+"формату файла налаштувань поточної версії Godot.\n"
 "Попередження: у результаті перетворення ви втратите можливість відкриття "
 "проекту у застарілих версіях рушія."
 
@@ -9461,6 +9456,10 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"У драйвері GLES2 не передбачено підтримки часток із обробкою за допомогою "
+"графічного процесора.\n"
+"Вам слід скористатися вузлом CPUParticles2D. Для цього можете вибрати пункт "
+"«Перетворити на CPUParticles»."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9656,6 +9655,10 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"У драйвері GLES2 не передбачено підтримки часток із обробкою за допомогою "
+"графічного процесора.\n"
+"Вам слід скористатися вузлом CPUParticles. Для цього можете вибрати пункт "
+"«Перетворити на CPUParticles»."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -9792,7 +9795,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "Вибрати колір з екрана."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9800,7 +9803,7 @@ msgstr "Raw (сирий) режим"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "Перемикання між шістнадцятковими значеннями і кодами."
 
 #: scene/gui/color_picker.cpp
 msgid "Add current color as a preset"

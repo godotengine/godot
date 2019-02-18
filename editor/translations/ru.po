@@ -35,12 +35,13 @@
 # Ruaguzov Michael <miha890r@gmail.com>, 2019.
 # Alexander Danilov <modos189@protonmail.com>, 2019.
 # Sergey Nakhov <true.stalin.exe@gmail.com>, 2019.
+# Bumerang <it.bumerang@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-04 17:09+0000\n"
-"Last-Translator: Sergey Nakhov <true.stalin.exe@gmail.com>\n"
+"PO-Revision-Date: 2019-02-13 16:10+0000\n"
+"Last-Translator: Bumerang <it.bumerang@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -60,7 +61,7 @@ msgstr "Неверный тип аргумента для convert(), испол�
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Не хватает байтов для декодирования байтов, или неверный формат."
+msgstr "Недостаточно байтов для декодирования байтов или неверный формат."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"

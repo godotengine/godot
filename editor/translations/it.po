@@ -12,7 +12,7 @@
 # Matteo <matteo.guglielmetti@hotmail.it>, 2018.
 # Myself <whatamidoing.wt@gmail.com>, 2017-2018.
 # RealAquilus <JamesHeller@live.it>, 2017.
-# Samuele Zolfanelli <samdazel@gmail.com>, 2018.
+# Samuele Zolfanelli <samdazel@gmail.com>, 2018, 2019.
 # Sean Bone <seanbone@zumguy.com>, 2017.
 # Red Pill <redpill902@gmail.com>, 2018.
 # iRadEntertainment <devitadario@gmail.com>, 2018.
@@ -27,12 +27,13 @@
 # Hairic95 <hairic95@gmail.com>, 2019.
 # Christian Biffi <creixx@virgilio.it>, 2019.
 # Giuseppe Guerra <me@nyodev.xyz>, 2019.
+# RHC <rhc.throwaway@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 13:31+0000\n"
-"Last-Translator: Giuseppe Guerra <me@nyodev.xyz>\n"
+"PO-Revision-Date: 2019-02-18 08:54+0000\n"
+"Last-Translator: RHC <rhc.throwaway@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -66,7 +67,7 @@ msgstr "self non può essere usato perché l'istanza è nulla (non passata)"
 #: core/math/expression.cpp
 #, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Nome proprietà indice invalido '%s' nel nodo %s."
+msgstr "Utilizzo errato dell'operatore %s, operandi %s e %s non validi."
 
 #: core/math/expression.cpp
 #, fuzzy
@@ -157,8 +158,9 @@ msgid "Bezier Curve Track"
 msgstr "Traccia Curva di Bezier"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Traccia di Riproduzione Audio"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -197,8 +199,9 @@ msgid "Toggle this track on/off."
 msgstr "Attiva/Disattiva la traccia."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Modalità di Aggiornamento (come viene impostata questa proprietà)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -323,6 +326,10 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Le tracce audio possono puntare solo a nodi di tipo:\n"
+"-AudioStreamPlayer\n"
+"-AudioStreamPlayer2D\n"
+"-AudioStreamPlayer3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
@@ -337,12 +344,14 @@ msgid "Not possible to add a new track without a root"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Il tracciato non è valido, non è possibile aggiungere una chiave."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "La traccia non è di tipo Spatial, impossibile aggiungere la chiave."
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
