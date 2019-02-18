@@ -98,6 +98,7 @@ Dictionary Engine::get_version_info() const {
 #else
 	dict["patch"] = 0;
 #endif
+	dict["hex"] = VERSION_HEX;
 	dict["status"] = VERSION_STATUS;
 	dict["build"] = VERSION_BUILD;
 	dict["year"] = VERSION_YEAR;
