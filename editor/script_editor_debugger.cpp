@@ -303,12 +303,49 @@ void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
 }
 
 void ScriptEditorDebugger::_file_selected(const String &p_file) {
-	if (file_dialog->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+	if (file_dialog_mode == SAVE_NODE) {
+
 		Array msg;
 		msg.push_back("save_node");
 		msg.push_back(inspected_object_id);
 		msg.push_back(p_file);
 		ppeer->put_var(msg);
+	} else if (file_dialog_mode == SAVE_CSV) {
+
+		Error err;
+		FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+		if (err != OK) {
+			ERR_PRINTS("Failed to open " + p_file);
+			return;
+		}
+		Vector<String> line;
+		line.resize(Performance::MONITOR_MAX);
+
+		// signatures
+		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+			line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
+		}
+		file->store_csv_line(line);
+
+		// values
+		List<Vector<float> >::Element *E = perf_history.back();
+		while (E) {
+
+			Vector<float> &perf_data = E->get();
+			for (int i = 0; i < perf_data.size(); i++) {
+
+				line.write[i] = String::num_real(perf_data[i]);
+			}
+			file->store_csv_line(line);
+			E = E->prev();
+		}
+		file->store_string("\n");
+
+		Vector<Vector<String> > profiler_data = profiler->get_data_as_csv();
+		for (int i = 0; i < profiler_data.size(); i++) {
+			file->store_csv_line(profiler_data[i]);
+		}
 	}
 }
 
@@ -1374,6 +1411,13 @@ void ScriptEditorDebugger::_output_clear() {
 	//output->push_color(Color(0,0,0));
 }
 
+void ScriptEditorDebugger::_export_csv() {
+
+	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog_mode = SAVE_CSV;
+	file_dialog->popup_centered_ratio();
+}
+
 String ScriptEditorDebugger::get_var_value(const String &p_var) const {
 	if (!breaked)
 		return String();
@@ -1859,6 +1903,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 
 			file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
 			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog_mode = SAVE_NODE;
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
@@ -1884,6 +1929,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("debug_break"), &ScriptEditorDebugger::debug_break);
 	ClassDB::bind_method(D_METHOD("debug_continue"), &ScriptEditorDebugger::debug_continue);
 	ClassDB::bind_method(D_METHOD("_output_clear"), &ScriptEditorDebugger::_output_clear);
+	ClassDB::bind_method(D_METHOD("_export_csv"), &ScriptEditorDebugger::_export_csv);
 	ClassDB::bind_method(D_METHOD("_performance_draw"), &ScriptEditorDebugger::_performance_draw);
 	ClassDB::bind_method(D_METHOD("_performance_select"), &ScriptEditorDebugger::_performance_select);
 	ClassDB::bind_method(D_METHOD("_scene_tree_request"), &ScriptEditorDebugger::_scene_tree_request);
@@ -2205,10 +2251,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ // misc
+		VBoxContainer *misc = memnew(VBoxContainer);
+		misc->set_name(TTR("Misc"));
+		tabs->add_child(misc);
+
 		GridContainer *info_left = memnew(GridContainer);
 		info_left->set_columns(2);
-		info_left->set_name(TTR("Misc"));
-		tabs->add_child(info_left);
+		misc->add_child(info_left);
 		clicked_ctrl = memnew(LineEdit);
 		clicked_ctrl->set_h_size_flags(SIZE_EXPAND_FILL);
 		info_left->add_child(memnew(Label(TTR("Clicked Control:"))));
@@ -2233,6 +2282,16 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 			le_set->set_disabled(true);
 			le_clear->set_disabled(true);
 		}
+
+		misc->add_child(memnew(VSeparator));
+
+		HBoxContainer *buttons = memnew(HBoxContainer);
+
+		export_csv = memnew(Button(TTR("Export measures as CSV")));
+		export_csv->connect("pressed", this, "_export_csv");
+		buttons->add_child(export_csv);
+
+		misc->add_child(buttons);
 	}
 
 	msgdialog = memnew(AcceptDialog);
