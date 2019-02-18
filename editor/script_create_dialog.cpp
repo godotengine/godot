@@ -34,6 +34,7 @@
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
+#include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor_file_system.h"
@@ -45,6 +46,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			path_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
+			parent_search_button->set_icon(get_icon("ClassList", "EditorIcons"));
 			status_panel->add_style_override("panel", get_stylebox("bg", "Tree"));
 		} break;
 	}
@@ -75,6 +77,11 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	_lang_changed(current_language);
 	_class_name_changed("");
 	_path_changed(file_path->get_text());
+}
+
+void ScriptCreateDialog::set_inheritance_base_type(const String &p_base) {
+
+	base_type = p_base;
 }
 
 bool ScriptCreateDialog::_validate(const String &p_string) {
@@ -362,6 +369,17 @@ void ScriptCreateDialog::_file_selected(const String &p_file) {
 	}
 }
 
+void ScriptCreateDialog::_create() {
+
+	parent_name->set_text(select_class->get_selected_type());
+}
+
+void ScriptCreateDialog::_browse_class_in_tree() {
+
+	select_class->set_base_type(base_type);
+	select_class->popup_create(true);
+}
+
 void ScriptCreateDialog::_path_changed(const String &p_path) {
 
 	is_path_valid = false;
@@ -595,6 +613,8 @@ void ScriptCreateDialog::_bind_methods() {
 	ClassDB::bind_method("_path_changed", &ScriptCreateDialog::_path_changed);
 	ClassDB::bind_method("_path_entered", &ScriptCreateDialog::_path_entered);
 	ClassDB::bind_method("_template_changed", &ScriptCreateDialog::_template_changed);
+	ClassDB::bind_method("_create", &ScriptCreateDialog::_create);
+	ClassDB::bind_method("_browse_class_in_tree", &ScriptCreateDialog::_browse_class_in_tree);
 
 	ClassDB::bind_method(D_METHOD("config", "inherits", "path", "built_in_enabled"), &ScriptCreateDialog::config, DEFVAL(true));
 
@@ -707,12 +727,18 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	/* Inherits */
 
+	base_type = "Object";
+
 	hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	parent_name = memnew(LineEdit);
 	parent_name->connect("text_changed", this, "_parent_name_changed");
 	parent_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(parent_name);
+	parent_search_button = memnew(Button);
+	parent_search_button->set_flat(true);
+	parent_search_button->connect("pressed", this, "_browse_class_in_tree");
+	hb->add_child(parent_search_button);
 	parent_browse_button = memnew(Button);
 	parent_browse_button->set_flat(true);
 	parent_browse_button->connect("pressed", this, "_browse_path", varray(true, false));
@@ -776,6 +802,10 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(hb);
 
 	/* Dialog Setup */
+
+	select_class = memnew(CreateDialog);
+	select_class->connect("create", this, "_create");
+	add_child(select_class);
 
 	file_browse = memnew(EditorFileDialog);
 	file_browse->connect("file_selected", this, "_file_selected");
