@@ -30,7 +30,13 @@ namespace Godot
 
         internal static IntPtr GetPtr(Object instance)
         {
-            return instance == null ? IntPtr.Zero : instance.ptr;
+            if (instance == null)
+                return IntPtr.Zero;
+
+            if (instance.disposed)
+                throw new ObjectDisposedException(instance.GetType().FullName);
+
+            return instance.ptr;
         }
 
         ~Object()

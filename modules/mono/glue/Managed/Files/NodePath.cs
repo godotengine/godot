@@ -11,7 +11,13 @@ namespace Godot
 
         internal static IntPtr GetPtr(NodePath instance)
         {
-            return instance == null ? IntPtr.Zero : instance.ptr;
+            if (instance == null)
+                return IntPtr.Zero;
+
+            if (instance.disposed)
+                throw new ObjectDisposedException(instance.GetType().FullName);
+
+            return instance.ptr;
         }
 
         ~NodePath()
@@ -49,7 +55,7 @@ namespace Godot
             get { return ptr; }
         }
 
-        public NodePath() : this(string.Empty) {}
+        public NodePath() : this(string.Empty) { }
 
         public NodePath(string path)
         {
