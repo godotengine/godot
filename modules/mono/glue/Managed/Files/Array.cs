@@ -50,6 +50,9 @@ namespace Godot.Collections
 
         internal IntPtr GetPtr()
         {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().FullName);
+
             return safeHandle.DangerousGetHandle();
         }
 
