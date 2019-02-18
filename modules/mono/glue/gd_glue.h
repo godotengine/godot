@@ -37,11 +37,11 @@
 
 MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes);
 
-MonoObject *godot_icall_GD_convert(MonoObject *p_what, int p_type);
+MonoObject *godot_icall_GD_convert(MonoObject *p_what, int32_t p_type);
 
 int godot_icall_GD_hash(MonoObject *p_var);
 
-MonoObject *godot_icall_GD_instance_from_id(int p_instance_id);
+MonoObject *godot_icall_GD_instance_from_id(uint64_t p_instance_id);
 
 void godot_icall_GD_print(MonoArray *p_what);
 
@@ -53,7 +53,17 @@ void godot_icall_GD_prints(MonoArray *p_what);
 
 void godot_icall_GD_printt(MonoArray *p_what);
 
-void godot_icall_GD_seed(int p_seed);
+double godot_icall_GD_randf();
+
+uint32_t godot_icall_GD_randi();
+
+void godot_icall_GD_randomize();
+
+double godot_icall_GD_rand_range(double from, double to);
+
+uint32_t godot_icall_GD_rand_seed(uint64_t seed, uint64_t *newSeed);
+
+void godot_icall_GD_seed(uint64_t p_seed);
 
 MonoString *godot_icall_GD_str(MonoArray *p_what);
 

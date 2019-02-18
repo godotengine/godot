@@ -50,7 +50,7 @@ namespace Godot
             return godot_icall_GD_hash(var);
         }
 
-        public static Object InstanceFromId(int instanceId)
+        public static Object InstanceFromId(ulong instanceId)
         {
             return godot_icall_GD_instance_from_id(instanceId);
         }
@@ -108,6 +108,31 @@ namespace Godot
         public static void PrintT(params object[] what)
         {
             godot_icall_GD_printt(what);
+        }
+
+        public static double Randf()
+        {
+            return godot_icall_GD_randf();
+        }
+
+        public static uint Randi()
+        {
+            return godot_icall_GD_randi();
+        }
+
+        public static void Randomize()
+        {
+            godot_icall_GD_randomize();
+        }
+
+        public static double rand_range(double from, double to)
+        {
+            return godot_icall_GD_rand_range(from, to);
+        }
+
+        public static uint RandSeed(ulong seed, out ulong newSeed)
+        {
+            return godot_icall_GD_rand_seed(seed, out newSeed);
         }
 
         public static int[] Range(int length)
@@ -174,7 +199,7 @@ namespace Godot
             return ret;
         }
 
-        public static void Seed(int seed)
+        public static void Seed(ulong seed)
         {
             godot_icall_GD_seed(seed);
         }
@@ -214,7 +239,7 @@ namespace Godot
         internal extern static int godot_icall_GD_hash(object var);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Object godot_icall_GD_instance_from_id(int instance_id);
+        internal extern static Object godot_icall_GD_instance_from_id(ulong instance_id);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_GD_print(object[] what);
@@ -232,7 +257,22 @@ namespace Godot
         internal extern static void godot_icall_GD_printt(object[] what);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_GD_seed(int seed);
+        internal extern static double godot_icall_GD_randf();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static uint godot_icall_GD_randi();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_randomize();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static double godot_icall_GD_rand_range(double from, double to);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static uint godot_icall_GD_rand_seed(ulong seed, out ulong newSeed);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void godot_icall_GD_seed(ulong seed);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static string godot_icall_GD_str(object[] what);
