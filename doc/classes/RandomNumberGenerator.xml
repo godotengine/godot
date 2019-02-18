@@ -43,7 +43,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Generates pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code](inclusive).
+				Generates pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randomize">
@@ -56,6 +56,7 @@
 	</methods>
 	<members>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed">
+			The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
 		</member>
 	</members>
 	<constants>
