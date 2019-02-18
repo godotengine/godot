@@ -30,6 +30,12 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="bone_setup_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>
