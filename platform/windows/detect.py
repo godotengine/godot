@@ -347,12 +347,12 @@ def configure(env):
         env['ENV']['TMP'] = os.environ['TMP']
 
     # First figure out which compiler, version, and target arch we're using
-    if os.getenv("VCINSTALLDIR"):
+    if os.getenv("VCINSTALLDIR") and not env["use_mingw"]:
         # Manual setup of MSVC
         setup_msvc_manual(env)
         env.msvc = True
         manual_msvc_config = True
-    elif env.get('MSVC_VERSION', ''):
+    elif env.get('MSVC_VERSION', '') and not env["use_mingw"]:
         setup_msvc_auto(env)
         env.msvc = True
         manual_msvc_config = False
