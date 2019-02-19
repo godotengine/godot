@@ -374,6 +374,11 @@ GDMonoClass *type_get_proxy_class(const StringName &p_type) {
 
 	GDMonoClass *klass = GDMono::get_singleton()->get_core_api_assembly()->get_class(BINDINGS_NAMESPACE, class_name);
 
+	if (klass && klass->is_static()) {
+		// A static class means this is a Godot singleton class. If an instance is needed we use Godot.Object.
+		return mono_cache.class_GodotObject;
+	}
+
 #ifdef TOOLS_ENABLED
 	if (!klass) {
 		return GDMono::get_singleton()->get_editor_api_assembly()->get_class(BINDINGS_NAMESPACE, class_name);

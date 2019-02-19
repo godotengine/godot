@@ -97,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(6)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(7)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -853,6 +853,12 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
+
+		output.push_back(MEMBER_BEGIN "private static Godot.Object singleton;\n");
+		output.push_back(MEMBER_BEGIN "public static Godot.Object Singleton\n" INDENT2 "{\n" INDENT3
+									  "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
+									  "singleton = Engine.GetSingleton(" BINDINGS_NATIVE_NAME_FIELD ");\n" INDENT4
+									  "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
 
 		output.push_back(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
 		output.push_back(itype.name);
