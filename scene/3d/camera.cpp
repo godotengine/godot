@@ -55,16 +55,23 @@ void Camera::_update_camera_mode() {
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size, near, far);
 		} break;
+		case PROJECTION_FRUSTUM: {
+			set_frustum(size, frustum_offset, near, far);
+		} break;
 	}
 }
 
 void Camera::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "fov") {
-		if (mode == PROJECTION_ORTHOGONAL) {
+		if (mode != PROJECTION_PERSPECTIVE) {
 			p_property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	} else if (p_property.name == "size") {
-		if (mode == PROJECTION_PERSPECTIVE) {
+		if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
+			p_property.usage = PROPERTY_USAGE_NOEDITOR;
+		}
+	} else if (p_property.name == "frustum_offset") {
+		if (mode != PROJECTION_FRUSTUM) {
 			p_property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
@@ -177,8 +184,24 @@ void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	update_gizmo();
 }
 
+void Camera::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
+	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM)
+		return;
+
+	size = p_size;
+	frustum_offset = p_offset;
+
+	near = p_z_near;
+	far = p_z_far;
+	mode = PROJECTION_FRUSTUM;
+	force_change = false;
+
+	VisualServer::get_singleton()->camera_set_frustum(camera, size, frustum_offset, near, far);
+	update_gizmo();
+}
+
 void Camera::set_projection(Camera::Projection p_mode) {
-	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL) {
+	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
 		mode = p_mode;
 		_update_camera_mode();
 		_change_notify();
@@ -468,16 +491,19 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_position", "screen_point"), &Camera::project_position);
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
+	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera::clear_current, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_current"), &Camera::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera::get_camera_transform);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera::get_fov);
+	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera::get_size);
 	ClassDB::bind_method(D_METHOD("get_zfar"), &Camera::get_zfar);
 	ClassDB::bind_method(D_METHOD("get_znear"), &Camera::get_znear);
 	ClassDB::bind_method(D_METHOD("set_fov"), &Camera::set_fov);
+	ClassDB::bind_method(D_METHOD("set_frustum_offset"), &Camera::set_frustum_offset);
 	ClassDB::bind_method(D_METHOD("set_size"), &Camera::set_size);
 	ClassDB::bind_method(D_METHOD("set_zfar"), &Camera::set_zfar);
 	ClassDB::bind_method(D_METHOD("set_znear"), &Camera::set_znear);
@@ -508,15 +534,17 @@ void Camera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal"), "set_projection", "get_projection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fov", PROPERTY_HINT_RANGE, "1,179,0.1"), "set_fov", "get_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "near", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01,or_greater"), "set_znear", "get_znear");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "far", PROPERTY_HINT_EXP_RANGE, "0.1,8192,0.1,or_greater"), "set_zfar", "get_zfar");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
+	BIND_ENUM_CONSTANT(PROJECTION_FRUSTUM);
 
 	BIND_ENUM_CONSTANT(KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(KEEP_HEIGHT);
@@ -539,6 +567,10 @@ float Camera::get_size() const {
 float Camera::get_znear() const {
 
 	return near;
+}
+
+Vector2 Camera::get_frustum_offset() const {
+	return frustum_offset;
 }
 
 float Camera::get_zfar() const {
@@ -565,6 +597,11 @@ void Camera::set_size(float p_size) {
 
 void Camera::set_znear(float p_znear) {
 	near = p_znear;
+	_update_camera_mode();
+}
+
+void Camera::set_frustum_offset(Vector2 p_offset) {
+	frustum_offset = p_offset;
 	_update_camera_mode();
 }
 
@@ -646,6 +683,7 @@ Camera::Camera() {
 	camera = VisualServer::get_singleton()->camera_create();
 	size = 1;
 	fov = 0;
+	frustum_offset = Vector2();
 	near = 0;
 	far = 0;
 	current = false;
