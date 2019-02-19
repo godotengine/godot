@@ -392,41 +392,22 @@ void main() {
 #ifdef USE_SKELETON
 	{
 		//skeleton transform
-		ivec4 bone_indicesi = ivec4(bone_indices); // cast to signed int
+		highp mat4 bone_matrix = mat4(0.0);
+		{
+			ivec4 bone_indicesi = ivec4(bone_indices);
 
-		ivec2 tex_ofs = ivec2(bone_indicesi.x % 256, (bone_indicesi.x / 256) * 3);
-		highp mat3x4 m;
-		m = mat3x4(
-					texelFetch(skeleton_texture, tex_ofs, 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
-			bone_weights.x;
+			for (int i = 0; i < 4; i++) {
+				ivec2 tex_ofs = ivec2(bone_indicesi[i] % 256, (bone_indicesi[i] / 256) * 3);
 
-		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 3);
+				highp mat4 b = mat4(
+						texelFetch(skeleton_texture, tex_ofs + ivec2(0, 0), 0),
+						texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
+						texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+						vec4(0.0, 0.0, 0.0, 1.0));
 
-		m += mat3x4(
-					 texelFetch(skeleton_texture, tex_ofs, 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
-			 bone_weights.y;
-
-		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 3);
-
-		m += mat3x4(
-					 texelFetch(skeleton_texture, tex_ofs, 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
-			 bone_weights.z;
-
-		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 3);
-
-		m += mat3x4(
-					 texelFetch(skeleton_texture, tex_ofs, 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
-			 bone_weights.w;
-
-		mat4 bone_matrix = transpose(mat4(m[0], m[1], m[2], vec4(0.0, 0.0, 0.0, 1.0)));
+				bone_matrix += transpose(b) * bone_weights[i];
+			}
+		}
 
 		world_matrix = bone_matrix * world_matrix;
 	}
