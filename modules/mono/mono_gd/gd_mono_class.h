@@ -109,6 +109,9 @@ public:
 	String get_full_name() const;
 	MonoType *get_mono_type();
 
+	uint32_t get_flags() const;
+	bool is_static() const;
+
 	bool is_assignable_from(GDMonoClass *p_from) const;
 
 	_FORCE_INLINE_ StringName get_namespace() const { return namespace_name; }

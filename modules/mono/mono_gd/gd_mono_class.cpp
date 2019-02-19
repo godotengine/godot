@@ -59,8 +59,16 @@ MonoType *GDMonoClass::get_mono_type() {
 	return get_mono_type(mono_class);
 }
 
-bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
+uint32_t GDMonoClass::get_flags() const {
+	return mono_class_get_flags(mono_class);
+}
 
+bool GDMonoClass::is_static() const {
+	uint32_t static_class_flags = MONO_TYPE_ATTR_ABSTRACT | MONO_TYPE_ATTR_SEALED;
+	return (get_flags() & static_class_flags) == static_class_flags;
+}
+
+bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
 }
 
