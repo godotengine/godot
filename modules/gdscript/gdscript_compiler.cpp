@@ -1508,9 +1508,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 						codegen.opcodes.write[break_addr + 1] = codegen.opcodes.size();
 
 					} break;
-					case GDScriptParser::ControlFlowNode::CF_SWITCH: {
-
-					} break;
 					case GDScriptParser::ControlFlowNode::CF_BREAK: {
 
 						if (p_break_addr < 0) {

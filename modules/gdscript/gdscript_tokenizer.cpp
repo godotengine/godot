@@ -80,10 +80,7 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"elif",
 	"else",
 	"for",
-	"do",
 	"while",
-	"switch (reserved)",
-	"case (reserved)",
 	"break",
 	"continue",
 	"pass",
@@ -224,9 +221,6 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_CF_ELSE, "else" },
 	{ GDScriptTokenizer::TK_CF_FOR, "for" },
 	{ GDScriptTokenizer::TK_CF_WHILE, "while" },
-	{ GDScriptTokenizer::TK_CF_DO, "do" },
-	{ GDScriptTokenizer::TK_CF_SWITCH, "switch" },
-	{ GDScriptTokenizer::TK_CF_CASE, "case" },
 	{ GDScriptTokenizer::TK_CF_BREAK, "break" },
 	{ GDScriptTokenizer::TK_CF_CONTINUE, "continue" },
 	{ GDScriptTokenizer::TK_CF_RETURN, "return" },
@@ -291,9 +285,6 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_CF_ELSE:
 		case TK_CF_FOR:
 		case TK_CF_WHILE:
-		case TK_CF_DO:
-		case TK_CF_SWITCH:
-		case TK_CF_CASE:
 		case TK_CF_BREAK:
 		case TK_CF_CONTINUE:
 		case TK_CF_RETURN:
