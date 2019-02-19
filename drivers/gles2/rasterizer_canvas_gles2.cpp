@@ -1221,6 +1221,9 @@ void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //back to front
 	glEnable(GL_BLEND);
+
+	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->copy_screen_effect.color);
+	glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void RasterizerCanvasGLES2::_copy_texscreen(const Rect2 &p_rect) {
