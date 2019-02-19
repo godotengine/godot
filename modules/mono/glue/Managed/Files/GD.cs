@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
@@ -125,7 +126,7 @@ namespace Godot
             godot_icall_GD_randomize();
         }
 
-        public static double rand_range(double from, double to)
+        public static double RandRange(double from, double to)
         {
             return godot_icall_GD_rand_range(from, to);
         }
@@ -135,68 +136,34 @@ namespace Godot
             return godot_icall_GD_rand_seed(seed, out newSeed);
         }
 
-        public static int[] Range(int length)
+        public static IEnumerable<int> Range(int end)
         {
-            var ret = new int[length];
-
-            for (int i = 0; i < length; i++)
-            {
-                ret[i] = i;
-            }
-
-            return ret;
+            return Range(0, end, 1);
         }
 
-        public static int[] Range(int from, int to)
+        public static IEnumerable<int> Range(int start, int end)
         {
-            if (to < from)
-                return new int[0];
-
-            var ret = new int[to - from];
-
-            for (int i = from; i < to; i++)
-            {
-                ret[i - from] = i;
-            }
-
-            return ret;
+            return Range(start, end, 1);
         }
 
-        public static int[] Range(int from, int to, int increment)
+        public static IEnumerable<int> Range(int start, int end, int step)
         {
-            if (to < from && increment > 0)
-                return new int[0];
-            if (to > from && increment < 0)
-                return new int[0];
+            if (end < start && step > 0)
+                yield break;
 
-            // Calculate count
-            int count;
+            if (end > start && step < 0)
+                yield break;
 
-            if (increment > 0)
-                count = (to - from - 1) / increment + 1;
-            else
-                count = (from - to - 1) / -increment + 1;
-
-            var ret = new int[count];
-
-            if (increment > 0)
+            if (step > 0)
             {
-                int idx = 0;
-                for (int i = from; i < to; i += increment)
-                {
-                    ret[idx++] = i;
-                }
+                for (int i = start; i < end; i += step)
+                    yield return i;
             }
             else
             {
-                int idx = 0;
-                for (int i = from; i > to; i += increment)
-                {
-                    ret[idx++] = i;
-                }
+                for (int i = start; i > end; i += step)
+                    yield return i;
             }
-
-            return ret;
         }
 
         public static void Seed(ulong seed)

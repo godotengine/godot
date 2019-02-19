@@ -88,7 +88,6 @@ namespace Godot
             }
         }
 
-
         public real_t this[int index, int axis]
         {
             get
