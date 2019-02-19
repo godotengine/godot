@@ -698,7 +698,11 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			// GodotObject
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
 				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
-				return ptr ? Variant(ptr) : Variant();
+				if (ptr != NULL) {
+					Reference *ref = Object::cast_to<Reference>(ptr);
+					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
+				}
+				return Variant();
 			}
 
 			if (CACHED_CLASS(NodePath) == type_class) {
