@@ -1246,6 +1246,21 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 	return false;
 }
 
+void SpaceBullet::convert_to_separation_result(PhysicsServer::SeparationResult *r_result, const SpaceBullet::RecoverResult &p_recover_result, int p_shape_id, const btCollisionObject *p_other_object) const {
+
+	const btRigidBody *btRigid = static_cast<const btRigidBody *>(p_other_object);
+	CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(p_other_object->getUserPointer());
+
+	r_result->collision_depth = p_recover_result.penetration_distance;
+	B_TO_G(p_recover_result.pointWorld, r_result->collision_point);
+	B_TO_G(p_recover_result.normal, r_result->collision_normal);
+	B_TO_G(btRigid->getVelocityInLocalPoint(p_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_result->collider_velocity);
+	r_result->collision_local_shape = p_shape_id;
+	r_result->collider_id = collisionObject->get_instance_id();
+	r_result->collider = collisionObject->get_self();
+	r_result->collider_shape = p_recover_result.other_compound_shape_index;
+}
+
 int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer::SeparationResult *r_results) {
 
 	RecoverPenetrationBroadPhaseCallback recover_broad_result(p_body->get_bt_collision_object(), p_body->get_collision_layer(), p_body->get_collision_mask());
@@ -1297,21 +1312,18 @@ int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btT
 				btCompoundShape *cs = static_cast<btCompoundShape *>(otherObject->getCollisionShape());
 				for (int x = cs->getNumChildShapes() - 1; 0 <= x; --x) {
 
-					RecoverResult r_recover_result;
-					if (RFP_convex_world_test(kin_shape.shape, cs->getChildShape(x), p_body->get_bt_collision_object(), otherObject, kinIndex, x, body_shape_position, otherObject->getWorldTransform() * cs->getChildTransform(x), p_recover_movement_scale, r_delta_recover_movement, &r_recover_result)) {
+					RecoverResult recover_result;
+					if (RFP_convex_world_test(kin_shape.shape, cs->getChildShape(x), p_body->get_bt_collision_object(), otherObject, kinIndex, x, body_shape_position, otherObject->getWorldTransform() * cs->getChildTransform(x), p_recover_movement_scale, r_delta_recover_movement, &recover_result)) {
 
-						const btRigidBody *btRigid = static_cast<const btRigidBody *>(otherObject);
-						CollisionObjectBullet *collisionObject = static_cast<CollisionObjectBullet *>(otherObject->getUserPointer());
-
-						r_results[ray_index].collision_depth = r_recover_result.penetration_distance;
-						B_TO_G(r_recover_result.pointWorld, r_results[ray_index].collision_point);
-						B_TO_G(r_recover_result.normal, r_results[ray_index].collision_normal);
-						B_TO_G(btRigid->getVelocityInLocalPoint(r_recover_result.pointWorld - btRigid->getWorldTransform().getOrigin()), r_results[ray_index].collider_velocity);
-						r_results[ray_index].collision_local_shape = kinIndex;
-						r_results[ray_index].collider_id = collisionObject->get_instance_id();
-						r_results[ray_index].collider = collisionObject->get_self();
-						r_results[ray_index].collider_shape = r_recover_result.other_compound_shape_index;
+						convert_to_separation_result(&r_results[ray_index], recover_result, kinIndex, otherObject);
 					}
+				}
+			} else {
+
+				RecoverResult recover_result;
+				if (RFP_convex_world_test(kin_shape.shape, otherObject->getCollisionShape(), p_body->get_bt_collision_object(), otherObject, kinIndex, 0, body_shape_position, otherObject->getWorldTransform(), p_recover_movement_scale, r_delta_recover_movement, &recover_result)) {
+
+					convert_to_separation_result(&r_results[ray_index], recover_result, kinIndex, otherObject);
 				}
 			}
 		}
