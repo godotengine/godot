@@ -1,14 +1,14 @@
 language: cpp
 
 # OS config, depends on actual 'os' in build matrix
-dist: trusty
+dist: xenial
 sudo: false
 
 env:
   global:
     - SCONS_CACHE=$HOME/.scons_cache
     - SCONS_CACHE_LIMIT=1024
-    - OPTIONS="debug_symbols=no verbose=yes progress=no gdnative_wrapper=yes"
+    - OPTIONS="debug_symbols=no verbose=yes progress=no"
     - secure: "uch9QszCgsl1qVbuzY41P7S2hWL2IiNFV4SbAYRCdi0oJ9MIu+pVyrQdpf3+jG4rH6j4Rffl+sN17Zz4dIDDioFL1JwqyCqyCyswR8uACC0Rr8gr4Mi3+HIRbv+2s2P4cIQq41JM8FJe84k9jLEMGCGh69w+ibCWoWs74CokYVA="
 
 cache:
@@ -23,20 +23,20 @@ matrix:
       addons:
         apt:
           sources:
-            - llvm-toolchain-trusty-6.0
-            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-6.0
           packages:
             - clang-format-6.0
-            - libstdc++6 # >= 4.9 needed for clang-format-6.0
 
-    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc EXTRA_ARGS="module_mono_enabled=yes mono_glue=no werror=yes"
+    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no werror=yes"
       os: linux
-      compiler: gcc
+      compiler: gcc-8
       addons:
         apt:
           sources:
             - mono
+            - ubuntu-toolchain-r-test
           packages:
+            - &gcc8_deps [gcc-8, g++-8]
             - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
@@ -69,24 +69,23 @@ matrix:
       os: osx
       compiler: clang
 
-    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc
-      os: linux
-      compiler: gcc
-      addons:
-        apt:
-          packages:
-            - *linux_deps
-
-    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 EXTRA_ARGS="warnings=all werror=yes" MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="werror=yes"
       os: linux
       compiler: gcc-8
       addons:
         apt:
           sources:
-          - sourceline: 'ppa:ubuntu-toolchain-r/test'
+            - ubuntu-toolchain-r-test
           packages:
-            - gcc-8
-            - g++-8
+            - *gcc8_deps
+            - *linux_deps
+
+    - env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5
+      os: linux
+      compiler: gcc
+      addons:
+        apt:
+          packages:
             - *linux_deps
 
 before_install:
@@ -96,11 +95,11 @@ before_install:
     fi
 
 install:
+  - pip install --user scons;
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$PLATFORM" = "android" ]; then
       misc/travis/android-tools-linux.sh;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      pip install --user scons;
       export PATH=${PATH}:/Users/travis/Library/Python/2.7/bin;
     fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ] && [ "$PLATFORM" = "android" ]; then
@@ -117,5 +116,5 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $EXTRA_ARGS $OPTIONS;
+      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS;
     fi
