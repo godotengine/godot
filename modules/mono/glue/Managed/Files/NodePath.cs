@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Godot
 {
-    public partial class NodePath : IDisposable
+    public sealed partial class NodePath : IDisposable
     {
         private bool disposed = false;
 
@@ -31,7 +31,7 @@ namespace Godot
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposed)
                 return;
