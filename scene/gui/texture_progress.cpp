@@ -251,12 +251,14 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 
 		middle_section_size *= MIN(1.0, (MAX(0.0, width_filled - first_section_size) / MAX(1.0, width_total - first_section_size - last_section_size)));
 		last_section_size = MAX(0.0, last_section_size - (width_total - width_filled));
+		first_section_size = MIN(first_section_size, width_filled);
 		width_texture = MIN(width_texture, first_section_size + middle_section_size + last_section_size);
 
 		switch (mode) {
 			case FILL_LEFT_TO_RIGHT: {
 				src_rect.size.x = width_texture;
 				dst_rect.size.x = width_filled;
+				topleft.x = first_section_size;
 				bottomright.x = last_section_size;
 			} break;
 			case FILL_RIGHT_TO_LEFT: {
@@ -265,11 +267,13 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.position.x += width_total - width_filled;
 				dst_rect.size.x = width_filled;
 				topleft.x = last_section_size;
+				bottomright.x = first_section_size;
 			} break;
 			case FILL_TOP_TO_BOTTOM: {
 				src_rect.size.y = width_texture;
 				dst_rect.size.y = width_filled;
 				bottomright.y = last_section_size;
+				topleft.y = first_section_size;
 			} break;
 			case FILL_BOTTOM_TO_TOP: {
 				src_rect.position.y += src_rect.size.y - width_texture;
@@ -277,6 +281,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.position.y += width_total - width_filled;
 				dst_rect.size.y = width_filled;
 				topleft.y = last_section_size;
+				bottomright.y = first_section_size;
 			} break;
 			case FILL_BILINEAR_LEFT_AND_RIGHT: {
 				// TODO: Implement
