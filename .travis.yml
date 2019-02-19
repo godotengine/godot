@@ -77,7 +77,7 @@ matrix:
           packages:
             - *linux_deps
 
-    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 EXTRA_ARGS="warnings=all werror=yes" MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       os: linux
       compiler: gcc-8
       addons:
