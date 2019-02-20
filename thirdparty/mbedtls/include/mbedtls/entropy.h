@@ -107,7 +107,7 @@ typedef int (*mbedtls_entropy_f_source_ptr)(void *data, unsigned char *output, s
 /**
  * \brief           Entropy source state
  */
-typedef struct
+typedef struct mbedtls_entropy_source_state
 {
     mbedtls_entropy_f_source_ptr    f_source;   /**< The entropy source callback */
     void *          p_source;   /**< The callback data pointer */
@@ -120,7 +120,7 @@ mbedtls_entropy_source_state;
 /**
  * \brief           Entropy context structure
  */
-typedef struct
+typedef struct mbedtls_entropy_context
 {
     int accumulator_started;
 #if defined(MBEDTLS_ENTROPY_SHA512_ACCUMULATOR)

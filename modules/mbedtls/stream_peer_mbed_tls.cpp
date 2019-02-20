@@ -270,7 +270,10 @@ void StreamPeerMbedTLS::poll() {
 		return;
 	}
 
-	int ret = mbedtls_ssl_read(&ssl, NULL, 0);
+	// We could pass NULL as second parameter, but some behaviour sanitizers doesn't seem to like that.
+	// Passing a 1 byte buffer to workaround it.
+	uint8_t byte;
+	int ret = mbedtls_ssl_read(&ssl, &byte, 0);
 
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		// Nothing to read/write (non blocking IO)

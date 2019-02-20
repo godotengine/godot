@@ -30,7 +30,14 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
 
-#if defined(MBEDTLS_PLATFORM_MEMORY)
+/* The compile time configuration of memory allocation via the macros
+ * MBEDTLS_PLATFORM_{FREE/CALLOC}_MACRO takes precedence over the runtime
+ * configuration via mbedtls_platform_set_calloc_free(). So, omit everything
+ * related to the latter if MBEDTLS_PLATFORM_{FREE/CALLOC}_MACRO are defined. */
+#if defined(MBEDTLS_PLATFORM_MEMORY) &&                 \
+    !( defined(MBEDTLS_PLATFORM_CALLOC_MACRO) &&        \
+       defined(MBEDTLS_PLATFORM_FREE_MACRO) )
+
 #if !defined(MBEDTLS_PLATFORM_STD_CALLOC)
 static void *platform_calloc_uninit( size_t n, size_t size )
 {
@@ -71,7 +78,9 @@ int mbedtls_platform_set_calloc_free( void * (*calloc_func)( size_t, size_t ),
     mbedtls_free_func = free_func;
     return( 0 );
 }
-#endif /* MBEDTLS_PLATFORM_MEMORY */
+#endif /* MBEDTLS_PLATFORM_MEMORY &&
+          !( defined(MBEDTLS_PLATFORM_CALLOC_MACRO) &&
+             defined(MBEDTLS_PLATFORM_FREE_MACRO) ) */
 
 #if defined(_WIN32)
 #include <stdarg.h>
