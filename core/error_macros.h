@@ -154,6 +154,20 @@ extern bool _err_error_exists;
 			_err_error_exists = false;                                                                              \
 	} while (0); // (*)
 
+/** An index has failed if m_index >=m_size, the function exists.
+* This function returns an error value, if returning Error, please select the most
+* appropriate error condition from error_macros.h
+*/
+
+#define ERR_FAIL_UNSIGNED_INDEX_V(m_index, m_size, m_retval)                                                        \
+	do {                                                                                                            \
+		if (unlikely((m_index) >= (m_size))) {                                                                      \
+			_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size)); \
+			return m_retval;                                                                                        \
+		} else                                                                                                      \
+			_err_error_exists = false;                                                                              \
+	} while (0); // (*)
+
 /** Use this one if there is no sensible fallback, that is, the error is unrecoverable.
 *   We'll return a null reference and try to keep running.
 */
