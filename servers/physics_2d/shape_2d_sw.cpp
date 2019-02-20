@@ -369,8 +369,11 @@ void RectangleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_suppor
 }
 
 bool RectangleShape2DSW::contains_point(const Vector2 &p_point) const {
-
-	return Math::abs(p_point.x) < half_extents.x && Math::abs(p_point.y) < half_extents.y;
+	float x = p_point.x;
+	float y = p_point.y;
+	float edge_x = half_extents.x;
+	float edge_y = half_extents.y;
+	return (x >= -edge_x) && (x < edge_x) && (y >= -edge_y) && (y < edge_y);
 }
 
 bool RectangleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
