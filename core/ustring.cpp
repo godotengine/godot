@@ -2945,11 +2945,11 @@ String String::left(int p_pos) const {
 
 String String::right(int p_pos) const {
 
-	if (p_pos >= size())
-		return *this;
-
-	if (p_pos < 0)
+	if (p_pos >= length())
 		return "";
+
+	if (p_pos <= 0)
+		return *this;
 
 	return substr(p_pos, (length() - p_pos));
 }
