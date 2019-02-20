@@ -112,7 +112,7 @@ private:
 	float adjustment_contrast;
 	float adjustment_saturation;
 	float adjustment_brightness;
-	Ref<Texture> adjustment_color_correction;
+	Ref<Texture3D> adjustment_color_correction;
 
 	bool ssr_enabled;
 	int ssr_max_steps;
@@ -242,8 +242,8 @@ public:
 	void set_adjustment_saturation(float p_saturation);
 	float get_adjustment_saturation() const;
 
-	void set_adjustment_color_correction(const Ref<Texture> &p_ramp);
-	Ref<Texture> get_adjustment_color_correction() const;
+	void set_adjustment_color_correction(const Ref<Texture3D> &p_ramp);
+	Ref<Texture3D> get_adjustment_color_correction() const;
 
 	void set_ssr_enabled(bool p_enable);
 	bool is_ssr_enabled() const;

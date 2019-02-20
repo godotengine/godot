@@ -49,7 +49,7 @@ uniform vec3 bcs;
 #endif
 
 #ifdef USE_COLOR_CORRECTION
-uniform sampler2D color_correction; //texunit:3
+uniform sampler3D color_correction; //texunit:3
 #endif
 
 layout(location = 0) out vec4 frag_color;
@@ -246,10 +246,11 @@ vec3 apply_bcs(vec3 color, vec3 bcs) {
 	return color;
 }
 
-vec3 apply_color_correction(vec3 color, sampler2D correction_tex) {
-	color.r = texture(correction_tex, vec2(color.r, 0.0f)).r;
-	color.g = texture(correction_tex, vec2(color.g, 0.0f)).g;
-	color.b = texture(correction_tex, vec2(color.b, 0.0f)).b;
+vec3 apply_color_correction(vec3 color, sampler3D correction_tex) {
+	ivec3 tex_size = textureSize(correction_tex, 0);
+	color = texture(correction_tex,
+			color * (vec3(tex_size - ivec3(1)) / vec3(tex_size)) + vec3(0.5) / vec3(tex_size))
+					.rgb;
 
 	return color;
 }
