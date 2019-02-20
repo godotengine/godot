@@ -278,6 +278,7 @@ void HTTPClient::close() {
 	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
+	chunk_trailer_part = 0;
 	read_until_eof = false;
 	response_num = 0;
 	handshaking = false;
@@ -421,6 +422,7 @@ Error HTTPClient::poll() {
 					chunked = false;
 					body_left = 0;
 					chunk_left = 0;
+					chunk_trailer_part = false;
 					read_until_eof = false;
 					response_str.clear();
 					response_headers.clear();
@@ -511,7 +513,30 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 		while (true) {
 
-			if (chunk_left == 0) {
+			if (chunk_trailer_part) {
+				// We need to consume the trailer part too or keep-alive will break
+				uint8_t b;
+				int rec = 0;
+				err = _get_http_data(&b, 1, rec);
+
+				if (rec == 0)
+					break;
+
+				chunk.push_back(b);
+				int cs = chunk.size();
+				if ((cs >= 2 && chunk[cs - 2] == '\r' && chunk[cs - 1] == '\n')) {
+					if (cs == 2) {
+						// Finally over
+						chunk_trailer_part = false;
+						status = STATUS_CONNECTED;
+						chunk.clear();
+						break;
+					} else {
+						// We do not process nor return the trailer data
+						chunk.clear();
+					}
+				}
+			} else if (chunk_left == 0) {
 				// Reading length
 				uint8_t b;
 				int rec = 0;
@@ -556,7 +581,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 					if (len == 0) {
 						// End reached!
-						status = STATUS_CONNECTED;
+						chunk_trailer_part = true;
 						chunk.clear();
 						break;
 					}
@@ -695,6 +720,7 @@ HTTPClient::HTTPClient() {
 	body_left = 0;
 	read_until_eof = false;
 	chunk_left = 0;
+	chunk_trailer_part = false;
 	response_num = 0;
 	ssl = false;
 	blocking = false;
