@@ -861,6 +861,9 @@ void TextEdit::_notification(int p_what) {
 
 					const String &str = wrap_rows[line_wrap_index];
 					int indent_px = line_wrap_index != 0 ? get_indent_level(line) * cache.font->get_char_size(' ').width : 0;
+					if (indent_px >= wrap_at) {
+						indent_px = 0;
+					}
 
 					if (line_wrap_index > 0)
 						last_wrap_column += wrap_rows[line_wrap_index - 1].length();
@@ -3788,6 +3791,9 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 	int cur_wrap_index = 0;
 
 	int tab_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
+	if (tab_offset_px >= wrap_at) {
+		tab_offset_px = 0;
+	}
 
 	while (col < line_text.length()) {
 		CharType c = line_text[col];
@@ -3795,29 +3801,36 @@ Vector<String> TextEdit::get_wrap_rows_text(int p_line) const {
 
 		int indent_ofs = (cur_wrap_index != 0 ? tab_offset_px : 0);
 
-		word_str += c;
-		word_px += w;
-		if (c == ' ') {
-			// end of a word; add this word to the substring
+		if (indent_ofs + word_px + w > wrap_at) {
+			// not enough space to add this char; start next line
 			wrap_substring += word_str;
-			px += word_px;
-			word_str = "";
-			word_px = 0;
-		}
-
-		if ((indent_ofs + px + word_px) > wrap_at) {
-			// do not want to add this word
-			if (indent_ofs + word_px > wrap_at) {
-				// not enough space; add it anyway
-				wrap_substring += word_str;
-				word_str = "";
-				word_px = 0;
-			}
 			lines.push_back(wrap_substring);
-			// reset for next wrap
 			cur_wrap_index++;
 			wrap_substring = "";
 			px = 0;
+
+			word_str = "";
+			word_str += c;
+			word_px = w;
+		} else {
+			word_str += c;
+			word_px += w;
+			if (c == ' ') {
+				// end of a word; add this word to the substring
+				wrap_substring += word_str;
+				px += word_px;
+				word_str = "";
+				word_px = 0;
+			}
+
+			if (indent_ofs + px + word_px > wrap_at) {
+				// this word will be moved to the next line
+				lines.push_back(wrap_substring);
+				// reset for next wrap
+				cur_wrap_index++;
+				wrap_substring = "";
+				px = 0;
+			}
 		}
 		col++;
 	}
@@ -4030,6 +4043,9 @@ int TextEdit::get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) cons
 
 		int line_wrap_amount = times_line_wraps(p_line);
 		int wrap_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
+		if (wrap_offset_px >= wrap_at) {
+			wrap_offset_px = 0;
+		}
 		if (p_wrap_index > line_wrap_amount)
 			p_wrap_index = line_wrap_amount;
 		if (p_wrap_index > 0)
@@ -4071,6 +4087,9 @@ int TextEdit::get_column_x_offset_for_line(int p_char, int p_line) const {
 		int px = get_column_x_offset(n_char, rows[wrap_index]);
 
 		int wrap_offset_px = get_indent_level(p_line) * cache.font->get_char_size(' ').width;
+		if (wrap_offset_px >= wrap_at) {
+			wrap_offset_px = 0;
+		}
 		if (wrap_index != 0)
 			px += wrap_offset_px;
 
