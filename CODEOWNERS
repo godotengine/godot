@@ -18,7 +18,6 @@ doc_classes/*        @godotengine/documentation
 /drivers/coreaudio/  @marcelofg55
 /drivers/coremidi/   @marcelofg55
 /drivers/pulseaudio/ @marcelofg55
-/drivers/rtaudio/    @marcelofg55
 /drivers/wasapi/     @marcelofg55
 /drivers/winmidi/    @marcelofg55
 /drivers/xaudio2/    @marcelofg55

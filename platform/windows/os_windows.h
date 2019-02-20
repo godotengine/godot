@@ -36,7 +36,6 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_windows.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/wasapi/audio_driver_wasapi.h"
 #include "drivers/winmidi/midi_driver_winmidi.h"
@@ -141,9 +140,6 @@ class OS_Windows : public OS {
 	int video_driver_index;
 #ifdef WASAPI_ENABLED
 	AudioDriverWASAPI driver_wasapi;
-#endif
-#ifdef RTAUDIO_ENABLED
-	AudioDriverRtAudio driver_rtaudio;
 #endif
 #ifdef XAUDIO2_ENABLED
 	AudioDriverXAudio2 driver_xaudio2;

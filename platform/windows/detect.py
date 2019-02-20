@@ -205,8 +205,8 @@ def configure_msvc(env, manual_msvc_config):
             print("Missing environment variable: WindowsSdkDir")
 
     env.AppendUnique(CPPDEFINES = ['WINDOWS_ENABLED', 'OPENGL_ENABLED',
-                                   'RTAUDIO_ENABLED', 'WASAPI_ENABLED',
-                                   'WINMIDI_ENABLED', 'TYPED_METHOD_BIND',
+                                   'WASAPI_ENABLED', 'WINMIDI_ENABLED',
+                                   'TYPED_METHOD_BIND',
                                    'WIN32', 'MSVC',
                                    'WINVER=%s' % env["target_win_version"],
                                    '_WIN32_WINNT=%s' % env["target_win_version"]])
@@ -326,8 +326,8 @@ def configure_mingw(env):
 
     env.Append(CCFLAGS=['-DWINDOWS_ENABLED', '-mwindows'])
     env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
-    env.Append(CCFLAGS=['-DRTAUDIO_ENABLED'])
     env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
+    env.Append(CCFLAGS=['-DWINMIDI_ENABLED'])
     env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
     env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt','avrt'])
 
