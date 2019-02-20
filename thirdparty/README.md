@@ -470,17 +470,6 @@ Files extracted from upstream source:
 - License.txt
 
 
-## rtaudio
-
-- Upstream: http://www.music.mcgill.ca/~gary/rtaudio/
-- Version: 4.1.2
-- License: MIT-like
-
-Files extracted from upstream source:
-
-- `RtAudio.{cpp,h}`
-
-
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish

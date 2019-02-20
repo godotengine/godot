@@ -32,7 +32,6 @@
 #define OS_SERVER_H
 
 #include "drivers/dummy/texture_loader_dummy.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #ifdef __APPLE__
