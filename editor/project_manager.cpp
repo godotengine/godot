@@ -1901,6 +1901,7 @@ ProjectManager::ProjectManager() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	panel->add_child(vb);
 	vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8 * EDSCALE);
+	vb->add_constant_override("separation", 8 * EDSCALE);
 
 	String cp;
 	cp += 0xA9;

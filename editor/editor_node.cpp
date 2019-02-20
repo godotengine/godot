@@ -5004,6 +5004,7 @@ EditorNode::EditorNode() {
 	main_vbox = memnew(VBoxContainer);
 	gui_base->add_child(main_vbox);
 	main_vbox->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 8);
+	main_vbox->add_constant_override("separation", 8 * EDSCALE);
 
 	menu_hb = memnew(HBoxContainer);
 	main_vbox->add_child(menu_hb);
