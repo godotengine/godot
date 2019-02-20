@@ -319,9 +319,6 @@
 		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="">
 			Hotspot for the custom mouse cursor image.
 		</member>
-		<member name="display/window/allow_per_pixel_transparency" type="bool" setter="" getter="">
-			Allow per pixel transparency in a Desktop window. This affects performance if not needed, so leave it off.
-		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="">
 			Allow HiDPI display on Windows and OSX. On Desktop Linux, this can't be enabled or disabled.
 		</member>
@@ -331,9 +328,12 @@
 		<member name="display/window/handheld/orientation" type="String" setter="" getter="">
 			Default orientation for cell phone or tablet.
 		</member>
-		<member name="display/window/per_pixel_transparency" type="bool" setter="" getter="">
+		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="">
+			Allow per pixel transparency in a Desktop window. This affects performance if not needed, so leave it off.
 		</member>
-		<member name="display/window/per_pixel_transparency_splash" type="bool" setter="" getter="">
+		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="">
+		</member>
+		<member name="display/window/per_pixel_transparency/splash" type="bool" setter="" getter="">
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="">
 			Force the window to be always on top.
