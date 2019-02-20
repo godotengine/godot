@@ -232,6 +232,7 @@ void TileSetEditor::_notification(int p_what) {
 			tools[BITMASK_PASTE]->set_icon(get_icon("Override", "EditorIcons"));
 			tools[BITMASK_CLEAR]->set_icon(get_icon("Clear", "EditorIcons"));
 			tools[SHAPE_NEW_POLYGON]->set_icon(get_icon("CollisionPolygon2D", "EditorIcons"));
+			tools[SHAPE_NEW_RECTANGLE]->set_icon(get_icon("CollisionShape2D", "EditorIcons"));
 			tools[SHAPE_DELETE]->set_icon(get_icon("Remove", "EditorIcons"));
 			tools[SHAPE_KEEP_INSIDE_TILE]->set_icon(get_icon("Snap", "EditorIcons"));
 			tools[TOOL_GRID_SNAP]->set_icon(get_icon("SnapGrid", "EditorIcons"));
@@ -376,6 +377,12 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[BITMASK_CLEAR]->set_tooltip(TTR("Erase bitmask."));
 	tools[BITMASK_CLEAR]->connect("pressed", this, "_on_tool_clicked", varray(BITMASK_CLEAR));
 	toolbar->add_child(tools[BITMASK_CLEAR]);
+
+	tools[SHAPE_NEW_RECTANGLE] = memnew(ToolButton);
+	toolbar->add_child(tools[SHAPE_NEW_RECTANGLE]);
+	tools[SHAPE_NEW_RECTANGLE]->set_toggle_mode(true);
+	tools[SHAPE_NEW_RECTANGLE]->set_button_group(tg);
+	tools[SHAPE_NEW_RECTANGLE]->set_tooltip(TTR("Create a new rectangle."));
 
 	tools[SHAPE_NEW_POLYGON] = memnew(ToolButton);
 	toolbar->add_child(tools[SHAPE_NEW_POLYGON]);
@@ -637,6 +644,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->hide();
 			tools[BITMASK_CLEAR]->hide();
 			tools[SHAPE_NEW_POLYGON]->hide();
+			tools[SHAPE_NEW_RECTANGLE]->hide();
 
 			if (workspace_mode == WORKSPACE_EDIT) {
 				separator_delete->show();
@@ -666,6 +674,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->hide();
 			tools[BITMASK_CLEAR]->hide();
 			tools[SHAPE_NEW_POLYGON]->show();
+			tools[SHAPE_NEW_RECTANGLE]->show();
 
 			separator_delete->show();
 			tools[SHAPE_DELETE]->show();
@@ -689,6 +698,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->show();
 			tools[BITMASK_CLEAR]->show();
 			tools[SHAPE_NEW_POLYGON]->hide();
+			tools[SHAPE_NEW_RECTANGLE]->hide();
 
 			separator_delete->hide();
 			tools[SHAPE_DELETE]->hide();
@@ -709,6 +719,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[BITMASK_PASTE]->hide();
 			tools[BITMASK_CLEAR]->hide();
 			tools[SHAPE_NEW_POLYGON]->hide();
+			tools[SHAPE_NEW_RECTANGLE]->hide();
 
 			separator_delete->hide();
 			tools[SHAPE_DELETE]->hide();
@@ -1427,6 +1438,20 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							}
 						} else if (mm.is_valid()) {
 							if (creating_shape) {
+								workspace->update();
+							}
+						}
+					} else if (tools[SHAPE_NEW_RECTANGLE]->is_pressed()) {
+						if (mb.is_valid()) {
+							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+								current_shape.resize(0);
+								current_shape.push_back(snap_point(shape_anchor));
+								current_shape.push_back(snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
+								current_shape.push_back(snap_point(shape_anchor + current_tile_region.size));
+								current_shape.push_back(snap_point(shape_anchor + Vector2(0, current_tile_region.size.y)));
+								close_shape(shape_anchor);
+								workspace->update();
+							} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 								workspace->update();
 							}
 						}
