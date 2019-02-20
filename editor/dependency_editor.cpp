@@ -496,9 +496,13 @@ void DependencyRemoveDialog::ok_pressed() {
 			res->set_path("");
 		}
 
-		// If the file we are deleting is the main scene, clear its definition.
+		// If the file we are deleting is the main scene or default environment, clear its definition.
 		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("application/run/main_scene")) {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
+		}
+
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("rendering/environment/default_environment")) {
+			ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 		}
 
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
