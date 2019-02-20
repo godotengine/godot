@@ -3584,10 +3584,10 @@ void CollisionPolygonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 ////
 
 NavigationMeshSpatialGizmoPlugin::NavigationMeshSpatialGizmoPlugin() {
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
-	create_material("navigation_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
+	create_material("navigation_edge_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge", Color(0.5, 1, 1)));
+	create_material("navigation_edge_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_edge_disabled", Color(0.7, 0.7, 0.7)));
+	create_material("navigation_solid_material", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid", Color(0.5, 1, 1, 0.4)));
+	create_material("navigation_solid_material_disabled", EDITOR_DEF("editors/3d_gizmos/gizmo_colors/navigation_solid_disabled", Color(0.7, 0.7, 0.7, 0.4)));
 }
 
 bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -3602,10 +3602,10 @@ void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	NavigationMeshInstance *navmesh = Object::cast_to<NavigationMeshInstance>(p_gizmo->get_spatial_node());
 
-	Ref<Material> edge_material = get_material("navigation_material", p_gizmo);
-	Ref<Material> edge_material_disabled = get_material("navigation_material", p_gizmo);
-	Ref<Material> solid_material = get_material("navigation_material", p_gizmo);
-	Ref<Material> solid_material_disabled = get_material("navigation_material", p_gizmo);
+	Ref<Material> edge_material = get_material("navigation_edge_material", p_gizmo);
+	Ref<Material> edge_material_disabled = get_material("navigation_edge_material_disabled", p_gizmo);
+	Ref<Material> solid_material = get_material("navigation_solid_material", p_gizmo);
+	Ref<Material> solid_material_disabled = get_material("navigation_solid_material_disabled", p_gizmo);
 
 	p_gizmo->clear();
 	Ref<NavigationMesh> navmeshie = navmesh->get_navigation_mesh();
