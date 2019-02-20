@@ -362,11 +362,6 @@ Comment: Recast
 Copyright: 2009, Mikko Mononen
 License: Zlib
 
-Files: ./thirdparty/rtaudio/
-Comment: RtAudio
-Copyright: 2001-2016, Gary P. Scavone
-License: Expat
-
 Files: ./thirdparty/squish/
 Comment: libSquish
 Copyright: 2006, Simon Brown

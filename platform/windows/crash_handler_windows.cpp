@@ -30,9 +30,9 @@
 
 #include "crash_handler_windows.h"
 
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "main/main.h"
-#include "os_windows.h"
 
 #ifdef CRASH_HANDLER_EXCEPTION
 
@@ -41,6 +41,7 @@
 #include <psapi.h>
 #include <algorithm>
 #include <iterator>
+#include <vector>
 
 #pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "dbghelp.lib")
