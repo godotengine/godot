@@ -39,9 +39,6 @@
 #define rangeloop(c, min, max) \
 	for ((c) = (min); (c) < (max); (c)++)
 
-#define ABSDIFF(x, y) \
-	(((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
-
 #define MULSHIFT_S32(Factor1, Factor2, Bits) \
 	((int)(((int64_t)(Factor1) * (Factor2)) >> (Bits)))
 

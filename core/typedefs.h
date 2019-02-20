@@ -116,6 +116,8 @@ T *_nullptr() {
 #define ABS(m_v) (((m_v) < 0) ? (-(m_v)) : (m_v))
 #endif
 
+#define ABSDIFF(x, y) (((x) < (y)) ? ((y) - (x)) : ((x) - (y)))
+
 #ifndef SGN
 #define SGN(m_v) (((m_v) < 0) ? (-1.0) : (+1.0))
 #endif

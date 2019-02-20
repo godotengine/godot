@@ -433,7 +433,6 @@ bool NetworkedMultiplayerENet::is_server() const {
 void NetworkedMultiplayerENet::close_connection(uint32_t wait_usec) {
 
 	ERR_FAIL_COND(!active);
-	ERR_FAIL_COND(wait_usec < 0);
 
 	_pop_current_packet();
 

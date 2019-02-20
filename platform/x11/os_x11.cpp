@@ -1743,7 +1743,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 			// is correct, but the xorg developers are
 			// not very helpful today.
 
-			::Time tresh = ABS(peek_event.xkey.time - xkeyevent->time);
+			::Time tresh = ABSDIFF(peek_event.xkey.time, xkeyevent->time);
 			if (peek_event.type == KeyPress && tresh < 5) {
 				KeySym rk;
 				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, NULL);
