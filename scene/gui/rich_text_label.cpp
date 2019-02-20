@@ -544,7 +544,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				Vector2 draw_ofs = Point2(wofs, y);
 				Color font_color_shadow = get_color("font_color_shadow");
 				bool use_outline = get_constant("shadow_as_outline");
-				Point2 shadow_ofs(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
+				Point2 shadow_ofs2(get_constant("shadow_offset_x"), get_constant("shadow_offset_y"));
 
 				if (p_mode == PROCESS_CACHE) {
 
@@ -568,7 +568,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 						for (int i = 0; i < frame->lines.size(); i++) {
 
-							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs);
+							_process_line(frame, Point2(), ly, available_width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 							table->columns.write[column].min_width = MAX(table->columns[column].min_width, frame->lines[i].minimum_width);
 							table->columns.write[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].maximum_width);
 						}
@@ -641,7 +641,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						for (int i = 0; i < frame->lines.size(); i++) {
 
 							int ly = 0;
-							_process_line(frame, Point2(), ly, table->columns[column].width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs);
+							_process_line(frame, Point2(), ly, table->columns[column].width, i, PROCESS_CACHE, cfont, Color(), font_color_shadow, use_outline, shadow_ofs2);
 							frame->lines.write[i].height_cache = ly; //actual height
 							frame->lines.write[i].height_accum_cache = ly; //actual height
 						}
@@ -674,9 +674,9 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 						if (visible) {
 							if (p_mode == PROCESS_DRAW) {
-								nonblank_line_count += _process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_DRAW, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs);
+								nonblank_line_count += _process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_DRAW, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2);
 							} else if (p_mode == PROCESS_POINTER) {
-								_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_POINTER, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs, p_click_pos, r_click_item, r_click_char, r_outside);
+								_process_line(frame, p_ofs + offset + draw_ofs + Vector2(0, yofs), ly, table->columns[column].width, i, PROCESS_POINTER, cfont, ccolor, font_color_shadow, use_outline, shadow_ofs2, p_click_pos, r_click_item, r_click_char, r_outside);
 								if (r_click_item && *r_click_item) {
 									RETURN; // exit early
 								}

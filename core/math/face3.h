@@ -241,13 +241,13 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 			real_t minT = 1e20, maxT = -1e20;
 			for (int k = 0; k < 3; k++) {
 
-				real_t d = axis.dot(vertex[k]);
+				real_t vert_d = axis.dot(vertex[k]);
 
-				if (d > maxT)
-					maxT = d;
+				if (vert_d > maxT)
+					maxT = vert_d;
 
-				if (d < minT)
-					minT = d;
+				if (vert_d < minT)
+					minT = vert_d;
 			}
 
 			if (maxB < minT || maxT < minB)

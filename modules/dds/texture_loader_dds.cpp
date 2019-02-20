@@ -263,14 +263,14 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				colsize = 4;
 		}
 
-		int w = width;
-		int h = height;
+		int w2 = width;
+		int h2 = height;
 
 		for (uint32_t i = 1; i < mipmaps; i++) {
 
-			w = (w + 1) >> 1;
-			h = (h + 1) >> 1;
-			size += w * h * info.block_size;
+			w2 = (w2 + 1) >> 1;
+			h2 = (h2 + 1) >> 1;
+			size += w2 * h2 * info.block_size;
 		}
 
 		src_data.resize(size + 256 * colsize);

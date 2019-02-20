@@ -125,8 +125,8 @@ static void actual_discoverer_handler() {
 
 	// Check for removed files
 	if (!changed) {
-		for (int i = 0; i < current_files.size(); i++) {
-			if (!file_paths.has(current_files[i])) {
+		for (int j = 0; j < current_files.size(); j++) {
+			if (!file_paths.has(current_files[j])) {
 				changed = true;
 				break;
 			}

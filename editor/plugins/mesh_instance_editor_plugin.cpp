@@ -198,14 +198,14 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
 
-			Ref<ArrayMesh> mesh = node->get_mesh();
-			if (!mesh.is_valid()) {
+			Ref<ArrayMesh> mesh2 = node->get_mesh();
+			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
 				err_dialog->popup_centered_minsize();
 				return;
 			}
 
-			Error err = mesh->lightmap_unwrap(node->get_global_transform());
+			Error err = mesh2->lightmap_unwrap(node->get_global_transform());
 			if (err != OK) {
 				err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
 				err_dialog->popup_centered_minsize();
@@ -214,8 +214,8 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_DEBUG_UV1: {
-			Ref<Mesh> mesh = node->get_mesh();
-			if (!mesh.is_valid()) {
+			Ref<Mesh> mesh2 = node->get_mesh();
+			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered_minsize();
 				return;
@@ -223,8 +223,8 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			_create_uv_lines(0);
 		} break;
 		case MENU_OPTION_DEBUG_UV2: {
-			Ref<Mesh> mesh = node->get_mesh();
-			if (!mesh.is_valid()) {
+			Ref<Mesh> mesh2 = node->get_mesh();
+			if (!mesh2.is_valid()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered_minsize();
 				return;

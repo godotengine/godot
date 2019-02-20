@@ -1314,9 +1314,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		if (bool(p_options["external_files/store_in_subdir"])) {
 			String subdir_name = p_source_file.get_file().get_basename();
 			DirAccess *da = DirAccess::open(base_path);
-			Error err = da->make_dir(subdir_name);
+			Error err2 = da->make_dir(subdir_name);
 			memdelete(da);
-			ERR_FAIL_COND_V(err != OK && err != ERR_ALREADY_EXISTS, err);
+			ERR_FAIL_COND_V(err2 != OK && err2 != ERR_ALREADY_EXISTS, err2);
 			base_path = base_path.plus_file(subdir_name);
 		}
 	}
@@ -1331,7 +1331,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			float texel_size = p_options["meshes/lightmap_texel_size"];
 			texel_size = MAX(0.001, texel_size);
 
-			EditorProgress progress("gen_lightmaps", TTR("Generating Lightmaps"), meshes.size());
+			EditorProgress progress2("gen_lightmaps", TTR("Generating Lightmaps"), meshes.size());
 			int step = 0;
 			for (Map<Ref<ArrayMesh>, Transform>::Element *E = meshes.front(); E; E = E->next()) {
 
@@ -1341,10 +1341,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 					name = "Mesh " + itos(step);
 				}
 
-				progress.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
+				progress2.step(TTR("Generating for Mesh: ") + name + " (" + itos(step) + "/" + itos(meshes.size()) + ")", step);
 
-				Error err = mesh->lightmap_unwrap(E->get(), texel_size);
-				if (err != OK) {
+				Error err2 = mesh->lightmap_unwrap(E->get(), texel_size);
+				if (err2 != OK) {
 					EditorNode::add_io_error("Mesh '" + name + "' failed lightmap generation. Please fix geometry.");
 				}
 				step++;

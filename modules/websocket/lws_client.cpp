@@ -144,9 +144,9 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 
 		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: {
 			int code;
-			String reason = peer->get_close_reason(in, len, code);
+			String reason2 = peer->get_close_reason(in, len, code);
 			peer_data->clean_close = true;
-			_on_close_request(code, reason);
+			_on_close_request(code, reason2);
 			return 0;
 		}
 

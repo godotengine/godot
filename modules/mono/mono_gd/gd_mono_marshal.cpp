@@ -68,39 +68,39 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = p_type.type_class;
+			GDMonoClass *vtclass = p_type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2))
+			if (vtclass == CACHED_CLASS(Vector2))
 				return Variant::VECTOR2;
 
-			if (tclass == CACHED_CLASS(Rect2))
+			if (vtclass == CACHED_CLASS(Rect2))
 				return Variant::RECT2;
 
-			if (tclass == CACHED_CLASS(Transform2D))
+			if (vtclass == CACHED_CLASS(Transform2D))
 				return Variant::TRANSFORM2D;
 
-			if (tclass == CACHED_CLASS(Vector3))
+			if (vtclass == CACHED_CLASS(Vector3))
 				return Variant::VECTOR3;
 
-			if (tclass == CACHED_CLASS(Basis))
+			if (vtclass == CACHED_CLASS(Basis))
 				return Variant::BASIS;
 
-			if (tclass == CACHED_CLASS(Quat))
+			if (vtclass == CACHED_CLASS(Quat))
 				return Variant::QUAT;
 
-			if (tclass == CACHED_CLASS(Transform))
+			if (vtclass == CACHED_CLASS(Transform))
 				return Variant::TRANSFORM;
 
-			if (tclass == CACHED_CLASS(AABB))
+			if (vtclass == CACHED_CLASS(AABB))
 				return Variant::AABB;
 
-			if (tclass == CACHED_CLASS(Color))
+			if (vtclass == CACHED_CLASS(Color))
 				return Variant::COLOR;
 
-			if (tclass == CACHED_CLASS(Plane))
+			if (vtclass == CACHED_CLASS(Plane))
 				return Variant::PLANE;
 
-			if (mono_class_is_enum(tclass->get_mono_ptr()))
+			if (mono_class_is_enum(vtclass->get_mono_ptr()))
 				return Variant::INT;
 		} break;
 
@@ -294,60 +294,60 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = p_type.type_class;
+			GDMonoClass *vtclass = p_type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2)) {
+			if (vtclass == CACHED_CLASS(Vector2)) {
 				GDMonoMarshal::M_Vector2 from = MARSHALLED_OUT(Vector2, p_var->operator ::Vector2());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Rect2)) {
+			if (vtclass == CACHED_CLASS(Rect2)) {
 				GDMonoMarshal::M_Rect2 from = MARSHALLED_OUT(Rect2, p_var->operator ::Rect2());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Transform2D)) {
+			if (vtclass == CACHED_CLASS(Transform2D)) {
 				GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var->operator ::Transform2D());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform2D), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Vector3)) {
+			if (vtclass == CACHED_CLASS(Vector3)) {
 				GDMonoMarshal::M_Vector3 from = MARSHALLED_OUT(Vector3, p_var->operator ::Vector3());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Basis)) {
+			if (vtclass == CACHED_CLASS(Basis)) {
 				GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_var->operator ::Basis());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Basis), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Quat)) {
+			if (vtclass == CACHED_CLASS(Quat)) {
 				GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_var->operator ::Quat());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quat), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Transform)) {
+			if (vtclass == CACHED_CLASS(Transform)) {
 				GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_var->operator ::Transform());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform), &from);
 			}
 
-			if (tclass == CACHED_CLASS(AABB)) {
+			if (vtclass == CACHED_CLASS(AABB)) {
 				GDMonoMarshal::M_AABB from = MARSHALLED_OUT(AABB, p_var->operator ::AABB());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(AABB), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Color)) {
+			if (vtclass == CACHED_CLASS(Color)) {
 				GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var->operator ::Color());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Color), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Plane)) {
+			if (vtclass == CACHED_CLASS(Plane)) {
 				GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var->operator ::Plane());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
 			}
 
-			if (mono_class_is_enum(tclass->get_mono_ptr())) {
-				MonoType *enum_basetype = mono_class_enum_basetype(tclass->get_mono_ptr());
+			if (mono_class_is_enum(vtclass->get_mono_ptr())) {
+				MonoType *enum_basetype = mono_class_enum_basetype(vtclass->get_mono_ptr());
 				MonoClass *enum_baseclass = mono_class_from_mono_type(enum_basetype);
 				switch (mono_type_get_type(enum_basetype)) {
 					case MONO_TYPE_BOOLEAN: {
@@ -624,39 +624,39 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = type.type_class;
+			GDMonoClass *vtclass = type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2))
+			if (vtclass == CACHED_CLASS(Vector2))
 				return MARSHALLED_IN(Vector2, (GDMonoMarshal::M_Vector2 *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Rect2))
+			if (vtclass == CACHED_CLASS(Rect2))
 				return MARSHALLED_IN(Rect2, (GDMonoMarshal::M_Rect2 *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Transform2D))
+			if (vtclass == CACHED_CLASS(Transform2D))
 				return MARSHALLED_IN(Transform2D, (GDMonoMarshal::M_Transform2D *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Vector3))
+			if (vtclass == CACHED_CLASS(Vector3))
 				return MARSHALLED_IN(Vector3, (GDMonoMarshal::M_Vector3 *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Basis))
+			if (vtclass == CACHED_CLASS(Basis))
 				return MARSHALLED_IN(Basis, (GDMonoMarshal::M_Basis *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Quat))
+			if (vtclass == CACHED_CLASS(Quat))
 				return MARSHALLED_IN(Quat, (GDMonoMarshal::M_Quat *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Transform))
+			if (vtclass == CACHED_CLASS(Transform))
 				return MARSHALLED_IN(Transform, (GDMonoMarshal::M_Transform *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(AABB))
+			if (vtclass == CACHED_CLASS(AABB))
 				return MARSHALLED_IN(AABB, (GDMonoMarshal::M_AABB *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Color))
+			if (vtclass == CACHED_CLASS(Color))
 				return MARSHALLED_IN(Color, (GDMonoMarshal::M_Color *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Plane))
+			if (vtclass == CACHED_CLASS(Plane))
 				return MARSHALLED_IN(Plane, (GDMonoMarshal::M_Plane *)mono_object_unbox(p_obj));
 
-			if (mono_class_is_enum(tclass->get_mono_ptr()))
+			if (mono_class_is_enum(vtclass->get_mono_ptr()))
 				return unbox<int32_t>(p_obj);
 		} break;
 
@@ -740,7 +740,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
-				MonoException *exc = NULL;
+				exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 				return *unbox<Dictionary *>(ret);
@@ -753,7 +753,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {
-				MonoException *exc = NULL;
+				exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 				return *unbox<Array *>(ret);

@@ -728,7 +728,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			bool at_key = true;
 			String key;
-			Token token;
+			Token token2;
 			bool need_comma = false;
 
 			while (true) {
@@ -740,11 +740,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				if (at_key) {
 
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, token2, line, r_err_str);
 					if (err != OK)
 						return err;
 
-					if (token.type == TK_PARENTHESIS_CLOSE) {
+					if (token2.type == TK_PARENTHESIS_CLOSE) {
 						Reference *reference = Object::cast_to<Reference>(obj);
 						if (reference) {
 							value = REF(reference);
@@ -756,7 +756,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 					if (need_comma) {
 
-						if (token.type != TK_COMMA) {
+						if (token2.type != TK_COMMA) {
 
 							r_err_str = "Expected '}' or ','";
 							return ERR_PARSE_ERROR;
@@ -766,18 +766,18 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						}
 					}
 
-					if (token.type != TK_STRING) {
+					if (token2.type != TK_STRING) {
 						r_err_str = "Expected property name as string";
 						return ERR_PARSE_ERROR;
 					}
 
-					key = token.value;
+					key = token2.value;
 
-					err = get_token(p_stream, token, line, r_err_str);
+					err = get_token(p_stream, token2, line, r_err_str);
 
 					if (err != OK)
 						return err;
-					if (token.type != TK_COLON) {
+					if (token2.type != TK_COLON) {
 
 						r_err_str = "Expected ':'";
 						return ERR_PARSE_ERROR;
@@ -785,12 +785,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					at_key = false;
 				} else {
 
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, token2, line, r_err_str);
 					if (err != OK)
 						return err;
 
 					Variant v;
-					err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+					err = parse_value(token2, v, p_stream, line, r_err_str, p_res_parser);
 					if (err)
 						return err;
 					obj->set(key, v);
@@ -882,11 +882,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			String id = token.value;
+			String id2 = token.value;
 
 			Ref<InputEvent> ie;
 
-			if (id == "NONE") {
+			if (id2 == "NONE") {
 
 				get_token(p_stream, token, line, r_err_str);
 
@@ -895,7 +895,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "KEY") {
+			} else if (id2 == "KEY") {
 
 				Ref<InputEventKey> key;
 				key.instance();
@@ -954,7 +954,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "MBUTTON") {
+			} else if (id2 == "MBUTTON") {
 
 				Ref<InputEventMouseButton> mb;
 				mb.instance();
@@ -980,7 +980,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "JBUTTON") {
+			} else if (id2 == "JBUTTON") {
 
 				Ref<InputEventJoypadButton> jb;
 				jb.instance();
@@ -1006,7 +1006,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "JAXIS") {
+			} else if (id2 == "JAXIS") {
 
 				Ref<InputEventJoypadMotion> jm;
 				jm.instance();

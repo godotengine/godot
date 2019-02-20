@@ -296,8 +296,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		if (ogg_sync_pageout(&oy, &og) > 0) {
 			queue_page(&og); /* demux into the appropriate stream */
 		} else {
-			int ret = buffer_data(); /* someone needs more data */
-			if (ret == 0) {
+			int ret2 = buffer_data(); /* someone needs more data */
+			if (ret2 == 0) {
 				fprintf(stderr, "End of file while searching for codec headers.\n");
 				clear();
 				return;

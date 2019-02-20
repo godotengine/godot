@@ -292,11 +292,11 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 				if (ek.from < ek.to)
 					SWAP(ek.from, ek.to);
 
-				Map<_EdgeKey, bool>::Element *E = edge_map.find(ek);
+				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
 
-				if (E) {
+				if (F) {
 
-					E->get() = false;
+					F->get() = false;
 
 				} else {
 

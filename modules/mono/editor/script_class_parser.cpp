@@ -346,7 +346,7 @@ Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
 
 	bool generic = false;
 	if (tk == TK_OP_LESS) {
-		Error err = _skip_generic_type_params();
+		err = _skip_generic_type_params();
 		if (err)
 			return err;
 		// We don't add it to the base list if it's generic
@@ -355,11 +355,11 @@ Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
 	}
 
 	if (tk == TK_COMMA) {
-		Error err = _parse_class_base(r_base);
+		err = _parse_class_base(r_base);
 		if (err)
 			return err;
 	} else if (tk == TK_IDENTIFIER && String(value) == "where") {
-		Error err = _parse_type_constraints();
+		err = _parse_type_constraints();
 		if (err) {
 			return err;
 		}

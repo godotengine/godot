@@ -989,11 +989,11 @@ void GDScriptTokenizerText::_advance() {
 
 							//built in func?
 
-							for (int i = 0; i < GDScriptFunctions::FUNC_MAX; i++) {
+							for (int j = 0; j < GDScriptFunctions::FUNC_MAX; j++) {
 
-								if (str == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(i))) {
+								if (str == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(j))) {
 
-									_make_built_in_func(GDScriptFunctions::Function(i));
+									_make_built_in_func(GDScriptFunctions::Function(j));
 									found = true;
 									break;
 								}

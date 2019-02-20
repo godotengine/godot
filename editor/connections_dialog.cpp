@@ -766,7 +766,7 @@ void ConnectionsDock::update_tree() {
 
 	while (base) {
 
-		List<MethodInfo> node_signals;
+		List<MethodInfo> node_signals2;
 		Ref<Texture> icon;
 		String name;
 
@@ -774,7 +774,7 @@ void ConnectionsDock::update_tree() {
 
 			Ref<Script> scr = selectedNode->get_script();
 			if (scr.is_valid()) {
-				scr->get_script_signal_list(&node_signals);
+				scr->get_script_signal_list(&node_signals2);
 				if (scr->get_path().is_resource_file())
 					name = scr->get_path().get_file();
 				else
@@ -787,7 +787,7 @@ void ConnectionsDock::update_tree() {
 
 		} else {
 
-			ClassDB::get_signal_list(base, &node_signals, true);
+			ClassDB::get_signal_list(base, &node_signals2, true);
 			if (has_icon(base, "EditorIcons")) {
 				icon = get_icon(base, "EditorIcons");
 			}
@@ -796,17 +796,17 @@ void ConnectionsDock::update_tree() {
 
 		TreeItem *pitem = NULL;
 
-		if (node_signals.size()) {
+		if (node_signals2.size()) {
 			pitem = tree->create_item(root);
 			pitem->set_text(0, name);
 			pitem->set_icon(0, icon);
 			pitem->set_selectable(0, false);
 			pitem->set_editable(0, false);
 			pitem->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
-			node_signals.sort();
+			node_signals2.sort();
 		}
 
-		for (List<MethodInfo>::Element *E = node_signals.front(); E; E = E->next()) {
+		for (List<MethodInfo>::Element *E = node_signals2.front(); E; E = E->next()) {
 
 			MethodInfo &mi = E->get();
 

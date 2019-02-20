@@ -1730,7 +1730,7 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 			//int level_limit = max_level;
 
 			cell = 0; //start from root
-			for (int i = 0; i < max_level; i++) {
+			for (int j = 0; j < max_level; j++) {
 
 				const Cell *bc = &cells[cell];
 
@@ -1759,14 +1759,14 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 		}
 
 		if (unlikely(cell != CHILD_EMPTY)) {
-			for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 6; j++) {
 				//anisotropic read light
-				float amount = direction.dot(aniso_normal[i]);
+				float amount = direction.dot(aniso_normal[j]);
 				if (amount <= 0)
 					continue;
-				accum.x += light[cell].accum[i][0] * amount;
-				accum.y += light[cell].accum[i][1] * amount;
-				accum.z += light[cell].accum[i][2] * amount;
+				accum.x += light[cell].accum[j][0] * amount;
+				accum.y += light[cell].accum[j][1] * amount;
+				accum.z += light[cell].accum[j][2] * amount;
 			}
 			accum.x += cells[cell].emission[0];
 			accum.y += cells[cell].emission[1];
@@ -1833,16 +1833,16 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 		}
 
 		int faces = ic ? ic / 3 : vc / 3;
-		for (int i = 0; i < faces; i++) {
+		for (int j = 0; j < faces; j++) {
 			Vector3 vertex[3];
 			Vector3 normal[3];
 			Vector2 uv[3];
 
-			for (int j = 0; j < 3; j++) {
-				int idx = ic ? ir[i * 3 + j] : i * 3 + j;
-				vertex[j] = xform.xform(vr[idx]);
-				normal[j] = xform.basis.xform(nr[idx]).normalized();
-				uv[j] = u2r[idx];
+			for (int k = 0; k < 3; k++) {
+				int idx = ic ? ir[j * 3 + k] : j * 3 + k;
+				vertex[k] = xform.xform(vr[idx]);
+				normal[k] = xform.basis.xform(nr[idx]).normalized();
+				uv[k] = u2r[idx];
 			}
 
 			_plot_triangle(uv, vertex, normal, lightmap.ptrw(), width, height);

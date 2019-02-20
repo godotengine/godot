@@ -75,15 +75,15 @@ void TileMap::_notification(int p_what) {
 
 				Quadrant &q = E->get();
 				if (navigation) {
-					for (Map<PosKey, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
+					for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
 
-						navigation->navpoly_remove(E->get().id);
+						navigation->navpoly_remove(F->get().id);
 					}
 					q.navpoly_ids.clear();
 				}
 
-				for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-					VS::get_singleton()->free(E->get().id);
+				for (Map<PosKey, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
+					VS::get_singleton()->free(F->get().id);
 				}
 				q.occluder_instances.clear();
 			}
@@ -129,14 +129,14 @@ void TileMap::_update_quadrant_transform() {
 		Physics2DServer::get_singleton()->body_set_state(q.body, Physics2DServer::BODY_STATE_TRANSFORM, xform);
 
 		if (navigation) {
-			for (Map<PosKey, Quadrant::NavPoly>::Element *E = q.navpoly_ids.front(); E; E = E->next()) {
+			for (Map<PosKey, Quadrant::NavPoly>::Element *F = q.navpoly_ids.front(); F; F = F->next()) {
 
-				navigation->navpoly_set_transform(E->get().id, nav_rel * E->get().xform);
+				navigation->navpoly_set_transform(F->get().id, nav_rel * F->get().xform);
 			}
 		}
 
-		for (Map<PosKey, Quadrant::Occluder>::Element *E = q.occluder_instances.front(); E; E = E->next()) {
-			VS::get_singleton()->canvas_light_occluder_set_transform(E->get().id, global_transform * E->get().xform);
+		for (Map<PosKey, Quadrant::Occluder>::Element *F = q.occluder_instances.front(); F; F = F->next()) {
+			VS::get_singleton()->canvas_light_occluder_set_transform(F->get().id, global_transform * F->get().xform);
 		}
 	}
 }
@@ -462,18 +462,18 @@ void TileMap::update_dirty_quadrants() {
 
 			Vector<TileSet::ShapeData> shapes = tile_set->tile_get_shapes(c.id);
 
-			for (int i = 0; i < shapes.size(); i++) {
-				Ref<Shape2D> shape = shapes[i].shape;
+			for (int j = 0; j < shapes.size(); j++) {
+				Ref<Shape2D> shape = shapes[j].shape;
 				if (shape.is_valid()) {
-					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[i].autotile_coord.x == c.autotile_coord_x && shapes[i].autotile_coord.y == c.autotile_coord_y)) {
+					if (tile_set->tile_get_tile_mode(c.id) == TileSet::SINGLE_TILE || (shapes[j].autotile_coord.x == c.autotile_coord_x && shapes[j].autotile_coord.y == c.autotile_coord_y)) {
 						Transform2D xform;
 						xform.set_origin(offset.floor());
 
-						Vector2 shape_ofs = shapes[i].shape_transform.get_origin();
+						Vector2 shape_ofs = shapes[j].shape_transform.get_origin();
 
 						_fix_cell_transform(xform, c, shape_ofs + center_ofs, s);
 
-						xform *= shapes[i].shape_transform.untranslated();
+						xform *= shapes[j].shape_transform.untranslated();
 
 						if (debug_canvas_item.is_valid()) {
 							vs->canvas_item_add_set_transform(debug_canvas_item, xform);
@@ -481,7 +481,7 @@ void TileMap::update_dirty_quadrants() {
 						}
 						ps->body_add_shape(q.body, shape->get_rid(), xform);
 						ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
-						ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[i].one_way_collision, shapes[i].one_way_collision_margin);
+						ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
 						shape_idx++;
 					}
 				}
@@ -531,23 +531,23 @@ void TileMap::update_dirty_quadrants() {
 								colors.resize(vsize);
 								{
 									PoolVector<Vector2>::Read vr = navigation_polygon_vertices.read();
-									for (int i = 0; i < vsize; i++) {
-										vertices.write[i] = vr[i];
-										colors.write[i] = debug_navigation_color;
+									for (int j = 0; j < vsize; j++) {
+										vertices.write[j] = vr[j];
+										colors.write[j] = debug_navigation_color;
 									}
 								}
 
 								Vector<int> indices;
 
-								for (int i = 0; i < navpoly->get_polygon_count(); i++) {
-									Vector<int> polygon = navpoly->get_polygon(i);
+								for (int j = 0; j < navpoly->get_polygon_count(); j++) {
+									Vector<int> polygon = navpoly->get_polygon(j);
 
-									for (int j = 2; j < polygon.size(); j++) {
+									for (int k = 2; k < polygon.size(); k++) {
 
-										int kofs[3] = { 0, j - 1, j };
-										for (int k = 0; k < 3; k++) {
+										int kofs[3] = { 0, k - 1, k };
+										for (int l = 0; l < 3; l++) {
 
-											int idx = polygon[kofs[k]];
+											int idx = polygon[kofs[l]];
 											ERR_FAIL_INDEX(idx, vsize);
 											indices.push_back(idx);
 										}
@@ -601,9 +601,9 @@ void TileMap::update_dirty_quadrants() {
 		for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 			Quadrant &q = E->get();
-			for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
+			for (List<RID>::Element *F = q.canvas_items.front(); F; F = F->next()) {
 
-				VS::get_singleton()->canvas_item_set_draw_index(E->get(), index++);
+				VS::get_singleton()->canvas_item_set_draw_index(F->get(), index++);
 			}
 		}
 
@@ -1053,9 +1053,9 @@ void TileMap::_update_all_items_material_state() {
 	for (Map<PosKey, Quadrant>::Element *E = quadrant_map.front(); E; E = E->next()) {
 
 		Quadrant &q = E->get();
-		for (List<RID>::Element *E = q.canvas_items.front(); E; E = E->next()) {
+		for (List<RID>::Element *F = q.canvas_items.front(); F; F = F->next()) {
 
-			_update_item_material_state(E->get());
+			_update_item_material_state(F->get());
 		}
 	}
 }

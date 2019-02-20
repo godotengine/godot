@@ -501,7 +501,7 @@ Error ProjectSettings::_load_settings_binary(const String p_path) {
 		d.resize(vlen);
 		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
-		Error err = decode_variant(value, d.ptr(), d.size());
+		err = decode_variant(value, d.ptr(), d.size());
 		ERR_EXPLAIN("Error decoding property: " + key);
 		ERR_CONTINUE(err != OK);
 		set(key, value);
@@ -656,7 +656,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_string(key);
 
 		int len;
-		Error err = encode_variant(p_custom_features, NULL, len);
+		err = encode_variant(p_custom_features, NULL, len);
 		if (err != OK) {
 			memdelete(file);
 			ERR_FAIL_V(err);
@@ -694,7 +694,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 			file->store_string(key);
 
 			int len;
-			Error err = encode_variant(value, NULL, len);
+			err = encode_variant(value, NULL, len);
 			if (err != OK)
 				memdelete(file);
 			ERR_FAIL_COND_V(err != OK, ERR_INVALID_DATA);

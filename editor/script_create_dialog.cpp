@@ -255,8 +255,8 @@ void ScriptCreateDialog::_lang_changed(int l) {
 			// change extension by selected language
 			List<String> extensions;
 			// get all possible extensions for script
-			for (int l = 0; l < language_menu->get_item_count(); l++) {
-				ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
+			for (int m = 0; m < language_menu->get_item_count(); m++) {
+				ScriptServer::get_language(m)->get_recognized_extensions(&extensions);
 			}
 
 			for (List<String>::Element *E = extensions.front(); E; E = E->next()) {

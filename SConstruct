@@ -336,12 +336,18 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=['/WX'])
     else: # Rest of the world
         disable_nonessential_warnings = ['-Wno-sign-compare']
+        shadow_local_warning = []
+
+        if 'gcc' in os.path.basename(env["CC"]):
+            version = methods.get_compiler_version(env)
+            if version != None and version[0] >= '7':
+                shadow_local_warning = ['-Wshadow-local']
         if (env["warnings"] == 'extra'):
-            env.Append(CCFLAGS=['-Wall', '-Wextra'])
+            env.Append(CCFLAGS=['-Wall', '-Wextra'] + shadow_local_warning)
         elif (env["warnings"] == 'all'):
-            env.Append(CCFLAGS=['-Wall'] + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall'] + shadow_local_warning + disable_nonessential_warnings)
         elif (env["warnings"] == 'moderate'):
-            env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused']  + shadow_local_warning + disable_nonessential_warnings)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
         if (env["werror"]):

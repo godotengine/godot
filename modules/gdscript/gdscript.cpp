@@ -1108,12 +1108,12 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 		//instance a fake script for editing the values
 
 		Vector<_GDScriptMemberSort> msort;
-		for (Map<StringName, PropertyInfo>::Element *E = sptr->member_info.front(); E; E = E->next()) {
+		for (Map<StringName, PropertyInfo>::Element *F = sptr->member_info.front(); F; F = F->next()) {
 
 			_GDScriptMemberSort ms;
-			ERR_CONTINUE(!sptr->member_indices.has(E->key()));
-			ms.index = sptr->member_indices[E->key()].index;
-			ms.name = E->key();
+			ERR_CONTINUE(!sptr->member_indices.has(F->key()));
+			ms.index = sptr->member_indices[F->key()].index;
+			ms.name = F->key();
 			msort.push_back(ms);
 		}
 

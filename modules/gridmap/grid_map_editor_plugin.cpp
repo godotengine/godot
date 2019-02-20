@@ -289,11 +289,11 @@ void GridMapEditor::_update_selection_transform() {
 			scale *= node->get_cell_size();
 			pos *= node->get_cell_size();
 
-			Transform xf;
-			xf.basis.scale(scale);
-			xf.origin = pos;
+			Transform xf2;
+			xf2.basis.scale(scale);
+			xf2.origin = pos;
 
-			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf);
+			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf2);
 		}
 	}
 }

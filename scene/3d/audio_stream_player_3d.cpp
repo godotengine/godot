@@ -422,20 +422,20 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 					if (cc >= 3) {
 						// Side pair
-						float sl = Math::abs(1.0 - Math::abs(-0.4 - av));
-						float sr = Math::abs(1.0 - Math::abs(0.4 - av));
+						float sleft = Math::abs(1.0 - Math::abs(-0.4 - av));
+						float sright = Math::abs(1.0 - Math::abs(0.4 - av));
 
-						output.vol[2].l = sl;
-						output.vol[2].r = sr;
+						output.vol[2].l = sleft;
+						output.vol[2].r = sright;
 					}
 
 					if (cc >= 4) {
 						// Rear pair
-						float rl = Math::abs(1.0 - Math::abs(-0.2 - av));
-						float rr = Math::abs(1.0 - Math::abs(0.2 - av));
+						float rleft = Math::abs(1.0 - Math::abs(-0.2 - av));
+						float rright = Math::abs(1.0 - Math::abs(0.2 - av));
 
-						output.vol[3].l = rl;
-						output.vol[3].r = rr;
+						output.vol[3].l = rleft;
+						output.vol[3].r = rright;
 					}
 				}
 

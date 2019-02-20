@@ -1052,7 +1052,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		if (fallback.length() >= 2) {
 
 			const CharType *fptr = &fallback[0];
-			bool near_match = false;
+			near_match = false;
 			for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
 				const Ref<Translation> &t = E->get();

@@ -92,9 +92,9 @@ void EditorPluginSettings::update_plugins() {
 		cf.instance();
 		String path = "res://addons/" + plugins[i] + "/plugin.cfg";
 
-		Error err = cf->load(path);
+		Error err2 = cf->load(path);
 
-		if (err != OK) {
+		if (err2 != OK) {
 			WARN_PRINTS("Can't load plugin config: " + path);
 		} else if (!cf->has_section_key("plugin", "name")) {
 			WARN_PRINTS("Plugin misses plugin/name: " + path);
@@ -108,7 +108,7 @@ void EditorPluginSettings::update_plugins() {
 			WARN_PRINTS("Plugin misses plugin/script: " + path);
 		} else {
 
-			String d = plugins[i];
+			String d2 = plugins[i];
 			String name = cf->get_value("plugin", "name");
 			String author = cf->get_value("plugin", "author");
 			String version = cf->get_value("plugin", "version");
@@ -118,7 +118,7 @@ void EditorPluginSettings::update_plugins() {
 			TreeItem *item = plugin_list->create_item(root);
 			item->set_text(0, name);
 			item->set_tooltip(0, "Name: " + name + "\nPath: " + path + "\nMain Script: " + script + "\nDescription: " + description);
-			item->set_metadata(0, d);
+			item->set_metadata(0, d2);
 			item->set_text(1, version);
 			item->set_metadata(1, script);
 			item->set_text(2, author);
@@ -129,7 +129,7 @@ void EditorPluginSettings::update_plugins() {
 			item->set_editable(3, true);
 			item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
 
-			if (EditorNode::get_singleton()->is_addon_plugin_enabled(d)) {
+			if (EditorNode::get_singleton()->is_addon_plugin_enabled(d2)) {
 				item->set_custom_color(3, get_color("success_color", "Editor"));
 				item->set_range(3, 1);
 			} else {
