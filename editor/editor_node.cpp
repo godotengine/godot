@@ -4419,7 +4419,7 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 
 void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 
-	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_current_path());
+	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_selected_path());
 	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 	Vector<String> just_copy = String("ttf,otf").split(",");
