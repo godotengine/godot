@@ -172,6 +172,7 @@ private:
 	bool chunked;
 	Vector<uint8_t> chunk;
 	int chunk_left;
+	bool chunk_trailer_part;
 	int body_size;
 	int body_left;
 	bool read_until_eof;

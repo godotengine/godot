@@ -278,6 +278,7 @@ void HTTPClient::close() {
 	body_size = -1;
 	body_left = 0;
 	chunk_left = 0;
+	chunk_trailer_part = 0;
 	read_until_eof = false;
 	response_num = 0;
 	handshaking = false;
@@ -421,6 +422,7 @@ Error HTTPClient::poll() {
 					chunked = false;
 					body_left = 0;
 					chunk_left = 0;
+					chunk_trailer_part = false;
 					read_until_eof = false;
 					response_str.clear();
 					response_headers.clear();
@@ -504,13 +506,37 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 	ERR_FAIL_COND_V(status != STATUS_BODY, PoolByteArray());
 
+	PoolByteArray ret;
 	Error err = OK;
 
 	if (chunked) {
 
 		while (true) {
 
-			if (chunk_left == 0) {
+			if (chunk_trailer_part) {
+				// We need to consume the trailer part too or keep-alive will break
+				uint8_t b;
+				int rec = 0;
+				err = _get_http_data(&b, 1, rec);
+
+				if (rec == 0)
+					break;
+
+				chunk.push_back(b);
+				int cs = chunk.size();
+				if ((cs >= 2 && chunk[cs - 2] == '\r' && chunk[cs - 1] == '\n')) {
+					if (cs == 2) {
+						// Finally over
+						chunk_trailer_part = false;
+						status = STATUS_CONNECTED;
+						chunk.clear();
+						break;
+					} else {
+						// We do not process nor return the trailer data
+						chunk.clear();
+					}
+				}
+			} else if (chunk_left == 0) {
 				// Reading length
 				uint8_t b;
 				int rec = 0;
@@ -524,7 +550,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 				if (chunk.size() > 32) {
 					ERR_PRINT("HTTP Invalid chunk hex len");
 					status = STATUS_CONNECTION_ERROR;
-					return PoolByteArray();
+					break;
 				}
 
 				if (chunk.size() > 2 && chunk[chunk.size() - 2] == '\r' && chunk[chunk.size() - 1] == '\n') {
@@ -542,22 +568,22 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 						else {
 							ERR_PRINT("HTTP Chunk len not in hex!!");
 							status = STATUS_CONNECTION_ERROR;
-							return PoolByteArray();
+							break;
 						}
 						len <<= 4;
 						len |= v;
 						if (len > (1 << 24)) {
 							ERR_PRINT("HTTP Chunk too big!! >16mb");
 							status = STATUS_CONNECTION_ERROR;
-							return PoolByteArray();
+							break;
 						}
 					}
 
 					if (len == 0) {
 						// End reached!
-						status = STATUS_CONNECTED;
+						chunk_trailer_part = true;
 						chunk.clear();
-						return PoolByteArray();
+						break;
 					}
 
 					chunk_left = len + 2;
@@ -577,18 +603,13 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 					if (chunk[chunk.size() - 2] != '\r' || chunk[chunk.size() - 1] != '\n') {
 						ERR_PRINT("HTTP Invalid chunk terminator (not \\r\\n)");
 						status = STATUS_CONNECTION_ERROR;
-						return PoolByteArray();
+						break;
 					}
 
-					PoolByteArray ret;
 					ret.resize(chunk.size() - 2);
-					{
-						PoolByteArray::Write w = ret.write();
-						copymem(w.ptr(), chunk.ptr(), chunk.size() - 2);
-					}
+					PoolByteArray::Write w = ret.write();
+					copymem(w.ptr(), chunk.ptr(), chunk.size() - 2);
 					chunk.clear();
-
-					return ret;
 				}
 
 				break;
@@ -598,45 +619,26 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 	} else {
 
 		int to_read = !read_until_eof ? MIN(body_left, read_chunk_size) : read_chunk_size;
-		PoolByteArray ret;
 		ret.resize(to_read);
 		int _offset = 0;
-		while (read_until_eof || to_read > 0) {
+		while (to_read > 0) {
 			int rec = 0;
 			{
 				PoolByteArray::Write w = ret.write();
 				err = _get_http_data(w.ptr() + _offset, to_read, rec);
 			}
-			if (rec < 0) {
-				if (to_read > 0) // Ended up reading less
-					ret.resize(_offset);
+			if (rec <= 0) { // Ended up reading less
+				ret.resize(_offset);
 				break;
 			} else {
 				_offset += rec;
+				to_read -= rec;
 				if (!read_until_eof) {
 					body_left -= rec;
-					to_read -= rec;
-				} else {
-					if (rec < to_read) {
-						ret.resize(_offset);
-						err = ERR_FILE_EOF;
-						break;
-					}
-					ret.resize(_offset + to_read);
 				}
 			}
-		}
-		if (!read_until_eof) {
-			if (body_left == 0) {
-				status = STATUS_CONNECTED;
-			}
-			return ret;
-		} else {
-			if (err == ERR_FILE_EOF) {
-				err = OK; // EOF is expected here
-				close();
-				return ret;
-			}
+			if (err != OK)
+				break;
 		}
 	}
 
@@ -651,12 +653,12 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 			status = STATUS_CONNECTION_ERROR;
 		}
-	} else if (body_left == 0 && !chunked) {
+	} else if (body_left == 0 && !chunked && !read_until_eof) {
 
 		status = STATUS_CONNECTED;
 	}
 
-	return PoolByteArray();
+	return ret;
 }
 
 HTTPClient::Status HTTPClient::get_status() const {
@@ -718,6 +720,7 @@ HTTPClient::HTTPClient() {
 	body_left = 0;
 	read_until_eof = false;
 	chunk_left = 0;
+	chunk_trailer_part = false;
 	response_num = 0;
 	ssl = false;
 	blocking = false;
