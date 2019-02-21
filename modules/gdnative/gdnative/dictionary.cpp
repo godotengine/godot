@@ -155,10 +155,24 @@ godot_string GDAPI godot_dictionary_to_json(const godot_dictionary *p_self) {
 	return raw_dest;
 }
 
+// GDNative core 1.1
+
 godot_bool GDAPI godot_dictionary_erase_with_return(godot_dictionary *p_self, const godot_variant *p_key) {
 	Dictionary *self = (Dictionary *)p_self;
 	const Variant *key = (const Variant *)p_key;
 	return self->erase(*key);
+}
+
+godot_variant GDAPI godot_dictionary_get_with_default(const godot_dictionary *p_self, const godot_variant *p_key, const godot_variant *p_default) {
+	const Dictionary *self = (const Dictionary *)p_self;
+	const Variant *key = (const Variant *)p_key;
+	const Variant *def = (const Variant *)p_default;
+
+	godot_variant raw_dest;
+	Variant *dest = (Variant *)&raw_dest;
+	memnew_placement(dest, Variant(self->get(*key, *def)));
+
+	return raw_dest;
 }
 
 #ifdef __cplusplus

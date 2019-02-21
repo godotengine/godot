@@ -107,6 +107,23 @@
           ]
         },
         {
+          "name": "godot_dictionary_get_with_default",
+          "return_type": "godot_variant",
+          "arguments": [
+            ["const godot_dictionary *", "p_self"],
+            ["const godot_variant *", "p_key"],
+            ["const godot_variant *", "p_default"]
+          ]
+        },
+        {
+          "name": "godot_dictionary_erase_with_return",
+          "return_type": "bool",
+          "arguments": [
+            ["godot_dictionary *", "p_self"],
+            ["const godot_variant *", "p_key"]
+          ]
+        },
+        {
           "name": "godot_node_path_get_as_property_path",
           "return_type": "godot_node_path",
           "arguments": [
@@ -231,14 +248,6 @@
             ["godot_basis *", "p_self"],
             ["const godot_quat *", "p_quat"],
             ["const godot_vector3 *", "p_scale"]
-          ]
-        },
-        {
-          "name": "godot_dictionary_erase_with_return",
-          "return_type": "bool",
-          "arguments": [
-            ["godot_dictionary *", "p_self"],
-            ["const godot_variant *", "p_key"]
           ]
         },
         {
