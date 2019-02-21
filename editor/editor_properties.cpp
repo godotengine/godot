@@ -483,16 +483,16 @@ EditorPropertyCheck::EditorPropertyCheck() {
 
 void EditorPropertyEnum::_option_selected(int p_which) {
 
-	int val = options->get_item_metadata(p_which);
+	int64_t val = options->get_item_metadata(p_which);
 	emit_changed(get_edited_property(), val);
 }
 
 void EditorPropertyEnum::update_property() {
 
-	int which = get_edited_object()->get(get_edited_property());
+	int64_t which = get_edited_object()->get(get_edited_property());
 
 	for (int i = 0; i < options->get_item_count(); i++) {
-		if (which == (int)options->get_item_metadata(i)) {
+		if (which == (int64_t)options->get_item_metadata(i)) {
 			options->select(i);
 			return;
 		}
@@ -501,11 +501,11 @@ void EditorPropertyEnum::update_property() {
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 
-	int current_val = 0;
+	int64_t current_val = 0;
 	for (int i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
 		if (text_split.size() != 1)
-			current_val = text_split[1].to_int();
+			current_val = text_split[1].to_int64();
 		options->add_item(text_split[0]);
 		options->set_item_metadata(i, current_val);
 		current_val += 1;
@@ -801,11 +801,11 @@ EditorPropertyLayers::EditorPropertyLayers() {
 void EditorPropertyInteger::_value_changed(double val) {
 	if (setting)
 		return;
-	emit_changed(get_edited_property(), int(val));
+	emit_changed(get_edited_property(), (int64_t)val);
 }
 
 void EditorPropertyInteger::update_property() {
-	int val = get_edited_object()->get(get_edited_property());
+	int64_t val = get_edited_object()->get(get_edited_property());
 	setting = true;
 	spin->set_value(val);
 	setting = false;
