@@ -1666,7 +1666,20 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 				if (E->get().usage & PROPERTY_USAGE_STORAGE) {
 
-					_find_resources(res->get(E->get().name));
+					Variant value = res->get(E->get().name);
+					if (E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						RES sres = value;
+						if (sres.is_valid()) {
+							NonPersistentKey npk;
+							npk.base = res;
+							npk.property = E->get().name;
+							non_persistent_map[npk] = sres;
+							resource_set.insert(sres);
+							saved_resources.push_back(sres);
+						}
+					} else {
+						_find_resources(value);
+					}
 				}
 			}
 
@@ -1810,7 +1823,17 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 				if ((F->get().usage & PROPERTY_USAGE_STORAGE)) {
 					Property p;
 					p.name_idx = get_string_index(F->get().name);
-					p.value = E->get()->get(F->get().name);
+
+					if (F->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						NonPersistentKey npk;
+						npk.base = E->get();
+						npk.property = F->get().name;
+						if (non_persistent_map.has(npk)) {
+							p.value = non_persistent_map[npk];
+						}
+					} else {
+						p.value = E->get()->get(F->get().name);
+					}
 
 					Variant default_value = ClassDB::class_get_default_property_value(E->get()->get_class(), F->get().name);
 

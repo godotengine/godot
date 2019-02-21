@@ -1408,7 +1408,21 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				if (pi.usage & PROPERTY_USAGE_STORAGE) {
 
 					Variant v = res->get(I->get().name);
-					_find_resources(v);
+
+					if (pi.usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						RES sres = v;
+						if (sres.is_valid()) {
+							NonPersistentKey npk;
+							npk.base = res;
+							npk.property = pi.name;
+							non_persistent_map[npk] = sres;
+							resource_set.insert(sres);
+							saved_resources.push_back(sres);
+						}
+					} else {
+						_find_resources(v);
+					}
+
 				}
 
 				I = I->next();
@@ -1600,7 +1614,17 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			if (PE->get().usage & PROPERTY_USAGE_STORAGE) {
 
 				String name = PE->get().name;
-				Variant value = res->get(name);
+				Variant value;
+				if (PE->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+					NonPersistentKey npk;
+					npk.base = res;
+					npk.property = name;
+					if (non_persistent_map.has(npk)) {
+						value = non_persistent_map[npk];
+					}
+				} else {
+					value = res->get(name);
+				}
 				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
