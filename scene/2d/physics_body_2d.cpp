@@ -1309,9 +1309,6 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				motion = motion.slide(n);
 				lv = lv.slide(n);
 			}
-
-			if (p_stop_on_slope)
-				break;
 		}
 
 		if (!found_collision) {
