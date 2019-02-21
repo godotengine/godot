@@ -173,7 +173,7 @@ public:
 #ifdef DEBUG_ENABLED
 	virtual const Vector<Pair<int, String> > &get_warning_skips() const = 0;
 	virtual const Set<String> &get_warning_global_skips() const = 0;
-	virtual const bool is_ignoring_warnings() const = 0;
+	virtual bool is_ignoring_warnings() const = 0;
 #endif // DEBUG_ENABLED
 
 	virtual ~GDScriptTokenizer(){};
@@ -245,7 +245,7 @@ public:
 #ifdef DEBUG_ENABLED
 	virtual const Vector<Pair<int, String> > &get_warning_skips() const { return warning_skips; }
 	virtual const Set<String> &get_warning_global_skips() const { return warning_global_skips; }
-	virtual const bool is_ignoring_warnings() const { return ignore_warnings; }
+	virtual bool is_ignoring_warnings() const { return ignore_warnings; }
 #endif // DEBUG_ENABLED
 };
 
@@ -289,7 +289,7 @@ public:
 		static Set<String> s;
 		return s;
 	}
-	virtual const bool is_ignoring_warnings() const { return true; }
+	virtual bool is_ignoring_warnings() const { return true; }
 #endif // DEBUG_ENABLED
 	GDScriptTokenizerBuffer();
 };
