@@ -2289,6 +2289,16 @@ void EditorPropertyResource::_update_menu_items() {
 				E = E->next();
 			}
 
+			List<StringName> global_classes;
+			ScriptServer::get_global_class_list(&global_classes);
+			E = global_classes.front();
+			while (E) {
+				if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base_type)) {
+					valid_inheritors.insert(E->get());
+				}
+				E = E->next();
+			}
+
 			for (Set<String>::Element *F = valid_inheritors.front(); F; F = F->next()) {
 				String t = F->get();
 
@@ -2305,7 +2315,7 @@ void EditorPropertyResource::_update_menu_items() {
 					}
 				}
 
-				if (!is_custom_resource && !ClassDB::can_instance(t))
+				if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instance(t)))
 					continue;
 
 				inheritors_array.push_back(t);
