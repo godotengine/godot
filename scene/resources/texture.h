@@ -111,7 +111,7 @@ private:
 	Size2 size_override;
 	float lossy_storage_quality;
 	mutable Ref<BitMap> alpha_cache;
-	Ref<Image> image_cache;
+	bool image_stored;
 
 protected:
 	virtual void reload_from_file();
@@ -126,11 +126,7 @@ protected:
 
 	void _set_data(Dictionary p_data);
 
-	static bool keep_images_cached;
-
 public:
-	static void set_keep_images_cached(bool p_enable);
-
 	void create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
 	void create_from_image(const Ref<Image> &p_image, uint32_t p_flags = FLAGS_DEFAULT);
 

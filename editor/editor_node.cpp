@@ -4781,8 +4781,6 @@ EditorNode::EditorNode() {
 	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
 	ResourceLoader::clear_path_remaps();
 
-	ImageTexture::set_keep_images_cached(true);
-
 	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
 
 	if (id) {
