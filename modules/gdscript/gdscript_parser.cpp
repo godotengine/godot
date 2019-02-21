@@ -503,7 +503,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			Ref<GDScript> gds = res;
 			if (gds.is_valid() && !gds->is_valid()) {
-				_set_error("Could not fully preload the script, possible cyclic reference or compilation error.");
+				_set_error("Could not fully preload the script, possible cyclic reference or compilation error. Use 'load()' instead if a cyclic reference is intended.");
 				return NULL;
 			}
 
