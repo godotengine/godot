@@ -85,8 +85,7 @@ public:
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
-	_FORCE_INLINE_ char get(int p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const char get(int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ const char &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size()))
@@ -143,8 +142,7 @@ public:
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 
-	_FORCE_INLINE_ CharType get(int p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const CharType get(int p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ CharType get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const CharType &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
@@ -197,7 +195,7 @@ public:
 	String substr(int p_from, int p_chars) const;
 	int find(const String &p_str, int p_from = 0) const; ///< return <0 if failed
 	int find(const char *p_str, int p_from = 0) const; ///< return <0 if failed
-	int find_char(CharType p_char, int p_from = 0) const; ///< return <0 if failed
+	int find_char(const CharType &p_char, int p_from = 0) const; ///< return <0 if failed
 	int find_last(const String &p_str) const; ///< return <0 if failed
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed

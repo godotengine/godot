@@ -223,7 +223,7 @@ void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_
 
 	Ref<ARVRInterfaceGDNative> new_interface;
 	new_interface.instance();
-	new_interface->set_interface((godot_arvr_interface_gdnative *const)p_interface);
+	new_interface->set_interface((const godot_arvr_interface_gdnative *)p_interface);
 	ARVRServer::get_singleton()->add_interface(new_interface);
 }
 
