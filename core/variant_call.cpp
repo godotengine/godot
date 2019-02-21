@@ -480,7 +480,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0(Dictionary, clear);
 	VCALL_LOCALMEM1R(Dictionary, has);
 	VCALL_LOCALMEM1R(Dictionary, has_all);
-	VCALL_LOCALMEM1(Dictionary, erase);
+	VCALL_LOCALMEM1R(Dictionary, erase);
 	VCALL_LOCALMEM0R(Dictionary, hash);
 	VCALL_LOCALMEM0R(Dictionary, keys);
 	VCALL_LOCALMEM0R(Dictionary, values);
