@@ -77,7 +77,7 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 		time_to = time_from + 1;
 	}
 
-	uint8_t vmin = 0;
+	uint8_t vmin = 255;
 
 	for (int i = time_from; i < time_to; i++) {
 
