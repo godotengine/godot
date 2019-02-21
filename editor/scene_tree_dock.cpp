@@ -583,7 +583,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				return;
 			}
 
-			editor_data->get_undo_redo().create_action("Make node as Root");
+			editor_data->get_undo_redo().create_action(TTR("Make node as Root"));
 			editor_data->get_undo_redo().add_do_method(node->get_parent(), "remove_child", node);
 			editor_data->get_undo_redo().add_do_method(root->get_parent(), "remove_child", root);
 			editor_data->get_undo_redo().add_do_method(node, "add_child", root);
@@ -849,7 +849,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			editor_data->get_undo_redo().create_action("New Scene Root");
+			editor_data->get_undo_redo().create_action(TTR("New Scene Root"));
 			editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", new_node);
 			editor_data->get_undo_redo().add_do_method(scene_tree, "update_tree");
 			editor_data->get_undo_redo().add_do_reference(new_node);

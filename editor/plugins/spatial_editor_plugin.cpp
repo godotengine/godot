@@ -2546,7 +2546,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
-			undo_redo->create_action(TTR("Align with view"));
+			undo_redo->create_action(TTR("Align with View"));
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				Spatial *sp = Object::cast_to<Spatial>(E->get());
@@ -5055,7 +5055,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 	Array keys = snap_data.keys();
 
 	if (keys.size()) {
-		undo_redo->create_action("Snap Nodes To Floor");
+		undo_redo->create_action(TTR("Snap Nodes To Floor"));
 
 		for (int i = 0; i < keys.size(); i++) {
 			Node *node = keys[i];
