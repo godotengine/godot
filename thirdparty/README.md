@@ -178,17 +178,20 @@ Files extracted from upstream source:
 ## libsimplewebm
 
 - Upstream: https://github.com/zaps166/libsimplewebm
-- Version: git (05cfdc2, 2016)
-- License: MIT, BSD-3-Clause
+- Version: git (fe57fd3, 2019)
+- License: MIT (main), BSD-3-Clause (libwebm)
+
+This contains libwebm, but the version in use is updated from the one used by libsimplewebm,
+and may have *unmarked* alterations from that.
 
 Files extracted from upstream source:
 
-TODO.
+- all the .cpp, .hpp files in the main folder except `example.cpp`
+- LICENSE
 
 Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
-
 
 ## libtheora
 
