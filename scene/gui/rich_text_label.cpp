@@ -1133,12 +1133,13 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 		}
 
 		Variant meta;
-		if (item && !outside && _find_meta(item, &meta)) {
-			if (meta_hovering != item) {
+		ItemMeta *item_meta;
+		if (item && !outside && _find_meta(item, &meta, &item_meta)) {
+			if (meta_hovering != item_meta) {
 				if (meta_hovering) {
 					emit_signal("meta_hover_ended", current_meta);
 				}
-				meta_hovering = static_cast<ItemMeta *>(item);
+				meta_hovering = item_meta;
 				current_meta = meta;
 				emit_signal("meta_hover_started", meta);
 			}
@@ -1269,7 +1270,7 @@ bool RichTextLabel::_find_strikethrough(Item *p_item) {
 	return false;
 }
 
-bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta) {
+bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 
 	Item *item = p_item;
 
@@ -1280,6 +1281,8 @@ bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta) {
 			ItemMeta *meta = static_cast<ItemMeta *>(item);
 			if (r_meta)
 				*r_meta = meta->meta;
+			if (r_item)
+				*r_item = meta;
 			return true;
 		}
 
