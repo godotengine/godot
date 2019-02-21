@@ -37,12 +37,17 @@ public:
 	class Image
 	{
 	public:
+// -- GODOT begin --
 #if 0
+// -- GODOT end --
 		int getWidth(int plane) const;
 		int getHeight(int plane) const;
+// -- GODOT begin --
 #endif
+// -- GODOT end --
 
 		int w, h;
+		int cs;
 		int chromaShiftW, chromaShiftH;
 		unsigned char *planes[3];
 		int linesize[3];
@@ -75,6 +80,7 @@ private:
 	vpx_codec_ctx *m_ctx;
 	const void *m_iter;
 	int m_delay;
+	int m_last_space;
 };
 
 #endif // VPXDECODER_HPP
