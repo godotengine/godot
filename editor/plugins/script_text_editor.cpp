@@ -1063,6 +1063,44 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->cursor_get_line(), tx->cursor_get_column());
 			}
 		} break;
+
+		case MOVE_CURSOR_FORWARD: {
+
+			if(tx->cursor_get_column() < tx->get_line(tx->cursor_get_line()).size()-1)
+				tx->cursor_set_column(tx->cursor_get_column()+1);
+			else {
+				tx->cursor_set_line(tx->cursor_get_line()+1);
+				tx->cursor_set_column(0);
+			}
+		} break;
+
+		case MOVE_CURSOR_BACKWARD: {
+
+			if(tx->cursor_get_column() > 0)
+				tx->cursor_set_column(tx->cursor_get_column()-1);
+			else {
+				tx->cursor_set_line(tx->cursor_get_line()-1);
+				tx->cursor_set_column(tx->get_line(tx->cursor_get_line()).size());
+			}
+		} break;
+		case MOVE_CURSOR_UP: {
+
+			tx->cursor_set_line(tx->cursor_get_line()-1);
+		} break;
+		case MOVE_CURSOR_DOWN: {
+
+			tx->cursor_set_line(tx->cursor_get_line()+1);
+		} break;
+		case EDIT_DELETE: {
+
+			if(tx->cursor_get_column() < tx->get_line(tx->cursor_get_line()).size()-1)
+				tx->cursor_set_column(tx->cursor_get_column()+1);
+			else {
+				tx->cursor_set_line(tx->cursor_get_line()+1);
+				tx->cursor_set_column(0);
+			}
+			tx->backspace_at_cursor();
+		} break;
 	}
 }
 
@@ -1512,6 +1550,17 @@ ScriptTextEditor::ScriptTextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F6), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", this, "_edit_option");
 
+	PopupMenu *macos_menu = memnew(PopupMenu);
+	macos_menu->set_name("emacsify_menu");
+	edit_menu->get_popup()->add_child(macos_menu);
+	edit_menu->get_popup()->add_submenu_item(TTR("Emacsify Editor"), "emacsify_menu");
+	macos_menu->add_shortcut(ED_SHORTCUT("script_text_editor/move_cursor_forward", TTR("Move Cursor Forward")), MOVE_CURSOR_FORWARD);
+	macos_menu->add_shortcut(ED_SHORTCUT("script_text_editor/move_cursor_backward", TTR("Move Cursor Backward")), MOVE_CURSOR_BACKWARD);
+	macos_menu->add_shortcut(ED_SHORTCUT("script_text_editor/move_cursor_up", TTR("Move Cursor Up")), MOVE_CURSOR_UP);
+	macos_menu->add_shortcut(ED_SHORTCUT("script_text_editor/move_cursor_down", TTR("Move Cursor Down")), MOVE_CURSOR_DOWN);
+	macos_menu->add_shortcut(ED_SHORTCUT("script_text_editor/edit_delete", TTR("Delete Char")), EDIT_DELETE);
+	macos_menu->connect("id_pressed", this, "_edit_option");
+
 	highlighters[TTR("Standard")] = NULL;
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
@@ -1625,6 +1674,20 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);
 #else
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_SHIFT | KEY_F1);
+#endif
+
+#ifdef OSX_ENABLED
+	ED_SHORTCUT("script_text_editor/move_cursor_forward", TTR("Move Cursor Forward"), KEY_MASK_CTRL | KEY_F);
+	ED_SHORTCUT("script_text_editor/move_cursor_backward", TTR("Move Cursor Backward"), KEY_MASK_CTRL | KEY_B);
+	ED_SHORTCUT("script_text_editor/move_cursor_up", TTR("Move Curor Up"), KEY_MASK_CTRL | KEY_P);
+	ED_SHORTCUT("script_text_editor/move_cursor_down", TTR("Move Cursor Down"), KEY_MASK_CTRL | KEY_N);
+	ED_SHORTCUT("script_text_editor/edit_delete", TTR("Delete Char"), KEY_MASK_CTRL | KEY_D);
+#else
+	ED_SHORTCUT("script_text_editor/move_cursor_forward", TTR("Move Cursor Forward"), 0);
+	ED_SHORTCUT("script_text_editor/move_cursor_backward", TTR("Move Cursor Backward"), 0);
+	ED_SHORTCUT("script_text_editor/move_cursor_up", TTR("Move Curor Up"), 0);
+	ED_SHORTCUT("script_text_editor/move_cursor_down", TTR("Move Cursor Down"), 0);
+	ED_SHORTCUT("script_text_editor/edit_delete", TTR("Delete Char"), 0);
 #endif
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
