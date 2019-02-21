@@ -1063,40 +1063,38 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->cursor_get_line(), tx->cursor_get_column());
 			}
 		} break;
-
 		case MOVE_CURSOR_FORWARD: {
 
-			if(tx->cursor_get_column() < tx->get_line(tx->cursor_get_line()).size()-1)
-				tx->cursor_set_column(tx->cursor_get_column()+1);
+			if (tx->cursor_get_column() < tx->get_line(tx->cursor_get_line()).size() - 1)
+				tx->cursor_set_column(tx->cursor_get_column() + 1);
 			else {
-				tx->cursor_set_line(tx->cursor_get_line()+1);
+				tx->cursor_set_line(tx->cursor_get_line() + 1);
 				tx->cursor_set_column(0);
 			}
 		} break;
-
 		case MOVE_CURSOR_BACKWARD: {
 
-			if(tx->cursor_get_column() > 0)
-				tx->cursor_set_column(tx->cursor_get_column()-1);
+			if (tx->cursor_get_column() > 0)
+				tx->cursor_set_column(tx->cursor_get_column() - 1);
 			else {
-				tx->cursor_set_line(tx->cursor_get_line()-1);
+				tx->cursor_set_line(tx->cursor_get_line() - 1);
 				tx->cursor_set_column(tx->get_line(tx->cursor_get_line()).size());
 			}
 		} break;
 		case MOVE_CURSOR_UP: {
 
-			tx->cursor_set_line(tx->cursor_get_line()-1);
+			tx->cursor_set_line(tx->cursor_get_line() - 1);
 		} break;
 		case MOVE_CURSOR_DOWN: {
 
-			tx->cursor_set_line(tx->cursor_get_line()+1);
+			tx->cursor_set_line(tx->cursor_get_line() + 1);
 		} break;
 		case EDIT_DELETE: {
 
-			if(tx->cursor_get_column() < tx->get_line(tx->cursor_get_line()).size()-1)
-				tx->cursor_set_column(tx->cursor_get_column()+1);
+			if (tx->cursor_get_column() < tx->get_line(tx->cursor_get_line()).size() - 1)
+				tx->cursor_set_column(tx->cursor_get_column() + 1);
 			else {
-				tx->cursor_set_line(tx->cursor_get_line()+1);
+				tx->cursor_set_line(tx->cursor_get_line() + 1);
 				tx->cursor_set_column(0);
 			}
 			tx->backspace_at_cursor();
