@@ -365,7 +365,7 @@ void EditorAudioBus::_send_selected(int p_which) {
 	updating_bus = true;
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
-	ur->create_action("Select Audio Bus Send");
+	ur->create_action(TTR("Select Audio Bus Send"));
 	ur->add_do_method(AudioServer::get_singleton(), "set_bus_send", get_index(), send->get_item_text(p_which));
 	ur->add_undo_method(AudioServer::get_singleton(), "set_bus_send", get_index(), AudioServer::get_singleton()->get_bus_send(get_index()));
 	ur->add_do_method(buses, "_update_bus", get_index());
