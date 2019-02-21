@@ -224,7 +224,7 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	uint32_t len = decode_uint32(lbuf);
 	ERR_FAIL_COND_V(remaining < (int)len, ERR_UNAVAILABLE);
 
-	ERR_FAIL_COND_V(input_buffer.size() < len, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(input_buffer.size() < (int)len, ERR_UNAVAILABLE);
 	ring_buffer.read(lbuf, 4); //get rid of first 4 bytes
 	ring_buffer.read(input_buffer.ptrw(), len); // read packet
 

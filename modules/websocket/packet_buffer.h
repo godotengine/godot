@@ -50,7 +50,7 @@ public:
 	Error write_packet(const uint8_t *p_payload, uint32_t p_size, const T *p_info) {
 #ifdef TOOLS_ENABLED
 		// Verbose buffer warnings
-		if (p_payload && _payload.space_left() < p_size) {
+		if (p_payload && _payload.space_left() < (int32_t)p_size) {
 			ERR_PRINT("Buffer payload full! Dropping data.");
 			ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 		}
@@ -83,8 +83,8 @@ public:
 		ERR_FAIL_COND_V(_packets.data_left() < 1, ERR_UNAVAILABLE);
 		_Packet p;
 		_packets.read(&p, 1);
-		ERR_FAIL_COND_V(_payload.data_left() < p.size, ERR_BUG);
-		ERR_FAIL_COND_V(p_bytes < p.size, ERR_OUT_OF_MEMORY);
+		ERR_FAIL_COND_V(_payload.data_left() < (int)p.size, ERR_BUG);
+		ERR_FAIL_COND_V(p_bytes < (int)p.size, ERR_OUT_OF_MEMORY);
 
 		r_read = p.size;
 		copymem(r_info, &p.info, sizeof(T));

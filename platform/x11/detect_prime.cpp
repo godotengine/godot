@@ -180,8 +180,8 @@ int detect_prime() {
 			const char *vendor = (const char *)glGetString(GL_VENDOR);
 			const char *renderer = (const char *)glGetString(GL_RENDERER);
 
-			int vendor_len = strlen(vendor) + 1;
-			int renderer_len = strlen(renderer) + 1;
+			unsigned int vendor_len = strlen(vendor) + 1;
+			unsigned int renderer_len = strlen(renderer) + 1;
 
 			if (vendor_len + renderer_len >= sizeof(string)) {
 				renderer_len = 200 - vendor_len;

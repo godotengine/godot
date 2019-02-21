@@ -421,7 +421,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		}
 
 		Vector<String> desc = path[path.size() - 1].replace("(", "( ").replace(")", " )").replace(",", ", ").split(" ");
-		for (size_t i = 0; i < desc.size(); i++) {
+		for (int i = 0; i < desc.size(); i++) {
 			desc.write[i] = desc[i].capitalize();
 			if (desc[i].ends_with(",")) {
 				desc.write[i] = desc[i].replace(",", ", ");

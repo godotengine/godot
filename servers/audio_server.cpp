@@ -91,10 +91,10 @@ void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 void AudioDriver::input_buffer_write(int32_t sample) {
 
 	input_buffer.write[input_position++] = sample;
-	if (input_position >= input_buffer.size()) {
+	if ((int)input_position >= input_buffer.size()) {
 		input_position = 0;
 	}
-	if (input_size < input_buffer.size()) {
+	if ((int)input_size < input_buffer.size()) {
 		input_size++;
 	}
 }

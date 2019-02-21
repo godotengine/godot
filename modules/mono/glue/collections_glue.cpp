@@ -86,7 +86,7 @@ bool godot_icall_Array_Contains(Array *ptr, MonoObject *item) {
 }
 
 void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index) {
-	int count = ptr->size();
+	unsigned int count = ptr->size();
 
 	if (mono_array_length(array) < (array_index + count)) {
 		MonoException *exc = mono_get_exception_argument("", "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
@@ -94,7 +94,7 @@ void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index) {
 		return;
 	}
 
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(ptr->operator[](i));
 		mono_array_setref(array, array_index, boxed);
 		array_index++;

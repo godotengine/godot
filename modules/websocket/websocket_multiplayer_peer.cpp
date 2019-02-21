@@ -213,7 +213,7 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 	_send_sys(get_peer(p_peer_id), SYS_ADD, 1);
 
 	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
-		uint32_t id = E->key();
+		int32_t id = E->key();
 		if (p_peer_id == id)
 			continue; // Skip the newwly added peer (already confirmed)
 
@@ -226,7 +226,7 @@ void WebSocketMultiplayerPeer::_send_add(int32_t p_peer_id) {
 
 void WebSocketMultiplayerPeer::_send_del(int32_t p_peer_id) {
 	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
-		uint32_t id = E->key();
+		int32_t id = E->key();
 		if (p_peer_id != id)
 			_send_sys(get_peer(id), SYS_DEL, p_peer_id);
 	}
@@ -288,7 +288,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 	data_size = size - PROTO_SIZE;
 
 	uint8_t type = 0;
-	int32_t from = 0;
+	uint32_t from = 0;
 	int32_t to = 0;
 	copymem(&type, in_buffer, 1);
 	copymem(&from, &in_buffer[1], 4);

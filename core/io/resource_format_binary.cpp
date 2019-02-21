@@ -106,7 +106,7 @@ StringName ResourceInteractiveLoaderBinary::_get_string() {
 	uint32_t id = f->get_32();
 	if (id & 0x80000000) {
 		uint32_t len = id & 0x7FFFFFFF;
-		if (len > str_buf.size()) {
+		if ((int)len > str_buf.size()) {
 			str_buf.resize(len);
 		}
 		if (len == 0)

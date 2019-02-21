@@ -91,7 +91,7 @@ static bool _wait_for_debugger_msecs(uint32_t p_msecs) {
 
 		OS::get_singleton()->delay_usec((p_msecs < 25 ? p_msecs : 25) * 1000);
 
-		int tdiff = OS::get_singleton()->get_ticks_msec() - last_tick;
+		uint32_t tdiff = OS::get_singleton()->get_ticks_msec() - last_tick;
 
 		if (tdiff > p_msecs) {
 			p_msecs = 0;
@@ -864,7 +864,7 @@ Error GDMono::reload_scripts_domain() {
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
 
-			Error err = _unload_scripts_domain();
+			err = _unload_scripts_domain();
 			if (err != OK) {
 				WARN_PRINT("Mono: Failed to unload scripts domain");
 			}

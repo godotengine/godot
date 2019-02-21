@@ -449,7 +449,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		Variant::_RID
 	};
 
-	for (int i = 0; i < sizeof(var_types) / sizeof(Variant::Type); i++) {
+	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(Variant::Type); i++) {
 		if (p_var_type_name == Variant::get_type_name(var_types[i]))
 			return p_var_type_name;
 	}
@@ -2172,7 +2172,7 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 				return false;
 			}
 
-			if (val != i) {
+			if (val != (unsigned int)i) {
 				uses_default_values = false;
 			}
 
