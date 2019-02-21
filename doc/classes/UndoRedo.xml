@@ -8,22 +8,22 @@
 		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
 		Here's an example on how to add an action to Godot editor's own 'undoredo':
 		[codeblock]
-		var undoredo = get_undo_redo() # method of EditorPlugin
+		var undo_redo = get_undo_redo() # Method of EditorPlugin.
 
 		func do_something():
-		    pass # put your code here
+		    pass # Put your code here.
 
 		func undo_something():
-		    pass # put here the code that reverts what's done by "do_something()"
+		    pass # Put here the code that reverts what's done by "do_something()".
 
 		func _on_MyButton_pressed():
 		    var node = get_node("MyNode2D")
-		    undoredo.create_action("Move the node")
-		    undoredo.add_do_method(self, "do_something")
-		    undoredo.add_undo_method(self, "undo_something")
-		    undoredo.add_do_property(node, "position", Vector2(100,100))
-		    undoredo.add_undo_property(node, "position", node.position)
-		    undoredo.commit_action()
+		    undo_redo.create_action("Move the node")
+		    undo_redo.add_do_method(self, "do_something")
+		    undo_redo.add_undo_method(self, "undo_something")
+		    undo_redo.add_do_property(node, "position", Vector2(100,100))
+		    undo_redo.add_undo_property(node, "position", node.position)
+		    undo_redo.commit_action()
 		[/codeblock]
 		[method create_action], [method add_do_method], [method add_undo_method], [method add_do_property], [method add_undo_property], and [method commit_action] should be called one after the other, like in the example. Not doing so could lead to crashes.
 		If you don't need to register a method you can leave [method add_do_method] and [method add_undo_method] out, and so it goes for properties. You can register more than one method/property.
@@ -125,6 +125,7 @@
 			</argument>
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
+				The way actions are merged is dictated by the [code]merge_mode[/code] argument. See [enum MergeMode] for details.
 			</description>
 		</method>
 		<method name="get_current_action_name" qualifiers="const">
@@ -159,10 +160,13 @@
 	</methods>
 	<constants>
 		<constant name="MERGE_DISABLE" value="0" enum="MergeMode">
+			Makes [code]do[/code]/[code]undo[/code] operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
+			Makes so that the action's [code]do[/code] operation is from the first action created and the [code]undo[/code] operation is from the last subsequent action with the same name.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
+			Makes subsequent actions with the same name be merged into one.
 		</constant>
 	</constants>
 </class>
