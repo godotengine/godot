@@ -1597,7 +1597,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::INT: {
 
-			p_store_string_func(p_store_string_ud, itos(p_variant.operator int()));
+			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::REAL: {
 
