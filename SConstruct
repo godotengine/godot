@@ -339,7 +339,6 @@ if selected_platform in platform_list:
         if (env["werror"]):
             env.Append(CCFLAGS=['/WX'])
     else: # Rest of the world
-        disable_nonessential_warnings = ['-Wno-sign-compare']
         shadow_local_warning = []
         all_plus_warnings = ['-Wwrite-strings']
 
@@ -350,9 +349,9 @@ if selected_platform in platform_list:
         if (env["warnings"] == 'extra'):
             env.Append(CCFLAGS=['-Wall', '-Wextra'] + all_plus_warnings + shadow_local_warning)
         elif (env["warnings"] == 'all'):
-            env.Append(CCFLAGS=['-Wall'] + all_plus_warnings + shadow_local_warning + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):
-            env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + shadow_local_warning + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused']  + shadow_local_warning)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
         if (env["werror"]):

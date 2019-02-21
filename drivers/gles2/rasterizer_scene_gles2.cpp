@@ -158,7 +158,7 @@ void RasterizerSceneGLES2::shadow_atlas_set_quadrant_subdivision(RID p_atlas, in
 
 	subdiv = int(Math::sqrt((float)subdiv));
 
-	if (shadow_atlas->quadrants[p_quadrant].shadows.size() == subdiv)
+	if (shadow_atlas->quadrants[p_quadrant].shadows.size() == (int)subdiv)
 		return;
 
 	// erase all data from the quadrant
