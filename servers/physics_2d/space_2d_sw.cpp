@@ -518,6 +518,9 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 		if (p_body->is_shape_set_as_disabled(i))
 			continue;
 
+		if (p_body->get_shape(i)->get_type() != Physics2DServer::SHAPE_RAY)
+			continue;
+
 		if (!shapes_found) {
 			body_aabb = p_body->get_shape_aabb(i);
 			shapes_found = true;
@@ -632,6 +635,7 @@ int Space2DSW::test_body_ray_separation(Body2DSW *p_body, const Transform2D &p_t
 						}
 
 						if (ray_index != -1) {
+
 							Physics2DServer::SeparationResult &result = r_results[ray_index];
 
 							for (int k = 0; k < cbk.amount; k++) {
@@ -707,6 +711,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	for (int i = 0; i < p_body->get_shape_count(); i++) {
 
 		if (p_body->is_shape_set_as_disabled(i))
+			continue;
+
+		if (p_exclude_raycast_shapes && p_body->get_shape(i)->get_type() == Physics2DServer::SHAPE_RAY)
 			continue;
 
 		if (!shapes_found) {
@@ -1030,6 +1037,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			Transform2D body_shape_xform = ugt * p_body->get_shape_transform(j);
 			Shape2DSW *body_shape = p_body->get_shape(j);
+
+			if (p_exclude_raycast_shapes && body_shape->get_type() == Physics2DServer::SHAPE_RAY) {
+				continue;
+			}
 
 			body_aabb.position += p_motion * unsafe;
 
