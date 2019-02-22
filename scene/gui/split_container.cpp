@@ -164,11 +164,6 @@ void SplitContainer::_notification(int p_what) {
 
 			_resort();
 		} break;
-		case NOTIFICATION_MOUSE_ENTER: {
-
-			mouse_inside = true;
-			update();
-		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 
 			mouse_inside = false;
@@ -182,16 +177,17 @@ void SplitContainer::_notification(int p_what) {
 			if (collapsed || (!mouse_inside && get_constant("autohide")))
 				return;
 
+			if (dragger_visibility != DRAGGER_VISIBLE)
+				return;
+
 			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_constant("separation") : 0;
 			Ref<Texture> tex = get_icon("grabber");
 			Size2 size = get_size();
-			if (dragger_visibility == DRAGGER_VISIBLE) {
 
-				if (vertical)
-					draw_texture(tex, Point2i((size.x - tex->get_width()) / 2, middle_sep + (sep - tex->get_height()) / 2));
-				else
-					draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
-			}
+			if (vertical)
+				draw_texture(tex, Point2i((size.x - tex->get_width()) / 2, middle_sep + (sep - tex->get_height()) / 2));
+			else
+				draw_texture(tex, Point2i(middle_sep + (sep - tex->get_width()) / 2, (size.y - tex->get_height()) / 2));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
@@ -241,7 +237,22 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && dragging) {
+	if (mm.is_valid()) {
+
+		bool mouse_inside_state = false;
+		if (vertical)
+			mouse_inside_state = mm->get_position().y > middle_sep && mm->get_position().y < middle_sep + get_constant("separation");
+		else
+			mouse_inside_state = mm->get_position().x > middle_sep && mm->get_position().x < middle_sep + get_constant("separation");
+
+		if (mouse_inside != mouse_inside_state) {
+
+			mouse_inside = mouse_inside_state;
+			update();
+		}
+
+		if (!dragging)
+			return;
 
 		split_offset = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
 		should_clamp_split_offset = true;
