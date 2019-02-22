@@ -631,7 +631,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 					(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
 
 				if (set_items.size()) {
-					undo_redo->create_action("GridMap Paint");
+					undo_redo->create_action(TTR("GridMap Paint"));
 					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
 
 						const SetItem &si = E->get();

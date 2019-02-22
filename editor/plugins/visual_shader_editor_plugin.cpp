@@ -393,7 +393,7 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	if (node->get_output_port_for_preview() == p_port) {
 		p_port = -1; //toggle it
 	}
-	undo_redo->create_action("Set Uniform Name");
+	undo_redo->create_action(TTR("Set Uniform Name"));
 	undo_redo->add_do_method(node.ptr(), "set_output_port_for_preview", p_port);
 	undo_redo->add_undo_method(node.ptr(), "set_output_port_for_preview", node->get_output_port_for_preview());
 	undo_redo->add_do_method(this, "_update_graph");
@@ -411,7 +411,7 @@ void VisualShaderEditor::_line_edit_changed(const String &p_text, Object *line_e
 	String validated_name = visual_shader->validate_uniform_name(p_text, node);
 
 	updating = true;
-	undo_redo->create_action("Set Uniform Name");
+	undo_redo->create_action(TTR("Set Uniform Name"));
 	undo_redo->add_do_method(node.ptr(), "set_uniform_name", validated_name);
 	undo_redo->add_undo_method(node.ptr(), "set_uniform_name", node->get_uniform_name());
 	undo_redo->add_do_method(this, "_update_graph");
@@ -436,7 +436,7 @@ void VisualShaderEditor::_port_edited() {
 	Ref<VisualShaderNode> vsn = visual_shader->get_node(type, editing_node);
 	ERR_FAIL_COND(!vsn.is_valid());
 
-	undo_redo->create_action("Set Input Default Port");
+	undo_redo->create_action(TTR("Set Input Default Port"));
 	undo_redo->add_do_method(vsn.ptr(), "set_input_port_default_value", editing_port, value);
 	undo_redo->add_undo_method(vsn.ptr(), "set_input_port_default_value", editing_port, vsn->get_input_port_default_value(editing_port));
 	undo_redo->add_do_method(this, "_update_graph");
@@ -487,7 +487,7 @@ void VisualShaderEditor::_add_node(int p_idx) {
 
 	int id_to_use = visual_shader->get_valid_node_id(type);
 
-	undo_redo->create_action("Add Node to Visual Shader");
+	undo_redo->create_action(TTR("Add Node to Visual Shader"));
 	undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, vsnode, position, id_to_use);
 	undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_to_use);
 	undo_redo->add_do_method(this, "_update_graph");
@@ -500,7 +500,7 @@ void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_t
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 
 	updating = true;
-	undo_redo->create_action("Node Moved");
+	undo_redo->create_action(TTR("Node Moved"));
 	undo_redo->add_do_method(visual_shader.ptr(), "set_node_position", type, p_node, p_to);
 	undo_redo->add_undo_method(visual_shader.ptr(), "set_node_position", type, p_node, p_from);
 	undo_redo->add_do_method(this, "_update_graph");
@@ -521,7 +521,7 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 		return;
 	}
 
-	undo_redo->create_action("Nodes Connected");
+	undo_redo->create_action(TTR("Nodes Connected"));
 
 	List<VisualShader::Connection> conns;
 	visual_shader->get_node_connections(type, &conns);
@@ -550,7 +550,7 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 	int to = p_to.to_int();
 
 	//updating = true; seems graph edit can handle this, no need to protect
-	undo_redo->create_action("Nodes Disconnected");
+	undo_redo->create_action(TTR("Nodes Disconnected"));
 	undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, from, p_from_index, to, p_to_index);
 	undo_redo->add_do_method(this, "_update_graph");
@@ -566,7 +566,7 @@ void VisualShaderEditor::_delete_request(int which) {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
 
-	undo_redo->create_action("Delete Node");
+	undo_redo->create_action(TTR("Delete Node"));
 	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
 	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, visual_shader->get_node(type, which), visual_shader->get_node_position(type, which), which);
 
@@ -671,7 +671,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 	if (nodes.empty())
 		return;
 
-	undo_redo->create_action("Duplicate Nodes");
+	undo_redo->create_action(TTR("Duplicate Nodes"));
 
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
@@ -732,7 +732,7 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> input, St
 	bool type_changed = input->get_input_type_by_name(name) != input->get_input_type_by_name(prev_name);
 
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-	undo_redo->create_action("Visual Shader Input Type Changed");
+	undo_redo->create_action(TTR("Visual Shader Input Type Changed"));
 
 	undo_redo->add_do_method(input.ptr(), "set_input_name", name);
 	undo_redo->add_undo_method(input.ptr(), "set_input_name", prev_name);
@@ -972,7 +972,7 @@ public:
 		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 		updating = true;
-		undo_redo->create_action("Edit Visual Property: " + prop, UndoRedo::MERGE_ENDS);
+		undo_redo->create_action(TTR("Edit Visual Property") + ": " + prop, UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(node.ptr(), prop, p_value);
 		undo_redo->add_undo_property(node.ptr(), prop, node->get(prop));
 		undo_redo->commit_action();
@@ -1093,7 +1093,7 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 		return;
 
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-	undo_redo->create_action("Visual Shader Mode Changed");
+	undo_redo->create_action(TTR("Visual Shader Mode Changed"));
 	//do is easy
 	undo_redo->add_do_method(visual_shader.ptr(), "set_mode", p_which);
 	undo_redo->add_undo_method(visual_shader.ptr(), "set_mode", visual_shader->get_mode());
