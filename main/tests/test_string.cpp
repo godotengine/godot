@@ -457,7 +457,7 @@ bool test_27() {
 			state = s.begins_with(sb) == tc[i].expected;
 		}
 		if (!state) {
-			OS::get_singleton()->print("\n\t Failure on:\n\t\tstring: ", tc[i].data, "\n\t\tbegin: ", tc[i].begin, "\n\t\texpected: ", tc[i].expected ? "true" : "false", "\n");
+			OS::get_singleton()->print("\n\t Failure on:\n\t\tstring: %s\n\t\tbegin: %s\n\t\texpected: %s\n", tc[i].data, tc[i].begin, tc[i].expected ? "true" : "false");
 			break;
 		}
 	};

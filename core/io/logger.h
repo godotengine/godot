@@ -49,11 +49,11 @@ public:
 		ERR_SHADER
 	};
 
-	virtual void logv(const char *p_format, va_list p_list, bool p_err) = 0;
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 
-	void logf(const char *p_format, ...);
-	void logf_error(const char *p_format, ...);
+	void logf(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+	void logf_error(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
 	virtual ~Logger();
 };
@@ -64,7 +64,7 @@ public:
 class StdLogger : public Logger {
 
 public:
-	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual ~StdLogger();
 };
 
@@ -88,7 +88,7 @@ class RotatedFileLogger : public Logger {
 public:
 	RotatedFileLogger(const String &p_base_path, int p_max_files = 10);
 
-	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0;
 
 	virtual ~RotatedFileLogger();
 };
@@ -99,7 +99,7 @@ class CompositeLogger : public Logger {
 public:
 	CompositeLogger(Vector<Logger *> p_loggers);
 
-	virtual void logv(const char *p_format, va_list p_list, bool p_err);
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 
 	void add_logger(Logger *p_logger);

@@ -307,4 +307,12 @@ struct _GlobalLock {
 #define unlikely(x) x
 #endif
 
+#if defined(__GNUC__)
+#define _PRINTF_FORMAT_ATTRIBUTE_2_0 __attribute__((format(printf, 2, 0)))
+#define _PRINTF_FORMAT_ATTRIBUTE_2_3 __attribute__((format(printf, 2, 3)))
+#else
+#define _PRINTF_FORMAT_ATTRIBUTE_2_0
+#define _PRINTF_FORMAT_ATTRIBUTE_2_3
+#endif
+
 #endif // TYPEDEFS_H

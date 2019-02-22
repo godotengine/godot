@@ -148,8 +148,8 @@ public:
 	static OS *get_singleton();
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
-	void print(const char *p_format, ...);
-	void printerr(const char *p_format, ...);
+	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 	virtual String get_stdin_string(bool p_block = true) = 0;
