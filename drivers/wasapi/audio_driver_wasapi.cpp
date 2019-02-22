@@ -270,6 +270,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	hr = p_device->audio_client->Initialize(AUDCLNT_SHAREMODE_SHARED, streamflags, p_capture ? REFTIMES_PER_SEC : 0, 0, pwfex, NULL);
+	ERR_EXPLAIN("WASAPI: Initialize failed with error 0x" + String::num_uint64(hr, 16));
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
 
 	if (p_capture) {
