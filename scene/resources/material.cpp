@@ -830,7 +830,7 @@ void SpatialMaterial::_update_shader() {
 		code += "\tALPHA = albedo.a * albedo_tex.a;\n";
 	}
 
-	if (!VisualServer::get_singleton()->is_low_end() && proximity_fade_enabled) {
+	if (proximity_fade_enabled) {
 		code += "\tfloat depth_tex = textureLod(DEPTH_TEXTURE,SCREEN_UV,0.0).r;\n";
 		code += "\tvec4 world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV*2.0-1.0,depth_tex*2.0-1.0,1.0);\n";
 		code += "\tworld_pos.xyz/=world_pos.w;\n";

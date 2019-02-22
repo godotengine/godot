@@ -1183,9 +1183,14 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->copy_screen_effect.color);
 	}
 
+	if (p_material->shader->spatial.uses_depth_texture && storage->frame.current_rt) {
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
+		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
+	}
+
 	bool shader_rebind = state.scene_shader.bind();
 
-	if (p_material->shader->spatial.no_depth_test) {
+	if (p_material->shader->spatial.no_depth_test || p_material->shader->spatial.uses_depth_texture) {
 		glDisable(GL_DEPTH_TEST);
 	} else {
 		glEnable(GL_DEPTH_TEST);
@@ -1195,10 +1200,10 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS:
 		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_OPAQUE: {
 
-			glDepthMask(!p_alpha_pass);
+			glDepthMask(!p_alpha_pass && !p_material->shader->spatial.uses_depth_texture);
 		} break;
 		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALWAYS: {
-			glDepthMask(GL_TRUE);
+			glDepthMask(GL_TRUE && !p_material->shader->spatial.uses_depth_texture);
 		} break;
 		case RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_NEVER: {
 			glDepthMask(GL_FALSE);
@@ -2359,7 +2364,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				} else {
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, 1.0);
-					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, Color(1.0, 1.0, 1.0, 1.0));
+					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, state.default_ambient);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, 1.0);
 				}
 
@@ -2471,7 +2476,6 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
-	glColorMask(1, 1, 1, 1);
 
 	// Camera
 	CameraMatrix camera;
@@ -2673,7 +2677,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	// clear color
 
-	Color clear_color(0, 0, 0, 0);
+	Color clear_color(0, 0, 0, 1);
 
 	if (storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
 		clear_color = Color(0, 0, 0, 0);
@@ -2693,6 +2697,8 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	if (!env || env->bg_mode != VS::ENV_BG_KEEP) {
 		glClearColor(clear_color.r, clear_color.g, clear_color.b, clear_color.a);
 	}
+
+	state.default_ambient = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
