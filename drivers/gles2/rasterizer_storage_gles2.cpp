@@ -4279,9 +4279,6 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	// copy texscreen buffers
 	if (!(rt->flags[RasterizerStorage::RENDER_TARGET_NO_SAMPLING])) {
 
-		int w = rt->width;
-		int h = rt->height;
-
 		glGenTextures(1, &rt->copy_screen_effect.color);
 		glBindTexture(GL_TEXTURE_2D, rt->copy_screen_effect.color);
 
