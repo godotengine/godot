@@ -1417,7 +1417,7 @@ StringName GDScriptTokenizerBuffer::get_token_identifier(int p_offset) const {
 
 	ERR_FAIL_INDEX_V(offset, tokens.size(), StringName());
 	uint32_t identifier = tokens[offset] >> TOKEN_BITS;
-	ERR_FAIL_INDEX_V(identifier, (uint32_t)identifiers.size(), StringName());
+	ERR_FAIL_UNSIGNED_INDEX_V(identifier, identifiers.size(), StringName());
 
 	return identifiers[identifier];
 }
@@ -1473,7 +1473,7 @@ const Variant &GDScriptTokenizerBuffer::get_token_constant(int p_offset) const {
 	int offset = token + p_offset;
 	ERR_FAIL_INDEX_V(offset, tokens.size(), nil);
 	uint32_t constant = tokens[offset] >> TOKEN_BITS;
-	ERR_FAIL_INDEX_V(constant, (uint32_t)constants.size(), nil);
+	ERR_FAIL_UNSIGNED_INDEX_V(constant, constants.size(), nil);
 	return constants[constant];
 }
 String GDScriptTokenizerBuffer::get_token_error(int p_offset) const {

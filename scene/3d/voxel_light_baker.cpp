@@ -2208,7 +2208,7 @@ PoolVector<int> VoxelLightBaker::create_gi_probe_data() {
 			}
 
 			{
-				uint16_t alpha = CLAMP(uint32_t(bake_cells[i].alpha * 65535.0), 0, 65535);
+				uint16_t alpha = MAX(uint32_t(bake_cells[i].alpha * 65535.0), 65535);
 				uint16_t level = bake_cells[i].level;
 
 				w32[ofs++] = (uint32_t(level) << 16) | uint32_t(alpha);

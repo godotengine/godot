@@ -2480,7 +2480,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 							uint32_t a = uint32_t(alpha_block[x][y]) - min_alpha;
 							//convert range to 3 bits
 							a = int((a * 7.0 / (max_alpha - min_alpha)) + 0.5);
-							a = CLAMP(a, 0, 7); //just to be sure
+							a = MAX(a, 7); //just to be sure
 							a = 7 - a; //because range is inverted in this mode
 							if (a == 0) {
 								//do none, remain
@@ -2924,10 +2924,10 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 				uint32_t mm_ofs = sizes[0] * sizes[1] * (local_data[idx].pos[2]) + sizes[0] * (local_data[idx].pos[1]) + (local_data[idx].pos[0]);
 				mm_ofs *= 4; //for RGBA (4 bytes)
 
-				mipmapw[mm_ofs + 0] = uint8_t(CLAMP(r2, 0, 255));
-				mipmapw[mm_ofs + 1] = uint8_t(CLAMP(g, 0, 255));
-				mipmapw[mm_ofs + 2] = uint8_t(CLAMP(b, 0, 255));
-				mipmapw[mm_ofs + 3] = uint8_t(CLAMP(a, 0, 255));
+				mipmapw[mm_ofs + 0] = uint8_t(MAX(r2, 255));
+				mipmapw[mm_ofs + 1] = uint8_t(MAX(g, 255));
+				mipmapw[mm_ofs + 2] = uint8_t(MAX(b, 255));
+				mipmapw[mm_ofs + 3] = uint8_t(MAX(a, 255));
 			}
 		}
 	} else if (probe_data->dynamic.compression == RasterizerStorage::GI_PROBE_S3TC) {
