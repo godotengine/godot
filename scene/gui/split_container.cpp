@@ -167,14 +167,15 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 
 			mouse_inside = false;
-			update();
+			if (get_constant("autohide"))
+				update();
 		} break;
 		case NOTIFICATION_DRAW: {
 
 			if (!_getch(0) || !_getch(1))
 				return;
 
-			if (collapsed || (!mouse_inside && get_constant("autohide")))
+			if (collapsed || (!dragging && !mouse_inside && get_constant("autohide")))
 				return;
 
 			if (dragger_visibility != DRAGGER_VISIBLE)
@@ -248,7 +249,8 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 		if (mouse_inside != mouse_inside_state) {
 
 			mouse_inside = mouse_inside_state;
-			update();
+			if (get_constant("autohide"))
+				update();
 		}
 
 		if (!dragging)
