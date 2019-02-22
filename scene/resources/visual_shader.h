@@ -175,7 +175,9 @@ public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
 		PORT_TYPE_VECTOR,
+		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
+		PORT_TYPE_COLOR // just a hint for node tree icons, do not use it as actual port type !
 	};
 
 	virtual String get_caption() const = 0;
