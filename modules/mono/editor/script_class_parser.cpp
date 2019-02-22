@@ -567,7 +567,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 					if (full_name.length())
 						full_name += ".";
 					full_name += class_decl.name;
-					OS::get_singleton()->print(String("Ignoring generic class declaration: " + class_decl.name).utf8());
+					OS::get_singleton()->print("%s", String("Ignoring generic class declaration: " + class_decl.name).utf8().get_data());
 				}
 			}
 		} else if (tk == TK_IDENTIFIER && String(value) == "struct") {
