@@ -167,7 +167,7 @@ public:
 
 		KinematicShape() :
 				shape(NULL) {}
-		const bool is_active() const { return shape; }
+		bool is_active() const { return shape; }
 	};
 
 	struct KinematicUtilities {
