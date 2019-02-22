@@ -724,6 +724,9 @@ uniform vec2 screen_pixel_size;
 #if defined(SCREEN_TEXTURE_USED)
 uniform highp sampler2D screen_texture; //texunit:-4
 #endif
+#if defined(DEPTH_TEXTURE_USED)
+uniform highp sampler2D depth_texture; //texunit:-4
+#endif
 
 #ifdef USE_REFLECTION_PROBE1
 

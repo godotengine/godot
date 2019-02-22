@@ -103,6 +103,7 @@ public:
 		GLuint sky_verts;
 
 		GLuint immediate_buffer;
+		Color default_ambient;
 
 		// ResolveShaderGLES3 resolve_shader;
 		// ScreenSpaceReflectionShaderGLES3 ssr_shader;

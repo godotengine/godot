@@ -115,12 +115,10 @@ void RasterizerCanvasGLES2::canvas_begin() {
 	state.using_transparent_rt = false;
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
-		glColorMask(1, 1, 1, 1);
 		state.using_transparent_rt = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 	}
 
 	if (storage->frame.clear_request) {
-		glColorMask(true, true, true, true);
 		glClearColor(storage->frame.clear_request_color.r,
 				storage->frame.clear_request_color.g,
 				storage->frame.clear_request_color.b,
@@ -128,8 +126,6 @@ void RasterizerCanvasGLES2::canvas_begin() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		storage->frame.clear_request = false;
 	}
-
-	glColorMask(1, 1, 1, state.using_transparent_rt ? 1 : 0);
 
 	/*
 	if (storage->frame.current_rt) {
@@ -186,9 +182,6 @@ void RasterizerCanvasGLES2::canvas_end() {
 	state.using_texture_rect = false;
 	state.using_skeleton = false;
 	state.using_ninepatch = false;
-	if (state.using_transparent_rt) {
-		glColorMask(1, 1, 1, 1);
-	}
 	state.using_transparent_rt = false;
 }
 
@@ -1182,10 +1175,6 @@ void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 		ERR_FAIL();
 	}
 
-	if (state.using_transparent_rt) {
-		glColorMask(1, 1, 1, 1);
-	}
-
 	glDisable(GL_BLEND);
 
 	Vector2 wh(storage->frame.current_rt->width, storage->frame.current_rt->height);
@@ -1228,10 +1217,6 @@ void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, false);
-
-	if (state.using_transparent_rt) {
-		glColorMask(1, 1, 1, 0);
-	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //back to front
 	glEnable(GL_BLEND);
