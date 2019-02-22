@@ -1046,6 +1046,13 @@ bool test_32() {
 #undef STRIP_TEST
 }
 
+bool test_33() {
+	OS::get_singleton()->print("\n\nTest 33: parse_utf8(null, -1)\n");
+
+	String empty;
+	return empty.parse_utf8(NULL, -1) == true;
+}
+
 typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
@@ -1082,6 +1089,7 @@ TestFunc test_funcs[] = {
 	test_30,
 	test_31,
 	test_32,
+	test_33,
 	0
 
 };
