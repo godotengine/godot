@@ -44,7 +44,7 @@ layout(location = 5) in vec2 uv2_attrib;
 
 #ifdef USE_SKELETON
 layout(location = 6) in uvec4 bone_indices; // attrib:6
-layout(location = 7) in vec4 bone_weights; // attrib:7
+layout(location = 7) in highp vec4 bone_weights; // attrib:7
 #endif
 
 #ifdef USE_INSTANCING
@@ -314,7 +314,7 @@ void main() {
 
 	highp vec4 vertex = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
 
-	mat4 world_matrix = world_transform;
+	highp mat4 world_matrix = world_transform;
 
 #ifdef USE_INSTANCING
 
@@ -395,44 +395,46 @@ void main() {
 		ivec4 bone_indicesi = ivec4(bone_indices); // cast to signed int
 
 		ivec2 tex_ofs = ivec2(bone_indicesi.x % 256, (bone_indicesi.x / 256) * 3);
-		highp mat3x4 m;
-		m = mat3x4(
+		highp mat4 m;
+		m = mat4(
 					texelFetch(skeleton_texture, tex_ofs, 0),
 					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					vec4(0.0,0.0,0.0,1.0)) *
 			bone_weights.x;
 
 		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 3);
 
-		m += mat3x4(
+		m += mat4(
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0,0.0,0.0,1.0)) *
 			 bone_weights.y;
 
 		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 3);
 
-		m += mat3x4(
+		m += mat4(
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0,0.0,0.0,1.0)) *
 			 bone_weights.z;
 
 		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 3);
 
-		m += mat3x4(
+		m += mat4(
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
-					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0)) *
+					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
+					 vec4(0.0,0.0,0.0,1.0)) *
 			 bone_weights.w;
 
-		mat4 bone_matrix = transpose(mat4(m[0], m[1], m[2], vec4(0.0, 0.0, 0.0, 1.0)));
-
-		world_matrix = bone_matrix * world_matrix;
+		world_matrix = transpose(m) * world_matrix;
 	}
 #endif
 
-	mat4 modelview = camera_inverse_matrix * world_matrix;
+	highp mat4 modelview = camera_inverse_matrix * world_matrix;
 	{
 		/* clang-format off */
 
