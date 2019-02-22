@@ -1359,6 +1359,9 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 #define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
 
+	if (!p_utf8)
+		return true;
+
 	String aux;
 
 	int cstr_size = 0;
