@@ -2705,6 +2705,7 @@ void TilesetEditorContext::_bind_methods() {
 TilesetEditorContext::TilesetEditorContext(TileSetEditor *p_tileset_editor) {
 
 	tileset_editor = p_tileset_editor;
+	snap_options_visible = false;
 }
 
 void TileSetEditorPlugin::edit(Object *p_node) {

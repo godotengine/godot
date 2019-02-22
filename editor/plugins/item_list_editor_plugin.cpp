@@ -353,6 +353,7 @@ void ItemListEditor::_bind_methods() {
 ItemListEditor::ItemListEditor() {
 
 	selected_idx = -1;
+	item_list = NULL;
 
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));

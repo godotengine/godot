@@ -1370,6 +1370,9 @@ bool EditorNode::item_has_editor(Object *p_object) {
 	return editor_data.get_subeditors(p_object).size() > 0;
 }
 
+void EditorNode::edit_item_resource(RES p_resource) {
+	edit_item(p_resource.ptr());
+}
 void EditorNode::edit_item(Object *p_object) {
 
 	Vector<EditorPlugin *> sub_plugins;
@@ -4730,6 +4733,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_clear_undo_history", &EditorNode::_clear_undo_history);
 	ClassDB::bind_method("_dropped_files", &EditorNode::_dropped_files);
 	ClassDB::bind_method("_toggle_distraction_free_mode", &EditorNode::_toggle_distraction_free_mode);
+	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
 	ClassDB::bind_method(D_METHOD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);

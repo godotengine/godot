@@ -2439,7 +2439,7 @@ void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 void EditorPropertyResource::_open_editor_pressed() {
 	RES res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->edit_item(res.ptr());
+		EditorNode::get_singleton()->call_deferred("edit_item_resource", res); //may clear the editor so do it deferred
 	}
 }
 

@@ -3202,6 +3202,8 @@ Viewport::Viewport() {
 	gui.drag_attempted = false;
 	gui.canvas_sort_index = 0;
 	gui.roots_order_dirty = false;
+	gui.mouse_focus = NULL;
+	gui.last_mouse_focus = NULL;
 
 	msaa = MSAA_DISABLED;
 	hdr = true;
