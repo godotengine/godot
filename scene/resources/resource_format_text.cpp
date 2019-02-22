@@ -1422,7 +1422,6 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 					} else {
 						_find_resources(v);
 					}
-
 				}
 
 				I = I->next();

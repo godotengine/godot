@@ -2057,7 +2057,6 @@ FRAGMENT_SHADER_CODE
 	gl_FragColor.rgb *= (1.0 - fog_interp.a);
 #endif // BASE_PASS
 
-
 #else //pixel based fog
 	float fog_amount = 0.0;
 
