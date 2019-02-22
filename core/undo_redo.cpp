@@ -63,43 +63,37 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 		_discard_redo();
 
 		// Check if the merge operation is valid
-		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].last_tick + 800 > ticks) {
+		if (p_mode == MERGE_ENDS && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].last_tick + 800 > ticks) {
 
 			current_action = actions.size() - 2;
 
-			if (p_mode == MERGE_ENDS) {
+			// Clear all do ops from last action, and delete all object references
+			List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front();
 
-				// Clear all do ops from last action, and delete all object references
-				List<Operation>::Element *E = actions.write[current_action + 1].do_ops.front();
+			while (E) {
 
-				while (E) {
+				if (E->get().type == Operation::TYPE_REFERENCE) {
 
-					if (E->get().type == Operation::TYPE_REFERENCE) {
+					Object *obj = ObjectDB::get_instance(E->get().object);
 
-						Object *obj = ObjectDB::get_instance(E->get().object);
-
-						if (obj)
-							memdelete(obj);
-					}
-
-					E = E->next();
-					actions.write[current_action + 1].do_ops.pop_front();
+					if (obj)
+						memdelete(obj);
 				}
+
+				E = E->next();
+				actions.write[current_action + 1].do_ops.pop_front();
 			}
 
 			actions.write[actions.size() - 1].last_tick = ticks;
-
-			merge_mode = p_mode;
-
 		} else {
 
 			Action new_action;
 			new_action.name = p_name;
 			new_action.last_tick = ticks;
 			actions.push_back(new_action);
-
-			merge_mode = MERGE_DISABLE;
 		}
+
+		merge_mode = p_mode;
 	}
 
 	action_level++;
