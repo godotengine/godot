@@ -339,7 +339,7 @@ if selected_platform in platform_list:
         shadow_local_warning = []
         all_plus_warnings = ['-Wwrite-strings']
 
-        if 'gcc' in os.path.basename(env["CC"]):
+        if methods.use_gcc(env):
             version = methods.get_compiler_version(env)
             if version != None and version[0] >= '7':
                 shadow_local_warning = ['-Wshadow-local']
