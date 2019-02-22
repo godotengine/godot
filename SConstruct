@@ -338,7 +338,7 @@ if selected_platform in platform_list:
         disable_nonessential_warnings = ['-Wno-sign-compare']
         shadow_local_warning = []
 
-        if 'gcc' in os.path.basename(env["CC"]):
+        if methods.use_gcc(env):
             version = methods.get_compiler_version(env)
             if version != None and version[0] >= '7':
                 shadow_local_warning = ['-Wshadow-local']
