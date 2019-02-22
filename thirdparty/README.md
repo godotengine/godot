@@ -287,6 +287,7 @@ File extracted from upstream release tarball `mbedtls-2.16.0-apache.tgz`:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
 - Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453). Soon to be merged upstream. Check it out at next update.
+- Applied the patch in `thirdparty/mbedtls/padlock.diff`. This disables VIA padlock support which defines a symbol `unsupported` which clashses with a symbol in libwebsockets.
 
 ## miniupnpc
 
