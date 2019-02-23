@@ -53,6 +53,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
 	get_text_edit()->set_text(p_shader->get_code());
 
+	_validate_script();
 	_line_col_changed();
 }
 

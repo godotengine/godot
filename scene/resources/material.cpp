@@ -113,6 +113,9 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 			if (n.find("param/") == 0) { //backwards compatibility
 				pr = n.substr(6, n.length());
 			}
+			if (n.find("shader_param/") == 0) { //backwards compatibility
+				pr = n.replace_first("shader_param/", "");
+			}
 		}
 		if (pr) {
 			VisualServer::get_singleton()->material_set_param(_get_material(), pr, p_value);
@@ -128,6 +131,16 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
 
 		StringName pr = shader->remap_param(p_name);
+		if (!pr) {
+			String n = p_name;
+			if (n.find("param/") == 0) { //backwards compatibility
+				pr = n.substr(6, n.length());
+			}
+			if (n.find("shader_param/") == 0) { //backwards compatibility
+				pr = n.replace_first("shader_param/", "");
+			}
+		}
+
 		if (pr) {
 			r_ret = VisualServer::get_singleton()->material_get_param(_get_material(), pr);
 			return true;
