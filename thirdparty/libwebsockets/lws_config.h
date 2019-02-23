@@ -78,6 +78,7 @@
 
 /* Build with support for ipv6 */
 /* #undef LWS_WITH_IPV6 */
+#define LWS_WITH_IPV6
 
 /* Build with support for UNIX domain socket */
 /* #undef LWS_WITH_UNIX_SOCK */
