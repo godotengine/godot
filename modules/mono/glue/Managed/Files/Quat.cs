@@ -123,22 +123,23 @@ namespace Godot
             // Calculate cosine
             real_t cosom = x * b.x + y * b.y + z * b.z + w * b.w;
 
-            var to1 = new real_t[4];
+            var to1 = new Quat();
 
             // Adjust signs if necessary
             if (cosom < 0.0)
             {
-                cosom = -cosom; to1[0] = -b.x;
-                to1[1] = -b.y;
-                to1[2] = -b.z;
-                to1[3] = -b.w;
+                cosom = -cosom;
+                to1.x = -b.x;
+                to1.y = -b.y;
+                to1.z = -b.z;
+                to1.w = -b.w;
             }
             else
             {
-                to1[0] = b.x;
-                to1[1] = b.y;
-                to1[2] = b.z;
-                to1[3] = b.w;
+                to1.x = b.x;
+                to1.y = b.y;
+                to1.z = b.z;
+                to1.w = b.w;
             }
 
             real_t sinom, scale0, scale1;
@@ -162,10 +163,10 @@ namespace Godot
             // Calculate final values
             return new Quat
             (
-                scale0 * x + scale1 * to1[0],
-                scale0 * y + scale1 * to1[1],
-                scale0 * z + scale1 * to1[2],
-                scale0 * w + scale1 * to1[3]
+                scale0 * x + scale1 * to1.x,
+                scale0 * y + scale1 * to1.y,
+                scale0 * z + scale1 * to1.z,
+                scale0 * w + scale1 * to1.w
             );
         }
 
