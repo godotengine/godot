@@ -2536,6 +2536,11 @@ void TileSetEditor::set_current_tile(int p_id) {
 		helper->_change_notify("");
 		select_coord(Vector2(0, 0));
 		update_workspace_tile_mode();
+		if (p_id == -1) {
+			editor->get_inspector()->edit(tileset.ptr());
+		} else {
+			editor->get_inspector()->edit(helper);
+		}
 	}
 }
 
@@ -2712,7 +2717,6 @@ void TileSetEditorPlugin::edit(Object *p_node) {
 
 	if (Object::cast_to<TileSet>(p_node)) {
 		tileset_editor->edit(Object::cast_to<TileSet>(p_node));
-		editor->get_inspector()->edit(tileset_editor->helper);
 	}
 }
 
@@ -2741,6 +2745,7 @@ Dictionary TileSetEditorPlugin::get_state() const {
 	state["snap_separation"] = tileset_editor->snap_separation;
 	state["snap_enabled"] = tileset_editor->tools[TileSetEditor::TOOL_GRID_SNAP]->is_pressed();
 	state["keep_inside_tile"] = tileset_editor->tools[TileSetEditor::SHAPE_KEEP_INSIDE_TILE]->is_pressed();
+	state["show_information"] = tileset_editor->tools[TileSetEditor::VISIBLE_INFO]->is_pressed();
 	return state;
 }
 
@@ -2761,10 +2766,17 @@ void TileSetEditorPlugin::set_state(const Dictionary &p_state) {
 
 	if (state.has("snap_enabled")) {
 		tileset_editor->tools[TileSetEditor::TOOL_GRID_SNAP]->set_pressed(state["snap_enabled"]);
+		if (tileset_editor->helper) {
+			tileset_editor->_on_grid_snap_toggled(state["snap_enabled"]);
+		}
 	}
 
 	if (state.has("keep_inside_tile")) {
 		tileset_editor->tools[TileSetEditor::SHAPE_KEEP_INSIDE_TILE]->set_pressed(state["keep_inside_tile"]);
+	}
+
+	if (state.has("show_information")) {
+		tileset_editor->tools[TileSetEditor::VISIBLE_INFO]->set_pressed(state["show_information"]);
 	}
 }
 
