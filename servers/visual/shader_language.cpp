@@ -2074,9 +2074,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 				bool fail = false;
 				for (int i = 0; i < argcount; i++) {
 
-					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
-						//all good
-					} else if (args[i] != builtin_func_defs[idx].args[i]) {
+					if (args[i] != builtin_func_defs[idx].args[i]) {
 						fail = true;
 						break;
 					}
@@ -2186,9 +2184,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 
 		for (int j = 0; j < args.size(); j++) {
 
-			if (get_scalar_type(args[j]) == args[j] && p_func->arguments[j + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[j + 1]), pfunc->arguments[j].type)) {
-				//all good
-			} else if (args[j] != pfunc->arguments[j].type) {
+			if (args[j] != pfunc->arguments[j].type) {
 				fail = true;
 				break;
 			}
