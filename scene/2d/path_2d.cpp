@@ -170,6 +170,9 @@ void PathFollow2D::_update_transform() {
 		return;
 
 	float path_length = c->get_baked_length();
+	if (path_length == 0) {
+		return;
+	}
 	float bounded_offset = offset;
 	if (loop)
 		bounded_offset = Math::fposmod(bounded_offset, path_length);
