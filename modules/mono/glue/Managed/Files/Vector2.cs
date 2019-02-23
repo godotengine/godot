@@ -84,7 +84,7 @@ namespace Godot
 
         public real_t AngleToPoint(Vector2 to)
         {
-            return Mathf.Atan2(x - to.x, y - to.y);
+            return Mathf.Atan2(y - to.y, x - to.x);
         }
 
         public real_t Aspect()
