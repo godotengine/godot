@@ -53,11 +53,11 @@ namespace Godot
             }
         }
 
-        public Vector2 this[int index]
+        public Vector2 this[int rowIndex]
         {
             get
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
                         return x;
@@ -71,7 +71,7 @@ namespace Godot
             }
             set
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
                         x = value;
@@ -88,29 +88,29 @@ namespace Godot
             }
         }
 
-        public real_t this[int index, int axis]
+        public real_t this[int rowIndex, int columnIndex]
         {
             get
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
-                        return x[axis];
+                        return x[columnIndex];
                     case 1:
-                        return y[axis];
+                        return y[columnIndex];
                     default:
                         throw new IndexOutOfRangeException();
                 }
             }
             set
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
-                        x[axis] = value;
+                        x[columnIndex] = value;
                         return;
                     case 1:
-                        y[axis] = value;
+                        y[columnIndex] = value;
                         return;
                     default:
                         throw new IndexOutOfRangeException();
@@ -120,30 +120,23 @@ namespace Godot
 
         public Transform2D AffineInverse()
         {
-            var inv = this;
-
             real_t det = BasisDeterminant();
 
             if (det == 0)
-            {
-                return new Transform2D
-                (
-                    real_t.NaN, real_t.NaN,
-                    real_t.NaN, real_t.NaN,
-                    real_t.NaN, real_t.NaN
-                );
-            }
+                throw new InvalidOperationException("Matrix determinant is zero and cannot be inverted.");
+
+            var inv = this;
+
+            real_t temp = inv[0, 0];
+            inv[0, 0] = inv[1, 1];
+            inv[1, 1] = temp;
 
             real_t detInv = 1.0f / det;
 
-            real_t temp = this[0, 0];
-            this[0, 0] = this[1, 1];
-            this[1, 1] = temp;
+            inv[0] *= new Vector2(detInv, -detInv);
+            inv[1] *= new Vector2(-detInv, detInv);
 
-            this[0] *= new Vector2(detInv, -detInv);
-            this[1] *= new Vector2(-detInv, detInv);
-
-            this[2] = BasisXform(-this[2]);
+            inv[2] = BasisXform(-inv[2]);
 
             return inv;
         }
@@ -293,9 +286,9 @@ namespace Godot
         private static readonly Transform2D _flipX = new Transform2D(-1, 0, 0, 1, 0, 0);
         private static readonly Transform2D _flipY = new Transform2D(1, 0, 0, -1, 0, 0);
 
-        public static Transform2D Identity { get { return _identity; } }
-        public static Transform2D FlipX { get { return _flipX; } }
-        public static Transform2D FlipY { get { return _flipY; } }
+        public static Transform2D Identity => _identity;
+        public static Transform2D FlipX => _flipX;
+        public static Transform2D FlipY => _flipY;
 
         // Constructors
         public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 originPos)
@@ -324,12 +317,10 @@ namespace Godot
         {
             left.origin = left.Xform(right.origin);
 
-            real_t x0, x1, y0, y1;
-
-            x0 = left.Tdotx(right.x);
-            x1 = left.Tdoty(right.x);
-            y0 = left.Tdotx(right.y);
-            y1 = left.Tdoty(right.y);
+            real_t x0 = left.Tdotx(right.x);
+            real_t x1 = left.Tdoty(right.x);
+            real_t y0 = left.Tdotx(right.y);
+            real_t y1 = left.Tdoty(right.y);
 
             left.x.x = x0;
             left.x.y = x1;
@@ -351,12 +342,7 @@ namespace Godot
 
         public override bool Equals(object obj)
         {
-            if (obj is Transform2D)
-            {
-                return Equals((Transform2D)obj);
-            }
-
-            return false;
+            return obj is Transform2D transform2D && Equals(transform2D);
         }
 
         public bool Equals(Transform2D other)
