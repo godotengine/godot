@@ -179,7 +179,7 @@ void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base, bool p_hidde
 	VS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
 }
 
-void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const RID &p_skeleton) {
+void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const RID &p_skeleton, const Ref<Material> &p_material) {
 
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
@@ -187,9 +187,13 @@ void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard
 	ins.billboard = p_billboard;
 	ins.mesh = p_mesh;
 	ins.skeleton = p_skeleton;
+	ins.material = p_material;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
 		VS::get_singleton()->instance_set_transform(ins.instance, spatial_node->get_global_transform());
+		if (ins.material.is_valid()) {
+			VS::get_singleton()->instance_geometry_set_material_override(ins.instance, p_material->get_rid());
+		}
 	}
 
 	instances.push_back(ins);
@@ -3519,9 +3523,8 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	if (Object::cast_to<ConcavePolygonShape>(*s)) {
 
 		Ref<ConcavePolygonShape> cs2 = s;
-		Ref<ArrayMesh> mesh = cs2->get_debug_mesh()->duplicate();
-		mesh->surface_set_material(0, material);
-		p_gizmo->add_mesh(mesh);
+		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
+		p_gizmo->add_mesh(mesh, false, RID(), material);
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {
