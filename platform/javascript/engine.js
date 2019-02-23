@@ -199,7 +199,8 @@
 					}
 					LIBS.FS.mkdirTree(dir);
 				}
-				LIBS.FS.createDataFile('/', file.path, new Uint8Array(file.buffer), true, true, true);
+				// With memory growth, canOwn should be false.
+				LIBS.FS.createDataFile(file.path, null, new Uint8Array(file.buffer), true, true, false);
 			}, this);
 
 			preloadedFiles = null;
