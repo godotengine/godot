@@ -904,6 +904,8 @@ uniform float ambient_energy;
 
 #ifdef USE_LIGHTING
 
+uniform highp vec4 shadow_color;
+
 #ifdef USE_VERTEX_LIGHTING
 
 //get from vertex
@@ -916,7 +918,7 @@ uniform highp vec3 light_direction; //may be used by fog, so leave here
 //done in fragment
 // general for all lights
 uniform highp vec4 light_color;
-uniform highp vec4 shadow_color;
+
 uniform highp float light_specular;
 
 // directional
