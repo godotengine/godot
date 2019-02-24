@@ -695,32 +695,7 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 	glBindTexture(texture->target, texture->tex_id);
 
 	if (p_type == VS::TEXTURE_TYPE_3D || p_type == VS::TEXTURE_TYPE_2D_ARRAY) {
-
-		int width = p_width;
-		int height = p_height;
-		int depth = p_depth_3d;
-
-		int mipmaps = 0;
-
-		while (width != 1 && height != 1) {
-			glTexImage3D(texture->target, 0, internal_format, width, height, depth, 0, format, type, NULL);
-
-			width = MAX(1, width / 2);
-			height = MAX(1, height / 2);
-
-			if (p_type == VS::TEXTURE_TYPE_3D) {
-				depth = MAX(1, depth / 2);
-			}
-
-			mipmaps++;
-
-			if (!(p_flags & VS::TEXTURE_FLAG_MIPMAPS))
-				break;
-		}
-
-		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
-
+		glTexImage3D(texture->target, 0, internal_format, p_width, p_height, p_depth_3d, 0, format, type, NULL);
 	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
 		glTexImage2D(texture->target, 0, internal_format, p_width, p_height, 0, format, type, NULL);
@@ -934,7 +909,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 	texture->stored_cube_sides |= (1 << p_layer);
 
-	if ((texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP) && (texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != VS::TEXTURE_TYPE_CUBEMAP || texture->stored_cube_sides == (1 << 6) - 1)) {
+	if ((texture->type == VS::TEXTURE_TYPE_2D || texture->type == VS::TEXTURE_TYPE_CUBEMAP || texture->type == VS::TEXTURE_TYPE_2D_ARRAY || texture->type == VS::TEXTURE_TYPE_3D) && (texture->flags & VS::TEXTURE_FLAG_MIPMAPS) && mipmaps == 1 && !texture->ignore_mipmaps && (texture->type != VS::TEXTURE_TYPE_CUBEMAP || texture->stored_cube_sides == (1 << 6) - 1)) {
 		//generate mipmaps if they were requested and the image does not contain them
 		glGenerateMipmap(texture->target);
 	} else if (mipmaps > 1) {
