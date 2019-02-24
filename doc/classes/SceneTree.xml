@@ -64,6 +64,13 @@
 			</argument>
 			<description>
 				Returns a [SceneTreeTimer] which will [signal SceneTreeTimer.timeout] after the given time in seconds elapsed in this SceneTree. If [code]pause_mode_process[/code] is set to false, pausing the SceneTree will also pause the timer.
+				Commonly used to create a one-shot delay timer as in the following example:
+				[codeblock]
+				func some_function():
+					print("start")
+					yield(get_tree().create_timer(1.0), "timeout")
+					print("end")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const">

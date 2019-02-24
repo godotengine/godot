@@ -4,7 +4,7 @@
 		Generic array datatype.
 	</brief_description>
 	<description>
-		Generic array, contains several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.). Example:
+		Generic array which can contain several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.). Example:
 		[codeblock]
 		var array = ["One", 2, 3, "Four"]
 		print(array[0])   # One
@@ -26,7 +26,7 @@
 			<argument index="0" name="from" type="PoolColorArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolColorArray].
+				Constructs an array from a [PoolColorArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -35,7 +35,7 @@
 			<argument index="0" name="from" type="PoolVector3Array">
 			</argument>
 			<description>
-				Construct an array from a [PoolVector3Array].
+				Constructs an array from a [PoolVector3Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -44,7 +44,7 @@
 			<argument index="0" name="from" type="PoolVector2Array">
 			</argument>
 			<description>
-				Construct an array from a [PoolVector2Array].
+				Constructs an array from a [PoolVector2Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -53,7 +53,7 @@
 			<argument index="0" name="from" type="PoolStringArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolStringArray].
+				Constructs an array from a [PoolStringArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -62,7 +62,7 @@
 			<argument index="0" name="from" type="PoolRealArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolRealArray].
+				Constructs an array from a [PoolRealArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -71,7 +71,7 @@
 			<argument index="0" name="from" type="PoolIntArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolIntArray].
+				Constructs an array from a [PoolIntArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -80,21 +80,21 @@
 			<argument index="0" name="from" type="PoolByteArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolByteArray].
+				Constructs an array from a [PoolByteArray].
 			</description>
 		</method>
 		<method name="append">
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Append an element at the end of the array (alias of [method push_back]).
+				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="back">
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the last element of the array if the array is not empty (size&gt;0).
+				Returns the last element of the array if the array is not empty.
 			</description>
 		</method>
 		<method name="bsearch">
@@ -125,7 +125,7 @@
 		</method>
 		<method name="clear">
 			<description>
-				Clear the array (resize to 0).
+				Clears the array (resizes to 0).
 			</description>
 		</method>
 		<method name="count">
@@ -134,7 +134,7 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Return the amount of times an element is in the array.
+				Returns the number of times an element is in the array.
 			</description>
 		</method>
 		<method name="duplicate">
@@ -144,21 +144,21 @@
 			</argument>
 			<description>
 				Returns a copy of the array.
-				If [code]deep[/code] is [code]true[/code], a deep copy is be performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
+				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
 			</description>
 		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the array is empty (size==0).
+				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="erase">
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Remove the first occurrence of a value from the array.
+				Removes the first occurrence of a value from the array.
 			</description>
 		</method>
 		<method name="find">
@@ -185,7 +185,7 @@
 			<return type="Variant">
 			</return>
 			<description>
-				Returns the first element of the array if the array is not empty (size&gt;0).
+				Returns the first element of the array if the array is not empty.
 			</description>
 		</method>
 		<method name="has">
@@ -194,7 +194,7 @@
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Return true if the array contains given value.
+				Returns [code]true[/code] if the array contains the given value.
 				[codeblock]
 				["inside", 7].has("inside") == true
 				["inside", 7].has("outside") == false
@@ -207,7 +207,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return a hashed integer value representing the array contents.
+				Returns a hashed integer value representing the array contents.
 			</description>
 		</method>
 		<method name="insert">
@@ -216,68 +216,68 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array.
+				Reverses the order of the elements in the array.
 			</description>
 		</method>
 		<method name="max">
 			<return type="Variant">
 			</return>
 			<description>
-				Return maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="min">
 			<return type="Variant">
 			</return>
 			<description>
-				Return minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="pop_back">
 			<return type="Variant">
 			</return>
 			<description>
-				Remove the last element of the array.
+				Removes the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
 			<return type="Variant">
 			</return>
 			<description>
-				Remove the first element of the array.
+				Removes the first element of the array.
 			</description>
 		</method>
 		<method name="push_back">
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Append an element at the end of the array.
+				Appends an element at the end of the array.
 			</description>
 		</method>
 		<method name="push_front">
 			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Add an element at the beginning of the array.
+				Adds an element at the beginning of the array.
 			</description>
 		</method>
 		<method name="remove">
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Remove an element from the array by index.
+				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Resize the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.
+				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.
 			</description>
 		</method>
 		<method name="rfind">
@@ -293,19 +293,19 @@
 		</method>
 		<method name="shuffle">
 			<description>
-				Shuffle the array such that the items will have a random order.
+				Shuffles the array such that the items will have a random order.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of elements in the array.
+				Returns the number of elements in the array.
 			</description>
 		</method>
 		<method name="sort">
 			<description>
-				Sort the array using natural order.
+				Sorts the array. Note: strings are sorted in alphabetical, not natural order.
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -314,7 +314,7 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
-				Sort the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise.
+				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise.
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:
