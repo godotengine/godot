@@ -5849,6 +5849,7 @@ void TextEdit::_update_completion_candidates() {
 
 	bool inquote = false;
 	int first_quote = -1;
+	int restore_quotes = -1;
 
 	int c = cofs - 1;
 	while (c >= 0) {
@@ -5856,6 +5857,11 @@ void TextEdit::_update_completion_candidates() {
 			inquote = !inquote;
 			if (first_quote == -1)
 				first_quote = c;
+			restore_quotes = 0;
+		} else if (restore_quotes == 0 && l[c] == '$') {
+			restore_quotes = 1;
+		} else if (restore_quotes == 0 && !_is_whitespace(l[c])) {
+			restore_quotes = -1;
 		}
 		c--;
 	}
@@ -5921,6 +5927,11 @@ void TextEdit::_update_completion_candidates() {
 	for (int i = 0; i < completion_strings.size(); i++) {
 		if (single_quote && completion_strings[i].is_quoted()) {
 			completion_strings.write[i] = completion_strings[i].unquote().quote("'");
+		}
+
+		if (inquote && restore_quotes == 1 && !completion_strings[i].is_quoted()) {
+			String quote = single_quote ? "'" : "\"";
+			completion_strings.write[i] = completion_strings[i].quote(quote);
 		}
 
 		if (completion_strings[i].begins_with(s)) {
