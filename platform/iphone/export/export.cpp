@@ -93,6 +93,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	String _get_linker_flags();
 	String _get_cpp_code();
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug);
+	void _append_to_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug);
 	Error _export_loading_screens(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir);
 	Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
 
@@ -249,14 +250,12 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_store_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "ZXSYZ493U4"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_debug"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_debug", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Developer"), "iPhone Developer"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_debug", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 1));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/provisioning_profile_uuid_release"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Distribution"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/code_sign_identity_release", PROPERTY_HINT_PLACEHOLDER_TEXT, "iPhone Distribution"), "iPhone Distribution"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_method_release", PROPERTY_HINT_ENUM, "App Store,Development,Ad-Hoc,Enterprise"), 0));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
@@ -266,10 +265,10 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 
+	// These set the `SystemCapabilities` property of the Xcode project.
+	// They *must* match the capabilities of your provisioning profile
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/arkit"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/camera"), false));
-
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/game_center"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/in_app_purchases"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/push_notifications"), false));
@@ -282,14 +281,13 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/portrait"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/portrait_upside_down"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/landscape_left"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/landscape_right"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/portrait_upside_down"), true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with retina display
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/ipad_76x76", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "required_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "*.png"), "")); // App Store
-
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_120x120", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone/iPod Touch with retina display
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_76x76", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/app_store_1024x1024", PROPERTY_HINT_FILE, "*.png"), "")); // App Store
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/iphone_180x180", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPhone with retina HD display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_152x152", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad with retina display
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/ipad_167x167", PROPERTY_HINT_FILE, "*.png"), "")); // Home screen on iPad Pro
@@ -306,6 +304,47 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	}
 }
 
+void EditorExportPlatformIOS::_append_to_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug) {
+	String str;
+	String strnew;
+	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
+
+	String binary_path = p_config.binary_name + "/" + p_config.binary_name;
+
+	// Add reference to our generated Info.plist file
+	strnew += "\nINFOPLIST_FILE = " + binary_path + "-Info.plist;\n";
+
+	// Set the bundle identifier and team from export options
+	String bundle_identifier = p_preset->get("application/identifier");
+	strnew += "PRODUCT_BUNDLE_IDENTIFIER = " + bundle_identifier + ";\n";
+	strnew += "DEVELOPMENT_TEAM = " + (String)p_preset->get("application/app_store_team_id") + ";\n";
+
+	// Pass build settings from Godot export options
+	strnew += "ARCHS = " + p_config.architectures + ";\n";
+	strnew += "FRAMEWORK_SEARCH_PATHS = $(inherited) " + p_config.binary_name + ";\n";
+
+	// Pass linker flags
+	strnew += "OTHER_LDFLAGS = $(inherited)";
+	if (p_config.linker_flags.length() != 0) {
+		strnew += " " + p_config.linker_flags;
+	}
+	strnew += ";\n";
+
+	// if enabled, add development (sandbox) APNS entitlements
+	if ((bool)p_preset->get("capabilities/push_notifications")) {
+		strnew += "\n\"CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]\" = " + binary_path + ".entitlements;\n";
+	}
+
+	print_line("Appending values to godot.xcconfig: " + strnew);
+
+	String strfile = str + strnew;
+	CharString cs = strfile.utf8();
+	pfile.resize(cs.size() - 1);
+	for (int i = 0; i < cs.size() - 1; i++) {
+		pfile.write[i] = cs[i];
+	}
+}
+
 void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug) {
 	static const String export_method_string[] = {
 		"app-store",
@@ -313,6 +352,15 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		"ad-hoc",
 		"enterprise"
 	};
+	// Failsafe in case the user deleted these
+	String debug_identity = p_preset->get("application/code_sign_identity_debug");
+	if (debug_identity.length() == 0) {
+		debug_identity = "iPhone Developer";
+	}
+	String release_identity = p_preset->get("application/code_sign_identity_release");
+	if (release_identity.length() == 0) {
+		release_identity = "iPhone Distribution";
+	}
 	String str;
 	String strnew;
 	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
@@ -345,21 +393,12 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$export_method") != -1) {
 			int export_method = p_preset->get(p_debug ? "application/export_method_debug" : "application/export_method_release");
 			strnew += lines[i].replace("$export_method", export_method_string[export_method]) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid_release") != -1) {
-			strnew += lines[i].replace("$provisioning_profile_uuid_release", p_preset->get("application/provisioning_profile_uuid_release")) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid_debug") != -1) {
-			strnew += lines[i].replace("$provisioning_profile_uuid_debug", p_preset->get("application/provisioning_profile_uuid_debug")) + "\n";
-		} else if (lines[i].find("$provisioning_profile_uuid") != -1) {
-			String uuid = p_debug ? p_preset->get("application/provisioning_profile_uuid_debug") : p_preset->get("application/provisioning_profile_uuid_release");
-			strnew += lines[i].replace("$provisioning_profile_uuid", uuid) + "\n";
 		} else if (lines[i].find("$code_sign_identity_debug") != -1) {
-			strnew += lines[i].replace("$code_sign_identity_debug", p_preset->get("application/code_sign_identity_debug")) + "\n";
+			strnew += lines[i].replace("$code_sign_identity_debug", debug_identity) + "\n";
 		} else if (lines[i].find("$code_sign_identity_release") != -1) {
-			strnew += lines[i].replace("$code_sign_identity_release", p_preset->get("application/code_sign_identity_release")) + "\n";
+			strnew += lines[i].replace("$code_sign_identity_release", release_identity) + "\n";
 		} else if (lines[i].find("$additional_plist_content") != -1) {
 			strnew += lines[i].replace("$additional_plist_content", p_config.plist_content) + "\n";
-		} else if (lines[i].find("$godot_archs") != -1) {
-			strnew += lines[i].replace("$godot_archs", p_config.architectures) + "\n";
 		} else if (lines[i].find("$linker_flags") != -1) {
 			strnew += lines[i].replace("$linker_flags", p_config.linker_flags) + "\n";
 		} else if (lines[i].find("$cpp_code") != -1) {
@@ -368,9 +407,6 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$docs_in_place", ((bool)p_preset->get("user_data/accessible_from_files_app")) ? "<true/>" : "<false/>") + "\n";
 		} else if (lines[i].find("$docs_sharing") != -1) {
 			strnew += lines[i].replace("$docs_sharing", ((bool)p_preset->get("user_data/accessible_from_itunes_sharing")) ? "<true/>" : "<false/>") + "\n";
-		} else if (lines[i].find("$access_wifi") != -1) {
-			bool is_on = p_preset->get("capabilities/access_wifi");
-			strnew += lines[i].replace("$access_wifi", is_on ? "1" : "0") + "\n";
 		} else if (lines[i].find("$game_center") != -1) {
 			bool is_on = p_preset->get("capabilities/game_center");
 			strnew += lines[i].replace("$game_center", is_on ? "1" : "0") + "\n";
@@ -392,9 +428,6 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 			if ((bool)p_preset->get("capabilities/game_center")) {
 				capabilities += "<string>gamekit</string>\n";
-			}
-			if ((bool)p_preset->get("capabilities/access_wifi")) {
-				capabilities += "<string>wifi</string>\n";
 			}
 
 			strnew += lines[i].replace("$required_device_capabilities", capabilities);
@@ -478,26 +511,24 @@ struct IconInfo {
 	const char *actual_size_side;
 	const char *scale;
 	const char *unscaled_size;
-	bool is_required;
 };
 
 static const IconInfo icon_infos[] = {
-	{ "required_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "2x", "60x60", true },
-	{ "required_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "3x", "40x40", true },
+	{ "optional_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "2x", "60x60" },
+	{ "optional_icons/iphone_120x120", "iphone", "Icon-120.png", "120", "3x", "40x40" },
+	{ "optional_icons/ipad_76x76", "ipad", "Icon-76.png", "76", "1x", "76x76" },
+	{ "optional_icons/app_store_1024x1024", "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024" },
 
-	{ "required_icons/ipad_76x76", "ipad", "Icon-76.png", "76", "1x", "76x76", false },
-	{ "required_icons/app_store_1024x1024", "ios-marketing", "Icon-1024.png", "1024", "1x", "1024x1024", false },
+	{ "optional_icons/iphone_180x180", "iphone", "Icon-180.png", "180", "3x", "60x60" },
 
-	{ "optional_icons/iphone_180x180", "iphone", "Icon-180.png", "180", "3x", "60x60", false },
+	{ "optional_icons/ipad_152x152", "ipad", "Icon-152.png", "152", "2x", "76x76" },
 
-	{ "optional_icons/ipad_152x152", "ipad", "Icon-152.png", "152", "2x", "76x76", false },
+	{ "optional_icons/ipad_167x167", "ipad", "Icon-167.png", "167", "2x", "83.5x83.5" },
 
-	{ "optional_icons/ipad_167x167", "ipad", "Icon-167.png", "167", "2x", "83.5x83.5", false },
+	{ "optional_icons/spotlight_40x40", "ipad", "Icon-40.png", "40", "1x", "40x40" },
 
-	{ "optional_icons/spotlight_40x40", "ipad", "Icon-40.png", "40", "1x", "40x40", false },
-
-	{ "optional_icons/spotlight_80x80", "iphone", "Icon-80.png", "80", "2x", "40x40", false },
-	{ "optional_icons/spotlight_80x80", "ipad", "Icon-80.png", "80", "2x", "40x40", false }
+	{ "optional_icons/spotlight_80x80", "iphone", "Icon-80.png", "80", "2x", "40x40" },
+	{ "optional_icons/spotlight_80x80", "ipad", "Icon-80.png", "80", "2x", "40x40" }
 
 };
 
@@ -511,11 +542,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		IconInfo info = icon_infos[i];
 		String icon_path = p_preset->get(info.preset_key);
-		if (icon_path.length() == 0) {
-			if (info.is_required) {
-				ERR_PRINT("Required icon is not specified in the preset");
-				return ERR_UNCONFIGURED;
-			}
+		if (icon_path == "") {
 			continue;
 		}
 		Error err = da->copy(icon_path, p_iconset_dir + info.export_name);
@@ -963,6 +990,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	files_to_parse.insert("godot_ios.xcodeproj/project.xcworkspace/contents.xcworkspacedata");
 	files_to_parse.insert("godot_ios.xcodeproj/xcshareddata/xcschemes/godot_ios.xcscheme");
 
+	Set<String> files_to_append;
+	files_to_append.insert("godot_ios/godot.xcconfig");
+
 	IOSConfigData config_data = {
 		pkg_name,
 		binary_name,
@@ -1021,6 +1051,8 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 		if (files_to_parse.has(file)) {
 			_fix_config_file(p_preset, data, config_data, p_debug);
+		} else if (files_to_append.has(file)) {
+			_append_to_file(p_preset, data, config_data, p_debug);
 		} else if (file.begins_with("libgodot.iphone")) {
 			if (file != library_to_use) {
 				ret = unzGoToNextFile(src_pkg_zip);
@@ -1224,18 +1256,6 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 	if (!is_package_name_valid(identifier, &pn_err)) {
 		err += TTR("Invalid Identifier:") + " " + pn_err + "\n";
 		valid = false;
-	}
-
-	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
-		IconInfo info = icon_infos[i];
-		String icon_path = p_preset->get(info.preset_key);
-		if (icon_path.length() == 0) {
-			if (info.is_required) {
-				err += TTR("Required icon is not specified in the preset.") + "\n";
-				valid = false;
-			}
-			break;
-		}
 	}
 
 	String etc_error = test_etc2();
