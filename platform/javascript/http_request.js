@@ -82,7 +82,7 @@ var GodotHTTPRequest = {
 
 	godot_xhr_send_string: function(xhrId, strPtr) {
 		if (!strPtr) {
-			console.warn("Failed to send string per XHR: null pointer");
+			err("Failed to send string per XHR: null pointer");
 			return;
 		}
 		GodotHTTPRequest.requests[xhrId].send(UTF8ToString(strPtr));
@@ -90,11 +90,11 @@ var GodotHTTPRequest = {
 
 	godot_xhr_send_data: function(xhrId, ptr, len) {
 		if (!ptr) {
-			console.warn("Failed to send data per XHR: null pointer");
+			err("Failed to send data per XHR: null pointer");
 			return;
 		}
 		if (len < 0) {
-			console.warn("Failed to send data per XHR: buffer length less than 0");
+			err("Failed to send data per XHR: buffer length less than 0");
 			return;
 		}
 		GodotHTTPRequest.requests[xhrId].send(HEAPU8.subarray(ptr, ptr + len));

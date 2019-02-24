@@ -209,7 +209,7 @@ Error AudioDriverJavaScript::capture_start() {
 		}
 
 		function gotMediaInputError(e) {
-			console.log(e);
+			out(e);
 		}
 
 		if (navigator.mediaDevices.getUserMedia) {

@@ -986,8 +986,8 @@ bool OS_JavaScript::main_loop_iterate() {
 		if (sync_wait_time < 0) {
 			/* clang-format off */
 			EM_ASM(
-				FS.syncfs(function(err) {
-					if (err) { console.warn('Failed to save IDB file system: ' + err.message); }
+				FS.syncfs(function(error) {
+					if (error) { err('Failed to save IDB file system: ' + error.message); }
 				});
 			);
 			/* clang-format on */
