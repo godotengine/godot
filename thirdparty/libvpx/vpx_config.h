@@ -29,7 +29,7 @@
 	#define HAVE_MMX 1
 	#define HAVE_SSE2 1
 	#define HAVE_SSSE3 1
-	#define HAVE_AVX2 1
+	#define HAVE_AVX2 0
 #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
 	#define ARCH_X86 0
 	#define ARCH_X86_64 1
@@ -41,7 +41,7 @@
 	#define HAVE_MMX 1
 	#define HAVE_SSE2 1
 	#define HAVE_SSSE3 1
-	#define HAVE_AVX2 1
+	#define HAVE_AVX2 0
 #elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM)
 	#define ARCH_X86 0
 	#define ARCH_X86_64 0
