@@ -1014,7 +1014,7 @@ void Object::set_script(const RefPtr &p_script) {
 		}
 	}
 
-	_change_notify("script");
+	_change_notify(); //scripts may add variables, so refresh is desired
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
 }
 
