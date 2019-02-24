@@ -51,9 +51,9 @@ typedef struct {
 
 	/* This is StreamPeer */
 	godot_error (*get_data)(void *user, uint8_t *p_buffer, int p_bytes);
-	godot_error (*get_partial_data)(void *user, uint8_t *p_buffer, int p_bytes, int &r_received);
+	godot_error (*get_partial_data)(void *user, uint8_t *p_buffer, int p_bytes, int *r_received);
 	godot_error (*put_data)(void *user, const uint8_t *p_data, int p_bytes);
-	godot_error (*put_partial_data)(void *user, const uint8_t *p_data, int p_bytes, int &r_sent);
+	godot_error (*put_partial_data)(void *user, const uint8_t *p_data, int p_bytes, int *r_sent);
 
 	int (*get_available_bytes)(const void *user);
 
@@ -61,7 +61,7 @@ typedef struct {
 } godot_net_stream_peer;
 
 /* Binds a StreamPeerGDNative to the provided interface */
-void godot_net_bind_stream_peer(godot_object *p_obj, godot_net_stream_peer *p_interface);
+void godot_net_bind_stream_peer(godot_object *p_obj, const godot_net_stream_peer *p_interface);
 
 typedef struct {
 	godot_gdnative_api_version version; /* version of our API */
@@ -69,7 +69,7 @@ typedef struct {
 	godot_object *data; /* User reference */
 
 	/* This is PacketPeer */
-	godot_error (*get_packet)(void *, const uint8_t **, int &);
+	godot_error (*get_packet)(void *, const uint8_t **, int *);
 	godot_error (*put_packet)(void *, const uint8_t *, int);
 	godot_int (*get_available_packet_count)(const void *);
 	godot_int (*get_max_packet_size)(const void *);
@@ -86,7 +86,7 @@ typedef struct {
 	godot_object *data; /* User reference */
 
 	/* This is PacketPeer */
-	godot_error (*get_packet)(void *, const uint8_t **, int &);
+	godot_error (*get_packet)(void *, const uint8_t **, int *);
 	godot_error (*put_packet)(void *, const uint8_t *, int);
 	godot_int (*get_available_packet_count)(const void *);
 	godot_int (*get_max_packet_size)(const void *);

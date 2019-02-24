@@ -45,6 +45,7 @@ def _build_gdnative_api_struct_header(api):
         '#include <android/godot_android.h>',
         '#include <arvr/godot_arvr.h>',
         '#include <nativescript/godot_nativescript.h>',
+        '#include <net/godot_net.h>',
         '#include <pluginscript/godot_pluginscript.h>',
         '#include <videodecoder/godot_videodecoder.h>',
         '',

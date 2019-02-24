@@ -43,7 +43,7 @@ void MultiplayerPeerGDNative::set_native_multiplayer_peer(const godot_net_multip
 
 Error MultiplayerPeerGDNative::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
-	return (Error)interface->get_packet(interface->data, r_buffer, r_buffer_size);
+	return (Error)interface->get_packet(interface->data, r_buffer, &r_buffer_size);
 }
 
 Error MultiplayerPeerGDNative::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
