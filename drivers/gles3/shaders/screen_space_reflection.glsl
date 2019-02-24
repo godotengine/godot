@@ -77,7 +77,7 @@ void main() {
 		return;
 	}
 	//ray_dir = normalize(view_dir - normal * dot(normal,view_dir) * 2.0);
-	//ray_dir = normalize(vec3(1, 1, -1));
+	//ray_dir = normalize(vec3(1.0, 1.0, -1.0));
 
 	////////////////
 

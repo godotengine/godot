@@ -400,7 +400,7 @@ void main() {
 					texelFetch(skeleton_texture, tex_ofs, 0),
 					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
 					texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
-					vec4(0.0,0.0,0.0,1.0)) *
+					vec4(0.0, 0.0, 0.0, 1.0)) *
 			bone_weights.x;
 
 		tex_ofs = ivec2(bone_indicesi.y % 256, (bone_indicesi.y / 256) * 3);
@@ -409,7 +409,7 @@ void main() {
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
-					 vec4(0.0,0.0,0.0,1.0)) *
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
 			 bone_weights.y;
 
 		tex_ofs = ivec2(bone_indicesi.z % 256, (bone_indicesi.z / 256) * 3);
@@ -418,7 +418,7 @@ void main() {
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
-					 vec4(0.0,0.0,0.0,1.0)) *
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
 			 bone_weights.z;
 
 		tex_ofs = ivec2(bone_indicesi.w % 256, (bone_indicesi.w / 256) * 3);
@@ -427,7 +427,7 @@ void main() {
 					 texelFetch(skeleton_texture, tex_ofs, 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 1), 0),
 					 texelFetch(skeleton_texture, tex_ofs + ivec2(0, 2), 0),
-					 vec4(0.0,0.0,0.0,1.0)) *
+					 vec4(0.0, 0.0, 0.0, 1.0)) *
 			 bone_weights.w;
 
 		world_matrix = transpose(m) * world_matrix;
@@ -1521,8 +1521,8 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds, ve
 
 #define MAX_CONE_DIRS 6
 	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[](
-			vec3(0, 0, 1),
-			vec3(0.866025, 0, 0.5),
+			vec3(0.0, 0.0, 1.0),
+			vec3(0.866025, 0.0, 0.5),
 			vec3(0.267617, 0.823639, 0.5),
 			vec3(-0.700629, 0.509037, 0.5),
 			vec3(-0.700629, -0.509037, 0.5),
@@ -1536,10 +1536,10 @@ void gi_probe_compute(mediump sampler3D probe, mat4 probe_xform, vec3 bounds, ve
 #define MAX_CONE_DIRS 4
 
 	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[](
-			vec3(0.707107, 0, 0.707107),
-			vec3(0, 0.707107, 0.707107),
-			vec3(-0.707107, 0, 0.707107),
-			vec3(0, -0.707107, 0.707107));
+			vec3(0.707107, 0.0, 0.707107),
+			vec3(0.0, 0.707107, 0.707107),
+			vec3(-0.707107, 0.0, 0.707107),
+			vec3(0.0, -0.707107, 0.707107));
 
 	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.25, 0.25, 0.25);
 	float cone_angle_tan = 0.98269;
@@ -1575,7 +1575,7 @@ void gi_probes_compute(vec3 pos, vec3 normal, float roughness, inout vec3 out_sp
 	vec3 ref_vec = normalize(reflect(normalize(pos), normal));
 
 	//find arbitrary tangent and bitangent, then build a matrix
-	vec3 v0 = abs(normal.z) < 0.999 ? vec3(0, 0, 1) : vec3(0, 1, 0);
+	vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
 	vec3 tangent = normalize(cross(v0, normal));
 	vec3 bitangent = normalize(cross(tangent, normal));
 	mat3 normal_mat = mat3(tangent, bitangent, normal);
@@ -1963,14 +1963,14 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_LIGHTMAP_CAPTURE
 	{
 		vec3 cone_dirs[12] = vec3[](
-				vec3(0, 0, 1),
-				vec3(0.866025, 0, 0.5),
+				vec3(0.0, 0.0, 1.0),
+				vec3(0.866025, 0.0, 0.5),
 				vec3(0.267617, 0.823639, 0.5),
 				vec3(-0.700629, 0.509037, 0.5),
 				vec3(-0.700629, -0.509037, 0.5),
 				vec3(0.267617, -0.823639, 0.5),
-				vec3(0, 0, -1),
-				vec3(0.866025, 0, -0.5),
+				vec3(0.0, 0.0, -1.0),
+				vec3(0.866025, 0.0, -0.5),
 				vec3(0.267617, 0.823639, -0.5),
 				vec3(-0.700629, 0.509037, -0.5),
 				vec3(-0.700629, -0.509037, -0.5),

@@ -311,8 +311,8 @@ void ParticlesMaterial::_update_shader() {
 		//initiate velocity spread in 3D
 		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0, cos(angle1_rad));\n";
-		code += "		vec3 direction_yz = vec3(0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
 		code += "		vec3 direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
 		code += "		direction = normalize(direction);\n";
@@ -347,7 +347,7 @@ void ParticlesMaterial::_update_shader() {
 					code += "		VELOCITY.xy = rotm * VELOCITY.xy;\n";
 				} else {
 					code += "		vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
-					code += "		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0, 1.0, 0.0);\n";
+					code += "		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
 					code += "		vec3 tangent = normalize(cross(v0, normal));\n";
 					code += "		vec3 bitangent = normalize(cross(tangent, normal));\n";
 					code += "		VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
