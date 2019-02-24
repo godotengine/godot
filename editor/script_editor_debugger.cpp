@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor/live_view.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
@@ -459,6 +460,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		le_clear->set_disabled(false);
 		le_set->set_disabled(false);
+	} else if (p_msg == "message:framebuffer") {
+
+		EditorNode::get_singleton()->get_live_view_dock()->update();
+
 	} else if (p_msg == "message:inspect_object") {
 
 		ScriptEditorDebuggerInspectedObject *debugObj = NULL;
@@ -1678,6 +1683,15 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 		msg.push_back(p_at_pos);
 		ppeer->put_var(msg);
 	}
+}
+
+bool ScriptEditorDebugger::send_message(const Array &p_message) {
+
+	if (!connection.is_valid()) {
+		return false;
+	}
+	ppeer->put_var(p_message);
+	return true;
 }
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
