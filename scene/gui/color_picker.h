@@ -37,6 +37,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
@@ -52,6 +53,8 @@ private:
 	Control *w_edit;
 	TextureRect *sample;
 	TextureRect *preset;
+	HBoxContainer *preset_container;
+	HSeparator *preset_separator;
 	Button *bt_add_preset;
 	List<Color> presets;
 	ToolButton *btn_pick;
@@ -70,6 +73,8 @@ private:
 	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
+	bool presets_enabled;
+	bool presets_visible;
 	float h, s, v;
 	Color last_hsv;
 
@@ -113,6 +118,12 @@ public:
 
 	void set_deferred_mode(bool p_enabled);
 	bool is_deferred_mode() const;
+
+	void set_presets_enabled(bool p_enabled);
+	bool are_presets_enabled() const;
+
+	void set_presets_visible(bool p_visible);
+	bool are_presets_visible() const;
 
 	void set_focus_on_line_edit();
 
