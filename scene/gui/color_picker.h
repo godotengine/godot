@@ -61,6 +61,7 @@ private:
 	Label *labels[4];
 	Button *text_type;
 	LineEdit *c_text;
+	HBoxContainer *preset_container;
 	bool edit_alpha;
 	Size2i ms;
 	bool text_is_constructor;
@@ -92,6 +93,7 @@ private:
 	void _focus_enter();
 	void _focus_exit();
 	void _html_focus_exit();
+	void _check_preset_settings();
 
 protected:
 	void _notification(int);

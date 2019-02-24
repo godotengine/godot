@@ -462,7 +462,13 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> bev = p_event;
 
-	if (bev.is_valid()) {
+#ifdef TOOLS_ENABLED
+	bool isEditable = EditorSettings::get_singleton()->get_setting("interface/color_picker/presets_editable");
+#else
+	bool isEditable = true;
+#endif
+
+	if (bev.is_valid() && isEditable) {
 
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			int index = bev->get_position().x / (preset->get_size().x / presets.size());
@@ -474,6 +480,8 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 			Color clicked_preset = presets[index];
 			erase_preset(clicked_preset);
 			emit_signal("preset_removed", clicked_preset);
+			bt_add_preset->set_disabled(false);
+			bt_add_preset->set_focus_mode(FOCUS_ALL);
 			bt_add_preset->show();
 		}
 	}
@@ -565,6 +573,29 @@ void ColorPicker::_html_focus_exit() {
 	_focus_exit();
 }
 
+void ColorPicker::_check_preset_settings() {
+#ifdef TOOLS_ENABLED
+	EditorSettings *editorSettings = EditorSettings::get_singleton();
+	bool isVisible = editorSettings->get_setting("interface/color_picker/presets_visible");
+	bool isEditable = editorSettings->get_setting("interface/color_picker/presets_editable");
+
+	if (!isVisible) {
+		preset_container->hide();
+	} else if (!isEditable) {
+		bt_add_preset->set_disabled(true);
+		bt_add_preset->set_focus_mode(FOCUS_NONE);
+		preset_container->show();
+	} else {
+		bt_add_preset->set_disabled(false);
+		bt_add_preset->set_focus_mode(FOCUS_ALL);
+		preset_container->show();
+	}
+#else
+	bt_add_preset->set_disabled(false);
+	preset_container->show();
+#endif
+}
+
 void ColorPicker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
@@ -593,6 +624,7 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_focus_enter"), &ColorPicker::_focus_enter);
 	ClassDB::bind_method(D_METHOD("_focus_exit"), &ColorPicker::_focus_exit);
 	ClassDB::bind_method(D_METHOD("_html_focus_exit"), &ColorPicker::_html_focus_exit);
+	ClassDB::bind_method(D_METHOD("_check_preset_settings"), &ColorPicker::_check_preset_settings);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
@@ -727,18 +759,20 @@ ColorPicker::ColorPicker() :
 
 	add_child(memnew(HSeparator));
 
-	HBoxContainer *bbc = memnew(HBoxContainer);
-	add_child(bbc);
+	preset_container = memnew(HBoxContainer);
+	add_child(preset_container);
 
 	preset = memnew(TextureRect);
-	bbc->add_child(preset);
+	preset_container->add_child(preset);
 	preset->connect("gui_input", this, "_preset_input");
 	preset->connect("draw", this, "_update_presets");
 
 	bt_add_preset = memnew(Button);
-	bbc->add_child(bt_add_preset);
+	preset_container->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
+
+	_check_preset_settings();
 }
 
 /////////////////
