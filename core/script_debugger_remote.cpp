@@ -282,6 +282,11 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				if (request_scene_tree)
 					request_scene_tree(request_scene_tree_ud);
 
+			} else if (command == "request_framebuffer") {
+
+				if (request_framebuffer)
+					request_framebuffer(request_framebuffer_ud);
+
 			} else if (command == "request_video_mem") {
 
 				_send_video_memory();
@@ -708,6 +713,10 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			if (request_scene_tree)
 				request_scene_tree(request_scene_tree_ud);
+		} else if (command == "request_framebuffer") {
+
+			if (request_framebuffer)
+				request_framebuffer(request_framebuffer_ud);
 		} else if (command == "request_video_mem") {
 
 			_send_video_memory();
@@ -1009,6 +1018,12 @@ void ScriptDebuggerRemote::set_request_scene_tree_message_func(RequestSceneTreeM
 	request_scene_tree_ud = p_udata;
 }
 
+void ScriptDebuggerRemote::set_request_framebuffer_message_func(RequestFramebufferMessageFunc p_func, void *p_udata) {
+
+	request_framebuffer = p_func;
+	request_framebuffer_ud = p_udata;
+}
+
 void ScriptDebuggerRemote::set_live_edit_funcs(LiveEditFuncs *p_funcs) {
 
 	live_edit_funcs = p_funcs;
@@ -1079,6 +1094,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		locking(false),
 		poll_every(0),
 		request_scene_tree(NULL),
+		request_framebuffer(NULL),
 		live_edit_funcs(NULL) {
 
 	packet_peer_stream->set_stream_peer(tcp_client);

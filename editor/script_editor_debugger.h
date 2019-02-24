@@ -230,6 +230,8 @@ public:
 
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 
+	bool send_message(const Array &p_message);
+
 	void update_live_edit_root();
 
 	void set_hide_on_stop(bool p_hide);
