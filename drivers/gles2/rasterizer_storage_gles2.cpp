@@ -1028,6 +1028,11 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		for (int i = 0; i < 6; i++) {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _cube_side_enum[i], sky->radiance, lod);
 
+			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				break; //may be too small
+			}
+
 			glViewport(0, 0, size, size);
 
 			bind_quad_array();
@@ -2209,6 +2214,8 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, surface->index_id);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_array_size, ir.ptr(), GL_STATIC_DRAW);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		} else {
+			surface->index_id = 0;
 		}
 
 		// TODO generate wireframes
