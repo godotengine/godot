@@ -114,6 +114,7 @@ public:
 class ResourceFormatSaverBinaryInstance {
 
 	String local_path;
+	String path;
 
 	bool relative_paths;
 	bool bundle_resources;
