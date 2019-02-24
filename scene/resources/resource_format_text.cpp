@@ -1361,7 +1361,9 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 		if (internal_resources.has(res)) {
 			return "SubResource( " + itos(internal_resources[res]) + " )";
 		} else if (res->get_path().length() && res->get_path().find("::") == -1) {
-
+			if (res->get_path() == local_path) { //circular reference attempt
+				return "null";
+			}
 			//external resource
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
 			return "Resource( \"" + path + "\" )";
@@ -1386,6 +1388,10 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				return;
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
+				if (res->get_path() == local_path) {
+					ERR_PRINTS("Circular reference to resource being saved found: '"+local_path+"' will be null next time it's loaded.");
+					return;
+				}
 				int index = external_resources.size();
 				external_resources[res] = index;
 				return;
