@@ -94,6 +94,7 @@ typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
 class EditorPluginList;
+class LiveViewDock;
 
 class EditorNode : public Node {
 
@@ -271,6 +272,7 @@ private:
 	PopupMenu *recent_scenes;
 	SceneTreeDock *scene_tree_dock;
 	InspectorDock *inspector_dock;
+	LiveViewDock *live_view_dock;
 	NodeDock *node_dock;
 	ImportDock *import_dock;
 	FileSystemDock *filesystem_dock;
@@ -713,6 +715,7 @@ public:
 	ImportDock *get_import_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	InspectorDock *get_inspector_dock();
+	LiveViewDock *get_live_view_dock();
 	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
