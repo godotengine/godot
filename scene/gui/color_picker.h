@@ -71,6 +71,8 @@ private:
 	bool deferred_mode_enabled;
 	bool updating;
 	bool changing_color;
+	bool presets_enabled;
+	bool presets_visible;
 	float h, s, v;
 	Color last_hsv;
 
@@ -115,6 +117,12 @@ public:
 
 	void set_deferred_mode(bool p_enabled);
 	bool is_deferred_mode() const;
+
+	void set_presets_enabled(bool p_enabled);
+	bool are_presets_enabled() const;
+
+	void set_presets_visible(bool p_visible);
+	bool are_presets_visible() const;
 
 	void set_focus_on_line_edit();
 

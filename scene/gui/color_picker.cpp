@@ -462,13 +462,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> bev = p_event;
 
-#ifdef TOOLS_ENABLED
-	bool isEditable = EditorSettings::get_singleton()->get_setting("interface/color_picker/presets_editable");
-#else
-	bool isEditable = true;
-#endif
-
-	if (bev.is_valid() && isEditable) {
+	if (bev.is_valid() && presets_enabled) {
 
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			int index = bev->get_position().x / (preset->get_size().x / presets.size());
@@ -480,8 +474,6 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 			Color clicked_preset = presets[index];
 			erase_preset(clicked_preset);
 			emit_signal("preset_removed", clicked_preset);
-			bt_add_preset->set_disabled(false);
-			bt_add_preset->set_focus_mode(FOCUS_ALL);
 			bt_add_preset->show();
 		}
 	}
@@ -573,27 +565,28 @@ void ColorPicker::_html_focus_exit() {
 	_focus_exit();
 }
 
-void ColorPicker::_check_preset_settings() {
-#ifdef TOOLS_ENABLED
-	EditorSettings *editorSettings = EditorSettings::get_singleton();
-	bool isVisible = editorSettings->get_setting("interface/color_picker/presets_visible");
-	bool isEditable = editorSettings->get_setting("interface/color_picker/presets_editable");
-
-	if (!isVisible) {
-		preset_container->hide();
-	} else if (!isEditable) {
+void ColorPicker::set_presets_enabled(bool p_enabled) {
+	presets_enabled = p_enabled;
+	if (!p_enabled) {
 		bt_add_preset->set_disabled(true);
 		bt_add_preset->set_focus_mode(FOCUS_NONE);
-		preset_container->show();
 	} else {
 		bt_add_preset->set_disabled(false);
 		bt_add_preset->set_focus_mode(FOCUS_ALL);
-		preset_container->show();
 	}
-#else
-	bt_add_preset->set_disabled(false);
-	preset_container->show();
-#endif
+}
+
+bool ColorPicker::are_presets_enabled() const {
+	return presets_enabled;
+}
+
+void ColorPicker::set_presets_visible(bool p_visible) {
+	presets_visible = p_visible;
+	preset_container->set_visible(p_visible);
+}
+
+bool ColorPicker::are_presets_visible() const {
+	return presets_visible;
 }
 
 void ColorPicker::_bind_methods() {
@@ -606,6 +599,10 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deferred_mode"), &ColorPicker::is_deferred_mode);
 	ClassDB::bind_method(D_METHOD("set_edit_alpha", "show"), &ColorPicker::set_edit_alpha);
 	ClassDB::bind_method(D_METHOD("is_editing_alpha"), &ColorPicker::is_editing_alpha);
+	ClassDB::bind_method(D_METHOD("set_presets_enabled", "enabled"), &ColorPicker::set_presets_enabled);
+	ClassDB::bind_method(D_METHOD("are_presets_enabled"), &ColorPicker::are_presets_enabled);
+	ClassDB::bind_method(D_METHOD("set_presets_visible", "visible"), &ColorPicker::set_presets_visible);
+	ClassDB::bind_method(D_METHOD("are_presets_visible"), &ColorPicker::are_presets_visible);
 	ClassDB::bind_method(D_METHOD("add_preset", "color"), &ColorPicker::add_preset);
 	ClassDB::bind_method(D_METHOD("erase_preset", "color"), &ColorPicker::erase_preset);
 	ClassDB::bind_method(D_METHOD("get_presets"), &ColorPicker::get_presets);
@@ -624,12 +621,13 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_focus_enter"), &ColorPicker::_focus_enter);
 	ClassDB::bind_method(D_METHOD("_focus_exit"), &ColorPicker::_focus_exit);
 	ClassDB::bind_method(D_METHOD("_html_focus_exit"), &ColorPicker::_html_focus_exit);
-	ClassDB::bind_method(D_METHOD("_check_preset_settings"), &ColorPicker::_check_preset_settings);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_enabled"), "set_presets_enabled", "are_presets_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_visible"), "set_presets_visible", "are_presets_visible");
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("preset_added", PropertyInfo(Variant::COLOR, "color")));
@@ -645,6 +643,8 @@ ColorPicker::ColorPicker() :
 	raw_mode_enabled = false;
 	deferred_mode_enabled = false;
 	changing_color = false;
+	presets_enabled = true;
+	presets_visible = true;
 	screen = NULL;
 
 	HBoxContainer *hb_smpl = memnew(HBoxContainer);
@@ -771,8 +771,6 @@ ColorPicker::ColorPicker() :
 	preset_container->add_child(bt_add_preset);
 	bt_add_preset->set_tooltip(TTR("Add current color as a preset."));
 	bt_add_preset->connect("pressed", this, "_add_preset_pressed");
-
-	_check_preset_settings();
 }
 
 /////////////////

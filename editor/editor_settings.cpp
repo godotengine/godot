@@ -295,10 +295,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Interface */
 
-	// Color Picker
-	_initial_set("interface/color_picker/presets_visible", true);
-	_initial_set("interface/color_picker/presets_editable", true);
-
 	// Editor
 	_initial_set("interface/editor/display_scale", 0);
 	hints["interface/editor/display_scale"] = PropertyInfo(Variant::INT, "interface/editor/display_scale", PROPERTY_HINT_ENUM, "Auto,75%,100%,125%,150%,175%,200%,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
