@@ -6419,6 +6419,41 @@
           ]
         }
       ]
+    },
+    {
+      "name": "net",
+      "type": "NET",
+      "version": {
+        "major": 3,
+        "minor": 1
+      },
+      "next": null,
+      "api": [
+        {
+          "name": "godot_net_bind_stream_peer",
+          "return_type": "void",
+          "arguments": [
+		  ["godot_object *", "p_obj"],
+		  ["const godot_net_stream_peer *", "p_interface"]
+          ]
+        },
+        {
+          "name": "godot_net_bind_packet_peer",
+          "return_type": "void",
+          "arguments": [
+		  ["godot_object *", "p_obj"],
+		  ["const godot_net_packet_peer *", "p_interface"]
+          ]
+        },
+        {
+          "name": "godot_net_bind_multiplayer_peer",
+          "return_type": "void",
+          "arguments": [
+		  ["godot_object *", "p_obj"],
+		  ["const godot_net_multiplayer_peer *", "p_interface"]
+          ]
+        }
+      ]
     }
   ]
 }
