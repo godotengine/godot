@@ -219,15 +219,15 @@ public:
 
 	static _ALWAYS_INLINE_ int wrapi(int value, int min, int max) {
 		int rng = max - min;
-		return min + ((((value - min) % rng) + rng) % rng);
+		return (rng != 0) ? min + ((((value - min) % rng) + rng) % rng) : min;
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		return (!is_equal_approx(rng, 0.0)) ? value - (rng * Math::floor((value - min) / rng)) : min;
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		return (!is_equal_approx(rng, 0.0f)) ? value - (rng * Math::floor((value - min) / rng)) : min;
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
