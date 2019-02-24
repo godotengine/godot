@@ -69,7 +69,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 				eval_ret = eval(UTF8ToString(CODE));
 			}
 		} catch (e) {
-			console.warn(e);
+			err(e);
 			eval_ret = null;
 		}
 
@@ -97,7 +97,7 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 					if (array_ptr!==0) {
 						_free(array_ptr)
 					}
-					console.warn(e);
+					err(e);
 					// fall through
 				}
 				break;
