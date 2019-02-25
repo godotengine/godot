@@ -167,7 +167,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			RasterizerCanvas::Light *light = lights_with_shadow;
 			while (light) {
 
-				VSG::canvas_render->canvas_light_shadow_buffer_update(light->shadow_buffer, light->xform_cache.affine_inverse(), light->item_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders, &light->shadow_matrix_cache);
+				VSG::canvas_render->canvas_light_shadow_buffer_update(light->shadow_buffer, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders, &light->shadow_matrix_cache);
 				light = light->shadows_next_ptr;
 			}
 
