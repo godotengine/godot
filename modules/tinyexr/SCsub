@@ -21,3 +21,10 @@ env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot's own source files
 env_tinyexr.add_source_files(env.modules_sources, "*.cpp")
+
+if not env.msvc:
+	env_tinyexr.Append(CCFLAGS=['-fno-lto'])
+	env_tinyexr.Append(LINKFLAGS=['-fno-lto'])
+else:
+	env_tinyexr.Append(CCFLAGS=['/GL-'])
+	env_tinyexr.Append(LINKFLAGS=['/LTCG:OFF'])
