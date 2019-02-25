@@ -193,6 +193,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 	int fc = 0; //count them and find version
 	String version;
+	String contents_dir;
 
 	while (ret == UNZ_OK) {
 
@@ -225,6 +226,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			}
 
 			version = data_str;
+			contents_dir = file.get_base_dir().trim_suffix("/").trim_suffix("\\");
 		}
 
 		if (file.get_file().size() != 0) {
@@ -268,7 +270,9 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
-		String file = String(fname).get_file();
+		String file_path(fname);
+
+		String file = file_path.get_file();
 
 		if (file.size() == 0) {
 			ret = unzGoToNextFile(pkg);
@@ -282,6 +286,23 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		unzOpenCurrentFile(pkg);
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
+
+		String base_dir = file_path.get_base_dir().trim_suffix("/").trim_suffix("\\");
+
+		if (base_dir != contents_dir && base_dir.begins_with(contents_dir)) {
+			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/").trim_prefix("\\");
+			file = base_dir.plus_file(file);
+
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			ERR_CONTINUE(!da);
+
+			String output_dir = template_path.plus_file(base_dir);
+
+			if (!DirAccess::exists(output_dir)) {
+				Error mkdir_err = da->make_dir_recursive(output_dir);
+				ERR_CONTINUE(mkdir_err != OK);
+			}
+		}
 
 		if (p) {
 			p->step(TTR("Importing:") + " " + file, fc);
