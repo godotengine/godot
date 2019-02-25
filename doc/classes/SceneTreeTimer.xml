@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A one-shot timer managed by the scene tree, which emits [signal timeout] on completion. See also [method SceneTree.create_timer].
-		As opposed to a [class Timer], does not require the instantiation of a node. Commonly used to create a one-shot delay timer as in the following example:
+		As opposed to [Timer], it does not require the instantiation of a node. Commonly used to create a one-shot delay timer as in the following example:
 		[codeblock]
 		func some_function():
 			print("start")
