@@ -107,6 +107,7 @@ vec2 select(vec2 a, vec2 b, bvec2 c) {
 void main() {
 
 	vec4 color = color_attrib;
+	vec2 uv;
 
 #ifdef USE_INSTANCING
 	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
@@ -121,9 +122,9 @@ void main() {
 #ifdef USE_TEXTURE_RECT
 
 	if (dst_rect.z < 0.0) { // Transpose is encoded as negative dst_rect.z
-		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex.yx;
+		uv = src_rect.xy + abs(src_rect.zw) * vertex.yx;
 	} else {
-		uv_interp = src_rect.xy + abs(src_rect.zw) * vertex;
+		uv = src_rect.xy + abs(src_rect.zw) * vertex;
 	}
 
 	vec4 outvec = vec4(0.0, 0.0, 0.0, 1.0);
@@ -140,7 +141,7 @@ void main() {
 #else
 	vec4 outvec = vec4(vertex.xy, 0.0, 1.0);
 
-	uv_interp = uv_attrib;
+	uv = uv_attrib;
 #endif
 
 	{
@@ -189,6 +190,7 @@ VERTEX_SHADER_CODE
 
 #endif
 
+	uv_interp = uv;
 	gl_Position = projection_matrix * outvec;
 
 #ifdef USE_LIGHTING
@@ -345,10 +347,14 @@ void main() {
 
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
+#ifdef USE_FORCE_REPEAT
+	//needs to use this to workaround GLES2/WebGL1 forcing tiling that textures that dont support it
+	uv = mod(uv,vec2(1.0,1.0));
+#endif
 
 #if !defined(COLOR_USED)
 	//default behavior, texture by color
-	color *= texture2D(color_texture, uv_interp);
+	color *= texture2D(color_texture, uv);
 #endif
 
 #ifdef SCREEN_UV_USED
@@ -365,7 +371,7 @@ void main() {
 #endif
 
 	if (use_default_normal) {
-		normal.xy = texture2D(normal_texture, uv_interp).xy * 2.0 - 1.0;
+		normal.xy = texture2D(normal_texture, uv).xy * 2.0 - 1.0;
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
 	} else {

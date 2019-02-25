@@ -187,7 +187,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> &image, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, int &flags, Ref<Image> &image, int p_size_limit = 0);
 	String path_to_file;
 	RID texture;
 	Image::Format format;

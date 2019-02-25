@@ -481,7 +481,7 @@ Image::Format StreamTexture::get_format() const {
 	return format;
 }
 
-Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> &image, int p_size_limit) {
+Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, int &flags, Ref<Image> &image, int p_size_limit) {
 
 	alpha_cache.unref();
 
@@ -497,8 +497,11 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 		ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'D' || header[2] != 'S' || header[3] != 'T', ERR_FILE_CORRUPT);
 	}
 
-	tw = f->get_32();
-	th = f->get_32();
+	tw = f->get_16();
+	tw_custom = f->get_16();
+	th = f->get_16();
+	th_custom = f->get_16();
+
 	flags = f->get_32(); //texture flags!
 	uint32_t df = f->get_32(); //data format
 
@@ -705,18 +708,26 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 
 Error StreamTexture::load(const String &p_path) {
 
-	int lw, lh, lflags;
+	int lw, lh, lwc, lhc, lflags;
 	Ref<Image> image;
 	image.instance();
-	Error err = _load_data(p_path, lw, lh, lflags, image);
+	Error err = _load_data(p_path, lw, lh, lwc, lhc, lflags, image);
 	if (err)
 		return err;
 
+	if (get_path() == String()) {
+		//temporarily set path if no path set for resource, helps find errors
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
 	VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, image->get_format(), VS::TEXTURE_TYPE_2D, lflags);
 	VS::get_singleton()->texture_set_data(texture, image);
+	if (lwc || lhc) {
+		VS::get_singleton()->texture_set_size_override(texture, lwc, lhc, 0);
+	} else {
+	}
 
-	w = lw;
-	h = lh;
+	w = lwc ? lwc : lw;
+	h = lhc ? lhc : lh;
 	flags = lflags;
 	path_to_file = p_path;
 	format = image->get_format();
@@ -784,6 +795,7 @@ bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
 				decom->decompress();
 				img = decom;
 			}
+
 			alpha_cache.instance();
 			alpha_cache->create_from_image_alpha(img);
 		}
