@@ -2542,6 +2542,7 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 	singleton->editor_plugins_over->get_plugins_list().erase(p_editor);
 	singleton->remove_child(p_editor);
 	singleton->editor_data.remove_editor_plugin(p_editor);
+	singleton->get_editor_plugins_force_input_forwarding()->remove_plugin(p_editor);
 }
 
 void EditorNode::_update_addon_config() {
@@ -6057,6 +6058,10 @@ void EditorPluginList::forward_spatial_force_draw_over_viewport(Control *p_overl
 
 void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
 	plugins_list.push_back(p_plugin);
+}
+
+void EditorPluginList::remove_plugin(EditorPlugin *p_plugin) {
+	plugins_list.erase(p_plugin);
 }
 
 bool EditorPluginList::empty() {
