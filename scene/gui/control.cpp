@@ -206,65 +206,62 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
+			if (data.icon_override.has(dname)) {
+				data.icon_override[dname]->disconnect("changed", this, "_override_changed");
+			}
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-			update();
 		} else if (name.begins_with("custom_shaders/")) {
 			String dname = name.get_slicec('/', 1);
+			if (data.shader_override.has(dname)) {
+				data.shader_override[dname]->disconnect("changed", this, "_override_changed");
+			}
 			data.shader_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-			update();
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
+			if (data.style_override.has(dname)) {
+				data.style_override[dname]->disconnect("changed", this, "_override_changed");
+			}
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-			update();
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
-				_unref_font(data.font_override[dname]);
+				data.font_override[dname]->disconnect("changed", this, "_override_changed");
 			}
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-			update();
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-			update();
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
-			update();
 		} else
 			return false;
 
 	} else {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
-			notification(NOTIFICATION_THEME_CHANGED);
 			add_icon_override(dname, p_value);
 		} else if (name.begins_with("custom_shaders/")) {
 			String dname = name.get_slicec('/', 1);
 			add_shader_override(dname, p_value);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			add_style_override(dname, p_value);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			add_font_override(dname, p_value);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_color_override(dname, p_value);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_constant_override(dname, p_value);
-			notification(NOTIFICATION_THEME_CHANGED);
 		} else
 			return false;
 	}
@@ -1800,51 +1797,63 @@ Rect2 Control::get_anchorable_rect() const {
 void Control::add_icon_override(const StringName &p_name, const Ref<Texture> &p_icon) {
 
 	ERR_FAIL_COND(p_icon.is_null());
+	if (data.icon_override.has(p_name)) {
+		data.icon_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
 	data.icon_override[p_name] = p_icon;
+	if (data.icon_override[p_name].is_valid()) {
+		data.icon_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+	}
 	notification(NOTIFICATION_THEME_CHANGED);
-	update();
 }
 
 void Control::add_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
 	ERR_FAIL_COND(p_shader.is_null());
+	if (data.shader_override.has(p_name)) {
+		data.shader_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
 	data.shader_override[p_name] = p_shader;
+	if (data.shader_override[p_name].is_valid()) {
+		data.shader_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+	}
 	notification(NOTIFICATION_THEME_CHANGED);
-	update();
 }
 void Control::add_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 
 	ERR_FAIL_COND(p_style.is_null());
+	if (data.style_override.has(p_name)) {
+		data.style_override[p_name]->disconnect("changed", this, "_override_changed");
+	}
 	data.style_override[p_name] = p_style;
+	if (data.style_override[p_name].is_valid()) {
+		data.style_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
+	}
+
 	notification(NOTIFICATION_THEME_CHANGED);
-	update();
 }
 
 void Control::add_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 
 	ERR_FAIL_COND(p_font.is_null());
 	if (data.font_override.has(p_name)) {
-		_unref_font(data.font_override[p_name]);
+		data.font_override[p_name]->disconnect("changed", this, "_override_changed");
 	}
 	data.font_override[p_name] = p_font;
-
-	if (p_font.is_valid()) {
-		_ref_font(p_font);
+	if (data.font_override[p_name].is_valid()) {
+		data.font_override[p_name]->connect("changed", this, "_override_changed", Vector<Variant>(), CONNECT_REFERENCE_COUNTED);
 	}
 
 	notification(NOTIFICATION_THEME_CHANGED);
-	update();
 }
 void Control::add_color_override(const StringName &p_name, const Color &p_color) {
 
 	data.color_override[p_name] = p_color;
 	notification(NOTIFICATION_THEME_CHANGED);
-	update();
 }
 void Control::add_constant_override(const StringName &p_name, int p_constant) {
 
 	data.constant_override[p_name] = p_constant;
 	notification(NOTIFICATION_THEME_CHANGED);
-	update();
 }
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
@@ -2143,7 +2152,6 @@ void Control::_propagate_theme_changed(CanvasItem *p_at, Control *p_owner, bool 
 			c->data.theme_owner = p_owner;
 		}
 		c->notification(NOTIFICATION_THEME_CHANGED);
-		c->update();
 	}
 }
 
@@ -2550,32 +2558,10 @@ float Control::get_rotation_degrees() const {
 	return Math::rad2deg(get_rotation());
 }
 
-//needed to update the control if the font changes..
-void Control::_ref_font(Ref<Font> p_sc) {
+void Control::_override_changed() {
 
-	if (!data.font_refcount.has(p_sc)) {
-		data.font_refcount[p_sc] = 1;
-		p_sc->connect("changed", this, "_font_changed");
-	} else {
-		data.font_refcount[p_sc] += 1;
-	}
-}
-
-void Control::_unref_font(Ref<Font> p_sc) {
-
-	ERR_FAIL_COND(!data.font_refcount.has(p_sc));
-	data.font_refcount[p_sc]--;
-	if (data.font_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", this, "_font_changed");
-		data.font_refcount.erase(p_sc);
-	}
-}
-
-void Control::_font_changed() {
-
-	update();
 	notification(NOTIFICATION_THEME_CHANGED);
-	minimum_size_changed(); //fonts affect minimum size pretty much almost always
+	minimum_size_changed(); // overrides are likely to affect minimum size
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
@@ -2829,7 +2815,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_theme_changed"), &Control::_theme_changed);
 
-	ClassDB::bind_method(D_METHOD("_font_changed"), &Control::_font_changed);
+	ClassDB::bind_method(D_METHOD("_override_changed"), &Control::_override_changed);
 
 	BIND_VMETHOD(MethodInfo("_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "_get_minimum_size"));
