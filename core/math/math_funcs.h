@@ -217,8 +217,8 @@ public:
 	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 
-	static _ALWAYS_INLINE_ int wrapi(int value, int min, int max) {
-		int rng = max - min;
+	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
+		int64_t rng = max - min;
 		return (rng != 0) ? min + ((((value - min) % rng) + rng) % rng) : min;
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
