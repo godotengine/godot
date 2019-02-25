@@ -207,7 +207,6 @@ private:
 		HashMap<StringName, Ref<Font> > font_override;
 		HashMap<StringName, Color> color_override;
 		HashMap<StringName, int> constant_override;
-		Map<Ref<Font>, int> font_refcount;
 
 	} data;
 
@@ -234,9 +233,7 @@ private:
 	void _size_changed();
 	String _get_tooltip() const;
 
-	void _ref_font(Ref<Font> p_sc);
-	void _unref_font(Ref<Font> p_sc);
-	void _font_changed();
+	void _override_changed();
 
 	void _update_canvas_item_transform();
 
