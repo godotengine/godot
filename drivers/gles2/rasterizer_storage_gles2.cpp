@@ -491,7 +491,6 @@ void RasterizerStorageGLES2::texture_set_data(RID p_texture, const Ref<Image> &p
 			img = img->duplicate();
 		}
 		img->resize_to_po2(false);
-		img->save_png("res://popo.png");
 	}
 
 	if (config.shrink_textures_x2 && (p_image->has_mipmaps() || !p_image->is_compressed()) && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
