@@ -1812,7 +1812,7 @@ FRAGMENT_SHADER_CODE
 
 #if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
 
-	light_att *= sample_shadow(light_directional_shadow, shadow_coord);
+	light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, shadow_coord));
 #endif //orthogonal
 
 #else //fragment version of pssm
