@@ -66,7 +66,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	subdirectory_item->set_selectable(0, true);
 	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
-	if (!p_select_in_favorites && (path == lpath || ((display_mode_setting == DISPLAY_MODE_SETTING_SPLIT) && path.get_base_dir() == lpath))) {
+	if (!p_select_in_favorites && (path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
 	}
 
@@ -84,7 +84,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		parent_should_expand = (_create_tree(subdirectory_item, p_dir->get_subdir(i), uncollapsed_paths, p_select_in_favorites) || parent_should_expand);
 
 	// Create all items for the files in the subdirectory
-	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
+	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
 			String file_name = p_dir->get_file(i);
 
@@ -229,19 +229,21 @@ void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool
 	updating_tree = false;
 }
 
+void FileSystemDock::set_display_mode(DisplayMode p_display_mode) {
+	display_mode = p_display_mode;
+	emit_signal("display_mode_changed");
+	_update_display_mode(false);
+}
+
 void FileSystemDock::_update_display_mode(bool p_force) {
 	// Compute the new display mode
-	DisplayMode new_display_mode = (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) ? DISPLAY_MODE_TREE_ONLY : DISPLAY_MODE_SPLIT;
-
-	if (p_force || new_display_mode != display_mode || old_display_mode_setting != display_mode_setting) {
-		display_mode = new_display_mode;
-		old_display_mode_setting = display_mode_setting;
-		button_toggle_display_mode->set_pressed(display_mode_setting == DISPLAY_MODE_SETTING_SPLIT ? true : false);
+	if (p_force || old_display_mode != display_mode) {
+		button_toggle_display_mode->set_pressed(display_mode == DISPLAY_MODE_SPLIT ? true : false);
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
 				tree->set_v_size_flags(SIZE_EXPAND_FILL);
-				if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
+				if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 					tree_search_box->show();
 				} else {
 					tree_search_box->hide();
@@ -262,6 +264,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				_update_file_list(true);
 				break;
 		}
+		old_display_mode = display_mode;
 	}
 }
 
@@ -269,9 +272,6 @@ void FileSystemDock::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_RESIZED: {
-			_update_display_mode();
-		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
 			if (initialized)
@@ -302,7 +302,6 @@ void FileSystemDock::_notification(int p_what) {
 
 			current_path->connect("text_entered", this, "_navigate_to_path");
 
-			display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 
 			_update_display_mode();
@@ -362,27 +361,10 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_right_icon(get_icon("Search", ei));
 			file_list_search_box->set_clear_button_enabled(true);
 
-			bool should_update_files = false;
-
-			// Update file list display mode
-			int new_file_list_mode = int(EditorSettings::get_singleton()->get("docks/filesystem/files_display_mode"));
-			if (new_file_list_mode != file_list_display_mode) {
-				set_file_list_display_mode(new_file_list_mode);
-				_update_file_list_display_mode_button();
-				should_update_files = true;
-			}
-
-			// Update display of files in tree
-			display_mode_setting = DisplayModeSetting(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
-
 			// Update always showfolders
 			bool new_always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
-				should_update_files = true;
-			}
-
-			if (should_update_files) {
 				_update_file_list(true);
 			}
 
@@ -530,6 +512,7 @@ void FileSystemDock::_update_file_list_display_mode_button() {
 		button_file_list_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
 		button_file_list_display_mode->set_tooltip(TTR("View items as a list."));
 	}
+	emit_signal("display_mode_changed");
 }
 
 void FileSystemDock::_change_file_display() {
@@ -1695,9 +1678,7 @@ void FileSystemDock::_rescan() {
 }
 
 void FileSystemDock::_toggle_split_mode(bool p_active) {
-	display_mode_setting = p_active ? DISPLAY_MODE_SETTING_SPLIT : DISPLAY_MODE_SETTING_TREE_ONLY;
-	EditorSettings::get_singleton()->set("docks/filesystem/display_mode", int(display_mode_setting));
-	_update_display_mode();
+	set_display_mode(p_active ? DISPLAY_MODE_SPLIT : DISPLAY_MODE_TREE_ONLY);
 }
 
 void FileSystemDock::fix_dependencies(const String &p_for_file) {
@@ -1709,7 +1690,7 @@ void FileSystemDock::focus_on_filter() {
 	file_list_search_box->grab_focus();
 }
 
-void FileSystemDock::set_file_list_display_mode(int p_mode) {
+void FileSystemDock::set_file_list_display_mode(FileListDisplayMode p_mode) {
 
 	if (p_mode == file_list_display_mode)
 		return;
@@ -2219,7 +2200,7 @@ void FileSystemDock::_update_import_dock() {
 
 	// List selected
 	Vector<String> selected;
-	if (display_mode_setting == DISPLAY_MODE_SETTING_TREE_ONLY) {
+	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		// Use the tree
 		selected = _tree_get_selected();
 
@@ -2334,6 +2315,8 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
 	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_file")));
+
+	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
 
 FileSystemDock::FileSystemDock(EditorNode *p_editor) {
@@ -2564,11 +2547,10 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	history_max_size = 20;
 	history.push_back("res://");
 
-	display_mode = DISPLAY_MODE_SPLIT;
+	display_mode = DISPLAY_MODE_TREE_ONLY;
+	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
-	display_mode_setting = DISPLAY_MODE_SETTING_TREE_ONLY;
-	old_display_mode_setting = DISPLAY_MODE_SETTING_TREE_ONLY;
 	always_show_folders = false;
 }
 

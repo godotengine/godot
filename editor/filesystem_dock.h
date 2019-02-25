@@ -65,17 +65,12 @@ public:
 		FILE_LIST_DISPLAY_LIST
 	};
 
-private:
-	enum DisplayModeSetting {
-		DISPLAY_MODE_SETTING_TREE_ONLY,
-		DISPLAY_MODE_SETTING_SPLIT,
-	};
-
 	enum DisplayMode {
 		DISPLAY_MODE_TREE_ONLY,
 		DISPLAY_MODE_SPLIT,
 	};
 
+private:
 	enum FileMenu {
 		FILE_OPEN,
 		FILE_INSTANCE,
@@ -123,8 +118,7 @@ private:
 
 	FileListDisplayMode file_list_display_mode;
 	DisplayMode display_mode;
-	DisplayModeSetting display_mode_setting;
-	DisplayModeSetting old_display_mode_setting;
+	DisplayMode old_display_mode;
 
 	PopupMenu *file_list_popup;
 	PopupMenu *tree_popup;
@@ -287,11 +281,15 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 
-	void set_file_list_display_mode(int p_mode);
-
 	int get_split_offset() { return split_box->get_split_offset(); }
 	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
 	void select_file(const String &p_file);
+
+	void set_display_mode(DisplayMode p_display_mode);
+	DisplayMode get_display_mode() { return display_mode; }
+
+	void set_file_list_display_mode(FileListDisplayMode p_mode);
+	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
