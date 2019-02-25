@@ -96,7 +96,7 @@
 				"string"   - major + minor + patch + status + build in a single String
 				The "hex" value is encoded as follows, from left to right: one byte for the major, one byte for the minor, one byte for the patch version. For example, "3.1.12" would be [code]0x03010C[/code]. Note that it's still an int internally, and printing it will give you its decimal representation, which is not particularly meaningful. Use hexadecimal literals for easy version comparisons from code:
 				[codeblock]
-				if Engine.get_version_info().hex >= 0x030200:
+				if Engine.get_version_info().hex &gt;= 0x030200:
 				    # do things specific to version 3.2 or later
 				else:
 				    # do things specific to versions before 3.2
