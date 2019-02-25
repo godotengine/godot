@@ -903,6 +903,7 @@ int StyleBoxLine::get_thickness() const {
 
 void StyleBoxLine::set_vertical(bool p_vertical) {
 	vertical = p_vertical;
+	emit_changed();
 }
 bool StyleBoxLine::is_vertical() const {
 	return vertical;
