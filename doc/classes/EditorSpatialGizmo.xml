@@ -66,6 +66,8 @@
 			</argument>
 			<argument index="2" name="skeleton" type="RID">
 			</argument>
+			<argument index="3" name="material" type="Material" default="null">
+			</argument>
 			<description>
 			</description>
 		</method>
