@@ -82,6 +82,7 @@ public:
 		bool support_32_bits_indices;
 		bool support_write_depth;
 		bool support_half_float_vertices;
+		bool support_npot_repeat_mipmap;
 	} config;
 
 	struct Resources {
@@ -240,6 +241,8 @@ public:
 
 		int mipmaps;
 
+		bool resize_to_po2;
+
 		bool active;
 		GLenum tex_id;
 
@@ -275,6 +278,7 @@ public:
 				ignore_mipmaps(false),
 				compressed(false),
 				mipmaps(0),
+				resize_to_po2(false),
 				active(false),
 				tex_id(0),
 				stored_cube_sides(0),
@@ -313,7 +317,7 @@ public:
 
 	mutable RID_Owner<Texture> texture_owner;
 
-	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed) const;
+	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, uint32_t p_flags, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_will_need_resize) const;
 
 	virtual RID texture_create();
 	virtual void texture_allocate(RID p_texture, int p_width, int p_height, int p_depth_3d, Image::Format p_format, VS::TextureType p_type, uint32_t p_flags = VS::TEXTURE_FLAGS_DEFAULT);

@@ -499,6 +499,23 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				glDisableVertexAttribArray(VS::ARRAY_COLOR);
 				glVertexAttrib4fv(VS::ARRAY_COLOR, r->modulate.components);
 
+				bool can_tile = true;
+				if (r->texture.is_valid() && r->flags & CANVAS_RECT_TILE && !storage->config.support_npot_repeat_mipmap) {
+					// workaround for when setting tiling does not work due to hardware limitation
+
+					RasterizerStorageGLES2::Texture *texture = storage->texture_owner.getornull(r->texture);
+
+					if (texture) {
+
+						texture = texture->get_ptr();
+
+						if (next_power_of_2(texture->alloc_width) != texture->alloc_width && next_power_of_2(texture->alloc_height) != texture->alloc_height) {
+							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
+							can_tile = false;
+						}
+					}
+				}
+
 				// On some widespread Nvidia cards, the normal draw method can produce some
 				// flickering in draw_rect and especially TileMap rendering (tiles randomly flicker).
 				// See GH-9913.
@@ -559,7 +576,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 						bool untile = false;
 
-						if (r->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
+						if (can_tile && r->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 							untile = true;
@@ -616,7 +633,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 						bool untile = false;
 
-						if (r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT)) {
+						if (can_tile && r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT)) {
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 							untile = true;
@@ -664,6 +681,9 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				}
+
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
+
 			} break;
 
 			case Item::Command::TYPE_NINEPATCH: {
