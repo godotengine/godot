@@ -141,6 +141,7 @@ opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'releas
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
+opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))
 
 # Components
 opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
@@ -223,6 +224,9 @@ env_base.Append(CPPPATH=['#editor', '#'])
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
+
+if (env_base["use_precise_math_checks"]):
+    env_base.Append(CPPDEFINES=['PRECISE_MATH_CHECKS'])
 
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])

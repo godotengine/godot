@@ -2019,6 +2019,7 @@ void RasterizerCanvasGLES2::initialize() {
 	state.canvas_shader.init();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 
 	state.canvas_shader.bind();
 

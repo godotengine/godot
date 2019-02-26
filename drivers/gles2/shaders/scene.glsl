@@ -96,6 +96,10 @@ uniform float light_normal_bias;
 // varyings
 //
 
+#if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
+varying highp vec4 position_interp;
+#endif
+
 varying highp vec3 vertex_interp;
 varying vec3 normal_interp;
 
@@ -355,7 +359,7 @@ void main() {
 	uv2_interp = uv2_attrib;
 #endif
 
-#ifdef OVERRIDE_POSITION
+#if defined(OVERRIDE_POSITION)
 	highp vec4 position;
 #endif
 
@@ -647,11 +651,16 @@ VERTEX_SHADER_CODE
 
 #endif //use vertex lighting
 
-#ifdef OVERRIDE_POSITION
+#if defined(OVERRIDE_POSITION)
 	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 #endif
+
+#if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
+	position_interp = gl_Position;
+#endif
+
 }
 
 /* clang-format off */
@@ -974,6 +983,10 @@ uniform vec4 light_clamp;
 //
 // varyings
 //
+
+#if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
+varying highp vec4 position_interp;
+#endif
 
 varying highp vec3 vertex_interp;
 varying vec3 normal_interp;
@@ -1335,8 +1348,21 @@ LIGHT_SHADER_CODE
 
 #ifdef USE_SHADOW
 
-#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, texture2D(p_shadow, p_pos).r)
-#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, texture2DProj(p_shadow, p_pos).r)
+#ifdef USE_RGBA_SHADOWS
+
+#define SHADOW_DEPTH(m_val) dot(m_val, vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0))
+
+#else
+
+#define SHADOW_DEPTH(m_val) (m_val).r
+
+#endif
+
+
+#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture2D(p_shadow, p_pos)))
+#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
+
+
 
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
@@ -2105,5 +2131,15 @@ FRAGMENT_SHADER_CODE
 
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
-#endif // not RENDER_DEPTH
+#else // not RENDER_DEPTH
+//depth render
+#ifdef USE_RGBA_SHADOWS
+
+	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
+	highp vec4 comp = fract(depth * vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0));
+	comp -= comp.xxyz * vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+	gl_FragColor = comp;
+
+#endif
+#endif
 }

@@ -76,15 +76,23 @@ void Basis::invert() {
 }
 
 void Basis::orthonormalize() {
+	/* this check is undesired, the matrix could be wrong but we still may want to generate a valid one
+	 * for practical purposes
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(determinant() == 0);
 #endif
+*/
 	// Gram-Schmidt Process
 
 	Vector3 x = get_axis(0);
 	Vector3 y = get_axis(1);
 	Vector3 z = get_axis(2);
 
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND(x.length_squared() == 0);
+	ERR_FAIL_COND(y.length_squared() == 0);
+	ERR_FAIL_COND(z.length_squared() == 0);
+#endif
 	x.normalize();
 	y = (y - x * (x.dot(y)));
 	y.normalize();
@@ -118,16 +126,16 @@ bool Basis::is_diagonal() const {
 }
 
 bool Basis::is_rotation() const {
-	return Math::is_equal_approx(determinant(), 1) && is_orthogonal();
+	return Math::is_equal_approx(determinant(), 1, UNIT_EPSILON) && is_orthogonal();
 }
 
 bool Basis::is_symmetric() const {
 
-	if (!Math::is_equal_approx(elements[0][1], elements[1][0]))
+	if (!Math::is_equal_approx_ratio(elements[0][1], elements[1][0], UNIT_EPSILON))
 		return false;
-	if (!Math::is_equal_approx(elements[0][2], elements[2][0]))
+	if (!Math::is_equal_approx_ratio(elements[0][2], elements[2][0], UNIT_EPSILON))
 		return false;
-	if (!Math::is_equal_approx(elements[1][2], elements[2][1]))
+	if (!Math::is_equal_approx_ratio(elements[1][2], elements[2][1], UNIT_EPSILON))
 		return false;
 
 	return true;
@@ -488,6 +496,11 @@ void Basis::set_euler_xyz(const Vector3 &p_euler) {
 // as the x, y, and z components of a Vector3 respectively.
 Vector3 Basis::get_euler_yxz() const {
 
+	/* checking this is a bad idea, because obtaining from scaled transform is a valid use case
+#ifdef MATH_CHECKS
+	ERR_FAIL_COND(!is_rotation());
+#endif
+*/
 	// Euler angles in YXZ convention.
 	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 	//
@@ -496,9 +509,7 @@ Vector3 Basis::get_euler_yxz() const {
 	//        cy*sx*sz-cz*sy    cy*cz*sx+sy*sz        cy*cx
 
 	Vector3 euler;
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!is_rotation(), euler);
-#endif
+
 	real_t m12 = elements[1][2];
 
 	if (m12 < 1) {
@@ -556,7 +567,7 @@ bool Basis::is_equal_approx(const Basis &a, const Basis &b) const {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx(a.elements[i][j], b.elements[i][j]))
+			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], UNIT_EPSILON))
 				return false;
 		}
 	}
@@ -599,10 +610,14 @@ Basis::operator String() const {
 }
 
 Quat Basis::get_quat() const {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!is_rotation(), Quat());
-#endif
-	real_t trace = elements[0][0] + elements[1][1] + elements[2][2];
+
+	/* Allow getting a quaternion from an unnormalized transform */
+	Basis m = *this;
+	m.elements[0].normalize();
+	m.elements[1].normalize();
+	m.elements[2].normalize();
+
+	real_t trace = m.elements[0][0] + m.elements[1][1] + m.elements[2][2];
 	real_t temp[4];
 
 	if (trace > 0.0) {
@@ -610,23 +625,23 @@ Quat Basis::get_quat() const {
 		temp[3] = (s * 0.5);
 		s = 0.5 / s;
 
-		temp[0] = ((elements[2][1] - elements[1][2]) * s);
-		temp[1] = ((elements[0][2] - elements[2][0]) * s);
-		temp[2] = ((elements[1][0] - elements[0][1]) * s);
+		temp[0] = ((m.elements[2][1] - m.elements[1][2]) * s);
+		temp[1] = ((m.elements[0][2] - m.elements[2][0]) * s);
+		temp[2] = ((m.elements[1][0] - m.elements[0][1]) * s);
 	} else {
-		int i = elements[0][0] < elements[1][1] ?
-						(elements[1][1] < elements[2][2] ? 2 : 1) :
-						(elements[0][0] < elements[2][2] ? 2 : 0);
+		int i = m.elements[0][0] < m.elements[1][1] ?
+						(m.elements[1][1] < m.elements[2][2] ? 2 : 1) :
+						(m.elements[0][0] < m.elements[2][2] ? 2 : 0);
 		int j = (i + 1) % 3;
 		int k = (i + 2) % 3;
 
-		real_t s = Math::sqrt(elements[i][i] - elements[j][j] - elements[k][k] + 1.0);
+		real_t s = Math::sqrt(m.elements[i][i] - m.elements[j][j] - m.elements[k][k] + 1.0);
 		temp[i] = s * 0.5;
 		s = 0.5 / s;
 
-		temp[3] = (elements[k][j] - elements[j][k]) * s;
-		temp[j] = (elements[j][i] + elements[i][j]) * s;
-		temp[k] = (elements[k][i] + elements[i][k]) * s;
+		temp[3] = (m.elements[k][j] - m.elements[j][k]) * s;
+		temp[j] = (m.elements[j][i] + m.elements[i][j]) * s;
+		temp[k] = (m.elements[k][i] + m.elements[i][k]) * s;
 	}
 
 	return Quat(temp[0], temp[1], temp[2], temp[3]);
@@ -696,9 +711,11 @@ void Basis::set_orthogonal_index(int p_index) {
 }
 
 void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
+	/* checking this is a bad idea, because obtaining from scaled transform is a valid use case
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(!is_rotation());
 #endif
+*/
 	real_t angle, x, y, z; // variables for result
 	real_t epsilon = 0.01; // margin to allow for rounding errors
 	real_t epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
@@ -835,14 +852,15 @@ void Basis::set_diagonal(const Vector3 p_diag) {
 }
 
 Basis Basis::slerp(const Basis &target, const real_t &t) const {
-// TODO: implement this directly without using quaternions to make it more efficient
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!is_rotation(), Basis());
-	ERR_FAIL_COND_V(!target.is_rotation(), Basis());
-#endif
 
+	//consider scale
 	Quat from(*this);
 	Quat to(target);
 
-	return Basis(from.slerp(to, t));
+	Basis b(from.slerp(to, t));
+	b.elements[0] *= Math::lerp(elements[0].length(), target.elements[0].length(), t);
+	b.elements[1] *= Math::lerp(elements[1].length(), target.elements[1].length(), t);
+	b.elements[2] *= Math::lerp(elements[2].length(), target.elements[2].length(), t);
+
+	return b;
 }
