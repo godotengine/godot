@@ -1150,6 +1150,12 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		}
 	}
 
+	String etc_error = test_etc2();
+	if (etc_error != String()) {
+		valid = false;
+		err += etc_error;
+	}
+
 	if (!err.empty())
 		r_error = err;
 

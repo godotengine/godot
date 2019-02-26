@@ -54,6 +54,7 @@ protected:
 	static void _texture_reimport_normal(const Ref<StreamTexture> &p_tex);
 
 	static ResourceImporterTexture *singleton;
+	static const char *compression_formats[];
 
 public:
 	static ResourceImporterTexture *get_singleton() { return singleton; }
@@ -85,9 +86,12 @@ public:
 
 	void _save_stex(const Ref<Image> &p_image, const String &p_to_path, int p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags, bool p_streamable, bool p_detect_3d, bool p_detect_srgb, bool p_force_rgbe, bool p_detect_normal, bool p_force_normal, bool p_force_po2_for_compressed);
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
 
 	void update_imports();
+
+	virtual bool are_import_settings_valid(const String &p_path) const;
+	virtual String get_import_settings_string() const;
 
 	ResourceImporterTexture();
 	~ResourceImporterTexture();

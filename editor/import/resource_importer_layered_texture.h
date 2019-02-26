@@ -40,6 +40,7 @@ class ResourceImporterLayeredTexture : public ResourceImporter {
 	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter)
 
 	bool is_3d;
+	static const char *compression_formats[];
 
 protected:
 	static void _texture_reimport_srgb(const Ref<StreamTexture> &p_tex);
@@ -76,9 +77,12 @@ public:
 
 	void _save_tex(const Vector<Ref<Image> > &p_images, const String &p_to_path, int p_compress_mode, Image::CompressMode p_vram_compression, bool p_mipmaps, int p_texture_flags);
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
 
 	void update_imports();
+
+	virtual bool are_import_settings_valid(const String &p_path) const;
+	virtual String get_import_settings_string() const;
 
 	void set_3d(bool p_3d) { is_3d = p_3d; }
 	ResourceImporterLayeredTexture();

@@ -32,6 +32,9 @@
 
 #include "core/os/os.h"
 #include "core/variant_parser.h"
+bool ResourceFormatImporter::SortImporterByName::operator() ( const Ref<ResourceImporter>& p_a,const Ref<ResourceImporter>& p_b) const {
+	return p_a->get_importer_name() < p_b->get_importer_name();
+}
 
 Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid) const {
 
@@ -90,6 +93,8 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				r_path_and_type.type = value;
 			} else if (assign == "importer") {
 				r_path_and_type.importer = value;
+			} else if (assign == "metadata") {
+				r_path_and_type.metadata = value;
 			} else if (assign == "valid") {
 				if (r_valid) {
 					*r_valid = value;
@@ -304,6 +309,19 @@ String ResourceFormatImporter::get_resource_type(const String &p_path) const {
 	return pat.type;
 }
 
+Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) const {
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path, pat);
+
+	if (err != OK) {
+
+		return Variant();
+	}
+
+	return pat.metadata;
+}
+
+
 void ResourceFormatImporter::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
 	PathAndType pat;
@@ -364,6 +382,35 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 String ResourceFormatImporter::get_import_base_path(const String &p_for_file) const {
 
 	return "res://.import/" + p_for_file.get_file() + "-" + p_for_file.md5_text();
+}
+
+bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) const {
+
+	bool valid = true;
+	PathAndType pat;
+	_get_path_and_type(p_path, pat, &valid);
+
+	if (!valid) {
+		return false;
+	}
+
+	for(int i=0;i<importers.size();i++) {
+		if (importers[i]->get_importer_name() == pat.importer) {
+			if (!importers[i]->are_import_settings_valid(p_path)) { //importer thinks this is not valid
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+ String ResourceFormatImporter::get_import_settings_hash() const {
+	String hash;
+	for(int i=0;i<importers.size();i++) {
+		hash+=":"+importers[i]->get_importer_name()+":"+importers[i]->get_import_settings_string();
+	}
+	return hash.md5_text();
 }
 
 ResourceFormatImporter *ResourceFormatImporter::singleton = NULL;
