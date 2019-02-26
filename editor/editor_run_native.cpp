@@ -32,6 +32,7 @@
 
 #include "editor_export.h"
 #include "editor_node.h"
+#include "editor_scale.h"
 
 void EditorRunNative::_notification(int p_what) {
 
@@ -49,7 +50,7 @@ void EditorRunNative::_notification(int p_what) {
 				im->clear_mipmaps();
 				if (!im->empty()) {
 
-					im->resize(16, 16);
+					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
 					small_icon.instance();
 					small_icon->create_from_image(im, 0);
