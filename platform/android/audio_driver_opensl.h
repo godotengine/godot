@@ -54,13 +54,18 @@ class AudioDriverOpenSL : public AudioDriver {
 	int32_t *mixdown_buffer;
 	int last_free;
 
+	Vector<int16_t> rec_buffer;
+
 	SLPlayItf playItf;
+	SLRecordItf recordItf;
 	SLObjectItf sl;
 	SLEngineItf EngineItf;
 	SLObjectItf OutputMix;
 	SLVolumeItf volumeItf;
 	SLObjectItf player;
+	SLObjectItf recorder;
 	SLAndroidSimpleBufferQueueItf bufferQueueItf;
+	SLAndroidSimpleBufferQueueItf recordBufferQueueItf;
 	SLDataSource audioSource;
 	SLDataFormat_PCM pcm;
 	SLDataSink audioSink;
@@ -73,6 +78,13 @@ class AudioDriverOpenSL : public AudioDriver {
 			SLAndroidSimpleBufferQueueItf queueItf);
 
 	static void _buffer_callbacks(
+			SLAndroidSimpleBufferQueueItf queueItf,
+			void *pContext);
+
+	void _record_buffer_callback(
+			SLAndroidSimpleBufferQueueItf queueItf);
+
+	static void _record_buffer_callbacks(
 			SLAndroidSimpleBufferQueueItf queueItf,
 			void *pContext);
 
@@ -90,6 +102,9 @@ public:
 	virtual void finish();
 
 	virtual void set_pause(bool p_pause);
+
+	virtual Error capture_start();
+	virtual Error capture_stop();
 
 	AudioDriverOpenSL();
 };
