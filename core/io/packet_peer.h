@@ -59,6 +59,11 @@ public:
 
 	virtual int get_max_packet_size() const = 0;
 
+	enum {
+		TARGET_PEER_BROADCAST = 0,
+		TARGET_PEER_SERVER = 1
+	};
+
 	/* helpers / binders */
 
 	virtual Error get_packet_buffer(PoolVector<uint8_t> &r_buffer);
