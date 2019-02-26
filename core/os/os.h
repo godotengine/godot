@@ -77,6 +77,7 @@ protected:
 
 public:
 	typedef void (*ImeCallback)(void *p_inp, String p_text, Point2 p_selection);
+	typedef bool (*HasServerFeatureCallback)(const String &p_feature);
 
 	enum PowerState {
 		POWERSTATE_UNKNOWN, /**< cannot determine power status */
@@ -121,6 +122,7 @@ public:
 protected:
 	friend class Main;
 
+	HasServerFeatureCallback has_server_feature_callback;
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deinitialize the OS
@@ -506,6 +508,8 @@ public:
 
 	virtual void force_process_input(){};
 	bool has_feature(const String &p_feature);
+
+	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }

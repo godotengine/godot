@@ -706,7 +706,7 @@ String OS_Android::get_joy_guid(int p_device) const {
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "mobile" || p_feature == "etc" || p_feature == "etc2") {
+	if (p_feature == "mobile") {
 		//TODO support etc2 only if GLES3 driver is selected
 		return true;
 	}

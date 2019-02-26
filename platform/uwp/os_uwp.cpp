@@ -889,7 +889,7 @@ String OS_UWP::get_user_data_dir() const {
 }
 
 bool OS_UWP::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc" || p_feature == "s3tc";
+	return p_feature == "pc";
 }
 
 OS::PowerState OS_UWP::get_power_state() {
