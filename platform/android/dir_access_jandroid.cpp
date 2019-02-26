@@ -31,6 +31,7 @@
 #include "dir_access_jandroid.h"
 #include "core/print_string.h"
 #include "file_access_jandroid.h"
+#include "string_android.h"
 #include "thread_jandroid.h"
 
 jobject DirAccessJAndroid::io = NULL;
@@ -69,7 +70,7 @@ String DirAccessJAndroid::get_next() {
 	if (!str)
 		return "";
 
-	String ret = String::utf8(env->GetStringUTFChars((jstring)str, NULL));
+	String ret = jstring_to_string((jstring)str, env);
 	env->DeleteLocalRef((jobject)str);
 	return ret;
 }
