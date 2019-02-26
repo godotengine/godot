@@ -4922,6 +4922,9 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 bool RasterizerStorageGLES2::has_os_feature(const String &p_feature) const {
 
+	if (p_feature == "pvrtc")
+		return config.pvrtc_supported;
+
 	if (p_feature == "s3tc")
 		return config.s3tc_supported;
 
@@ -4971,12 +4974,14 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef GLES_OVER_GL
 	config.float_texture_supported = true;
 	config.s3tc_supported = true;
+	config.pvrtc_supported = false;
 	config.etc1_supported = false;
 	config.support_npot_repeat_mipmap = true;
 #else
 	config.float_texture_supported = config.extensions.has("GL_ARB_texture_float") || config.extensions.has("GL_OES_texture_float");
 	config.s3tc_supported = config.extensions.has("GL_EXT_texture_compression_s3tc") || config.extensions.has("WEBGL_compressed_texture_s3tc");
 	config.etc1_supported = config.extensions.has("GL_OES_compressed_ETC1_RGB8_texture") || config.extensions.has("WEBGL_compressed_texture_etc1");
+	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
 #endif

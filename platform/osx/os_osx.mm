@@ -2812,7 +2812,7 @@ OS_OSX::OS_OSX() {
 }
 
 bool OS_OSX::_check_internal_feature_support(const String &p_feature) {
-	return p_feature == "pc" || p_feature == "s3tc";
+	return p_feature == "pc";
 }
 
 void OS_OSX::disable_crash_handler() {

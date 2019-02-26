@@ -322,7 +322,7 @@ String OS_Haiku::get_executable_path() const {
 
 bool OS_Haiku::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc";
+	return p_feature == "pc";
 }
 
 String OS_Haiku::get_config_path() const {

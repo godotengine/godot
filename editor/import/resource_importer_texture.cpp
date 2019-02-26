@@ -235,7 +235,6 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		f->store_16(p_image->get_width());
 		f->store_16(next_power_of_2(p_image->get_height()));
 		f->store_16(p_image->get_height());
-		f->store_16(0);
 	} else {
 		f->store_16(p_image->get_width());
 		f->store_16(0);

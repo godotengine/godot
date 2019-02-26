@@ -72,6 +72,7 @@ public:
 		bool float_texture_supported;
 		bool s3tc_supported;
 		bool etc1_supported;
+		bool pvrtc_supported;
 
 		bool keep_original_textures;
 

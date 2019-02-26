@@ -587,7 +587,7 @@ void OSIPhone::native_video_stop() {
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "mobile" || p_feature == "etc" || p_feature == "pvrtc" || p_feature == "etc2";
+	return p_feature == "mobile";
 }
 
 // Initialization order between compilation units is not guaranteed,
