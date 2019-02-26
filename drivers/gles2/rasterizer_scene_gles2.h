@@ -256,6 +256,7 @@ public:
 
 		GLuint fbo;
 		GLuint depth;
+		GLuint color;
 
 		Map<RID, uint32_t> shadow_owners;
 	};
@@ -279,6 +280,7 @@ public:
 	struct DirectionalShadow {
 		GLuint fbo;
 		GLuint depth;
+		GLuint color;
 
 		int light_count;
 		int size;
@@ -311,10 +313,9 @@ public:
 		int reflection_index;
 
 		GLuint fbo[6];
-		GLuint cubemap;
+		GLuint color[6];
 		GLuint depth;
-
-		GLuint fbo_blur;
+		GLuint cubemap;
 
 		int current_resolution;
 		mutable bool dirty;

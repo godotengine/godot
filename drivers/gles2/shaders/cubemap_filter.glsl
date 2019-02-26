@@ -187,6 +187,18 @@ void main() {
 	vec2 uv = (uv_interp * 2.0) - 1.0;
 	vec3 N = texelCoordToVec(uv, face_id);
 
+#ifdef USE_DIRECT_WRITE
+
+#ifdef USE_SOURCE_PANORAMA
+
+	gl_FragColor = vec4(texturePanorama(source_panorama, N).rgb, 1.0);
+#else
+
+	gl_FragColor = vec4(textureCube(source_cube,N).rgb, 1.0);
+#endif //USE_SOURCE_PANORAMA
+
+#else
+
 	vec4 sum = vec4(0.0);
 
 	for (int sample_num = 0; sample_num < SAMPLE_COUNT; sample_num++) {
@@ -221,4 +233,5 @@ void main() {
 	sum.rgb = mix((vec3(1.0) + a) * pow(sum.rgb, vec3(1.0 / 2.4)) - a, 12.92 * sum.rgb, vec3(lessThan(sum.rgb, vec3(0.0031308))));
 
 	gl_FragColor = vec4(sum.rgb, 1.0);
+#endif
 }
