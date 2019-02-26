@@ -598,8 +598,10 @@ static int frame_count = 0;
 };
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-	OS::get_singleton()->get_main_loop()->notification(
-			MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(
+				MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
+	}
 };
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
