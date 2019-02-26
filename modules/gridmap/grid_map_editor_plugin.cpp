@@ -717,6 +717,26 @@ void GridMapEditor::_set_display_mode(int p_mode) {
 	update_palette();
 }
 
+void GridMapEditor::_text_changed(const String &p_text) {
+	update_palette();
+}
+
+void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
+
+	Ref<InputEventKey> k = p_ie;
+
+	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_PAGEUP || k->get_scancode() == KEY_PAGEDOWN)) {
+
+		mesh_library_palette->call("_gui_input", k);
+		search_box->accept_event();
+	}
+}
+
+void GridMapEditor::_icon_size_changed(float p_value) {
+	mesh_library_palette->set_icon_scale(p_value);
+	update_palette();
+}
+
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
@@ -730,8 +750,9 @@ void GridMapEditor::update_palette() {
 	}
 
 	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	min_size *= EDSCALE;
 	mesh_library_palette->set_fixed_icon_size(Size2(min_size, min_size));
-	mesh_library_palette->set_fixed_column_width(min_size * 3 / 2);
+	mesh_library_palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1.5));
 	mesh_library_palette->set_max_text_lines(2);
 
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
@@ -754,23 +775,28 @@ void GridMapEditor::update_palette() {
 	}
 	il.sort();
 
+	String filter = search_box->get_text().strip_edges();
+
 	int item = 0;
 
 	for (List<_CGMEItemSort>::Element *E = il.front(); E; E = E->next()) {
 		int id = E->get().id;
-
-		mesh_library_palette->add_item("");
-
 		String name = mesh_library->get_item_name(id);
 		Ref<Texture> preview = mesh_library->get_item_preview(id);
 
+		if (name == "") {
+			name = "#" + itos(id);
+		}
+
+		if (filter != "" && !filter.is_subsequence_ofi(name))
+			continue;
+
+		mesh_library_palette->add_item("");
 		if (!preview.is_null()) {
 			mesh_library_palette->set_item_icon(item, preview);
 			mesh_library_palette->set_item_tooltip(item, name);
 		}
-		if (name != "") {
-			mesh_library_palette->set_item_text(item, name);
-		}
+		mesh_library_palette->set_item_text(item, name);
 		mesh_library_palette->set_item_metadata(item, id);
 
 		item++;
@@ -985,6 +1011,7 @@ void GridMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_icon(get_icon("GridMap", "EditorIcons"));
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
@@ -1031,6 +1058,9 @@ void GridMapEditor::_floor_changed(float p_value) {
 
 void GridMapEditor::_bind_methods() {
 
+	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
+	ClassDB::bind_method("_sbox_input", &GridMapEditor::_sbox_input);
+	ClassDB::bind_method("_icon_size_changed", &GridMapEditor::_icon_size_changed);
 	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_item_selected_cbk", &GridMapEditor::_item_selected_cbk);
@@ -1132,6 +1162,12 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	add_child(hb);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
+	search_box = memnew(LineEdit);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(search_box);
+	search_box->connect("text_changed", this, "_text_changed");
+	search_box->connect("gui_input", this, "_sbox_input");
+
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
@@ -1145,6 +1181,15 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
 	hb->add_child(mode_list);
 	mode_list->connect("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
+
+	size_slider = memnew(HSlider);
+	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	size_slider->set_min(0.1f);
+	size_slider->set_max(4.0f);
+	size_slider->set_step(0.1f);
+	size_slider->set_value(1.0f);
+	size_slider->connect("value_changed", this, "_icon_size_changed");
+	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
