@@ -79,6 +79,8 @@ class GridMapEditor : public VBoxContainer {
 	double accumulated_floor_delta;
 	ToolButton *mode_thumbnail;
 	ToolButton *mode_list;
+	LineEdit *search_box;
+	HSlider *size_slider;
 	HBoxContainer *spatial_editor_hb;
 	ConfirmationDialog *settings_dialog;
 	VBoxContainer *settings_vbc;
@@ -192,6 +194,11 @@ class GridMapEditor : public VBoxContainer {
 	void _update_cursor_transform();
 	void _update_cursor_instance();
 	void _update_clip();
+
+	void _text_changed(const String &p_text);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
+
+	void _icon_size_changed(float p_value);
 
 	void _update_duplicate_indicator();
 	void _duplicate_paste();
