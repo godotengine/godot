@@ -54,8 +54,6 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
 
-#define _DEPTH_COMPONENT24_OES 0x81A6
-
 #define _RED_OES 0x1903
 
 void RasterizerStorageGLES2::bind_quad_array() const {
@@ -4309,11 +4307,7 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 	glGenTextures(1, &rt->depth);
 	glBindTexture(GL_TEXTURE_2D, rt->depth);
 
-#ifdef JAVASCRIPT_ENABLED
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-#else
-	glTexImage2D(GL_TEXTURE_2D, 0, _DEPTH_COMPONENT24_OES, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-#endif
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -4538,11 +4532,7 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 
 	glGenRenderbuffers(1, &cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
-#ifdef JAVASCRIPT_ENABLED
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, cls->size, cls->height);
-#else
-	glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, cls->size, cls->height);
-#endif
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, cls->size, cls->height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
