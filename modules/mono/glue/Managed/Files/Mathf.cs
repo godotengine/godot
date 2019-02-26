@@ -59,14 +59,9 @@ namespace Godot
             return (real_t)Math.Ceiling(s);
         }
 
-        public static int Clamp(int value, int min, int max)
+        public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
         {
-            return value < min ? min : value > max ? max : value;
-        }
-
-        public static real_t Clamp(real_t value, real_t min, real_t max)
-        {
-            return value < min ? min : value > max ? max : value;
+            return value.CompareTo(min) == -1 ? min : value.CompareTo(max) == 1 ? max : value;
         }
 
         public static real_t Cos(real_t s)
@@ -163,24 +158,14 @@ namespace Godot
             return (real_t)Math.Log(s);
         }
 
-        public static int Max(int a, int b)
+        public static T Max<T>(T a, T b) where T : IComparable<T>
         {
-            return a > b ? a : b;
+            return a.CompareTo(b) == 1 ? a : b;
         }
 
-        public static real_t Max(real_t a, real_t b)
+        public static T Min<T>(T a, T b) where T : IComparable<T>
         {
-            return a > b ? a : b;
-        }
-
-        public static int Min(int a, int b)
-        {
-            return a < b ? a : b;
-        }
-
-        public static real_t Min(real_t a, real_t b)
-        {
-            return a < b ? a : b;
+            return a.CompareTo(b) == -1 ? a : b;
         }
 
         public static int NearestPo2(int value)
