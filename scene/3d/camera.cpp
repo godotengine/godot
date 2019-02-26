@@ -449,7 +449,9 @@ void Camera::set_doppler_tracking(DopplerTracking p_tracking) {
 	doppler_tracking = p_tracking;
 	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
 		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
-		velocity_tracker->reset(get_global_transform().origin);
+		if (is_inside_tree()) {
+			velocity_tracker->reset(get_global_transform().origin);
+		}
 	}
 	_update_camera_mode();
 }

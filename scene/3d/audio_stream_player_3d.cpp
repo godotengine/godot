@@ -860,7 +860,9 @@ void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
 	if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 		set_notify_transform(true);
 		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
-		velocity_tracker->reset(get_global_transform().origin);
+		if (is_inside_tree()) {
+			velocity_tracker->reset(get_global_transform().origin);
+		}
 	} else {
 		set_notify_transform(false);
 	}

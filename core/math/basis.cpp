@@ -76,23 +76,17 @@ void Basis::invert() {
 }
 
 void Basis::orthonormalize() {
-	/* this check is undesired, the matrix could be wrong but we still may want to generate a valid one
-	 * for practical purposes
+
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND(determinant() == 0);
 #endif
-*/
+
 	// Gram-Schmidt Process
 
 	Vector3 x = get_axis(0);
 	Vector3 y = get_axis(1);
 	Vector3 z = get_axis(2);
 
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND(x.length_squared() == 0);
-	ERR_FAIL_COND(y.length_squared() == 0);
-	ERR_FAIL_COND(z.length_squared() == 0);
-#endif
 	x.normalize();
 	y = (y - x * (x.dot(y)));
 	y.normalize();
