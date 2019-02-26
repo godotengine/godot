@@ -418,13 +418,14 @@ void EditorPropertyArray::_length_changed(double p_page) {
 		return;
 
 	Variant array = object->get_array();
+	int previous_size = array.call("size");
+
 	array.call("resize", int(p_page));
-	emit_changed(get_edited_property(), array, "", false);
 
 	if (array.get_type() == Variant::ARRAY) {
 		if (subtype != Variant::NIL) {
 			int size = array.call("size");
-			for (int i = 0; i < size; i++) {
+			for (int i = previous_size; i < size; i++) {
 				if (array.get(i).get_type() == Variant::NIL) {
 					Variant::CallError ce;
 					array.set(i, Variant::construct(subtype, NULL, 0, ce));
@@ -432,7 +433,16 @@ void EditorPropertyArray::_length_changed(double p_page) {
 			}
 		}
 		array = array.call("duplicate"); //dupe, so undo/redo works better
+	} else {
+		int size = array.call("size");
+		// Pool*Array don't initialize their elements, have to do it manually
+		for (int i = previous_size; i < size; i++) {
+			Variant::CallError ce;
+			array.set(i, Variant::construct(array.get(i).get_type(), NULL, 0, ce));
+		}
 	}
+
+	emit_changed(get_edited_property(), array, "", false);
 	object->set_array(array);
 	update_property();
 }
