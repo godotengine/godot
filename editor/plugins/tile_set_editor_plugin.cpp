@@ -1425,6 +1425,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									workspace->update();
 								} else {
 									creating_shape = true;
+									edited_collision_shape = Ref<ConvexPolygonShape2D>();
 									current_shape.resize(0);
 									current_shape.push_back(snap_point(pos));
 									workspace->update();
@@ -1444,6 +1445,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 					} else if (tools[SHAPE_NEW_RECTANGLE]->is_pressed()) {
 						if (mb.is_valid()) {
 							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+								edited_collision_shape = Ref<ConvexPolygonShape2D>();
 								current_shape.resize(0);
 								current_shape.push_back(snap_point(shape_anchor));
 								current_shape.push_back(snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
