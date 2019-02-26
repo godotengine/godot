@@ -1210,7 +1210,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 				colliders.push_back(collision);
 				motion = collision.remainder;
 
-				bool is_on_slope = false;
 				if (p_floor_direction == Vector3()) {
 					//all is a wall
 					on_wall = true;
@@ -1228,25 +1227,22 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 								set_global_transform(gt);
 								return Vector3();
 							}
+							motion = motion.slide(p_floor_direction);
+							lv = lv.slide(p_floor_direction);
+						} else {
+							motion = slide_floor(motion, p_floor_direction, p_floor_max_angle, collision);
+							lv = slide_floor(lv, p_floor_direction, p_floor_max_angle, collision);
 						}
-
-						is_on_slope = true;
 
 					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
 						on_ceiling = true;
+						motion = slide_ceiling(motion, p_floor_direction, p_floor_max_angle, collision);
+						lv = slide_ceiling(lv, p_floor_direction, p_floor_max_angle, collision);
 					} else {
 						on_wall = true;
+						motion = slide_wall(motion, p_floor_direction, p_floor_max_angle, collision);
+						lv = slide_wall(lv, p_floor_direction, p_floor_max_angle, collision);
 					}
-				}
-
-				if (p_stop_on_slope && is_on_slope) {
-					motion = motion.slide(p_floor_direction);
-					lv = lv.slide(p_floor_direction);
-				} else {
-
-					Vector3 n = collision.normal;
-					motion = motion.slide(n);
-					lv = lv.slide(n);
 				}
 
 				for (int i = 0; i < 3; i++) {
@@ -1266,6 +1262,51 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	}
 
 	return lv;
+}
+
+Vector3 KinematicBody::slide_floor(Vector3 p_motion, Vector3 p_floor_direction, float p_floor_max_angle, Collision p_collision) {
+	if (get_script_instance() && get_script_instance()->has_method("slide_floor")) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = p_collision;
+
+		return get_script_instance()->call("slide_floor", p_motion, p_floor_direction, p_floor_max_angle, motion_cache);
+	} else {
+		return p_motion.slide(p_collision.normal);
+	}
+}
+
+Vector3 KinematicBody::slide_ceiling(Vector3 p_motion, Vector3 p_floor_direction, float p_floor_max_angle, Collision p_collision) {
+	if (get_script_instance() && get_script_instance()->has_method("slide_ceiling")) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = p_collision;
+
+		return get_script_instance()->call("slide_ceiling", p_motion, p_floor_direction, p_floor_max_angle, motion_cache);
+	} else {
+		return p_motion.slide(p_collision.normal);
+	}
+}
+
+Vector3 KinematicBody::slide_wall(Vector3 p_motion, Vector3 p_floor_direction, float p_floor_max_angle, Collision p_collision) {
+	if (get_script_instance() && get_script_instance()->has_method("slide_wall")) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = p_collision;
+
+		return get_script_instance()->call("slide_wall", p_motion, p_floor_direction, p_floor_max_angle, motion_cache);
+	} else {
+		return p_motion.slide(p_collision.normal);
+	}
 }
 
 Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
@@ -1434,6 +1475,10 @@ void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_slide_count"), &KinematicBody::get_slide_count);
 	ClassDB::bind_method(D_METHOD("get_slide_collision", "slide_idx"), &KinematicBody::_get_slide_collision);
+
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR3, "slide_floor", PropertyInfo(Variant::VECTOR3, "motion"), PropertyInfo(Variant::VECTOR3, "floor_normal"), PropertyInfo(Variant::REAL, "floor_max_angle"), PropertyInfo(Variant::OBJECT, "collision", PROPERTY_HINT_RESOURCE_TYPE, "KinematicCollision")));
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR3, "slide_ceiling", PropertyInfo(Variant::VECTOR3, "motion"), PropertyInfo(Variant::VECTOR3, "floor_normal"), PropertyInfo(Variant::REAL, "floor_max_angle"), PropertyInfo(Variant::OBJECT, "collision", PROPERTY_HINT_RESOURCE_TYPE, "KinematicCollision")));
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR3, "slide_wall", PropertyInfo(Variant::VECTOR3, "motion"), PropertyInfo(Variant::VECTOR3, "floor_normal"), PropertyInfo(Variant::REAL, "floor_max_angle"), PropertyInfo(Variant::OBJECT, "collision", PROPERTY_HINT_RESOURCE_TYPE, "KinematicCollision")));
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "move_lock_x", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_X);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "move_lock_y", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_LINEAR_Y);

@@ -313,6 +313,10 @@ private:
 	Ref<KinematicCollision> _move(const Vector3 &p_motion, bool p_infinite_inertia = true, bool p_test_only = false);
 	Ref<KinematicCollision> _get_slide_collision(int p_bounce);
 
+	Vector3 slide_floor(Vector3 p_motion, Vector3 p_floor_direction, float p_floor_max_angle, Collision p_collision);
+	Vector3 slide_ceiling(Vector3 p_motion, Vector3 p_floor_direction, float p_floor_max_angle, Collision p_collision);
+	Vector3 slide_wall(Vector3 p_motion, Vector3 p_floor_direction, float p_floor_max_angle, Collision p_collision);
+
 protected:
 	static void _bind_methods();
 

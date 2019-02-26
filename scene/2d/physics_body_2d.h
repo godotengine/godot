@@ -325,6 +325,10 @@ private:
 	Transform2D last_valid_transform;
 	void _direct_state_changed(Object *p_state);
 
+	Vector2 slide_floor(Vector2 p_motion, Vector2 p_floor_direction, float p_floor_max_angle, Collision p_collision);
+	Vector2 slide_ceiling(Vector2 p_motion, Vector2 p_floor_direction, float p_floor_max_angle, Collision p_collision);
+	Vector2 slide_wall(Vector2 p_motion, Vector2 p_floor_direction, float p_floor_max_angle, Collision p_collision);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

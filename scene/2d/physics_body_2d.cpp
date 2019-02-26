@@ -1298,16 +1298,19 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 							}
 						}
 
+						motion = slide_floor(motion, p_floor_direction, p_floor_max_angle, collision);
+						lv = slide_floor(lv, p_floor_direction, p_floor_max_angle, collision);
+
 					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
 						on_ceiling = true;
+						motion = slide_ceiling(motion, p_floor_direction, p_floor_max_angle, collision);
+						lv = slide_ceiling(lv, p_floor_direction, p_floor_max_angle, collision);
 					} else {
 						on_wall = true;
+						motion = slide_wall(motion, p_floor_direction, p_floor_max_angle, collision);
+						lv = slide_wall(lv, p_floor_direction, p_floor_max_angle, collision);
 					}
 				}
-
-				Vector2 n = collision.normal;
-				motion = motion.slide(n);
-				lv = lv.slide(n);
 			}
 		}
 
@@ -1320,6 +1323,51 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 	}
 
 	return lv;
+}
+
+Vector2 KinematicBody2D::slide_floor(Vector2 p_motion, Vector2 p_floor_direction, float p_floor_max_angle, Collision p_collision) {
+	if (get_script_instance() && get_script_instance()->has_method("slide_floor")) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = p_collision;
+
+		return get_script_instance()->call("slide_floor", p_motion, p_floor_direction, p_floor_max_angle, motion_cache);
+	} else {
+		return p_motion.slide(p_collision.normal);
+	}
+}
+
+Vector2 KinematicBody2D::slide_ceiling(Vector2 p_motion, Vector2 p_floor_direction, float p_floor_max_angle, Collision p_collision) {
+	if (get_script_instance() && get_script_instance()->has_method("slide_ceiling")) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = p_collision;
+
+		return get_script_instance()->call("slide_ceiling", p_motion, p_floor_direction, p_floor_max_angle, motion_cache);
+	} else {
+		return p_motion.slide(p_collision.normal);
+	}
+}
+
+Vector2 KinematicBody2D::slide_wall(Vector2 p_motion, Vector2 p_floor_direction, float p_floor_max_angle, Collision p_collision) {
+	if (get_script_instance() && get_script_instance()->has_method("slide_wall")) {
+		if (motion_cache.is_null()) {
+			motion_cache.instance();
+			motion_cache->owner = this;
+		}
+
+		motion_cache->collision = p_collision;
+
+		return get_script_instance()->call("slide_wall", p_motion, p_floor_direction, p_floor_max_angle, motion_cache);
+	} else {
+		return p_motion.slide(p_collision.normal);
+	}
 }
 
 Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_velocity, const Vector2 &p_snap, const Vector2 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
@@ -1498,6 +1546,10 @@ void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &KinematicBody2D::is_sync_to_physics_enabled);
 
 	ClassDB::bind_method(D_METHOD("_direct_state_changed"), &KinematicBody2D::_direct_state_changed);
+
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "slide_floor", PropertyInfo(Variant::VECTOR2, "motion"), PropertyInfo(Variant::VECTOR2, "floor_normal"), PropertyInfo(Variant::REAL, "floor_max_angle"), PropertyInfo(Variant::OBJECT, "collision", PROPERTY_HINT_RESOURCE_TYPE, "KinematicCollision2D")));
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "slide_ceiling", PropertyInfo(Variant::VECTOR2, "motion"), PropertyInfo(Variant::VECTOR2, "floor_normal"), PropertyInfo(Variant::REAL, "floor_max_angle"), PropertyInfo(Variant::OBJECT, "collision", PROPERTY_HINT_RESOURCE_TYPE, "KinematicCollision2D")));
+	BIND_VMETHOD(MethodInfo(Variant::VECTOR2, "slide_wall", PropertyInfo(Variant::VECTOR2, "motion"), PropertyInfo(Variant::VECTOR2, "floor_normal"), PropertyInfo(Variant::REAL, "floor_max_angle"), PropertyInfo(Variant::OBJECT, "collision", PROPERTY_HINT_RESOURCE_TYPE, "KinematicCollision2D")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "collision/safe_margin", PROPERTY_HINT_RANGE, "0.001,256,0.001"), "set_safe_margin", "get_safe_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "motion/sync_to_physics"), "set_sync_to_physics", "is_sync_to_physics_enabled");
