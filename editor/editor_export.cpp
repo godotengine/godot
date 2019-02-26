@@ -1166,7 +1166,7 @@ String EditorExportPlatform::test_etc2() const {
 	bool etc2_supported = ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc");
 
 	if (driver == "GLES2" && !etc2_supported) {
-		return TTR("Target platform requires 'ETC' texture compression. Enable support in Project Settings.");
+		return TTR("Target platform requires 'ETC' texture compression for GLES2. Enable support in Project Settings.");
 	}
 	return String();
 }
