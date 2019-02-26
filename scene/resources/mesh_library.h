@@ -52,6 +52,7 @@ public:
 		Ref<Mesh> mesh;
 		Vector<ShapeData> shapes;
 		Ref<Texture> preview;
+		Transform navmesh_transform;
 		Ref<NavigationMesh> navmesh;
 	};
 
@@ -72,11 +73,13 @@ public:
 	void set_item_name(int p_item, const String &p_name);
 	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
 	void set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh);
+	void set_item_navmesh_transform(int p_item, const Transform &p_transform);
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
 	void set_item_preview(int p_item, const Ref<Texture> &p_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Ref<NavigationMesh> get_item_navmesh(int p_item) const;
+	Transform get_item_navmesh_transform(int p_item) const;
 	Vector<ShapeData> get_item_shapes(int p_item) const;
 	Ref<Texture> get_item_preview(int p_item) const;
 
