@@ -191,7 +191,7 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 	memdelete(f);
 }
 
-Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	int compress_mode = p_options["compress/mode"];
 	int no_bptc_if_rgb = p_options["compress/no_bptc_if_rgb"];
@@ -252,6 +252,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	}
 
 	String extension = get_save_extension();
+	Array formats_imported;
 
 	if (compress_mode == COMPRESS_VIDEO_RAM) {
 		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
@@ -270,6 +271,8 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 					encode_bptc = false;
 				}
 			}
+
+			formats_imported.push_back("bptc");
 		}
 
 		if (encode_bptc) {
@@ -284,23 +287,27 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			_save_tex(slices, p_save_path + ".s3tc." + extension, compress_mode, Image::COMPRESS_S3TC, mipmaps, tex_flags);
 			r_platform_variants->push_back("s3tc");
 			ok_on_pc = true;
+			formats_imported.push_back("s3tc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
 
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, Image::COMPRESS_ETC2, mipmaps, tex_flags);
 			r_platform_variants->push_back("etc2");
+			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
 			_save_tex(slices, p_save_path + ".etc." + extension, compress_mode, Image::COMPRESS_ETC, mipmaps, tex_flags);
 			r_platform_variants->push_back("etc");
+			formats_imported.push_back("etc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
 
 			_save_tex(slices, p_save_path + ".pvrtc." + extension, compress_mode, Image::COMPRESS_PVRTC4, mipmaps, tex_flags);
 			r_platform_variants->push_back("pvrtc");
+			formats_imported.push_back("pvrtc");
 		}
 
 		if (!ok_on_pc) {
@@ -311,7 +318,77 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		_save_tex(slices, p_save_path + "." + extension, compress_mode, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags);
 	}
 
+	if (r_metadata) {
+		Dictionary metadata;
+		metadata["vram_texture"] = compress_mode == COMPRESS_VIDEO_RAM;
+		if (formats_imported.size()) {
+			metadata["imported_formats"] = formats_imported;
+		}
+		*r_metadata = metadata;
+	}
+
 	return OK;
+}
+
+const char *ResourceImporterLayeredTexture::compression_formats[] = {
+	"bptc",
+	"s3tc",
+	"etc",
+	"etc2",
+	"pvrtc",
+	NULL
+};
+String ResourceImporterLayeredTexture::get_import_settings_string() const {
+
+	String s;
+
+	int index = 0;
+	while (compression_formats[index]) {
+		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		if (test) {
+			s += String(compression_formats[index]);
+		}
+		index++;
+	}
+
+	return s;
+}
+
+bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
+
+	//will become invalid if formats are missing to import
+	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
+
+	if (!metadata.has("vram_texture")) {
+		return false;
+	}
+
+	bool vram = metadata["vram_texture"];
+	if (!vram) {
+		return true; //do not care about non vram
+	}
+
+	Vector<String> formats_imported;
+	if (metadata.has("imported_formats")) {
+		formats_imported = metadata["imported_formats"];
+	}
+
+	int index = 0;
+	bool valid = true;
+	while (compression_formats[index]) {
+		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		if (test) {
+			if (formats_imported.find(compression_formats[index]) == -1) {
+				valid = false;
+				break;
+			}
+		}
+		index++;
+	}
+
+	return valid;
 }
 
 ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = NULL;

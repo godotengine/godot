@@ -1453,6 +1453,12 @@ public:
 			err += TTR("Invalid package name:") + " " + pn_err + "\n";
 		}
 
+		String etc_error = test_etc2();
+		if (etc_error != String()) {
+			valid = false;
+			err += etc_error;
+		}
+
 		r_error = err;
 		return valid;
 	}

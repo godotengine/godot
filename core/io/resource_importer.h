@@ -43,11 +43,17 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		String path;
 		String type;
 		String importer;
+		Variant metadata;
 	};
 
 	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = NULL) const;
 
 	static ResourceFormatImporter *singleton;
+
+	//need them to stay in order to compute the settings hash
+	struct SortImporterByName {
+		bool operator() ( const Ref<ResourceImporter>& p_a,const Ref<ResourceImporter>& p_b) const;
+	};
 
 	Vector<Ref<ResourceImporter> > importers;
 
@@ -59,6 +65,7 @@ public:
 	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual Variant get_resource_metadata(const String &p_path) const;
 	virtual bool is_import_valid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 
@@ -68,11 +75,14 @@ public:
 	String get_internal_resource_path(const String &p_path) const;
 	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);
 
-	void add_importer(const Ref<ResourceImporter> &p_importer) { importers.push_back(p_importer); }
+	void add_importer(const Ref<ResourceImporter> &p_importer) { importers.push_back(p_importer); importers.sort_custom<SortImporterByName>();}
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
 	Ref<ResourceImporter> get_importer_by_extension(const String &p_extension) const;
 	void get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter> > *r_importers);
+
+	bool are_import_settings_valid(const String &p_path) const;
+	String get_import_settings_hash() const;
 
 	String get_import_base_path(const String &p_for_file) const;
 	ResourceFormatImporter();
@@ -107,7 +117,10 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const = 0;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const = 0;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL) = 0;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata=NULL) = 0;
+	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
+	virtual String get_import_settings_string() const { return String(); }
+
 };
 
 #endif // RESOURCE_IMPORTER_H
