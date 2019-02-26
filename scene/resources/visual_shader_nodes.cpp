@@ -1136,7 +1136,7 @@ String VisualShaderNodeScalarFunc::generate_code(Shader::Mode p_mode, VisualShad
 		"round($)",
 		"ceil($)",
 		"fract($)",
-		"min(max($,0),1)",
+		"min(max($,0.0),1.0)",
 		"-($)",
 	};
 
