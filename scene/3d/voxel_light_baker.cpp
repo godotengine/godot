@@ -887,7 +887,7 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 			distance -= distance_adv;
 		}
 
-		if (result == idx) {
+		if (result == (uint32_t)idx) {
 			//cell hit itself! hooray!
 
 			Vector3 normal(cells[idx].normal[0], cells[idx].normal[1], cells[idx].normal[2]);
@@ -1018,7 +1018,7 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 			distance -= distance_adv;
 		}
 
-		if (result == idx) {
+		if (result == (uint32_t)idx) {
 			//cell hit itself! hooray!
 
 			if (normal == Vector3()) {
@@ -1152,7 +1152,7 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 			distance -= distance_adv;
 		}
 
-		if (result == idx) {
+		if (result == (uint32_t)idx) {
 			//cell hit itself! hooray!
 
 			if (normal == Vector3()) {
@@ -2252,7 +2252,7 @@ void VoxelLightBaker::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Re
 
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY || child >= max_original_cells)
+			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells)
 				continue;
 
 			AABB aabb = p_aabb;
