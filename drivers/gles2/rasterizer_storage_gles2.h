@@ -85,6 +85,9 @@ public:
 		bool support_write_depth;
 		bool support_half_float_vertices;
 		bool support_npot_repeat_mipmap;
+
+		GLuint depth_internalformat;
+		GLuint depth_type;
 	} config;
 
 	struct Resources {
