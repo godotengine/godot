@@ -77,7 +77,6 @@ public:
 
 	void add_importer(const Ref<ResourceImporter> &p_importer) {
 		importers.push_back(p_importer);
-		importers.sort_custom<SortImporterByName>();
 	}
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;

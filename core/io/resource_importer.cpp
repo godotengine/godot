@@ -406,9 +406,14 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 }
 
 String ResourceFormatImporter::get_import_settings_hash() const {
+
+	Vector<Ref<ResourceImporter> > sorted_importers = importers;
+
+	sorted_importers.sort_custom<SortImporterByName>();
+
 	String hash;
-	for (int i = 0; i < importers.size(); i++) {
-		hash += ":" + importers[i]->get_importer_name() + ":" + importers[i]->get_import_settings_string();
+	for (int i = 0; i < sorted_importers.size(); i++) {
+		hash += ":" + sorted_importers[i]->get_importer_name() + ":" + sorted_importers[i]->get_import_settings_string();
 	}
 	return hash.md5_text();
 }
