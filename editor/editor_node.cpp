@@ -1017,6 +1017,35 @@ bool EditorNode::_validate_scene_recursive(const String &p_filename, Node *p_nod
 	return false;
 }
 
+static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Resource> > &edited_resources) {
+
+	if (p_resource->is_edited()) {
+		edited_resources.insert(p_resource);
+		return true;
+	}
+
+	List<PropertyInfo> plist;
+
+	p_resource->get_property_list(&plist);
+
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+		if (E->get().type == Variant::OBJECT && E->get().usage & PROPERTY_USAGE_STORAGE && !(E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT)) {
+			RES res = p_resource->get(E->get().name);
+			if (res.is_null()) {
+				continue;
+			}
+			if (res->get_path().is_resource_file()) { //not a subresource, continue
+				continue;
+			}
+			if (_find_edited_resources(res, edited_resources)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void EditorNode::_save_scene(String p_file, int idx) {
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
@@ -1080,15 +1109,27 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	//_save_edited_subresources(scene, processed, flg);
 	{ //instead, just find globally unsaved subresources and save them
 
+		Set<Ref<Resource> > edited_subresources;
+
 		List<Ref<Resource> > cached;
 		ResourceCache::get_cached_resources(&cached);
 		for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
 
 			Ref<Resource> res = E->get();
-			if (res->is_edited() && res->get_path().is_resource_file()) {
+			if (!res->get_path().is_resource_file())
+				continue;
+			//not only check if this resourec is edited, check contained subresources too
+			if (_find_edited_resources(res, edited_subresources)) {
 				ResourceSaver::save(res->get_path(), res, flg);
-				res->set_edited(false);
 			}
+		}
+
+		// clear later, because user may have put the same subresource in two different resources,
+		// which will be shared until the next reload
+
+		for (Set<Ref<Resource> >::Element *E = edited_subresources.front(); E; E = E->next()) {
+			Ref<Resource> res = E->get();
+			res->set_edited(false);
 		}
 	}
 
