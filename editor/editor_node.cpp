@@ -3868,9 +3868,8 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		}
 	}
 
-	int fs_split_ofs = 0;
 	if (p_layout->has_section_key(p_section, "dock_filesystem_split")) {
-		fs_split_ofs = p_layout->get_value(p_section, "dock_filesystem_split");
+		int fs_split_ofs = p_layout->get_value(p_section, "dock_filesystem_split");
 		filesystem_dock->set_split_offset(fs_split_ofs);
 	}
 
@@ -3883,7 +3882,6 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		FileSystemDock::FileListDisplayMode dock_filesystem_file_list_display_mode = FileSystemDock::FileListDisplayMode(int(p_layout->get_value(p_section, "dock_filesystem_file_list_display_mode")));
 		filesystem_dock->set_file_list_display_mode(dock_filesystem_file_list_display_mode);
 	}
-	filesystem_dock->set_split_offset(fs_split_ofs);
 
 	for (int i = 0; i < vsplits.size(); i++) {
 
