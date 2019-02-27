@@ -194,7 +194,7 @@ void main() {
 	gl_FragColor = vec4(texturePanorama(source_panorama, N).rgb, 1.0);
 #else
 
-	gl_FragColor = vec4(textureCube(source_cube,N).rgb, 1.0);
+	gl_FragColor = vec4(textureCube(source_cube, N).rgb, 1.0);
 #endif //USE_SOURCE_PANORAMA
 
 #else

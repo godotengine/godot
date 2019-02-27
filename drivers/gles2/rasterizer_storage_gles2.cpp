@@ -54,8 +54,6 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 #define _EXT_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
 
-#define _DEPTH_COMPONENT24_OES 0x81A6
-
 #define _RED_OES 0x1903
 
 void RasterizerStorageGLES2::bind_quad_array() const {

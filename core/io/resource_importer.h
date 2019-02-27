@@ -52,7 +52,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 
 	//need them to stay in order to compute the settings hash
 	struct SortImporterByName {
-		bool operator() ( const Ref<ResourceImporter>& p_a,const Ref<ResourceImporter>& p_b) const;
+		bool operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const;
 	};
 
 	Vector<Ref<ResourceImporter> > importers;
@@ -75,7 +75,10 @@ public:
 	String get_internal_resource_path(const String &p_path) const;
 	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);
 
-	void add_importer(const Ref<ResourceImporter> &p_importer) { importers.push_back(p_importer); importers.sort_custom<SortImporterByName>();}
+	void add_importer(const Ref<ResourceImporter> &p_importer) {
+		importers.push_back(p_importer);
+		importers.sort_custom<SortImporterByName>();
+	}
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
 	Ref<ResourceImporter> get_importer_by_extension(const String &p_extension) const;
@@ -117,10 +120,9 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const = 0;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const = 0;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata=NULL) = 0;
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL) = 0;
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
-
 };
 
 #endif // RESOURCE_IMPORTER_H
