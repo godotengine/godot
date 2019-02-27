@@ -27,7 +27,7 @@ matrix:
           packages:
             - clang-format-6.0
 
-    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no werror=yes"
+    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
       compiler: gcc-8
       addons:
@@ -49,7 +49,7 @@ matrix:
           build_command: "scons p=x11 -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
-    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="werror=yes"
+    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
       addons:
@@ -57,7 +57,7 @@ matrix:
           packages:
             - *linux_deps
 
-    - env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="werror=yes"
+    - env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
 
@@ -69,7 +69,7 @@ matrix:
       os: osx
       compiler: clang
 
-    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="werror=yes"
+    - env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: gcc-8
       addons:

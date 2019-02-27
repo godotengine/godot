@@ -328,4 +328,10 @@ struct _GlobalLock {
 #define _PRINTF_FORMAT_ATTRIBUTE_2_3
 #endif
 
+/** This is needed due to a strange OpenGL API that expects a pointer
+ *  type for an argument that is actually an offset.
+ */
+
+#define CAST_INT_TO_UCHAR_PTR(ptr) ((uint8_t *)(uintptr_t)(ptr))
+
 #endif // TYPEDEFS_H
