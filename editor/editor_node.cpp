@@ -530,6 +530,7 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 void EditorNode::_sources_changed(bool p_exist) {
 
 	if (waiting_for_first_scan) {
+		waiting_for_first_scan = false;
 
 		EditorResourcePreview::get_singleton()->start(); //start previes now that it's safe
 
@@ -540,8 +541,6 @@ void EditorNode::_sources_changed(bool p_exist) {
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
-
-		waiting_for_first_scan = false;
 	}
 }
 
@@ -3653,6 +3652,9 @@ void EditorNode::_dock_select_draw() {
 
 void EditorNode::_save_docks() {
 
+	if (waiting_for_first_scan) {
+		return; //scanning, do not touch docks
+	}
 	Ref<ConfigFile> config;
 	config.instance();
 
