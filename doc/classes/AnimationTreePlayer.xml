@@ -29,7 +29,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Shifts position in the animation timeline. Delta is the time in seconds to shift.
+				Shifts position in the animation timeline. Delta is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_node_get_animation" qualifiers="const">
