@@ -442,6 +442,8 @@ private:
 	void _show_messages();
 	void _vp_resized();
 
+	int _save_external_resources();
+
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();

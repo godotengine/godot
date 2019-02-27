@@ -1052,6 +1052,41 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Reso
 	return false;
 }
 
+int EditorNode::_save_external_resources() {
+	//save external resources and its subresources if any was modified
+
+	int flg = 0;
+	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
+		flg |= ResourceSaver::FLAG_COMPRESS;
+	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+
+	Set<Ref<Resource> > edited_subresources;
+	int saved = 0;
+	List<Ref<Resource> > cached;
+	ResourceCache::get_cached_resources(&cached);
+	for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
+
+		Ref<Resource> res = E->get();
+		if (!res->get_path().is_resource_file())
+			continue;
+		//not only check if this resourec is edited, check contained subresources too
+		if (_find_edited_resources(res, edited_subresources)) {
+			ResourceSaver::save(res->get_path(), res, flg);
+			saved++;
+		}
+	}
+
+	// clear later, because user may have put the same subresource in two different resources,
+	// which will be shared until the next reload
+
+	for (Set<Ref<Resource> >::Element *E = edited_subresources.front(); E; E = E->next()) {
+		Ref<Resource> res = E->get();
+		res->set_edited(false);
+	}
+
+	return saved;
+}
+
 void EditorNode::_save_scene(String p_file, int idx) {
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
@@ -1110,34 +1145,8 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 	err = ResourceSaver::save(p_file, sdata, flg);
-	//Map<RES, bool> processed;
-	//this method is slow and not always works, deprecating
-	//_save_edited_subresources(scene, processed, flg);
-	{ //instead, just find globally unsaved subresources and save them
 
-		Set<Ref<Resource> > edited_subresources;
-
-		List<Ref<Resource> > cached;
-		ResourceCache::get_cached_resources(&cached);
-		for (List<Ref<Resource> >::Element *E = cached.front(); E; E = E->next()) {
-
-			Ref<Resource> res = E->get();
-			if (!res->get_path().is_resource_file())
-				continue;
-			//not only check if this resourec is edited, check contained subresources too
-			if (_find_edited_resources(res, edited_subresources)) {
-				ResourceSaver::save(res->get_path(), res, flg);
-			}
-		}
-
-		// clear later, because user may have put the same subresource in two different resources,
-		// which will be shared until the next reload
-
-		for (Set<Ref<Resource> >::Element *E = edited_subresources.front(); E; E = E->next()) {
-			Ref<Resource> res = E->get();
-			res->set_edited(false);
-		}
-	}
+	_save_external_resources();
 
 	editor_data.save_editor_external_data();
 	if (err == OK) {
@@ -1890,7 +1899,15 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (!scene) {
 
-				show_accept(TTR("This operation can't be done without a tree root."), TTR("OK"));
+				int saved = _save_external_resources();
+				String err_text;
+				if (saved > 0) {
+					err_text = vformat(TTR("Saved %s modified resource(s)."), itos(saved));
+				} else {
+					err_text = TTR("A root node is required to save the scene.");
+				}
+
+				show_accept(err_text, TTR("OK"));
 				break;
 			}
 
