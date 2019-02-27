@@ -65,6 +65,7 @@
 			</argument>
 			<description>
 				Set the color of a specific instance.
+				For the color to take effect, ensure that [member color_format] is non-[code]null[/code] on the [code]MultiMesh[/code] and [member SpatialMaterial.vertex_color_use_as_albedo] is [code]true[/code] on the material.
 			</description>
 		</method>
 		<method name="set_instance_custom_data">
