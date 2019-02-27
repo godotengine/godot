@@ -42,8 +42,6 @@
 #define glClearDepth glClearDepthf
 #endif
 
-#define _DEPTH_COMPONENT24_OES 0x81A6
-
 static const GLenum _cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -569,7 +567,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 					glBindFramebuffer(GL_FRAMEBUFFER, rpi->fbo[i]);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _cube_side_enum[i], rpi->cubemap, 0);
 					glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth);
-					glRenderbufferStorage(GL_RENDERBUFFER, _DEPTH_COMPONENT24_OES, size, size);
+					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size, size); // Note: used to be _DEPTH_COMPONENT24_OES. GL_DEPTH_COMPONENT untested.
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rpi->depth);
 
 #ifdef DEBUG_ENABLED

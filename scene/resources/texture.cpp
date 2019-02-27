@@ -427,7 +427,7 @@ ImageTexture::ImageTexture() {
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
 	image_stored = false;
-	format = Image::Format::FORMAT_L8;
+	format = Image::FORMAT_L8;
 }
 
 ImageTexture::~ImageTexture() {
@@ -1516,7 +1516,7 @@ CubeMap::CubeMap() {
 	cubemap = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
-	format = Image::Format::FORMAT_BPTC_RGBA;
+	format = Image::FORMAT_BPTC_RGBA;
 }
 
 CubeMap::~CubeMap() {

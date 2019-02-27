@@ -32,7 +32,8 @@
 
 #include "core/os/os.h"
 #include "core/variant_parser.h"
-bool ResourceFormatImporter::SortImporterByName::operator() ( const Ref<ResourceImporter>& p_a,const Ref<ResourceImporter>& p_b) const {
+
+bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
 }
 
@@ -321,7 +322,6 @@ Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) cons
 	return pat.metadata;
 }
 
-
 void ResourceFormatImporter::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
 	PathAndType pat;
@@ -394,7 +394,7 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 		return false;
 	}
 
-	for(int i=0;i<importers.size();i++) {
+	for (int i = 0; i < importers.size(); i++) {
 		if (importers[i]->get_importer_name() == pat.importer) {
 			if (!importers[i]->are_import_settings_valid(p_path)) { //importer thinks this is not valid
 				return false;
@@ -405,10 +405,10 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 	return true;
 }
 
- String ResourceFormatImporter::get_import_settings_hash() const {
+String ResourceFormatImporter::get_import_settings_hash() const {
 	String hash;
-	for(int i=0;i<importers.size();i++) {
-		hash+=":"+importers[i]->get_importer_name()+":"+importers[i]->get_import_settings_string();
+	for (int i = 0; i < importers.size(); i++) {
+		hash += ":" + importers[i]->get_importer_name() + ":" + importers[i]->get_import_settings_string();
 	}
 	return hash.md5_text();
 }
