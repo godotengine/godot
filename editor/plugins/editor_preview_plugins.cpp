@@ -92,7 +92,12 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
 		if (!tex.is_valid()) {
 			return Ref<Texture>();
 		}
+
 		Ref<Image> atlas = tex->get_data();
+		if (!atlas.is_valid()) {
+			return Ref<Texture>();
+		}
+
 		img = atlas->get_rect(atex->get_region());
 	} else if (ltex.is_valid()) {
 		img = ltex->to_image();
