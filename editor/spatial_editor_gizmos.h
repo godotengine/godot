@@ -136,7 +136,8 @@ public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
-
+	String get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const;
 	SkeletonSpatialGizmoPlugin();
 };
 

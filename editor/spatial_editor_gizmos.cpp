@@ -1530,6 +1530,24 @@ SkeletonSpatialGizmoPlugin::SkeletonSpatialGizmoPlugin() {
 
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4));
 	create_material("skeleton_material", gizmo_color);
+	create_handle_material("handles");
+}
+
+String SkeletonSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
+	Skeleton *sk = Object::cast_to<Skeleton>(p_gizmo->get_spatial_node());
+	if (!sk) {
+		return "Skeleton";
+	}
+	ERR_FAIL_COND_V(p_idx >= sk->get_bone_count(), "Skeleton");
+	return "Skeleton bone " + sk->get_bone_name(p_idx);
+}
+Variant SkeletonSpatialGizmoPlugin::get_handle_value(EditorSpatialGizmo *p_gizmo, int p_idx) const {
+	Skeleton *sk = Object::cast_to<Skeleton>(p_gizmo->get_spatial_node());
+	if (!sk) {
+		return Transform();
+	}
+	ERR_FAIL_COND_V(p_idx >= sk->get_bone_count(), Transform());
+	return sk->get_bone_rest(p_idx);
 }
 
 bool SkeletonSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -1571,9 +1589,10 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	Color bonecolor = Color(1.0, 0.4, 0.4, 0.3);
 	Color rootcolor = Color(0.4, 1.0, 0.4, 0.1);
-
+	Vector<Vector3> handles;
 	for (int i_bone = 0; i_bone < skel->get_bone_count(); i_bone++) {
 
+		handles.push_back(skel->get_bone_global_pose(i_bone).get_origin());
 		int i = skel->get_process_order(i_bone);
 
 		int parent = skel->get_bone_parent(i);
@@ -1667,65 +1686,15 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				surface_tool->add_color(bonecolor);
 				surface_tool->add_vertex(points[(j + 1) % 4]);
 			}
-
-			/*
-			bones[0]=parent;
-			surface_tool->add_bones(bones);
-			surface_tool->add_weights(weights);
-			surface_tool->add_color(Color(0.4,1,0.4,0.4));
-			surface_tool->add_vertex(v0);
-			bones[0]=i;
-			surface_tool->add_bones(bones);
-			surface_tool->add_weights(weights);
-			surface_tool->add_color(Color(0.4,1,0.4,0.4));
-			surface_tool->add_vertex(v1);
-*/
 		} else {
 
 			grests.write[i] = skel->get_bone_rest(i);
 			bones.write[0] = i;
 		}
-		/*
-		Transform  t = grests[i];
-		t.orthonormalize();
-
-		for (int i=0;i<6;i++) {
-
-
-			Vector3 face_points[4];
-
-			for (int j=0;j<4;j++) {
-
-				float v[3];
-				v[0]=1.0;
-				v[1]=1-2*((j>>1)&1);
-				v[2]=v[1]*(1-2*(j&1));
-
-				for (int k=0;k<3;k++) {
-
-					if (i<3)
-						face_points[j][(i+k)%3]=v[k]*(i>=3?-1:1);
-					else
-						face_points[3-j][(i+k)%3]=v[k]*(i>=3?-1:1);
-				}
-			}
-
-			for(int j=0;j<4;j++) {
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(Color(1.0,0.4,0.4,0.4));
-				surface_tool->add_vertex(t.xform(face_points[j]*0.04));
-				surface_tool->add_bones(bones);
-				surface_tool->add_weights(weights);
-				surface_tool->add_color(Color(1.0,0.4,0.4,0.4));
-				surface_tool->add_vertex(t.xform(face_points[(j+1)%4]*0.04));
-			}
-
-		}
-		*/
 	}
 
 	Ref<ArrayMesh> m = surface_tool->commit();
+	p_gizmo->add_handles(handles, get_material("handles"));
 	p_gizmo->add_mesh(m, false, skel->get_skeleton());
 }
 

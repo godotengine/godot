@@ -331,7 +331,7 @@ void Skeleton::_notification(int p_what) {
 					sp->set_transform(b.pose_global);
 				}
 			}
-
+			update_gizmo();
 			dirty = false;
 		} break;
 	}
