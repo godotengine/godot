@@ -53,7 +53,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	} else {
 
 		int32_t *src_buff = mixdown_buffer;
-		for (int i = 0; i < buffer_size * 2; i++) {
+		for (unsigned int i = 0; i < buffer_size * 2; i++) {
 			src_buff[i] = 0;
 		}
 	}
@@ -66,7 +66,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	int16_t *ptr = (int16_t *)buffers[last_free];
 	last_free = (last_free + 1) % BUFFER_COUNT;
 
-	for (int i = 0; i < buffer_size * 2; i++) {
+	for (unsigned int i = 0; i < buffer_size * 2; i++) {
 
 		ptr[i] = src_buff[i] >> 16;
 	}

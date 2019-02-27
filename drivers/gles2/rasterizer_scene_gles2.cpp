@@ -1358,7 +1358,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
 				if (s->attribs[i].enabled) {
 					glEnableVertexAttribArray(i);
-					glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, (uint8_t *)0 + s->attribs[i].offset);
+					glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset));
 				} else {
 					glDisableVertexAttribArray(i);
 					switch (i) {
@@ -1519,7 +1519,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
 				if (s->attribs[i].enabled) {
 					glEnableVertexAttribArray(i);
-					glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, (uint8_t *)0 + s->attribs[i].offset);
+					glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset));
 				} else {
 					glDisableVertexAttribArray(i);
 					switch (i) {
@@ -1698,7 +1698,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				if (!c.normals.empty()) {
 					glEnableVertexAttribArray(VS::ARRAY_NORMAL);
 					glBufferSubData(GL_ARRAY_BUFFER, buf_ofs, sizeof(Vector3) * vertices, c.normals.ptr());
-					glVertexAttribPointer(VS::ARRAY_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), ((uint8_t *)NULL) + buf_ofs);
+					glVertexAttribPointer(VS::ARRAY_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), CAST_INT_TO_UCHAR_PTR(buf_ofs));
 					buf_ofs += sizeof(Vector3) * vertices;
 				} else {
 					glDisableVertexAttribArray(VS::ARRAY_NORMAL);
@@ -1707,7 +1707,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				if (!c.tangents.empty()) {
 					glEnableVertexAttribArray(VS::ARRAY_TANGENT);
 					glBufferSubData(GL_ARRAY_BUFFER, buf_ofs, sizeof(Plane) * vertices, c.tangents.ptr());
-					glVertexAttribPointer(VS::ARRAY_TANGENT, 4, GL_FLOAT, GL_FALSE, sizeof(Plane), ((uint8_t *)NULL) + buf_ofs);
+					glVertexAttribPointer(VS::ARRAY_TANGENT, 4, GL_FLOAT, GL_FALSE, sizeof(Plane), CAST_INT_TO_UCHAR_PTR(buf_ofs));
 					buf_ofs += sizeof(Plane) * vertices;
 				} else {
 					glDisableVertexAttribArray(VS::ARRAY_TANGENT);
@@ -1716,7 +1716,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				if (!c.colors.empty()) {
 					glEnableVertexAttribArray(VS::ARRAY_COLOR);
 					glBufferSubData(GL_ARRAY_BUFFER, buf_ofs, sizeof(Color) * vertices, c.colors.ptr());
-					glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(Color), ((uint8_t *)NULL) + buf_ofs);
+					glVertexAttribPointer(VS::ARRAY_COLOR, 4, GL_FLOAT, GL_FALSE, sizeof(Color), CAST_INT_TO_UCHAR_PTR(buf_ofs));
 					buf_ofs += sizeof(Color) * vertices;
 				} else {
 					glDisableVertexAttribArray(VS::ARRAY_COLOR);
@@ -1725,7 +1725,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				if (!c.uvs.empty()) {
 					glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 					glBufferSubData(GL_ARRAY_BUFFER, buf_ofs, sizeof(Vector2) * vertices, c.uvs.ptr());
-					glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), ((uint8_t *)NULL) + buf_ofs);
+					glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buf_ofs));
 					buf_ofs += sizeof(Vector2) * vertices;
 				} else {
 					glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
@@ -1734,7 +1734,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				if (!c.uv2s.empty()) {
 					glEnableVertexAttribArray(VS::ARRAY_TEX_UV2);
 					glBufferSubData(GL_ARRAY_BUFFER, buf_ofs, sizeof(Vector2) * vertices, c.uv2s.ptr());
-					glVertexAttribPointer(VS::ARRAY_TEX_UV2, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), ((uint8_t *)NULL) + buf_ofs);
+					glVertexAttribPointer(VS::ARRAY_TEX_UV2, 2, GL_FLOAT, GL_FALSE, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buf_ofs));
 					buf_ofs += sizeof(Vector2) * vertices;
 				} else {
 					glDisableVertexAttribArray(VS::ARRAY_TEX_UV2);
@@ -1742,7 +1742,7 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 
 				glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 				glBufferSubData(GL_ARRAY_BUFFER, buf_ofs, sizeof(Vector3) * vertices, c.vertices.ptr());
-				glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), ((uint8_t *)NULL) + buf_ofs);
+				glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3), CAST_INT_TO_UCHAR_PTR(buf_ofs));
 
 				glDrawArrays(gl_primitive[c.primitive], 0, c.vertices.size());
 			}
@@ -2598,7 +2598,7 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 
 	// bind sky vertex array....
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, 0);
-	glVertexAttribPointer(VS::ARRAY_TEX_UV, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, ((uint8_t *)NULL) + sizeof(Vector3));
+	glVertexAttribPointer(VS::ARRAY_TEX_UV, 3, GL_FLOAT, GL_FALSE, sizeof(Vector3) * 2, CAST_INT_TO_UCHAR_PTR(sizeof(Vector3)));
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
 

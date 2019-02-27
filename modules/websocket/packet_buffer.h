@@ -59,7 +59,7 @@ public:
 			ERR_FAIL_V(ERR_OUT_OF_MEMORY);
 		}
 #else
-		ERR_FAIL_COND_V(p_payload && _payload.space_left() < p_size, ERR_OUT_OF_MEMORY);
+		ERR_FAIL_COND_V(p_payload && (uint32_t)_payload.space_left() < p_size, ERR_OUT_OF_MEMORY);
 		ERR_FAIL_COND_V(p_info && _packets.space_left() < 1, ERR_OUT_OF_MEMORY);
 #endif
 

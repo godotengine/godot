@@ -3466,9 +3466,9 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 					continue;
 
 				if (attribs[i].integer) {
-					glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, ((uint8_t *)0) + attribs[i].offset);
+					glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
 				} else {
-					glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, ((uint8_t *)0) + attribs[i].offset);
+					glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
 				}
 				glEnableVertexAttribArray(attribs[i].index);
 			}
@@ -3571,9 +3571,9 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 						continue;
 
 					if (attribs[i].integer) {
-						glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, ((uint8_t *)0) + attribs[i].offset);
+						glVertexAttribIPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
 					} else {
-						glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, ((uint8_t *)0) + attribs[i].offset);
+						glVertexAttribPointer(attribs[i].index, attribs[i].size, attribs[i].type, attribs[i].normalized, attribs[i].stride, CAST_INT_TO_UCHAR_PTR(attribs[i].offset));
 					}
 					glEnableVertexAttribArray(attribs[i].index);
 				}
@@ -3616,9 +3616,9 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 					continue;
 
 				if (attribs[j].integer) {
-					glVertexAttribIPointer(attribs[j].index, attribs[j].size, attribs[j].type, attribs[j].stride, ((uint8_t *)0) + attribs[j].offset);
+					glVertexAttribIPointer(attribs[j].index, attribs[j].size, attribs[j].type, attribs[j].stride, CAST_INT_TO_UCHAR_PTR(attribs[j].offset));
 				} else {
-					glVertexAttribPointer(attribs[j].index, attribs[j].size, attribs[j].type, attribs[j].normalized, attribs[j].stride, ((uint8_t *)0) + attribs[j].offset);
+					glVertexAttribPointer(attribs[j].index, attribs[j].size, attribs[j].type, attribs[j].normalized, attribs[j].stride, CAST_INT_TO_UCHAR_PTR(attribs[j].offset));
 				}
 				glEnableVertexAttribArray(attribs[j].index);
 			}
@@ -4149,44 +4149,44 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 
 					case VS::ARRAY_VERTEX: {
 						if (s->format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
-							glVertexAttribPointer(i + 8, 2, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+							glVertexAttribPointer(i + 8, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 							ofs += 2 * 4;
 						} else {
-							glVertexAttribPointer(i + 8, 3, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+							glVertexAttribPointer(i + 8, 3, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 							ofs += 3 * 4;
 						}
 					} break;
 					case VS::ARRAY_NORMAL: {
-						glVertexAttribPointer(i + 8, 3, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i + 8, 3, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 3 * 4;
 					} break;
 					case VS::ARRAY_TANGENT: {
-						glVertexAttribPointer(i + 8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i + 8, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 4 * 4;
 
 					} break;
 					case VS::ARRAY_COLOR: {
-						glVertexAttribPointer(i + 8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i + 8, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 4 * 4;
 
 					} break;
 					case VS::ARRAY_TEX_UV: {
-						glVertexAttribPointer(i + 8, 2, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i + 8, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 2 * 4;
 
 					} break;
 					case VS::ARRAY_TEX_UV2: {
-						glVertexAttribPointer(i + 8, 2, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i + 8, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 2 * 4;
 
 					} break;
 					case VS::ARRAY_BONES: {
-						glVertexAttribIPointer(i + 8, 4, GL_UNSIGNED_INT, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribIPointer(i + 8, 4, GL_UNSIGNED_INT, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 4 * 4;
 
 					} break;
 					case VS::ARRAY_WEIGHTS: {
-						glVertexAttribPointer(i + 8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i + 8, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 4 * 4;
 
 					} break;
@@ -4219,44 +4219,44 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 
 				case VS::ARRAY_VERTEX: {
 					if (s->format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
-						glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 2 * 4;
 					} else {
-						glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+						glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 						ofs += 3 * 4;
 					}
 				} break;
 				case VS::ARRAY_NORMAL: {
-					glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 3 * 4;
 				} break;
 				case VS::ARRAY_TANGENT: {
-					glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 4 * 4;
 
 				} break;
 				case VS::ARRAY_COLOR: {
-					glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 4 * 4;
 
 				} break;
 				case VS::ARRAY_TEX_UV: {
-					glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 2 * 4;
 
 				} break;
 				case VS::ARRAY_TEX_UV2: {
-					glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribPointer(i, 2, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 2 * 4;
 
 				} break;
 				case VS::ARRAY_BONES: {
-					glVertexAttribIPointer(i, 4, GL_UNSIGNED_INT, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribIPointer(i, 4, GL_UNSIGNED_INT, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 4 * 4;
 
 				} break;
 				case VS::ARRAY_WEIGHTS: {
-					glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)0) + ofs);
+					glVertexAttribPointer(i, 4, GL_FLOAT, GL_FALSE, stride, CAST_INT_TO_UCHAR_PTR(ofs));
 					ofs += 4 * 4;
 
 				} break;
@@ -6080,7 +6080,7 @@ void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount)
 
 		for (int j = 0; j < 6; j++) {
 			glEnableVertexAttribArray(j);
-			glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, ((uint8_t *)0) + (j * 16));
+			glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, CAST_INT_TO_UCHAR_PTR((j * 16)));
 		}
 	}
 
@@ -6094,7 +6094,7 @@ void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount)
 
 			for (int j = 0; j < 6; j++) {
 				glEnableVertexAttribArray(j);
-				glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, ((uint8_t *)0) + (j * 16));
+				glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, CAST_INT_TO_UCHAR_PTR(j * 16));
 			}
 			particles->particle_valid_histories[i] = false;
 		}
@@ -6172,7 +6172,7 @@ void RasterizerStorageGLES3::_particles_update_histories(Particles *particles) {
 
 			for (int j = 0; j < 6; j++) {
 				glEnableVertexAttribArray(j);
-				glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, ((uint8_t *)0) + (j * 16));
+				glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, CAST_INT_TO_UCHAR_PTR(j * 16));
 			}
 
 			particles->particle_valid_histories[i] = false;
@@ -7997,7 +7997,7 @@ void RasterizerStorageGLES3::initialize() {
 		glBindBuffer(GL_ARRAY_BUFFER, resources.quadie);
 		glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, ((uint8_t *)NULL) + 8);
+		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, CAST_INT_TO_UCHAR_PTR(8));
 		glEnableVertexAttribArray(4);
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind

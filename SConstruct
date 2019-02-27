@@ -347,7 +347,12 @@ if selected_platform in platform_list:
             if version != None and version[0] >= '7':
                 shadow_local_warning = ['-Wshadow-local']
         if (env["warnings"] == 'extra'):
-            env.Append(CCFLAGS=['-Wall', '-Wextra'] + all_plus_warnings + shadow_local_warning)
+            # FIXME: enable -Wimplicit-fallthrough once #26135 is fixed
+            # FIXME: enable -Wclobbered once #26351 is fixed
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-implicit-fallthrough', '-Wno-unused-parameter'] + all_plus_warnings + shadow_local_warning)
+            if methods.use_gcc(env):
+                env['CCFLAGS'] += ['-Wno-clobbered']
+
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):
