@@ -342,15 +342,19 @@ bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_impo
 	if (!reimport_on_missing_imported_files && p_only_imported_files)
 		return false;
 
-	Error err;
-	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
-
-	if (!f) { //no import file, do reimport
+	if (!FileAccess::exists(p_path + ".import")) {
 		return true;
 	}
 
 	if (!ResourceFormatImporter::get_singleton()->are_import_settings_valid(p_path)) {
 		//reimport settings are not valid, reimport
+		return true;
+	}
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path + ".import", FileAccess::READ, &err);
+
+	if (!f) { //no import file, do reimport
 		return true;
 	}
 
