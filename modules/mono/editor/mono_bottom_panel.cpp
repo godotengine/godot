@@ -125,8 +125,13 @@ void MonoBottomPanel::_build_tabs_item_selected(int p_idx) {
 
 void MonoBottomPanel::_build_tabs_nothing_selected() {
 
-	if (build_tabs->get_tab_count() != 0) // just in case
+	if (build_tabs->get_tab_count() != 0) { // just in case
 		build_tabs->set_visible(false);
+
+		// This callback is called when clicking on the empty space of the list.
+		// ItemList won't deselect the items automatically, so we must do it ourselves.
+		build_tabs_list->unselect_all();
+	}
 
 	warnings_btn->set_visible(false);
 	errors_btn->set_visible(false);

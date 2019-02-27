@@ -51,8 +51,8 @@ class MonoBottomPanel : public VBoxContainer {
 	ItemList *build_tabs_list;
 	TabContainer *build_tabs;
 
-	Button *warnings_btn;
-	Button *errors_btn;
+	ToolButton *warnings_btn;
+	ToolButton *errors_btn;
 	Button *view_log_btn;
 
 	void _update_build_tabs_list();

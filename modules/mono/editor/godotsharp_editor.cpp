@@ -167,9 +167,6 @@ void GodotSharpEditor::_remove_create_sln_menu_option() {
 
 	menu_popup->remove_item(menu_popup->get_item_index(MENU_CREATE_SLN));
 
-	if (menu_popup->get_item_count() == 0)
-		menu_button->hide();
-
 	bottom_panel_btn->show();
 }
 
@@ -413,9 +410,12 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	editor->add_child(memnew(MonoReloadNode));
 
-	menu_button = memnew(MenuButton);
-	menu_button->set_text(TTR("Mono"));
-	menu_popup = menu_button->get_popup();
+	menu_popup = memnew(PopupMenu);
+	menu_popup->hide();
+	menu_popup->set_as_toplevel(true);
+	menu_popup->set_pass_on_modal_close_click(false);
+
+	editor->add_tool_submenu_item("Mono", menu_popup);
 
 	// TODO: Remove or edit this info dialog once Mono support is no longer in alpha
 	{
@@ -478,10 +478,12 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	menu_popup->connect("id_pressed", this, "_menu_option_pressed");
 
-	if (menu_popup->get_item_count() == 0)
-		menu_button->hide();
-
-	editor->get_menu_hb()->add_child(menu_button);
+	ToolButton *build_button = memnew(ToolButton);
+	build_button->set_text("Build");
+	build_button->set_tooltip("Build solution");
+	build_button->set_focus_mode(Control::FOCUS_NONE);
+	build_button->connect("pressed", MonoBottomPanel::get_singleton(), "_build_project_pressed");
+	editor->get_menu_hb()->add_child(build_button);
 
 	// External editor settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
