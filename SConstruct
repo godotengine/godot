@@ -30,7 +30,7 @@ for x in glob.glob("platform/*"):
         continue
     tmppath = "./" + x
 
-    sys.path.append(tmppath)
+    sys.path.insert(0,tmppath)
     import detect
 
     if (os.path.exists(x + "/export/export.cpp")):
@@ -214,7 +214,7 @@ for k in platform_opts.keys():
 for x in module_list:
     module_enabled = True
     tmppath = "./modules/" + x
-    sys.path.append(tmppath)
+    sys.path.insert(0,tmppath)
     import config
     enabled_attr = getattr(config, "is_enabled", None)
     if (callable(enabled_attr) and not config.is_enabled()):
@@ -265,8 +265,8 @@ elif env_base['p'] != "":
 
 
 if selected_platform in platform_list:
-
-    sys.path.append("./platform/" + selected_platform)
+    tmppath = "./platform/" + selected_platform
+    sys.path.insert(0,tmppath)
     import detect
     if "create" in dir(detect):
         env = detect.create(env_base)
@@ -401,7 +401,7 @@ if selected_platform in platform_list:
         if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
-        sys.path.append(tmppath)
+        sys.path.insert(0,tmppath)
         env.current_module = x
         import config
         if (config.can_build(selected_platform)):
