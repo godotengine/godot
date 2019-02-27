@@ -146,6 +146,22 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = hint;
 	}
+	if (property.name == "editor_default_animation") {
+		List<String> names;
+
+		for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
+			names.push_back(E->key());
+		}
+		names.sort();
+		String hint;
+		for (List<String>::Element *E = names.front(); E; E = E->next()) {
+
+			if (E != names.front())
+				hint += ",";
+			hint += E->get();
+		}
+		property.hint_string = hint;
+	}
 }
 
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -178,6 +194,9 @@ void AnimationPlayer::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
+			if (Engine::get_singleton()->is_editor_hint() && is_inside_tree()) {
+				set_editor_default_animation(get_editor_default_animation());
+			}
 
 			if (!processing) {
 				//make sure that a previous process state was not saved
@@ -1260,6 +1279,32 @@ String AnimationPlayer::get_current_animation() const {
 	return (is_playing() ? playback.assigned : "");
 }
 
+void AnimationPlayer::set_editor_default_animation(const String &p_anim) {
+	if (!is_inside_tree()) {
+		return;
+	}
+	if (p_anim == "") {
+		String name;
+		List<String> names;
+		for (Map<StringName, AnimationData>::Element *E = animation_set.front(); E; E = E->next()) {
+			names.push_back(E->key());
+		}
+		names.sort();
+		for (List<String>::Element *E = names.front(); E; E = E->next()) {
+			name = E->get();
+			break;
+		}
+		call_deferred("play", name);
+		call_deferred("stop", true);
+		call_deferred("seek", 0.0f, true);
+	}
+}
+
+String AnimationPlayer::get_editor_default_animation() const {
+
+	return playback.editor;
+}
+
 void AnimationPlayer::set_assigned_animation(const String &p_anim) {
 
 	if (is_playing()) {
@@ -1617,6 +1662,8 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "anim"), &AnimationPlayer::set_current_animation);
 	ClassDB::bind_method(D_METHOD("get_current_animation"), &AnimationPlayer::get_current_animation);
+	ClassDB::bind_method(D_METHOD("set_editor_default_animation", "anim"), &AnimationPlayer::set_editor_default_animation);
+	ClassDB::bind_method(D_METHOD("get_editor_default_animation"), &AnimationPlayer::get_editor_default_animation);
 	ClassDB::bind_method(D_METHOD("set_assigned_animation", "anim"), &AnimationPlayer::set_assigned_animation);
 	ClassDB::bind_method(D_METHOD("get_assigned_animation"), &AnimationPlayer::get_assigned_animation);
 	ClassDB::bind_method(D_METHOD("queue", "name"), &AnimationPlayer::queue);
@@ -1651,6 +1698,7 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_default_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_editor_default_animation", "get_editor_default_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "assigned_animation", PROPERTY_HINT_NONE, "", 0), "set_assigned_animation", "get_assigned_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_length", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_length");
