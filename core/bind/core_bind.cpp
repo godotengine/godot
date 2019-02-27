@@ -792,7 +792,7 @@ Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
 
 	size_t imonth = 0;
 
-	while (dayno >= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth]) {
+	while ((unsigned long)dayno >= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth]) {
 		dayno -= MONTH_DAYS_TABLE[LEAPYEAR(year)][imonth];
 		imonth++;
 	}
