@@ -270,7 +270,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
-		String file_path(fname);
+		String file_path(String(fname).simplify_path());
 
 		String file = file_path.get_file();
 
@@ -287,10 +287,10 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
-		String base_dir = file_path.get_base_dir().trim_suffix("/").trim_suffix("\\");
+		String base_dir = file_path.get_base_dir().trim_suffix("/");
 
 		if (base_dir != contents_dir && base_dir.begins_with(contents_dir)) {
-			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/").trim_prefix("\\");
+			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/");
 			file = base_dir.plus_file(file);
 
 			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
