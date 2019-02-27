@@ -126,6 +126,7 @@ public:
 	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void check_for_invalidation(const String &p_path);
 
+	void start();
 	void stop();
 
 	EditorResourcePreview();

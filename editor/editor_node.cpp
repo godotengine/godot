@@ -531,6 +531,8 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 	if (waiting_for_first_scan) {
 
+		EditorResourcePreview::get_singleton()->start(); //start previes now that it's safe
+
 		_load_docks();
 
 		if (defer_load_scene != "") {

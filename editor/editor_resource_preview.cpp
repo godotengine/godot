@@ -417,6 +417,10 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 	}
 }
 
+void EditorResourcePreview::start() {
+	ERR_FAIL_COND(thread);
+	thread = Thread::create(_thread_func, this);
+}
 void EditorResourcePreview::stop() {
 	if (thread) {
 		exit = true;
@@ -428,13 +432,12 @@ void EditorResourcePreview::stop() {
 }
 
 EditorResourcePreview::EditorResourcePreview() {
+	thread = NULL;
 	singleton = this;
 	preview_mutex = Mutex::create();
 	preview_sem = Semaphore::create();
 	order = 0;
 	exit = false;
-
-	thread = Thread::create(_thread_func, this);
 }
 
 EditorResourcePreview::~EditorResourcePreview() {
