@@ -231,6 +231,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			}
 
 			pb->set_percent_visible(false);
+			pb->set_custom_minimum_size(Vector2(0, 14) * EDSCALE);
 			animations[E->get()] = pb;
 			node->add_child(pb);
 
