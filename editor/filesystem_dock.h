@@ -181,8 +181,8 @@ private:
 	void _tree_gui_input(Ref<InputEvent> p_event);
 
 	void _update_file_list(bool p_keep_selection);
-	void _update_file_list_display_mode_button();
-	void _change_file_display();
+	void _toggle_file_display(bool p_active);
+	void _set_file_display(bool p_active);
 	void _fs_changed();
 
 	void _tree_toggle_collapsed();
