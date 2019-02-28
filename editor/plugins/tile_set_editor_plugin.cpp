@@ -206,6 +206,7 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("add_texture", &TileSetEditor::add_texture);
 	ClassDB::bind_method("remove_texture", &TileSetEditor::remove_texture);
 	ClassDB::bind_method("update_texture_list_icon", &TileSetEditor::update_texture_list_icon);
+	ClassDB::bind_method("update_workspace_minsize", &TileSetEditor::update_workspace_minsize);
 }
 
 void TileSetEditor::_notification(int p_what) {
@@ -590,16 +591,15 @@ void TileSetEditor::_on_texture_list_selected(int p_index) {
 	if (get_current_texture().is_valid()) {
 		current_item_index = p_index;
 		preview->set_texture(get_current_texture());
-		workspace->set_custom_minimum_size(get_current_texture()->get_size() + WORKSPACE_MARGIN * 2);
-		workspace_container->set_custom_minimum_size(get_current_texture()->get_size() + WORKSPACE_MARGIN * 2);
-		workspace_overlay->set_custom_minimum_size(get_current_texture()->get_size() + WORKSPACE_MARGIN * 2);
 		update_workspace_tile_mode();
+		update_workspace_minsize();
 	} else {
 		current_item_index = -1;
 		preview->set_texture(NULL);
 		workspace->set_custom_minimum_size(Size2i());
 		update_workspace_tile_mode();
 	}
+
 	set_current_tile(-1);
 	workspace->update();
 }
@@ -1082,7 +1082,23 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						undo_redo->create_action(TTR("Set Tile Region"));
 						undo_redo->add_do_method(tileset.ptr(), "tile_set_region", get_current_tile(), edited_region);
 						undo_redo->add_undo_method(tileset.ptr(), "tile_set_region", get_current_tile(), tileset->tile_get_region(get_current_tile()));
+
+						Size2 tile_workspace_size = edited_region.position + edited_region.size + WORKSPACE_MARGIN * 2;
+						Size2 workspace_minsize = workspace->get_custom_minimum_size();
+						if (tile_workspace_size.x > workspace_minsize.x && tile_workspace_size.y > workspace_minsize.y) {
+							undo_redo->add_do_method(workspace, "set_custom_minimum_size", tile_workspace_size);
+							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", tile_workspace_size);
+							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", tile_workspace_size);
+							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
+						} else if (workspace_minsize.x > get_current_texture()->get_size().x + WORKSPACE_MARGIN.x * 2 || workspace_minsize.y > get_current_texture()->get_size().y + WORKSPACE_MARGIN.y * 2) {
+							undo_redo->add_do_method(this, "update_workspace_minsize");
+							undo_redo->add_undo_method(this, "update_workspace_minsize");
+						}
+
 						edited_region = Rect2();
+
 						undo_redo->add_do_method(workspace, "update");
 						undo_redo->add_undo_method(workspace, "update");
 						undo_redo->add_do_method(workspace_overlay, "update");
@@ -1106,6 +1122,19 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						tool_workspacemode[WORKSPACE_EDIT]->set_pressed(true);
 						tool_editmode[EDITMODE_COLLISION]->set_pressed(true);
 						edit_mode = EDITMODE_COLLISION;
+
+						Size2 tile_workspace_size = edited_region.position + edited_region.size + WORKSPACE_MARGIN * 2;
+						Size2 workspace_minsize = workspace->get_custom_minimum_size();
+						if (tile_workspace_size.x > workspace_minsize.x || tile_workspace_size.y > workspace_minsize.y) {
+							Size2 new_workspace_minsize = Size2(MAX(tile_workspace_size.x, workspace_minsize.x), MAX(tile_workspace_size.y, workspace_minsize.y));
+							undo_redo->add_do_method(workspace, "set_custom_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method(workspace, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_container, "set_custom_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method(workspace_container, "set_custom_minimum_size", workspace_minsize);
+							undo_redo->add_do_method(workspace_overlay, "set_custom_minimum_size", new_workspace_minsize);
+							undo_redo->add_undo_method(workspace_overlay, "set_custom_minimum_size", workspace_minsize);
+						}
+
 						edited_region = Rect2();
 
 						undo_redo->add_do_method(workspace, "update");
@@ -1504,6 +1533,14 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 						undo_redo->add_do_method(tileset.ptr(), "remove_tile", t_id);
 						_undo_tile_removal(t_id);
 						undo_redo->add_do_method(this, "_validate_current_tile_id");
+
+						Rect2 tile_region = tileset->tile_get_region(get_current_tile());
+						Size2 tile_workspace_size = tile_region.position + tile_region.size;
+						if (tile_workspace_size.x > get_current_texture()->get_size().x || tile_workspace_size.y > get_current_texture()->get_size().y) {
+							undo_redo->add_do_method(this, "update_workspace_minsize");
+							undo_redo->add_undo_method(this, "update_workspace_minsize");
+						}
+
 						undo_redo->add_do_method(workspace, "update");
 						undo_redo->add_undo_method(workspace, "update");
 						undo_redo->add_do_method(workspace_overlay, "update");
@@ -2504,6 +2541,26 @@ void TileSetEditor::update_workspace_tile_mode() {
 		tool_editmode[EDITMODE_PRIORITY]->hide();
 	}
 	_on_edit_mode_changed(edit_mode);
+}
+
+void TileSetEditor::update_workspace_minsize() {
+	Size2 workspace_min_size = get_current_texture()->get_size();
+	RID current_texture_rid = get_current_texture()->get_rid();
+	List<int> *tiles = new List<int>();
+	tileset->get_tile_list(tiles);
+	for (List<int>::Element *E = tiles->front(); E; E = E->next()) {
+		if (tileset->tile_get_texture(E->get())->get_rid() == current_texture_rid) {
+			Rect2i region = tileset->tile_get_region(E->get());
+			if (region.position.x + region.size.x > workspace_min_size.x)
+				workspace_min_size.x = region.position.x + region.size.x;
+			if (region.position.y + region.size.y > workspace_min_size.y)
+				workspace_min_size.y = region.position.y + region.size.y;
+		}
+	}
+
+	workspace->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
+	workspace_container->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
+	workspace_overlay->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
 }
 
 void TileSetEditor::update_edited_region(const Vector2 &end_point) {
