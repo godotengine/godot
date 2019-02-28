@@ -423,9 +423,11 @@ Files extracted from the upstream source:
 
 Files extracted from upstream source:
 
-- all .c and .h files in src/ (both opus and opusfile),
-  except `opus_demo.c`
+- all .c and .h files in src/ (both opus and opusfile)
 - all .h files in include/ (both opus and opusfile) as opus/
+- remove unused `opus_demo.c`,
+- remove `http.c`, `wincerts.c` and `winerrno.h` (part of
+  unused libopusurl)
 - celt/ and silk/ subfolders
 - COPYING
 
