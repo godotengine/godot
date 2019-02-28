@@ -152,12 +152,13 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Variant::CallErro
 	}
 
 	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
-
 	if (_baseptr->native.ptr()) {
 		owner = _baseptr->native->instance();
 	} else {
 		owner = memnew(Reference); //by default, no base means use reference
 	}
+	ERR_EXPLAIN("Can't inherit from a virtual class");
+	ERR_FAIL_COND_V(!owner, Variant());
 
 	Reference *r = Object::cast_to<Reference>(owner);
 	if (r) {
