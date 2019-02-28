@@ -1528,6 +1528,15 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	CRASH_COND(!gchandle.is_valid());
 #endif
 
+	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
+	GDMonoMethod *ctor = script->script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
+	if (ctor == NULL) {
+		ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + script->get_path());
+
+		ERR_EXPLAIN("Constructor not found");
+		ERR_FAIL_V(NULL);
+	}
+
 	CSharpLanguage::get_singleton()->release_script_gchandle(gchandle);
 
 	ERR_FAIL_NULL_V(owner, NULL);
@@ -1557,7 +1566,6 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, owner);
 
 	// Construct
-	GDMonoMethod *ctor = script->script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
 	ctor->invoke_raw(mono_object, NULL);
 
 	return mono_object;
@@ -1900,13 +1908,21 @@ bool CSharpScript::_update_exports() {
 		MonoObject *tmp_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_mono_ptr());
 
 		if (!tmp_object) {
-			ERR_PRINT("Failed to create temporary MonoObject");
+			ERR_PRINT("Failed to allocate temporary MonoObject");
 			return false;
 		}
 
 		uint32_t tmp_pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(tmp_object); // pin it (not sure if needed)
 
 		GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
+
+		if (ctor == NULL) {
+			ERR_PRINTS("Cannot construct temporary MonoObject because the class does not define a default constructor: " + get_path());
+
+			ERR_EXPLAIN("Constructor not found");
+			ERR_FAIL_V(NULL);
+		}
+
 		MonoException *ctor_exc = NULL;
 		ctor->invoke(tmp_object, NULL, &ctor_exc);
 
@@ -2387,6 +2403,18 @@ StringName CSharpScript::get_instance_base_type() const {
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error) {
 
 	/* STEP 1, CREATE */
+
+	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
+	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
+	if (ctor == NULL) {
+		if (p_argcount == 0) {
+			ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + get_path());
+		}
+
+		ERR_EXPLAIN("Constructor not found");
+		ERR_FAIL_V(NULL);
+	}
+
 	Ref<Reference> ref;
 	if (p_isref) {
 		// Hold it alive. Important if we have to dispose a script instance binding before creating the CSharpInstance.
@@ -2453,7 +2481,6 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, instance->owner);
 
 	// Construct
-	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
 	ctor->invoke(mono_object, p_args);
 
 	/* STEP 3, PARTY */
