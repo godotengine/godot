@@ -1084,19 +1084,19 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (error_count != last_error_count || warning_count != last_warning_count) {
 
 				if (error_count == 0 && warning_count == 0) {
-					error_tree->set_name(TTR("Errors"));
+					errors_tab->set_name(TTR("Errors"));
 					debugger_button->set_text(TTR("Debugger"));
 					debugger_button->set_icon(Ref<Texture>());
-					tabs->set_tab_icon(error_tree->get_index(), Ref<Texture>());
+					tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture>());
 				} else {
-					error_tree->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
+					errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 					if (error_count == 0) {
 						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
-						tabs->set_tab_icon(error_tree->get_index(), get_icon("Warning", "EditorIcons"));
+						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Warning", "EditorIcons"));
 					} else {
 						debugger_button->set_icon(get_icon("Error", "EditorIcons"));
-						tabs->set_tab_icon(error_tree->get_index(), get_icon("Error", "EditorIcons"));
+						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Error", "EditorIcons"));
 					}
 				}
 				last_error_count = error_count;
@@ -2054,11 +2054,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ //errors
-		VBoxContainer *errvb = memnew(VBoxContainer);
-		errvb->set_name(TTR("Errors"));
+		errors_tab = memnew(VBoxContainer);
+		errors_tab->set_name(TTR("Errors"));
 
 		HBoxContainer *errhb = memnew(HBoxContainer);
-		errvb->add_child(errhb);
+		errors_tab->add_child(errhb);
 
 		Button *expand_all = memnew(Button);
 		expand_all->set_text(TTR("Expand All"));
@@ -2093,13 +2093,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		error_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 		error_tree->set_allow_rmb_select(true);
 		error_tree->connect("item_rmb_selected", this, "_error_tree_item_rmb_selected");
-		errvb->add_child(error_tree);
+		errors_tab->add_child(error_tree);
 
 		item_menu = memnew(PopupMenu);
 		item_menu->connect("id_pressed", this, "_item_menu_id_pressed");
 		error_tree->add_child(item_menu);
 
-		tabs->add_child(errvb);
+		tabs->add_child(errors_tab);
 	}
 
 	{ // remote scene tree
