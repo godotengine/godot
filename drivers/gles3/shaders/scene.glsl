@@ -111,7 +111,7 @@ uniform highp mat4 world_transform;
 
 #if defined(ENABLE_AABB_UVW_INTERP)
 uniform highp vec3 aabb_pos;
-uniform highp vec3 aabb_size; 
+uniform highp vec3 aabb_size;
 #endif
 
 #ifdef USE_LIGHT_DIRECTIONAL

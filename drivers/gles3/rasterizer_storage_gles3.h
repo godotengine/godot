@@ -486,7 +486,7 @@ public:
 			bool no_depth_test;
 			bool uses_vertex;
 			bool uses_discard;
-			bool use_aabb_tex_coord;
+			bool uses_aabb_tex_coord;
 			bool uses_sss;
 			bool uses_screen_texture;
 			bool uses_depth_texture;

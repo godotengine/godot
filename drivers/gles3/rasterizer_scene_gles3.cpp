@@ -2346,7 +2346,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		state.used_sss = true;
 	}
 
-	if (p_material->shader->spatial.use_aabb_tex_coord) {
+	if (p_material->shader->spatial.uses_aabb_tex_coord) {
 		state.used_aabb_tex_coord = true;
 	}
 
