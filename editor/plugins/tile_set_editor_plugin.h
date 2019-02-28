@@ -76,6 +76,8 @@ class TileSetEditor : public HSplitContainer {
 	};
 
 	enum TileSetTools {
+		SELECT_PREVIOUS,
+		SELECT_NEXT,
 		TOOL_SELECT,
 		BITMASK_COPY,
 		BITMASK_PASTE,
@@ -188,6 +190,12 @@ private:
 	void _on_priority_changed(float val);
 	void _on_z_index_changed(float val);
 	void _on_grid_snap_toggled(bool p_val);
+	void _select_next_tile();
+	void _select_previous_tile();
+	Array _get_tiles_in_current_texture(bool sorted = false);
+	bool _sort_tiles(Variant p_a, Variant p_b);
+	void _select_next_subtile();
+	void _select_previous_subtile();
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
 	void _set_snap_sep(Vector2 p_val);
