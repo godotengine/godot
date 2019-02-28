@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  shader_gles2.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -112,7 +112,6 @@ private:
 		GLuint id;
 		GLuint vert_id;
 		GLuint frag_id;
-		Vector<StringName> uniform_names;
 		GLint *uniform_location;
 		Vector<GLint> texture_uniform_locations;
 		Map<StringName, GLint> custom_uniform_locations;
@@ -177,9 +176,6 @@ private:
 
 	int max_image_units;
 
-	Map<uint32_t, Variant> uniform_defaults;
-	Map<uint32_t, CameraMatrix> uniform_cameras;
-
 	Map<StringName, Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > > uniform_values;
 
 protected:
@@ -212,245 +208,10 @@ public:
 	static _FORCE_INLINE_ ShaderGLES2 *get_active() { return active; }
 	bool bind();
 	void unbind();
-	void bind_uniforms();
 
 	inline GLuint get_program() const { return version ? version->id : 0; }
 
 	void clear_caches();
-
-	_FORCE_INLINE_ void _set_uniform_value(GLint p_uniform, const Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > &value) {
-		if (p_uniform < 0)
-			return;
-
-		const Vector<ShaderLanguage::ConstantNode::Value> &values = value.second;
-
-		switch (value.first) {
-			case ShaderLanguage::TYPE_BOOL: {
-				glUniform1i(p_uniform, values[0].boolean);
-			} break;
-
-			case ShaderLanguage::TYPE_BVEC2: {
-				glUniform2i(p_uniform, values[0].boolean, values[1].boolean);
-			} break;
-
-			case ShaderLanguage::TYPE_BVEC3: {
-				glUniform3i(p_uniform, values[0].boolean, values[1].boolean, values[2].boolean);
-			} break;
-
-			case ShaderLanguage::TYPE_BVEC4: {
-				glUniform4i(p_uniform, values[0].boolean, values[1].boolean, values[2].boolean, values[3].boolean);
-			} break;
-
-			case ShaderLanguage::TYPE_INT: {
-				glUniform1i(p_uniform, values[0].sint);
-			} break;
-
-			case ShaderLanguage::TYPE_IVEC2: {
-				glUniform2i(p_uniform, values[0].sint, values[1].sint);
-			} break;
-
-			case ShaderLanguage::TYPE_IVEC3: {
-				glUniform3i(p_uniform, values[0].sint, values[1].sint, values[2].sint);
-			} break;
-
-			case ShaderLanguage::TYPE_IVEC4: {
-				glUniform4i(p_uniform, values[0].sint, values[1].sint, values[2].sint, values[3].sint);
-			} break;
-
-			case ShaderLanguage::TYPE_UINT: {
-				glUniform1i(p_uniform, values[0].uint);
-			} break;
-
-			case ShaderLanguage::TYPE_UVEC2: {
-				glUniform2i(p_uniform, values[0].uint, values[1].uint);
-			} break;
-
-			case ShaderLanguage::TYPE_UVEC3: {
-				glUniform3i(p_uniform, values[0].uint, values[1].uint, values[2].uint);
-			} break;
-
-			case ShaderLanguage::TYPE_UVEC4: {
-				glUniform4i(p_uniform, values[0].uint, values[1].uint, values[2].uint, values[3].uint);
-			} break;
-
-			case ShaderLanguage::TYPE_FLOAT: {
-				glUniform1f(p_uniform, values[0].real);
-			} break;
-
-			case ShaderLanguage::TYPE_VEC2: {
-				glUniform2f(p_uniform, values[0].real, values[1].real);
-			} break;
-
-			case ShaderLanguage::TYPE_VEC3: {
-				glUniform3f(p_uniform, values[0].real, values[1].real, values[2].real);
-			} break;
-
-			case ShaderLanguage::TYPE_VEC4: {
-				glUniform4f(p_uniform, values[0].real, values[1].real, values[2].real, values[3].real);
-			} break;
-
-			case ShaderLanguage::TYPE_MAT2: {
-				GLfloat mat[4];
-
-				for (int i = 0; i < 4; i++) {
-					mat[i] = values[i].real;
-				}
-
-				glUniformMatrix2fv(p_uniform, 1, GL_FALSE, mat);
-			} break;
-
-			case ShaderLanguage::TYPE_MAT3: {
-				GLfloat mat[9];
-
-				for (int i = 0; i < 9; i++) {
-					mat[i] = values[i].real;
-				}
-
-				glUniformMatrix3fv(p_uniform, 1, GL_FALSE, mat);
-
-			} break;
-
-			case ShaderLanguage::TYPE_MAT4: {
-				GLfloat mat[16];
-
-				for (int i = 0; i < 16; i++) {
-					mat[i] = values[i].real;
-				}
-
-				glUniformMatrix4fv(p_uniform, 1, GL_FALSE, mat);
-
-			} break;
-
-			case ShaderLanguage::TYPE_SAMPLER2D: {
-
-			} break;
-
-			case ShaderLanguage::TYPE_ISAMPLER2D: {
-
-			} break;
-
-			case ShaderLanguage::TYPE_USAMPLER2D: {
-
-			} break;
-
-			case ShaderLanguage::TYPE_SAMPLERCUBE: {
-
-			} break;
-
-			case ShaderLanguage::TYPE_SAMPLER2DARRAY:
-			case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
-			case ShaderLanguage::TYPE_USAMPLER2DARRAY:
-			case ShaderLanguage::TYPE_SAMPLER3D:
-			case ShaderLanguage::TYPE_ISAMPLER3D:
-			case ShaderLanguage::TYPE_USAMPLER3D: {
-				// Not implemented in GLES2
-			} break;
-
-			case ShaderLanguage::TYPE_VOID: {
-				// Nothing to do?
-			} break;
-		}
-	}
-
-	_FORCE_INLINE_ void _set_uniform_variant(GLint p_uniform, const Variant &p_value) {
-
-		if (p_uniform < 0)
-			return; // do none
-		switch (p_value.get_type()) {
-
-			case Variant::BOOL:
-			case Variant::INT: {
-
-				int val = p_value;
-				glUniform1i(p_uniform, val);
-			} break;
-			case Variant::REAL: {
-
-				real_t val = p_value;
-				glUniform1f(p_uniform, val);
-			} break;
-			case Variant::COLOR: {
-
-				Color val = p_value;
-				glUniform4f(p_uniform, val.r, val.g, val.b, val.a);
-			} break;
-			case Variant::VECTOR2: {
-
-				Vector2 val = p_value;
-				glUniform2f(p_uniform, val.x, val.y);
-			} break;
-			case Variant::VECTOR3: {
-
-				Vector3 val = p_value;
-				glUniform3f(p_uniform, val.x, val.y, val.z);
-			} break;
-			case Variant::PLANE: {
-
-				Plane val = p_value;
-				glUniform4f(p_uniform, val.normal.x, val.normal.y, val.normal.z, val.d);
-			} break;
-			case Variant::QUAT: {
-
-				Quat val = p_value;
-				glUniform4f(p_uniform, val.x, val.y, val.z, val.w);
-			} break;
-
-			case Variant::TRANSFORM2D: {
-
-				Transform2D tr = p_value;
-				GLfloat matrix[16] = { /* build a 16x16 matrix */
-					tr.elements[0][0],
-					tr.elements[0][1],
-					0,
-					0,
-					tr.elements[1][0],
-					tr.elements[1][1],
-					0,
-					0,
-					0,
-					0,
-					1,
-					0,
-					tr.elements[2][0],
-					tr.elements[2][1],
-					0,
-					1
-				};
-
-				glUniformMatrix4fv(p_uniform, 1, false, matrix);
-
-			} break;
-			case Variant::BASIS:
-			case Variant::TRANSFORM: {
-
-				Transform tr = p_value;
-				GLfloat matrix[16] = { /* build a 16x16 matrix */
-					tr.basis.elements[0][0],
-					tr.basis.elements[1][0],
-					tr.basis.elements[2][0],
-					0,
-					tr.basis.elements[0][1],
-					tr.basis.elements[1][1],
-					tr.basis.elements[2][1],
-					0,
-					tr.basis.elements[0][2],
-					tr.basis.elements[1][2],
-					tr.basis.elements[2][2],
-					0,
-					tr.origin.x,
-					tr.origin.y,
-					tr.origin.z,
-					1
-				};
-
-				glUniformMatrix4fv(p_uniform, 1, false, matrix);
-			} break;
-			case Variant::OBJECT: {
-
-			} break;
-			default: { ERR_FAIL(); } // do nothing
-		}
-	}
 
 	uint32_t create_custom_shader();
 	void set_custom_shader_code(uint32_t p_code_id,
@@ -468,18 +229,6 @@ public:
 
 	uint32_t get_version_key() const { return conditional_version.version; }
 
-	void set_uniform_default(int p_idx, const Variant &p_value) {
-
-		if (p_value.get_type() == Variant::NIL) {
-
-			uniform_defaults.erase(p_idx);
-		} else {
-
-			uniform_defaults[p_idx] = p_value;
-		}
-		uniforms_dirty = true;
-	}
-
 	// this void* is actually a RasterizerStorageGLES2::Material, but C++ doesn't
 	// like forward declared nested classes.
 	void use_material(void *p_material);
@@ -487,30 +236,8 @@ public:
 	_FORCE_INLINE_ uint32_t get_version() const { return new_conditional_version.version; }
 	_FORCE_INLINE_ bool is_version_valid() const { return version && version->ok; }
 
-	void set_uniform_camera(int p_idx, const CameraMatrix &p_mat) {
-
-		uniform_cameras[p_idx] = p_mat;
-		uniforms_dirty = true;
-	}
-
-	_FORCE_INLINE_ void set_texture_uniform(int p_idx, const Variant &p_value) {
-
-		ERR_FAIL_COND(!version);
-		ERR_FAIL_INDEX(p_idx, version->texture_uniform_locations.size());
-		_set_uniform_variant(version->texture_uniform_locations[p_idx], p_value);
-	}
-
-	_FORCE_INLINE_ GLint get_texture_uniform_location(int p_idx) {
-
-		ERR_FAIL_COND_V(!version, -1);
-		ERR_FAIL_INDEX_V(p_idx, version->texture_uniform_locations.size(), -1);
-		return version->texture_uniform_locations[p_idx];
-	}
-
 	virtual void init() = 0;
 	void finish();
-
-	void set_base_material_tex_index(int p_idx);
 
 	void add_custom_define(const String &p_define) {
 		custom_defines.push_back(p_define.utf8());
