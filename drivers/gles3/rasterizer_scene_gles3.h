@@ -203,6 +203,7 @@ public:
 		bool cull_front;
 		bool cull_disabled;
 		bool used_sss;
+		bool used_aabb_tex_coord;
 		bool used_screen_texture;
 		bool used_depth_texture;
 		bool using_contact_shadows;

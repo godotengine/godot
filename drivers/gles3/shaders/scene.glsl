@@ -109,6 +109,11 @@ layout(std140) uniform SceneData { // ubo:0
 
 uniform highp mat4 world_transform;
 
+#if defined(ENABLE_AABB_UVW_INTERP)
+uniform highp vec3 aabb_pos;
+uniform highp vec3 aabb_size; 
+#endif
+
 #ifdef USE_LIGHT_DIRECTIONAL
 
 layout(std140) uniform DirectionalLightData { //ubo:3
@@ -269,6 +274,10 @@ out vec2 uv_interp;
 out vec2 uv2_interp;
 #endif
 
+#if defined(ENABLE_AABB_UVW_INTERP)
+out vec3 aabb_uvw_interp;
+#endif
+
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
 out vec3 tangent_interp;
 out vec3 binormal_interp;
@@ -350,6 +359,10 @@ void main() {
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
+#endif
+
+#if defined(ENABLE_AABB_UVW_INTERP)
+	aabb_uvw_interp = (vertex_attrib.xyz - aabb_pos) * (1.0 / aabb_size);
 #endif
 
 #ifdef OVERRIDE_POSITION
@@ -603,6 +616,10 @@ in vec2 uv_interp;
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 in vec2 uv2_interp;
+#endif
+
+#if defined(ENABLE_AABB_UVW_INTERP)
+in vec3 aabb_uvw_interp;
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)

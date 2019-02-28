@@ -166,7 +166,6 @@ public:
 
 		SelfList<Instance> update_item;
 
-		AABB aabb;
 		AABB transformed_aabb;
 		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
 		float extra_margin;

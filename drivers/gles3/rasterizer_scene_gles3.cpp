@@ -2228,6 +2228,13 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
+		bool use_spatial_instance = e->instance->base_type == VS::INSTANCE_MESH || e->instance->base_type == VS::INSTANCE_MULTIMESH;
+		if (use_spatial_instance && state.used_aabb_tex_coord) {
+			// possible can don't update if prev_instance is the curr_instance
+			state.scene_shader.set_uniform(SceneShaderGLES3::AABB_POS, e->instance->aabb.position);
+			state.scene_shader.set_uniform(SceneShaderGLES3::AABB_SIZE, e->instance->aabb.size);
+		}
+
 		if (!(e->sort_key & SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
 			_setup_light(e, p_view_transform);
 		}
@@ -2337,6 +2344,10 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	if (p_material->shader->spatial.uses_sss) {
 		state.used_sss = true;
+	}
+
+	if (p_material->shader->spatial.use_aabb_tex_coord) {
+		state.used_aabb_tex_coord = true;
 	}
 
 	if (p_material->shader->spatial.uses_screen_texture) {

@@ -90,6 +90,7 @@ public:
 		RID material_override;
 
 		Transform transform;
+		AABB aabb;
 
 		int depth_layer;
 		uint32_t layer_mask;
