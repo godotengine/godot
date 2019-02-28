@@ -149,7 +149,7 @@ EditorLog::EditorLog() {
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
-	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
+	log->set_custom_minimum_size(Size2(0, 90) * EDSCALE);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(log);
