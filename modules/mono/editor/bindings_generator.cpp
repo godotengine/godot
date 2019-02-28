@@ -703,7 +703,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
 	if (verbose_output)
-		OS::get_singleton()->print(String("Generating " + itype.proxy_name + ".cs...\n").utf8());
+		OS::get_singleton()->print("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
 
 	String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
@@ -1280,7 +1280,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 		List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
-		OS::get_singleton()->print(String("Generating " + itype.name + "...\n").utf8());
+		OS::get_singleton()->print("Generating %s...\n", itype.name.utf8().get_data());
 
 		String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 

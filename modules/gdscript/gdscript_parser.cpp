@@ -4691,6 +4691,16 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
+							if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
+								if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
+									Variant::CallError err;
+									const Variant *args = &cn->value;
+									cn->value = Variant::construct(member._export.type, &args, 1, err);
+								} else {
+									_set_error("Cannot convert the provided value to the export type.");
+									return;
+								}
+							}
 							member.default_value = cn->value;
 						}
 					}

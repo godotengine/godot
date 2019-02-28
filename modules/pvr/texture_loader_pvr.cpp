@@ -216,7 +216,7 @@ static void _compress_pvrtc4(Image *p_img) {
 			int ofs, size, w, h;
 			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::RgbaBitmap bm(w, h);
-			for (unsigned j = 0; j < size / 4; j++) {
+			for (int j = 0; j < size / 4; j++) {
 				Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
 				/* red and Green colors are swapped.  */
 				new (dp) Javelin::ColorRgba<unsigned char>(r[ofs + 4 * j + 2], r[ofs + 4 * j + 1], r[ofs + 4 * j], r[ofs + 4 * j + 3]);

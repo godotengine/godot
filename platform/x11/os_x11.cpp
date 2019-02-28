@@ -2593,7 +2593,7 @@ Error OS_X11::shell_open(String p_uri) {
 
 bool OS_X11::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "pc" || p_feature == "s3tc" || p_feature == "bptc";
+	return p_feature == "pc";
 }
 
 String OS_X11::get_config_path() const {

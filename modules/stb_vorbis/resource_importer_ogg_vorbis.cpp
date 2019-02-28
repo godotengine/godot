@@ -76,7 +76,7 @@ void ResourceImporterOGGVorbis::get_import_options(List<ImportOption> *r_options
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "loop_offset"), 0));
 }
 
-Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterOGGVorbis::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	bool loop = p_options["loop"];
 	float loop_offset = p_options["loop_offset"];

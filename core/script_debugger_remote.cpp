@@ -1054,7 +1054,6 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	physics_frame_time = p_physics_frame_time;
 }
 
-
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() :

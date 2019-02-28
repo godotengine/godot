@@ -210,6 +210,7 @@ private:
 	void select_coord(const Vector2 &coord);
 	Vector2 snap_point(const Vector2 &point);
 	void update_workspace_tile_mode();
+	void update_workspace_minsize();
 	void update_edited_region(const Vector2 &end_point);
 
 	int get_current_tile() const;

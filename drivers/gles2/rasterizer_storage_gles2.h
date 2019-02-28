@@ -72,17 +72,22 @@ public:
 		bool float_texture_supported;
 		bool s3tc_supported;
 		bool etc1_supported;
+		bool pvrtc_supported;
 
 		bool keep_original_textures;
 
 		bool force_vertex_shading;
 
 		bool use_rgba_2d_shadows;
+		bool use_rgba_3d_shadows;
 
 		bool support_32_bits_indices;
 		bool support_write_depth;
 		bool support_half_float_vertices;
 		bool support_npot_repeat_mipmap;
+
+		GLuint depth_internalformat;
+		GLuint depth_type;
 	} config;
 
 	struct Resources {
@@ -91,6 +96,9 @@ public:
 		GLuint black_tex;
 		GLuint normal_tex;
 		GLuint aniso_tex;
+
+		GLuint mipmap_blur_fbo;
+		GLuint mipmap_blur_color;
 
 		GLuint radical_inverse_vdc_cache_tex;
 		bool use_rgba_2d_shadows;

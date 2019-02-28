@@ -69,51 +69,6 @@ ShaderGLES2 *ShaderGLES2::active = NULL;
 
 #endif
 
-void ShaderGLES2::bind_uniforms() {
-	if (!uniforms_dirty)
-		return;
-
-	// regular uniforms
-
-	const Map<uint32_t, Variant>::Element *E = uniform_defaults.front();
-
-	while (E) {
-		int idx = E->key();
-		int location = version->uniform_location[idx];
-
-		if (location < 0) {
-			E = E->next();
-			continue;
-		}
-
-		Variant v;
-
-		v = E->value();
-
-		_set_uniform_variant(location, v);
-		E = E->next();
-	}
-
-	// camera uniforms
-
-	const Map<uint32_t, CameraMatrix>::Element *C = uniform_cameras.front();
-
-	while (C) {
-		int idx = C->key();
-		int location = version->uniform_location[idx];
-
-		if (location < 0) {
-			C = C->next();
-			continue;
-		}
-
-		glUniformMatrix4fv(location, 1, GL_FALSE, &(C->get().matrix[0][0]));
-		C = C->next();
-	}
-
-	uniforms_dirty = false;
-}
-
 GLint ShaderGLES2::get_uniform_location(int p_index) const {
 
 	ERR_FAIL_COND_V(!version, -1);
@@ -138,28 +93,6 @@ bool ShaderGLES2::bind() {
 	}
 
 	glUseProgram(version->id);
-
-	// find out uniform names and locations
-
-	int count;
-	glGetProgramiv(version->id, GL_ACTIVE_UNIFORMS, &count);
-	version->uniform_names.resize(count);
-
-	for (int i = 0; i < count; i++) {
-		GLchar uniform_name[1024];
-		int len = 0;
-		GLint size = 0;
-		GLenum type;
-
-		glGetActiveUniform(version->id, i, 1024, &len, &size, &type, uniform_name);
-
-		uniform_name[len] = '\0';
-		String name = String((const char *)uniform_name);
-
-		version->uniform_names.write[i] = name;
-	}
-
-	bind_uniforms();
 
 	DEBUG_TEST_ERROR("use program");
 
@@ -513,6 +446,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 			String native_uniform_name = _mkid(cc->texture_uniforms[i]);
 			GLint location = glGetUniformLocation(v.id, (native_uniform_name).ascii().get_data());
 			v.custom_uniform_locations[cc->texture_uniforms[i]] = location;
+			glUniform1i(location, i);
 		}
 	}
 
@@ -732,340 +666,315 @@ void ShaderGLES2::use_material(void *p_material) {
 		if (E->get().texture_order >= 0)
 			continue; // this is a texture, doesn't go here
 
+		Map<StringName, GLint>::Element *L = v->custom_uniform_locations.find(E->key());
+		if (!L || L->get() < 0)
+			continue; //uniform not valid
+
+		GLuint location = L->get();
+
 		Map<StringName, Variant>::Element *V = material->params.find(E->key());
 
-		Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > value;
-
-		value.first = E->get().type;
-		value.second = E->get().default_value;
-
 		if (V) {
-			value.second = Vector<ShaderLanguage::ConstantNode::Value>();
-			value.second.resize(E->get().default_value.size());
 			switch (E->get().type) {
 				case ShaderLanguage::TYPE_BOOL: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					value.second.write[0].boolean = V->get();
+
+					bool boolean = V->get();
+					glUniform1i(location, boolean ? 1 : 0);
 				} break;
 
 				case ShaderLanguage::TYPE_BVEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
 					int flags = V->get();
-					value.second.write[0].boolean = flags & 1;
-					value.second.write[1].boolean = flags & 2;
+					glUniform2i(location, (flags & 1) ? 1 : 0, (flags & 2) ? 1 : 0);
 				} break;
 
 				case ShaderLanguage::TYPE_BVEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
+
 					int flags = V->get();
-					value.second.write[0].boolean = flags & 1;
-					value.second.write[1].boolean = flags & 2;
-					value.second.write[2].boolean = flags & 4;
+					glUniform3i(location, (flags & 1) ? 1 : 0, (flags & 2) ? 1 : 0, (flags & 4) ? 1 : 0);
 
 				} break;
 
 				case ShaderLanguage::TYPE_BVEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
 					int flags = V->get();
-					value.second.write[0].boolean = flags & 1;
-					value.second.write[1].boolean = flags & 2;
-					value.second.write[2].boolean = flags & 4;
-					value.second.write[3].boolean = flags & 8;
+					glUniform4i(location, (flags & 1) ? 1 : 0, (flags & 2) ? 1 : 0, (flags & 4) ? 1 : 0, (flags & 8) ? 1 : 0);
 
 				} break;
 
-				case ShaderLanguage::TYPE_INT: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					int val = V->get();
-					value.second.write[0].sint = val;
-				} break;
-
-				case ShaderLanguage::TYPE_IVEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].sint = val[i];
-					}
-				} break;
-
-				case ShaderLanguage::TYPE_IVEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].sint = val[i];
-					}
-
-				} break;
-
-				case ShaderLanguage::TYPE_IVEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].sint = val[i];
-					}
-
-				} break;
-
+				case ShaderLanguage::TYPE_INT:
 				case ShaderLanguage::TYPE_UINT: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					uint32_t val = V->get();
-					value.second.write[0].uint = val;
+					int value = V->get();
+					glUniform1i(location, value);
 				} break;
 
+				case ShaderLanguage::TYPE_IVEC2:
 				case ShaderLanguage::TYPE_UVEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].uint = val[i];
+
+					Array r = V->get();
+					const int count = 2;
+					if (r.size() == count) {
+						int values[count];
+						for (int i = 0; i < count; i++) {
+							values[i] = r[i];
+						}
+						glUniform2i(location, values[0], values[1]);
 					}
 
 				} break;
 
+				case ShaderLanguage::TYPE_IVEC3:
 				case ShaderLanguage::TYPE_UVEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].uint = val[i];
+					Array r = V->get();
+					const int count = 3;
+					if (r.size() == count) {
+						int values[count];
+						for (int i = 0; i < count; i++) {
+							values[i] = r[i];
+						}
+						glUniform3i(location, values[0], values[1], values[2]);
 					}
 
 				} break;
 
+				case ShaderLanguage::TYPE_IVEC4:
 				case ShaderLanguage::TYPE_UVEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					PoolIntArray val = V->get();
-					for (int i = 0; i < val.size(); i++) {
-						value.second.write[i].uint = val[i];
+					Array r = V->get();
+					const int count = 4;
+					if (r.size() == count) {
+						int values[count];
+						for (int i = 0; i < count; i++) {
+							values[i] = r[i];
+						}
+						glUniform4i(location, values[0], values[1], values[2], values[3]);
 					}
 
 				} break;
 
 				case ShaderLanguage::TYPE_FLOAT: {
-					if (value.second.size() < 1)
-						value.second.resize(1);
-					value.second.write[0].real = V->get();
+					float value = V->get();
+					glUniform1f(location, value);
 
 				} break;
 
 				case ShaderLanguage::TYPE_VEC2: {
-					if (value.second.size() < 2)
-						value.second.resize(2);
-					Vector2 val = V->get();
-					value.second.write[0].real = val.x;
-					value.second.write[1].real = val.y;
+					Vector2 value = V->get();
+					glUniform2f(location, value.x, value.y);
 				} break;
 
 				case ShaderLanguage::TYPE_VEC3: {
-					if (value.second.size() < 3)
-						value.second.resize(3);
-					Vector3 val = V->get();
-					value.second.write[0].real = val.x;
-					value.second.write[1].real = val.y;
-					value.second.write[2].real = val.z;
+					Vector3 value = V->get();
+					glUniform3f(location, value.x, value.y, value.z);
 				} break;
 
 				case ShaderLanguage::TYPE_VEC4: {
-					if (value.second.size() < 4)
-						value.second.resize(4);
-					if (V->get().get_type() == Variant::PLANE) {
-						Plane val = V->get();
-						value.second.write[0].real = val.normal.x;
-						value.second.write[1].real = val.normal.y;
-						value.second.write[2].real = val.normal.z;
-						value.second.write[3].real = val.d;
+					if (V->get().get_type() == Variant::COLOR) {
+						Color value = V->get();
+						glUniform4f(location, value.r, value.g, value.b, value.a);
+					} else if (V->get().get_type() == Variant::QUAT) {
+						Quat value = V->get();
+						glUniform4f(location, value.x, value.y, value.z, value.w);
 					} else {
-						Color val = V->get();
-						value.second.write[0].real = val.r;
-						value.second.write[1].real = val.g;
-						value.second.write[2].real = val.b;
-						value.second.write[3].real = val.a;
+						Plane value = V->get();
+						glUniform4f(location, value.normal.x, value.normal.y, value.normal.z, value.d);
 					}
 
 				} break;
 
 				case ShaderLanguage::TYPE_MAT2: {
-					Transform2D val = V->get();
 
-					if (value.second.size() < 4) {
-						value.second.resize(4);
-					}
-
-					value.second.write[0].real = val.elements[0][0];
-					value.second.write[1].real = val.elements[0][1];
-					value.second.write[2].real = val.elements[1][0];
-					value.second.write[3].real = val.elements[1][1];
+					Transform2D tr = V->get();
+					GLfloat matrix[4] = {
+						/* build a 16x16 matrix */
+						tr.elements[0][0],
+						tr.elements[0][1],
+						tr.elements[1][0],
+						tr.elements[1][1],
+					};
+					glUniformMatrix2fv(location, 1, GL_FALSE, matrix);
 
 				} break;
 
 				case ShaderLanguage::TYPE_MAT3: {
 					Basis val = V->get();
 
-					if (value.second.size() < 9) {
-						value.second.resize(9);
-					}
+					GLfloat mat[9] = {
+						val.elements[0][0],
+						val.elements[1][0],
+						val.elements[2][0],
+						val.elements[0][1],
+						val.elements[1][1],
+						val.elements[2][1],
+						val.elements[0][2],
+						val.elements[1][2],
+						val.elements[2][2],
+					};
 
-					value.second.write[0].real = val.elements[0][0];
-					value.second.write[1].real = val.elements[0][1];
-					value.second.write[2].real = val.elements[0][2];
-					value.second.write[3].real = val.elements[1][0];
-					value.second.write[4].real = val.elements[1][1];
-					value.second.write[5].real = val.elements[1][2];
-					value.second.write[6].real = val.elements[2][0];
-					value.second.write[7].real = val.elements[2][1];
-					value.second.write[8].real = val.elements[2][2];
+					glUniformMatrix3fv(location, 1, GL_FALSE, mat);
+
 				} break;
 
 				case ShaderLanguage::TYPE_MAT4: {
-					Transform val = V->get();
 
-					if (value.second.size() < 16) {
-						value.second.resize(16);
-					}
+					Transform2D tr = V->get();
+					GLfloat matrix[16] = { /* build a 16x16 matrix */
+						tr.elements[0][0],
+						tr.elements[0][1],
+						0,
+						0,
+						tr.elements[1][0],
+						tr.elements[1][1],
+						0,
+						0,
+						0,
+						0,
+						1,
+						0,
+						tr.elements[2][0],
+						tr.elements[2][1],
+						0,
+						1
+					};
 
-					value.second.write[0].real = val.basis.elements[0][0];
-					value.second.write[1].real = val.basis.elements[0][1];
-					value.second.write[2].real = val.basis.elements[0][2];
-					value.second.write[3].real = 0;
-					value.second.write[4].real = val.basis.elements[1][0];
-					value.second.write[5].real = val.basis.elements[1][1];
-					value.second.write[6].real = val.basis.elements[1][2];
-					value.second.write[7].real = 0;
-					value.second.write[8].real = val.basis.elements[2][0];
-					value.second.write[9].real = val.basis.elements[2][1];
-					value.second.write[10].real = val.basis.elements[2][2];
-					value.second.write[11].real = 0;
-					value.second.write[12].real = val.origin[0];
-					value.second.write[13].real = val.origin[1];
-					value.second.write[14].real = val.origin[2];
-					value.second.write[15].real = 1;
+					glUniformMatrix4fv(location, 1, GL_FALSE, matrix);
+
 				} break;
 
 				default: {
-
+					ERR_PRINT("type missing, bug?");
 				} break;
 			}
-		} else {
-			if (value.second.size() == 0) {
-				// No default value set... weird, let's just use zero for everything
-				size_t default_arg_size = 1;
-				bool is_float = false;
-				switch (E->get().type) {
-					case ShaderLanguage::TYPE_BOOL:
-					case ShaderLanguage::TYPE_INT:
-					case ShaderLanguage::TYPE_UINT: {
-						default_arg_size = 1;
-					} break;
+		} else if (E->get().default_value.size()) {
+			const Vector<ShaderLanguage::ConstantNode::Value> &values = E->get().default_value;
+			switch (E->get().type) {
+				case ShaderLanguage::TYPE_BOOL: {
+					glUniform1i(location, values[0].boolean);
+				} break;
 
-					case ShaderLanguage::TYPE_FLOAT: {
-						default_arg_size = 1;
-						is_float = true;
-					} break;
+				case ShaderLanguage::TYPE_BVEC2: {
+					glUniform2i(location, values[0].boolean, values[1].boolean);
+				} break;
 
-					case ShaderLanguage::TYPE_BVEC2:
-					case ShaderLanguage::TYPE_IVEC2:
-					case ShaderLanguage::TYPE_UVEC2: {
-						default_arg_size = 2;
-					} break;
+				case ShaderLanguage::TYPE_BVEC3: {
+					glUniform3i(location, values[0].boolean, values[1].boolean, values[2].boolean);
+				} break;
 
-					case ShaderLanguage::TYPE_VEC2: {
-						default_arg_size = 2;
-						is_float = true;
-					} break;
+				case ShaderLanguage::TYPE_BVEC4: {
+					glUniform4i(location, values[0].boolean, values[1].boolean, values[2].boolean, values[3].boolean);
+				} break;
 
-					case ShaderLanguage::TYPE_BVEC3:
-					case ShaderLanguage::TYPE_IVEC3:
-					case ShaderLanguage::TYPE_UVEC3: {
-						default_arg_size = 3;
-					} break;
+				case ShaderLanguage::TYPE_INT: {
+					glUniform1i(location, values[0].sint);
+				} break;
 
-					case ShaderLanguage::TYPE_VEC3: {
-						default_arg_size = 3;
-						is_float = true;
-					} break;
+				case ShaderLanguage::TYPE_IVEC2: {
+					glUniform2i(location, values[0].sint, values[1].sint);
+				} break;
 
-					case ShaderLanguage::TYPE_BVEC4:
-					case ShaderLanguage::TYPE_IVEC4:
-					case ShaderLanguage::TYPE_UVEC4: {
-						default_arg_size = 4;
-					} break;
+				case ShaderLanguage::TYPE_IVEC3: {
+					glUniform3i(location, values[0].sint, values[1].sint, values[2].sint);
+				} break;
 
-					case ShaderLanguage::TYPE_VEC4: {
-						default_arg_size = 4;
-						is_float = true;
-					} break;
+				case ShaderLanguage::TYPE_IVEC4: {
+					glUniform4i(location, values[0].sint, values[1].sint, values[2].sint, values[3].sint);
+				} break;
 
-					default: {
-						// TODO matricies and all that stuff
-						default_arg_size = 1;
-					} break;
-				}
+				case ShaderLanguage::TYPE_UINT: {
+					glUniform1i(location, values[0].uint);
+				} break;
 
-				value.second.resize(default_arg_size);
+				case ShaderLanguage::TYPE_UVEC2: {
+					glUniform2i(location, values[0].uint, values[1].uint);
+				} break;
 
-				for (size_t i = 0; i < default_arg_size; i++) {
-					if (is_float) {
-						value.second.write[i].real = 0.0;
-					} else {
-						value.second.write[i].uint = 0;
+				case ShaderLanguage::TYPE_UVEC3: {
+					glUniform3i(location, values[0].uint, values[1].uint, values[2].uint);
+				} break;
+
+				case ShaderLanguage::TYPE_UVEC4: {
+					glUniform4i(location, values[0].uint, values[1].uint, values[2].uint, values[3].uint);
+				} break;
+
+				case ShaderLanguage::TYPE_FLOAT: {
+					glUniform1f(location, values[0].real);
+				} break;
+
+				case ShaderLanguage::TYPE_VEC2: {
+					glUniform2f(location, values[0].real, values[1].real);
+				} break;
+
+				case ShaderLanguage::TYPE_VEC3: {
+					glUniform3f(location, values[0].real, values[1].real, values[2].real);
+				} break;
+
+				case ShaderLanguage::TYPE_VEC4: {
+					glUniform4f(location, values[0].real, values[1].real, values[2].real, values[3].real);
+				} break;
+
+				case ShaderLanguage::TYPE_MAT2: {
+					GLfloat mat[4];
+
+					for (int i = 0; i < 4; i++) {
+						mat[i] = values[i].real;
 					}
-				}
+
+					glUniformMatrix2fv(location, 1, GL_FALSE, mat);
+				} break;
+
+				case ShaderLanguage::TYPE_MAT3: {
+					GLfloat mat[9];
+
+					for (int i = 0; i < 9; i++) {
+						mat[i] = values[i].real;
+					}
+
+					glUniformMatrix3fv(location, 1, GL_FALSE, mat);
+
+				} break;
+
+				case ShaderLanguage::TYPE_MAT4: {
+					GLfloat mat[16];
+
+					for (int i = 0; i < 16; i++) {
+						mat[i] = values[i].real;
+					}
+
+					glUniformMatrix4fv(location, 1, GL_FALSE, mat);
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_USAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLERCUBE: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_SAMPLER3D:
+				case ShaderLanguage::TYPE_ISAMPLER3D:
+				case ShaderLanguage::TYPE_USAMPLER3D: {
+					// Not implemented in GLES2
+				} break;
+
+				case ShaderLanguage::TYPE_VOID: {
+					// Nothing to do?
+				} break;
+				default: {
+					ERR_PRINT("type missing, bug?");
+				} break;
 			}
 		}
-
-		GLint location;
-		if (v->custom_uniform_locations.has(E->key())) {
-			location = v->custom_uniform_locations[E->key()];
-		} else {
-			int idx = v->uniform_names.find(E->key()); // TODO maybe put those in a Map?
-			if (idx < 0) {
-				location = -1;
-			} else {
-				location = v->uniform_location[idx];
-			}
-		}
-
-		_set_uniform_value(location, value);
 	}
-
-	// bind textures
-	int tc = material->textures.size();
-	Pair<StringName, RID> *textures = material->textures.ptrw();
-
-	for (int i = 0; i < tc; i++) {
-
-		Pair<ShaderLanguage::DataType, Vector<ShaderLanguage::ConstantNode::Value> > value;
-		value.first = ShaderLanguage::TYPE_INT;
-		value.second.resize(1);
-		value.second.write[0].sint = i;
-
-		// GLint location = get_uniform_location(textures[i].first);
-
-		// if (location < 0) {
-		//	location = material->shader->uniform_locations[textures[i].first];
-		// }
-		GLint location = -1;
-		if (v->custom_uniform_locations.has(textures[i].first)) {
-			location = v->custom_uniform_locations[textures[i].first];
-		} else {
-			location = get_uniform_location(textures[i].first);
-		}
-
-		_set_uniform_value(location, value);
-	}
-}
-
-void ShaderGLES2::set_base_material_tex_index(int p_idx) {
 }
 
 ShaderGLES2::ShaderGLES2() {

@@ -569,6 +569,11 @@ int OS::get_power_percent_left() {
 	return -1;
 }
 
+void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
+
+	has_server_feature_callback = p_callback;
+}
+
 bool OS::has_feature(const String &p_feature) {
 
 	if (p_feature == get_name())
@@ -624,6 +629,10 @@ bool OS::has_feature(const String &p_feature) {
 
 	if (_check_internal_feature_support(p_feature))
 		return true;
+
+	if (has_server_feature_callback && has_server_feature_callback(p_feature)) {
+		return true;
+	}
 
 	if (ProjectSettings::get_singleton()->has_custom_feature(p_feature))
 		return true;
@@ -728,6 +737,8 @@ OS::OS() {
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;
+
+	has_server_feature_callback = NULL;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

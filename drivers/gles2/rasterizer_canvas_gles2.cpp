@@ -509,7 +509,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 						texture = texture->get_ptr();
 
-						if (next_power_of_2(texture->alloc_width) != texture->alloc_width && next_power_of_2(texture->alloc_height) != texture->alloc_height) {
+						if (next_power_of_2(texture->alloc_width) != (unsigned int)texture->alloc_width && next_power_of_2(texture->alloc_height) != (unsigned int)texture->alloc_height) {
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
 							can_tile = false;
 						}
@@ -2019,6 +2019,7 @@ void RasterizerCanvasGLES2::initialize() {
 	state.canvas_shader.init();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 
 	state.canvas_shader.bind();
 

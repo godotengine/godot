@@ -167,9 +167,6 @@ void GodotSharpEditor::_remove_create_sln_menu_option() {
 
 	menu_popup->remove_item(menu_popup->get_item_index(MENU_CREATE_SLN));
 
-	if (menu_popup->get_item_count() == 0)
-		menu_button->hide();
-
 	bottom_panel_btn->show();
 }
 
@@ -277,40 +274,20 @@ Error GodotSharpEditor::open_in_external_editor(const Ref<Script> &p_script, int
 
 				// TODO: Use initializer lists once C++11 is allowed
 
-				// Try with hint paths
-				static Vector<String> hint_paths;
-#ifdef WINDOWS_ENABLED
-				if (hint_paths.empty()) {
-					hint_paths.push_back(OS::get_singleton()->get_environment("ProgramFiles") + "\\Microsoft VS Code\\Code.exe");
-					if (sizeof(size_t) == 8) {
-						hint_paths.push_back(OS::get_singleton()->get_environment("ProgramFiles(x86)") + "\\Microsoft VS Code\\Code.exe");
-					}
+				static Vector<String> vscode_names;
+				if (vscode_names.empty()) {
+					vscode_names.push_back("code");
+					vscode_names.push_back("code-oss");
+					vscode_names.push_back("vscode");
+					vscode_names.push_back("vscode-oss");
+					vscode_names.push_back("visual-studio-code");
+					vscode_names.push_back("visual-studio-code-oss");
 				}
-#endif
-				for (int i = 0; i < hint_paths.size(); i++) {
-					vscode_path = hint_paths[i];
-					if (FileAccess::exists(vscode_path)) {
+				for (int i = 0; i < vscode_names.size(); i++) {
+					vscode_path = path_which(vscode_names[i]);
+					if (!vscode_path.empty()) {
 						found = true;
 						break;
-					}
-				}
-
-				if (!found) {
-					static Vector<String> vscode_names;
-					if (vscode_names.empty()) {
-						vscode_names.push_back("code");
-						vscode_names.push_back("code-oss");
-						vscode_names.push_back("vscode");
-						vscode_names.push_back("vscode-oss");
-						vscode_names.push_back("visual-studio-code");
-						vscode_names.push_back("visual-studio-code-oss");
-					}
-					for (int i = 0; i < vscode_names.size(); i++) {
-						vscode_path = path_which(vscode_names[i]);
-						if (!vscode_path.empty()) {
-							found = true;
-							break;
-						}
 					}
 				}
 
@@ -433,9 +410,12 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	editor->add_child(memnew(MonoReloadNode));
 
-	menu_button = memnew(MenuButton);
-	menu_button->set_text(TTR("Mono"));
-	menu_popup = menu_button->get_popup();
+	menu_popup = memnew(PopupMenu);
+	menu_popup->hide();
+	menu_popup->set_as_toplevel(true);
+	menu_popup->set_pass_on_modal_close_click(false);
+
+	editor->add_tool_submenu_item("Mono", menu_popup);
 
 	// TODO: Remove or edit this info dialog once Mono support is no longer in alpha
 	{
@@ -498,10 +478,12 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	menu_popup->connect("id_pressed", this, "_menu_option_pressed");
 
-	if (menu_popup->get_item_count() == 0)
-		menu_button->hide();
-
-	editor->get_menu_hb()->add_child(menu_button);
+	ToolButton *build_button = memnew(ToolButton);
+	build_button->set_text("Build");
+	build_button->set_tooltip("Build solution");
+	build_button->set_focus_mode(Control::FOCUS_NONE);
+	build_button->connect("pressed", MonoBottomPanel::get_singleton(), "_build_project_pressed");
+	editor->get_menu_hb()->add_child(build_button);
 
 	// External editor settings
 	EditorSettings *ed_settings = EditorSettings::get_singleton();
