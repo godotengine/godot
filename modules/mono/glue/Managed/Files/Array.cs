@@ -155,6 +155,11 @@ namespace Godot.Collections
             godot_icall_Array_RemoveAt(GetPtr(), index);
         }
 
+        public Error Resize(int newSize)
+        {
+            return godot_icall_Array_Resize(GetPtr(), newSize);
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -201,6 +206,9 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static Error godot_icall_Array_Resize(IntPtr ptr, int newSize);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
@@ -337,6 +345,11 @@ namespace Godot.Collections
         public void RemoveAt(int index)
         {
             objectArray.RemoveAt(index);
+        }
+
+        public Error Resize(int newSize)
+        {
+            return objectArray.Resize(newSize);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
