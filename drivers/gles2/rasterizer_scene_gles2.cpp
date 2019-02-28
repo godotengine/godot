@@ -1265,9 +1265,9 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 	}
 
 	int tc = p_material->textures.size();
-	Pair<StringName, RID> *textures = p_material->textures.ptrw();
+	const Pair<StringName, RID> *textures = p_material->textures.ptr();
 
-	ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = p_material->shader->texture_hints.ptrw();
+	const ShaderLanguage::ShaderNode::Uniform::Hint *texture_hints = p_material->shader->texture_hints.ptr();
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::SKELETON_TEXTURE_SIZE, p_skeleton_tex_size);
 

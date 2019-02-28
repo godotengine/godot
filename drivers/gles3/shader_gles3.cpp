@@ -133,15 +133,6 @@ bool ShaderGLES3::bind() {
 
 	active = this;
 	uniforms_dirty = true;
-	/*
- *	why on earth is this code here?
-	for (int i=0;i<texunit_pair_count;i++) {
-
-		glUniform1i(texunit_pairs[i].location, texunit_pairs[i].index);
-		DEBUG_TEST_ERROR("Uniform 1 i");
-	}
-
-*/
 	return true;
 }
 
