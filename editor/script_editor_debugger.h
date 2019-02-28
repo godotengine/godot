@@ -87,7 +87,7 @@ class ScriptEditorDebugger : public Control {
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<ObjectID> unfold_cache;
 
-	HSplitContainer *error_split;
+	VBoxContainer *errors_tab;
 	Tree *error_tree;
 	Tree *inspect_scene_tree;
 	Button *clearbutton;
