@@ -1308,7 +1308,19 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			actions->uniforms = &p_shader->uniforms;
 
 			if (p_shader->spatial.uses_screen_texture && p_shader->spatial.uses_depth_texture) {
-				WARN_PRINT("Using both SCREEN_TEXTURE and DEPTH_TEXTURE is not supported in GLES2");
+				static bool show_warning = true; //show warning only once
+				if (show_warning) {
+					ERR_PRINT("Using both SCREEN_TEXTURE and DEPTH_TEXTURE is not supported in GLES2");
+					show_warning = false;
+				}
+			}
+
+			if (p_shader->spatial.uses_depth_texture && !config.support_depth_texture) {
+				static bool show_warning = true; //show warning only once
+				if (show_warning) {
+					ERR_PRINT("Using DEPTH_TEXTURE is not permitted on this hardware, operation will fail.");
+					show_warning = false;
+				}
 			}
 		} break;
 
@@ -4306,24 +4318,36 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 	// depth
 
-	glGenTextures(1, &rt->depth);
-	glBindTexture(GL_TEXTURE_2D, rt->depth);
+	if (config.support_depth_texture) {
+		glGenTextures(1, &rt->depth);
+		glBindTexture(GL_TEXTURE_2D, rt->depth);
+		glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, rt->width, rt->height, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+	} else {
+		glGenRenderbuffers(1, &rt->depth);
+		glBindRenderbuffer(GL_RENDERBUFFER, rt->depth);
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+		glRenderbufferStorage(GL_RENDERBUFFER, config.depth_internalformat, rt->width, rt->height);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+	}
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 
 		glDeleteFramebuffers(1, &rt->fbo);
-		glDeleteTextures(1, &rt->depth);
+		if (config.support_depth_texture) {
+			glDeleteTextures(1, &rt->depth);
+		} else {
+			glDeleteRenderbuffers(1, &rt->depth);
+		}
 		glDeleteTextures(1, &rt->color);
 		rt->fbo = 0;
 		rt->width = 0;
@@ -4395,7 +4419,12 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 	}
 
 	if (rt->depth) {
-		glDeleteTextures(1, &rt->depth);
+		if (config.support_depth_texture) {
+			glDeleteTextures(1, &rt->depth);
+		} else {
+			glDeleteRenderbuffers(1, &rt->depth);
+		}
+
 		rt->depth = 0;
 	}
 
@@ -4533,17 +4562,10 @@ RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	glGenFramebuffers(1, &cls->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, cls->fbo);
 
-	glGenTextures(1, &cls->depth);
-	glBindTexture(GL_TEXTURE_2D, cls->depth);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, config.depth_internalformat, cls->size, cls->height, 0, GL_DEPTH_COMPONENT, config.depth_type, NULL);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, cls->depth, 0);
+	glGenRenderbuffers(1, &cls->depth);
+	glBindRenderbuffer(GL_RENDERBUFFER, cls->depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, config.depth_internalformat, cls->size, cls->height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, cls->depth);
 
 	glGenTextures(1, &cls->distance);
 	glBindTexture(GL_TEXTURE_2D, cls->distance);
@@ -4908,7 +4930,7 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 
 		CanvasLightShadow *cls = canvas_light_shadow_owner.get(p_rid);
 		glDeleteFramebuffers(1, &cls->fbo);
-		glDeleteTextures(1, &cls->depth);
+		glDeleteRenderbuffers(1, &cls->depth);
 		glDeleteTextures(1, &cls->distance);
 		canvas_light_shadow_owner.free(p_rid);
 		memdelete(cls);
@@ -4986,21 +5008,17 @@ void RasterizerStorageGLES2::initialize() {
 	config.pvrtc_supported = config.extensions.has("IMG_texture_compression_pvrtc");
 	config.support_npot_repeat_mipmap = config.extensions.has("GL_OES_texture_npot");
 
-	if (config.extensions.has("GL_OES_depth24")) {
-		config.depth_internalformat = _DEPTH_COMPONENT24_OES;
-		config.depth_type = GL_UNSIGNED_INT;
-	} else {
-		config.depth_internalformat = GL_DEPTH_COMPONENT16;
-		config.depth_type = GL_UNSIGNED_SHORT;
-	}
-
 #endif
 #ifdef GLES_OVER_GL
 	config.use_rgba_2d_shadows = false;
+	config.support_depth_texture = true;
 	config.use_rgba_3d_shadows = false;
+	config.support_depth_cubemaps = true;
 #else
 	config.use_rgba_2d_shadows = !(config.float_texture_supported && config.extensions.has("GL_EXT_texture_rg"));
-	config.use_rgba_3d_shadows = config.extensions.has("GL_OES_depth_texture");
+	config.support_depth_texture = config.extensions.has("GL_OES_depth_texture");
+	config.use_rgba_3d_shadows = !config.support_depth_texture;
+	config.support_depth_cubemaps = config.extensions.has("GL_OES_depth_texture_cube_map");
 #endif
 
 #ifdef GLES_OVER_GL
@@ -5023,6 +5041,55 @@ void RasterizerStorageGLES2::initialize() {
 	//every other platform, be it mobile or desktop, supports this (even if not in the GLES2 spec).
 	config.support_half_float_vertices = true;
 #endif
+
+	//determine formats for depth textures (or renderbuffers)
+	if (config.support_depth_texture) {
+		// Will use texture for depth
+		// have to manually see if we can create a valid framebuffer texture using UNSIGNED_INT,
+		// as there is no extension to test for this.
+		GLuint fbo;
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		GLuint depth;
+		glGenTextures(1, &depth);
+		glBindTexture(GL_TEXTURE_2D, depth);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 32, 32, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+		if (status == GL_FRAMEBUFFER_COMPLETE) {
+			config.depth_internalformat = GL_DEPTH_COMPONENT;
+			config.depth_type = GL_UNSIGNED_INT;
+		} else {
+			config.depth_internalformat = GL_DEPTH_COMPONENT16;
+			config.depth_type = GL_UNSIGNED_SHORT;
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+		glDeleteFramebuffers(1, &fbo);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glDeleteTextures(1, &depth);
+
+	} else {
+		// Will use renderbuffer for depth
+		if (config.extensions.has("GL_OES_depth24")) {
+			config.depth_internalformat = _DEPTH_COMPONENT24_OES;
+			config.depth_type = GL_UNSIGNED_INT;
+		} else {
+			config.depth_internalformat = GL_DEPTH_COMPONENT16;
+			config.depth_type = GL_UNSIGNED_SHORT;
+		}
+	}
+
+	//picky requirements for these
+	config.support_shadow_cubemaps = config.support_depth_texture && config.support_write_depth && config.support_depth_cubemaps;
 
 	frame.count = 0;
 	frame.delta = 0;

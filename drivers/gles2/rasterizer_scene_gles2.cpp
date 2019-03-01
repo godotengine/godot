@@ -83,7 +83,11 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 	// erase the old atlast
 	if (shadow_atlas->fbo) {
-		glDeleteTextures(1, &shadow_atlas->depth);
+		if (storage->config.use_rgba_3d_shadows) {
+			glDeleteRenderbuffers(1, &shadow_atlas->depth);
+		} else {
+			glDeleteTextures(1, &shadow_atlas->depth);
+		}
 		glDeleteFramebuffers(1, &shadow_atlas->fbo);
 		if (shadow_atlas->color) {
 			glDeleteTextures(1, &shadow_atlas->color);
@@ -111,18 +115,15 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 
 		// create a depth texture
 		glActiveTexture(GL_TEXTURE0);
-		glGenTextures(1, &shadow_atlas->depth);
-		glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size, 0, GL_DEPTH_COMPONENT, storage->config.depth_type, NULL);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_atlas->depth, 0);
 
 		if (storage->config.use_rgba_3d_shadows) {
+
+			//maximum compatibility, renderbuffer and RGBA shadow
+			glGenRenderbuffers(1, &shadow_atlas->depth);
+			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
+			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, shadow_atlas->depth);
+
 			glGenTextures(1, &shadow_atlas->color);
 			glBindTexture(GL_TEXTURE_2D, shadow_atlas->color);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, shadow_atlas->size, shadow_atlas->size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -131,6 +132,18 @@ void RasterizerSceneGLES2::shadow_atlas_set_size(RID p_atlas, int p_size) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadow_atlas->color, 0);
+		} else {
+			//just depth texture
+			glGenTextures(1, &shadow_atlas->depth);
+			glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
+			glTexImage2D(GL_TEXTURE_2D, 0, storage->config.depth_internalformat, shadow_atlas->size, shadow_atlas->size, 0, GL_DEPTH_COMPONENT, storage->config.depth_type, NULL);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_atlas->depth, 0);
 		}
 		glViewport(0, 0, shadow_atlas->size, shadow_atlas->size);
 
@@ -475,7 +488,8 @@ RID RasterizerSceneGLES2::reflection_probe_instance_create(RID p_probe) {
 		glGenTextures(1, &rpi->color[i]);
 	}
 
-	glGenTextures(1, &rpi->depth);
+	glGenRenderbuffers(1, &rpi->depth);
+
 	rpi->cubemap = 0;
 	//glGenTextures(1, &rpi->cubemap);
 
@@ -524,8 +538,8 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 
 		glActiveTexture(GL_TEXTURE0);
 
-		glBindTexture(GL_TEXTURE_2D, rpi->depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, storage->config.depth_internalformat, size, size, 0, GL_DEPTH_COMPONENT, storage->config.depth_type, NULL);
+		glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth);
+		glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, size, size);
 
 		if (rpi->cubemap != 0) {
 			glDeleteTextures(1, &rpi->cubemap);
@@ -547,7 +561,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 			glBindTexture(GL_TEXTURE_2D, rpi->color[i]);
 			glTexImage2D(GL_TEXTURE_2D, 0, internal_format, size, size, 0, format, type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rpi->color[i], 0);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rpi->depth, 0);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rpi->depth);
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			ERR_CONTINUE(status != GL_FRAMEBUFFER_COMPLETE);
 		}
@@ -566,8 +580,6 @@ bool RasterizerSceneGLES2::reflection_probe_instance_begin_render(RID p_instance
 					//adjust framebuffer
 					glBindFramebuffer(GL_FRAMEBUFFER, rpi->fbo[i]);
 					glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _cube_side_enum[i], rpi->cubemap, 0);
-					glBindRenderbuffer(GL_RENDERBUFFER, rpi->depth);
-					glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, size, size); // Note: used to be _DEPTH_COMPONENT24_OES. GL_DEPTH_COMPONENT untested.
 					glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rpi->depth);
 
 #ifdef DEBUG_ENABLED
@@ -2977,7 +2989,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 
 		if (light->type == VS::LIGHT_OMNI) {
 			// cubemap only
-			if (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && storage->config.support_write_depth) {
+			if (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && storage->config.support_shadow_cubemaps) {
 				int cubemap_index = shadow_cubemaps.size() - 1;
 
 				// find an appropriate cubemap to render to
@@ -3075,7 +3087,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES2::RENDER_DEPTH_DUAL_PARABOLOID, false);
 
 	// convert cubemap to dual paraboloid if needed
-	if (light->type == VS::LIGHT_OMNI && (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && storage->config.support_write_depth) && p_pass == 5) {
+	if (light->type == VS::LIGHT_OMNI && (light->omni_shadow_mode == VS::LIGHT_OMNI_SHADOW_CUBE && storage->config.support_shadow_cubemaps) && p_pass == 5) {
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, shadow_atlas->fbo);
@@ -3172,7 +3184,7 @@ bool RasterizerSceneGLES2::free(RID p_rid) {
 		if (reflection_instance->cubemap != 0) {
 			glDeleteTextures(1, &reflection_instance->cubemap);
 		}
-		glDeleteTextures(1, &reflection_instance->depth);
+		glDeleteRenderbuffers(1, &reflection_instance->depth);
 
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
@@ -3253,7 +3265,7 @@ void RasterizerSceneGLES2::initialize() {
 	}
 
 	// cubemaps for shadows
-	if (storage->config.support_write_depth) { //not going to be used
+	if (storage->config.support_shadow_cubemaps) { //not going to be used
 		int max_shadow_cubemap_sampler_size = 512;
 
 		int cube_size = max_shadow_cubemap_sampler_size;
@@ -3302,19 +3314,13 @@ void RasterizerSceneGLES2::initialize() {
 		glGenFramebuffers(1, &directional_shadow.fbo);
 		glBindFramebuffer(GL_FRAMEBUFFER, directional_shadow.fbo);
 
-		glGenTextures(1, &directional_shadow.depth);
-		glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, storage->config.depth_internalformat, directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, storage->config.depth_type, NULL);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
-
 		if (storage->config.use_rgba_3d_shadows) {
+			//maximum compatibility, renderbuffer and RGBA shadow
+			glGenRenderbuffers(1, &directional_shadow.depth);
+			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
+			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, directional_shadow.size, directional_shadow.size);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, directional_shadow.depth);
+
 			glGenTextures(1, &directional_shadow.color);
 			glBindTexture(GL_TEXTURE_2D, directional_shadow.color);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, directional_shadow.size, directional_shadow.size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -3323,6 +3329,19 @@ void RasterizerSceneGLES2::initialize() {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, directional_shadow.color, 0);
+		} else {
+			//just a depth buffer
+			glGenTextures(1, &directional_shadow.depth);
+			glBindTexture(GL_TEXTURE_2D, directional_shadow.depth);
+
+			glTexImage2D(GL_TEXTURE_2D, 0, storage->config.depth_internalformat, directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, storage->config.depth_type, NULL);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, directional_shadow.depth, 0);
 		}
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

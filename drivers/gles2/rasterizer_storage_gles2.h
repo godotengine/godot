@@ -85,6 +85,10 @@ public:
 		bool support_write_depth;
 		bool support_half_float_vertices;
 		bool support_npot_repeat_mipmap;
+		bool support_depth_texture;
+		bool support_depth_cubemaps;
+
+		bool support_shadow_cubemaps;
 
 		GLuint depth_internalformat;
 		GLuint depth_type;
