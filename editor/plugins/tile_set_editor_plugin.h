@@ -94,6 +94,12 @@ class TileSetEditor : public HSplitContainer {
 		TOOL_MAX
 	};
 
+	struct SubtileData {
+		Array collisions;
+		Ref<OccluderPolygon2D> occlusion_shape;
+		Ref<NavigationPolygon> navigation_shape;
+	};
+
 	Ref<TileSet> tileset;
 	TilesetEditorContext *helper;
 	EditorNode *editor;
@@ -117,6 +123,7 @@ class TileSetEditor : public HSplitContainer {
 	bool draw_edited_region;
 	Vector2 edited_shape_coord;
 	PoolVector2Array current_shape;
+	Map<Vector2i, SubtileData> current_tile_data;
 	Map<Vector2, uint16_t> bitmask_map_copy;
 
 	Vector2 snap_step;
@@ -190,12 +197,15 @@ private:
 	void _on_priority_changed(float val);
 	void _on_z_index_changed(float val);
 	void _on_grid_snap_toggled(bool p_val);
+	void _update_tile_data();
 	void _select_next_tile();
 	void _select_previous_tile();
 	Array _get_tiles_in_current_texture(bool sorted = false);
 	bool _sort_tiles(Variant p_a, Variant p_b);
 	void _select_next_subtile();
 	void _select_previous_subtile();
+	void _select_next_shape();
+	void _select_previous_shape();
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
 	void _set_snap_sep(Vector2 p_val);
