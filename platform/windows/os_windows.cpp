@@ -2451,7 +2451,13 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 
-			argss += String(" \"") + E->get() + "\"";
+			argss += " \"" + E->get() + "\"";
+		}
+
+		argss += "\"";
+
+		if (read_stderr) {
+			argss += " 2>&1"; // Read stderr too
 		}
 
 		FILE *f = _wpopen(argss.c_str(), L"r");
