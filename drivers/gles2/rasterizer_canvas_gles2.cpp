@@ -2029,6 +2029,7 @@ void RasterizerCanvasGLES2::initialize() {
 
 	state.using_light = NULL;
 	state.using_transparent_rt = false;
+	state.using_skeleton = false;
 }
 
 void RasterizerCanvasGLES2::finalize() {
