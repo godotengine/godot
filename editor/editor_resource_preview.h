@@ -90,7 +90,8 @@ class EditorResourcePreview : public Node {
 	Mutex *preview_mutex;
 	Semaphore *preview_sem;
 	Thread *thread;
-	bool exit;
+	volatile bool exit;
+	volatile bool exited;
 
 	struct Item {
 		Ref<Texture> preview;
