@@ -30,12 +30,12 @@
 
 #include "rasterizer_storage_gles2.h"
 
+#include "core/engine.h"
 #include "core/math/transform.h"
 #include "core/project_settings.h"
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/shader_language.h"
-
 GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 /* TEXTURE API */
@@ -1308,19 +1308,11 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			actions->uniforms = &p_shader->uniforms;
 
 			if (p_shader->spatial.uses_screen_texture && p_shader->spatial.uses_depth_texture) {
-				static bool show_warning = true; //show warning only once
-				if (show_warning) {
-					ERR_PRINT("Using both SCREEN_TEXTURE and DEPTH_TEXTURE is not supported in GLES2");
-					show_warning = false;
-				}
+				ERR_PRINT_ONCE("Using both SCREEN_TEXTURE and DEPTH_TEXTURE is not supported in GLES2");
 			}
 
 			if (p_shader->spatial.uses_depth_texture && !config.support_depth_texture) {
-				static bool show_warning = true; //show warning only once
-				if (show_warning) {
-					ERR_PRINT("Using DEPTH_TEXTURE is not permitted on this hardware, operation will fail.");
-					show_warning = false;
-				}
+				ERR_PRINT_ONCE("Using DEPTH_TEXTURE is not permitted on this hardware, operation will fail.");
 			}
 		} break;
 
@@ -2266,9 +2258,14 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 	surface->aabb = p_aabb;
 	surface->max_bone = p_bone_aabbs.size();
-
+#ifdef TOOLS_ENABLED
+	surface->blend_shape_data = p_blend_shapes;
+	if (surface->blend_shape_data.size()) {
+		ERR_PRINT_ONCE("Blend shapes are not supported in OpenGL ES 2.0");
+	}
 	surface->data = array;
 	surface->index_data = p_index_array;
+#endif
 
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
 
@@ -2338,12 +2335,12 @@ void RasterizerStorageGLES2::mesh_set_blend_shape_count(RID p_mesh, int p_amount
 	ERR_FAIL_COND(p_amount < 0);
 
 	mesh->blend_shape_count = p_amount;
+	mesh->instance_change_notify(true, false);
 }
 
 int RasterizerStorageGLES2::mesh_get_blend_shape_count(RID p_mesh) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, 0);
-
 	return mesh->blend_shape_count;
 }
 
@@ -2429,7 +2426,9 @@ PoolVector<uint8_t> RasterizerStorageGLES2::mesh_surface_get_array(RID p_mesh, i
 	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), PoolVector<uint8_t>());
 
 	Surface *surface = mesh->surfaces[p_surface];
-
+#ifndef TOOLS_ENABLED
+	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
+#endif
 	return surface->data;
 }
 
@@ -2469,7 +2468,14 @@ AABB RasterizerStorageGLES2::mesh_surface_get_aabb(RID p_mesh, int p_surface) co
 }
 
 Vector<PoolVector<uint8_t> > RasterizerStorageGLES2::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
-	return Vector<PoolVector<uint8_t> >();
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, Vector<PoolVector<uint8_t> >());
+	ERR_FAIL_INDEX_V(p_surface, mesh->surfaces.size(), Vector<PoolVector<uint8_t> >());
+#ifndef TOOLS_ENABLED
+	ERR_PRINT("OpenGL ES 2.0 does not allow retrieving mesh array data");
+#endif
+
+	return mesh->surfaces[p_surface]->blend_shape_data;
 }
 Vector<AABB> RasterizerStorageGLES2::mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);

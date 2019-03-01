@@ -445,6 +445,9 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 				InstanceGeometryData *geom = memnew(InstanceGeometryData);
 				instance->base_data = geom;
+				if (instance->base_type == VS::INSTANCE_MESH) {
+					instance->blend_values.resize(VSG::storage->mesh_get_blend_shape_count(p_base));
+				}
 			} break;
 			case VS::INSTANCE_REFLECTION_PROBE: {
 

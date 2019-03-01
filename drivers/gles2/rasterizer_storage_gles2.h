@@ -635,6 +635,7 @@ public:
 
 		PoolVector<uint8_t> data;
 		PoolVector<uint8_t> index_data;
+		Vector<PoolVector<uint8_t> > blend_shape_data;
 
 		int total_data_size;
 
