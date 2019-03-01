@@ -208,6 +208,8 @@ private:
 	void draw_polygon_shapes();
 	void close_shape(const Vector2 &shape_anchor);
 	void select_coord(const Vector2 &coord);
+	void select_shape_at_position(const Vector2 &position);
+	void update_current_shape();
 	Vector2 snap_point(const Vector2 &point);
 	void update_workspace_tile_mode();
 	void update_workspace_minsize();
@@ -215,6 +217,8 @@ private:
 
 	int get_current_tile() const;
 	void set_current_tile(int p_id);
+
+	Vector2 get_current_tile_anchor() const;
 };
 
 class TilesetEditorContext : public Object {
