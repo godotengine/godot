@@ -3634,6 +3634,7 @@ void RasterizerStorageGLES3::mesh_set_blend_shape_count(RID p_mesh, int p_amount
 	ERR_FAIL_COND(p_amount < 0);
 
 	mesh->blend_shape_count = p_amount;
+	mesh->instance_change_notify(true, false);
 }
 int RasterizerStorageGLES3::mesh_get_blend_shape_count(RID p_mesh) const {
 

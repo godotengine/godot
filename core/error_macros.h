@@ -310,6 +310,16 @@ extern bool _err_error_exists;
 		_err_error_exists = false;                                                              \
 	}
 
+#define ERR_PRINT_ONCE(m_string)                                          \
+	{                                                                     \
+		static bool first_print = true;                                   \
+		if (first_print) {                                                \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string); \
+			_err_error_exists = false;                                    \
+			first_print = false;                                          \
+		}                                                                 \
+	}
+
 /** Print a warning string.
  */
 
@@ -323,6 +333,16 @@ extern bool _err_error_exists;
 	{                                                                                                                \
 		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, String(m_string).utf8().get_data(), ERR_HANDLER_WARNING); \
 		_err_error_exists = false;                                                                                   \
+	}
+
+#define WARN_PRINT_ONCE(m_string)                                                              \
+	{                                                                                          \
+		static bool first_print = true;                                                        \
+		if (first_print) {                                                                     \
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, m_string, ERR_HANDLER_WARNING); \
+			_err_error_exists = false;                                                         \
+			first_print = false;                                                               \
+		}                                                                                      \
 	}
 
 #define WARN_DEPRECATED                                                                                                                                   \
