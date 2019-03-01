@@ -118,6 +118,16 @@ msgstr "Дублировать выделенные ключ(и)"
 msgid "Delete Selected Key(s)"
 msgstr "Удалить выделенные ключ(и)"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "Добавить точку"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "Передвинуть Точку"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Дублировать ключи"
@@ -145,6 +155,16 @@ msgstr "Измененить значение ключевого кадра"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Изменить вызов анимации"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "Изменить цикличность анимации"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr "Изменить цикличность анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -196,6 +216,11 @@ msgid "Anim Clips:"
 msgstr "Дорожки Анимации:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Track Path"
+msgstr "Изменить значение массива"
+
+#: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
 msgstr "Переключить этот трек вкл/выкл."
 
@@ -219,6 +244,11 @@ msgstr "Удалить этот трек."
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
 msgstr "Время (сек.): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle Track Enabled"
+msgstr "Доплеровский режим"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -271,6 +301,21 @@ msgid "Delete Key(s)"
 msgstr "Удалить ключ(ключи)"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "Изменить имя анимации:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "Режим Перехода"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "Изменить цикличность анимации"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Удалить дорожку"
 
@@ -312,6 +357,16 @@ msgid "Anim Insert Key"
 msgstr "Вставить ключ"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Step"
+msgstr "Изменить FPS анимации"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "Перестановка автозагрузок"
+
+#: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr "Трек трансформации применяется только к основанным на Spatial узлам."
 
@@ -340,6 +395,11 @@ msgid "Not possible to add a new track without a root"
 msgstr "Нельзя добавить новый трек без корневого узла"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Bezier Track"
+msgstr "Добавить новый Трек"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
 msgstr "Путь трека некорректен, потому нельзя добавить ключ."
 
@@ -348,8 +408,23 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "Трек не имеет тип Spatial, нельзя добавить ключ"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Transform Track Key"
+msgstr "Трек 3D Преобразования"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "Добавить новый Трек"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Путь трека некорректен, потому нельзя добавить ключ метода."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "Трек Вызова Метода"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -362,6 +437,10 @@ msgstr "Переместить ключи"
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
 msgstr "Буфер обмена пуст"
+
+#: editor/animation_track_editor.cpp
+msgid "Paste Tracks"
+msgstr "Вставить Треки"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -406,10 +485,6 @@ msgstr "Свойства анимации."
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
 msgstr "Копировать Треки"
-
-#: editor/animation_track_editor.cpp
-msgid "Paste Tracks"
-msgstr "Вставить Треки"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -510,6 +585,19 @@ msgstr "Выбрать треки для копирования:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копировать"
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "Аудио Дорожки:"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1323,6 +1411,12 @@ msgstr "Шаблоны экспорта не найдены по ожидаем�
 msgid "Packing"
 msgstr "Упаковывание"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1898,6 +1992,16 @@ msgstr "Сохранить и закрыть"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Сохранить изменения в «%s» перед закрытием?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "Не удалось загрузить ресурс."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "A root node is required to save the scene."
+msgstr "Только один файл необходим для большой текстуры."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3536,10 +3640,47 @@ msgstr "Загрузка..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "Передвинуть Точку"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "Изменить время \"смешивания\""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "Изменить время \"смешивания\""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
 "Этот тип узла не может быть использован. Разрешены только корневые узлы."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "Добавить узел"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "Добавить анимацию"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "Удалить точку пути"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3585,12 +3726,42 @@ msgid "Triangle already exists"
 msgstr "Треугольник уже существует"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "Добавить переменную"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "Изменить время \"смешивания\""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "Изменить время \"смешивания\""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "Удалить точку пути"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Triangle"
+msgstr "Удалить переменную"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr "BlendSpace2D не принадлежит Узлу AnimationTree."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr "Невозможно смешивать, поскольку отсутствуют треугольники."
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "Переключить автозагрузку глобальных скриптов"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3610,6 +3781,11 @@ msgid "Blend:"
 msgstr "Смешивание:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "Изменения материала"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "Редактировать фильтры"
@@ -3619,10 +3795,54 @@ msgid "Output node can't be added to the blend tree."
 msgstr "Узел вывода не может быть добавлен в дерево смешивания."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to BlendTree"
+msgstr "Добавить узел(узлы) из дерева"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "Режим перемещения"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
 "Невозможно подключиться, возможно порт уже используется или недействительный."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "Подключен"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "Отключен"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "Анимация"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "Удалить узел(узлы)"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "Переключить этот трек вкл/выкл."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "Изменен фильтр языков"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3640,6 +3860,12 @@ msgid ""
 msgstr ""
 "Анимация игрока не имеет действующего пути корневого узла, поэтому не "
 "удается получить отслеживаемые имена."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "Имя узла"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3870,6 +4096,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "Межанимационный инструмент смешивания"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "Режим перемещения"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "Добавить перевод"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr "Добавить узел"
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr "Конец"
 
@@ -3896,6 +4137,20 @@ msgstr "Для суб-перехода необходимы начальный �
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
 msgstr "В пути нет ресурсов воспроизведения: %s."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "Удалено:"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "Transition узел"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4717,6 +4972,10 @@ msgstr "Удерживайте Shift, чтобы изменить касател
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Запечь GI пробу"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -5862,6 +6121,16 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У этого скелета нет костей, создайте дочерние Bone2D узлы."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "Сделать позу покоя (из костей)"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Set Rest Pose to Bones"
+msgstr "Сделать позу покоя (из костей)"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
 msgstr "2D скелет"
 
@@ -5970,10 +6239,6 @@ msgid "Vertices"
 msgstr "Вершины"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr "FPS"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr "Вид сверху."
 
@@ -6018,7 +6283,8 @@ msgid "Rear"
 msgstr "Зад"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
+#, fuzzy
+msgid "Align with View"
 msgstr "Совместить с видом"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6110,12 +6376,23 @@ msgid "Freelook Speed Modifier"
 msgstr "Обзор модификатор скорости"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Блокировать вращение камеры"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm диалоговое окно"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "Привязать к полу"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -6397,10 +6674,6 @@ msgstr "Вставить кадр"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
 msgstr "Добавить пустоту"
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
-msgstr "Изменить цикличность анимации"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
@@ -6731,6 +7004,11 @@ msgid "Erase bitmask."
 msgstr "Стереть битовую маску."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new rectangle."
+msgstr "Создать новый узел."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Создать новый полигон."
 
@@ -6908,6 +7186,29 @@ msgid "TileSet"
 msgstr "TileSet"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "Установить по умолчанию для '%s'"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to Visual Shader"
+msgstr "VisualShader"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "Дублировать узел(узлы)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "Вершины"
 
@@ -6923,6 +7224,16 @@ msgstr "Свет"
 msgid "VisualShader"
 msgstr "VisualShader"
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "Редактировать приоритет тайла"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Visual Shader Mode Changed"
+msgstr "Изменения шейдеров"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Активный"
@@ -6936,8 +7247,17 @@ msgid "Delete preset '%s'?"
 msgstr "Удалить '%s'?"
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "Шаблоны экспорта для этой платформы отсутствуют/повреждены:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Release"
@@ -6946,6 +7266,10 @@ msgstr "Релиз"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Экспорт всех"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr "Шаблоны экспорта для этой платформы отсутствуют/повреждены:"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -7973,6 +8297,11 @@ msgid "Instantiated scenes can't become root"
 msgstr "Мгновенные сцены не могут быть корневыми"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "Создать корневой узел сцены"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "Удалить узел(узлы)?"
 
@@ -8007,6 +8336,11 @@ msgstr "Загрузить как заполнитель"
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
 msgstr "Сделать локальным"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "Создать корневой узел сцены"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
@@ -8440,6 +8774,21 @@ msgid "Set From Tree"
 msgstr "Установить из дерева"
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "Переход ИЗ"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Restore Shortcut"
+msgstr "Горячие клавиши"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "Изменить привязку"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr "Горячие клавиши"
 
@@ -8643,6 +8992,10 @@ msgstr "Злить выделенную GridMap"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "Дублировать выделенную сетку"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Paint"
+msgstr "Рисование сетки"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -8945,10 +9298,6 @@ msgid "Change Expression"
 msgstr "Изменить выражение"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr "Добавить узел"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr "Удалить узлы VisualScript"
 
@@ -9031,6 +9380,11 @@ msgstr "Скрипт уже имеет функцию '%s'"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
 msgstr "Изменить входное значение"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "Изменить размер CanvasItem"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -9899,6 +10253,9 @@ msgstr "Назначить форму"
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Переменные могут быть назначены только в функции вершин."
 
+#~ msgid "FPS"
+#~ msgstr "FPS"
+
 #~ msgid "Warnings:"
 #~ msgstr "Предупреждения:"
 
@@ -10069,9 +10426,6 @@ msgstr "Переменные могут быть назначены только
 
 #~ msgid "Convert To Lowercase"
 #~ msgstr "Конвертировать в нижний регистр"
-
-#~ msgid "Snap To Floor"
-#~ msgstr "Привязать к полу"
 
 #~ msgid "Rotate 0 degrees"
 #~ msgstr "Поворот на 0 градусов"
@@ -10605,9 +10959,6 @@ msgstr "Переменные могут быть назначены только
 #~ msgid "Added:"
 #~ msgstr "Добавлено:"
 
-#~ msgid "Removed:"
-#~ msgstr "Удалено:"
-
 #~ msgid "Could not save atlas subtexture:"
 #~ msgstr "Невозможно сохранить текстуру атласа:"
 
@@ -10876,9 +11227,6 @@ msgstr "Переменные могут быть назначены только
 #~ msgid "Error importing:"
 #~ msgstr "Ошибка импортирования:"
 
-#~ msgid "Only one file is required for large texture."
-#~ msgstr "Только один файл необходим для большой текстуры."
-
 #~ msgid "Max Texture Size:"
 #~ msgstr "Максимальный размер текстуры:"
 
@@ -11107,9 +11455,6 @@ msgstr "Переменные могут быть назначены только
 
 #~ msgid "Edit Groups"
 #~ msgstr "Редактировать группы"
-
-#~ msgid "GridMap Paint"
-#~ msgstr "Рисование сетки"
 
 #~ msgid "Tiles"
 #~ msgstr "Тайлы"

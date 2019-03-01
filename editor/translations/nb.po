@@ -97,6 +97,16 @@ msgstr "Dupliser valgte nøkler/taster"
 msgid "Delete Selected Key(s)"
 msgstr "Slett valgte nøkler/taster"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "Legg til punkt"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "Flytt Punkt"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Anim Dupliser Nøkler"
@@ -124,6 +134,16 @@ msgstr "Anim Endre Nøkkelbildeverdi"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Anim Forandre Kall"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "Endre Animasjonsnavn:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -186,6 +206,11 @@ msgstr "Anim-klipp:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Change Track Path"
+msgstr "Endre Array-verdi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Toggle this track on/off."
 msgstr "Vis/skjul distraksjonsfri modus."
 
@@ -211,6 +236,10 @@ msgstr "Fjern valgt spor."
 #, fuzzy
 msgid "Time (s): "
 msgstr "X-Fade Tid (s):"
+
+#: editor/animation_track_editor.cpp
+msgid "Toggle Track Enabled"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -266,6 +295,21 @@ msgid "Delete Key(s)"
 msgstr "Anim Fjern Nøkler"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "Endre Animasjonsnavn:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "Animasjonsnode"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "Endre Anim-Løkke"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Fjern Anim-Spor"
 
@@ -308,6 +352,16 @@ msgstr "Anim Sett Inn Nøkkel"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Change Animation Step"
+msgstr "Endre Animasjonsnavn:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "Omorganiser Autoloads"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr "Transformasjonsspor kan kun brukes på Spatial-baserte noder."
 
@@ -340,6 +394,11 @@ msgstr "Ikke mulig å legge til et nytt spor uten en rot"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Add Bezier Track"
+msgstr "Anim Legg til Spor"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a key."
 msgstr "Sporsti er ugyldig, så kan ikke legge til en nøkkel."
 
@@ -350,8 +409,23 @@ msgstr "Spor er ikke av type Spatial, kan ikke legge til nøkkel"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Add Transform Track Key"
+msgstr "3D transformasjonsspor"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "Anim Legg til Spor"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Sporsti er ugyldig, så kan ikke legge til metodenøkkel."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "Kall metode-spor"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -365,6 +439,11 @@ msgstr "Anim Flytt Nøkler"
 #, fuzzy
 msgid "Clipboard is empty"
 msgstr "Ressurs-utklippstavle er tom!"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Paste Tracks"
+msgstr "Lim inn Parametre"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -414,11 +493,6 @@ msgstr "Animasjon"
 #, fuzzy
 msgid "Copy Tracks"
 msgstr "Kopier Parametre"
-
-#: editor/animation_track_editor.cpp
-#, fuzzy
-msgid "Paste Tracks"
-msgstr "Lim inn Parametre"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -522,6 +596,19 @@ msgstr "Velg spor å kopiere:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Lim inn"
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "Lydklipp:"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1345,6 +1432,12 @@ msgstr "Ingen eksportmal funnet på forventet søkesti:"
 msgid "Packing"
 msgstr "Pakking"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1944,6 +2037,15 @@ msgstr "Lagre og Lukk"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Lagre endringer til '%s' før lukking?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "Kunne ikke laste ressurs."
+
+#: editor/editor_node.cpp
+msgid "A root node is required to save the scene."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3672,8 +3774,45 @@ msgstr "Last"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "Flytt Punkt"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "Endre Blend-Tid"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "Endre Blend-Tid"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "Legg til punkt"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "Legg til Animasjon"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "Fjern Stipunkt"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3720,12 +3859,41 @@ msgid "Triangle already exists"
 msgstr "ERROR: Animasjonsnavnet finnes allerede!"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "Anim Legg til Spor"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "Endre Blend-Tid"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "Endre Blend-Tid"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "Fjern Stipunkt"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Remove BlendSpace2D Triangle"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "Veksle AutoLoad Globals"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3746,6 +3914,11 @@ msgid "Blend:"
 msgstr "Blend:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "Forandre"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "Rediger Filtre"
@@ -3755,9 +3928,53 @@ msgid "Output node can't be added to the blend tree."
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to BlendTree"
+msgstr "Legg til node(r) fra tre"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "Flytt Modus"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "Tilkoblet"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "Frakoblet"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "Animasjon"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "Kutt Noder"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "Vis/skjul distraksjonsfri modus."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "Endre Anim Lengde"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3773,6 +3990,12 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "Nodenavn:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4014,6 +4237,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "Kryss-Animasjon Blend-Tid"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "Flytt Modus"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "Overgang"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr ""
 
@@ -4041,6 +4279,20 @@ msgstr ""
 #, fuzzy
 msgid "No playback resource set at path: %s."
 msgstr "Ikke i resource path."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "Fjern"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "Overgang Node"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4889,6 +5141,10 @@ msgstr "Hold Shift for å endre tangenter individuelt"
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Bak GI Probe"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -6089,6 +6345,15 @@ msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "Fjern Ben"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Rest Pose to Bones"
+msgstr ""
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Skeleton2D"
 msgstr "Singleton"
 
@@ -6202,10 +6467,6 @@ msgid "Vertices"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr ""
 
@@ -6250,8 +6511,9 @@ msgid "Rear"
 msgstr "Bak"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
-msgstr ""
+#, fuzzy
+msgid "Align with View"
+msgstr "Høyrevisning"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6344,6 +6606,12 @@ msgid "Freelook Speed Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "View Rotation Locked"
 msgstr "Vis Informasjon"
@@ -6351,6 +6619,11 @@ msgstr "Vis Informasjon"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "Snap til rutenett"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -6633,10 +6906,6 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
-msgstr ""
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -6986,6 +7255,11 @@ msgstr "Høyreklikk: Slett Punkt."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Create a new rectangle."
+msgstr "Lag ny %s"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create a new polygon."
 msgstr "Lag en ny polygon fra bunnen."
 
@@ -7170,6 +7444,28 @@ msgid "TileSet"
 msgstr "TileSet..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "Sett som Standard for '%s'"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node to Visual Shader"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "Anim Dupliser Nøkler"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr ""
 
@@ -7186,6 +7482,16 @@ msgstr "Høyre"
 msgid "VisualShader"
 msgstr ""
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "Rediger Filtre"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Visual Shader Mode Changed"
+msgstr "Forandre"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Kjørbar"
@@ -7199,7 +7505,16 @@ msgid "Delete preset '%s'?"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -7210,6 +7525,10 @@ msgstr ""
 #, fuzzy
 msgid "Exporting All"
 msgstr "Eksporter"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -8221,6 +8540,11 @@ msgid "Instantiated scenes can't become root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "Lagre Scene"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr ""
 
@@ -8254,6 +8578,11 @@ msgstr ""
 #, fuzzy
 msgid "Make Local"
 msgstr "Lag Ben"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "Lagre Scene"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8685,6 +9014,20 @@ msgid "Set From Tree"
 msgstr ""
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "Gli ut"
+
+#: editor/settings_config_dialog.cpp
+msgid "Restore Shortcut"
+msgstr ""
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "Endre Anker"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr ""
 
@@ -8896,6 +9239,10 @@ msgstr "Slett Valgte"
 #, fuzzy
 msgid "GridMap Duplicate Selection"
 msgstr "Dupliser Utvalg"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Paint"
+msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -9208,10 +9555,6 @@ msgid "Change Expression"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr ""
 
@@ -9300,6 +9643,11 @@ msgstr ""
 #, fuzzy
 msgid "Change Input Value"
 msgstr "Anim Forandre Verdi"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "Endre CanvasItem"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -10211,10 +10559,6 @@ msgstr ""
 #~ msgid "Convert To Lowercase"
 #~ msgstr "Konverter til små versaler"
 
-#, fuzzy
-#~ msgid "Snap To Floor"
-#~ msgstr "Snap til rutenett"
-
 #~ msgid "Rotate 0 degrees"
 #~ msgstr "Roter 0 grader"
 
@@ -10281,12 +10625,6 @@ msgstr ""
 
 #~ msgid "Out-In"
 #~ msgstr "Ut-Inn"
-
-#~ msgid "Change Anim Len"
-#~ msgstr "Endre Anim Lengde"
-
-#~ msgid "Change Anim Loop"
-#~ msgstr "Endre Anim-Løkke"
 
 #~ msgid "Anim Create Typed Value Key"
 #~ msgstr "Anim Lag Typet Verdi Nøkkel"

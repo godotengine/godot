@@ -93,6 +93,16 @@ msgstr "Дублювати позначені ключі"
 msgid "Delete Selected Key(s)"
 msgstr "Вилучити позначені ключі"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "Додати точку"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "Перемістити точки"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Дублювати ключі"
@@ -120,6 +130,16 @@ msgstr "Змінити значення ключового кадру"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Змінити виклик анімації"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "Змінити цикл анімації"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr "Змінити цикл анімації"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -171,6 +191,11 @@ msgid "Anim Clips:"
 msgstr "Кліпи анімації:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Track Path"
+msgstr "Змінити значення масиву"
+
+#: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
 msgstr "Увімкнути або вимкнути цю доріжку."
 
@@ -193,6 +218,11 @@ msgstr "Вилучити цю доріжку."
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
 msgstr "Час (с): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle Track Enabled"
+msgstr "Ефект Доплера"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -245,6 +275,21 @@ msgid "Delete Key(s)"
 msgstr "Вилучити ключі"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "Змінити ім'я анімації:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "Режим інтерполяції"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "Змінити цикл анімації"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Видалити доріжку"
 
@@ -286,6 +331,16 @@ msgid "Anim Insert Key"
 msgstr "Вставити ключ анімації"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Step"
+msgstr "Змінити частоту кадрів анімації"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "Змінити порядок автозавантажень"
+
+#: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr "Доріжки перетворення застосовуються лише до вузлів на основі Spatial."
 
@@ -316,6 +371,11 @@ msgid "Not possible to add a new track without a root"
 msgstr "Не можна додавати нові доріжки без кореневого запису"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Bezier Track"
+msgstr "Додати доріжку"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
 msgstr "Шлях доріжки є некоректним, отже не можна додавати ключ."
 
@@ -324,8 +384,23 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "Доріжка не належить до типу Spatial, не можна вставляти ключ"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Transform Track Key"
+msgstr "Доріжка просторового перетворення"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "Додати доріжку"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Шлях доріжки є некоректним, отже не можна додавати ключ методу."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "Доріжка виклику методів"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -338,6 +413,10 @@ msgstr "Перемістити ключі анімації"
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
 msgstr "Буфер обміну порожній"
+
+#: editor/animation_track_editor.cpp
+msgid "Paste Tracks"
+msgstr "Вставити доріжки"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -383,10 +462,6 @@ msgstr "Властивості анімації."
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
 msgstr "Копіювати доріжки"
-
-#: editor/animation_track_editor.cpp
-msgid "Paste Tracks"
-msgstr "Вставити доріжки"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -487,6 +562,19 @@ msgstr "Виберіть доріжки для копіювання:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Копіювати"
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "Звукові кліпи:"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1297,6 +1385,12 @@ msgstr "У очікуваному каталозі не знайдено шаб�
 msgid "Packing"
 msgstr "Пакування"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1871,6 +1965,15 @@ msgstr "Зберегти та закрити"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Зберегти зміни, внесені до '%s' перед закриттям?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "Не вдалося завантажити ресурс."
+
+#: editor/editor_node.cpp
+msgid "A root node is required to save the scene."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3511,11 +3614,48 @@ msgstr "Завантажити…"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "Перемістити точки"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "Змінити час змішування"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "Змінити час змішування"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
 "Не можна використовувати цей тип вузлів. Можна використовувати лише кореневі "
 "вузли."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "Додати вузол"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "Додавання анімації"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "Видалити точку шляху"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3563,12 +3703,42 @@ msgid "Triangle already exists"
 msgstr "Трикутник вже існує"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "Додати змінну"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "Змінити час змішування"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "Змінити час змішування"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "Видалити точку шляху"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Triangle"
+msgstr "Вилучити змінну"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr "BlendSpace2D не належить до вузла AnimationTree."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr "Трикутників не існує, отже злиття не є можливим."
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "Увімкнути  автозавантаження глобальних скриптів"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3588,6 +3758,11 @@ msgid "Blend:"
 msgstr "Змішувати:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "Зміни матеріалу"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "Редагувати фільтри"
@@ -3597,11 +3772,55 @@ msgid "Output node can't be added to the blend tree."
 msgstr "Вузол виведення не можна додавати до дерева злиття."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to BlendTree"
+msgstr "Додати вузли з дерева"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "Режим переміщення"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
 "Не вдалося з'єднати. Можливо, порт вже використано або з'єднання є "
 "некоректним."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "З’єднано"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "Роз'єднано"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "Нова анімація"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "Вилучити вузли"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "Увімкнути або вимкнути цю доріжку."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "Змінено фільтр локалі"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3622,6 +3841,12 @@ msgid ""
 msgstr ""
 "Відтворювач анімації не має коректного шляху до кореневого вузла, тому "
 "неможливо отримати назви доріжок."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "Назва вузла"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3850,6 +4075,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "Час між анімаціями"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "Режим переміщення"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "Додати переклад"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr "Додати вузол"
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr "Кінець"
 
@@ -3876,6 +4116,20 @@ msgstr "Для проміжного переходу потрібен почат
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
 msgstr "Не встановлено ресурсу відтворення у шляху: %s."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "Вилучити"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "Вузол переходу"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4698,6 +4952,10 @@ msgstr "Утримуйте Shift, щоб змінити дотичні окре�
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Запекти пробу GI"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -5846,6 +6104,16 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "У цього каркаса немає кісток, створіть хоч якісь дочірні вузли Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "Створити вільну позу (з кісток)"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Set Rest Pose to Bones"
+msgstr "Створити вільну позу (з кісток)"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
 msgstr "Плоский каркас"
 
@@ -5954,10 +6222,6 @@ msgid "Vertices"
 msgstr "Вершини"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr "Кадри за секунду"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr "Вигляд згори."
 
@@ -6002,7 +6266,8 @@ msgid "Rear"
 msgstr "Ззаду"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
+#, fuzzy
+msgid "Align with View"
 msgstr "Вирівняти з переглядом"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6094,12 +6359,23 @@ msgid "Freelook Speed Modifier"
 msgstr "Коефіцієнт швидкості огляду"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Обертання перегляду заблоковано"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Вікно XForm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "Приліпити до підлоги"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -6381,10 +6657,6 @@ msgstr "Вставити кадр"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
 msgstr "Додати порожній"
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
-msgstr "Змінити цикл анімації"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
@@ -6712,6 +6984,11 @@ msgid "Erase bitmask."
 msgstr "Витерти бітову маску."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new rectangle."
+msgstr "Створити вузли."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Створити новий полігон."
 
@@ -6893,6 +7170,29 @@ msgid "TileSet"
 msgstr "Набір плиток"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "Встановити як типове для '%s'"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to Visual Shader"
+msgstr "VisualShader"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "Дублювати вузли"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "Вершина"
 
@@ -6908,6 +7208,16 @@ msgstr "Світло"
 msgid "VisualShader"
 msgstr "VisualShader"
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "Редагувати пріоритетність плитки"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Visual Shader Mode Changed"
+msgstr "Зміни шейдерів"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Активний"
@@ -6921,9 +7231,17 @@ msgid "Delete preset '%s'?"
 msgstr "Вилучити набір «%s»?"
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
 msgstr ""
-"Не вистачає шаблонів експортування для платформи або шаблони пошкоджено:"
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Release"
@@ -6932,6 +7250,11 @@ msgstr "Випуск"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Експортування усього"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr ""
+"Не вистачає шаблонів експортування для платформи або шаблони пошкоджено:"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -7972,6 +8295,11 @@ msgid "Instantiated scenes can't become root"
 msgstr "Сцени зі створеними екземплярами не можуть ставати кореневими"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "Зробити кореневим для сцени"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "Вилучити вузли?"
 
@@ -8006,6 +8334,11 @@ msgstr "Завантажити як заповнювач"
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
 msgstr "Зробити локальним"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "Зробити кореневим для сцени"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
@@ -8436,6 +8769,21 @@ msgid "Set From Tree"
 msgstr "Встановити з дерева"
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "Перейти з"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Restore Shortcut"
+msgstr "Клавіатурні скорочення"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "Змінити прив'язки"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr "Клавіатурні скорочення"
 
@@ -8640,6 +8988,11 @@ msgstr "Вибір заповнення GridMap"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "Дублювання позначеного GridMap"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Paint"
+msgstr "Параметри GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -8942,10 +9295,6 @@ msgid "Change Expression"
 msgstr "Змінити вираз"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr "Додати вузол"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr "Вилучити вузли VisualScript"
 
@@ -9028,6 +9377,11 @@ msgstr "Скрипт уже має функцію '%s'"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
 msgstr "Зміна вхідного значення"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "Змінити розмір CanvasItem"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -9914,6 +10268,9 @@ msgstr "Призначення однорідного."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
 
+#~ msgid "FPS"
+#~ msgstr "Кадри за секунду"
+
 #~ msgid "Warnings:"
 #~ msgstr "Попередження:"
 
@@ -10078,9 +10435,6 @@ msgstr "Змінні величини можна пов'язувати лише 
 
 #~ msgid "Convert To Lowercase"
 #~ msgstr "Конвертувати в нижній регістр"
-
-#~ msgid "Snap To Floor"
-#~ msgstr "Приліпити до підлоги"
 
 #~ msgid "Rotate 0 degrees"
 #~ msgstr "Обертання на 0 градусів"

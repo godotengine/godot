@@ -92,6 +92,16 @@ msgstr "선택한 키를 복제"
 msgid "Delete Selected Key(s)"
 msgstr "선택한 키를 삭제"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "포인트 추가"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "포인트 이동"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "애니메이션 키 복제"
@@ -119,6 +129,16 @@ msgstr "애니메이션 키프레임 값 변경"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "애니메이션 호출 변경"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "애니메이션 루프 변경"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr "애니메이션 루프 변경"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -170,6 +190,11 @@ msgid "Anim Clips:"
 msgstr "애니메이션 클립:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Track Path"
+msgstr "배열 값 변경"
+
+#: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
 msgstr "이 트랙을 키거나 끕니다."
 
@@ -192,6 +217,11 @@ msgstr "이 트랙을 삭제합니다."
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
 msgstr "시간 (초): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle Track Enabled"
+msgstr "도플러 활성화"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -244,6 +274,21 @@ msgid "Delete Key(s)"
 msgstr "키 삭제"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "애니메이션 이름 변경:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "보간 모드"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "애니메이션 루프 변경"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "애니메이션 트랙 삭제"
 
@@ -286,6 +331,16 @@ msgid "Anim Insert Key"
 msgstr "애니메이션 키 삽입"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Step"
+msgstr "애니메이션 FPS 변경"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "오토로드 재정렬"
+
+#: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr "변형 트랙은 오직 Spatial 기반 노드에만 적용됩니다."
 
@@ -315,6 +370,11 @@ msgid "Not possible to add a new track without a root"
 msgstr "루트 없이 새 트랙을 추가할 수 없음"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Bezier Track"
+msgstr "트랙 추가"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
 msgstr "트랙 경로가 유효하지 않습니다, 키를 추가하실 수 없습니다."
 
@@ -323,8 +383,23 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "트랙이 Spatial 타입이 아닙니다, 키를 삽입하실 수 없습니다"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Transform Track Key"
+msgstr "3D 변형 트랙"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "트랙 추가"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr "트랙 경로가 유효하지 않습니다, 메서드 키를 추가하실 수 없습니다."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "호출 메서드 트랙"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -337,6 +412,10 @@ msgstr "애니메이션 키 이동"
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
 msgstr "클립보드가 비었습니다"
+
+#: editor/animation_track_editor.cpp
+msgid "Paste Tracks"
+msgstr "트랙 붙여넣기"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -379,10 +458,6 @@ msgstr "애니메이션 속성."
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
 msgstr "트랙 복사"
-
-#: editor/animation_track_editor.cpp
-msgid "Paste Tracks"
-msgstr "트랙 붙여넣기"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -483,6 +558,19 @@ msgstr "복사할 트랙 선택:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "복사하기"
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "오디오 클립:"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1289,6 +1377,12 @@ msgstr "예상 경로에서 내보내기 템플릿을 찾을 수 없습니다:"
 msgid "Packing"
 msgstr "패킹 중"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1858,6 +1952,16 @@ msgstr "저장 및 닫기"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "닫기 전에 '%s'에 변경사항을 저장하시겠습니까?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "리소스 불러오기 실패."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "A root node is required to save the scene."
+msgstr "큰 텍스쳐를 위해서는 단 하나의 파일만 요구됩니다."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3488,9 +3592,46 @@ msgstr "불러오기..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "포인트 이동"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "블렌드 시간 변경"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "블렌드 시간 변경"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr "이 타입의 노드를 사용할 수 없습니다. 오직 루트 노드만 사용 가능합니다."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "노드 추가"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "애니메이션 추가하기"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "경로 포인트 삭제"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3536,12 +3677,42 @@ msgid "Triangle already exists"
 msgstr "삼각형이 이미 존재함"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "변수 추가"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "블렌드 시간 변경"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "블렌드 시간 변경"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "경로 포인트 삭제"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Triangle"
+msgstr "변수 삭제"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr "BlendSpace2D가 AnimationTree 노드에 속해있지 않습니다."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr "삼각형이 존재하지 않습니다, 블랜딩이 일어나지 않습니다."
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "오토로드 글로벌 토글"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3561,6 +3732,11 @@ msgid "Blend:"
 msgstr "블렌드:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "머티리얼 변경"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "필터 편집"
@@ -3570,9 +3746,53 @@ msgid "Output node can't be added to the blend tree."
 msgstr "출력 노드를 블렌드 트리에 추가할 수 없습니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to BlendTree"
+msgstr "트리에서 노드 추가"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "이동 모드"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr "연결할 수 없습니다, 포트가 사용 중이거나 유효하지 않는 연결입니다."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "연결됨"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "연결 해제됨"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "새로운 애니메이션"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "노드 삭제"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "이 트랙을 키거나 끕니다."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "로케일 필터 변경됨"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3591,6 +3811,12 @@ msgid ""
 msgstr ""
 "애니메이션 플레이어가 유효한 루트 노드 경로를 가지고 있지 않습니다, 트랙 이름"
 "을 검색할 수 없습니다."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "노드 이름"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3818,6 +4044,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "교차-애니메이션 블렌드 시간"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "이동 모드"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "번역 추가"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr "노드 추가"
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr "End"
 
@@ -3844,6 +4085,20 @@ msgstr "하위 전환에 시작과 끝 노드가 필요합니다."
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
 msgstr "다음 경로에 설정된 재생 리소스가 없습니다: %s."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "제거됨:"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "전환 노드"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4657,6 +4912,10 @@ msgstr "Shift키를 누르고 있으면 탄젠트를 개별적으로 편집 가�
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "GI 프로브 굽기"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -5804,6 +6063,16 @@ msgstr ""
 "이 스켈레톤은 본을 가지고 있지 않습니다, 자식으로 Bone2D 노드를 추가하세요."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "(본으로부터) 휴식 포즈 만들기"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Set Rest Pose to Bones"
+msgstr "(본으로부터) 휴식 포즈 만들기"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
 msgstr "스켈레톤2D"
 
@@ -5912,10 +6181,6 @@ msgid "Vertices"
 msgstr "버틱스"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr "초당 프레임"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr "윗면 보기."
 
@@ -5960,7 +6225,8 @@ msgid "Rear"
 msgstr "뒷면"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
+#, fuzzy
+msgid "Align with View"
 msgstr "뷰에 정렬"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6052,12 +6318,23 @@ msgid "Freelook Speed Modifier"
 msgstr "자유시점 속도 변화"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "뷰 회전 잠김"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "XForm 대화 상자"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "바닥에 스냅"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -6337,10 +6614,6 @@ msgstr "프레임 붙여넣기"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
 msgstr "빈 프레임 추가"
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
-msgstr "애니메이션 루프 변경"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
@@ -6668,6 +6941,11 @@ msgid "Erase bitmask."
 msgstr "비트 마스크 지우기."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new rectangle."
+msgstr "새 노드 만들기."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "새로운 폴리곤 만들기."
 
@@ -6846,6 +7124,29 @@ msgid "TileSet"
 msgstr "TileSet(타일 셋)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "'%s'을(를) 기본으로 지정"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to Visual Shader"
+msgstr "비주얼 셰이더"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "노드 복제"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "버텍스"
 
@@ -6861,6 +7162,16 @@ msgstr "빛"
 msgid "VisualShader"
 msgstr "비주얼 셰이더"
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "필터 우선 순위 편집"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Visual Shader Mode Changed"
+msgstr "셰이더 변경"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "실행가능"
@@ -6874,8 +7185,17 @@ msgid "Delete preset '%s'?"
 msgstr "'%s' 프리셋을 삭제하시겠습니까?"
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
-msgstr "이 플랫폼에 대한 내보내기 템플릿이 없거나 손상됨:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Release"
@@ -6884,6 +7204,10 @@ msgstr "배포"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "모두 내보내기"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr "이 플랫폼에 대한 내보내기 템플릿이 없거나 손상됨:"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -7909,6 +8233,11 @@ msgid "Instantiated scenes can't become root"
 msgstr "인스턴트화된 씬은 루트가 될 수 없습니다"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "씬 루트 만들기"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "노드를 삭제하시겠습니까?"
 
@@ -7943,6 +8272,11 @@ msgstr "Placeholder로써 불러오기"
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
 msgstr "로컬로 만들기"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "씬 루트 만들기"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
@@ -8371,6 +8705,21 @@ msgid "Set From Tree"
 msgstr "트리로부터 설정"
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "완화 out"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Restore Shortcut"
+msgstr "단축키"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "앵커 변경"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr "단축키"
 
@@ -8575,6 +8924,11 @@ msgstr "그리드맵 채우기 선택"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "그리드맵 선택 복제"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Paint"
+msgstr "그리드맵 설정"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -8878,10 +9232,6 @@ msgid "Change Expression"
 msgstr "표현식 변경"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr "노드 추가"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr "비주얼 스크립트 노드 삭제"
 
@@ -8964,6 +9314,11 @@ msgstr "스크립트가 이미 '%s' 함수를 갖고 있음"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
 msgstr "입력 값 변경"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "CanvasItem 크기 조절"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -9816,6 +10171,9 @@ msgstr "균일하게 배치함."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
 
+#~ msgid "FPS"
+#~ msgstr "초당 프레임"
+
 #~ msgid "Warnings:"
 #~ msgstr "경고:"
 
@@ -9984,9 +10342,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Convert To Lowercase"
 #~ msgstr "소문자로 변환"
-
-#~ msgid "Snap To Floor"
-#~ msgstr "바닥에 스냅"
 
 #~ msgid "Rotate 0 degrees"
 #~ msgstr "0도 회전"
@@ -10512,9 +10867,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Added:"
 #~ msgstr "추가됨:"
 
-#~ msgid "Removed:"
-#~ msgstr "제거됨:"
-
 #~ msgid "Could not save atlas subtexture:"
 #~ msgstr "아틀라스 서브 텍스쳐를 저장할 수 없습니다:"
 
@@ -10772,9 +11124,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Error importing:"
 #~ msgstr "가져오기 에러:"
-
-#~ msgid "Only one file is required for large texture."
-#~ msgstr "큰 텍스쳐를 위해서는 단 하나의 파일만 요구됩니다."
 
 #~ msgid "Max Texture Size:"
 #~ msgstr "최대 텍스쳐 사이즈:"
