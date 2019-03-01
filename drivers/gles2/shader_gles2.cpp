@@ -973,6 +973,140 @@ void ShaderGLES2::use_material(void *p_material) {
 					ERR_PRINT("type missing, bug?");
 				} break;
 			}
+		} else { //zero
+
+			switch (E->get().type) {
+				case ShaderLanguage::TYPE_BOOL: {
+					glUniform1i(location, GL_FALSE);
+				} break;
+
+				case ShaderLanguage::TYPE_BVEC2: {
+					glUniform2i(location, GL_FALSE, GL_FALSE);
+				} break;
+
+				case ShaderLanguage::TYPE_BVEC3: {
+					glUniform3i(location, GL_FALSE, GL_FALSE, GL_FALSE);
+				} break;
+
+				case ShaderLanguage::TYPE_BVEC4: {
+					glUniform4i(location, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+				} break;
+
+				case ShaderLanguage::TYPE_INT: {
+					glUniform1i(location, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_IVEC2: {
+					glUniform2i(location, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_IVEC3: {
+					glUniform3i(location, 0, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_IVEC4: {
+					glUniform4i(location, 0, 0, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_UINT: {
+					glUniform1i(location, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_UVEC2: {
+					glUniform2i(location, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_UVEC3: {
+					glUniform3i(location, 0, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_UVEC4: {
+					glUniform4i(location, 0, 0, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_FLOAT: {
+					glUniform1f(location, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_VEC2: {
+					glUniform2f(location, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_VEC3: {
+					glUniform3f(location, 0, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_VEC4: {
+					glUniform4f(location, 0, 0, 0, 0);
+				} break;
+
+				case ShaderLanguage::TYPE_MAT2: {
+					GLfloat mat[4]{ 0, 0, 0, 0 };
+
+					glUniformMatrix2fv(location, 1, GL_FALSE, mat);
+				} break;
+
+				case ShaderLanguage::TYPE_MAT3: {
+					GLfloat mat[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+					glUniformMatrix3fv(location, 1, GL_FALSE, mat);
+
+				} break;
+
+				case ShaderLanguage::TYPE_MAT4: {
+					GLfloat mat[16] = { 0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0 };
+
+					glUniformMatrix4fv(location, 1, GL_FALSE, mat);
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_ISAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_USAMPLER2D: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLERCUBE: {
+
+				} break;
+
+				case ShaderLanguage::TYPE_SAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+				case ShaderLanguage::TYPE_SAMPLER3D:
+				case ShaderLanguage::TYPE_ISAMPLER3D:
+				case ShaderLanguage::TYPE_USAMPLER3D: {
+					// Not implemented in GLES2
+				} break;
+
+				case ShaderLanguage::TYPE_VOID: {
+					// Nothing to do?
+				} break;
+				default: {
+					ERR_PRINT("type missing, bug?");
+				} break;
+			}
 		}
 	}
 }
