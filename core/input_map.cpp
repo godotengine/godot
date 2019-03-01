@@ -259,14 +259,6 @@ void InputMap::load_default() {
 
 	add_action("ui_accept");
 	key.instance();
-	key->set_scancode(KEY_ENTER);
-	action_add_event("ui_accept", key);
-
-	key.instance();
-	key->set_scancode(KEY_KP_ENTER);
-	action_add_event("ui_accept", key);
-
-	key.instance();
 	key->set_scancode(KEY_SPACE);
 	action_add_event("ui_accept", key);
 
@@ -279,6 +271,15 @@ void InputMap::load_default() {
 	key.instance();
 	key->set_scancode(KEY_ESCAPE);
 	action_add_event("ui_cancel", key);
+
+	add_action("ui_apply");
+	key.instance();
+	key->set_scancode(KEY_ENTER);
+	action_add_event("ui_apply", key);
+
+	key.instance();
+	key->set_scancode(KEY_KP_ENTER);
+	action_add_event("ui_apply", key);
 
 	add_action("ui_focus_next");
 	key.instance();

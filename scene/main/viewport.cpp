@@ -2291,6 +2291,21 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
+		if (p_event->is_pressed() && p_event->is_action("ui_apply") && !gui.modal_stack.empty()) {
+
+			_gui_sort_modal_stack();
+			Control *top = gui.modal_stack.back()->get();
+			if (!top->data.modal_exclusive) {
+
+				top->notification(Control::NOTIFICATION_MODAL_APPLY);
+				top->_modal_stack_remove();
+				top->hide();
+				// Close modal, set input as handled
+				set_input_as_handled();
+				return;
+			}
+		}
+
 		Control *from = gui.key_focus ? gui.key_focus : NULL; //hmm
 
 		//keyboard focus

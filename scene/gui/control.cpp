@@ -638,6 +638,10 @@ void Control::_notification(int p_notification) {
 
 			emit_signal("modal_closed");
 		} break;
+		case NOTIFICATION_MODAL_APPLY: {
+
+			emit_signal("modal_applied");
+		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (!is_visible_in_tree()) {
@@ -2955,6 +2959,7 @@ void Control::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("size_flags_changed"));
 	ADD_SIGNAL(MethodInfo("minimum_size_changed"));
 	ADD_SIGNAL(MethodInfo("modal_closed"));
+	ADD_SIGNAL(MethodInfo("modal_applied"));
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }
