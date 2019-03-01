@@ -53,12 +53,13 @@
 # Rémi Bintein <reminus5@hotmail.fr>, 2018, 2019.
 # Sylvain Corsini <sylvain.corsini@gmail.com>, 2018.
 # Caye Pierre <pierrecaye@laposte.net>, 2019.
+# Peter Kent <0.peter.kent@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-18 08:54+0000\n"
-"Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2019-02-21 21:18+0000\n"
+"Last-Translator: Peter Kent <0.peter.kent@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -147,7 +148,7 @@ msgstr "Modifier le temps d'image-clé"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Modifier la transition"
+msgstr "Changement du transition de l'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -480,7 +481,7 @@ msgstr "Utiliser les courbes de Bézier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimiser l'animation"
+msgstr "Optimiser de l'animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -603,9 +604,8 @@ msgid "Warnings"
 msgstr "Avertissements"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Numéros de ligne et de colonne"
+msgstr "Numéros de ligne et de colonne."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1165,9 +1165,8 @@ msgid "Add Bus"
 msgstr "Ajouter un bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Enregistrer la disposition des bus audio sous…"
+msgstr "Ajoutez un nouveau bus audio à cette disposition."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2461,9 +2460,8 @@ msgid "Save & Restart"
 msgstr "Enregistrer et Redémarrer"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "Tourne lorsque la fenêtre de l'éditeur est repainte !"
+msgstr "Tourne lorsque la fenêtre de l'éditeur est redessinée."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -5307,6 +5305,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"Polygon 2D a des sommets internes, donc il ne peut plus être édité dans la "
+"fenêtre d'affichage."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -7252,7 +7252,7 @@ msgstr "Parcourir"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr "Moteur de rendu :"
+msgstr "Moteur de rendre :"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
@@ -9925,9 +9925,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "Alterner entre les valeurs hexadécimales ou brutes."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Ajouter la couleur courante comme pré-réglage"
+msgstr "Ajouter la couleur courante comme pré-réglage."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

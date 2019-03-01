@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-13 07:10+0000\n"
+"PO-Revision-Date: 2019-02-21 21:18+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -548,9 +548,8 @@ msgid "Warnings"
 msgstr "Varoitukset"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Rivi- ja sarakenumerot"
+msgstr "Rivi- ja sarakenumerot."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1109,9 +1108,8 @@ msgid "Add Bus"
 msgstr "Lisää väylä"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Tallenna ääniväylän asettelu nimellä..."
+msgstr "Lisää tähän asetteluun uusi ääniväylä."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2381,9 +2379,8 @@ msgid "Save & Restart"
 msgstr "Tallenna & käynnistä uudelleen"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "Pyörii kun editorin ikkuna päivittyy!"
+msgstr "Pyörii kun editorin ikkuna päivittyy."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -5209,6 +5206,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"2D-polygonilla on sisäisiä kärkipisteitä, joten sitä ei voi enää muokata "
+"näyttöruudussa."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -9775,9 +9774,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Lisää nykyinen väri esiasetukseksi"
+msgstr "Lisää nykyinen väri esiasetukseksi."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

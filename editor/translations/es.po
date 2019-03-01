@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-13 07:10+0000\n"
+"PO-Revision-Date: 2019-02-21 21:18+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -585,9 +585,8 @@ msgid "Warnings"
 msgstr "Advertencias"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Números de línea y columna"
+msgstr "Números de línea y columna."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1124,7 +1123,7 @@ msgstr "Mover bus de audio"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr "Guardar configuración de bus de audio como..."
+msgstr "Guardar configuración de Bus de Audio como..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
@@ -1147,9 +1146,8 @@ msgid "Add Bus"
 msgstr "Añadir bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Guardar configuración de bus de audio como..."
+msgstr "Añade un nuevo Bus de Audio a esta configuración."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2438,9 +2436,8 @@ msgid "Save & Restart"
 msgstr "Guardar y Reiniciar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "¡Gira cuando la ventana del editor redibuja!"
+msgstr "Gira cuando la ventana del editor se redibuja."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -5277,6 +5274,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"El polígono 2D tiene vértices internos, por lo que ya no se puede editar en "
+"el viewport."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -9880,9 +9879,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "Cambiar entre valores hexadecimales y de código."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Añadir el color actual como predeterminado"
+msgstr "Añadir el color actual como preset."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

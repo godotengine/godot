@@ -25,7 +25,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-18 08:54+0000\n"
+"PO-Revision-Date: 2019-03-01 11:59+0000\n"
 "Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -39,7 +39,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Convert()に対して無効な型の引数です。TYPE_ 定数を使ってください。"
+msgstr "convert() の引数の型が無効です。TYPE_* 定数を使ってください。"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -565,9 +565,8 @@ msgid "Warnings"
 msgstr "警告"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "行及び列番号"
+msgstr "行番号と列番号。"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1124,9 +1123,8 @@ msgid "Add Bus"
 msgstr "バスを追加"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "オーディオバスのレイアウトを別名で保存..."
+msgstr "新規オーディオバスをこのレイアウトに追加する。"
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1536,7 +1534,7 @@ msgid ""
 "$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/"
 "url][/color]."
 msgstr ""
-"現在、このクラスのチュートリアルはありませんが、[color=$color][url=$url]寄付"
+"現在、このクラスのチュートリアルはありませんが、[color=$color][url=$url]貢献"
 "[/url][/color]、または[color=$color][url=$url2]リクエスト[/url][/color]は可能"
 "です。"
 
@@ -1553,8 +1551,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"現在、このプロパティの説明はありません。[color=$color][url=$url]寄付[/url][/"
-"color]して私たちを助けてください！"
+"現在、このプロパティの説明はありません。[color=$color][url=$url]貢献[/url][/"
+"color]して私たちを助けてください!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -1569,8 +1567,8 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"現在、このメソッドの説明はありません。[color=$color][url=$url]寄付[/url][/"
-"color]して私たちを助けてください！"
+"現在、このメソッドの説明はありません。[color=$color][url=$url]貢献[/url][/"
+"color]して私たちを助けてください!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2394,9 +2392,8 @@ msgid "Save & Restart"
 msgstr "保存して再起動"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "エディタウィンドウの再描画時にスピンします！"
+msgstr "エディタ ウィンドウの再描画時にスピンします。"
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -3129,7 +3126,7 @@ msgstr "スクリプト作成"
 
 #: editor/find_in_files.cpp
 msgid "Find in Files"
-msgstr "ファイル内検索"
+msgstr "複数ファイル内を検索"
 
 #: editor/find_in_files.cpp
 msgid "Find:"
@@ -3314,8 +3311,9 @@ msgid "Reimport"
 msgstr "再インポート"
 
 #: editor/import_dock.cpp
+#, fuzzy
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "シーンを保存し、再インポートして再起動"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -4194,6 +4192,8 @@ msgid ""
 "No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
 "Light' flag is on."
 msgstr ""
+"ベイクするメッシュがありません。メッシュに UV2チャンネルが含まれてお"
+"り、'Bake Light' フラグがオンになっていることを確認してください。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
@@ -4355,7 +4355,7 @@ msgstr "回転モード"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr "スケール（拡大縮小）モード"
+msgstr "スケールモード"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5309,19 +5309,16 @@ msgid "UV"
 msgstr "UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Points"
 msgstr "点"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "ポリゴン->UV"
+msgstr "ポリゴン"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Bones"
-msgstr "ボーンを生成"
+msgstr "ボーン"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5337,9 +5334,8 @@ msgid "Shift: Move All"
 msgstr "Shift: すべて移動"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Shift+Ctrl: Scale"
-msgstr "Shift+Ctrl: 縮尺（Scale）"
+msgstr "Shift+Ctrl: スケール"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Move Polygon"
@@ -5356,13 +5352,15 @@ msgstr "ポリゴンの縮尺を変更"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create a custom polygon. Enables custom polygon rendering."
-msgstr ""
+msgstr "カスタムポリゴンを生成し、カスタムポリゴンの描画を有効にする。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
 "Remove a custom polygon. If none remain, custom polygon rendering is "
 "disabled."
 msgstr ""
+"カスタムポリゴンを削除する。他に残っていない場合、カスタムポリゴンの描画は無"
+"効になります。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Paint weights with specified intensity."
@@ -5494,9 +5492,8 @@ msgid "Path to AnimationPlayer is invalid"
 msgstr "AnimationPlayer へのパスが無効です"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Recent Files"
-msgstr "最近開いたファイルの記録をクリア"
+msgstr "最近開いたファイルの履歴をクリア"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Close and save changes?"
@@ -5763,9 +5760,8 @@ msgid "Only resources from filesystem can be dropped."
 msgstr "ファイルシステムのリソースのみドロップできます."
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Lookup Symbol"
-msgstr "記号すべて"
+msgstr "シンボルを検索"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Pick Color"
@@ -5834,9 +5830,8 @@ msgid "Clone Down"
 msgstr "下に複写"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Complete Symbol"
-msgstr "記号すべて"
+msgstr "シンボルを補完"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -5876,9 +5871,8 @@ msgid "Find Previous"
 msgstr "前を検索"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Find in Files..."
-msgstr "ファイルを絞り込む..."
+msgstr "複数ファイル内を検索..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function..."
@@ -6118,7 +6112,6 @@ msgid "View FPS"
 msgstr "フレームレートを表示"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Half Resolution"
 msgstr "半解像度"
 
@@ -6196,7 +6189,7 @@ msgstr "回転モード (E)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode (R)"
-msgstr "スケール（拡大縮小）モード(R)"
+msgstr "スケールモード (R)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Local Coords"
@@ -6259,24 +6252,20 @@ msgid "Tool Select"
 msgstr "選択ツール"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Move"
 msgstr "移動ツール"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Rotate"
 msgstr "回転ツール"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Tool Scale"
-msgstr "拡大縮小ツール"
+msgstr "スケールツール"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Freelook"
-msgstr "フルスクリーンの切り替え"
+msgstr "フリールックの切り替え"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -9395,7 +9384,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "パッケージ名がありません。"
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
@@ -9403,7 +9392,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
+msgstr "文字 '%s' はAndroidアプリケーション パッケージ名に使用できません。"
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
@@ -9411,11 +9400,11 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
+msgstr "文字 '%s' はパッケージ セグメントの先頭に使用できません。"
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "パッケージには一つ以上の区切り文字 '.' が必要です。"
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
@@ -9423,7 +9412,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "OpenJDK jarsignerがエディター設定で設定されていません。"
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
@@ -9431,7 +9420,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "APK expansion の公開鍵が無効です。"
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
@@ -9439,7 +9428,7 @@ msgstr "無効なパッケージ名:"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "識別子がありません。"
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
@@ -9456,15 +9445,15 @@ msgstr ""
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
-msgstr ""
+msgstr "文字 '%s' は識別子 セグメントの先頭に使用できません。"
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "識別子には一つ以上の区切り文字 '.' が必要です。"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
-msgstr ""
+msgstr "App Store チームID が未指定 - プロジェクトを構成できません。"
 
 #: platform/iphone/export/export.cpp
 msgid "Invalid Identifier:"
@@ -9951,7 +9940,7 @@ msgstr "見つからないアニメーション: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
-msgstr ""
+msgstr "ノード '%s', 無効なアニメーション: '%s'。"
 
 #: scene/animation/animation_tree.cpp
 msgid "Invalid animation: '%s'."
@@ -9987,7 +9976,7 @@ msgstr ""
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "スクリーンから色を選択してください。"
 
 #: scene/gui/color_picker.cpp
 #, fuzzy
@@ -10090,11 +10079,12 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to uniform."
-msgstr ""
+msgstr "uniform への割り当て。"
 
 #: servers/visual/shader_language.cpp
+#, fuzzy
 msgid "Varyings can only be assigned in vertex function."
-msgstr ""
+msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 
 #~ msgid "Warnings:"
 #~ msgstr "警告:"

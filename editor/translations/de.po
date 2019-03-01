@@ -37,12 +37,13 @@
 # ssantos <ssantos@web.de>, 2018.
 # Rémi Verschelde <akien@godotengine.org>, 2019.
 # Martin <martinreininger@gmx.net>, 2019.
+# Andreas During <anduring@web.de>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-13 23:10+0000\n"
-"Last-Translator: Martin <martinreininger@gmx.net>\n"
+"PO-Revision-Date: 2019-03-01 11:59+0000\n"
+"Last-Translator: Andreas During <anduring@web.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -67,7 +68,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Ungültige Eingabe %i (nicht bestanden) in Ausdruck"
+msgstr "Ungültige Eingabe %i (nicht übergeben) im Ausdruck"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -582,9 +583,8 @@ msgid "Warnings"
 msgstr "Warnungen"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Zeilen- und Spaltennummern"
+msgstr "Zeilen- und Spaltennummern."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1147,9 +1147,8 @@ msgid "Add Bus"
 msgstr "Audiobus hinzufügen"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Audiobus-Layout speichern als..."
+msgstr "Neuen Audio-Bus diesem Layout hinzufügen."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1652,7 +1651,7 @@ msgstr "Setze"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr "Setze mehrere:"
+msgstr "Mehrfach einstellen:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
@@ -2188,7 +2187,7 @@ msgstr "Mesh-Bibliothek..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "Tile Set…"
+msgstr "TileSet…"
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2439,9 +2438,8 @@ msgid "Save & Restart"
 msgstr "Speichern & Neu starten"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "Dreht sich, wenn das Editorfenster neu gezeichnet wird!"
+msgstr "Dreht sich, wenn das Editorfenster neu gezeichnet wird."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -5273,6 +5271,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"Dieses Polygon2D enthält interne Vertices, es kann nicht mehr im Viewport "
+"bearbeitet werden."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -7537,7 +7537,7 @@ msgstr "Ereignis hinzufügen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Button"
+msgstr "Taste"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -9878,9 +9878,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "Wechselt zwischen Hexadezimal- und Zahlenwerten."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Füge aktuelle Farbe als Vorlage hinzu"
+msgstr "Aktuelle Farbe als Vorlage hinzufügen."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
