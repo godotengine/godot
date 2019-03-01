@@ -31,7 +31,7 @@ def copy_file(src_dir, dst_dir, name):
     copyfile(src_path, dst_path)
 
 
-def configure(env):
+def configure(env, env_mono):
     envvars = Variables()
     envvars.Add(BoolVariable('mono_static', 'Statically link mono', False))
     envvars.Add(BoolVariable('copy_mono_root', 'Make a copy of the mono installation directory to bundle with the editor', False))
@@ -65,12 +65,12 @@ def configure(env):
         print('Found Mono root directory: ' + mono_root)
 
         mono_version = mono_root_try_find_mono_version(mono_root)
-        configure_for_mono_version(env, mono_version)
+        configure_for_mono_version(env_mono, mono_version)
 
         mono_lib_path = os.path.join(mono_root, 'lib')
 
         env.Append(LIBPATH=mono_lib_path)
-        env.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
+        env_mono.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
         if mono_static:
             lib_suffix = Environment()['LIBSUFFIX']
@@ -148,19 +148,19 @@ def configure(env):
             print('Found Mono root directory: ' + mono_root)
 
             mono_version = mono_root_try_find_mono_version(mono_root)
-            configure_for_mono_version(env, mono_version)
+            configure_for_mono_version(env_mono, mono_version)
 
             mono_lib_path = os.path.join(mono_root, 'lib')
 
             env.Append(LIBPATH=mono_lib_path)
-            env.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
+            env_mono.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
             mono_lib = find_file_in_dir(mono_lib_path, mono_lib_names, prefix='lib', extension='.a')
 
             if not mono_lib:
                 raise RuntimeError('Could not find mono library in: ' + mono_lib_path)
 
-            env.Append(CPPFLAGS=['-D_REENTRANT'])
+            env_mono.Append(CPPFLAGS=['-D_REENTRANT'])
 
             if mono_static:
                 mono_lib_file = os.path.join(mono_lib_path, 'lib' + mono_lib + '.a')
@@ -191,9 +191,10 @@ def configure(env):
             print('Mono root directory not found. Using pkg-config instead')
 
             mono_version = pkgconfig_try_find_mono_version()
-            configure_for_mono_version(env, mono_version)
+            configure_for_mono_version(env_mono, mono_version)
 
-            env.ParseConfig('pkg-config monosgen-2 --cflags --libs')
+            env.ParseConfig('pkg-config monosgen-2 --libs')
+            env_mono.ParseConfig('pkg-config monosgen-2 --cflags')
 
             mono_lib_path = ''
             mono_so_name = ''

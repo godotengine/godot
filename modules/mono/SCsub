@@ -48,7 +48,7 @@ env_mono = conf.Finish()
 
 import build_scripts.mono_configure as mono_configure
 
-mono_configure.configure(env)
+mono_configure.configure(env, env_mono)
 
 # Build GodotSharpTools
 
