@@ -44,7 +44,30 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 #define _EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #define _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 
+#define _EXT_COMPRESSED_RED_RGTC1_EXT 0x8DBB
+#define _EXT_COMPRESSED_RED_RGTC1 0x8DBB
+#define _EXT_COMPRESSED_SIGNED_RED_RGTC1 0x8DBC
+#define _EXT_COMPRESSED_RG_RGTC2 0x8DBD
+#define _EXT_COMPRESSED_SIGNED_RG_RGTC2 0x8DBE
+#define _EXT_COMPRESSED_SIGNED_RED_RGTC1_EXT 0x8DBC
+#define _EXT_COMPRESSED_RED_GREEN_RGTC2_EXT 0x8DBD
+#define _EXT_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT 0x8DBE
 #define _EXT_ETC1_RGB8_OES 0x8D64
+
+#define _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG 0x8C00
+#define _EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG 0x8C01
+#define _EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0x8C02
+#define _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0x8C03
+
+#define _EXT_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT 0x8A54
+#define _EXT_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT 0x8A55
+#define _EXT_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT 0x8A56
+#define _EXT_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT 0x8A57
+
+#define _EXT_COMPRESSED_RGBA_BPTC_UNORM 0x8E8C
+#define _EXT_COMPRESSED_SRGB_ALPHA_BPTC_UNORM 0x8E8D
+#define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
+#define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
 #ifdef GLES_OVER_GL
 #define _GL_HALF_FLOAT_OES 0x140B
@@ -231,41 +254,130 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RGTC_R: {
 
-			need_decompress = true;
+			if (config.rgtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RED_RGTC1_EXT;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+
+				need_decompress = true;
+			}
 
 		} break;
 		case Image::FORMAT_RGTC_RG: {
 
-			need_decompress = true;
+			if (config.rgtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RED_GREEN_RGTC2_EXT;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+			} else {
+
+				need_decompress = true;
+			}
 
 		} break;
 		case Image::FORMAT_BPTC_RGBA: {
 
-			need_decompress = true;
+			if (config.bptc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_BPTC_UNORM;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_BPTC_RGBF: {
 
-			need_decompress = true;
+			if (config.bptc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_FLOAT;
+				r_compressed = true;
+			} else {
+
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_BPTC_RGBFU: {
+			if (config.bptc_supported) {
 
-			need_decompress = true;
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_FLOAT;
+				r_compressed = true;
+			} else {
+
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_PVRTC2: {
 
-			need_decompress = true;
+			if (config.pvrtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+
+				need_decompress = true;
+			}
 		} break;
 		case Image::FORMAT_PVRTC2A: {
 
-			need_decompress = true;
+			if (config.pvrtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+
+				need_decompress = true;
+			}
+
 		} break;
 		case Image::FORMAT_PVRTC4: {
 
-			need_decompress = true;
+			if (config.pvrtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+
+				need_decompress = true;
+			}
+
 		} break;
 		case Image::FORMAT_PVRTC4A: {
 
-			need_decompress = true;
+			if (config.pvrtc_supported) {
+
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+
+				need_decompress = true;
+			}
+
 		} break;
 		case Image::FORMAT_ETC: {
 
@@ -1222,8 +1334,6 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 	ShaderCompilerGLES2::IdentifierActions *actions = NULL;
 
 	switch (p_shader->mode) {
-
-			// TODO
 
 		case VS::SHADER_CANVAS_ITEM: {
 
@@ -3339,7 +3449,6 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->size = p_bones;
 	skeleton->use_2d = p_2d_skeleton;
 
-	// TODO use float texture for vertex shader
 	if (config.float_texture_supported) {
 		glGenTextures(1, &skeleton->tex_id);
 
@@ -5141,6 +5250,9 @@ void RasterizerStorageGLES2::initialize() {
 	//every other platform, be it mobile or desktop, supports this (even if not in the GLES2 spec).
 	config.support_half_float_vertices = true;
 #endif
+
+	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
+	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc");
 
 	//determine formats for depth textures (or renderbuffers)
 	if (config.support_depth_texture) {
