@@ -285,7 +285,7 @@ private:
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
-	bool _find_meta(Item *p_item, Variant *r_meta);
+	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
 
 	void _update_scroll();
 	void _scroll_changed(double);
