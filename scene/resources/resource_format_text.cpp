@@ -1645,7 +1645,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 		}
 
-		f->store_string("\n");
+		if (E->next())
+			f->store_line(String());
 	}
 
 	if (packed_scene.is_valid()) {
@@ -1714,7 +1715,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 				f->store_string(_valprop(String(state->get_node_property_name(i, j))) + " = " + vars + "\n");
 			}
 
-			f->store_line(String());
+			if (i < state->get_node_count() - 1)
+				f->store_line(String());
 		}
 
 		for (int i = 0; i < state->get_connection_count(); i++) {
