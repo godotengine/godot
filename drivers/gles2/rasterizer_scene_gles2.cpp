@@ -2523,6 +2523,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_RADIANCE_MAP, false);
+	state.scene_shader.set_conditional(SceneShaderGLES2::USE_DEPTH_PREPASS, false);
 }
 
 void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation) {
