@@ -2542,16 +2542,110 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 	if (mesh->custom_aabb != AABB())
 		return mesh->custom_aabb;
 
-	// TODO handle skeletons
+	Skeleton *sk = NULL;
+	if (p_skeleton.is_valid()) {
+		sk = skeleton_owner.get(p_skeleton);
+	}
 
 	AABB aabb;
 
-	if (mesh->surfaces.size() >= 1) {
-		aabb = mesh->surfaces[0]->aabb;
-	}
+	if (sk && sk->size != 0) {
 
-	for (int i = 0; i < mesh->surfaces.size(); i++) {
-		aabb.merge_with(mesh->surfaces[i]->aabb);
+		for (int i = 0; i < mesh->surfaces.size(); i++) {
+
+			AABB laabb;
+			if ((mesh->surfaces[i]->format & VS::ARRAY_FORMAT_BONES) && mesh->surfaces[i]->skeleton_bone_aabb.size()) {
+
+				int bs = mesh->surfaces[i]->skeleton_bone_aabb.size();
+				const AABB *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
+				const bool *skused = mesh->surfaces[i]->skeleton_bone_used.ptr();
+
+				int sbs = sk->size;
+				ERR_CONTINUE(bs > sbs);
+				const float *texture = sk->bone_data.ptr();
+
+				bool first = true;
+				if (sk->use_2d) {
+					for (int j = 0; j < bs; j++) {
+
+						if (!skused[j])
+							continue;
+
+						int base_ofs = j * 2 * 4;
+
+						Transform mtx;
+
+						mtx.basis[0].x = texture[base_ofs + 0];
+						mtx.basis[0].y = texture[base_ofs + 1];
+						mtx.origin.x = texture[base_ofs + 3];
+						base_ofs += 256 * 4;
+						mtx.basis[1].x = texture[base_ofs + 0];
+						mtx.basis[1].y = texture[base_ofs + 1];
+						mtx.origin.y = texture[base_ofs + 3];
+
+						AABB baabb = mtx.xform(skbones[j]);
+
+						if (first) {
+							laabb = baabb;
+							first = false;
+						} else {
+							laabb.merge_with(baabb);
+						}
+					}
+				} else {
+					for (int j = 0; j < bs; j++) {
+
+						if (!skused[j])
+							continue;
+
+						int base_ofs = j * 3 * 4;
+
+						Transform mtx;
+
+						mtx.basis[0].x = texture[base_ofs + 0];
+						mtx.basis[0].y = texture[base_ofs + 1];
+						mtx.basis[0].z = texture[base_ofs + 2];
+						mtx.origin.x = texture[base_ofs + 3];
+						base_ofs += 256 * 4;
+						mtx.basis[1].x = texture[base_ofs + 0];
+						mtx.basis[1].y = texture[base_ofs + 1];
+						mtx.basis[1].z = texture[base_ofs + 2];
+						mtx.origin.y = texture[base_ofs + 3];
+						base_ofs += 256 * 4;
+						mtx.basis[2].x = texture[base_ofs + 0];
+						mtx.basis[2].y = texture[base_ofs + 1];
+						mtx.basis[2].z = texture[base_ofs + 2];
+						mtx.origin.z = texture[base_ofs + 3];
+
+						AABB baabb = mtx.xform(skbones[j]);
+						if (first) {
+							laabb = baabb;
+							first = false;
+						} else {
+							laabb.merge_with(baabb);
+						}
+					}
+				}
+
+			} else {
+
+				laabb = mesh->surfaces[i]->aabb;
+			}
+
+			if (i == 0)
+				aabb = laabb;
+			else
+				aabb.merge_with(laabb);
+		}
+	} else {
+
+		for (int i = 0; i < mesh->surfaces.size(); i++) {
+
+			if (i == 0)
+				aabb = mesh->surfaces[i]->aabb;
+			else
+				aabb.merge_with(mesh->surfaces[i]->aabb);
+		}
 	}
 
 	return aabb;
