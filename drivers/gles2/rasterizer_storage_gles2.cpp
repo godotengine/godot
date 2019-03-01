@@ -30,12 +30,12 @@
 
 #include "rasterizer_storage_gles2.h"
 
-#include "core/engine.h"
 #include "core/math/transform.h"
 #include "core/project_settings.h"
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/shader_language.h"
+
 GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 /* TEXTURE API */
