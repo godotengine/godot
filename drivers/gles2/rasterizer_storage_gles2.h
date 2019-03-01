@@ -73,6 +73,8 @@ public:
 		bool s3tc_supported;
 		bool etc1_supported;
 		bool pvrtc_supported;
+		bool rgtc_supported;
+		bool bptc_supported;
 
 		bool keep_original_textures;
 
