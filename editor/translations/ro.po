@@ -87,6 +87,16 @@ msgstr "Duplicați Cheile Selectate"
 msgid "Delete Selected Key(s)"
 msgstr "Ştergeți Cheile Selectate"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "Adaugă punct"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "Deplasare punct"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Anim Clonare Chei"
@@ -114,6 +124,16 @@ msgstr "Anim Schimbare valoare cadre cheie"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Anim Schimbare apelare"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "Schimbă Numele Animației:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -171,6 +191,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Change Track Path"
+msgstr "Schimbați Valoarea Array-ului"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Toggle this track on/off."
 msgstr "Comutează modul fără distrageri."
 
@@ -196,6 +221,11 @@ msgstr "Ștergeți pista selectată."
 #, fuzzy
 msgid "Time (s): "
 msgstr "Timp X-Decolorare (s):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle Track Enabled"
+msgstr "Activare mod Doppler"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -251,6 +281,21 @@ msgid "Delete Key(s)"
 msgstr "Anim Ștergeți Cheile"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "Schimbă Numele Animației:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "Nod de Animație"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "Schimbați Bucla Anim"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Elimină Pista Anim"
 
@@ -292,6 +337,16 @@ msgid "Anim Insert Key"
 msgstr "Anim Inserați Cheie"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Step"
+msgstr "Schimbă Numele Animației:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "Rearanjați Autoload-urile"
+
+#: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
 
@@ -316,6 +371,11 @@ msgid "Not possible to add a new track without a root"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Bezier Track"
+msgstr "Anim Adăugați Pistă"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
 msgstr ""
 
@@ -324,8 +384,23 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Transform Track Key"
+msgstr "Transformare hartă UV"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "Anim Adăugați Pistă"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "Anim Inserați Pistă și Cheie"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -339,6 +414,11 @@ msgstr "Anim Mutați Cheie"
 #, fuzzy
 msgid "Clipboard is empty"
 msgstr "Clip-board de resurse gol !"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Paste Tracks"
+msgstr "Lipiţi Parametrii"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -385,11 +465,6 @@ msgstr "ArboreAnimație"
 #, fuzzy
 msgid "Copy Tracks"
 msgstr "Copie Parametrii"
-
-#: editor/animation_track_editor.cpp
-#, fuzzy
-msgid "Paste Tracks"
-msgstr "Lipiţi Parametrii"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -492,6 +567,19 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "Anim Adăugați Pistă"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
 msgstr ""
 
 #: editor/array_property_edit.cpp
@@ -1314,6 +1402,12 @@ msgstr ""
 msgid "Packing"
 msgstr "Ambalare"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1908,6 +2002,15 @@ msgstr "Salvează și închide"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Salvează schimbările la ’%s’ înainte de ieșire?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "Încărcarea resursei a eșuat."
+
+#: editor/editor_node.cpp
+msgid "A root node is required to save the scene."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3600,8 +3703,45 @@ msgstr "Încărcați"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "Deplasare punct"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "Schimbă Timpul Amestecului"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "Schimbă Timpul Amestecului"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "Adaugă punct"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "Adaugă Animația"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "Ștergere punct cale"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3648,12 +3788,41 @@ msgid "Triangle already exists"
 msgstr "EROARE: Numele animației există deja!"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "Anim Adăugați Pistă"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "Schimbă Timpul Amestecului"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "Schimbă Timpul Amestecului"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "Ștergere punct cale"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Remove BlendSpace2D Triangle"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "Comutați Globale AutoLoad"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3673,6 +3842,11 @@ msgid "Blend:"
 msgstr "Amestec:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "Modificări ale Actualizării"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "Editează Filtrele"
@@ -3682,9 +3856,52 @@ msgid "Output node can't be added to the blend tree."
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Add Node to BlendTree"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "Mod Mutare"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "Conectat"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "Deconectat"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "Animație"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "Creează Nod"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "Comutează modul fără distrageri."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "Schimbați Lung Anim"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3700,6 +3917,12 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "Nume Nod:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3936,6 +4159,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "Timpi de Amestecare Cross-Animație"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "Mod Mutare"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "Tranziție"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr ""
 
@@ -3963,6 +4201,20 @@ msgstr ""
 #, fuzzy
 msgid "No playback resource set at path: %s."
 msgstr "Nu în calea de resurse."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "Ștergeți"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "Nod Tranziție"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4800,6 +5052,10 @@ msgstr "Ține apăsat Shift pentru a edita individual tangentele"
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Procesează Sonda GI"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -5988,6 +6244,15 @@ msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "Creează Puncte de Emisie Din Mesh"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Rest Pose to Bones"
+msgstr ""
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Skeleton2D"
 msgstr "Singleton (Unicat)"
 
@@ -6099,10 +6364,6 @@ msgid "Vertices"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr ""
 
@@ -6147,7 +6408,7 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
+msgid "Align with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6241,6 +6502,12 @@ msgid "Freelook Speed Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "View Rotation Locked"
 msgstr "Curăță Rotația Cursorului"
@@ -6248,6 +6515,11 @@ msgstr "Curăță Rotația Cursorului"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "Snap pe grilă"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -6527,10 +6799,6 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
-msgstr ""
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -6874,6 +7142,11 @@ msgstr "RMB: Șterge Punctul."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Create a new rectangle."
+msgstr "Creați %s Nou"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create a new polygon."
 msgstr "Creează un nou poligon de la zero."
 
@@ -7055,6 +7328,28 @@ msgid "TileSet"
 msgstr "Set_de_Plăci..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "Setează ca Implicit pentru '%s'"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add Node to Visual Shader"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "Anim Clonare Chei"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr ""
 
@@ -7070,6 +7365,15 @@ msgstr ""
 msgid "VisualShader"
 msgstr ""
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "Editează Filtrele"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Mode Changed"
+msgstr ""
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr ""
@@ -7083,7 +7387,16 @@ msgid "Delete preset '%s'?"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -7094,6 +7407,10 @@ msgstr ""
 #, fuzzy
 msgid "Exporting All"
 msgstr "Exportare"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -8096,6 +8413,11 @@ msgid "Instantiated scenes can't become root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "Salvează Scena"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr ""
 
@@ -8129,6 +8451,11 @@ msgstr ""
 #, fuzzy
 msgid "Make Local"
 msgstr "Creează Oase"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "Salvează Scena"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8555,6 +8882,20 @@ msgid "Set From Tree"
 msgstr ""
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "Facilitare din"
+
+#: editor/settings_config_dialog.cpp
+msgid "Restore Shortcut"
+msgstr ""
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "Modifică Ancorele"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr ""
 
@@ -8760,6 +9101,10 @@ msgstr "Toată selecția"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Paint"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -9058,10 +9403,6 @@ msgid "Change Expression"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr ""
 
@@ -9142,6 +9483,11 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "Editează ObiectulPânză"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -10029,10 +10375,6 @@ msgstr ""
 #~ msgid "Search in files"
 #~ msgstr "Căutare Clase"
 
-#, fuzzy
-#~ msgid "Snap To Floor"
-#~ msgstr "Snap pe grilă"
-
 #~ msgid "Bake!"
 #~ msgstr "Coacere!"
 
@@ -10086,12 +10428,6 @@ msgstr ""
 
 #~ msgid "Out-In"
 #~ msgstr "Afară-Înăuntru"
-
-#~ msgid "Change Anim Len"
-#~ msgstr "Schimbați Lung Anim"
-
-#~ msgid "Change Anim Loop"
-#~ msgstr "Schimbați Bucla Anim"
 
 #~ msgid "Anim Create Typed Value Key"
 #~ msgstr "Anim Creați Cheie Valoare Typed"

@@ -94,6 +94,16 @@ msgstr "Kiválasztás megkettőzés"
 msgid "Delete Selected Key(s)"
 msgstr "Törli a kiválasztott fájlokat?"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "Pont hozzáadása"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "Pont Mozgatása"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Animáció kulcsok megkettőzése"
@@ -121,6 +131,16 @@ msgstr "Animáció kulcsképkocka érték változtatás"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Animáció hívás változtatás"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "Animáció Nevének Megváltoztatása:"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -178,6 +198,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Change Track Path"
+msgstr "Tömb Értékének Megváltoztatása"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Toggle this track on/off."
 msgstr "Zavarmentes mód váltása."
 
@@ -203,6 +228,11 @@ msgstr "Kiválasztott nyomvonal eltávolítása."
 #, fuzzy
 msgid "Time (s): "
 msgstr "Áttűnési Idő (mp):"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle Track Enabled"
+msgstr "Doppler engedélyezése"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -258,6 +288,21 @@ msgid "Delete Key(s)"
 msgstr "Animáció kulcs törlés"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "Animáció Nevének Megváltoztatása:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "Animáció Node"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "Animáció hurok változtatás"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Animáció nyomvonal eltávolítás"
 
@@ -299,6 +344,16 @@ msgid "Anim Insert Key"
 msgstr "Animáció kulcs beillesztés"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Step"
+msgstr "Animáció Nevének Megváltoztatása:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "AutoLoad-ok Átrendezése"
+
+#: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr ""
 
@@ -323,6 +378,11 @@ msgid "Not possible to add a new track without a root"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Bezier Track"
+msgstr "Animáció nyomvonal hozzáadás"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
 msgstr ""
 
@@ -331,8 +391,23 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Transform Track Key"
+msgstr "UV Térkép Transzformálása"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "Animáció nyomvonal hozzáadás"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "Animáció nyomvonal és kulcs beillesztés"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -346,6 +421,11 @@ msgstr "Animáció kulcs mozgatás"
 #, fuzzy
 msgid "Clipboard is empty"
 msgstr "Az erőforrás vágólap üres!"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Paste Tracks"
+msgstr "Paraméterek Beillesztése"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -392,11 +472,6 @@ msgstr "AnimációFa"
 #, fuzzy
 msgid "Copy Tracks"
 msgstr "Paraméterek Másolása"
-
-#: editor/animation_track_editor.cpp
-#, fuzzy
-msgid "Paste Tracks"
-msgstr "Paraméterek Beillesztése"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -500,6 +575,19 @@ msgstr ""
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Másolás"
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "Animáció nyomvonal hozzáadás"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1315,6 +1403,12 @@ msgstr ""
 msgid "Packing"
 msgstr "Csomagolás"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1914,6 +2008,15 @@ msgstr "Mentés és Bezárás"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "Bezárás előtt menti a '%s'-n végzett módosításokat?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "Nem sikerült betölteni az erőforrást."
+
+#: editor/editor_node.cpp
+msgid "A root node is required to save the scene."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3606,8 +3709,45 @@ msgstr "Betöltés"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "Pont Mozgatása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "Keverési Idő Módosítása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "Keverési Idő Módosítása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
+msgstr ""
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "Pont hozzáadása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "Animáció Hozzáadása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "Útvonal Pont Eltávolítása"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
 msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3654,12 +3794,41 @@ msgid "Triangle already exists"
 msgstr "HIBA: Animáció név már létezik!"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "Animáció nyomvonal hozzáadás"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "Keverési Idő Módosítása"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "Keverési Idő Módosítása"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "Útvonal Pont Eltávolítása"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+msgid "Remove BlendSpace2D Triangle"
+msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr ""
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr ""
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "AutoLoad Globálisok Kapcsolása"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3679,6 +3848,11 @@ msgid "Blend:"
 msgstr "Keverés:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "Változások Frissítése"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "Szűrők Szerkesztése"
@@ -3688,9 +3862,52 @@ msgid "Output node can't be added to the blend tree."
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+msgid "Add Node to BlendTree"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "Mozgás Mód"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "Csatlakozva"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "Kapcsolat bontva"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "Animáció"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "Node létrehozás"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "Zavarmentes mód váltása."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "Animáció hossz változtatás"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3706,6 +3923,12 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "Node neve:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3943,6 +4166,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "Animációk Közötti Keverési Idők"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "Mozgás Mód"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "Átmenet"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr ""
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr ""
 
@@ -3970,6 +4208,20 @@ msgstr ""
 #, fuzzy
 msgid "No playback resource set at path: %s."
 msgstr "Nincs az erőforrás elérési útban."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "Eltávolít"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "Átmenet Node"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4810,6 +5062,10 @@ msgstr "Tartsa lenyomva a Shift gombot az érintők egyenkénti szerkesztéséhe
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "GI Szonda Besütése"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -6004,6 +6260,15 @@ msgstr ""
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 #, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "Kibocsátási Pontok Létrehozása A Mesh Alapján"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+msgid "Set Rest Pose to Bones"
+msgstr ""
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Skeleton2D"
 msgstr "Egyke"
 
@@ -6115,10 +6380,6 @@ msgid "Vertices"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr ""
 
@@ -6163,7 +6424,7 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
+msgid "Align with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6256,12 +6517,23 @@ msgid "Freelook Speed Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "Rácshoz illesztés"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -6542,10 +6814,6 @@ msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
-msgstr ""
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
 msgstr ""
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -6889,6 +7157,11 @@ msgstr "Jobb Egérgomb: Pont Törlése."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Create a new rectangle."
+msgstr "Új %s Létrehozása"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Create a new polygon."
 msgstr "Új sokszög létrehozása a semmiből."
 
@@ -7070,6 +7343,29 @@ msgid "TileSet"
 msgstr "TileSet-re..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "Beállítás Alapértelmezettként '%s'-hez"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to Visual Shader"
+msgstr "Árnyaló"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "Animáció kulcsok megkettőzése"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr ""
 
@@ -7086,6 +7382,16 @@ msgstr ""
 msgid "VisualShader"
 msgstr "Árnyaló"
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "Szűrők Szerkesztése"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Visual Shader Mode Changed"
+msgstr "Árnyaló"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr ""
@@ -7099,7 +7405,16 @@ msgid "Delete preset '%s'?"
 msgstr ""
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
 msgstr ""
 
 #: editor/project_export.cpp
@@ -7110,6 +7425,10 @@ msgstr ""
 #, fuzzy
 msgid "Exporting All"
 msgstr "Exportálás"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -8106,6 +8425,11 @@ msgid "Instantiated scenes can't become root"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "Scene mentés"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr ""
 
@@ -8139,6 +8463,11 @@ msgstr ""
 #, fuzzy
 msgid "Make Local"
 msgstr "Csontok Létrehozása"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "Scene mentés"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8564,6 +8893,20 @@ msgid "Set From Tree"
 msgstr ""
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "Lassan Ki"
+
+#: editor/settings_config_dialog.cpp
+msgid "Restore Shortcut"
+msgstr ""
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "Horgonyok Módosítása"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr ""
 
@@ -8769,6 +9112,10 @@ msgstr "Minden kiválasztás"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
+msgstr ""
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "GridMap Paint"
 msgstr ""
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
@@ -9074,10 +9421,6 @@ msgid "Change Expression"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr ""
 
@@ -9158,6 +9501,11 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "CanvasItem Szerkesztése"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -10071,10 +10419,6 @@ msgstr ""
 #~ msgid "Convert To Lowercase"
 #~ msgstr "Konvertálás Kisbetűsre"
 
-#, fuzzy
-#~ msgid "Snap To Floor"
-#~ msgstr "Rácshoz illesztés"
-
 #~ msgid "Bake!"
 #~ msgstr "Besütés!"
 
@@ -10170,12 +10514,6 @@ msgstr ""
 
 #~ msgid "Out-In"
 #~ msgstr "Ki-Be"
-
-#~ msgid "Change Anim Len"
-#~ msgstr "Animáció hossz változtatás"
-
-#~ msgid "Change Anim Loop"
-#~ msgstr "Animáció hurok változtatás"
 
 #~ msgid "Anim Create Typed Value Key"
 #~ msgstr "Animáció típusos érték kulcs létrehozás"

@@ -119,6 +119,16 @@ msgstr "Duplicar Clave(s) Seleccionada(s)"
 msgid "Delete Selected Key(s)"
 msgstr "Eliminar Clave(s) Seleccionada(s)"
 
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Add Bezier Point"
+msgstr "Añadir punto"
+
+#: editor/animation_bezier_editor.cpp
+#, fuzzy
+msgid "Move Bezier Points"
+msgstr "Mover Puntos"
+
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
 msgstr "Duplicar claves de animación"
@@ -146,6 +156,16 @@ msgstr "Cambiar valor de la clave de animación"
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Cambiar llamada de animación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Length"
+msgstr "Cambiar repetición de animación"
+
+#: editor/animation_track_editor.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Change Animation Loop"
+msgstr "Cambiar repetición de animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -197,6 +217,11 @@ msgid "Anim Clips:"
 msgstr "Clips de Anim:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Track Path"
+msgstr "Cambiar valor del array"
+
+#: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
 msgstr "Act./Desact. esta pista."
 
@@ -219,6 +244,11 @@ msgstr "Quitar esta pista."
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
 msgstr "Tiempo (s): "
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Toggle Track Enabled"
+msgstr "Activar Doppler"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -271,6 +301,21 @@ msgid "Delete Key(s)"
 msgstr "Eliminar Clave(s)"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Update Mode"
+msgstr "Cambiar nombre de animación:"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Interpolation Mode"
+msgstr "Modo de Interpolación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Loop Mode"
+msgstr "Cambiar repetición de animación"
+
+#: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
 msgstr "Quitar pista de animación"
 
@@ -312,6 +357,16 @@ msgid "Anim Insert Key"
 msgstr "Insertar clave de animación"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Change Animation Step"
+msgstr "Cambiar FPS de animación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Rearrange Tracks"
+msgstr "Reordenar Autoloads"
+
+#: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
 msgstr "Las pistas Transform solo aplican a nodos de tipo Spatial."
 
@@ -342,6 +397,11 @@ msgid "Not possible to add a new track without a root"
 msgstr "No es posible agregar una nueva pista sin una raíz"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Bezier Track"
+msgstr "Agregar Pista"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
 msgstr ""
 "La ruta de la pista es inválida, por lo tanto no se pueden agregar claves."
@@ -351,10 +411,25 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "La pista no es de tipo Spatial, no se puede insertar la clave"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Transform Track Key"
+msgstr "Pista de Transformación 3D"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Track Key"
+msgstr "Agregar Pista"
+
+#: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
 "La ruta de la pista es inválida, por ende no se pueden agregar claves de "
 "métodos."
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Add Method Track Key"
+msgstr "Pista de Llamada a Métodos"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -367,6 +442,10 @@ msgstr "Mover Claves de Anim"
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
 msgstr "El portapapeles está vacío"
+
+#: editor/animation_track_editor.cpp
+msgid "Paste Tracks"
+msgstr "Pegar Pistas"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -411,10 +490,6 @@ msgstr "Propiedades de animación."
 #: editor/animation_track_editor.cpp
 msgid "Copy Tracks"
 msgstr "Copiar Pistas"
-
-#: editor/animation_track_editor.cpp
-msgid "Paste Tracks"
-msgstr "Pegar Pistas"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -515,6 +590,19 @@ msgstr "Elegir pistas a copiar:"
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
 msgstr "Copiar"
+
+#: editor/animation_track_editor_plugins.cpp
+#, fuzzy
+msgid "Add Audio Track Clip"
+msgstr "Clips de Audio:"
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip Start Offset"
+msgstr ""
+
+#: editor/animation_track_editor_plugins.cpp
+msgid "Change Audio Track Clip End Offset"
+msgstr ""
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1329,6 +1417,12 @@ msgstr ""
 msgid "Packing"
 msgstr "Empaquetando"
 
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for GLES2. Enable support "
+"in Project Settings."
+msgstr ""
+
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
@@ -1906,6 +2000,16 @@ msgstr "Guardar y cerrar"
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
 msgstr "¿Guardar cambios de '%s' antes de cerrar?"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Saved %s modified resource(s)."
+msgstr "Error al cargar el recurso."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "A root node is required to save the scene."
+msgstr "Solo se requiere un archivo para textura grande."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3556,10 +3660,47 @@ msgstr "Cargar..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Move Node Point"
+msgstr "Mover Puntos"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Limits"
+msgstr "Cambiar tiempo de mezcla"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace1D Labels"
+msgstr "Cambiar tiempo de mezcla"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
 "Este tipo de nodo no puede ser usado. Solo los nodos raíz están permitidos."
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Node Point"
+msgstr "Añadir nodo"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Animation Point"
+msgstr "Añadir animación"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace1D Point"
+msgstr "Quitar punto de ruta"
+
+#: editor/plugins/animation_blend_space_1d_editor.cpp
+msgid "Move BlendSpace1D Node Point"
+msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3605,12 +3746,42 @@ msgid "Triangle already exists"
 msgstr "El triángulo ya existe"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Add Triangle"
+msgstr "Añadir variable"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Limits"
+msgstr "Cambiar tiempo de mezcla"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Change BlendSpace2D Labels"
+msgstr "Cambiar tiempo de mezcla"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Point"
+msgstr "Quitar punto de ruta"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Remove BlendSpace2D Triangle"
+msgstr "Quitar variable"
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr "BlendSpace2D no pertenece a un nodo AnimationTree."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
 msgstr "No hay ningún triángulo, así que no se puede hacer blending."
+
+#: editor/plugins/animation_blend_space_2d_editor.cpp
+#, fuzzy
+msgid "Toggle Auto Triangles"
+msgstr "Act/desact. globales de Autoload"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3630,6 +3801,11 @@ msgid "Blend:"
 msgstr "Mezcla:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Parameter Changed"
+msgstr "Cambios del material"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Edit Filters"
 msgstr "Editar filtros"
@@ -3639,11 +3815,55 @@ msgid "Output node can't be added to the blend tree."
 msgstr "El nodo de salida no puede ser agregado al blend tree."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to BlendTree"
+msgstr "Añadir nodo(s) desde árbol"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Node Moved"
+msgstr "Modo movimiento"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
 msgstr ""
 "No se pudo conectar, el puerto podría estar en uso o la conexión ser "
 "inválida."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Connected"
+msgstr "Conectado"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Nodes Disconnected"
+msgstr "Desconectado"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Set Animation"
+msgstr "Nueva Animación"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Node"
+msgstr "Eliminar nodo(s)"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Toggle Filter On/Off"
+msgstr "Act./Desact. esta pista."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#, fuzzy
+msgid "Change Filter"
+msgstr "Cambiar filtro de localización"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3665,6 +3885,12 @@ msgid ""
 msgstr ""
 "El reproductor de animación no tiene una ruta válida a un nodo raíz, así que "
 "no se pudieron obtener los nombres de las pistas."
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Renamed"
+msgstr "Nombre del nodo"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3894,6 +4120,21 @@ msgid "Cross-Animation Blend Times"
 msgstr "Cross-Animation Blend Times"
 
 #: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Move Node"
+msgstr "Modo movimiento"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Add Transition"
+msgstr "Añadir traducción"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Add Node"
+msgstr "Añadir nodo"
+
+#: editor/plugins/animation_state_machine_editor.cpp
 msgid "End"
 msgstr "Fin"
 
@@ -3920,6 +4161,20 @@ msgstr "El comienzo y fin de los nodos son necesarios para una sub-transición."
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "No playback resource set at path: %s."
 msgstr "Ningún recurso de reproducción asignado en la ruta: %s."
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Node Removed"
+msgstr "Eliminado:"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+#, fuzzy
+msgid "Transition Removed"
+msgstr "Nodo Transition"
+
+#: editor/plugins/animation_state_machine_editor.cpp
+msgid "Set Start Node (Autoplay)"
+msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4742,6 +4997,10 @@ msgstr "Mantén Mayús para editar las tangentes individualmente"
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
 msgstr "Precalcular GI Probe"
+
+#: editor/plugins/gradient_editor_plugin.cpp
+msgid "Gradient Edited"
+msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -5897,6 +6156,16 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto no tiene huesos, crea algunos nodos Bone2D hijos."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Create Rest Pose from Bones"
+msgstr "Crear Pose de Descanso (De los Huesos)"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Set Rest Pose to Bones"
+msgstr "Crear Pose de Descanso (De los Huesos)"
+
+#: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
 msgstr "Skeleton2D"
 
@@ -6005,10 +6274,6 @@ msgid "Vertices"
 msgstr "Vértices"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "FPS"
-msgstr "FPS"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Top View."
 msgstr "Vista superior."
 
@@ -6053,7 +6318,8 @@ msgid "Rear"
 msgstr "Detrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with view"
+#, fuzzy
+msgid "Align with View"
 msgstr "Alinear con vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6145,12 +6411,23 @@ msgid "Freelook Speed Modifier"
 msgstr "Modificador de velocidad de vista libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
 msgstr "Bloquear Rotación de Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
 msgstr "Diálogo XForm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Snap Nodes To Floor"
+msgstr "Ajustar al suelo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -6430,10 +6707,6 @@ msgstr "Pegar fotograma"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
 msgstr "Añadir elemento vacío"
-
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "Change Animation Loop"
-msgstr "Cambiar repetición de animación"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation FPS"
@@ -6761,6 +7034,11 @@ msgid "Erase bitmask."
 msgstr "Borrar bitmask."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Create a new rectangle."
+msgstr "Crear nuevos nodos."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
 msgstr "Crear un nuevo polígono."
 
@@ -6939,6 +7217,29 @@ msgid "TileSet"
 msgstr "TileSet"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set Uniform Name"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Set Input Default Port"
+msgstr "Configurar por defecto para '%s'"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Add Node to Visual Shader"
+msgstr "VisualShader"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Duplicate Nodes"
+msgstr "Duplicar nodo(s)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Visual Shader Input Type Changed"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "Vértice"
 
@@ -6954,6 +7255,16 @@ msgstr "Luz"
 msgid "VisualShader"
 msgstr "VisualShader"
 
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Edit Visual Property"
+msgstr "Editar Prioridad del Tile"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Visual Shader Mode Changed"
+msgstr "Cambios del shader"
+
 #: editor/project_export.cpp
 msgid "Runnable"
 msgstr "Ejecutable"
@@ -6967,9 +7278,17 @@ msgid "Delete preset '%s'?"
 msgstr "¿Eliminar preajuste '%s'?"
 
 #: editor/project_export.cpp
-msgid "Export templates for this platform are missing/corrupted:"
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"Export templates seem to be missing or invalid."
 msgstr ""
-"Las plantillas de exportación para esta plataforma faltan/están corruptas:"
+
+#: editor/project_export.cpp
+msgid ""
+"Failed to export the project for platform '%s'.\n"
+"This might be due to a configuration issue in the export preset or your "
+"export settings."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Release"
@@ -6978,6 +7297,11 @@ msgstr "Release"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Exportar Todo"
+
+#: editor/project_export.cpp
+msgid "Export templates for this platform are missing/corrupted:"
+msgstr ""
+"Las plantillas de exportación para esta plataforma faltan/están corruptas:"
 
 #: editor/project_export.cpp
 msgid "Presets"
@@ -8020,6 +8344,11 @@ msgid "Instantiated scenes can't become root"
 msgstr "Las escenas instanciadas no pueden ser raíz"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Make node as Root"
+msgstr "Convertir en raíz de escena"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
 msgstr "¿Eliminar nodo(s)?"
 
@@ -8054,6 +8383,11 @@ msgstr "Cargar como Placeholder"
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
 msgstr "Crear local"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "New Scene Root"
+msgstr "Convertir en raíz de escena"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
@@ -8485,6 +8819,21 @@ msgid "Set From Tree"
 msgstr "Establecer desde árbol"
 
 #: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Erase Shortcut"
+msgstr "Transición de salida"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Restore Shortcut"
+msgstr "Atajos"
+
+#: editor/settings_config_dialog.cpp
+#, fuzzy
+msgid "Change Shortcut"
+msgstr "Cambiar anclas"
+
+#: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
 msgstr "Atajos"
 
@@ -8691,6 +9040,11 @@ msgstr "Llenar selección en GridMap"
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Duplicate Selection"
 msgstr "GridMap Duplicar selección"
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "GridMap Paint"
+msgstr "Coloreado de GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
@@ -8995,10 +9349,6 @@ msgid "Change Expression"
 msgstr "Cambiar expresión"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Add Node"
-msgstr "Añadir nodo"
-
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Remove VisualScript Nodes"
 msgstr "Quitar nodos de VisualScript"
 
@@ -9081,6 +9431,11 @@ msgstr "El script ya contiene la función '%s'"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change Input Value"
 msgstr "Cambiar valor de entrada"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Resize Comment"
+msgstr "Redimensionar CanvasItem"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -9974,6 +10329,9 @@ msgstr "Asignación a uniform."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 
+#~ msgid "FPS"
+#~ msgstr "FPS"
+
 #~ msgid "Warnings:"
 #~ msgstr "Advertencias:"
 
@@ -10146,9 +10504,6 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 
 #~ msgid "Convert To Lowercase"
 #~ msgstr "Convertir a minúsculas"
-
-#~ msgid "Snap To Floor"
-#~ msgstr "Ajustar al suelo"
 
 #~ msgid "Rotate 0 degrees"
 #~ msgstr "Rotar 0 grados"
@@ -10696,9 +11051,6 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #~ msgid "Added:"
 #~ msgstr "Añadido:"
 
-#~ msgid "Removed:"
-#~ msgstr "Eliminado:"
-
 #~ msgid "Could not save atlas subtexture:"
 #~ msgstr "No se pudo guardar la subtextura del altas:"
 
@@ -10970,9 +11322,6 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #~ msgid "Error importing:"
 #~ msgstr "Hubo un error al importar:"
 
-#~ msgid "Only one file is required for large texture."
-#~ msgstr "Solo se requiere un archivo para textura grande."
-
 #~ msgid "Max Texture Size:"
 #~ msgstr "Tamaño máximo de textura:"
 
@@ -11206,10 +11555,6 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 
 #~ msgid "Edit Groups"
 #~ msgstr "Editar grupos"
-
-#, fuzzy
-#~ msgid "GridMap Paint"
-#~ msgstr "Coloreado de GridMap"
 
 #, fuzzy
 #~ msgid "Tiles"
