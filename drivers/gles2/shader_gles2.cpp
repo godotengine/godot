@@ -839,7 +839,7 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				default: {
-					ERR_PRINT("type missing, bug?");
+					ERR_PRINT("ShaderNode type missing, bug?");
 				} break;
 			}
 		} else if (E->get().default_value.size()) {
@@ -970,7 +970,7 @@ void ShaderGLES2::use_material(void *p_material) {
 					// Nothing to do?
 				} break;
 				default: {
-					ERR_PRINT("type missing, bug?");
+					ERR_PRINT("ShaderNode type missing, bug?");
 				} break;
 			}
 		} else { //zero
@@ -1041,7 +1041,7 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_MAT2: {
-					GLfloat mat[4]{ 0, 0, 0, 0 };
+					GLfloat mat[4] = { 0, 0, 0, 0 };
 
 					glUniformMatrix2fv(location, 1, GL_FALSE, mat);
 				} break;
@@ -1054,22 +1054,7 @@ void ShaderGLES2::use_material(void *p_material) {
 				} break;
 
 				case ShaderLanguage::TYPE_MAT4: {
-					GLfloat mat[16] = { 0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0,
-						0 };
+					GLfloat mat[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 					glUniformMatrix4fv(location, 1, GL_FALSE, mat);
 
@@ -1104,7 +1089,7 @@ void ShaderGLES2::use_material(void *p_material) {
 					// Nothing to do?
 				} break;
 				default: {
-					ERR_PRINT("type missing, bug?");
+					ERR_PRINT("ShaderNode type missing, bug?");
 				} break;
 			}
 		}
