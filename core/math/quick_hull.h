@@ -64,7 +64,7 @@ public:
 	struct Face {
 
 		Plane plane;
-		int vertices[3];
+		uint32_t vertices[3];
 		Vector<int> points_over;
 
 		bool operator<(const Face &p_face) const {
