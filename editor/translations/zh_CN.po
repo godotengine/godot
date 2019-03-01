@@ -45,7 +45,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-02-18 08:54+0000\n"
+"PO-Revision-Date: 2019-02-21 21:17+0000\n"
 "Last-Translator: yzt <834950797@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -579,9 +579,8 @@ msgid "Warnings"
 msgstr "警告"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "行号和列号"
+msgstr "行号和列号。"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1129,9 +1128,8 @@ msgid "Add Bus"
 msgstr "添加Bus"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "将音频Bus布局保存为..."
+msgstr "将新的音频总线添加到此布局。"
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2369,9 +2367,8 @@ msgid "Save & Restart"
 msgstr "保存并重启"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "旋转时，重新绘制编辑器窗口！"
+msgstr "编辑器窗口重绘时旋转。"
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -5150,7 +5147,7 @@ msgstr "创建UV贴图"
 msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
-msgstr ""
+msgstr "多边形2d 具有内部顶点, 因此不能再在视口中对其进行编辑。"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -9615,9 +9612,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "在十六进制值和代码值之间切换。"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "将当前颜色添加为预设"
+msgstr "将当前颜色添加为预设。"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

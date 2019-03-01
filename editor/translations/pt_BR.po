@@ -38,7 +38,7 @@
 # Pedro Pacheco <pedroxixipa@hotmail.com>, 2018, 2019.
 # Bruno Henrique <nimbusdroid@gmail.com>, 2018, 2019.
 # Luciano Scilletta <lucianoscilletta@gmail.com>, 2018.
-# Julio Yagami <juliohenrique31501234@hotmail.com>, 2018.
+# Julio Yagami <juliohenrique31501234@hotmail.com>, 2018, 2019.
 # Fernando Martinez <contact@fernandodev.com>, 2018.
 # Marcelo <mitissa@gmail.com>, 2018, 2019.
 # Walter Bolitto <wrcarval@live.com>, 2018, 2019.
@@ -51,12 +51,14 @@
 # Alan Valmorbida <alanvalmorbida@gmail.com>, 2019.
 # João Vitor Ferreira Cavalcante <jvfecav@gmail.com>, 2019.
 # Thiago Amendola <amendolathiago@gmail.com>, 2019.
+# Raphael Nogueira Campos <raphaelncampos@gmail.com>, 2019.
+# Dimenicius <vinicius.costa.92@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-02-14 02:10+0000\n"
-"Last-Translator: Alan Valmorbida <alanvalmorbida@gmail.com>\n"
+"PO-Revision-Date: 2019-02-21 21:18+0000\n"
+"Last-Translator: Julio Yagami <juliohenrique31501234@hotmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -593,9 +595,8 @@ msgid "Warnings"
 msgstr "Avisos"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Números de linha e coluna"
+msgstr "Números de linha e coluna."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1154,9 +1155,8 @@ msgid "Add Bus"
 msgstr "Adicionar Canal"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Salvar Layout de Canais de Áudio Como..."
+msgstr "Adiciona um novo Canal de Áudio a esse layout."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2434,9 +2434,8 @@ msgid "Save & Restart"
 msgstr "Salvar e Reiniciar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "Gira quando a janela do editor atualiza!"
+msgstr "Gira quando a janela do editor atualiza."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -3902,7 +3901,7 @@ msgstr "Sincronizar"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
-msgstr "No final"
+msgstr "No Fim"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Travel"
@@ -4342,15 +4341,14 @@ msgstr "Mover CanvaItem"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
 msgstr ""
+"Predefinições para os valores de âncoras e margens de um nó de controle."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Filhos de contêineres tem suas posições e tamanhos sobrescritos pelos seus "
-"pais."
+"Filhos de contêineres tem sua âncora e margens sobrescritos pelos seus pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5265,6 +5263,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"Polygon2D tem vértices internos, portanto não pode mais ser editado no "
+"Viewport."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -6357,9 +6357,8 @@ msgid "Post"
 msgstr "Pós"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Nameless gizmo"
-msgstr "Gaveta sem nome"
+msgstr "Coisa sem nome"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
@@ -7259,7 +7258,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "Tem certeza de que quer abrir mais de um projeto?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -7272,13 +7270,12 @@ msgid ""
 "the engine anymore."
 msgstr ""
 "O seguinte arquivo de configurações do projeto foi gerado por uma versão "
-"mais antiga do mecanismo e precisa ser convertido para esta versão:\n"
+"mais antiga do Godot e precisa ser convertido para esta versão:\n"
 "\n"
 "%s\n"
 "\n"
 "Você deseja realizar a conversão?\n"
-"Aviso: você não poderá mais abrir o projeto com versões anteriores do "
-"mecanismo."
+"Aviso: você não poderá mais abrir o projeto com versões anteriores do Godot."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7992,7 +7989,6 @@ msgid "Duplicate Node(s)"
 msgstr "Duplicar Nó(s)"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
 "Não é possível re-hierarquizar nós em cenas herdadas, a ordem dos nós não "
@@ -9252,9 +9248,10 @@ msgstr "OpenJDK jarsigner não configurado nas opções do Editor."
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
+"Porta-chaves de depuração não configurado nas Configurações do Editor e nem "
+"na predefinição."
 
 #: platform/android/export/export.cpp
-#, fuzzy
 msgid "Invalid public key for APK expansion."
 msgstr "Chave pública inválida para expansão de APK."
 
@@ -9267,9 +9264,8 @@ msgid "Identifier is missing."
 msgstr "Identificador está ausente."
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Identifier segments must be of non-zero length."
-msgstr "O identificador deve ter comprimento diferente de zero."
+msgstr "Os segmentos de identificador devem ter comprimento diferente de zero."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
@@ -9301,7 +9297,6 @@ msgid "Invalid Identifier:"
 msgstr "O nome não é um identificador válido:"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Required icon is not specified in the preset."
 msgstr "Ícone necessário não especificado na predefinição."
 
@@ -9346,7 +9341,6 @@ msgid "Invalid product GUID."
 msgstr "GUID de produto inválido."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
 msgstr "GUID do editor inválido."
 
@@ -9355,37 +9349,32 @@ msgid "Invalid background color."
 msgstr "Cor de fundo inválida."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr "Dimensões inválidas do logo da loja (deve ser 50x50)."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr "Dimensões inválidas do logo quadrado de 44x44 (deve ser 44x44)."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr "Dimensões inválidas do logo quadrado de 71x71 (deve ser 71x71)."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr "Dimensões inválidas do logo quadrado de 150x150 (deve ser 150x150)."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr "Dimensões inválidas do logo quadrado de 310x310 (deve ser 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Dimensões inválidas de logo retangular de 310x150 (deve ser 310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Dimensões inválidas da tela de abertura (deve ser 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -9503,6 +9492,9 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"Partículas baseadas em GPU não são suportadas pelo driver de vídeo GLES2.\n"
+"Use o nó CPUParticles2D como substituto. Você pode usar a opção \"Converter "
+"para CPUParticles\" para este propósito."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -9699,6 +9691,9 @@ msgid ""
 "Use the CPUParticles node instead. You can use the \"Convert to CPUParticles"
 "\" option for this purpose."
 msgstr ""
+"Partículas baseadas em GPU não são suportadas pelo driver de vídeo GLES2.\n"
+"Use o nó CPUParticles como substituto. Você pode usar a opção \"Converter "
+"para CPUParticles\" para este propósito."
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -9719,13 +9714,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow só funciona quando definido como filho de um nó Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
 "Path's Curve resource."
 msgstr ""
-"OrientedPathFollow requer \"Up Vector\" habilitado no recurso Curva do "
-"Caminho pai."
+"PathFollow ROTATION_ORIENTED requer \"Up Vector\" habilitado no recurso "
+"Curva do Caminho pai."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -9835,7 +9829,7 @@ msgstr "Este nó foi reprovado. Use AnimationTree em vez disso."
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "Escolha uma cor da tela."
 
 #: scene/gui/color_picker.cpp
 msgid "Raw Mode"
@@ -9843,12 +9837,11 @@ msgstr "Modo Bruto"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
-msgstr ""
+msgstr "Alterne entre valores haxadecimais e de código."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Adicionar cor atual como uma predefinição"
+msgstr "Adicionar cor atual como uma predefinição."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

@@ -8,12 +8,13 @@
 # Nguyễn Tuấn Anh <anhnt.fami@gmail.com>, 2017.
 # Tung Le <tungkradle@gmail.com>, 2017.
 # 38569459 <xxx38569459@gmail.com>, 2018.
+# TyTYct Hihi <tytyct@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:44+0100\n"
-"Last-Translator: 01lifeleft <01lifeleft@gmail.com>\n"
+"PO-Revision-Date: 2019-03-01 11:59+0000\n"
+"Last-Translator: TyTYct Hihi <tytyct@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2296,12 +2297,10 @@ msgid "Issue Tracker"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Community"
 msgstr "Cộng đồng"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "About"
 msgstr "Thông tin"
 
@@ -7527,7 +7526,6 @@ msgid "Project Settings (project.godot)"
 msgstr ""
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "General"
 msgstr "Tổng quan"
 

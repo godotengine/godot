@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-13 07:10+0000\n"
+"PO-Revision-Date: 2019-02-21 21:18+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -557,9 +557,8 @@ msgid "Warnings"
 msgstr "Попередження"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Номери рядків і позицій"
+msgstr "Номери рядків і позицій."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1118,9 +1117,8 @@ msgid "Add Bus"
 msgstr "Додати шину"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Зберегти компонування аудіо шини як..."
+msgstr "Додати нову аудіошину до цього компонування."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -2398,9 +2396,8 @@ msgid "Save & Restart"
 msgstr "Зберегти і перезапустити"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Spins when the editor window redraws."
-msgstr "Обертається, коли перемальовується вікно редактора!"
+msgstr "Обертається, коли перемальовується вікно редактора."
 
 #: editor/editor_node.cpp
 msgid "Update Always"
@@ -5227,6 +5224,8 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"Плоский багатокутник має внутрішні вершини, отже його редагування у полі "
+"перегляду надалі не є можливим."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
@@ -9819,9 +9818,8 @@ msgid "Switch between hexadecimal and code values."
 msgstr "Перемикання між шістнадцятковими значеннями і кодами."
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Add current color as a preset."
-msgstr "Додати поточний колір в якості пресету"
+msgstr "Додати поточний колір як шаблон."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

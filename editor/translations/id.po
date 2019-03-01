@@ -17,12 +17,13 @@
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 # Evan Hyacinth <muhammad.ivan669@gmail.com>, 2018, 2019.
 # Guntur Sarwohadi <gsarwohadi@gmail.com>, 2019.
+# Alphin Albukhari <alphinalbukhari5@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:07+0000\n"
-"Last-Translator: Guntur Sarwohadi <gsarwohadi@gmail.com>\n"
+"PO-Revision-Date: 2019-03-01 11:59+0000\n"
+"Last-Translator: Alphin Albukhari <alphinalbukhari5@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -30,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.5-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -443,15 +444,15 @@ msgstr "Gunakan Lengkungan Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Anim. Optimisasi"
+msgstr "Pengoptimal Animasi"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
-msgstr "Maks. Linier Error:"
+msgstr "Error Linier Maksimum:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Angular Error:"
-msgstr "Maks. Angular Error:"
+msgstr "Error Angular Maksimum:"
 
 #: editor/animation_track_editor.cpp
 msgid "Max Optimizable Angle:"
@@ -459,7 +460,7 @@ msgstr "Maksimal Angle yang dapat Dioptimalkan:"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize"
-msgstr "Optimasi"
+msgstr "Optimalkan"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
@@ -483,7 +484,7 @@ msgstr "Bersihkan"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Ratio:"
-msgstr "Skala Rasio:"
+msgstr "Rasio Skala:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
@@ -523,7 +524,7 @@ msgstr "Tidak ada yang cocok"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr "%d kejadian diganti."
+msgstr "kejadian %d diganti."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -563,11 +564,11 @@ msgstr "Kebalikan Semula Pandangan"
 
 #: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Peringatan"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Nomor Baris dan Kolom"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -651,18 +652,17 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Memutuskan '%s' dari '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
-msgstr "Memutuskan '%s' dari '%s'"
+msgstr "Memutuskan semua dari sinyal '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr "Menyambungkan..."
+msgstr "Sambungkan..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Tidak tersambung"
+msgstr "Putuskan"
 
 #: editor/connections_dialog.cpp
 msgid "Connect Signal: "

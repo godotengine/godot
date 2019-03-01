@@ -36,12 +36,13 @@
 # Alexander Danilov <modos189@protonmail.com>, 2019.
 # Sergey Nakhov <true.stalin.exe@gmail.com>, 2019.
 # Bumerang <it.bumerang@gmail.com>, 2019.
+# Viorel <vrila.noroc@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-13 16:10+0000\n"
-"Last-Translator: Bumerang <it.bumerang@gmail.com>\n"
+"PO-Revision-Date: 2019-02-23 17:17+0000\n"
+"Last-Translator: Viorel <vrila.noroc@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -579,8 +580,9 @@ msgid "Warnings"
 msgstr "Предупреждения"
 
 #: editor/code_editor.cpp
+#, fuzzy
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Номер линии и столбца"
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"

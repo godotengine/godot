@@ -30,11 +30,12 @@
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
 # Nie Powiem <blazek10@tlen.pl>, 2019.
 # Sebastian Hojka <sibibibi1@gmail.com>, 2019.
+# Robert <vizz0@onet.pl>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-18 08:54+0000\n"
+"PO-Revision-Date: 2019-03-01 11:59+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -3039,7 +3040,7 @@ msgstr "Duplikowanie Folderu:"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scene(s)"
-msgstr "Otwórz Scenę/y"
+msgstr "Otwórz scenę/y"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
@@ -3055,7 +3056,7 @@ msgstr "Usuń z ulubionych"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr "Edytuj Zależności..."
+msgstr "Edytuj zależności..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
@@ -4315,6 +4316,7 @@ msgstr "Przesuń CanvasItem"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
 msgstr ""
+"Ustawienia wstępne dla wartości zakotwiczeń i marginesów węzła sterującego."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4347,9 +4349,8 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Zoom Reset"
-msgstr "Wyzeruj powiększenie"
+msgstr "Zresetuj powiększenie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -5128,9 +5129,8 @@ msgid "Click: Add Point"
 msgstr "Klik: Dodaj Punkt"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Left Click: Split Segment (in curve)"
-msgstr "Podziel Segment (na krzywej)"
+msgstr "LPM: Podziel Segment (na krzywej)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5243,43 +5243,40 @@ msgid ""
 "Polygon 2D has internal vertices, so it can no longer be edited in the "
 "viewport."
 msgstr ""
+"Wielokąt 2D ma wewnętrzne wierzchołki, więc nie można go już edytować w "
+"oknie roboczym."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Create Polygon & UV"
 msgstr "Utwórz wielokąt i UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Internal Vertex"
-msgstr "Utwórz nową prowadnicę poziomą"
+msgstr "Utwórz wewnętrzny wierzchołek"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Internal Vertex"
-msgstr "Usuń punkt ścieżki"
+msgstr "Usuń wewnętrzny wierzchołek"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr ""
+msgstr "Nieprawidłowy wielokąt (potrzebujesz 3 różnych wierzchołków)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Add Custom Polygon"
-msgstr "Edytuj wielokąt"
+msgstr "Dodaj niestandardowy wielokąt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Custom Polygon"
-msgstr "Usuń wielokąt i punkt"
+msgstr "Usuń niestandardowy wielokąt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Transform UV Map"
 msgstr "Przekształć Mapę UV"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Transform Polygon"
-msgstr "Typ przekształcenia"
+msgstr "Przekształć wielokąt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -5287,9 +5284,8 @@ msgid "Paint Bone Weights"
 msgstr "Maluj wagi kości"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Open Polygon 2D UV editor."
-msgstr "Wielokąt 2D UV Edytor"
+msgstr "Otwórz Polygon 2D UV editor."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
@@ -5305,9 +5301,8 @@ msgid "Points"
 msgstr "Punkt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Polygons"
-msgstr "Wielokąt->UV"
+msgstr "Wielokąt"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Bones"
@@ -5462,7 +5457,7 @@ msgstr "Otwórz w edytorze"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
-msgstr "Wczytaj Zasób"
+msgstr "Wczytaj zasób"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ResourcePreloader"
