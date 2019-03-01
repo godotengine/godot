@@ -2852,7 +2852,7 @@ bool EditorNode::is_changing_scene() const {
 
 void EditorNode::_clear_undo_history() {
 
-	get_undo_redo()->clear_history();
+	get_undo_redo()->clear_history(false);
 }
 
 void EditorNode::set_current_scene(int p_idx) {
