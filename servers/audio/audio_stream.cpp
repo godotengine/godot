@@ -186,6 +186,10 @@ float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
 
 void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 
+	if (active) {
+		return;
+	}
+
 	if (!GLOBAL_GET("audio/enable_audio_input")) {
 		WARN_PRINTS("Need to enable Project settings > Audio > Enable Audio Input option to use capturing.");
 		return;
@@ -193,15 +197,17 @@ void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
 
 	input_ofs = 0;
 
-	AudioDriver::get_singleton()->capture_start();
-
-	active = true;
-	_begin_resample();
+	if (AudioDriver::get_singleton()->capture_start() == OK) {
+		active = true;
+		_begin_resample();
+	}
 }
 
 void AudioStreamPlaybackMicrophone::stop() {
-	AudioDriver::get_singleton()->capture_stop();
-	active = false;
+	if (active) {
+		AudioDriver::get_singleton()->capture_stop();
+		active = false;
+	}
 }
 
 bool AudioStreamPlaybackMicrophone::is_playing() const {
