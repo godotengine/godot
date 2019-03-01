@@ -205,6 +205,7 @@ public:
 		*/
 
 		bool used_screen_texture;
+		bool used_aabb_tex_coord;
 		bool shadow_is_dual_parabolloid;
 		float dual_parbolloid_direction;
 		float dual_parbolloid_zfar;

@@ -1217,6 +1217,7 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 			shaders.actions_scene.usage_flag_pointers["ALPHA"] = &p_shader->spatial.uses_alpha;
 			shaders.actions_scene.usage_flag_pointers["ALPHA_SCISSOR"] = &p_shader->spatial.uses_alpha_scissor;
+			shaders.actions_scene.usage_flag_pointers["AABB_UVW"] = &p_shader->spatial.uses_aabb_tex_coord;
 
 			shaders.actions_scene.usage_flag_pointers["SSS_STRENGTH"] = &p_shader->spatial.uses_sss;
 			shaders.actions_scene.usage_flag_pointers["DISCARD"] = &p_shader->spatial.uses_discard;

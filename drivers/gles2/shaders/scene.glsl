@@ -87,6 +87,11 @@ uniform highp float time;
 
 uniform highp vec2 viewport_size;
 
+#if defined(ENABLE_AABB_UVW_INTERP)
+uniform highp vec3 aabb_pos;
+uniform highp vec3 aabb_size;
+#endif
+
 #ifdef RENDER_DEPTH
 uniform float light_bias;
 uniform float light_normal_bias;
@@ -114,6 +119,10 @@ varying vec2 uv_interp;
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 varying vec2 uv2_interp;
+#endif
+
+#if defined(ENABLE_AABB_UVW_INTERP)
+varying vec3 aabb_uvw_interp;
 #endif
 
 /* clang-format off */
@@ -353,6 +362,10 @@ void main() {
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
+#endif
+
+#if defined(ENABLE_AABB_UVW_INTERP)
+	aabb_uvw_interp = (vertex_attrib.xyz - aabb_pos) * (1.0 / aabb_size);
 #endif
 
 #ifdef OVERRIDE_POSITION
@@ -988,6 +1001,10 @@ varying vec2 uv_interp;
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 varying vec2 uv2_interp;
+#endif
+
+#if defined(ENABLE_AABB_UVW_INTERP)
+varying vec3 aabb_uvw_interp;
 #endif
 
 varying vec3 view_interp;

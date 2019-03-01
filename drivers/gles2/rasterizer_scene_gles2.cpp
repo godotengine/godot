@@ -929,6 +929,10 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	//	state.used_sss = true;
 	//}
 
+	if (p_material->shader->spatial.uses_aabb_tex_coord) {
+		state.used_aabb_tex_coord = true;
+	}
+
 	if (p_material->shader->spatial.uses_screen_texture) {
 		state.used_screen_texture = true;
 	}
@@ -2415,6 +2419,12 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		if (rebind_lightmap && lightmap) {
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_ENERGY, lightmap_energy);
+		}
+
+		if (state.used_aabb_tex_coord) {
+			// possible can don't update if prev_instance is the curr_instance
+			state.scene_shader.set_uniform(SceneShaderGLES2::AABB_POS, e->instance->aabb.position);
+			state.scene_shader.set_uniform(SceneShaderGLES2::AABB_SIZE, e->instance->aabb.size);
 		}
 
 		state.scene_shader.set_uniform(SceneShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
