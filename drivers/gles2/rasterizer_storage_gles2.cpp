@@ -2494,7 +2494,7 @@ void RasterizerStorageGLES2::mesh_remove_surface(RID p_mesh, int p_surface) {
 	Surface *surface = mesh->surfaces[p_surface];
 
 	if (surface->material.is_valid()) {
-		// TODO _material_remove_geometry(surface->material, mesh->surfaces[p_surface]);
+		_material_remove_geometry(surface->material, mesh->surfaces[p_surface]);
 	}
 
 	glDeleteBuffers(1, &surface->vertex_id);

@@ -261,8 +261,9 @@ void GraphEdit::add_child_notify(Node *p_child) {
 void GraphEdit::remove_child_notify(Node *p_child) {
 
 	Control::remove_child_notify(p_child);
-
-	top_layer->call_deferred("raise"); //top layer always on top!
+	if (is_inside_tree()) {
+		top_layer->call_deferred("raise"); //top layer always on top!
+	}
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("offset_changed", this, "_graph_node_moved");
