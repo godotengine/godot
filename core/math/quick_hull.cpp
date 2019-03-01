@@ -36,8 +36,6 @@ uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 
 Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
 
-	static const real_t over_tolerance = 0.0001;
-
 	/* CREATE AABB VOLUME */
 
 	AABB aabb;
@@ -179,6 +177,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 		faces.push_back(f);
 	}
+
+	real_t over_tolerance = 3 * UNIT_EPSILON * (aabb.size.x + aabb.size.y + aabb.size.z);
 
 	/* COMPUTE AVAILABLE VERTICES */
 
