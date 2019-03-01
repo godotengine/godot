@@ -157,7 +157,7 @@ bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
 void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	p_list->push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, "image", PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""));
 }
 
@@ -176,12 +176,6 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	VisualServer::get_singleton()->texture_set_data(texture, img);
 
 	_change_notify();
-}
-
-bool ImageTexture::keep_images_cached = false;
-
-void ImageTexture::set_keep_images_cached(bool p_enable) {
-	keep_images_cached = p_enable;
 }
 
 void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
@@ -205,9 +199,7 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 	_change_notify();
 
-	if (keep_images_cached) {
-		image_cache = p_image;
-	}
+	image_stored = true;
 }
 
 void ImageTexture::set_flags(uint32_t p_flags) {
@@ -255,10 +247,7 @@ void ImageTexture::set_data(const Ref<Image> &p_image) {
 
 	_change_notify();
 	alpha_cache.unref();
-
-	if (keep_images_cached) {
-		image_cache = p_image;
-	}
+	image_stored = true;
 }
 
 void ImageTexture::_resource_path_changed() {
@@ -268,10 +257,10 @@ void ImageTexture::_resource_path_changed() {
 
 Ref<Image> ImageTexture::get_data() const {
 
-	if (image_cache.is_valid()) {
-		return image_cache;
-	} else {
+	if (image_stored) {
 		return VisualServer::get_singleton()->texture_get_data(texture);
+	} else {
+		return Ref<Image>();
 	}
 }
 
@@ -437,6 +426,8 @@ ImageTexture::ImageTexture() {
 	texture = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
+	image_stored = false;
+	format = Image::FORMAT_L8;
 }
 
 ImageTexture::~ImageTexture() {
@@ -492,7 +483,7 @@ Image::Format StreamTexture::get_format() const {
 	return format;
 }
 
-Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> &image, int p_size_limit) {
+Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, int &flags, Ref<Image> &image, int p_size_limit) {
 
 	alpha_cache.unref();
 
@@ -508,8 +499,11 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 		ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'D' || header[2] != 'S' || header[3] != 'T', ERR_FILE_CORRUPT);
 	}
 
-	tw = f->get_32();
-	th = f->get_32();
+	tw = f->get_16();
+	tw_custom = f->get_16();
+	th = f->get_16();
+	th_custom = f->get_16();
+
 	flags = f->get_32(); //texture flags!
 	uint32_t df = f->get_32(); //data format
 
@@ -716,18 +710,26 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 
 Error StreamTexture::load(const String &p_path) {
 
-	int lw, lh, lflags;
+	int lw, lh, lwc, lhc, lflags;
 	Ref<Image> image;
 	image.instance();
-	Error err = _load_data(p_path, lw, lh, lflags, image);
+	Error err = _load_data(p_path, lw, lh, lwc, lhc, lflags, image);
 	if (err)
 		return err;
 
+	if (get_path() == String()) {
+		//temporarily set path if no path set for resource, helps find errors
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
 	VS::get_singleton()->texture_allocate(texture, image->get_width(), image->get_height(), 0, image->get_format(), VS::TEXTURE_TYPE_2D, lflags);
 	VS::get_singleton()->texture_set_data(texture, image);
+	if (lwc || lhc) {
+		VS::get_singleton()->texture_set_size_override(texture, lwc, lhc, 0);
+	} else {
+	}
 
-	w = lw;
-	h = lh;
+	w = lwc ? lwc : lw;
+	h = lhc ? lhc : lh;
 	flags = lflags;
 	path_to_file = p_path;
 	format = image->get_format();
@@ -795,6 +797,7 @@ bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
 				decom->decompress();
 				img = decom;
 			}
+
 			alpha_cache.instance();
 			alpha_cache->create_from_image_alpha(img);
 		}
@@ -1513,6 +1516,7 @@ CubeMap::CubeMap() {
 	cubemap = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
 	lossy_storage_quality = 0.7;
+	format = Image::FORMAT_BPTC_RGBA;
 }
 
 CubeMap::~CubeMap() {

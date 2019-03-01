@@ -30,7 +30,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Shifts position in the animation timeline. Delta is the time in seconds to shift.
+				Shifts position in the animation timeline. Delta is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_get_next" qualifiers="const">
@@ -197,7 +197,7 @@
 			<argument index="1" name="update" type="bool" default="false">
 			</argument>
 			<description>
-				Seek the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time.
+				Seek the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [code]seconds[/code] are skipped.
 			</description>
 		</method>
 		<method name="set_blend_time">

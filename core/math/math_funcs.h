@@ -217,17 +217,17 @@ public:
 	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 
-	static _ALWAYS_INLINE_ int wrapi(int value, int min, int max) {
-		int rng = max - min;
-		return min + ((((value - min) % rng) + rng) % rng);
+	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
+		int64_t rng = max - min;
+		return (rng != 0) ? min + ((((value - min) % rng) + rng) % rng) : min;
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		return (!is_equal_approx(rng, 0.0)) ? value - (rng * Math::floor((value - min) / rng)) : min;
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		return (!is_equal_approx(rng, 0.0f)) ? value - (rng * Math::floor((value - min) / rng)) : min;
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
@@ -249,13 +249,25 @@ public:
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+	static _ALWAYS_INLINE_ bool is_equal_approx_ratio(real_t a, real_t b, real_t epsilon = CMP_EPSILON) {
+		// this is an approximate way to check that numbers are close, as a ratio of their average size
+		// helps compare approximate numbers that may be very big or very small
+		real_t diff = abs(a - b);
+		if (diff == 0.0) {
+			return true;
+		}
+		real_t avg_size = (abs(a) + abs(b)) / 2.0;
+		diff /= avg_size;
+		return diff < epsilon;
+	}
+
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t epsilon = CMP_EPSILON) {
 		// TODO: Comparing floats for approximate-equality is non-trivial.
 		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
 		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
 		// See https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/ for details.
 
-		return abs(a - b) < CMP_EPSILON;
+		return abs(a - b) < epsilon;
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {

@@ -953,13 +953,15 @@ void CSGBrushOperation::_merge_poly(MeshMerge &mesh, int p_face_idx, const Build
 
 					//duplicate point
 					int insert_at = with_outline_vertex;
-					polys.write[i].points.insert(insert_at, polys[i].points[insert_at]);
+					int point = polys[i].points[insert_at];
+					polys.write[i].points.insert(insert_at, point);
 					insert_at++;
 					//insert all others, outline should be backwards (must check)
 					int holesize = polys[i].holes[j].size();
 					for (int k = 0; k <= holesize; k++) {
 						int idx = (from_hole_vertex + k) % holesize;
-						polys.write[i].points.insert(insert_at, polys[i].holes[j][idx]);
+						int point2 = polys[i].holes[j][idx];
+						polys.write[i].points.insert(insert_at, point2);
 						insert_at++;
 					}
 

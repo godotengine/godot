@@ -106,7 +106,7 @@ StringName ResourceInteractiveLoaderBinary::_get_string() {
 	uint32_t id = f->get_32();
 	if (id & 0x80000000) {
 		uint32_t len = id & 0x7FFFFFFF;
-		if (len > str_buf.size()) {
+		if ((int)len > str_buf.size()) {
 			str_buf.resize(len);
 		}
 		if (len == 0)
@@ -1501,7 +1501,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 				if (!resource_set.has(res)) {
 					f->store_32(OBJECT_EMPTY);
-					ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
+					ERR_EXPLAIN("Resource was not pre cached for the resource section, most likely due to circular refedence.");
 					ERR_FAIL();
 				}
 
@@ -1650,6 +1650,10 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
+				if (res->get_path() == path) {
+					ERR_PRINTS("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					return;
+				}
 				int idx = external_resources.size();
 				external_resources[res] = idx;
 				return;
@@ -1666,7 +1670,20 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 				if (E->get().usage & PROPERTY_USAGE_STORAGE) {
 
-					_find_resources(res->get(E->get().name));
+					Variant value = res->get(E->get().name);
+					if (E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						RES sres = value;
+						if (sres.is_valid()) {
+							NonPersistentKey npk;
+							npk.base = res;
+							npk.property = E->get().name;
+							non_persistent_map[npk] = sres;
+							resource_set.insert(sres);
+							saved_resources.push_back(sres);
+						}
+					} else {
+						_find_resources(value);
+					}
 				}
 			}
 
@@ -1761,6 +1778,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		takeover_paths = false;
 
 	local_path = p_path.get_base_dir();
+	path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	_find_resources(p_resource, true);
 
@@ -1810,7 +1828,17 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 				if ((F->get().usage & PROPERTY_USAGE_STORAGE)) {
 					Property p;
 					p.name_idx = get_string_index(F->get().name);
-					p.value = E->get()->get(F->get().name);
+
+					if (F->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						NonPersistentKey npk;
+						npk.base = E->get();
+						npk.property = F->get().name;
+						if (non_persistent_map.has(npk)) {
+							p.value = non_persistent_map[npk];
+						}
+					} else {
+						p.value = E->get()->get(F->get().name);
+					}
 
 					Variant default_value = ClassDB::class_get_default_property_value(E->get()->get_class(), F->get().name);
 

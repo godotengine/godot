@@ -86,7 +86,7 @@ bool godot_icall_Array_Contains(Array *ptr, MonoObject *item) {
 }
 
 void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index) {
-	int count = ptr->size();
+	unsigned int count = ptr->size();
 
 	if (mono_array_length(array) < (array_index + count)) {
 		MonoException *exc = mono_get_exception_argument("", "Destination array was not long enough. Check destIndex and length, and the array's lower bounds.");
@@ -94,7 +94,7 @@ void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index) {
 		return;
 	}
 
-	for (int i = 0; i < count; i++) {
+	for (unsigned int i = 0; i < count; i++) {
 		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(ptr->operator[](i));
 		mono_array_setref(array, array_index, boxed);
 		array_index++;
@@ -128,6 +128,10 @@ void godot_icall_Array_RemoveAt(Array *ptr, int index) {
 		return;
 	}
 	ptr->remove(index);
+}
+
+Error godot_icall_Array_Resize(Array *ptr, int new_size) {
+	return ptr->resize(new_size);
 }
 
 void godot_icall_Array_Generic_GetElementTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class) {
@@ -274,6 +278,7 @@ void godot_register_collections_icalls() {
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Insert", (void *)godot_icall_Array_Insert);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Remove", (void *)godot_icall_Array_Remove);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_RemoveAt", (void *)godot_icall_Array_RemoveAt);
+	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Resize", (void *)godot_icall_Array_Resize);
 	mono_add_internal_call("Godot.Collections.Array::godot_icall_Array_Generic_GetElementTypeInfo", (void *)godot_icall_Array_Generic_GetElementTypeInfo);
 
 	mono_add_internal_call("Godot.Collections.Dictionary::godot_icall_Dictionary_Ctor", (void *)godot_icall_Dictionary_Ctor);

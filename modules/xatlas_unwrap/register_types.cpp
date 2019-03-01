@@ -108,7 +108,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	float max_x = 0;
 	float max_y = 0;
-	for (int i = 0; i < output->vertexCount; i++) {
+	for (uint32_t i = 0; i < output->vertexCount; i++) {
 		(*r_vertex)[i] = output->vertexArray[i].xref;
 		(*r_uv)[i * 2 + 0] = output->vertexArray[i].uv[0] / w;
 		(*r_uv)[i * 2 + 1] = output->vertexArray[i].uv[1] / h;
@@ -119,7 +119,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	printf("final texsize: %f,%f - max %f,%f\n", w, h, max_x, max_y);
 	*r_vertex_count = output->vertexCount;
 
-	for (int i = 0; i < output->indexCount; i++) {
+	for (uint32_t i = 0; i < output->indexCount; i++) {
 		(*r_index)[i] = output->indexArray[i];
 	}
 

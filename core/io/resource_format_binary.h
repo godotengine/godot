@@ -114,6 +114,7 @@ public:
 class ResourceFormatSaverBinaryInstance {
 
 	String local_path;
+	String path;
 
 	bool relative_paths;
 	bool bundle_resources;
@@ -123,6 +124,14 @@ class ResourceFormatSaverBinaryInstance {
 	FileAccess *f;
 	String magic;
 	Set<RES> resource_set;
+
+	struct NonPersistentKey { //for resource properties generated on the fly
+		RES base;
+		StringName property;
+		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
+	};
+
+	Map<NonPersistentKey, RES> non_persistent_map;
 	Map<StringName, int> string_map;
 	Vector<StringName> strings;
 

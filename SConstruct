@@ -141,6 +141,7 @@ opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'releas
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
+opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))
 
 # Components
 opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
@@ -223,6 +224,9 @@ env_base.Append(CPPPATH=['#editor', '#'])
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
+
+if (env_base["use_precise_math_checks"]):
+    env_base.Append(CPPDEFINES=['PRECISE_MATH_CHECKS'])
 
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
@@ -335,19 +339,19 @@ if selected_platform in platform_list:
         if (env["werror"]):
             env.Append(CCFLAGS=['/WX'])
     else: # Rest of the world
-        disable_nonessential_warnings = ['-Wno-sign-compare']
         shadow_local_warning = []
+        all_plus_warnings = ['-Wwrite-strings']
 
-        if 'gcc' in os.path.basename(env["CC"]):
+        if methods.use_gcc(env):
             version = methods.get_compiler_version(env)
             if version != None and version[0] >= '7':
                 shadow_local_warning = ['-Wshadow-local']
         if (env["warnings"] == 'extra'):
-            env.Append(CCFLAGS=['-Wall', '-Wextra'] + shadow_local_warning)
+            env.Append(CCFLAGS=['-Wall', '-Wextra'] + all_plus_warnings + shadow_local_warning)
         elif (env["warnings"] == 'all'):
-            env.Append(CCFLAGS=['-Wall'] + shadow_local_warning + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):
-            env.Append(CCFLAGS=['-Wall', '-Wno-unused']  + shadow_local_warning + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused']  + shadow_local_warning)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
         if (env["werror"]):

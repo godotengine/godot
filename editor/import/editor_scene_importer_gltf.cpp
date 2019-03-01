@@ -892,9 +892,11 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				primitive = primitives2[mode];
 			}
 
+			ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
 			if (a.has("POSITION")) {
 				array[Mesh::ARRAY_VERTEX] = _decode_accessor_as_vec3(state, a["POSITION"], true);
 			}
+
 			if (a.has("NORMAL")) {
 				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(state, a["NORMAL"], true);
 			}

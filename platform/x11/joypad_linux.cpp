@@ -476,7 +476,7 @@ void JoypadLinux::process_joypads() {
 
 				// ev may be tainted and out of MAX_KEY range, which will cause
 				// joy->key_map[ev.code] to crash
-				if (ev.code < 0 || ev.code >= MAX_KEY)
+				if (ev.code >= MAX_KEY)
 					return;
 
 				switch (ev.type) {

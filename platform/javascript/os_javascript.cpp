@@ -986,8 +986,8 @@ bool OS_JavaScript::main_loop_iterate() {
 		if (sync_wait_time < 0) {
 			/* clang-format off */
 			EM_ASM(
-				FS.syncfs(function(err) {
-					if (err) { console.warn('Failed to save IDB file system: ' + err.message); }
+				FS.syncfs(function(error) {
+					if (error) { err('Failed to save IDB file system: ' + error.message); }
 				});
 			);
 			/* clang-format on */
@@ -1070,16 +1070,6 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "JavaScript")
 		return true;
 #endif
-
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_get_current_context();
-	// All extensions are already automatically enabled, this function allows
-	// checking WebGL extension support without inline JavaScript
-	if (p_feature == "s3tc")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_s3tc_srgb");
-	if (p_feature == "etc")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc1");
-	if (p_feature == "etc2")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc");
 
 	return false;
 }

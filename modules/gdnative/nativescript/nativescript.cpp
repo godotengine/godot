@@ -1599,18 +1599,20 @@ bool NativeScriptLanguage::handles_global_class_type(const String &p_type) const
 }
 
 String NativeScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
-	Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
-	if (script.is_valid()) {
+	if (!p_path.empty()) {
+		Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
+		if (script.is_valid()) {
+			if (r_base_type)
+				*r_base_type = script->get_instance_base_type();
+			if (r_icon_path)
+				*r_icon_path = script->get_script_class_icon_path();
+			return script->get_script_class_name();
+		}
 		if (r_base_type)
-			*r_base_type = script->get_instance_base_type();
+			*r_base_type = String();
 		if (r_icon_path)
-			*r_icon_path = script->get_script_class_icon_path();
-		return script->get_script_class_name();
+			*r_icon_path = String();
 	}
-	if (r_base_type)
-		*r_base_type = String();
-	if (r_icon_path)
-		*r_icon_path = String();
 	return String();
 }
 

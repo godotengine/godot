@@ -112,24 +112,20 @@ void RasterizerCanvasGLES2::_set_uniforms() {
 void RasterizerCanvasGLES2::canvas_begin() {
 
 	state.canvas_shader.bind();
-	bool transparent = false;
+	state.using_transparent_rt = false;
 	if (storage->frame.current_rt) {
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
-		glColorMask(1, 1, 1, 1);
-		transparent = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
+		state.using_transparent_rt = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 	}
 
 	if (storage->frame.clear_request) {
-		glColorMask(true, true, true, true);
 		glClearColor(storage->frame.clear_request_color.r,
 				storage->frame.clear_request_color.g,
 				storage->frame.clear_request_color.b,
-				transparent ? storage->frame.clear_request_color.a : 1.0);
+				state.using_transparent_rt ? storage->frame.clear_request_color.a : 1.0);
 		glClear(GL_COLOR_BUFFER_BIT);
 		storage->frame.clear_request = false;
 	}
-
-	glColorMask(1, 1, 1, transparent ? 1 : 0);
 
 	/*
 	if (storage->frame.current_rt) {
@@ -186,7 +182,7 @@ void RasterizerCanvasGLES2::canvas_end() {
 	state.using_texture_rect = false;
 	state.using_skeleton = false;
 	state.using_ninepatch = false;
-	glColorMask(1, 1, 1, 1);
+	state.using_transparent_rt = false;
 }
 
 RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
@@ -503,6 +499,23 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				glDisableVertexAttribArray(VS::ARRAY_COLOR);
 				glVertexAttrib4fv(VS::ARRAY_COLOR, r->modulate.components);
 
+				bool can_tile = true;
+				if (r->texture.is_valid() && r->flags & CANVAS_RECT_TILE && !storage->config.support_npot_repeat_mipmap) {
+					// workaround for when setting tiling does not work due to hardware limitation
+
+					RasterizerStorageGLES2::Texture *texture = storage->texture_owner.getornull(r->texture);
+
+					if (texture) {
+
+						texture = texture->get_ptr();
+
+						if (next_power_of_2(texture->alloc_width) != (unsigned int)texture->alloc_width && next_power_of_2(texture->alloc_height) != (unsigned int)texture->alloc_height) {
+							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, true);
+							can_tile = false;
+						}
+					}
+				}
+
 				// On some widespread Nvidia cards, the normal draw method can produce some
 				// flickering in draw_rect and especially TileMap rendering (tiles randomly flicker).
 				// See GH-9913.
@@ -563,7 +576,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 						bool untile = false;
 
-						if (r->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
+						if (can_tile && r->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 							untile = true;
@@ -620,7 +633,7 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 						bool untile = false;
 
-						if (r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT)) {
+						if (can_tile && r->flags & CANVAS_RECT_TILE && !(tex->flags & VS::TEXTURE_FLAG_REPEAT)) {
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 							untile = true;
@@ -668,6 +681,9 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 				}
+
+				state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
+
 			} break;
 
 			case Item::Command::TYPE_NINEPATCH: {
@@ -1189,6 +1205,8 @@ void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 		storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, true);
 	}
 
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, !state.using_transparent_rt);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->copy_screen_effect.fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->color);
@@ -1218,6 +1236,7 @@ void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 	_draw_polygon(indexpos, 6, 4, vertpos, uvpos, NULL, false);
 
 	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_COPY_SECTION, false);
+	storage->shaders.copy.set_conditional(CopyShaderGLES2::USE_NO_ALPHA, false);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo); //back to front
 	glEnable(GL_BLEND);
@@ -2000,6 +2019,7 @@ void RasterizerCanvasGLES2::initialize() {
 	state.canvas_shader.init();
 
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_RGBA_SHADOWS, storage->config.use_rgba_2d_shadows);
 
 	state.canvas_shader.bind();
 
@@ -2008,6 +2028,8 @@ void RasterizerCanvasGLES2::initialize() {
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP, GLOBAL_DEF("rendering/quality/2d/use_pixel_snap", false));
 
 	state.using_light = NULL;
+	state.using_transparent_rt = false;
+	state.using_skeleton = false;
 }
 
 void RasterizerCanvasGLES2::finalize() {

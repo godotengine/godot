@@ -206,7 +206,8 @@ public:
 		bool used_aabb_tex_coord;
 		bool used_screen_texture;
 		bool used_depth_texture;
-		bool using_contact_shadows;
+		bool used_depth_prepass;
+		bool used_depth_prepass_and_resolved;
 
 		VS::ViewportDebugDraw debug_draw;
 	} state;

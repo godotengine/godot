@@ -503,7 +503,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			Ref<GDScript> gds = res;
 			if (gds.is_valid() && !gds->is_valid()) {
-				_set_error("Could not fully preload the script, possible cyclic reference or compilation error.");
+				_set_error("Could not fully preload the script, possible cyclic reference or compilation error. Use 'load()' instead if a cyclic reference is intended.");
 				return NULL;
 			}
 
@@ -4691,6 +4691,16 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
+							if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
+								if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
+									Variant::CallError err;
+									const Variant *args = &cn->value;
+									cn->value = Variant::construct(member._export.type, &args, 1, err);
+								} else {
+									_set_error("Cannot convert the provided value to the export type.");
+									return;
+								}
+							}
 							member.default_value = cn->value;
 						}
 					}
@@ -7458,7 +7468,8 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 				found_setter = true;
 				FunctionNode *setter = p_class->functions[j];
 
-				if (setter->arguments.size() != 1) {
+				if (setter->get_required_argument_count() != 1 &&
+						!(setter->get_required_argument_count() == 0 && setter->default_values.size() > 0)) {
 					_set_error("Setter function needs to receive exactly 1 argument. See '" + setter->name +
 									   "()' definition at line " + itos(setter->line) + ".",
 							v.line);
@@ -7477,7 +7488,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 				found_getter = true;
 				FunctionNode *getter = p_class->functions[j];
 
-				if (getter->arguments.size() != 0) {
+				if (getter->get_required_argument_count() != 0) {
 					_set_error("Getter function can't receive arguments. See '" + getter->name +
 									   "()' definition at line " + itos(getter->line) + ".",
 							v.line);

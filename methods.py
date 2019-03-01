@@ -667,3 +667,6 @@ def get_compiler_version(env):
         return match.group().split('.')
     else:
         return None
+
+def use_gcc(env):
+    return 'gcc' in os.path.basename(env["CC"])

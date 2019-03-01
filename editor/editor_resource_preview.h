@@ -90,7 +90,8 @@ class EditorResourcePreview : public Node {
 	Mutex *preview_mutex;
 	Semaphore *preview_sem;
 	Thread *thread;
-	bool exit;
+	volatile bool exit;
+	volatile bool exited;
 
 	struct Item {
 		Ref<Texture> preview;
@@ -126,6 +127,7 @@ public:
 	void remove_preview_generator(const Ref<EditorResourcePreviewGenerator> &p_generator);
 	void check_for_invalidation(const String &p_path);
 
+	void start();
 	void stop();
 
 	EditorResourcePreview();

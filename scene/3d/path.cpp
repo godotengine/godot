@@ -107,6 +107,9 @@ void PathFollow::_update_transform() {
 	}
 
 	float bl = c->get_baked_length();
+	if (bl == 0.0) {
+		return;
+	}
 	float bi = c->get_bake_interval();
 	float o = offset;
 	float o_next = offset + bi;

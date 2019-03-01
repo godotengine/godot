@@ -92,7 +92,12 @@ Ref<Texture> EditorTexturePreviewPlugin::generate(const RES &p_from, const Size2
 		if (!tex.is_valid()) {
 			return Ref<Texture>();
 		}
+
 		Ref<Image> atlas = tex->get_data();
+		if (!atlas.is_valid()) {
+			return Ref<Texture>();
+		}
+
 		img = atlas->get_rect(atex->get_region());
 	} else if (ltex.is_valid()) {
 		img = ltex->to_image();
@@ -845,14 +850,15 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 
 	font->draw(canvas_item, pos, sampled_text);
 
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
-
 	preview_done = false;
+	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ONCE); //once used for capture
 	VS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done) {
 		OS::get_singleton()->delay_usec(10);
 	}
+
+	VS::get_singleton()->canvas_item_clear(canvas_item);
 
 	Ref<Image> img = VS::get_singleton()->texture_get_data(viewport_texture);
 	ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
@@ -878,7 +884,11 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 
 Ref<Texture> EditorFontPreviewPlugin::generate(const RES &p_from, const Size2 p_size) const {
 
-	return generate_from_path(p_from->get_path(), p_size);
+	String path = p_from->get_path();
+	if (!FileAccess::exists(path)) {
+		return Ref<Texture>();
+	}
+	return generate_from_path(path, p_size);
 }
 
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {

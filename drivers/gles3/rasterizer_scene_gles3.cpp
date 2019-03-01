@@ -2360,7 +2360,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 
 	if (p_depth_pass) {
 
-		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
+		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) || p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_NEVER || p_material->shader->spatial.no_depth_test)
 			return; //bye
 
 		if (!p_material->shader->spatial.uses_alpha_scissor && !p_material->shader->spatial.writes_modelview_or_projection && !p_material->shader->spatial.uses_vertex && !p_material->shader->spatial.uses_discard && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
@@ -3297,6 +3297,16 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
 
+	if (!state.used_depth_prepass_and_resolved) {
+		//resolve depth buffer
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
+
 	if (env->ssao_enabled || env->ssr_enabled) {
 
 		//copy normal and roughness to effect buffer
@@ -4149,6 +4159,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	glDepthFunc(GL_LEQUAL);
 
 	state.used_contact_shadows = false;
+	state.used_depth_prepass_and_resolved = false;
 
 	for (int i = 0; i < p_light_cull_count; i++) {
 
@@ -4196,13 +4207,14 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			//bind depth for read
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
 			glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
+			state.used_depth_prepass_and_resolved = true;
 		}
 
 		fb_cleared = true;
 		render_pass++;
-		state.using_contact_shadows = true;
+		state.used_depth_prepass = true;
 	} else {
-		state.using_contact_shadows = false;
+		state.used_depth_prepass = false;
 	}
 
 	_setup_lights(p_light_cull_result, p_light_cull_count, p_cam_transform.affine_inverse(), p_cam_projection, p_shadow_atlas);
@@ -4299,7 +4311,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	if (!fb_cleared) {
-		glClearBufferfi(GL_DEPTH, 0, 1.0, 0);
+		glClearDepth(1.0f);
+		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	Color clear_color(0, 0, 0, 0);
@@ -4449,6 +4462,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	//state.scene_shader.set_conditional( SceneShaderGLES3::USE_FOG,false);
 
 	if (use_mrt) {
+
 		_render_mrts(env, p_cam_projection);
 	} else {
 		//FIXME: check that this is possible to use
@@ -4573,7 +4587,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 	float bias = 0;
 	float normal_bias = 0;
 
-	state.using_contact_shadows = false;
+	state.used_depth_prepass = false;
 
 	CameraMatrix light_projection;
 	Transform light_transform;
@@ -5050,7 +5064,7 @@ void RasterizerSceneGLES3::initialize() {
 		state.scene_shader.add_custom_define("#define MAX_LIGHT_DATA_STRUCTS " + itos(state.max_ubo_lights) + "\n");
 		state.scene_shader.add_custom_define("#define MAX_FORWARD_LIGHTS " + itos(state.max_forward_lights_per_object) + "\n");
 
-		state.max_ubo_reflections = MIN(RenderList::MAX_REFLECTIONS, max_ubo_size / sizeof(ReflectionProbeDataUBO));
+		state.max_ubo_reflections = MIN((int)RenderList::MAX_REFLECTIONS, max_ubo_size / sizeof(ReflectionProbeDataUBO));
 
 		state.reflection_array_tmp = (uint8_t *)memalloc(sizeof(ReflectionProbeDataUBO) * state.max_ubo_reflections);
 

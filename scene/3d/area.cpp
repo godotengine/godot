@@ -439,7 +439,7 @@ Array Area::get_overlapping_bodies() const {
 
 void Area::set_monitorable(bool p_enable) {
 
-	if (locked || PhysicsServer::get_singleton()->is_flushing_queries()) {
+	if (locked || (is_inside_tree() && PhysicsServer::get_singleton()->is_flushing_queries())) {
 		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitorable\",true/false)");
 	}
 	ERR_FAIL_COND(locked || PhysicsServer::get_singleton()->is_flushing_queries());

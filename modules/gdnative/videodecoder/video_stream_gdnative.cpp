@@ -76,7 +76,7 @@ int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 			} break;
 			case SEEK_CUR: {
 				// Just in case it doesn't exist
-				if (pos < 0 && -pos > file->get_position()) {
+				if (pos < 0 && (size_t)-pos > file->get_position()) {
 					return -1;
 				}
 				pos = pos + static_cast<int>(file->get_position());
@@ -86,7 +86,7 @@ int64_t GDAPI godot_videodecoder_file_seek(void *ptr, int64_t pos, int whence) {
 			} break;
 			case SEEK_END: {
 				// Just in case something goes wrong
-				if (-pos > len) {
+				if ((size_t)-pos > len) {
 					return -1;
 				}
 				file->seek_end(pos);

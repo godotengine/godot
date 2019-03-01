@@ -93,6 +93,7 @@ public:
 		Transform vp;
 		Light *using_light;
 		bool using_shadow;
+		bool using_transparent_rt;
 
 	} state;
 

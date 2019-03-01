@@ -223,7 +223,6 @@ public:
 	AABB get_aabb() const;
 	virtual RID get_rid() const;
 
-	void center_geometry();
 	void regen_normalmaps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);

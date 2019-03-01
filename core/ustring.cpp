@@ -1359,6 +1359,9 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 #define _UNICERROR(m_err) print_line("Unicode error: " + String(m_err));
 
+	if (!p_utf8)
+		return true;
+
 	String aux;
 
 	int cstr_size = 0;
@@ -2393,7 +2396,7 @@ int String::find(const char *p_str, int p_from) const {
 	return -1;
 }
 
-int String::find_char(CharType p_char, int p_from) const {
+int String::find_char(const CharType &p_char, int p_from) const {
 	return _cowdata.find(p_char, p_from);
 }
 
