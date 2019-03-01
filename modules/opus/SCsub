@@ -218,7 +218,9 @@ if env['builtin_opus']:
         "silk/fixed",
         "silk/float",
     ]
-    env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+    # Using Prepend instead of Append to workaround GH-26289.
+    # Better fix would be to make the Mono module less intrusive to other envs.
+    env_opus.Prepend(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
     env_thirdparty = env_opus.Clone()
     env_thirdparty.disable_warnings()
