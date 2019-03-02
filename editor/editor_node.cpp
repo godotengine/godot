@@ -5659,7 +5659,6 @@ EditorNode::EditorNode() {
 
 	filesystem_dock = memnew(FileSystemDock(this));
 	filesystem_dock->connect("open", this, "open_request");
-	filesystem_dock->set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 	filesystem_dock->connect("instance", this, "_instance_request");
 	filesystem_dock->connect("display_mode_changed", this, "_save_docks");
 
