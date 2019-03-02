@@ -348,11 +348,11 @@ size_t DirAccessWindows::get_space_left() {
 
 String DirAccessWindows::get_filesystem_type() const {
 	String path = fix_path(const_cast<DirAccessWindows *>(this)->get_current_dir());
-	print_line("fixed path: " + path);
+
 	int unit_end = path.find(":");
 	ERR_FAIL_COND_V(unit_end == -1, String());
 	String unit = path.substr(0, unit_end + 1) + "\\";
-	print_line("unit: " + unit);
+
 
 	WCHAR szVolumeName[100];
 	WCHAR szFileSystemName[10];
