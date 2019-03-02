@@ -90,12 +90,16 @@ void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 
 void AudioDriver::input_buffer_write(int32_t sample) {
 
-	input_buffer.write[input_position++] = sample;
-	if ((int)input_position >= input_buffer.size()) {
-		input_position = 0;
-	}
-	if ((int)input_size < input_buffer.size()) {
-		input_size++;
+	if ((int)input_position < input_buffer.size()) {
+		input_buffer.write[input_position++] = sample;
+		if ((int)input_position >= input_buffer.size()) {
+			input_position = 0;
+		}
+		if ((int)input_size < input_buffer.size()) {
+			input_size++;
+		}
+	} else {
+		WARN_PRINTS("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
 
@@ -145,6 +149,8 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_mix_amount = 0;
+	input_position = 0;
+	input_size = 0;
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
