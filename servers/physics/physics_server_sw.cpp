@@ -40,10 +40,10 @@
 #include "joints/pin_joint_sw.h"
 #include "joints/slider_joint_sw.h"
 
-#define FLUSH_QUERY_CHECK                                                                                                                     \
-	if (flushing_queries) {                                                                                                                   \
-		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred()/set_deferred() to change monitoring state instead"); \
-		ERR_FAIL();                                                                                                                           \
+#define FLUSH_QUERY_CHECK(m_object)                                                                                                              \
+	if (m_object->get_space() && flushing_queries) {                                                                                             \
+		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead"); \
+		ERR_FAIL();                                                                                                                              \
 	}
 
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
@@ -358,11 +358,10 @@ void PhysicsServerSW::area_clear_shapes(RID p_area) {
 
 void PhysicsServerSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
 
-	FLUSH_QUERY_CHECK
-
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
+	FLUSH_QUERY_CHECK(area);
 	area->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
@@ -443,10 +442,9 @@ void PhysicsServerSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 
 void PhysicsServerSW::area_set_monitorable(RID p_area, bool p_monitorable) {
 
-	FLUSH_QUERY_CHECK
-
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
+	FLUSH_QUERY_CHECK(area);
 
 	area->set_monitorable(p_monitorable);
 }
@@ -592,11 +590,11 @@ RID PhysicsServerSW::body_get_shape(RID p_body, int p_shape_idx) const {
 
 void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
 
-	FLUSH_QUERY_CHECK
-
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+	FLUSH_QUERY_CHECK(body);
+
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
 
