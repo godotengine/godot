@@ -307,7 +307,9 @@ void Polygon2D::_notification(int p_what) {
 
 			if (invert || polygons.size() == 0) {
 				Vector<int> indices = Geometry::triangulate_polygon(points);
-				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
+				if (indices.size()) {
+					VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID());
+				}
 			} else {
 				//draw individual polygons
 				Vector<int> total_indices;

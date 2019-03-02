@@ -758,11 +758,12 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
-	int ps = p_points.size();
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != ps && p_colors.size() != 1);
-	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != ps);
-	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != ps * 4);
-	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != ps * 4);
+	int vertex_count = p_points.size();
+	ERR_FAIL_COND(vertex_count==0);
+	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
+	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != vertex_count);
+	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
+	ERR_FAIL_COND(!p_weights.empty() && p_weights.size() != vertex_count * 4);
 
 	Vector<int> indices = p_indices;
 
@@ -770,9 +771,9 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 
 	if (indices.empty()) {
 
-		ERR_FAIL_COND(ps % 3 != 0);
+		ERR_FAIL_COND(vertex_count % 3 != 0);
 		if (p_count == -1)
-			count = ps;
+			count = vertex_count;
 	} else {
 
 		ERR_FAIL_COND(indices.size() % 3 != 0);
