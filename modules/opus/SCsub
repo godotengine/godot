@@ -138,7 +138,7 @@ if env['builtin_opus']:
 
     opus_sources_silk = []
 
-    if("opus_fixed_point" in env and env.opus_fixed_point == "yes"):
+    if env["platform"] in ["android", "iphone", "javascript"]:
         env_opus.Append(CFLAGS=["-DFIXED_POINT"])
         opus_sources_silk = [
             "silk/fixed/LTP_analysis_filter_FIX.c",
@@ -219,6 +219,12 @@ if env['builtin_opus']:
         "silk/float",
     ]
     env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+
+    if env["platform"] == "android" or env["platform"] == "iphone":
+        if ("arch" in env and env["arch"] == "arm") or ("android_arch" in env and env["android_arch"] in ["armv6", "armv7"]):
+            env_opus.Append(CFLAGS=["-DOPUS_ARM_OPT"])
+        elif ("arch" in env and env["arch"] == "arm64") or ("android_arch" in env and env["android_arch"] == "arm64v8"):
+            env_opus.Append(CFLAGS=["-DOPUS_ARM64_OPT"])
 
     env_thirdparty = env_opus.Clone()
     env_thirdparty.disable_warnings()

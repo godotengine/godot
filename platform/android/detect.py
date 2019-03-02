@@ -298,12 +298,6 @@ def configure(env):
     env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL'])
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z', 'dl'])
 
-    # TODO: Move that to opus module's config
-    if 'module_opus_enabled' in env and env['module_opus_enabled']:
-        if (env["android_arch"] == "armv6" or env["android_arch"] == "armv7"):
-            env.Append(CFLAGS=["-DOPUS_ARM_OPT"])
-        env.opus_fixed_point = "yes"
-
 # Return NDK version string in source.properties (adapted from the Chromium project).
 def get_ndk_version(path):
     if path is None:
