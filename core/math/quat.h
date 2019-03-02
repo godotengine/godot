@@ -131,6 +131,14 @@ public:
 			w(q.w) {
 	}
 
+	Quat operator=(const Quat &q) {
+		x = q.x;
+		y = q.y;
+		z = q.z;
+		w = q.w;
+		return *this;
+	}
+
 	Quat(const Vector3 &v0, const Vector3 &v1) // shortest arc
 	{
 		Vector3 c = v0.cross(v1);
