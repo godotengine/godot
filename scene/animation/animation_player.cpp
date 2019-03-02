@@ -287,7 +287,6 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 						// broken track (nonexistent bone)
 						p_anim->node_cache[i]->skeleton = NULL;
 						p_anim->node_cache[i]->spatial = NULL;
-						printf("bone is %ls\n", String(bone_name).c_str());
 						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 					}
 				} else {
@@ -1133,8 +1132,6 @@ void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_bl
 
 void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
 
-	//printf("animation is %ls\n", String(p_name).c_str());
-	//ERR_FAIL_COND(!is_inside_scene());
 	StringName name = p_name;
 
 	if (String(name) == "")
