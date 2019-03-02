@@ -1836,9 +1836,14 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const {
 
 	if (from_time != length && to_time == length)
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length * 1.001; //include a little more if at the end
 	int to = _find(vt->values, to_time);
 
+	if (to>=0 && from_time == to_time && vt->values[to].time==from_time) {
+		//find exact (0 delta), return if found
+		p_indices->push_back(to);
+		return;
+	}
 	// can't really send the events == time, will be sent in the next frame.
 	// if event>=len then it will probably never be requested by the anim player.
 
@@ -1884,7 +1889,7 @@ void Animation::value_track_get_key_indices(int p_track, float p_time, float p_d
 
 		if (from_time > to_time) {
 			// handle loop by splitting
-			_value_track_get_key_indices_in_range(vt, length - from_time, length, p_indices);
+			_value_track_get_key_indices_in_range(vt, from_time, length, p_indices);
 			_value_track_get_key_indices_in_range(vt, 0, to_time, p_indices);
 			return;
 		}
