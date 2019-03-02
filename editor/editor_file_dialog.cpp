@@ -75,7 +75,7 @@ void EditorFileDialog::_notification(int p_what) {
 				preview_wheel_index++;
 				if (preview_wheel_index >= 8)
 					preview_wheel_index = 0;
-				Ref<Texture> frame = get_icon("WaitPreview" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture> frame = get_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}
@@ -323,11 +323,10 @@ void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
 	if (!FileAccess::exists(p_path))
 		return;
 
-	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
-
 	set_process(true);
 	preview_waiting = true;
 	preview_wheel_timeout = 0;
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
 }
 
 void EditorFileDialog::_action_pressed() {
