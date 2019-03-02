@@ -243,6 +243,7 @@ void TileSetEditor::_notification(int p_what) {
 			tools[ZOOM_1]->set_icon(get_icon("ZoomReset", "EditorIcons"));
 			tools[ZOOM_IN]->set_icon(get_icon("ZoomMore", "EditorIcons"));
 			tools[VISIBLE_INFO]->set_icon(get_icon("InformationSign", "EditorIcons"));
+			_update_toggle_shape_button();
 
 			tool_editmode[EDITMODE_REGION]->set_icon(get_icon("RegionEdit", "EditorIcons"));
 			tool_editmode[EDITMODE_COLLISION]->set_icon(get_icon("StaticBody2D", "EditorIcons"));
@@ -410,6 +411,12 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SHAPE_NEW_POLYGON]->set_toggle_mode(true);
 	tools[SHAPE_NEW_POLYGON]->set_button_group(tg);
 	tools[SHAPE_NEW_POLYGON]->set_tooltip(TTR("Create a new polygon."));
+
+	separator_shape_toggle = memnew(VSeparator);
+	toolbar->add_child(separator_shape_toggle);
+	tools[SHAPE_TOGGLE_TYPE] = memnew(ToolButton);
+	tools[SHAPE_TOGGLE_TYPE]->connect("pressed", this, "_on_tool_clicked", varray(SHAPE_TOGGLE_TYPE));
+	toolbar->add_child(tools[SHAPE_TOGGLE_TYPE]);
 
 	separator_delete = memnew(VSeparator);
 	toolbar->add_child(separator_delete);
@@ -765,6 +772,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 		} break;
 		default: {}
 	}
+	_update_toggle_shape_button();
 	workspace->update();
 }
 
@@ -1367,8 +1375,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										}
 
 										undo_redo->create_action(TTR("Edit Collision Polygon"));
-										undo_redo->add_do_method(edited_collision_shape.ptr(), "set_points", points);
-										undo_redo->add_undo_method(edited_collision_shape.ptr(), "set_points", edited_collision_shape->get_points());
+										_set_edited_shape_points(points);
 										undo_redo->add_do_method(this, "_select_edited_shape_coord");
 										undo_redo->add_undo_method(this, "_select_edited_shape_coord");
 										undo_redo->commit_action();
@@ -1446,7 +1453,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 									workspace->update();
 								} else {
 									creating_shape = true;
-									edited_collision_shape = Ref<ConvexPolygonShape2D>();
+									_set_edited_collision_shape(Ref<ConvexPolygonShape2D>());
 									current_shape.resize(0);
 									current_shape.push_back(snap_point(pos));
 									workspace->update();
@@ -1466,7 +1473,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 					} else if (tools[SHAPE_NEW_RECTANGLE]->is_pressed()) {
 						if (mb.is_valid()) {
 							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-								edited_collision_shape = Ref<ConvexPolygonShape2D>();
+								_set_edited_collision_shape(Ref<ConvexPolygonShape2D>());
 								current_shape.resize(0);
 								current_shape.push_back(snap_point(shape_anchor));
 								current_shape.push_back(snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
@@ -1511,6 +1518,45 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 		undo_redo->add_do_method(workspace, "update");
 		undo_redo->add_undo_method(workspace, "update");
 		undo_redo->commit_action();
+	} else if (p_tool == SHAPE_TOGGLE_TYPE) {
+		if (edited_collision_shape.is_valid()) {
+			Ref<ConvexPolygonShape2D> convex = edited_collision_shape;
+			Ref<ConcavePolygonShape2D> concave = edited_collision_shape;
+			Ref<Shape2D> previous_shape = edited_collision_shape;
+			Array sd = tileset->call("tile_get_shapes", get_current_tile());
+
+			if (convex.is_valid()) {
+				// Make concave
+				undo_redo->create_action(TTR("Make Polygon Concave"));
+				Ref<ConcavePolygonShape2D> _concave = memnew(ConcavePolygonShape2D);
+				edited_collision_shape = _concave;
+				_set_edited_shape_points(_get_collision_shape_points(convex));
+			} else if (concave.is_valid()) {
+				// Make convex
+				undo_redo->create_action(TTR("Make Polygon Convex"));
+				Ref<ConvexPolygonShape2D> _convex = memnew(ConvexPolygonShape2D);
+				edited_collision_shape = _convex;
+				_set_edited_shape_points(_get_collision_shape_points(concave));
+			} else {
+				// Shoudn't haphen
+			}
+			for (int i = 0; i < sd.size(); i++) {
+				if (sd[i].get("shape") == previous_shape) {
+					undo_redo->add_undo_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd.duplicate());
+					sd.remove(i);
+					sd.insert(i, edited_collision_shape);
+					undo_redo->add_do_method(tileset.ptr(), "tile_set_shapes", get_current_tile(), sd);
+					undo_redo->add_do_method(this, "_select_edited_shape_coord");
+					undo_redo->add_undo_method(this, "_select_edited_shape_coord");
+					undo_redo->commit_action();
+					break;
+				}
+			}
+			_update_toggle_shape_button();
+			workspace->update();
+			workspace_container->update();
+			helper->_change_notify("");
+		}
 	} else if (p_tool == SELECT_NEXT) {
 		_select_next_shape();
 	} else if (p_tool == SELECT_PREVIOUS) {
@@ -1629,6 +1675,48 @@ void TileSetEditor::_on_grid_snap_toggled(bool p_val) {
 	workspace->update();
 }
 
+Vector<Vector2> TileSetEditor::_get_collision_shape_points(const Ref<Shape2D> &p_shape) {
+	Ref<ConvexPolygonShape2D> convex = p_shape;
+	Ref<ConcavePolygonShape2D> concave = p_shape;
+	if (convex.is_valid()) {
+		return convex->get_points();
+	} else if (concave.is_valid()) {
+		Vector<Vector2> points;
+		for (int i = 0; i < concave->get_segments().size(); i += 2) {
+			points.push_back(concave->get_segments()[i]);
+		}
+		return points;
+	} else {
+		return Vector<Vector2>();
+	}
+}
+
+Vector<Vector2> TileSetEditor::_get_edited_shape_points() {
+	return _get_collision_shape_points(edited_collision_shape);
+}
+
+void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> points) {
+	Ref<ConvexPolygonShape2D> convex = edited_collision_shape;
+	Ref<ConcavePolygonShape2D> concave = edited_collision_shape;
+	if (convex.is_valid()) {
+		undo_redo->add_do_method(convex.ptr(), "set_points", points);
+		undo_redo->add_undo_method(convex.ptr(), "set_points", _get_edited_shape_points());
+	} else if (concave.is_valid()) {
+		PoolVector2Array segments;
+		for (int i = 0; i < points.size() - 1; i++) {
+			segments.push_back(points[i]);
+			segments.push_back(points[i + 1]);
+		}
+		segments.push_back(points[points.size() - 1]);
+		segments.push_back(points[0]);
+		concave->set_segments(segments);
+		undo_redo->add_do_method(concave.ptr(), "set_segments", segments);
+		undo_redo->add_undo_method(concave.ptr(), "set_segments", concave->get_segments());
+	} else {
+		// Invalid shape
+	}
+}
+
 void TileSetEditor::_update_tile_data() {
 	current_tile_data.clear();
 	if (get_current_tile() < 0)
@@ -1661,6 +1749,27 @@ void TileSetEditor::_update_tile_data() {
 				current_tile_data[coord] = data;
 			}
 		}
+	}
+}
+
+void TileSetEditor::_update_toggle_shape_button() {
+	Ref<ConvexPolygonShape2D> convex = edited_collision_shape;
+	Ref<ConcavePolygonShape2D> concave = edited_collision_shape;
+	separator_shape_toggle->show();
+	tools[SHAPE_TOGGLE_TYPE]->show();
+	if (edit_mode != EDITMODE_COLLISION || !edited_collision_shape.is_valid()) {
+		separator_shape_toggle->hide();
+		tools[SHAPE_TOGGLE_TYPE]->hide();
+	} else if (concave.is_valid()) {
+		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConvexPolygonShape2D", "EditorIcons"));
+		tools[SHAPE_TOGGLE_TYPE]->set_text("Make Convex");
+	} else if (convex.is_valid()) {
+		tools[SHAPE_TOGGLE_TYPE]->set_icon(get_icon("ConcavePolygonShape2D", "EditorIcons"));
+		tools[SHAPE_TOGGLE_TYPE]->set_text("Make Concave");
+	} else {
+		// Shoudn't happen
+		separator_shape_toggle->hide();
+		tools[SHAPE_TOGGLE_TYPE]->hide();
 	}
 }
 
@@ -1842,11 +1951,11 @@ void TileSetEditor::_select_next_shape() {
 		} else {
 			int index = data.collisions.find(edited_collision_shape);
 			if (index < 0) {
-				edited_collision_shape = data.collisions[0];
+				_set_edited_collision_shape(data.collisions[0]);
 			} else if (index == data.collisions.size() - 1) {
 				_select_next_subtile();
 			} else {
-				edited_collision_shape = data.collisions[index + 1];
+				_set_edited_collision_shape(data.collisions[index + 1]);
 			}
 		}
 		current_shape.resize(0);
@@ -1861,8 +1970,8 @@ void TileSetEditor::_select_next_shape() {
 		current_tile_region.position += shape_anchor;
 
 		if (edited_collision_shape.is_valid()) {
-			for (int i = 0; i < edited_collision_shape->get_points().size(); i++) {
-				current_shape.push_back(edited_collision_shape->get_points()[i] + current_tile_region.position);
+			for (int i = 0; i < _get_edited_shape_points().size(); i++) {
+				current_shape.push_back(_get_edited_shape_points()[i] + current_tile_region.position);
 			}
 		}
 		workspace->update();
@@ -1877,7 +1986,7 @@ void TileSetEditor::_select_previous_shape() {
 		if (get_current_tile() != -1 && edit_mode == EDITMODE_COLLISION) {
 			SubtileData data = current_tile_data[Vector2i(edited_shape_coord)];
 			if (data.collisions.size() > 1) {
-				edited_collision_shape = data.collisions[data.collisions.size() - 1];
+				_set_edited_collision_shape(data.collisions[data.collisions.size() - 1]);
 			}
 		} else {
 			return;
@@ -1894,22 +2003,23 @@ void TileSetEditor::_select_previous_shape() {
 			_select_previous_subtile();
 			data = current_tile_data[Vector2i(edited_shape_coord)];
 			if (data.collisions.size() > 1) {
-				edited_collision_shape = data.collisions[data.collisions.size() - 1];
+				_set_edited_collision_shape(data.collisions[data.collisions.size() - 1]);
 			}
 		} else {
 			int index = data.collisions.find(edited_collision_shape);
 			if (index < 0) {
-				edited_collision_shape = data.collisions[data.collisions.size() - 1];
+				_set_edited_collision_shape(data.collisions[data.collisions.size() - 1]);
 			} else if (index == 0) {
 				_select_previous_subtile();
 				data = current_tile_data[Vector2i(edited_shape_coord)];
 				if (data.collisions.size() > 1) {
-					edited_collision_shape = data.collisions[data.collisions.size() - 1];
+					_set_edited_collision_shape(data.collisions[data.collisions.size() - 1]);
 				}
 			} else {
-				edited_collision_shape = data.collisions[index - 1];
+				_set_edited_collision_shape(data.collisions[index - 1]);
 			}
 		}
+
 		current_shape.resize(0);
 		Rect2 current_tile_region = tileset->tile_get_region(get_current_tile());
 		current_tile_region.position += WORKSPACE_MARGIN;
@@ -1922,14 +2032,19 @@ void TileSetEditor::_select_previous_shape() {
 		current_tile_region.position += shape_anchor;
 
 		if (edited_collision_shape.is_valid()) {
-			for (int i = 0; i < edited_collision_shape->get_points().size(); i++) {
-				current_shape.push_back(edited_collision_shape->get_points()[i] + current_tile_region.position);
+			for (int i = 0; i < _get_edited_shape_points().size(); i++) {
+				current_shape.push_back(_get_edited_shape_points()[i] + current_tile_region.position);
 			}
 		}
 		workspace->update();
 		workspace_container->update();
 		helper->_change_notify("");
 	}
+}
+
+void TileSetEditor::_set_edited_collision_shape(const Ref<Shape2D> &p_shape) {
+	edited_collision_shape = p_shape;
+	_update_toggle_shape_button();
 }
 
 void TileSetEditor::_set_snap_step(Vector2 p_val) {
@@ -2228,16 +2343,29 @@ void TileSetEditor::draw_polygon_shapes() {
 				}
 				anchor += WORKSPACE_MARGIN;
 				anchor += tileset->tile_get_region(t_id).position;
-				Ref<ConvexPolygonShape2D> shape = sd[i].shape;
+				Ref<Shape2D> shape = sd[i].shape;
 				if (shape.is_valid()) {
 					Color c_bg;
 					Color c_border;
+					Ref<ConvexPolygonShape2D> convex = shape;
+					bool is_convex = convex.is_valid();
 					if ((tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE || coord == edited_shape_coord) && sd[i].shape == edited_collision_shape) {
-						c_bg = Color(0, 1, 1, 0.5);
-						c_border = Color(0, 1, 1);
+						if (is_convex) {
+							c_bg = Color(0, 1, 1, 0.5);
+							c_border = Color(0, 1, 1);
+						} else {
+							c_bg = Color(0.8, 0, 1, 0.5);
+							c_border = Color(0.8, 0, 1);
+						}
 					} else {
-						c_bg = Color(0.9, 0.7, 0.07, 0.5);
-						c_border = Color(0.9, 0.7, 0.07, 1);
+						if (is_convex) {
+							c_bg = Color(0.9, 0.7, 0.07, 0.5);
+							c_border = Color(0.9, 0.7, 0.07, 1);
+
+						} else {
+							c_bg = Color(0.9, 0.45, 0.075, 0.5);
+							c_border = Color(0.9, 0.45, 0.075);
+						}
 					}
 					Vector<Vector2> polygon;
 					Vector<Color> colors;
@@ -2247,8 +2375,8 @@ void TileSetEditor::draw_polygon_shapes() {
 							colors.push_back(c_bg);
 						}
 					} else {
-						for (int j = 0; j < shape->get_points().size(); j++) {
-							polygon.push_back(shape->get_points()[j] + anchor);
+						for (int j = 0; j < _get_collision_shape_points(shape).size(); j++) {
+							polygon.push_back(_get_collision_shape_points(shape)[j] + anchor);
 							colors.push_back(c_bg);
 						}
 					}
@@ -2465,11 +2593,11 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 		if (current_shape.size() >= 3) {
 			Ref<ConvexPolygonShape2D> shape = memnew(ConvexPolygonShape2D);
 
-			Vector<Vector2> segments;
+			Vector<Vector2> points;
 			float p_total = 0;
 
 			for (int i = 0; i < current_shape.size(); i++) {
-				segments.push_back(current_shape[i] - shape_anchor);
+				points.push_back(current_shape[i] - shape_anchor);
 
 				if (i != current_shape.size() - 1)
 					p_total += ((current_shape[i + 1].x - current_shape[i].x) * (-current_shape[i + 1].y + (-current_shape[i].y)));
@@ -2478,9 +2606,9 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 			}
 
 			if (p_total < 0)
-				segments.invert();
+				points.invert();
 
-			shape->set_points(segments);
+			shape->set_points(points);
 
 			undo_redo->create_action(TTR("Create Collision Polygon"));
 			// Necessary to get the version that returns a Array instead of a Vector.
@@ -2573,7 +2701,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 	current_tile_region.position += WORKSPACE_MARGIN;
 	if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
 		if (edited_collision_shape != tileset->tile_get_shape(get_current_tile(), 0))
-			edited_collision_shape = tileset->tile_get_shape(get_current_tile(), 0);
+			_set_edited_collision_shape(tileset->tile_get_shape(get_current_tile(), 0));
 		if (edited_occlusion_shape != tileset->tile_get_light_occluder(get_current_tile()))
 			edited_occlusion_shape = tileset->tile_get_light_occluder(get_current_tile());
 		if (edited_navigation_shape != tileset->tile_get_navigation_polygon(get_current_tile()))
@@ -2582,8 +2710,8 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 		if (edit_mode == EDITMODE_COLLISION) {
 			current_shape.resize(0);
 			if (edited_collision_shape.is_valid()) {
-				for (int i = 0; i < edited_collision_shape->get_points().size(); i++) {
-					current_shape.push_back(edited_collision_shape->get_points()[i] + current_tile_region.position);
+				for (int i = 0; i < _get_edited_shape_points().size(); i++) {
+					current_shape.push_back(_get_edited_shape_points()[i] + current_tile_region.position);
 				}
 			}
 		} else if (edit_mode == EDITMODE_OCCLUSION) {
@@ -2610,13 +2738,13 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 		for (int i = 0; i < sd.size(); i++) {
 			if (sd[i].autotile_coord == coord) {
 				if (edited_collision_shape != sd[i].shape)
-					edited_collision_shape = sd[i].shape;
+					_set_edited_collision_shape(sd[i].shape);
 				found_collision_shape = true;
 				break;
 			}
 		}
 		if (!found_collision_shape)
-			edited_collision_shape = Ref<ConvexPolygonShape2D>(NULL);
+			_set_edited_collision_shape(Ref<ConvexPolygonShape2D>(NULL));
 		if (edited_occlusion_shape != tileset->autotile_get_light_occluder(get_current_tile(), coord))
 			edited_occlusion_shape = tileset->autotile_get_light_occluder(get_current_tile(), coord);
 		if (edited_navigation_shape != tileset->autotile_get_navigation_polygon(get_current_tile(), coord))
@@ -2631,8 +2759,8 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 		if (edit_mode == EDITMODE_COLLISION) {
 			current_shape.resize(0);
 			if (edited_collision_shape.is_valid()) {
-				for (int j = 0; j < edited_collision_shape->get_points().size(); j++) {
-					current_shape.push_back(edited_collision_shape->get_points()[j] + shape_anchor);
+				for (int j = 0; j < _get_edited_shape_points().size(); j++) {
+					current_shape.push_back(_get_edited_shape_points()[j] + shape_anchor);
 				}
 			}
 		} else if (edit_mode == EDITMODE_OCCLUSION) {
