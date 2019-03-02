@@ -302,6 +302,8 @@ void FileSystemDock::_notification(int p_what) {
 
 			always_show_folders = bool(EditorSettings::get_singleton()->get("docks/filesystem/always_show_folders"));
 
+			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
+
 			_update_display_mode();
 
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
