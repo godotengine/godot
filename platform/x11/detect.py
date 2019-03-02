@@ -20,12 +20,10 @@ def can_build():
     # Check the minimal dependencies
     x11_error = os.system("pkg-config --version > /dev/null")
     if (x11_error):
-        print("pkg-config not found.. x11 disabled.")
         return False
 
     x11_error = os.system("pkg-config x11 --modversion > /dev/null ")
     if (x11_error):
-        print("X11 not found.. x11 disabled.")
         return False
 
     x11_error = os.system("pkg-config xcursor --modversion > /dev/null ")
