@@ -34,6 +34,7 @@
 #include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
 #include "scene/2d/sprite.h"
+#include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
 
@@ -84,6 +85,7 @@ class TileSetEditor : public HSplitContainer {
 		BITMASK_CLEAR,
 		SHAPE_NEW_POLYGON,
 		SHAPE_NEW_RECTANGLE,
+		SHAPE_TOGGLE_TYPE,
 		SHAPE_DELETE,
 		SHAPE_KEEP_INSIDE_TILE,
 		TOOL_GRID_SNAP,
@@ -130,7 +132,7 @@ class TileSetEditor : public HSplitContainer {
 	Vector2 snap_offset;
 	Vector2 snap_separation;
 
-	Ref<ConvexPolygonShape2D> edited_collision_shape;
+	Ref<Shape2D> edited_collision_shape;
 	Ref<OccluderPolygon2D> edited_occlusion_shape;
 	Ref<NavigationPolygon> edited_navigation_shape;
 
@@ -146,6 +148,7 @@ class TileSetEditor : public HSplitContainer {
 	HSeparator *separator_editmode;
 	HBoxContainer *toolbar;
 	ToolButton *tools[TOOL_MAX];
+	VSeparator *separator_shape_toggle;
 	VSeparator *separator_bitmask;
 	VSeparator *separator_delete;
 	VSeparator *separator_grid;
@@ -197,7 +200,11 @@ private:
 	void _on_priority_changed(float val);
 	void _on_z_index_changed(float val);
 	void _on_grid_snap_toggled(bool p_val);
+	Vector<Vector2> _get_collision_shape_points(const Ref<Shape2D> &p_shape);
+	Vector<Vector2> _get_edited_shape_points();
+	void _set_edited_shape_points(const Vector<Vector2> points);
 	void _update_tile_data();
+	void _update_toggle_shape_button();
 	void _select_next_tile();
 	void _select_previous_tile();
 	Array _get_tiles_in_current_texture(bool sorted = false);
@@ -206,6 +213,7 @@ private:
 	void _select_previous_subtile();
 	void _select_next_shape();
 	void _select_previous_shape();
+	void _set_edited_collision_shape(const Ref<Shape2D> &p_shape);
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
 	void _set_snap_sep(Vector2 p_val);
