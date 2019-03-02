@@ -150,7 +150,7 @@ void AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fr
 		input_ofs = 0;
 	} else {
 		for (int i = 0; i < p_frames; i++) {
-			if (input_size > input_ofs) {
+			if (input_size > input_ofs && (int)input_ofs < buf.size()) {
 				float l = (buf[input_ofs++] >> 16) / 32768.f;
 				if ((int)input_ofs >= buf.size()) {
 					input_ofs = 0;
