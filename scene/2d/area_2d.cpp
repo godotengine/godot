@@ -428,8 +428,8 @@ void Area2D::set_monitorable(bool p_enable) {
 
 	if (locked || (is_inside_tree() && Physics2DServer::get_singleton()->is_flushing_queries())) {
 		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitorable\",true/false)");
+		ERR_FAIL();
 	}
-	ERR_FAIL_COND(locked || Physics2DServer::get_singleton()->is_flushing_queries());
 
 	if (p_enable == monitorable)
 		return;
