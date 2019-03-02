@@ -49,8 +49,23 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 		name = p_name;
 	//name = DirAccess::normalize_path(name);
 
+	//printf("path registering %ls\n", p_name.c_str());
 	(*files)[name] = p_data;
 }
+
+bool FileAccessMemory::has_file(String  p_name) {
+	
+	if (!files)
+		return false;
+
+	String name;
+	if (Globals::get_singleton())
+		name = Globals::get_singleton()->globalize_path(p_name);
+	else
+		name = p_name;
+	
+	return files->has(name);
+};
 
 void FileAccessMemory::cleanup() {
 
@@ -85,7 +100,11 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 
 	ERR_FAIL_COND_V(!files, ERR_FILE_NOT_FOUND);
 
-	String name = fix_path(p_path);
+	String name;
+	if (Globals::get_singleton())
+		name = Globals::get_singleton()->globalize_path(p_path);
+	else
+		name = p_path;
 	//	name = DirAccess::normalize_path(name);
 
 	Map<String, Vector<uint8_t> >::Element *E = files->find(name);

@@ -34,6 +34,8 @@
 #include "globals.h"
 #include "os/os.h"
 
+#include "core/io/file_access_memory.h"
+
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
 
@@ -95,9 +97,19 @@ Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 
 FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
 
-	//try packed data first
-
 	FileAccess *ret = NULL;
+
+	// try memory first
+	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && FileAccessMemory::has_file(p_path)) {
+
+		ret = memnew(FileAccessMemory);
+		Error err = ret->_open(p_path, p_mode_flags);
+		if (r_error)
+			*r_error = err;
+		return ret;
+	};
+
+	//try packed data first
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret) {
