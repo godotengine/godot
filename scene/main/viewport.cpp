@@ -1486,7 +1486,8 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->set_as_toplevel(true);
 	//gui.tooltip_popup->hide();
 
-	Rect2 r(gui.tooltip_pos + Point2(10, 10), gui.tooltip_popup->get_minimum_size());
+	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
+	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_minimum_size());
 	Rect2 vr = gui.tooltip_popup->get_viewport_rect();
 	if (r.size.x + r.position.x > vr.size.x)
 		r.position.x = vr.size.x - r.size.x;
