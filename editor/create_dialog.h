@@ -53,6 +53,7 @@ class CreateDialog : public ConfirmationDialog {
 	Button *favorite;
 	LineEdit *search_box;
 	Tree *search_options;
+	HashMap<String, TreeItem *> search_options_types;
 	bool is_replace_mode;
 	String base_type;
 	String preferred_search_result_type;
@@ -82,6 +83,8 @@ class CreateDialog : public ConfirmationDialog {
 
 	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
 
+	void select_type(const String &p_type);
+
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -104,7 +107,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type);
 	String get_preferred_search_result_type();
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false);
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node");
 
 	CreateDialog();
 };

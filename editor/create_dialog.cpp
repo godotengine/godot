@@ -38,7 +38,7 @@
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
 
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
@@ -116,6 +116,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 	is_replace_mode = p_replace_mode;
 
 	if (p_replace_mode) {
+		select_type(p_select_type);
 		set_title(vformat(TTR("Change %s Type"), base_type));
 		get_ok()->set_text(TTR("Change"));
 	} else {
@@ -258,6 +259,27 @@ bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_cla
 	return false;
 }
 
+void CreateDialog::select_type(const String &p_type) {
+	TreeItem *to_select;
+	if (search_options_types.has(p_type)) {
+		to_select = search_options_types[p_type];
+	} else {
+		to_select = search_options->get_root();
+	}
+
+	// uncollapse from selected type to top level
+	// TODO: should this be in tree?
+	TreeItem *cur = to_select;
+	while (cur) {
+		cur->set_collapsed(false);
+		cur = cur->get_parent();
+	}
+
+	to_select->select(0);
+
+	search_options->scroll_to_item(to_select);
+}
+
 void CreateDialog::_update_search() {
 
 	search_options->clear();
@@ -269,7 +291,7 @@ void CreateDialog::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	HashMap<String, TreeItem *> types;
+	search_options_types.clear();
 
 	TreeItem *root = search_options->create_item();
 	EditorData &ed = EditorNode::get_editor_data();
@@ -307,7 +329,7 @@ void CreateDialog::_update_search() {
 		}
 
 		if (search_box->get_text() == "") {
-			add_type(type, types, root, &to_select);
+			add_type(type, search_options_types, root, &to_select);
 		} else {
 
 			bool found = false;
@@ -323,7 +345,7 @@ void CreateDialog::_update_search() {
 			}
 
 			if (found)
-				add_type(I->get(), types, root, &to_select);
+				add_type(I->get(), search_options_types, root, &to_select);
 		}
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
@@ -337,12 +359,12 @@ void CreateDialog::_update_search() {
 				if (!show)
 					continue;
 
-				if (!types.has(type))
-					add_type(type, types, root, &to_select);
+				if (!search_options_types.has(type))
+					add_type(type, search_options_types, root, &to_select);
 
 				TreeItem *ti;
-				if (types.has(type))
-					ti = types[type];
+				if (search_options_types.has(type))
+					ti = search_options_types[type];
 				else
 					ti = search_options->get_root();
 
