@@ -186,6 +186,7 @@ public:
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 	virtual bool is_action_type() const;
 
+	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
 	InputEvent();
 };
 
@@ -350,6 +351,8 @@ public:
 
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
+
+	virtual bool accumulate(const Ref<InputEvent> &p_event);
 
 	InputEventMouseMotion();
 };

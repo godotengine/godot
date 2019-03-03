@@ -122,6 +122,8 @@ void InputEvent::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
 
+	ClassDB::bind_method(D_METHOD("accumulate", "with_event"), &InputEvent::accumulate);
+
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "device"), "set_device", "get_device");
@@ -618,6 +620,44 @@ String InputEventMouseMotion::as_text() const {
 			break;
 	}
 	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
+}
+
+bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseMotion> motion = p_event;
+	if (motion.is_null())
+		return false;
+
+	if (is_pressed() != motion->is_pressed()) {
+		return false;
+	}
+
+	if (get_button_mask() != motion->get_button_mask()) {
+		return false;
+	}
+
+	if (get_shift() != motion->get_shift()) {
+		return false;
+	}
+
+	if (get_control() != motion->get_control()) {
+		return false;
+	}
+
+	if (get_alt() != motion->get_alt()) {
+		return false;
+	}
+
+	if (get_metakey() != motion->get_metakey()) {
+		return false;
+	}
+
+	set_position(motion->get_position());
+	set_global_position(motion->get_global_position());
+	set_speed(motion->get_speed());
+	relative += motion->get_relative();
+
+	return true;
 }
 
 void InputEventMouseMotion::_bind_methods() {

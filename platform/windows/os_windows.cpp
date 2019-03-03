@@ -271,7 +271,7 @@ void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 	event->set_position(Vector2(p_x, p_y));
 
 	if (main_loop) {
-		input->parse_input_event(event);
+		input->accumulate_input_event(event);
 	}
 };
 
@@ -293,7 +293,7 @@ void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 	event->set_position(Vector2(p_x, p_y));
 
 	if (main_loop)
-		input->parse_input_event(event);
+		input->accumulate_input_event(event);
 };
 
 LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -458,7 +458,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				}
 
 				if (window_has_focus && main_loop && mm->get_relative() != Vector2())
-					input->parse_input_event(mm);
+					input->accumulate_input_event(mm);
 			}
 			delete[] lpb;
 		} break;
@@ -545,7 +545,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (window_has_focus && main_loop)
-				input->parse_input_event(mm);
+				input->accumulate_input_event(mm);
 
 		} break;
 		case WM_LBUTTONDOWN:
@@ -718,14 +718,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mb->set_global_position(mb->get_position());
 
 			if (main_loop) {
-				input->parse_input_event(mb);
+				input->accumulate_input_event(mb);
 				if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
 					//send release for mouse wheel
 					Ref<InputEventMouseButton> mbd = mb->duplicate();
 					last_button_state &= ~(1 << (mbd->get_button_index() - 1));
 					mbd->set_button_mask(last_button_state);
 					mbd->set_pressed(false);
-					input->parse_input_event(mbd);
+					input->accumulate_input_event(mbd);
 				}
 			}
 		} break;
@@ -988,7 +988,7 @@ void OS_Windows::process_key_events() {
 					if (k->get_unicode() < 32)
 						k->set_unicode(0);
 
-					input->parse_input_event(k);
+					input->accumulate_input_event(k);
 				}
 
 				//do nothing
@@ -1026,7 +1026,7 @@ void OS_Windows::process_key_events() {
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
 
-				input->parse_input_event(k);
+				input->accumulate_input_event(k);
 
 			} break;
 		}
@@ -2252,6 +2252,7 @@ void OS_Windows::process_events() {
 
 	if (!drop_events) {
 		process_key_events();
+		input->flush_accumulated_events();
 	}
 }
 
