@@ -1114,16 +1114,10 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-		// Re-enable when a GLES 2.0 backend is read
-		/*int api = p_preset->get("graphics/api");
-		if (api == 0)
-			r_features->push_back("etc");
-		else*/
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-		if (driver == "GLES2" || driver == "GLES3") {
+		if (driver == "GLES2") {
 			r_features->push_back("etc");
-		}
-		if (driver == "GLES3") {
+		} else if (driver == "GLES3") {
 			r_features->push_back("etc2");
 		}
 
