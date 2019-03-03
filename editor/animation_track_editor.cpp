@@ -692,12 +692,10 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	p_new_len = MAX(0.001, p_new_len);
 
 	editing = true;
-	*block_animation_update_ptr = true;
 	undo_redo->create_action(TTR("Change Animation Length"));
 	undo_redo->add_do_method(animation.ptr(), "set_length", p_new_len);
 	undo_redo->add_undo_method(animation.ptr(), "set_length", animation->get_length());
 	undo_redo->commit_action();
-	*block_animation_update_ptr = false;
 	editing = false;
 	update();
 
@@ -706,12 +704,10 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 
 void AnimationTimelineEdit::_anim_loop_pressed() {
 
-	*block_animation_update_ptr = true;
 	undo_redo->create_action(TTR("Change Animation Loop"));
 	undo_redo->add_do_method(animation.ptr(), "set_loop", loop->is_pressed());
 	undo_redo->add_undo_method(animation.ptr(), "set_loop", animation->has_loop());
 	undo_redo->commit_action();
-	*block_animation_update_ptr = false;
 }
 
 int AnimationTimelineEdit::get_buttons_width() const {
@@ -936,10 +932,6 @@ Size2 AnimationTimelineEdit::get_minimum_size() const {
 	return ms;
 }
 
-void AnimationTimelineEdit::set_block_animation_update_ptr(bool *p_block_ptr) {
-	block_animation_update_ptr = p_block_ptr;
-}
-
 void AnimationTimelineEdit::set_undo_redo(UndoRedo *p_undo_redo) {
 	undo_redo = p_undo_redo;
 }
@@ -1080,7 +1072,6 @@ void AnimationTimelineEdit::_bind_methods() {
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
 
-	block_animation_update_ptr = NULL;
 	editing = false;
 	name_limit = 150;
 	zoom = NULL;
@@ -1884,12 +1875,10 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		Point2 pos = mb->get_position();
 
 		if (check_rect.has_point(pos)) {
-			*block_animation_update_ptr = true;
 			undo_redo->create_action(TTR("Toggle Track Enabled"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_enabled", track, !animation->track_is_enabled(track));
 			undo_redo->add_undo_method(animation.ptr(), "track_set_enabled", track, animation->track_is_enabled(track));
 			undo_redo->commit_action();
-			*block_animation_update_ptr = false;
 			update();
 			accept_event();
 		}
@@ -2186,12 +2175,10 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_CALL_MODE_CAPTURE: {
 
 			Animation::UpdateMode update_mode = Animation::UpdateMode(p_index);
-			*block_animation_update_ptr = true;
 			undo_redo->create_action(TTR("Change Animation Update Mode"));
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", track, update_mode);
 			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", track, animation->value_track_get_update_mode(track));
 			undo_redo->commit_action();
-			*block_animation_update_ptr = false;
 			update();
 
 		} break;
@@ -2200,24 +2187,20 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_INTERPOLATION_CUBIC: {
 
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
-			*block_animation_update_ptr = true;
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", track, animation->track_get_interpolation_type(track));
 			undo_redo->commit_action();
-			*block_animation_update_ptr = false;
 			update();
 		} break;
 		case MENU_LOOP_WRAP:
 		case MENU_LOOP_CLAMP: {
 
 			bool loop_wrap = p_index == MENU_LOOP_WRAP;
-			*block_animation_update_ptr = true;
 			undo_redo->create_action(TTR("Change Animation Loop Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, loop_wrap);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, animation->track_get_interpolation_loop_wrap(track));
 			undo_redo->commit_action();
-			*block_animation_update_ptr = false;
 			update();
 
 		} break;
@@ -2233,10 +2216,6 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 
 		} break;
 	}
-}
-
-void AnimationTrackEdit::set_block_animation_update_ptr(bool *p_block_ptr) {
-	block_animation_update_ptr = p_block_ptr;
 }
 
 void AnimationTrackEdit::cancel_drop() {
@@ -2301,7 +2280,6 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	root = NULL;
 	path = NULL;
 	menu = NULL;
-	block_animation_update_ptr = NULL;
 	clicking_on_name = false;
 	dropping_at = 0;
 
@@ -3384,7 +3362,6 @@ void AnimationTrackEditor::_update_tracks() {
 
 		track_edit->set_undo_redo(undo_redo);
 		track_edit->set_timeline(timeline);
-		track_edit->set_block_animation_update_ptr(&block_animation_update);
 		track_edit->set_root(root);
 		track_edit->set_animation_and_track(animation, i);
 		track_edit->set_play_position(timeline->get_play_position());
@@ -3425,7 +3402,7 @@ void AnimationTrackEditor::_animation_changed() {
 
 	timeline->update();
 	timeline->update_values();
-	if (block_animation_update) {
+	if (undo_redo->is_commiting_action()) {
 		for (int i = 0; i < track_edits.size(); i++) {
 			track_edits[i]->update();
 		}
@@ -4075,9 +4052,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 		undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
 	}
 
-	block_animation_update = true; //animation will change and this is triggered from a signal, so block updates
 	undo_redo->commit_action();
-	block_animation_update = false;
 
 	moving_selection = false;
 	for (int i = 0; i < track_edits.size(); i++) {
@@ -4778,7 +4753,6 @@ void AnimationTrackEditor::_bind_methods() {
 
 AnimationTrackEditor::AnimationTrackEditor() {
 	root = NULL;
-	block_animation_update = false;
 
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
@@ -4796,7 +4770,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->add_constant_override("separation", 0);
 
 	timeline = memnew(AnimationTimelineEdit);
-	timeline->set_block_animation_update_ptr(&block_animation_update);
 	timeline->set_undo_redo(undo_redo);
 	timeline_vbox->add_child(timeline);
 	timeline->connect("timeline_changed", this, "_timeline_changed");
@@ -4815,7 +4788,6 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	bezier_edit = memnew(AnimationBezierTrackEdit);
 	timeline_vbox->add_child(bezier_edit);
-	bezier_edit->set_block_animation_update_ptr(&block_animation_update);
 	bezier_edit->set_undo_redo(undo_redo);
 	bezier_edit->set_editor(this);
 	bezier_edit->set_timeline(timeline);

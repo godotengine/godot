@@ -239,6 +239,10 @@ void UndoRedo::_pop_history_tail() {
 	}
 }
 
+bool UndoRedo::is_commiting_action() const {
+	return commiting > 0;
+}
+
 void UndoRedo::commit_action() {
 
 	ERR_FAIL_COND(action_level <= 0);
@@ -321,10 +325,13 @@ bool UndoRedo::redo() {
 
 	if ((current_action + 1) >= actions.size())
 		return false; //nothing to redo
+
+	commiting++;
 	current_action++;
 
 	_process_operation_list(actions.write[current_action].do_ops.front());
 	version++;
+	commiting--;
 
 	return true;
 }
@@ -334,10 +341,11 @@ bool UndoRedo::undo() {
 	ERR_FAIL_COND_V(action_level > 0, false);
 	if (current_action < 0)
 		return false; //nothing to redo
+	commiting++;
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
-
+	commiting--;
 	return true;
 }
 
@@ -386,6 +394,7 @@ void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_ca
 
 UndoRedo::UndoRedo() {
 
+	commiting = 0;
 	version = 1;
 	action_level = 0;
 	current_action = -1;
@@ -484,6 +493,7 @@ void UndoRedo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
 	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
+	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_commiting_action);
 
 	//ClassDB::bind_method(D_METHOD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
 	//ClassDB::bind_method(D_METHOD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);

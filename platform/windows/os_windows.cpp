@@ -308,7 +308,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		}
 	};
 
-
 	switch (uMsg) // Check For Windows Messages
 	{
 		case WM_SETFOCUS: {
@@ -3004,9 +3003,9 @@ bool OS_Windows::is_disable_crash_handler() const {
 
 void OS_Windows::process_and_drop_events() {
 
-	drop_events=true;
+	drop_events = true;
 	process_events();
-	drop_events=false;
+	drop_events = false;
 }
 
 Error OS_Windows::move_to_trash(const String &p_path) {
