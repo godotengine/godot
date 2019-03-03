@@ -1158,9 +1158,6 @@ void NativeScriptLanguage::debug_get_stack_level_members(int p_level, List<Strin
 }
 void NativeScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 }
-String NativeScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
-	return "";
-}
 // Debugging stuff end.
 
 void NativeScriptLanguage::reload_all_scripts() {

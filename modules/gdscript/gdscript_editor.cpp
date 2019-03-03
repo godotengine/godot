@@ -384,11 +384,6 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 	}
 }
 
-String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
-
-	return "";
-}
-
 void GDScriptLanguage::get_recognized_extensions(List<String> *p_extensions) const {
 
 	p_extensions->push_back("gd");

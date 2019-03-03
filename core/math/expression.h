@@ -109,96 +109,6 @@ public:
 		FUNC_MAX
 	};
 
-	static int get_func_argument_count(BuiltinFunc p_func);
-	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str);
-	static BuiltinFunc find_function(const String &p_string);
-
-private:
-	static const char *func_name[FUNC_MAX];
-
-	struct Input {
-
-		Variant::Type type;
-		String name;
-
-		Input() :
-				type(Variant::NIL) {
-		}
-	};
-
-	Vector<Input> inputs;
-	Variant::Type output_type;
-
-	String expression;
-
-	bool sequenced;
-	int str_ofs;
-	bool expression_dirty;
-
-	bool _compile_expression();
-
-	enum TokenType {
-		TK_CURLY_BRACKET_OPEN,
-		TK_CURLY_BRACKET_CLOSE,
-		TK_BRACKET_OPEN,
-		TK_BRACKET_CLOSE,
-		TK_PARENTHESIS_OPEN,
-		TK_PARENTHESIS_CLOSE,
-		TK_IDENTIFIER,
-		TK_BUILTIN_FUNC,
-		TK_SELF,
-		TK_CONSTANT,
-		TK_BASIC_TYPE,
-		TK_COLON,
-		TK_COMMA,
-		TK_PERIOD,
-		TK_OP_IN,
-		TK_OP_EQUAL,
-		TK_OP_NOT_EQUAL,
-		TK_OP_LESS,
-		TK_OP_LESS_EQUAL,
-		TK_OP_GREATER,
-		TK_OP_GREATER_EQUAL,
-		TK_OP_AND,
-		TK_OP_OR,
-		TK_OP_NOT,
-		TK_OP_ADD,
-		TK_OP_SUB,
-		TK_OP_MUL,
-		TK_OP_DIV,
-		TK_OP_MOD,
-		TK_OP_SHIFT_LEFT,
-		TK_OP_SHIFT_RIGHT,
-		TK_OP_BIT_AND,
-		TK_OP_BIT_OR,
-		TK_OP_BIT_XOR,
-		TK_OP_BIT_INVERT,
-		TK_INPUT,
-		TK_EOF,
-		TK_ERROR,
-		TK_MAX
-	};
-
-	static const char *token_name[TK_MAX];
-	struct Token {
-
-		TokenType type;
-		Variant value;
-	};
-
-	void _set_error(const String &p_err) {
-		if (error_set)
-			return;
-		error_str = p_err;
-		error_set = true;
-	}
-
-	Error _get_token(Token &r_token);
-
-	String error_str;
-	bool error_set;
-
 	struct ENode {
 
 		enum Type {
@@ -331,6 +241,96 @@ private:
 		}
 	};
 
+	static int get_func_argument_count(BuiltinFunc p_func);
+	static String get_func_name(BuiltinFunc p_func);
+	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str);
+	static BuiltinFunc find_function(const String &p_string);
+
+private:
+	static const char *func_name[FUNC_MAX];
+
+	struct Input {
+
+		Variant::Type type;
+		String name;
+
+		Input() :
+				type(Variant::NIL) {
+		}
+	};
+
+	Vector<Input> inputs;
+	Variant::Type output_type;
+
+	String expression;
+
+	bool sequenced;
+	int str_ofs;
+	bool expression_dirty;
+
+	bool _compile_expression();
+
+	enum TokenType {
+		TK_CURLY_BRACKET_OPEN,
+		TK_CURLY_BRACKET_CLOSE,
+		TK_BRACKET_OPEN,
+		TK_BRACKET_CLOSE,
+		TK_PARENTHESIS_OPEN,
+		TK_PARENTHESIS_CLOSE,
+		TK_IDENTIFIER,
+		TK_BUILTIN_FUNC,
+		TK_SELF,
+		TK_CONSTANT,
+		TK_BASIC_TYPE,
+		TK_COLON,
+		TK_COMMA,
+		TK_PERIOD,
+		TK_OP_IN,
+		TK_OP_EQUAL,
+		TK_OP_NOT_EQUAL,
+		TK_OP_LESS,
+		TK_OP_LESS_EQUAL,
+		TK_OP_GREATER,
+		TK_OP_GREATER_EQUAL,
+		TK_OP_AND,
+		TK_OP_OR,
+		TK_OP_NOT,
+		TK_OP_ADD,
+		TK_OP_SUB,
+		TK_OP_MUL,
+		TK_OP_DIV,
+		TK_OP_MOD,
+		TK_OP_SHIFT_LEFT,
+		TK_OP_SHIFT_RIGHT,
+		TK_OP_BIT_AND,
+		TK_OP_BIT_OR,
+		TK_OP_BIT_XOR,
+		TK_OP_BIT_INVERT,
+		TK_INPUT,
+		TK_EOF,
+		TK_ERROR,
+		TK_MAX
+	};
+
+	static const char *token_name[TK_MAX];
+	struct Token {
+
+		TokenType type;
+		Variant value;
+	};
+
+	void _set_error(const String &p_err) {
+		if (error_set)
+			return;
+		error_str = p_err;
+		error_set = true;
+	}
+
+	Error _get_token(Token &r_token);
+
+	String error_str;
+	bool error_set;
+
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);
@@ -355,6 +355,9 @@ public:
 	Variant execute(Array p_inputs, Object *p_base = NULL, bool p_show_error = true);
 	bool has_execute_failed() const;
 	String get_error_text() const;
+	String get_source_string() const { return expression; };
+
+	Vector<ENode *> get_nodes_by_type(const ENode::Type p_type) const;
 
 	Expression();
 	~Expression();

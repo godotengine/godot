@@ -318,7 +318,6 @@ public:
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return NULL; }
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 
 	struct StackInfo {
 		String file;
@@ -410,6 +409,8 @@ public:
 	~PlaceHolderScriptInstance();
 };
 
+class Expression;
+
 class ScriptDebugger {
 
 	int lines_left;
@@ -419,6 +420,33 @@ class ScriptDebugger {
 	Map<int, Set<StringName> > breakpoints;
 
 	ScriptLanguage *break_lang;
+
+	Mutex *evaluate_watches_mutex;
+
+protected:
+	struct WatchData {
+		Expression *expression;
+		int inverse_stack_level;
+		ObjectID base_id;
+		Variant result_cache;
+		bool tracking;
+		bool locked;
+		bool dirty;
+		bool error;
+	};
+
+	Vector<WatchData> watches;
+
+	bool _evaluate_watches(int p_stack_level, int p_watch);
+
+	struct ExpressionContext {
+		Object *base;
+		Vector<String> input_names;
+		Array input_values;
+	};
+
+	ExpressionContext get_expression_context(int p_stack_level);
+	bool evaluate_expression(int p_level, const String &p_expression, String &p_result);
 
 public:
 	typedef void (*RequestSceneTreeMessageFunc)(void *);
@@ -461,6 +489,21 @@ public:
 	void clear_breakpoints();
 	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
+	void add_watch(int p_stack_level, const String &p_expression);
+	void set_watch_expression(int p_stack_level, int p_index, const String &p_expression);
+	void set_watch_tracking(int p_index, bool p_is_tracking);
+	void set_watch_lock(int p_stack_level, int p_index, bool p_is_locked);
+	void set_watch_dirty(int p_index, bool p_dirty);
+	void remove_watch(int p_index);
+	void clear_watches();
+	int get_watch_count() const { return watches.size(); };
+	Variant get_watch_result(int p_index) const;
+	bool watch_has_error(int p_index) const;
+	bool watch_is_dirty(int p_index) const;
+	String get_watch_error_text(int p_index) const;
+
+	_ALWAYS_INLINE_ bool evaluate_watches(int p_stack_level = 0, int p_watch = -1);
+
 	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
 	virtual void idle_poll();
 	virtual void line_poll();
@@ -486,5 +529,13 @@ public:
 	ScriptDebugger();
 	virtual ~ScriptDebugger() { singleton = NULL; }
 };
+
+_ALWAYS_INLINE_ bool ScriptDebugger::evaluate_watches(int p_stack_level, int p_watch) {
+	if (watches.size() == 0) {
+		return false;
+	}
+
+	return _evaluate_watches(p_stack_level, p_watch);
+}
 
 #endif

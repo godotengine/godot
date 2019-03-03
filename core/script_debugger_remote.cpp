@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
+#include "core/math/expression.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -57,6 +58,41 @@ void ScriptDebuggerRemote::_send_video_memory() {
 		packet_peer_stream->put_var(E->get().format);
 		packet_peer_stream->put_var(E->get().vram);
 	}
+}
+
+void ScriptDebuggerRemote::_execute_expression(int stack_frame, const String &p_expression) {
+	String result;
+	bool success = evaluate_expression(stack_frame, p_expression, result);
+
+	packet_peer_stream->put_var("message:expression_result");
+	packet_peer_stream->put_var(2);
+	packet_peer_stream->put_var(success);
+	packet_peer_stream->put_var(result);
+}
+
+void ScriptDebuggerRemote::_update_watch(int p_index) {
+	const bool success = !watch_has_error(p_index);
+	String result;
+	if (success) {
+		result = get_watch_result(p_index).get_construct_string();
+	} else {
+		result = get_watch_error_text(p_index);
+	}
+
+	packet_peer_stream->put_var("message:watch_update");
+	packet_peer_stream->put_var(3);
+	packet_peer_stream->put_var(success);
+	packet_peer_stream->put_var(p_index);
+	packet_peer_stream->put_var(result);
+
+	set_watch_dirty(p_index, false);
+}
+
+void ScriptDebuggerRemote::_send_remove_watch(int p_index) {
+
+	packet_peer_stream->put_var("message:watch_remove");
+	packet_peer_stream->put_var(1);
+	packet_peer_stream->put_var(p_index);
 }
 
 Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_port) {
@@ -285,6 +321,57 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 			} else if (command == "request_video_mem") {
 
 				_send_video_memory();
+			} else if (command == "execute_expression") {
+
+				_execute_expression(cmd[1], cmd[2]);
+			} else if (command == "add_watch") {
+
+				const int stack_level = cmd[1];
+				const String &expression = cmd[2];
+
+				add_watch(stack_level, expression);
+
+				int index = get_watch_count() - 1;
+				(void)evaluate_watches(stack_level, index);
+			} else if (command == "remove_watch") {
+
+				int index = cmd[1];
+				remove_watch(index);
+			} else if (command == "watch_expression") {
+
+				const int stack_level = cmd[1];
+				int index = cmd[2];
+				const String &expression = cmd[3];
+
+				set_watch_expression(stack_level, index, expression);
+				(void)evaluate_watches(stack_level, index);
+			} else if (command == "watch_tracking") {
+
+				int index = cmd[1];
+				bool is_tracked = cmd[2];
+				set_watch_tracking(index, is_tracked);
+			} else if (command == "watch_lock") {
+
+				const int stack_level = cmd[1];
+				int index = cmd[2];
+				bool is_locked = cmd[3];
+				set_watch_lock(stack_level, index, is_locked);
+			} else if (command == "eval_watches") {
+
+				int stack_level = cmd[1];
+
+				(void)evaluate_watches(stack_level);
+				for (int i = 0; i < get_watch_count(); ++i) {
+					if (watch_is_dirty(i)) {
+						_update_watch(i);
+					}
+				}
+			} else if (command == "refresh_watches") {
+				for (int i = 0; i < get_watch_count(); ++i) {
+					if (watch_is_dirty(i)) {
+						_update_watch(i);
+					}
+				}
 			} else if (command == "inspect_object") {
 
 				ObjectID id = cmd[1];
@@ -423,6 +510,23 @@ void ScriptDebuggerRemote::line_poll() {
 	if (poll_every % 2048 == 0)
 		_poll_events();
 	poll_every++;
+
+	ScriptDebugger *const debugger = ScriptDebugger::get_singleton();
+	ScriptLanguage *const lang = get_break_language();
+	// Currently, stepping through code in debugger brings focus back to the most recent stack level
+	const int stack_level = 0;
+	const int inverse_stack_level = lang->debug_get_stack_level_count() - stack_level - 1;
+
+	// Checking for stale watches
+	for (int i = 0; i < get_watch_count(); i++) {
+		if (
+				watches[i].inverse_stack_level > inverse_stack_level ||
+				(watches[i].inverse_stack_level == 0 && debugger->get_depth() == -1) ||
+				(watches[i].base_id != 0 && ObjectDB::get_instance(watches[i].base_id) == NULL)) {
+			_send_remove_watch(i);
+			remove_watch(i);
+		}
+	}
 }
 
 void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
@@ -735,6 +839,46 @@ void ScriptDebuggerRemote::_poll_events() {
 		} else if (command == "request_video_mem") {
 
 			_send_video_memory();
+		} else if (command == "watch_tracking") {
+
+			int index = cmd[1];
+			bool is_tracked = cmd[2];
+
+			set_watch_tracking(index, is_tracked);
+		} else if (command == "add_watch") {
+
+			const int stack_level = cmd[1];
+			const String &expression = cmd[2];
+
+			add_watch(stack_level, expression);
+
+			int index = get_watch_count() - 1;
+			(void)evaluate_watches(stack_level, index);
+		} else if (command == "remove_watch") {
+
+			int index = cmd[1];
+			remove_watch(index);
+		} else if (command == "watch_expression") {
+
+			const int stack_level = cmd[1];
+			int index = cmd[2];
+			const String &expression = cmd[3];
+
+			set_watch_expression(stack_level, index, expression);
+			(void)evaluate_watches(stack_level, index);
+		} else if (command == "watch_lock") {
+
+			const int stack_level = cmd[1];
+			int index = cmd[2];
+			bool is_locked = cmd[3];
+			set_watch_lock(stack_level, index, is_locked);
+		} else if (command == "refresh_watches") {
+
+			for (int i = 0; i < get_watch_count(); ++i) {
+				if (watch_is_dirty(i)) {
+					_update_watch(i);
+				}
+			}
 		} else if (command == "inspect_object") {
 
 			ObjectID id = cmd[1];

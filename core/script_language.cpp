@@ -31,6 +31,7 @@
 #include "script_language.h"
 
 #include "core/core_string_names.h"
+#include "core/math/expression.h"
 #include "core/project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -361,6 +362,253 @@ void ScriptDebugger::clear_breakpoints() {
 	breakpoints.clear();
 }
 
+void ScriptDebugger::add_watch(int p_stack_level, const String &p_expression) {
+	WatchData watch;
+	watch.expression = memnew(Expression);
+	watch.inverse_stack_level = 0;
+	watch.base_id = 0;
+	watch.result_cache = Variant();
+	watch.tracking = false;
+	watch.locked = false;
+	watch.dirty = false;
+	watch.error = false;
+
+	watches.push_back(watch);
+	set_watch_expression(p_stack_level, watches.size() - 1, p_expression);
+}
+
+void ScriptDebugger::set_watch_expression(int p_stack_level, int p_index, const String &p_expression) {
+	ERR_FAIL_INDEX(p_index, watches.size());
+
+	WatchData &watch = watches.write[p_index];
+	ScriptLanguage *const lang = get_break_language();
+
+	ERR_FAIL_COND(lang->debug_get_stack_level_count() <= 0)
+
+	ExpressionContext context = get_expression_context(p_stack_level);
+
+	if (watch.expression->parse(p_expression, context.input_names) != OK) {
+		watch.error = true;
+	} else {
+		watch.error = false;
+	}
+
+	bool locals_used = watch.expression->get_nodes_by_type(Expression::ENode::TYPE_INPUT).size() > 0;
+	bool members_used = watch.expression->get_nodes_by_type(Expression::ENode::TYPE_SELF).size() > 0;
+
+	if (locals_used) {
+		watch.inverse_stack_level = lang->debug_get_stack_level_count() - p_stack_level - 1;
+	} else {
+		watch.inverse_stack_level = -1;
+	}
+
+	if (members_used) {
+		watch.base_id = lang->debug_get_stack_level_instance(p_stack_level)->get_owner()->get_instance_id();
+	} else {
+		watch.base_id = 0;
+	}
+}
+
+void ScriptDebugger::set_watch_tracking(int p_index, bool p_is_tracking) {
+	ERR_FAIL_INDEX(p_index, watches.size());
+	WatchData &watch = watches.write[p_index];
+
+	watch.tracking = p_is_tracking;
+	if (p_is_tracking) {
+
+		ScriptLanguage *lang = get_break_language();
+
+		watch.base_id = lang->debug_get_stack_level_instance(0)->get_owner()->get_instance_id();
+	}
+}
+
+void ScriptDebugger::set_watch_lock(int p_stack_level, int p_index, bool p_is_locked) {
+	ERR_FAIL_INDEX(p_index, watches.size());
+	WatchData &watch = watches.write[p_index];
+	ScriptLanguage *lang = get_break_language();
+
+	if (lang->debug_get_stack_level_count() != 0) {
+		watch.base_id = lang->debug_get_stack_level_instance(p_stack_level)->get_owner()->get_instance_id();
+	}
+	watch.locked = p_is_locked;
+}
+
+void ScriptDebugger::set_watch_dirty(int p_index, bool p_dirty) {
+	ERR_FAIL_INDEX(p_index, watches.size());
+	watches.write[p_index].dirty = p_dirty;
+}
+
+void ScriptDebugger::remove_watch(int p_index) {
+	ERR_FAIL_INDEX(p_index, watches.size());
+
+	memdelete(watches[p_index].expression);
+	watches.remove(p_index);
+}
+
+void ScriptDebugger::clear_watches() {
+	const int size = watches.size();
+
+	for (int i = 0; i < size; i++) {
+		memdelete(watches[i].expression);
+	}
+	watches.clear();
+}
+
+Variant ScriptDebugger::get_watch_result(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, watches.size(), Variant());
+
+	return watches[p_index].result_cache;
+}
+
+bool ScriptDebugger::watch_has_error(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, watches.size(), false);
+
+	return watches[p_index].error;
+}
+
+bool ScriptDebugger::watch_is_dirty(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, watches.size(), false);
+
+	return watches[p_index].dirty;
+}
+
+String ScriptDebugger::get_watch_error_text(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, watches.size(), String());
+
+	return watches[p_index].expression->get_error_text();
+}
+
+bool ScriptDebugger::_evaluate_watches(int p_stack_level, int p_watch) {
+	if (watches.size() == 0) {
+		return false;
+	}
+
+	if (evaluate_watches_mutex->try_lock() != OK) {
+		return false;
+	}
+
+	int from = p_watch;
+	int to = p_watch + 1;
+	if (p_watch == -1) {
+		from = 0;
+		to = watches.size();
+	}
+
+	ScriptLanguage *const lang = get_break_language();
+	int inverse_stack_level = lang->debug_get_stack_level_count() - p_stack_level - 1;
+	bool executing_script = lang->debug_get_stack_level_count() > 0;
+	ObjectID script_owner_id = 0;
+	ExpressionContext context;
+
+	if (executing_script) {
+		script_owner_id = lang->debug_get_stack_level_instance(p_stack_level)->get_owner()->get_instance_id();
+
+		// We need a way to check whether variable has been declared and initialized already. At the moment,
+		// the `debug_get_stack_level_locals` returns Variant::NIL for the uninitialized vars which is problematic.
+		// Until this is resolved, tracking watches will not be implemented, because they trigger false alarms.
+		//
+		// Also we currently identify vars by their name. In GDScript this doesn't pose an issue since vars must
+		// have a unique name across the whole function, but can be an issue in other languages
+		context = get_expression_context(p_stack_level);
+	}
+
+	bool tracking_watch_changed = false;
+
+	for (int i = from; i < to; i++) {
+		WatchData &data = watches.write[i];
+		Variant result;
+
+		if (data.inverse_stack_level == -1 || data.inverse_stack_level == inverse_stack_level) {
+			if (data.base_id == 0 || data.base_id == script_owner_id) {
+				result = data.expression->execute(context.input_values, context.base, false);
+			} else {
+				Object *const base = ObjectDB::get_instance(data.base_id);
+
+				if (!base) {
+					continue;
+				}
+				result = data.expression->execute(Array(), base, false);
+			}
+
+			if (data.expression->has_execute_failed()) {
+				data.error = true;
+			} else {
+				data.error = false;
+			}
+		}
+
+		if (result != data.result_cache || data.error) {
+			// Enable this once we implement variable initialization checking
+			/*
+				if (data.tracking) {
+					tracking_watch_changed = true;
+				}
+			*/
+			data.result_cache = result;
+			data.dirty = true;
+		}
+	}
+	evaluate_watches_mutex->unlock();
+
+	return tracking_watch_changed;
+}
+
+ScriptDebugger::ExpressionContext ScriptDebugger::get_expression_context(int p_stack_level) {
+	ERR_FAIL_INDEX_V(p_stack_level, break_lang->debug_get_stack_level_count(), ExpressionContext());
+	ExpressionContext context;
+
+	List<Variant> vals;
+	List<String> vars;
+
+	break_lang->debug_get_stack_level_locals(p_stack_level, &vars, &vals);
+
+	ERR_FAIL_COND_V(vals.size() != vars.size(), ExpressionContext());
+
+	const int size = vals.size();
+
+	if (size > 0) {
+		List<String>::Element *vars_it = vars.front();
+		List<Variant>::Element *vals_it = vals.front();
+		int i = 0;
+
+		context.input_names.resize(size);
+		context.input_values.resize(size);
+
+		do {
+			context.input_names.set(i, vars_it->get());
+			context.input_values.set(i, vals_it->get());
+			vars_it = vars_it->next();
+			vals_it = vals_it->next();
+			++i;
+		} while (vars_it);
+	}
+
+	context.base = break_lang->debug_get_stack_level_instance(p_stack_level)->get_owner();
+
+	return context;
+}
+
+bool ScriptDebugger::evaluate_expression(int p_level, const String &p_expression, String &p_result) {
+	ERR_FAIL_INDEX_V(p_level, break_lang->debug_get_stack_level_count(), false);
+
+	Expression expr;
+	ExpressionContext context = get_expression_context(p_level);
+
+	if (expr.parse(p_expression, context.input_names) == OK) {
+		p_result = expr.execute(context.input_values, context.base);
+		if (expr.has_execute_failed()) {
+			p_result = expr.get_error_text();
+
+			return false;
+		}
+	} else {
+		p_result = expr.get_error_text();
+
+		return false;
+	}
+	return true;
+}
+
 void ScriptDebugger::idle_poll() {
 }
 
@@ -382,6 +630,7 @@ ScriptDebugger::ScriptDebugger() {
 	singleton = this;
 	lines_left = -1;
 	depth = -1;
+	evaluate_watches_mutex = Mutex::create();
 	break_lang = NULL;
 }
 

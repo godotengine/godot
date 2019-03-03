@@ -144,7 +144,8 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 			} else {
 
 				String expr = line.get_slicec(' ', 2);
-				String res = p_script->debug_parse_stack_level_expression(current_frame, expr);
+				String res;
+				(void)evaluate_expression(current_frame, expr, res);
 				print_line(res);
 			}
 

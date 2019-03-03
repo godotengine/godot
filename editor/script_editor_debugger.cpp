@@ -33,6 +33,8 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor/expression_evaluator.h"
+#include "editor/script_watches.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
@@ -461,6 +463,148 @@ void ScriptEditorDebugger::_video_mem_request() {
 	ppeer->put_var(msg);
 }
 
+bool ScriptEditorDebugger::_execute_expression(const String &p_expression) {
+	ERR_FAIL_COND_V(connection.is_null(), false);
+	ERR_FAIL_COND_V(!connection->is_connected_to_host(), false);
+
+	TreeItem *ti = stack_dump->get_selected();
+	if (!p_expression.empty() && ti) {
+		Dictionary d = ti->get_metadata(0);
+		int frame = d["frame"];
+		Array msg;
+		msg.push_back("execute_expression");
+		msg.push_back(frame);
+		msg.push_back(p_expression);
+		ppeer->put_var(msg);
+
+		return true;
+	}
+	return false;
+}
+
+void ScriptEditorDebugger::_print_expression(const String &p_expression, const String &p_error_text) {
+	if (connection.is_null() || !connection->is_connected_to_host() || !breaked) {
+		evaluator->set_result(p_error_text, true);
+	} else {
+		if (!_execute_expression(p_expression)) {
+			evaluator->set_result(p_error_text, true);
+		}
+	}
+}
+
+void ScriptEditorDebugger::_watch_expression(const String &p_expression) {
+	_add_watch(p_expression);
+	watches->add_watch(p_expression);
+	tabs->set_current_tab(watches->get_index());
+}
+
+void ScriptEditorDebugger::_add_watch(const String &p_expression) {
+
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+	TreeItem *ti = stack_dump->get_selected();
+	int frame = -1;
+	if (ti) {
+		const Dictionary d = ti->get_metadata(0);
+		frame = d["frame"];
+	}
+	Array msg;
+
+	msg.push_back("add_watch");
+	msg.push_back(frame);
+	msg.push_back(p_expression);
+	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_update_watch_expression(int p_index, const String &p_expression) {
+
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+	TreeItem *ti = stack_dump->get_selected();
+	int frame = -1;
+	if (ti) {
+		const Dictionary d = ti->get_metadata(0);
+		frame = d["frame"];
+	}
+	Array msg;
+
+	msg.push_back("watch_expression");
+	msg.push_back(frame);
+	msg.push_back(p_index);
+	msg.push_back(p_expression);
+	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_update_watch_lock(int p_index, bool p_is_locked) {
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+	TreeItem *ti = stack_dump->get_selected();
+
+	ERR_EXPLAIN("Can't lock watch if execution didn't break.");
+	ERR_FAIL_NULL(ti);
+
+	const Dictionary d = ti->get_metadata(0);
+	const int frame = d["frame"];
+
+	Array msg;
+
+	msg.push_back("watch_lock");
+	msg.push_back(frame);
+	msg.push_back(p_index);
+	msg.push_back(p_is_locked);
+	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_update_watch_tracking(int p_index, bool p_is_tracked) {
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+
+	Array msg;
+	msg.push_back("watch_tracking");
+	msg.push_back(p_index);
+	msg.push_back(p_is_tracked);
+	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_remove_watch(int p_index) {
+
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+
+	Array msg;
+	msg.push_back("remove_watch");
+	msg.push_back(p_index);
+	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_request_watches_evaluation(int p_stack_level) {
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+
+	Array msg;
+	msg.push_back("eval_watches");
+	msg.push_back(p_stack_level);
+	ppeer->put_var(msg);
+}
+
+void ScriptEditorDebugger::_sync_watches() {
+	const int watch_count = watches->get_watch_count();
+
+	for (int i = 0; i < watch_count; ++i) {
+		const String &expr = watches->get_watch_expression(i);
+		_add_watch(expr);
+	}
+}
+
+void ScriptEditorDebugger::_refresh_watches() {
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
+
+	Array msg;
+	msg.push_back("refresh_watches");
+	ppeer->put_var(msg);
+}
+
 Size2 ScriptEditorDebugger::get_minimum_size() const {
 
 	Size2 ms = Control::get_minimum_size();
@@ -638,6 +782,24 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		vmem_total->set_tooltip(TTR("Bytes:") + " " + itos(total));
 		vmem_total->set_text(String::humanize_size(total));
 
+	} else if (p_msg == "message:expression_result") {
+		bool success = p_data[0];
+		const String &result = p_data[1];
+
+		evaluator->set_result(result, !success);
+
+	} else if (p_msg == "message:watch_update") {
+		bool success = p_data[0];
+		int index = p_data[1];
+		const String &result = p_data[2];
+		watches->update_watch_result(index, result, success);
+	} else if (p_msg == "message:watch_remove") {
+		int index = p_data[0];
+
+		watches->remove_watch(index);
+	} else if (p_msg == "tracking_watches_changed") {
+		Vector<int> watch_indices = p_data[1];
+		tabs->set_current_tab(watches->get_index());
 	} else if (p_msg == "stack_dump") {
 
 		stack_dump->clear();
@@ -980,6 +1142,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "kill_me") {
 
+		debugger_tabs->set_current_tab(0);
+		watches->disable(true);
 		editor->call_deferred("stop_child_process");
 	}
 }
@@ -1129,6 +1293,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 						}
 					}
 				}
+
+				if (watches->get_watch_count() > 0) {
+					refresh_watches_timeout -= get_process_delta_time();
+					if (refresh_watches_timeout < 0) {
+						refresh_watches_timeout = EditorSettings::get_singleton()->get("debugger/watches_refresh_interval");
+						_refresh_watches();
+					}
+				}
 			}
 
 			if (error_count != last_error_count || warning_count != last_warning_count) {
@@ -1190,6 +1362,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
 
 					update_live_edit_root();
+					_sync_watches();
+					watches->disable(false);
 					if (profiler->is_profiling()) {
 						_profiler_activate(true);
 					}
@@ -1381,6 +1555,8 @@ void ScriptEditorDebugger::stop() {
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_tab_buttons();
+	debugger_tabs->set_current_tab(0);
+	watches->disable(true);
 
 	if (hide_on_stop) {
 		if (is_visible_in_tree())
@@ -1443,6 +1619,8 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	} else {
 		inspector->edit(NULL);
 	}
+
+	_request_watches_evaluation(d["frame"]);
 }
 
 void ScriptEditorDebugger::_output_clear() {
@@ -1992,6 +2170,14 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_performance_select"), &ScriptEditorDebugger::_performance_select);
 	ClassDB::bind_method(D_METHOD("_scene_tree_request"), &ScriptEditorDebugger::_scene_tree_request);
 	ClassDB::bind_method(D_METHOD("_video_mem_request"), &ScriptEditorDebugger::_video_mem_request);
+	ClassDB::bind_method(D_METHOD("_execute_expression"), &ScriptEditorDebugger::_execute_expression);
+	ClassDB::bind_method(D_METHOD("_print_expression"), &ScriptEditorDebugger::_print_expression);
+	ClassDB::bind_method(D_METHOD("_watch_expression"), &ScriptEditorDebugger::_watch_expression);
+	ClassDB::bind_method(D_METHOD("_add_watch"), &ScriptEditorDebugger::_add_watch);
+	ClassDB::bind_method(D_METHOD("_update_watch_expression", "index", "expression"), &ScriptEditorDebugger::_update_watch_expression);
+	ClassDB::bind_method(D_METHOD("_update_watch_lock", "index", "is_locked"), &ScriptEditorDebugger::_update_watch_lock);
+	ClassDB::bind_method(D_METHOD("_update_watch_tracking", "index", "is_tracked"), &ScriptEditorDebugger::_update_watch_tracking);
+	ClassDB::bind_method(D_METHOD("_remove_watch", "watch_index"), &ScriptEditorDebugger::_remove_watch);
 	ClassDB::bind_method(D_METHOD("_live_edit_set"), &ScriptEditorDebugger::_live_edit_set);
 	ClassDB::bind_method(D_METHOD("_live_edit_clear"), &ScriptEditorDebugger::_live_edit_clear);
 
@@ -2051,7 +2237,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		vbc->set_name(TTR("Debugger"));
-		//tabs->add_child(vbc);
 		Control *dbg = vbc;
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
@@ -2120,12 +2305,22 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		stack_dump->connect("cell_selected", this, "_stack_dump_frame_selected");
 		sc->add_child(stack_dump);
 
+		debugger_tabs = memnew(TabContainer);
+		debugger_tabs->set_h_size_flags(SIZE_EXPAND_FILL);
+		sc->add_child(debugger_tabs);
+
 		inspector = memnew(EditorInspector);
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
+		inspector->set_name("Variables");
 		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
 		inspector->connect("object_id_selected", this, "_scene_tree_property_select_object");
-		sc->add_child(inspector);
+		debugger_tabs->add_child(inspector);
+
+		evaluator = memnew(ExpressionEvaluator);
+		debugger_tabs->add_child(evaluator);
+		evaluator->connect("evaluate", this, "_print_expression");
+		evaluator->connect("add_watch", this, "_watch_expression");
 
 		server.instance();
 
@@ -2136,6 +2331,20 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		breaked = false;
 
 		tabs->add_child(dbg);
+	}
+
+	{ //watches
+		watches = memnew(ScriptWatches(this));
+		watches->set_name("Watches");
+		watches->connect("watch_added", this, "_add_watch");
+		watches->connect("expression_updated", this, "_update_watch_expression");
+		watches->connect("lock_updated", this, "_update_watch_lock");
+		watches->connect("tracking_updated", this, "_update_watch_tracking");
+		watches->connect("watch_removed", this, "_remove_watch");
+		tabs->add_child(watches);
+
+		watches->disable(true);
+		refresh_watches_timeout = EDITOR_DEF("debugger/watches_refresh_interval", 0.2);
 	}
 
 	{ //errors

@@ -50,6 +50,8 @@ class TreeItem;
 class HSplitContainer;
 class ItemList;
 class EditorProfiler;
+class ExpressionEvaluator;
+class ScriptWatches;
 
 class ScriptEditorDebuggerInspectedObject;
 
@@ -137,7 +139,11 @@ class ScriptEditorDebugger : public Control {
 	LineEdit *vmem_total;
 
 	Tree *stack_dump;
+	TabContainer *debugger_tabs;
 	EditorInspector *inspector;
+	ExpressionEvaluator *evaluator;
+	ScriptWatches *watches;
+	float refresh_watches_timeout;
 
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
@@ -176,6 +182,18 @@ class ScriptEditorDebugger : public Control {
 	int _update_scene_tree(TreeItem *parent, const Array &nodes, int current_index);
 
 	void _video_mem_request();
+
+	bool _execute_expression(const String &p_expression);
+	void _print_expression(const String &p_expression, const String &p_error_text);
+	void _watch_expression(const String &p_expression);
+	void _add_watch(const String &p_expression);
+	void _update_watch_expression(int p_index, const String &p_expression);
+	void _update_watch_lock(int p_index, bool p_is_locked);
+	void _update_watch_tracking(int p_index, bool p_is_tracking);
+	void _remove_watch(int p_index);
+	void _request_watches_evaluation(int p_stack_level);
+	void _sync_watches();
+	void _refresh_watches();
 
 	int _get_node_path_cache(const NodePath &p_path);
 

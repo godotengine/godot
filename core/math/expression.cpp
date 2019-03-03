@@ -1912,7 +1912,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 
 			const Expression::InputNode *in = static_cast<const Expression::InputNode *>(p_node);
 			if (in->index < 0 || in->index >= p_inputs.size()) {
-				r_error_str = vformat(RTR("Invalid input %i (not passed) in expression"), in->index);
+				r_error_str = vformat(RTR("Invalid input %d (not passed) in expression"), in->index);
 				return true;
 			}
 			r_ret = p_inputs[in->index];
@@ -2196,6 +2196,21 @@ void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
+}
+
+Vector<Expression::ENode *> Expression::get_nodes_by_type(const ENode::Type p_type) const {
+	Vector<ENode *> filtered_nodes;
+	ENode *node = nodes;
+
+	while (node) {
+		if (node->type == p_type) {
+			filtered_nodes.push_back(node);
+		}
+
+		node = node->next;
+	}
+
+	return filtered_nodes;
 }
 
 Expression::Expression() :

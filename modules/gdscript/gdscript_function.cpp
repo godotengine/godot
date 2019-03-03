@@ -1521,6 +1521,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					if (ScriptDebugger::get_singleton()->is_breakpoint(line, source))
 						do_break = true;
 
+					if (ScriptDebugger::get_singleton()->evaluate_watches()) {
+						do_break = true;
+					}
+
 					if (do_break) {
 						GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
 					}

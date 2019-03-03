@@ -121,7 +121,11 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	void _send_object_id(ObjectID p_id);
 	void _send_video_memory();
+	void _execute_expression(int stack_frame, const String &expression);
 	LiveEditFuncs *live_edit_funcs;
+
+	void _update_watch(int p_index);
+	void _send_remove_watch(int p_index);
 
 	ErrorHandlerList eh;
 	static void _err_handler(void *, const char *, const char *, int p_line, const char *, const char *, ErrorHandlerType p_type);
