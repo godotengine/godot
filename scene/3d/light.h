@@ -92,6 +92,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
+	virtual void _validate_property(PropertyInfo &property) const;
 
 	Light(VisualServer::LightType p_type);
 
