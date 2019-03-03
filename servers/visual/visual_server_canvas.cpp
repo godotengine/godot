@@ -759,7 +759,7 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 	ERR_FAIL_COND(!canvas_item);
 
 	int vertex_count = p_points.size();
-	ERR_FAIL_COND(vertex_count==0);
+	ERR_FAIL_COND(vertex_count == 0);
 	ERR_FAIL_COND(!p_colors.empty() && p_colors.size() != vertex_count && p_colors.size() != 1);
 	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size() != vertex_count);
 	ERR_FAIL_COND(!p_bones.empty() && p_bones.size() != vertex_count * 4);
