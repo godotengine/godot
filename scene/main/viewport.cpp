@@ -2923,6 +2923,13 @@ bool Viewport::is_handling_input_locally() const {
 	return handle_input_locally;
 }
 
+void Viewport::_validate_property(PropertyInfo &property) const {
+
+	if (VisualServer::get_singleton()->is_low_end() && property.name == "hdr") {
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	}
+}
+
 void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);

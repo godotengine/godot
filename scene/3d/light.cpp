@@ -210,6 +210,13 @@ bool Light::is_editor_only() const {
 	return editor_only;
 }
 
+void Light::_validate_property(PropertyInfo &property) const {
+
+	if (VisualServer::get_singleton()->is_low_end() && property.name == "shadow_contact") {
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	}
+}
+
 void Light::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_editor_only", "editor_only"), &Light::set_editor_only);
