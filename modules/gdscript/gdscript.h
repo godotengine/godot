@@ -511,6 +511,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {
