@@ -123,7 +123,6 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 		frame_drawn_callbacks.pop_front();
 	}
-
 	VS::get_singleton()->emit_signal("frame_post_draw");
 }
 void VisualServerRaster::sync() {

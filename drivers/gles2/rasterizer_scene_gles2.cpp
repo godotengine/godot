@@ -1312,11 +1312,11 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 			continue;
 		}
 
-		t = t->get_ptr();
-
 		if (t->redraw_if_visible) { //must check before proxy because this is often used with proxies
 			VisualServerRaster::redraw_request();
 		}
+
+		t = t->get_ptr();
 
 #ifdef TOOLS_ENABLED
 		if (t->detect_3d) {
@@ -1671,11 +1671,10 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				if (c.texture.is_valid() && storage->texture_owner.owns(c.texture)) {
 					RasterizerStorageGLES2::Texture *t = storage->texture_owner.get(c.texture);
 
-					t = t->get_ptr();
-
 					if (t->redraw_if_visible) {
 						VisualServerRaster::redraw_request();
 					}
+					t = t->get_ptr();
 
 #ifdef TOOLS_ENABLED
 					if (t->detect_3d) {
