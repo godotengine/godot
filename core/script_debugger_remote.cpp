@@ -311,6 +311,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 		} else {
 			OS::get_singleton()->delay_usec(10000);
+			OS::get_singleton()->process_and_drop_events();
 		}
 	}
 

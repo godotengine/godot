@@ -298,6 +298,17 @@ void OS_Windows::_drag_event(float p_x, float p_y, int idx) {
 
 LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
+	if (drop_events) {
+
+		if (user_proc) {
+
+			return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
+		} else {
+			return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+		}
+	};
+
+
 	switch (uMsg) // Check For Windows Messages
 	{
 		case WM_SETFOCUS: {
@@ -2230,7 +2241,9 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-	joypad->process_joypads();
+	if (!drop_events) {
+		joypad->process_joypads();
+	}
 
 	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 
@@ -2238,7 +2251,9 @@ void OS_Windows::process_events() {
 		DispatchMessageW(&msg);
 	}
 
-	process_key_events();
+	if (!drop_events) {
+		process_key_events();
+	}
 }
 
 void OS_Windows::set_cursor_shape(CursorShape p_shape) {
@@ -2987,6 +3002,13 @@ bool OS_Windows::is_disable_crash_handler() const {
 	return crash_handler.is_disabled();
 }
 
+void OS_Windows::process_and_drop_events() {
+
+	drop_events=true;
+	process_events();
+	drop_events=false;
+}
+
 Error OS_Windows::move_to_trash(const String &p_path) {
 	SHFILEOPSTRUCTW sf;
 	WCHAR *from = new WCHAR[p_path.length() + 2];
@@ -3015,6 +3037,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
+	drop_events = false;
 	key_event_pos = 0;
 	layered_window = false;
 	hBitmap = NULL;
