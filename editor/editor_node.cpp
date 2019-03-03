@@ -4850,6 +4850,7 @@ void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_err
 
 EditorNode::EditorNode() {
 
+	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
 	VisualServer::get_singleton()->textures_keep_original(true);
