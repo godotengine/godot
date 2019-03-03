@@ -177,8 +177,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 			node = Object::cast_to<Node>(obj);
 
 		} else {
-			print_line("Class is disabled for: " + itos(n.type));
-			print_line("name: " + String(snames[n.type]));
+			//print_line("Class is disabled for: " + itos(n.type));
+			//print_line("name: " + String(snames[n.type]));
 		}
 
 		if (node) {

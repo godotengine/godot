@@ -198,11 +198,7 @@ void Skeleton::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			if (dirty) {
-
-				dirty = false;
-				_make_dirty(); // property make it dirty
-			}
+			VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -210,21 +206,7 @@ void Skeleton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (dirty)
-				break; //will be eventually updated
-
-			//if moved, just update transforms
-			VisualServer *vs = VisualServer::get_singleton();
-			const Bone *bonesptr = bones.ptr();
-			int len = bones.size();
-			Transform global_transform = get_global_transform();
-			Transform global_transform_inverse = global_transform.affine_inverse();
-
-			for (int i = 0; i < len; i++) {
-
-				const Bone &b = bonesptr[i];
-				vs->skeleton_bone_set_transform(skeleton, i, global_transform * (b.transform_final * global_transform_inverse));
-			}
+			VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
 		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 
@@ -256,9 +238,6 @@ void Skeleton::_notification(int p_what) {
 
 				rest_global_inverse_dirty = false;
 			}
-
-			Transform global_transform = get_global_transform();
-			Transform global_transform_inverse = global_transform.affine_inverse();
 
 			for (int i = 0; i < len; i++) {
 
@@ -320,7 +299,7 @@ void Skeleton::_notification(int p_what) {
 				}
 
 				b.transform_final = b.pose_global * b.rest_global_inverse;
-				vs->skeleton_bone_set_transform(skeleton, order[i], global_transform * (b.transform_final * global_transform_inverse));
+				vs->skeleton_bone_set_transform(skeleton, order[i], b.transform_final);
 
 				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
 
@@ -594,10 +573,6 @@ void Skeleton::_make_dirty() {
 	if (dirty)
 		return;
 
-	if (!is_inside_tree()) {
-		dirty = true;
-		return;
-	}
 	MessageQueue::get_singleton()->push_notification(this, NOTIFICATION_UPDATE_SKELETON);
 	dirty = true;
 }
@@ -771,6 +746,16 @@ void Skeleton::physical_bones_remove_collision_exception(RID p_exception) {
 
 #endif // _3D_DISABLED
 
+void Skeleton::set_use_bones_in_world_transform(bool p_enable) {
+	use_bones_in_world_transform = p_enable;
+	if (is_inside_tree()) {
+		VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
+	}
+}
+bool Skeleton::is_using_bones_in_world_transform() const {
+	return use_bones_in_world_transform;
+}
+
 void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton::add_bone);
@@ -807,6 +792,9 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_transform", "bone_idx"), &Skeleton::get_bone_transform);
 
+	ClassDB::bind_method(D_METHOD("set_use_bones_in_world_transform", "enable"), &Skeleton::set_use_bones_in_world_transform);
+	ClassDB::bind_method(D_METHOD("is_using_bones_in_world_transform"), &Skeleton::is_using_bones_in_world_transform);
+
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton::physical_bones_stop_simulation);
@@ -818,6 +806,7 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bone_ignore_animation", "bone", "ignore"), &Skeleton::set_bone_ignore_animation);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bones_in_world_transform"), "set_use_bones_in_world_transform", "is_using_bones_in_world_transform");
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }
 
@@ -828,6 +817,7 @@ Skeleton::Skeleton() {
 	process_order_dirty = true;
 	skeleton = VisualServer::get_singleton()->skeleton_create();
 	set_notify_transform(true);
+	use_bones_in_world_transform = false;
 }
 
 Skeleton::~Skeleton() {

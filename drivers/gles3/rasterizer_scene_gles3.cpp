@@ -2044,7 +2044,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	int current_blend_mode = -1;
 
 	int prev_shading = -1;
-	RID prev_skeleton;
+	RasterizerStorageGLES3::Skeleton *prev_skeleton = NULL;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true); //by default unshaded (easier to set)
 
@@ -2058,7 +2058,10 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		RenderList::Element *e = p_elements[i];
 		RasterizerStorageGLES3::Material *material = e->material;
-		RID skeleton = e->instance->skeleton;
+		RasterizerStorageGLES3::Skeleton *skeleton = NULL;
+		if (e->instance->skeleton.is_valid()) {
+			skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
+		}
 
 		bool rebind = first;
 
@@ -2205,15 +2208,14 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		}
 
 		if (prev_skeleton != skeleton) {
-			if (prev_skeleton.is_valid() != skeleton.is_valid()) {
-				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, skeleton.is_valid());
+			if ((prev_skeleton == NULL) != (skeleton == NULL)) {
+				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, skeleton != NULL);
 				rebind = true;
 			}
 
-			if (skeleton.is_valid()) {
-				RasterizerStorageGLES3::Skeleton *sk = storage->skeleton_owner.getornull(skeleton);
+			if (skeleton) {
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
-				glBindTexture(GL_TEXTURE_2D, sk->texture);
+				glBindTexture(GL_TEXTURE_2D, skeleton->texture);
 			}
 		}
 
@@ -2239,6 +2241,11 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		}
 
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
+
+		if (skeleton) {
+			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_TRANSFORM, skeleton->world_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_IN_WORLD_COORDS, skeleton->use_world_transform);
+		}
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 

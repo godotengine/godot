@@ -302,6 +302,8 @@ out highp float dp_clip;
 
 #ifdef USE_SKELETON
 uniform highp sampler2D skeleton_texture; // texunit:-1
+uniform highp mat4 skeleton_transform;
+uniform bool skeleton_in_world_coords;
 #endif
 
 out highp vec4 position_interp;
@@ -430,7 +432,14 @@ void main() {
 					 vec4(0.0, 0.0, 0.0, 1.0)) *
 			 bone_weights.w;
 
-		world_matrix = transpose(m) * world_matrix;
+		if (skeleton_in_world_coords) {
+			highp mat4 bone_matrix = skeleton_transform * (transpose(m) * inverse(skeleton_transform));
+			world_matrix = bone_matrix * world_matrix;
+
+		} else {
+
+			world_matrix = world_matrix * transpose(m);
+		}
 	}
 #endif
 

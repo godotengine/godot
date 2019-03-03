@@ -2487,6 +2487,12 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		state.scene_shader.set_uniform(SceneShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
 
+		if (skeleton) {
+			state.scene_shader.set_uniform(SceneShaderGLES2::SKELETON_IN_WORLD_COORDS, skeleton->use_world_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES2::SKELETON_TRANSFORM, skeleton->world_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES2::SKELETON_TRANSFORM_INVERSE, skeleton->world_transform_inverse);
+		}
+
 		if (use_lightmap_capture) { //this is per instance, must be set always if present
 			glUniform4fv(state.scene_shader.get_uniform_location(SceneShaderGLES2::LIGHTMAP_CAPTURES), 12, (const GLfloat *)e->instance->lightmap_capture_data.ptr());
 			state.scene_shader.set_uniform(SceneShaderGLES2::LIGHTMAP_CAPTURE_SKY, false);

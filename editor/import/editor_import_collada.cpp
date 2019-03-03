@@ -176,7 +176,7 @@ Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
 
 		Skeleton *sk = memnew(Skeleton);
 		int bone = 0;
-
+		sk->set_use_bones_in_world_transform(true); // This improves compatibility in Collada
 		for (int i = 0; i < p_node->children.size(); i++) {
 
 			_populate_skeleton(sk, p_node->children[i], bone, -1);
