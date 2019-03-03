@@ -1839,7 +1839,7 @@ void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, floa
 		to_time = length * 1.001; //include a little more if at the end
 	int to = _find(vt->values, to_time);
 
-	if (to>=0 && from_time == to_time && vt->values[to].time==from_time) {
+	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
 		//find exact (0 delta), return if found
 		p_indices->push_back(to);
 		return;
