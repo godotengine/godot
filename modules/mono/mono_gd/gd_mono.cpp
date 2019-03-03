@@ -34,6 +34,7 @@
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/mono-gc.h>
+#include <mono/metadata/profiler.h>
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -77,6 +78,14 @@ void setup_runtime_main_args() {
 	}
 
 	mono_runtime_set_main_args(main_args.size(), main_args.ptrw());
+}
+
+void gdmono_profiler_init() {
+	String profiler_args = GLOBAL_DEF("mono/profiler/args", "log:calls,alloc,sample,output=output.mlpd");
+	bool profiler_enabled = GLOBAL_DEF("mono/profiler/enabled", false);
+	if (profiler_enabled) {
+		mono_profiler_load(profiler_args.utf8());
+	}
 }
 
 #ifdef DEBUG_ENABLED
@@ -264,6 +273,8 @@ void GDMono::initialize() {
 	add_mono_shared_libs_dir_to_path();
 
 	GDMonoAssembly::initialize();
+
+	gdmono_profiler_init();
 
 #ifdef DEBUG_ENABLED
 	gdmono_debug_init();
