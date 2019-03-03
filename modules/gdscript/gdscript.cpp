@@ -1840,67 +1840,85 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		return String();
 	}
 
-	int len = f->get_len();
-	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
-	f->close();
-	memdelete(f);
-	ERR_FAIL_COND_V(r != len, String());
-	w[len] = 0;
-
-	String s;
-	if (s.parse_utf8((const char *)w.ptr())) {
-		return String();
-	}
+	String source = f->get_as_utf8_string();
 
 	GDScriptParser parser;
-
-	parser.parse(s, p_path.get_base_dir(), true, p_path);
+	parser.parse(source, p_path.get_base_dir(), true, p_path, false, NULL, true);
 
 	if (parser.get_parse_tree() && parser.get_parse_tree()->type == GDScriptParser::Node::TYPE_CLASS) {
 
 		const GDScriptParser::ClassNode *c = static_cast<const GDScriptParser::ClassNode *>(parser.get_parse_tree());
-		if (r_base_type) {
-			GDScriptParser::DataType base_type;
-			if (c->base_type.has_type) {
-				base_type = c->base_type;
-				while (base_type.has_type && base_type.kind != GDScriptParser::DataType::NATIVE) {
-					switch (base_type.kind) {
-						case GDScriptParser::DataType::CLASS: {
-							base_type = base_type.class_type->base_type;
-						} break;
-						case GDScriptParser::DataType::GDSCRIPT: {
-							Ref<GDScript> gds = base_type.script_type;
-							if (gds.is_valid()) {
-								base_type.kind = GDScriptParser::DataType::NATIVE;
-								base_type.native_type = gds->get_instance_base_type();
-							} else {
-								base_type = GDScriptParser::DataType();
-							}
-						} break;
-						default: {
-							base_type = GDScriptParser::DataType();
-						} break;
-					}
-				}
-			}
-			if (base_type.has_type) {
-				*r_base_type = base_type.native_type;
-			} else {
-				// Fallback
-				if (c->extends_used && c->extends_class.size() == 1) {
-					*r_base_type = c->extends_class[0];
-				} else if (!c->extends_used) {
-					*r_base_type = "Reference";
-				}
-			}
-		}
 		if (r_icon_path) {
 			if (c->icon_path.empty() || c->icon_path.is_abs_path())
 				*r_icon_path = c->icon_path;
 			else if (c->icon_path.is_rel_path())
 				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();
+		}
+		if (r_base_type) {
+
+			const GDScriptParser::ClassNode *subclass = c;
+			String path = p_path;
+			GDScriptParser subparser;
+			while (subclass) {
+				if (subclass->extends_used) {
+					if (subclass->extends_file) {
+						if (subclass->extends_class.size() == 0) {
+							get_global_class_name(subclass->extends_file, r_base_type);
+							subclass = NULL;
+							break;
+						} else {
+							Vector<StringName> extend_classes = subclass->extends_class;
+
+							FileAccess *subfile = FileAccess::open(subclass->extends_file, FileAccess::READ);
+							if (!subfile) {
+								break;
+							}
+							String subsource = subfile->get_as_utf8_string();
+							if (subsource.empty()) {
+								break;
+							}
+							String subpath = subclass->extends_file;
+							if (subpath.is_rel_path()) {
+								subpath = path.get_base_dir().plus_file(subpath).simplify_path();
+							}
+
+							if (OK != subparser.parse(subsource, subpath.get_base_dir(), true, subpath, false, NULL, true)) {
+								break;
+							}
+							path = subpath;
+							if (!subparser.get_parse_tree() || subparser.get_parse_tree()->type != GDScriptParser::Node::TYPE_CLASS) {
+								break;
+							}
+							subclass = static_cast<const GDScriptParser::ClassNode *>(subparser.get_parse_tree());
+
+							while (extend_classes.size() > 0) {
+								bool found = false;
+								for (int i = 0; i < subclass->subclasses.size(); i++) {
+									const GDScriptParser::ClassNode *inner_class = subclass->subclasses[i];
+									if (inner_class->name == extend_classes[0]) {
+										extend_classes.remove(0);
+										found = true;
+										subclass = inner_class;
+										break;
+									}
+								}
+								if (!found) {
+									subclass = NULL;
+									break;
+								}
+							}
+						}
+					} else if (subclass->extends_class.size() == 1) {
+						*r_base_type = subclass->extends_class[0];
+						subclass = NULL;
+					} else {
+						break;
+					}
+				} else {
+					*r_base_type = "Reference";
+					subclass = NULL;
+				}
+			}
 		}
 		return c->name;
 	}
@@ -2181,6 +2199,26 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 	if (el == "gd" || el == "gdc" || el == "gde")
 		return "GDScript";
 	return "";
+}
+
+void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
+
+	FileAccess *file = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND(!file);
+
+	String source = file->get_as_utf8_string();
+	if (source.empty()) {
+		return;
+	}
+
+	GDScriptParser parser;
+	if (OK != parser.parse(source, p_path.get_base_dir(), true, p_path, false, NULL, true)) {
+		return;
+	}
+
+	for (const List<String>::Element *E = parser.get_dependencies().front(); E; E = E->next()) {
+		p_dependencies->push_back(E->get());
+	}
 }
 
 Error ResourceFormatSaverGDScript::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
