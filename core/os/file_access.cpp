@@ -409,6 +409,23 @@ int FileAccess::get_buffer(uint8_t *p_dst, int p_length) const {
 	return i;
 }
 
+String FileAccess::get_as_utf8_string() const {
+	PoolVector<uint8_t> sourcef;
+	int len = get_len();
+	sourcef.resize(len + 1);
+
+	PoolVector<uint8_t>::Write w = sourcef.write();
+	int r = get_buffer(w.ptr(), len);
+	ERR_FAIL_COND_V(r != len, String());
+	w[len] = 0;
+
+	String s;
+	if (s.parse_utf8((const char *)w.ptr())) {
+		return String();
+	}
+	return s;
+}
+
 void FileAccess::store_16(uint16_t p_dest) {
 
 	uint8_t a, b;
