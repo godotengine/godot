@@ -3656,11 +3656,55 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case POOL_INT_ARRAY: {
-			r_dst = a;
+			const PoolVector<int> *arr_a = reinterpret_cast<const PoolVector<int> *>(a._data._mem);
+			const PoolVector<int> *arr_b = reinterpret_cast<const PoolVector<int> *>(b._data._mem);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				PoolVector<int> v;
+				v.resize(sz);
+				{
+					PoolVector<int>::Write vw = v.write();
+					PoolVector<int>::Read ar = arr_a->read();
+					PoolVector<int>::Read br = arr_b->read();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						Variant::interpolate(ar[i], br[i], c, va);
+						vw[i] = va;
+					}
+				}
+				r_dst = v;
+			}
 		}
 			return;
 		case POOL_REAL_ARRAY: {
-			r_dst = a;
+			const PoolVector<real_t> *arr_a = reinterpret_cast<const PoolVector<real_t> *>(a._data._mem);
+			const PoolVector<real_t> *arr_b = reinterpret_cast<const PoolVector<real_t> *>(b._data._mem);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				PoolVector<real_t> v;
+				v.resize(sz);
+				{
+					PoolVector<real_t>::Write vw = v.write();
+					PoolVector<real_t>::Read ar = arr_a->read();
+					PoolVector<real_t>::Read br = arr_b->read();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						Variant::interpolate(ar[i], br[i], c, va);
+						vw[i] = va;
+					}
+				}
+				r_dst = v;
+			}
 		}
 			return;
 		case POOL_STRING_ARRAY: {
@@ -3717,7 +3761,27 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case POOL_COLOR_ARRAY: {
-			r_dst = a;
+			const PoolVector<Color> *arr_a = reinterpret_cast<const PoolVector<Color> *>(a._data._mem);
+			const PoolVector<Color> *arr_b = reinterpret_cast<const PoolVector<Color> *>(b._data._mem);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+
+				r_dst = a;
+			} else {
+
+				PoolVector<Color> v;
+				v.resize(sz);
+				{
+					PoolVector<Color>::Write vw = v.write();
+					PoolVector<Color>::Read ar = arr_a->read();
+					PoolVector<Color>::Read br = arr_b->read();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].linear_interpolate(br[i], c);
+					}
+				}
+				r_dst = v;
+			}
 		}
 			return;
 		default: {
