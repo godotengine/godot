@@ -202,11 +202,11 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 
 		} else {
 
-			texture = texture->get_ptr();
-
 			if (texture->redraw_if_visible) {
 				VisualServerRaster::redraw_request();
 			}
+
+			texture = texture->get_ptr();
 
 			if (texture->render_target) {
 				texture->render_target->used_in_frame = true;
@@ -244,11 +244,11 @@ RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_bind_canvas_texture(con
 
 		} else {
 
-			normal_map = normal_map->get_ptr();
-
 			if (normal_map->redraw_if_visible) { //check before proxy, because this is usually used with proxies
 				VisualServerRaster::redraw_request();
 			}
+
+			normal_map = normal_map->get_ptr();
 
 			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 2);
 			glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
@@ -1412,6 +1412,10 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 						continue;
 					}
 
+					if (t->redraw_if_visible) {
+						VisualServerRaster::redraw_request();
+					}
+
 					t = t->get_ptr();
 
 #ifdef TOOLS_ENABLED
@@ -1421,10 +1425,6 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 #endif
 					if (t->render_target)
 						t->render_target->used_in_frame = true;
-
-					if (t->redraw_if_visible) {
-						VisualServerRaster::redraw_request();
-					}
 
 					glBindTexture(t->target, t->tex_id);
 				}
