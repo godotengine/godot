@@ -34,6 +34,9 @@
 #include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
+
+#include <iostream>
+
 #ifdef TOOLS_ENABLED
 void AnimatedValuesBackup::update_skeletons() {
 
@@ -236,104 +239,110 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		p_anim->node_cache.write[i] = NULL;
 		RES resource;
 		Vector<StringName> leftover_path;
-		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
-		if (!child) {
-			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
-		}
-		ERR_CONTINUE(!child); // couldn't find the child node
-		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
-		int bone_idx = -1;
+Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
+if (!child) {
+	ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
+}
+ERR_CONTINUE(!child); // couldn't find the child node
+uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
+int bone_idx = -1;
 
-		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
+if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
 
-			Skeleton *sk = Object::cast_to<Skeleton>(child);
-			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
-			if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
+	Skeleton *sk = Object::cast_to<Skeleton>(child);
+	bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
+	if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
 
-				continue;
+		continue;
+	}
+}
+
+{
+	if (!child->is_connected("tree_exiting", this, "_node_removed"))
+		child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
+}
+
+TrackNodeCacheKey key;
+key.id = id;
+key.bone_idx = bone_idx;
+
+if (!node_cache_map.has(key))
+node_cache_map[key] = TrackNodeCache();
+
+p_anim->node_cache.write[i] = &node_cache_map[key];
+p_anim->node_cache[i]->path = a->track_get_path(i);
+p_anim->node_cache[i]->node = child;
+p_anim->node_cache[i]->resource = resource;
+p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
+if (a->track_get_type(i) == Animation::TYPE_TRANSFORM) {
+	// special cases and caches for transform tracks
+
+	// cache spatial
+	p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
+	// cache skeleton
+	p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
+	if (p_anim->node_cache[i]->skeleton) {
+		if (a->track_get_path(i).get_subname_count() == 1) {
+			StringName bone_name = a->track_get_path(i).get_subname(0);
+
+			p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
+			if (p_anim->node_cache[i]->bone_idx < 0) {
+				// broken track (nonexistent bone)
+				p_anim->node_cache[i]->skeleton = NULL;
+				p_anim->node_cache[i]->spatial = NULL;
+				ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 			}
 		}
-
-		{
-			if (!child->is_connected("tree_exiting", this, "_node_removed"))
-				child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
-		}
-
-		TrackNodeCacheKey key;
-		key.id = id;
-		key.bone_idx = bone_idx;
-
-		if (!node_cache_map.has(key))
-			node_cache_map[key] = TrackNodeCache();
-
-		p_anim->node_cache.write[i] = &node_cache_map[key];
-		p_anim->node_cache[i]->path = a->track_get_path(i);
-		p_anim->node_cache[i]->node = child;
-		p_anim->node_cache[i]->resource = resource;
-		p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
-		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM) {
-			// special cases and caches for transform tracks
-
-			// cache spatial
-			p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
-			// cache skeleton
-			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
-			if (p_anim->node_cache[i]->skeleton) {
-				if (a->track_get_path(i).get_subname_count() == 1) {
-					StringName bone_name = a->track_get_path(i).get_subname(0);
-
-					p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
-					if (p_anim->node_cache[i]->bone_idx < 0) {
-						// broken track (nonexistent bone)
-						p_anim->node_cache[i]->skeleton = NULL;
-						p_anim->node_cache[i]->spatial = NULL;
-						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
-					}
-				} else {
-					// no property, just use spatialnode
-					p_anim->node_cache[i]->skeleton = NULL;
-				}
-			}
-		}
-
-		if (a->track_get_type(i) == Animation::TYPE_VALUE) {
-
-			if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
-
-				TrackNodeCache::PropertyAnim pa;
-				pa.subpath = leftover_path;
-				pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
-				pa.special = SP_NONE;
-				pa.owner = p_anim->node_cache[i];
-				if (false && p_anim->node_cache[i]->node_2d) {
-
-					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos)
-						pa.special = SP_NODE2D_POS;
-					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot)
-						pa.special = SP_NODE2D_ROT;
-					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale)
-						pa.special = SP_NODE2D_SCALE;
-				}
-				p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
-			}
-		}
-
-		if (a->track_get_type(i) == Animation::TYPE_BEZIER && leftover_path.size()) {
-
-			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
-
-				TrackNodeCache::BezierAnim ba;
-				ba.bezier_property = leftover_path;
-				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
-				ba.owner = p_anim->node_cache[i];
-
-				p_anim->node_cache[i]->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
-			}
+		else {
+			// no property, just use spatialnode
+			p_anim->node_cache[i]->skeleton = NULL;
 		}
 	}
 }
 
+if (a->track_get_type(i) == Animation::TYPE_VALUE) {
+
+	if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+
+		TrackNodeCache::PropertyAnim pa;
+		pa.subpath = leftover_path;
+		pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
+		pa.special = SP_NONE;
+		pa.owner = p_anim->node_cache[i];
+		if (false && p_anim->node_cache[i]->node_2d) {
+
+			if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos)
+				pa.special = SP_NODE2D_POS;
+			else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot)
+				pa.special = SP_NODE2D_ROT;
+			else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale)
+				pa.special = SP_NODE2D_SCALE;
+		}
+		p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
+	}
+}
+
+if (a->track_get_type(i) == Animation::TYPE_BEZIER && leftover_path.size()) {
+
+	if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+
+		TrackNodeCache::BezierAnim ba;
+		ba.bezier_property = leftover_path;
+		ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
+		ba.owner = p_anim->node_cache[i];
+
+		p_anim->node_cache[i]->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
+	}
+}
+	}
+}
+
 void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started) {
+	//print_line(String("{0}, {1}").format(varray("p_time=", p_time)));
+
+	//if (p_time == 2.4) {
+	//	int a = 0;
+	//}
 
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
@@ -710,7 +719,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					if (anim->has_loop()) {
 						at_anim_pos = Math::fposmod(p_time - pos, anim->get_length()); //seek to loop
 					} else {
-						at_anim_pos = MAX(anim->get_length(), p_time - pos); //seek to end
+						at_anim_pos = MIN(anim->get_length(), p_time - pos); //seek to end
 					}
 
 					if (player->is_playing() || p_seeked) {
@@ -718,8 +727,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						player->seek(at_anim_pos);
 						nc->animation_playing = true;
 						playing_caches.insert(nc);
+
 					} else {
 						player->set_assigned_animation(anim_name);
+
 						player->seek(at_anim_pos, true);
 					}
 				} else {
