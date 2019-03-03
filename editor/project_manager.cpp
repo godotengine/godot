@@ -392,6 +392,8 @@ private:
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text()) == OK) {
 
+			EditorSettings::get_singleton()->set("filesystem/directories/default_project_path", project_path->get_text(), 0);
+			EditorSettings::get_singleton()->save();
 			if (!d->dir_exists(project_name->get_text())) {
 
 				if (d->make_dir(project_name->get_text()) == OK) {
@@ -1637,6 +1639,8 @@ void ProjectManager::_scan_dir(DirAccess *da, float pos, float total, List<Strin
 
 void ProjectManager::_scan_begin(const String &p_base) {
 
+	EditorSettings::get_singleton()->set("filesystem/directories/default_project_path", p_base, 0);
+	EditorSettings::get_singleton()->save();
 	print_line("Scanning projects at: " + p_base);
 	List<String> projects;
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
