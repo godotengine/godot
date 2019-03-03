@@ -2082,7 +2082,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 				return NULL;
 			}
 			pattern->pt_type = GDScriptParser::PatternNode::PT_BIND;
-			pattern->bind = tokenizer->get_token_identifier();
+			pattern->bind = tokenizer->get_token_literal();
 			// Check if variable name is already used
 			BlockNode *bl = current_block;
 			while (bl) {
@@ -7842,13 +7842,16 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							return;
 						}
 
-						if (!lh_type.has_type && check_types) {
-							if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
-								_mark_line_as_unsafe(op->line);
+						if (check_types) {
+							if (!lh_type.has_type) {
+								if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
+									_mark_line_as_unsafe(op->line);
+								}
 							}
-						} else if (lh_type.is_constant) {
-							_set_error("Cannot assign a new value to a constant.", op->line);
-							return;
+							if (lh_type.is_constant) {
+								_set_error("Cannot assign a new value to a constant.", op->line);
+								return;
+							}
 						}
 
 						DataType rh_type;
