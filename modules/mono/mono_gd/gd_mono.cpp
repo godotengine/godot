@@ -55,6 +55,10 @@
 #include "main/main.h"
 #endif
 
+#define OUT_OF_SYNC_ERR_MESSAGE(m_assembly_name) "The assembly '" m_assembly_name "' is out of sync. "                    \
+												 "This error is expected if you just upgraded to a newer Godot version. " \
+												 "Building the project will update the assembly to the correct version."
+
 GDMono *GDMono::singleton = NULL;
 
 namespace {
@@ -364,15 +368,15 @@ void GDMono::initialize() {
 			// metadata, so we invalidate the version in the metadata and unload the script domain.
 
 			if (core_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Core API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(CORE_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
-				ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
+				ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed");
 				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 			}
 
 			if (editor_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Editor API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(EDITOR_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
 
@@ -863,7 +867,7 @@ Error GDMono::reload_scripts_domain() {
 			// metadata, so we invalidate the version in the metadata and unload the script domain.
 
 			if (core_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Core API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(CORE_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
 				ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
@@ -871,7 +875,7 @@ Error GDMono::reload_scripts_domain() {
 			}
 
 			if (editor_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Editor API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(EDITOR_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
 
