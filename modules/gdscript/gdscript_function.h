@@ -55,7 +55,7 @@ struct GDScriptDataType {
 	StringName native_type;
 	Ref<Script> script_type;
 
-	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const {
+	bool is_type(const Variant &p_variant) const {
 		if (!has_type) return true; // Can't type check
 
 		switch (kind) {
@@ -63,11 +63,7 @@ struct GDScriptDataType {
 				break;
 			case BUILTIN: {
 				Variant::Type var_type = p_variant.get_type();
-				bool valid = builtin_type == var_type;
-				if (!valid && p_allow_implicit_conversion) {
-					valid = Variant::can_convert_strict(var_type, builtin_type);
-				}
-				return valid;
+				return builtin_type == var_type;
 			} break;
 			case NATIVE: {
 				if (p_variant.get_type() == Variant::NIL) {
