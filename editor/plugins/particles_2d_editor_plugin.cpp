@@ -133,7 +133,10 @@ void Particles2DEditorPlugin::_generate_visibility_rect() {
 		particles->set_emitting(false);
 	}
 
-	particles->set_visibility_rect(rect);
+	undo_redo->create_action(TTR("Generate Visibility Rect"));
+	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
+	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());
+	undo_redo->commit_action();
 }
 
 void Particles2DEditorPlugin::_generate_emission_mask() {
