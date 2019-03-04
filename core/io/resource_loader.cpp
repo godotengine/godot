@@ -633,6 +633,31 @@ bool ResourceLoader::is_import_valid(const String &p_path) {
 	return false; //not found
 }
 
+bool ResourceLoader::is_imported(const String &p_path) {
+
+	String path = _path_remap(p_path);
+
+	String local_path;
+	if (path.is_rel_path())
+		local_path = "res://" + path;
+	else
+		local_path = ProjectSettings::get_singleton()->localize_path(path);
+
+	for (int i = 0; i < loader_count; i++) {
+
+		if (!loader[i]->recognize_path(local_path))
+			continue;
+		/*
+		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+			continue;
+		*/
+
+		return loader[i]->is_imported(p_path);
+	}
+
+	return false; //not found
+}
+
 void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
 	String path = _path_remap(p_path);
