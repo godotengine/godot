@@ -1,10 +1,10 @@
 
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -17,6 +17,17 @@
  */
 
 #include "pngpriv.h"
+
+#ifdef PNG_ARM_NEON_IMPLEMENTATION
+#  if PNG_ARM_NEON_IMPLEMENTATION == 1
+#    define PNG_ARM_NEON_INTRINSICS_AVAILABLE
+#    if defined(_MSC_VER) && defined(_M_ARM64)
+#      include <arm64_neon.h>
+#    else
+#      include <arm_neon.h>
+#    endif
+#  endif
+#endif
 
 #ifdef PNG_READ_SUPPORTED
 
@@ -2986,7 +2997,6 @@ png_do_gray_to_rgb(png_row_infop row_info, png_bytep row)
  */
 static int
 png_do_rgb_to_gray(png_structrp png_ptr, png_row_infop row_info, png_bytep row)
-
 {
    int rgb_error = 0;
 
@@ -2995,12 +3005,11 @@ png_do_rgb_to_gray(png_structrp png_ptr, png_row_infop row_info, png_bytep row)
    if ((row_info->color_type & PNG_COLOR_MASK_PALETTE) == 0 &&
        (row_info->color_type & PNG_COLOR_MASK_COLOR) != 0)
    {
-      PNG_CONST png_uint_32 rc = png_ptr->rgb_to_gray_red_coeff;
-      PNG_CONST png_uint_32 gc = png_ptr->rgb_to_gray_green_coeff;
-      PNG_CONST png_uint_32 bc = 32768 - rc - gc;
-      PNG_CONST png_uint_32 row_width = row_info->width;
-      PNG_CONST int have_alpha =
-         (row_info->color_type & PNG_COLOR_MASK_ALPHA) != 0;
+      png_uint_32 rc = png_ptr->rgb_to_gray_red_coeff;
+      png_uint_32 gc = png_ptr->rgb_to_gray_green_coeff;
+      png_uint_32 bc = 32768 - rc - gc;
+      png_uint_32 row_width = row_info->width;
+      int have_alpha = (row_info->color_type & PNG_COLOR_MASK_ALPHA) != 0;
 
       if (row_info->bit_depth == 8)
       {
@@ -4143,12 +4152,11 @@ png_do_encode_alpha(png_row_infop row_info, png_bytep row, png_structrp png_ptr)
    {
       if (row_info->bit_depth == 8)
       {
-         PNG_CONST png_bytep table = png_ptr->gamma_from_1;
+         png_bytep table = png_ptr->gamma_from_1;
 
          if (table != NULL)
          {
-            PNG_CONST int step =
-               (row_info->color_type & PNG_COLOR_MASK_COLOR) ? 4 : 2;
+            int step = (row_info->color_type & PNG_COLOR_MASK_COLOR) ? 4 : 2;
 
             /* The alpha channel is the last component: */
             row += step - 1;
@@ -4162,13 +4170,12 @@ png_do_encode_alpha(png_row_infop row_info, png_bytep row, png_structrp png_ptr)
 
       else if (row_info->bit_depth == 16)
       {
-         PNG_CONST png_uint_16pp table = png_ptr->gamma_16_from_1;
-         PNG_CONST int gamma_shift = png_ptr->gamma_shift;
+         png_uint_16pp table = png_ptr->gamma_16_from_1;
+         int gamma_shift = png_ptr->gamma_shift;
 
          if (table != NULL)
          {
-            PNG_CONST int step =
-               (row_info->color_type & PNG_COLOR_MASK_COLOR) ? 8 : 4;
+            int step = (row_info->color_type & PNG_COLOR_MASK_COLOR) ? 8 : 4;
 
             /* The alpha channel is the last component: */
             row += step - 2;
@@ -4199,8 +4206,9 @@ png_do_encode_alpha(png_row_infop row_info, png_bytep row, png_structrp png_ptr)
  * upon whether you supply trans and num_trans.
  */
 static void
-png_do_expand_palette(png_row_infop row_info, png_bytep row,
-    png_const_colorp palette, png_const_bytep trans_alpha, int num_trans)
+png_do_expand_palette(png_structrp png_ptr, png_row_infop row_info,
+    png_bytep row, png_const_colorp palette, png_const_bytep trans_alpha,
+    int num_trans)
 {
    int shift, value;
    png_bytep sp, dp;
@@ -4304,14 +4312,25 @@ png_do_expand_palette(png_row_infop row_info, png_bytep row,
                sp = row + (size_t)row_width - 1;
                dp = row + ((size_t)row_width << 2) - 1;
 
-               for (i = 0; i < row_width; i++)
+               i = 0;
+#ifdef PNG_ARM_NEON_INTRINSICS_AVAILABLE
+               if (png_ptr->riffled_palette != NULL)
+               {
+                  /* The RGBA optimization works with png_ptr->bit_depth == 8
+                   * but sometimes row_info->bit_depth has been changed to 8.
+                   * In these cases, the palette hasn't been riffled.
+                   */
+                  i = png_do_expand_palette_neon_rgba(png_ptr, row_info, row,
+                      &sp, &dp);
+               }
+#endif
+
+               for (; i < row_width; i++)
                {
                   if ((int)(*sp) >= num_trans)
                      *dp-- = 0xff;
-
                   else
                      *dp-- = trans_alpha[*sp];
-
                   *dp-- = palette[*sp].blue;
                   *dp-- = palette[*sp].green;
                   *dp-- = palette[*sp].red;
@@ -4328,8 +4347,13 @@ png_do_expand_palette(png_row_infop row_info, png_bytep row,
             {
                sp = row + (size_t)row_width - 1;
                dp = row + (size_t)(row_width * 3) - 1;
+               i = 0;
+#ifdef PNG_ARM_NEON_INTRINSICS_AVAILABLE
+               i = png_do_expand_palette_neon_rgb(png_ptr, row_info, row,
+                   &sp, &dp);
+#endif
 
-               for (i = 0; i < row_width; i++)
+               for (; i < row_width; i++)
                {
                   *dp-- = palette[*sp].blue;
                   *dp-- = palette[*sp].green;
@@ -4743,8 +4767,22 @@ png_do_read_transformations(png_structrp png_ptr, png_row_infop row_info)
    {
       if (row_info->color_type == PNG_COLOR_TYPE_PALETTE)
       {
-         png_do_expand_palette(row_info, png_ptr->row_buf + 1,
-             png_ptr->palette, png_ptr->trans_alpha, png_ptr->num_trans);
+#ifdef PNG_ARM_NEON_INTRINSICS_AVAILABLE
+         if ((png_ptr->num_trans > 0) && (png_ptr->bit_depth == 8))
+         {
+            /* Allocate space for the decompressed full palette. */
+            if (png_ptr->riffled_palette == NULL)
+            {
+               png_ptr->riffled_palette = png_malloc(png_ptr, 256*4);
+               if (png_ptr->riffled_palette == NULL)
+                  png_error(png_ptr, "NULL row buffer");
+               /* Build the RGBA palette. */
+               png_riffle_palette_rgba(png_ptr, row_info);
+            }
+         }
+#endif
+         png_do_expand_palette(png_ptr, row_info, png_ptr->row_buf + 1,
+            png_ptr->palette, png_ptr->trans_alpha, png_ptr->num_trans);
       }
 
       else

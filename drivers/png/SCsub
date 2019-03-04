@@ -50,6 +50,7 @@ if env['builtin_libpng']:
         neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/arm_init.c"))
         neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon_intrinsics.c"))
         neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/filter_neon.S"))
+        neon_sources.append(env_neon.Object(thirdparty_dir + "/arm/palette_neon_intrinsics.c"))
         env.drivers_sources += neon_sources
 
 # Godot source files
