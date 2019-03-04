@@ -26,6 +26,13 @@
 
 #include "sljitLir.h"
 
+#ifdef _WIN32
+
+/* For SLJIT_CACHE_FLUSH, which can expand to FlushInstructionCache. */
+#include <windows.h>
+
+#endif /* _WIN32 */
+
 #if !(defined SLJIT_STD_MACROS_DEFINED && SLJIT_STD_MACROS_DEFINED)
 
 /* These libraries are needed for the macros below. */
@@ -2178,7 +2185,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fmem(struct sljit_compiler *compil
 
 #endif
 
-#if !(defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86)
+#if !(defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86) \
+	&& !(defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64)
 
 SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_get_local_base(struct sljit_compiler *compiler, sljit_s32 dst, sljit_sw dstw, sljit_sw offset)
 {
