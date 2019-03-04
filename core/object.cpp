@@ -832,23 +832,22 @@ void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid)
 }
 
 Variant Object::callv(const StringName &p_method, const Array &p_args) {
+	const Variant **argptrs = NULL;
 
-	if (p_args.size() == 0) {
-		return call(p_method);
-	}
-
-	Vector<Variant> args;
-	args.resize(p_args.size());
-	Vector<const Variant *> argptrs;
-	argptrs.resize(p_args.size());
-
-	for (int i = 0; i < p_args.size(); i++) {
-		args.write[i] = p_args[i];
-		argptrs.write[i] = &args[i];
+	if (p_args.size() > 0) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_args.size());
+		for (int i = 0; i < p_args.size(); i++) {
+			argptrs[i] = &p_args[i];
+		}
 	}
 
 	Variant::CallError ce;
-	return call(p_method, (const Variant **)argptrs.ptr(), p_args.size(), ce);
+	Variant ret = call(p_method, argptrs, p_args.size(), ce);
+	if (ce.error != Variant::CallError::CALL_OK) {
+		ERR_EXPLAIN("Error calling method from 'callv': " + Variant::get_call_error_text(this, p_method, argptrs, p_args.size(), ce));
+		ERR_FAIL_V(Variant());
+	}
+	return ret;
 }
 
 Variant Object::call(const StringName &p_name, VARIANT_ARG_DECLARE) {

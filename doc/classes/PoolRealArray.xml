@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolRealArray" category="Built-In Types" version="3.1">
+<class name="PoolRealArray" category="Built-In Types" version="3.2">
 	<brief_description>
 		A pooled [Array] of reals ([float]).
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new [code]PoolRealArray[/code]. Optionally, you can pass in a generic [Array] that will be converted.
+				Construct a new [PoolRealArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolRealArray">
 			</argument>
 			<description>
-				Append a [code]PoolRealArray[/code] at the end of this array.
+				Append a [PoolRealArray] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">

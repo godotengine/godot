@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventMouse" inherits="InputEventWithModifiers" category="Core" version="3.1">
+<class name="InputEventMouse" inherits="InputEventWithModifiers" category="Core" version="3.2">
 	<brief_description>
 		Base input event type for mouse events.
 	</brief_description>
@@ -15,7 +15,7 @@
 	</methods>
 	<members>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask">
-			Mouse button mask identifier, one of or a bitwise combination of the BUTTON_MASK_* constants in [@GlobalScope].
+			Mouse button mask identifier, one of or a bitwise combination of the [enum ButtonList] button masks.
 		</member>
 		<member name="global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
 			Mouse position relative to the current [Viewport] when used in [method Control._gui_input], otherwise is at 0,0.

@@ -299,7 +299,11 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 		}
 	}
 
-	node->set_cell(p_pos.x, p_pos.y, p_value, p_flip_h, p_flip_v, p_transpose, p_autotile_coord);
+	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_value, v_flip_h = p_flip_h, v_flip_v = p_flip_v, v_transpose = p_transpose, v_autotile_coord = Vector2(p_autotile_coord.x, p_autotile_coord.y);
+	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_autotile_coord };
+	Variant::CallError ce;
+	node->call("set_cell", args, 7, ce);
+
 	if (manual_autotile || (p_value != -1 && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
 		if (current != -1) {
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
@@ -477,10 +481,10 @@ void TileMapEditor::_update_palette() {
 	if (sel_tile != TileMap::INVALID_CELL) {
 		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE) {
 
-			const Map<Vector2, uint16_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
+			const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
 			Vector<Vector2> entries2;
-			for (const Map<Vector2, uint16_t>::Element *E = tiles2.front(); E; E = E->next()) {
+			for (const Map<Vector2, uint32_t>::Element *E = tiles2.front(); E; E = E->next()) {
 				entries2.push_back(E->key());
 			}
 			entries2.sort();
@@ -1434,9 +1438,9 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		aabb.expand_to(node->world_to_map(xform_inv.xform(screen_size)));
 		Rect2i si = aabb.grow(1.0);
 
-		if (node->get_half_offset() != TileMap::HALF_OFFSET_X) {
+		if (node->get_half_offset() != TileMap::HALF_OFFSET_X && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_X) {
 
-			int max_lines = 2000; //avoid crash if size too smal
+			int max_lines = 2000; //avoid crash if size too small
 
 			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
 
@@ -1450,7 +1454,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			}
 		} else {
 
-			int max_lines = 10000; //avoid crash if size too smal
+			int max_lines = 10000; //avoid crash if size too small
 
 			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
 
@@ -1458,23 +1462,26 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					Vector2 ofs;
 					if (ABS(j) & 1) {
-						ofs = cell_xf[0] * 0.5;
+						ofs = cell_xf[0] * (node->get_half_offset() == TileMap::HALF_OFFSET_X ? 0.5 : -0.5);
 					}
 
 					Vector2 from = xform.xform(node->map_to_world(Vector2(i, j), true) + ofs);
 					Vector2 to = xform.xform(node->map_to_world(Vector2(i, j + 1), true) + ofs);
+
 					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
 					p_overlay->draw_line(from, to, col, 1);
 
-					if (max_lines-- == 0)
+					if (--max_lines == 0)
 						break;
 				}
+				if (max_lines == 0)
+					break;
 			}
 		}
 
 		int max_lines = 10000; //avoid crash if size too smal
 
-		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y) {
+		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_Y) {
 
 			for (int i = (si.position.y) - 1; i <= (si.position.y + si.size.y); i++) {
 
@@ -1495,17 +1502,20 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					Vector2 ofs;
 					if (ABS(j) & 1) {
-						ofs = cell_xf[1] * 0.5;
+						ofs = cell_xf[1] * (node->get_half_offset() == TileMap::HALF_OFFSET_Y ? 0.5 : -0.5);
 					}
 
 					Vector2 from = xform.xform(node->map_to_world(Vector2(j, i), true) + ofs);
 					Vector2 to = xform.xform(node->map_to_world(Vector2(j + 1, i), true) + ofs);
+
 					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
 					p_overlay->draw_line(from, to, col, 1);
 
-					if (max_lines-- == 0)
+					if (--max_lines == 0)
 						break;
 				}
+				if (max_lines == 0)
+					break;
 			}
 		}
 	}
@@ -1533,8 +1543,12 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		for (int i = 0; i < 4; i++) {
 			if (node->get_half_offset() == TileMap::HALF_OFFSET_X && ABS(over_tile.y) & 1)
 				endpoints[i] += cell_xf[0] * 0.5;
+			if (node->get_half_offset() == TileMap::HALF_OFFSET_NEGATIVE_X && ABS(over_tile.y) & 1)
+				endpoints[i] += cell_xf[0] * -0.5;
 			if (node->get_half_offset() == TileMap::HALF_OFFSET_Y && ABS(over_tile.x) & 1)
 				endpoints[i] += cell_xf[1] * 0.5;
+			if (node->get_half_offset() == TileMap::HALF_OFFSET_NEGATIVE_Y && ABS(over_tile.x) & 1)
+				endpoints[i] += cell_xf[1] * -0.5;
 			endpoints[i] = xform.xform(endpoints[i]);
 		}
 		Color col;

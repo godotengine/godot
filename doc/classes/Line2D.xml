@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Line2D" inherits="Node2D" category="Core" version="3.1">
+<class name="Line2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		A 2D line.
 	</brief_description>
@@ -18,6 +18,13 @@
 			</argument>
 			<description>
 				Add a point at the [code]position[/code]. Appends the point at the end of the line.
+			</description>
+		</method>
+		<method name="clear_points">
+			<return type="void">
+			</return>
+			<description>
+				Removes all points from the line.
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">

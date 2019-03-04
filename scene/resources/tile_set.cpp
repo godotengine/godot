@@ -30,6 +30,7 @@
 
 #include "tile_set.h"
 #include "core/array.h"
+#include "core/engine.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -214,7 +215,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = autotile_get_spacing(id);
 		else if (what == "bitmask_flags") {
 			Array p;
-			for (Map<Vector2, uint16_t>::Element *E = tile_map[id].autotile_data.flags.front(); E; E = E->next()) {
+			for (Map<Vector2, uint32_t>::Element *E = tile_map[id].autotile_data.flags.front(); E; E = E->next()) {
 				p.push_back(E->key());
 				p.push_back(E->value());
 			}
@@ -543,7 +544,7 @@ const Map<Vector2, int> &TileSet::autotile_get_z_index_map(int p_id) const {
 	return tile_map[p_id].autotile_data.z_index_map;
 }
 
-void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag) {
+void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (p_flag == 0) {
@@ -554,7 +555,7 @@ void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag) {
 	}
 }
 
-uint16_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
+uint32_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
 	if (!tile_map[p_id].autotile_data.flags.has(p_coord)) {
@@ -563,13 +564,13 @@ uint16_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
 	return tile_map[p_id].autotile_data.flags[p_coord];
 }
 
-const Map<Vector2, uint16_t> &TileSet::autotile_get_bitmask_map(int p_id) {
+const Map<Vector2, uint32_t> &TileSet::autotile_get_bitmask_map(int p_id) {
 
-	static Map<Vector2, uint16_t> dummy;
-	static Map<Vector2, uint16_t> dummy_atlas;
+	static Map<Vector2, uint32_t> dummy;
+	static Map<Vector2, uint32_t> dummy_atlas;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
 	if (tile_get_tile_mode(p_id) == ATLAS_TILE) {
-		dummy_atlas = Map<Vector2, uint16_t>();
+		dummy_atlas = Map<Vector2, uint32_t>();
 		Rect2 region = tile_get_region(p_id);
 		Size2 size = autotile_get_size(p_id);
 		float spacing = autotile_get_spacing(p_id);
@@ -599,18 +600,25 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 	}
 
 	List<Vector2> coords;
-	uint16_t mask;
-	for (Map<Vector2, uint16_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
+	uint32_t mask;
+	uint16_t mask_;
+	uint16_t mask_ignore;
+	for (Map<Vector2, uint32_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
 		mask = E->get();
 		if (tile_map[p_id].autotile_data.bitmask_mode == BITMASK_2X2) {
-			mask &= (BIND_BOTTOMLEFT | BIND_BOTTOMRIGHT | BIND_TOPLEFT | BIND_TOPRIGHT);
+			mask |= (BIND_IGNORE_TOP | BIND_IGNORE_LEFT | BIND_IGNORE_CENTER | BIND_IGNORE_RIGHT | BIND_IGNORE_BOTTOM);
 		}
-		if (mask == p_bitmask) {
+
+		mask_ = mask & 0xFFFF;
+		mask_ignore = mask >> 16;
+
+		if (((mask_ & (~mask_ignore)) == (p_bitmask & (~mask_ignore))) && (((~mask_) | mask_ignore) == ((~p_bitmask) | mask_ignore))) {
 			for (int i = 0; i < autotile_get_subtile_priority(p_id, E->key()); i++) {
 				coords.push_back(E->key());
 			}
 		}
 	}
+
 	if (coords.size() == 0) {
 		return autotile_get_icon_coordinate(p_id);
 	} else {
@@ -662,6 +670,7 @@ void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_sha
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
 	tile_map[p_id].shapes_data.write[p_shape_id].shape = p_shape;
+	_decompose_convex_shape(p_shape);
 	emit_changed();
 }
 
@@ -844,6 +853,9 @@ void TileSet::tile_set_shapes(int p_id, const Vector<ShapeData> &p_shapes) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].shapes_data = p_shapes;
+	for (int i = 0; i < p_shapes.size(); i++) {
+		_decompose_convex_shape(p_shapes[i].shape);
+	}
 	emit_changed();
 }
 
@@ -888,9 +900,10 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 		} else if (p_shapes[i].get_type() == Variant::DICTIONARY) {
 			Dictionary d = p_shapes[i];
 
-			if (d.has("shape") && d["shape"].get_type() == Variant::OBJECT)
+			if (d.has("shape") && d["shape"].get_type() == Variant::OBJECT) {
 				s.shape = d["shape"];
-			else
+				_decompose_convex_shape(s.shape);
+			} else
 				continue;
 
 			if (d.has("shape_transform") && d["shape_transform"].get_type() == Variant::TRANSFORM2D)
@@ -954,6 +967,26 @@ Array TileSet::_get_tiles_ids() const {
 	}
 
 	return arr;
+}
+
+void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+	Ref<ConvexPolygonShape2D> convex = p_shape;
+	if (!convex.is_valid())
+		return;
+	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(convex->get_points());
+	if (decomp.size() > 1) {
+		Array sub_shapes;
+		for (int i = 0; i < decomp.size(); i++) {
+			Ref<ConvexPolygonShape2D> _convex = memnew(ConvexPolygonShape2D);
+			_convex->set_points(decomp[i]);
+			sub_shapes.append(_convex);
+		}
+		convex->set_meta("decomposed", sub_shapes);
+	} else {
+		convex->set_meta("decomposed", Variant());
+	}
 }
 
 void TileSet::get_tile_list(List<int> *p_tiles) const {

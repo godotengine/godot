@@ -46,7 +46,8 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC: {
 			if (is_master)
 				r_skip_rpc = true; // I am the master, so skip remote call.
-		} // Do not break, fall over to other sync.
+			FALLTHROUGH;
+		}
 		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
 		case MultiplayerAPI::RPC_MODE_PUPPETSYNC: {
 			// Call it, sync always results in a local call.
@@ -299,7 +300,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 		ERR_FAIL_COND(p_offset >= p_packet_len);
 
 		int vlen;
-		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
+		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ERR_EXPLAIN("Invalid packet received. Unable to decode RPC argument.");
 		ERR_FAIL_COND(err != OK);
 
@@ -335,7 +336,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 	ERR_FAIL_COND(!_can_call_mode(p_node, rset_mode, p_from));
 
 	Variant value;
-	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset);
+	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, allow_object_decoding || network_peer->is_object_decoding_allowed());
 
 	ERR_EXPLAIN("Invalid packet received. Unable to decode RSET value.");
 	ERR_FAIL_COND(err != OK);
@@ -526,11 +527,11 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	if (p_set) {
 		// Set argument.
-		Error err = encode_variant(*p_arg[0], NULL, len);
+		Error err = encode_variant(*p_arg[0], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ERR_EXPLAIN("Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		ERR_FAIL_COND(err != OK);
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
+		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ofs += len;
 
 	} else {
@@ -539,11 +540,11 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
-			Error err = encode_variant(*p_arg[i], NULL, len);
+			Error err = encode_variant(*p_arg[i], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ERR_EXPLAIN("Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			ERR_FAIL_COND(err != OK);
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
+			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ofs += len;
 		}
 	}
@@ -818,6 +819,16 @@ Vector<int> MultiplayerAPI::get_network_connected_peers() const {
 	return ret;
 }
 
+void MultiplayerAPI::set_allow_object_decoding(bool p_enable) {
+
+	allow_object_decoding = p_enable;
+}
+
+bool MultiplayerAPI::is_object_decoding_allowed() const {
+
+	return allow_object_decoding;
+}
+
 void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node", "node"), &MultiplayerAPI::set_root_node);
 	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode"), &MultiplayerAPI::send_bytes, DEFVAL(NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE));
@@ -838,6 +849,10 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &MultiplayerAPI::get_network_connected_peers);
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &MultiplayerAPI::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &MultiplayerAPI::is_refusing_new_network_connections);
+	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &MultiplayerAPI::set_allow_object_decoding);
+	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &MultiplayerAPI::is_object_decoding_allowed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
 
@@ -859,7 +874,8 @@ void MultiplayerAPI::_bind_methods() {
 	BIND_ENUM_CONSTANT(RPC_MODE_PUPPETSYNC);
 }
 
-MultiplayerAPI::MultiplayerAPI() {
+MultiplayerAPI::MultiplayerAPI() :
+		allow_object_decoding(false) {
 	rpc_sender_id = 0;
 	root_node = NULL;
 	clear();

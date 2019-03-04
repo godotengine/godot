@@ -408,7 +408,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	generate_visibility_rect->connect("confirmed", this, "_generate_visibility_rect");
 
 	emission_mask = memnew(ConfirmationDialog);
-	emission_mask->set_title(TTR("Generate Visibility Rect"));
+	emission_mask->set_title(TTR("Load Emission Mask"));
 	VBoxContainer *emvb = memnew(VBoxContainer);
 	emission_mask->add_child(emvb);
 	emission_mask_mode = memnew(OptionButton);

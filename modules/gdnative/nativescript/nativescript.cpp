@@ -160,8 +160,10 @@ bool NativeScript::can_instance() const {
 	NativeScriptDesc *script_data = get_script_desc();
 
 #ifdef TOOLS_ENABLED
-
-	return script_data || (!is_tool() && !ScriptServer::is_scripting_enabled());
+	// Only valid if this is either a tool script or a "regular" script.
+	// (so an environment whre scripting is disabled (and not the editor) would not
+	// create objects).
+	return script_data && (is_tool() || ScriptServer::is_scripting_enabled());
 #else
 	return script_data;
 #endif
@@ -199,25 +201,6 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 		return NULL;
 	}
 
-#ifdef TOOLS_ENABLED
-	if (!ScriptServer::is_scripting_enabled() && !is_tool()) {
-		// placeholder for nodes. For tools we want the rool thing.
-
-		PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(NSL, Ref<Script>(this), p_this));
-		placeholders.insert(sins);
-
-		if (script_data->create_func.create_func) {
-			script_data->create_func.create_func(
-					(godot_object *)p_this,
-					script_data->create_func.method_data);
-		}
-
-		_update_placeholder(sins);
-
-		return sins;
-	}
-#endif
-
 	NativeScriptInstance *nsi = memnew(NativeScriptInstance);
 
 	nsi->owner = p_this;
@@ -244,6 +227,19 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 #endif
 
 	return nsi;
+}
+
+PlaceHolderScriptInstance *NativeScript::placeholder_instance_create(Object *p_this) {
+#ifdef TOOLS_ENABLED
+	PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(NSL, Ref<Script>(this), p_this));
+	placeholders.insert(sins);
+
+	_update_placeholder(sins);
+
+	return sins;
+#else
+	return NULL;
+#endif
 }
 
 bool NativeScript::instance_has(const Object *p_this) const {
@@ -1036,8 +1032,16 @@ NativeScriptLanguage::~NativeScriptLanguage() {
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
-		if (L->get().is_valid())
-			L->get()->terminate();
+		Ref<GDNative> lib = L->get();
+		// only shut down valid libs, duh!
+		if (lib.is_valid()) {
+
+			// If it's a singleton-library then the gdnative module
+			// manages the destruction at engine shutdown, not NativeScript.
+			if (!lib->get_library()->is_singleton()) {
+				lib->terminate();
+			}
+		}
 	}
 
 	NSL->library_classes.clear();
@@ -1641,7 +1645,16 @@ void NativeReloadNode::_notification(int p_what) {
 					continue;
 				}
 
+				// Don't unload what should not be reloaded!
 				if (!gdn->get_library()->is_reloadable()) {
+					continue;
+				}
+
+				// singleton libraries might have alive pointers living inside the
+				// editor. Also reloading a singleton library would mean that
+				// the singleton entry will not be called again, as this only
+				// happens at engine startup.
+				if (gdn->get_library()->is_singleton()) {
 					continue;
 				}
 
@@ -1669,6 +1682,12 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				if (!gdn->get_library()->is_reloadable()) {
+					continue;
+				}
+
+				// since singleton libraries are not unloaded there is no point
+				// in loading them again.
+				if (gdn->get_library()->is_singleton()) {
 					continue;
 				}
 

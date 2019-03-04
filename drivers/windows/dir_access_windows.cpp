@@ -394,7 +394,7 @@ DirAccessWindows::DirAccessWindows() {
 
 		if (mask & (1 << i)) { //DRIVE EXISTS
 
-			drives[drive_count] = 'a' + i;
+			drives[drive_count] = 'A' + i;
 			drive_count++;
 		}
 	}

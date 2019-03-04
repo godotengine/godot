@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Spatial" inherits="Node" category="Core" version="3.1">
+<class name="Spatial" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		Most basic 3D game object, parent of all 3D related nodes.
 	</brief_description>
 	<description>
-		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Spatial. Use [code]Spatial[/code] as a parent node to move, scale, rotate and show/hide children in a 3D project.
-		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [code]Spatial[/code] object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the [code]Spatial[/code]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [code]Spatial[/code] object itself is referred to as object-local coordinate system.
+		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Spatial. Use [Spatial] as a parent node to move, scale, rotate and show/hide children in a 3D project.
+		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [Spatial] object is set as top level. Affine operations in this coordinate system correspond to direct affine operations on the [Spatial]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [Spatial] object itself is referred to as object-local coordinate system.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
@@ -23,14 +23,14 @@
 			<return type="Spatial">
 			</return>
 			<description>
-				Returns the parent [code]Spatial[/code], or an empty [Object] if no parent exists or parent is not of type [code]Spatial[/code].
+				Returns the parent [Spatial], or an empty [Object] if no parent exists or parent is not of type [Spatial].
 			</description>
 		</method>
 		<method name="get_world" qualifiers="const">
 			<return type="World">
 			</return>
 			<description>
-				Returns the current [World] resource this [code]Spatial[/code] node is registered to.
+				Returns the current [World] resource this [Spatial] node is registered to.
 			</description>
 		</method>
 		<method name="global_rotate">
@@ -72,7 +72,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether node notifies about its local transformation changes. [code]Spatial[/code] will not propagate this by default.
+				Returns whether node notifies about its local transformation changes. [Spatial] will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_scale_disabled" qualifiers="const">
@@ -92,7 +92,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns whether the node notifies about its global and local transformation changes. [code]Spatial[/code] will not propagate this by default.
+				Returns whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default.
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
@@ -232,7 +232,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether the node notifies about its local transformation changes. [code]Spatial[/code] will not propagate this by default.
+				Set whether the node notifies about its local transformation changes. [Spatial] will not propagate this by default.
 			</description>
 		</method>
 		<method name="set_notify_transform">
@@ -241,7 +241,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether the node notifies about its global and local transformation changes. [code]Spatial[/code] will not propagate this by default.
+				Set whether the node notifies about its global and local transformation changes. [Spatial] will not propagate this by default.
 			</description>
 		</method>
 		<method name="show">

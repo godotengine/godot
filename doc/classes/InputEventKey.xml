@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventKey" inherits="InputEventWithModifiers" category="Core" version="3.1">
+<class name="InputEventKey" inherits="InputEventWithModifiers" category="Core" version="3.2">
 	<brief_description>
 		Input event type for keyboard events.
 	</brief_description>
@@ -28,7 +28,7 @@
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
 		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
-			Key scancode, one of the [code]KEY_*[/code] constants in [@GlobalScope].
+			Key scancode, one of the [enum KeyList] constants.
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">
 			Key unicode identifier when relevant.

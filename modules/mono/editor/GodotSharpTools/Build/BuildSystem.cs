@@ -21,6 +21,8 @@ namespace GodotSharpTools.Build
         private extern static string godot_icall_BuildInstance_get_MonoWindowsBinDir();
         [MethodImpl(MethodImplOptions.InternalCall)]
         private extern static bool godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private extern static bool godot_icall_BuildInstance_get_PrintBuildOutput();
 
         private static string GetMSBuildPath()
         {
@@ -53,6 +55,14 @@ namespace GodotSharpTools.Build
             }
         }
 
+        private static bool PrintBuildOutput
+        {
+            get
+            {
+                return godot_icall_BuildInstance_get_PrintBuildOutput();
+            }
+        }
+
         private string solution;
         private string config;
 
@@ -71,8 +81,6 @@ namespace GodotSharpTools.Build
 
         public bool Build(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
-            bool debugMSBuild = IsDebugMSBuildRequested();
-
             List<string> customPropertiesList = new List<string>();
 
             if (customProperties != null)
@@ -82,7 +90,10 @@ namespace GodotSharpTools.Build
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
-            bool redirectOutput = !debugMSBuild;
+            bool redirectOutput = !IsDebugMSBuildRequested() && !PrintBuildOutput;
+
+            if (!redirectOutput) // TODO: or if stdout verbose
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
 
             startInfo.RedirectStandardOutput = redirectOutput;
             startInfo.RedirectStandardError = redirectOutput;
@@ -123,8 +134,6 @@ namespace GodotSharpTools.Build
 
         public bool BuildAsync(string loggerAssemblyPath, string loggerOutputDir, string[] customProperties = null)
         {
-            bool debugMSBuild = IsDebugMSBuildRequested();
-
             if (process != null)
                 throw new InvalidOperationException("Already in use");
 
@@ -137,7 +146,10 @@ namespace GodotSharpTools.Build
 
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
-            bool redirectOutput = !debugMSBuild;
+            bool redirectOutput = !IsDebugMSBuildRequested() && !PrintBuildOutput;
+
+            if (!redirectOutput) // TODO: or if stdout verbose
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
 
             startInfo.RedirectStandardOutput = redirectOutput;
             startInfo.RedirectStandardError = redirectOutput;

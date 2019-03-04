@@ -55,6 +55,10 @@
 #include "main/main.h"
 #endif
 
+#define OUT_OF_SYNC_ERR_MESSAGE(m_assembly_name) "The assembly '" m_assembly_name "' is out of sync. "                    \
+												 "This error is expected if you just upgraded to a newer Godot version. " \
+												 "Building the project will update the assembly to the correct version."
+
 GDMono *GDMono::singleton = NULL;
 
 namespace {
@@ -208,7 +212,7 @@ void GDMono::initialize() {
 	String config_dir;
 
 #ifdef TOOLS_ENABLED
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
 	mono_reg_info = MonoRegUtils::find_mono();
 
 	if (mono_reg_info.assembly_dir.length() && DirAccess::exists(mono_reg_info.assembly_dir)) {
@@ -218,7 +222,7 @@ void GDMono::initialize() {
 	if (mono_reg_info.config_dir.length() && DirAccess::exists(mono_reg_info.config_dir)) {
 		config_dir = mono_reg_info.config_dir;
 	}
-#elif OSX_ENABLED
+#elif defined(OSX_ENABLED)
 	const char *c_assembly_rootdir = mono_assembly_getrootdir();
 	const char *c_config_dir = mono_get_config_dir();
 
@@ -284,7 +288,7 @@ void GDMono::initialize() {
 
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
 
-#ifdef TOOLS_ENABLED
+#ifndef TOOLS_ENABLED
 	if (!DirAccess::exists("res://.mono")) {
 		// 'res://.mono/' is missing so there is nothing to load. We don't need to initialize mono, but
 		// we still do so unless mscorlib is missing (which is the case for projects that don't use C#).
@@ -364,15 +368,15 @@ void GDMono::initialize() {
 			// metadata, so we invalidate the version in the metadata and unload the script domain.
 
 			if (core_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Core API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(CORE_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
-				ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
+				ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed");
 				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 			}
 
 			if (editor_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Editor API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(EDITOR_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
 
@@ -583,6 +587,8 @@ bool GDMono::_load_core_api_assembly() {
 										CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
 		if (!core_api_assembly_out_of_sync) {
 			GDMonoUtils::update_godot_api_cache();
+
+			_install_trace_listener();
 		}
 #else
 		GDMonoUtils::update_godot_api_cache();
@@ -686,6 +692,23 @@ bool GDMono::_load_api_assemblies() {
 	return true;
 }
 
+void GDMono::_install_trace_listener() {
+
+#ifdef DEBUG_ENABLED
+	// Install the trace listener now before the project assembly is loaded
+	typedef void (*DebuggingUtils_InstallTraceListener)(MonoObject **);
+	MonoException *exc = NULL;
+	GDMonoClass *debug_utils = core_api_assembly->get_class(BINDINGS_NAMESPACE, "DebuggingUtils");
+	DebuggingUtils_InstallTraceListener install_func =
+			(DebuggingUtils_InstallTraceListener)debug_utils->get_method_thunk("InstallTraceListener");
+	install_func((MonoObject **)&exc);
+	if (exc) {
+		ERR_PRINT("Failed to install System.Diagnostics.Trace listener");
+		GDMonoUtils::debug_print_unhandled_exception(exc);
+	}
+#endif
+}
+
 #ifdef TOOLS_ENABLED
 String GDMono::_get_api_assembly_metadata_path() {
 
@@ -775,8 +798,6 @@ Error GDMono::_unload_scripts_domain() {
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
 
-	mono_gc_collect(mono_gc_max_generation());
-
 	finalizing_scripts_domain = true;
 
 	if (!mono_domain_finalize(scripts_domain, 2000)) {
@@ -844,6 +865,8 @@ Error GDMono::reload_scripts_domain() {
 		}
 	}
 
+	CSharpLanguage::get_singleton()->_uninitialize_script_bindings();
+
 	Error err = _load_scripts_domain();
 	if (err != OK) {
 		ERR_PRINT("Mono: Failed to load scripts domain");
@@ -863,7 +886,7 @@ Error GDMono::reload_scripts_domain() {
 			// metadata, so we invalidate the version in the metadata and unload the script domain.
 
 			if (core_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Core API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(CORE_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_CORE, true);
 			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
 				ERR_PRINT("The loaded Core API assembly is in sync, but the cache update failed");
@@ -871,7 +894,7 @@ Error GDMono::reload_scripts_domain() {
 			}
 
 			if (editor_api_assembly_out_of_sync) {
-				ERR_PRINT("The loaded Editor API assembly is out of sync");
+				ERR_PRINT(OUT_OF_SYNC_ERR_MESSAGE(EDITOR_API_ASSEMBLY_NAME));
 				metadata_set_api_assembly_invalidated(APIAssembly::API_EDITOR, true);
 			}
 
@@ -912,13 +935,19 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 	if (mono_domain_get() == p_domain)
 		mono_domain_set(root_domain, true);
 
-	mono_gc_collect(mono_gc_max_generation());
 	if (!mono_domain_finalize(p_domain, 2000)) {
 		ERR_PRINT("Mono: Domain finalization timeout");
 	}
+
 	mono_gc_collect(mono_gc_max_generation());
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
+
+#ifdef TOOLS_ENABLED
+	if (p_domain == tools_domain) {
+		editor_tools_assembly = NULL;
+	}
+#endif
 
 	MonoException *exc = NULL;
 	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
@@ -1021,11 +1050,19 @@ GDMono::~GDMono() {
 
 	if (is_runtime_initialized()) {
 
-		if (scripts_domain) {
+#ifdef TOOLS_ENABLED
+		if (tools_domain) {
+			Error err = finalize_and_unload_domain(tools_domain);
+			if (err != OK) {
+				ERR_PRINT("Mono: Failed to unload tools domain");
+			}
+		}
+#endif
 
+		if (scripts_domain) {
 			Error err = _unload_scripts_domain();
 			if (err != OK) {
-				WARN_PRINT("Mono: Failed to unload scripts domain");
+				ERR_PRINT("Mono: Failed to unload scripts domain");
 			}
 		}
 
@@ -1045,6 +1082,8 @@ GDMono::~GDMono() {
 		print_verbose("Mono: Runtime cleanup...");
 
 		mono_jit_cleanup(root_domain);
+
+		print_verbose("Mono: Finalized");
 
 		runtime_initialized = false;
 	}

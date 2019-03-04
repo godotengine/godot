@@ -499,6 +499,47 @@ String CSharpLanguage::_get_indentation() const {
 	return "\t";
 }
 
+String CSharpLanguage::debug_get_error() const {
+
+	return _debug_error;
+}
+
+int CSharpLanguage::debug_get_stack_level_count() const {
+
+	if (_debug_parse_err_line >= 0)
+		return 1;
+
+	// TODO: StackTrace
+	return 1;
+}
+
+int CSharpLanguage::debug_get_stack_level_line(int p_level) const {
+
+	if (_debug_parse_err_line >= 0)
+		return _debug_parse_err_line;
+
+	// TODO: StackTrace
+	return 1;
+}
+
+String CSharpLanguage::debug_get_stack_level_function(int p_level) const {
+
+	if (_debug_parse_err_line >= 0)
+		return String();
+
+	// TODO: StackTrace
+	return String();
+}
+
+String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
+
+	if (_debug_parse_err_line >= 0)
+		return _debug_parse_err_file;
+
+	// TODO: StackTrace
+	return String();
+}
+
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 
 #ifdef DEBUG_ENABLED
@@ -530,7 +571,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 
 	MonoException *exc = NULL;
 
-	MonoArray *frames = invoke_method_thunk(CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames), p_stack_trace, (MonoObject **)&exc);
+	MonoArray *frames = invoke_method_thunk(CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames), p_stack_trace, &exc);
 
 	if (exc) {
 		GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -554,7 +595,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 		MonoString *file_name;
 		int file_line_num;
 		MonoString *method_decl;
-		invoke_method_thunk(get_sf_info, frame, &file_name, &file_line_num, &method_decl, (MonoObject **)&exc);
+		invoke_method_thunk(get_sf_info, frame, &file_name, &file_line_num, &method_decl, &exc);
 
 		if (exc) {
 			GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -584,7 +625,7 @@ void CSharpLanguage::frame() {
 
 			if (task_scheduler) {
 				MonoException *exc = NULL;
-				invoke_method_thunk(CACHED_METHOD_THUNK(GodotTaskScheduler, Activate), task_scheduler, (MonoObject **)&exc);
+				invoke_method_thunk(CACHED_METHOD_THUNK(GodotTaskScheduler, Activate), task_scheduler, &exc);
 
 				if (exc) {
 					GDMonoUtils::debug_unhandled_exception(exc);
@@ -958,12 +999,11 @@ void CSharpLanguage::thread_exit() {
 
 bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 
-	// Break because of parse error
+	// Not a parser error in our case, but it's still used for other type of errors
 	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
-		// TODO
-		//_debug_parse_err_line = p_line;
-		//_debug_parse_err_file = p_file;
-		//_debug_error = p_error;
+		_debug_parse_err_line = p_line;
+		_debug_parse_err_file = p_file;
+		_debug_error = p_error;
 		ScriptDebugger::get_singleton()->debug(this, false);
 		return true;
 	} else {
@@ -974,14 +1014,20 @@ bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const S
 bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 
 	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
-		// TODO
-		//_debug_parse_err_line = -1;
-		//_debug_parse_err_file = "";
-		//_debug_error = p_error;
+		_debug_parse_err_line = -1;
+		_debug_parse_err_file = "";
+		_debug_error = p_error;
 		ScriptDebugger::get_singleton()->debug(this, p_allow_continue);
 		return true;
 	} else {
 		return false;
+	}
+}
+
+void CSharpLanguage::_uninitialize_script_bindings() {
+	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
+		CSharpScriptBinding &script_binding = E->value();
+		script_binding.inited = false;
 	}
 }
 
@@ -1269,14 +1315,14 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
-		GDMonoField *field = script->script_class->get_field(p_name);
+		GDMonoField *field = top->get_field(p_name);
 
 		if (field) {
 			field->set_value_from_variant(mono_object, p_value);
 			return true;
 		}
 
-		GDMonoProperty *property = script->script_class->get_property(p_name);
+		GDMonoProperty *property = top->get_property(p_name);
 
 		if (property) {
 			property->set_value(mono_object, GDMonoMarshal::variant_to_mono_object(p_value, property->get_type()));
@@ -1531,7 +1577,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
 	GDMonoMethod *ctor = script->script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
 	if (ctor == NULL) {
-		ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + script->get_path());
+		ERR_PRINTS("Cannot create script instance because the class does not define a parameterless constructor: " + script->get_path());
 
 		ERR_EXPLAIN("Constructor not found");
 		ERR_FAIL_V(NULL);
@@ -1887,6 +1933,9 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 bool CSharpScript::_update_exports() {
 
 #ifdef TOOLS_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint())
+		return false;
+
 	placeholder_fallback_enabled = true; // until proven otherwise
 
 	if (!valid)
@@ -1917,7 +1966,7 @@ bool CSharpScript::_update_exports() {
 		GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
 
 		if (ctor == NULL) {
-			ERR_PRINTS("Cannot construct temporary MonoObject because the class does not define a default constructor: " + get_path());
+			ERR_PRINTS("Cannot construct temporary MonoObject because the class does not define a parameterless constructor: " + get_path());
 
 			ERR_EXPLAIN("Constructor not found");
 			ERR_FAIL_V(NULL);
@@ -2117,7 +2166,8 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 		CRASH_NOW();
 	}
 
-	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type);
+	GDMonoMarshal::ExportInfo export_info;
+	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type, &export_info);
 
 	if (!p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
 		r_prop_info = PropertyInfo(variant_type, name.operator String(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
@@ -2142,6 +2192,7 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 		ERR_PRINTS("Unknown type of exported member: " + p_class->get_full_name() + "." + name.operator String());
 		return false;
 	} else if (variant_type == Variant::INT && type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(type.type_class->get_mono_ptr())) {
+		// TODO: Move to ExportInfo?
 		variant_type = Variant::INT;
 		hint = PROPERTY_HINT_ENUM;
 
@@ -2203,8 +2254,16 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 			hint_string = name_only_hint_string;
 		}
 	} else if (variant_type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(type.type_class)) {
+		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(type.type_class);
+		CRASH_COND(field_native_class == NULL);
+
 		hint = PROPERTY_HINT_RESOURCE_TYPE;
-		hint_string = NATIVE_GDMONOCLASS_NAME(type.type_class);
+		hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
+	} else if (variant_type == Variant::ARRAY && export_info.array.element_type != Variant::NIL) {
+		hint = PROPERTY_HINT_TYPE_STRING;
+		hint_string = itos(export_info.array.element_type) + ":";
+	} else if (variant_type == Variant::DICTIONARY && export_info.dictionary.key_type != Variant::NIL && export_info.dictionary.value_type != Variant::NIL) {
+		// TODO: There is no hint for this yet
 	} else {
 		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
@@ -2408,7 +2467,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
 	if (ctor == NULL) {
 		if (p_argcount == 0) {
-			ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + get_path());
+			ERR_PRINTS("Cannot create script instance because the class does not define a parameterless constructor: " + get_path());
 		}
 
 		ERR_EXPLAIN("Constructor not found");
@@ -2699,6 +2758,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 			}
 
 			load_script_signals(script_class, native);
+			_update_exports();
 		}
 
 		return OK;

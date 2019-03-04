@@ -1466,7 +1466,7 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 	int high = len - 1;
 	int middle = 0;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	if (low > high)
 		ERR_PRINT("low > high, this may be a bug");
 #endif
@@ -2638,6 +2638,7 @@ void Animation::copy_track(int p_track, Ref<Animation> p_to_animation) {
 	p_to_animation->track_set_enabled(dst_track, track_is_enabled(p_track));
 	p_to_animation->track_set_interpolation_type(dst_track, track_get_interpolation_type(p_track));
 	p_to_animation->track_set_interpolation_loop_wrap(dst_track, track_get_interpolation_loop_wrap(p_track));
+	p_to_animation->value_track_set_update_mode(dst_track, value_track_get_update_mode(p_track));
 	for (int i = 0; i < track_get_key_count(p_track); i++) {
 		p_to_animation->track_insert_key(dst_track, track_get_key_time(p_track, i), track_get_key_value(p_track, i), track_get_key_transition(p_track, i));
 	}

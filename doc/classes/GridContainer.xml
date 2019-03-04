@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridContainer" inherits="Container" category="Core" version="3.1">
+<class name="GridContainer" inherits="Container" category="Core" version="3.2">
 	<brief_description>
 		Grid container used to arrange elements in a grid like layout.
 	</brief_description>
@@ -14,7 +14,7 @@
 	</methods>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns">
-			The number of columns in the [code]GridContainer[/code]. If modified, [code]GridContainer[/code] reorders its children to accommodate the new layout.
+			The number of columns in the [GridContainer]. If modified, [GridContainer] reorders its children to accommodate the new layout.
 		</member>
 	</members>
 	<constants>

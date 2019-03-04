@@ -272,7 +272,7 @@ int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
 	if (eof)
 		return 0;
 
-	int64_t to_read = p_length;
+	uint64_t to_read = p_length;
 	if (to_read + pos > pf.size) {
 		eof = true;
 		to_read = int64_t(pf.size) - int64_t(pos);

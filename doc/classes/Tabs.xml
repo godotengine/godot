@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Tabs" inherits="Control" category="Core" version="3.1">
+<class name="Tabs" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Tabs Control.
 	</brief_description>
@@ -97,7 +97,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the [code]Tabs[/code] rearrange group id.
+				Returns the [Tabs] rearrange group id.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -168,7 +168,7 @@
 			<argument index="0" name="group_id" type="int">
 			</argument>
 			<description>
-				Defines rearrange group id, choose for each [code]Tabs[/code] the same value to enable tab drag between [code]Tabs[/code]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
+				Defines rearrange group id, choose for each [Tabs] the same value to enable tab drag between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
 		</method>
 	</methods>

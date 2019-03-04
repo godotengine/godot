@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceFormatSaver" inherits="Reference" category="Core" version="3.1">
+<class name="ResourceFormatSaver" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Saves a specific resource type to a file.
 	</brief_description>
 	<description>
-		The engine can save resources when you do it from the editor, or when you call [method ResourceSaver.save]. This is accomplished with multiple [code]ResourceFormatSaver[/code]s, each handling its own format.
+		The engine can save resources when you do it from the editor, or when you call [method ResourceSaver.save]. This is accomplished with multiple [ResourceFormatSaver]s, each handling its own format.
 		By default, Godot saves resources as [code].tres[/code], [code].res[/code] or another built-in format, but you can choose to create your own format by extending this class. You should give it a global class name with [code]class_name[/code] for it to be registered. You may as well implement a [ResourceFormatLoader].
 	</description>
 	<tutorials>

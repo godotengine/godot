@@ -5,70 +5,6 @@ Import('env_modules')
 
 env_mono = env_modules.Clone()
 
-# TODO move functions to their own modules
-
-def make_cs_files_header(src, dst, version_dst):
-    from compat import byte_to_str
-
-    with open(dst, 'w') as header:
-        header.write('/* THIS FILE IS GENERATED DO NOT EDIT */\n')
-        header.write('#ifndef CS_COMPRESSED_H\n')
-        header.write('#define CS_COMPRESSED_H\n\n')
-        header.write('#ifdef TOOLS_ENABLED\n\n')
-        header.write('#include "core/map.h"\n')
-        header.write('#include "core/ustring.h"\n')
-        inserted_files = ''
-        import os
-        latest_mtime = 0
-        cs_file_count = 0
-        for root, _, files in os.walk(src):
-            files = [f for f in files if f.endswith('.cs')]
-            for file in files:
-                cs_file_count += 1
-                filepath = os.path.join(root, file)
-                filepath_src_rel = os.path.relpath(filepath, src)
-                mtime = os.path.getmtime(filepath)
-                latest_mtime = mtime if mtime > latest_mtime else latest_mtime
-                with open(filepath, 'rb') as f:
-                    buf = f.read()
-                    decomp_size = len(buf)
-                    import zlib
-                    buf = zlib.compress(buf)
-                    name = str(cs_file_count)
-                    header.write('\n')
-                    header.write('// ' + filepath_src_rel + '\n')
-                    header.write('static const int _cs_' + name + '_compressed_size = ' + str(len(buf)) + ';\n')
-                    header.write('static const int _cs_' + name + '_uncompressed_size = ' + str(decomp_size) + ';\n')
-                    header.write('static const unsigned char _cs_' + name + '_compressed[] = { ')
-                    for i, buf_idx in enumerate(range(len(buf))):
-                        if i > 0:
-                            header.write(', ')
-                        header.write(byte_to_str(buf[buf_idx]))
-                    inserted_files += '\tr_files.insert("' + filepath_src_rel.replace('\\', '\\\\') + '", ' \
-                                        'CompressedFile(_cs_' + name + '_compressed_size, ' \
-                                        '_cs_' + name + '_uncompressed_size, ' \
-                                        '_cs_' + name + '_compressed));\n'
-                    header.write(' };\n')
-        header.write('\nstruct CompressedFile\n' '{\n'
-            '\tint compressed_size;\n' '\tint uncompressed_size;\n' '\tconst unsigned char* data;\n'
-            '\n\tCompressedFile(int p_comp_size, int p_uncomp_size, const unsigned char* p_data)\n'
-            '\t{\n' '\t\tcompressed_size = p_comp_size;\n' '\t\tuncompressed_size = p_uncomp_size;\n'
-            '\t\tdata = p_data;\n' '\t}\n' '\n\tCompressedFile() {}\n' '};\n'
-            '\nvoid get_compressed_files(Map<String, CompressedFile>& r_files)\n' '{\n' + inserted_files + '}\n'
-            )
-        header.write('\n#endif // TOOLS_ENABLED\n')
-        header.write('\n#endif // CS_COMPRESSED_H\n')
-
-        glue_version = int(latest_mtime) # The latest modified time will do for now
-
-        with open(version_dst, 'w') as version_header:
-            version_header.write('/* THIS FILE IS GENERATED DO NOT EDIT */\n')
-            version_header.write('#ifndef CS_GLUE_VERSION_H\n')
-            version_header.write('#define CS_GLUE_VERSION_H\n\n')
-            version_header.write('#define CS_GLUE_VERSION UINT32_C(' + str(glue_version) + ')\n')
-            version_header.write('\n#endif // CS_GLUE_VERSION_H\n')
-
-
 env_mono.add_source_files(env.modules_sources, '*.cpp')
 env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
 env_mono.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
@@ -77,7 +13,12 @@ env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
 if env['tools']:
     env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
     # NOTE: It is safe to generate this file here, since this is still executed serially
-    make_cs_files_header('glue/Managed/Files', 'glue/cs_compressed.gen.h', 'glue/cs_glue_version.gen.h')
+    import build_scripts.make_cs_compressed_header as make_cs_compressed_header
+    make_cs_compressed_header.generate_header(
+        'glue/Managed/Files',
+        'glue/cs_compressed.gen.h',
+        'glue/cs_glue_version.gen.h'
+    )
 
 vars = Variables()
 vars.Add(BoolVariable('mono_glue', 'Build with the mono glue sources', True))
@@ -88,273 +29,29 @@ vars.Update(env_mono)
 if env_mono['mono_glue']:
     env_mono.Append(CPPDEFINES=['MONO_GLUE_ENABLED'])
 
+    import os.path
+    if not os.path.isfile('glue/mono_glue.gen.cpp'):
+        raise RuntimeError('Missing mono glue sources. Did you forget to generate them?')
+
 if env_mono['tools'] or env_mono['target'] != 'release':
     env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
 
-# Configure TLS checks
+# Configure Thread Local Storage
 
-import tls_configure
+import build_scripts.tls_configure as tls_configure
+
 conf = Configure(env_mono)
 tls_configure.configure(conf)
 env_mono = conf.Finish()
 
+# Configure Mono
 
-# Build GodotSharpTools solution
+import build_scripts.mono_configure as mono_configure
 
+mono_configure.configure(env, env_mono)
 
-import os
+# Build GodotSharpTools
 
+import build_scripts.godotsharptools_build as godotsharptools_build
 
-def find_nuget_unix():
-    import os
-
-    if 'NUGET_PATH' in os.environ:
-        hint_path = os.environ['NUGET_PATH']
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-        hint_path = os.path.join(hint_path, 'nuget')
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-
-    import os.path
-    import sys
-
-    hint_dirs = ['/opt/novell/mono/bin']
-    if sys.platform == 'darwin':
-        hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current/bin', '/usr/local/var/homebrew/linked/mono/bin'] + hint_dirs
-
-    for hint_dir in hint_dirs:
-        hint_path = os.path.join(hint_dir, 'nuget')
-        if os.path.isfile(hint_path):
-            return hint_path
-        elif os.path.isfile(hint_path + '.exe'):
-            return hint_path + '.exe'
-
-    for hint_dir in os.environ['PATH'].split(os.pathsep):
-        hint_dir = hint_dir.strip('"')
-        hint_path = os.path.join(hint_dir, 'nuget')
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-        if os.path.isfile(hint_path + '.exe') and os.access(hint_path + '.exe', os.X_OK):
-            return hint_path + '.exe'
-
-    return None
-
-
-def find_nuget_windows():
-    import os
-
-    if 'NUGET_PATH' in os.environ:
-        hint_path = os.environ['NUGET_PATH']
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-        hint_path = os.path.join(hint_path, 'nuget.exe')
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-
-    import mono_reg_utils as monoreg
-
-    mono_root = ''
-    bits = env['bits']
-
-    if bits == '32':
-        if os.getenv('MONO32_PREFIX'):
-            mono_root = os.getenv('MONO32_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-    else:
-        if os.getenv('MONO64_PREFIX'):
-            mono_root = os.getenv('MONO64_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-
-    if mono_root:
-        mono_bin_dir = os.path.join(mono_root, 'bin')
-        nuget_mono = os.path.join(mono_bin_dir, 'nuget.bat')
-
-        if os.path.isfile(nuget_mono):
-            return nuget_mono
-
-    # Standalone NuGet
-
-    for hint_dir in os.environ['PATH'].split(os.pathsep):
-        hint_dir = hint_dir.strip('"')
-        hint_path = os.path.join(hint_dir, 'nuget.exe')
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-
-    return None
-
-
-def find_msbuild_unix(filename):
-    import os.path
-    import sys
-
-    hint_dirs = ['/opt/novell/mono/bin']
-    if sys.platform == 'darwin':
-        hint_dirs = ['/Library/Frameworks/Mono.framework/Versions/Current/bin', '/usr/local/var/homebrew/linked/mono/bin'] + hint_dirs
-
-    for hint_dir in hint_dirs:
-        hint_path = os.path.join(hint_dir, filename)
-        if os.path.isfile(hint_path):
-            return hint_path
-        elif os.path.isfile(hint_path + '.exe'):
-            return hint_path + '.exe'
-
-    for hint_dir in os.environ['PATH'].split(os.pathsep):
-        hint_dir = hint_dir.strip('"')
-        hint_path = os.path.join(hint_dir, filename)
-        if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
-            return hint_path
-        if os.path.isfile(hint_path + '.exe') and os.access(hint_path + '.exe', os.X_OK):
-            return hint_path + '.exe'
-
-    return None
-
-
-def find_msbuild_windows():
-    import mono_reg_utils as monoreg
-
-    mono_root = ''
-    bits = env['bits']
-
-    if bits == '32':
-        if os.getenv('MONO32_PREFIX'):
-            mono_root = os.getenv('MONO32_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-    else:
-        if os.getenv('MONO64_PREFIX'):
-            mono_root = os.getenv('MONO64_PREFIX')
-        else:
-            mono_root = monoreg.find_mono_root_dir(bits)
-
-    if not mono_root:
-        raise RuntimeError('Cannot find mono root directory')
-
-    framework_path = os.path.join(mono_root, 'lib', 'mono', '4.5')
-    mono_bin_dir = os.path.join(mono_root, 'bin')
-    msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
-
-    if os.path.isfile(msbuild_mono):
-        # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
-        # building with Mono's MSBuild. They must point to the batch files
-        # in Mono's bin directory to make sure they are executed with Mono.
-        mono_msbuild_env = {
-            'CscToolExe': os.path.join(mono_bin_dir, 'csc.bat'),
-            'VbcToolExe': os.path.join(mono_bin_dir, 'vbc.bat'),
-            'FscToolExe': os.path.join(mono_bin_dir, 'fsharpc.bat')
-        }
-        return (msbuild_mono, framework_path, mono_msbuild_env)
-
-    msbuild_tools_path = monoreg.find_msbuild_tools_path_reg()
-
-    if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
-
-    return None
-
-
-def mono_build_solution(source, target, env):
-    import subprocess
-    import mono_reg_utils as monoreg
-    from shutil import copyfile
-
-    sln_path = os.path.abspath(str(source[0]))
-    target_path = os.path.abspath(str(target[0]))
-
-    framework_path = ''
-    msbuild_env = os.environ.copy()
-
-    # Needed when running from Developer Command Prompt for VS
-    if 'PLATFORM' in msbuild_env:
-        del msbuild_env['PLATFORM']
-
-    # Find MSBuild
-    if os.name == 'nt':
-        msbuild_info = find_msbuild_windows()
-        if msbuild_info is None:
-            raise RuntimeError('Cannot find MSBuild executable')
-        msbuild_path = msbuild_info[0]
-        framework_path = msbuild_info[1]
-        msbuild_env.update(msbuild_info[2])
-    else:
-        msbuild_path = find_msbuild_unix('msbuild')
-        if msbuild_path is None:
-            xbuild_fallback = env['xbuild_fallback']
-
-            if xbuild_fallback and os.name == 'nt':
-                print('Option \'xbuild_fallback\' not supported on Windows')
-                xbuild_fallback = False
-
-            if xbuild_fallback:
-                print('Cannot find MSBuild executable, trying with xbuild')
-                print('Warning: xbuild is deprecated')
-
-                msbuild_path = find_msbuild_unix('xbuild')
-
-                if msbuild_path is None:
-                    raise RuntimeError('Cannot find xbuild executable')
-            else:
-                raise RuntimeError('Cannot find MSBuild executable')
-
-    print('MSBuild path: ' + msbuild_path)
-
-    # Find NuGet
-    nuget_path = find_nuget_windows() if os.name == 'nt' else find_nuget_unix()
-    if nuget_path is None:
-        raise RuntimeError('Cannot find NuGet executable')
-
-    print('NuGet path: ' + nuget_path)
-
-    # Do NuGet restore
-
-    try:
-        subprocess.check_call([nuget_path, 'restore', sln_path])
-    except subprocess.CalledProcessError:
-        raise RuntimeError('GodotSharpTools: NuGet restore failed')
-
-    # Build solution
-
-    build_config = 'Release'
-
-    msbuild_args = [
-        msbuild_path,
-        sln_path,
-        '/p:Configuration=' + build_config,
-    ]
-
-    if framework_path:
-        msbuild_args += ['/p:FrameworkPathOverride=' + framework_path]
-
-    try:
-        subprocess.check_call(msbuild_args, env=msbuild_env)
-    except subprocess.CalledProcessError:
-        raise RuntimeError('GodotSharpTools: Build failed')
-
-    # Copy files
-
-    src_dir = os.path.abspath(os.path.join(sln_path, os.pardir, 'bin', build_config))
-    dst_dir = os.path.abspath(os.path.join(target_path, os.pardir))
-    asm_file = 'GodotSharpTools.dll'
-
-    if not os.path.isdir(dst_dir):
-        if os.path.exists(dst_dir):
-            raise RuntimeError('Target directory is a file')
-        os.makedirs(dst_dir)
-
-    copyfile(os.path.join(src_dir, asm_file), os.path.join(dst_dir, asm_file))
-
-    # Dependencies
-    copyfile(os.path.join(src_dir, "DotNet.Glob.dll"), os.path.join(dst_dir, "DotNet.Glob.dll"))
-
-if env['tools']:
-    output_dir = Dir('#bin').abspath
-    editor_tools_dir = os.path.join(output_dir, 'GodotSharp', 'Tools')
-
-    mono_sln_builder = Builder(action=mono_build_solution)
-    env_mono.Append(BUILDERS={'MonoBuildSolution': mono_sln_builder})
-    env_mono.MonoBuildSolution(
-        os.path.join(editor_tools_dir, 'GodotSharpTools.dll'),
-        'editor/GodotSharpTools/GodotSharpTools.sln'
-    )
+godotsharptools_build.build(env_mono)

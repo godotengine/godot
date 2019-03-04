@@ -85,7 +85,7 @@ public:
 
 	static _ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
+	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
 	PoolVector<String> get_recognized_extensions(const RES &p_resource);
 
 	_ResourceSaver();
@@ -356,6 +356,8 @@ public:
 
 	bool has_feature(const String &p_feature) const;
 
+	bool request_permission(const String &p_name);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
@@ -434,11 +436,11 @@ public:
 		COMPRESSION_GZIP = Compression::MODE_GZIP
 	};
 
-	Error open_encrypted(const String &p_path, int p_mode_flags, const Vector<uint8_t> &p_key);
-	Error open_encrypted_pass(const String &p_path, int p_mode_flags, const String &p_pass);
-	Error open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode = 0);
+	Error open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
+	Error open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
+	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
-	Error open(const String &p_path, int p_mode_flags); ///< open a file
+	Error open(const String &p_path, ModeFlags p_mode_flags); ///< open a file
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open
 
@@ -461,7 +463,7 @@ public:
 	double get_double() const;
 	real_t get_real() const;
 
-	Variant get_var() const;
+	Variant get_var(bool p_allow_objects = false) const;
 
 	PoolVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
@@ -498,7 +500,7 @@ public:
 
 	void store_buffer(const PoolVector<uint8_t> &p_buffer); ///< store an array of bytes
 
-	void store_var(const Variant &p_var);
+	void store_var(const Variant &p_var, bool p_full_objects = false);
 
 	bool file_exists(const String &p_name) const; ///< return true if a file exists
 
@@ -567,8 +569,8 @@ protected:
 public:
 	static _Marshalls *get_singleton();
 
-	String variant_to_base64(const Variant &p_var);
-	Variant base64_to_variant(const String &p_str);
+	String variant_to_base64(const Variant &p_var, bool p_full_objects = false);
+	Variant base64_to_variant(const String &p_str, bool p_allow_objects = false);
 
 	String raw_to_base64(const PoolVector<uint8_t> &p_arr);
 	PoolVector<uint8_t> base64_to_raw(const String &p_str);
@@ -630,10 +632,11 @@ public:
 
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
-		PRIORITY_HIGH
+		PRIORITY_HIGH,
+		PRIORITY_MAX
 	};
 
-	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), int p_priority = PRIORITY_NORMAL);
+	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();

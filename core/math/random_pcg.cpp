@@ -32,24 +32,24 @@
 
 #include "core/os/os.h"
 
-RandomPCG::RandomPCG(uint64_t seed, uint64_t inc) :
-		pcg() {
-	pcg.state = seed;
-	pcg.inc = inc;
+RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
+		pcg(),
+		current_inc(p_inc) {
+	seed(p_seed);
 }
 
 void RandomPCG::randomize() {
 	seed(OS::get_singleton()->get_ticks_usec() * pcg.state + PCG_DEFAULT_INC_64);
 }
 
-double RandomPCG::random(double from, double to) {
+double RandomPCG::random(double p_from, double p_to) {
 	unsigned int r = rand();
 	double ret = (double)r / (double)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+	return (ret) * (p_to - p_from) + p_from;
 }
 
-float RandomPCG::random(float from, float to) {
+float RandomPCG::random(float p_from, float p_to) {
 	unsigned int r = rand();
 	float ret = (float)r / (float)RANDOM_MAX;
-	return (ret) * (to - from) + from;
+	return (ret) * (p_to - p_from) + p_from;
 }

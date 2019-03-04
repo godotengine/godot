@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputMap" inherits="Object" category="Core" version="3.1">
+<class name="InputMap" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Singleton that manages [InputEventAction].
 	</brief_description>
@@ -72,7 +72,7 @@
 			<argument index="1" name="deadzone" type="float" default="0.5">
 			</argument>
 			<description>
-				Adds an empty action to the [code]InputMap[/code] with a configurable [code]deadzone[/code].
+				Adds an empty action to the [InputMap] with a configurable [code]deadzone[/code].
 				An [InputEvent] can then be added to this action with [method action_add_event].
 			</description>
 		</method>
@@ -82,7 +82,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Removes an action from the [code]InputMap[/code].
+				Removes an action from the [InputMap].
 			</description>
 		</method>
 		<method name="event_is_action" qualifiers="const">
@@ -109,7 +109,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an array of all actions in the [code]InputMap[/code].
+				Returns an array of all actions in the [InputMap].
 			</description>
 		</method>
 		<method name="has_action" qualifiers="const">
@@ -118,14 +118,14 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]InputMap[/code] has a registered action with the given name.
+				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.
 			</description>
 		</method>
 		<method name="load_from_globals">
 			<return type="void">
 			</return>
 			<description>
-				Clears all [InputEventAction] in the [code]InputMap[/code] and load it anew from [ProjectSettings].
+				Clears all [InputEventAction] in the [InputMap] and load it anew from [ProjectSettings].
 			</description>
 		</method>
 	</methods>

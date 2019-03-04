@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="UndoRedo" inherits="Object" category="Core" version="3.1">
+<class name="UndoRedo" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Helper to manage UndoRedo in the editor or custom tools.
 	</brief_description>
@@ -141,6 +141,12 @@
 			<description>
 				Get the version, each time a new action is committed, the version number of the UndoRedo is increased automatically.
 				This is useful mostly to check if something changed from a saved version.
+			</description>
+		</method>
+		<method name="is_commiting_action" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="redo">

@@ -569,6 +569,8 @@ public:
 	BIND0R(RID, canvas_create)
 	BIND3(canvas_set_item_mirroring, RID, RID, const Point2 &)
 	BIND2(canvas_set_modulate, RID, const Color &)
+	BIND3(canvas_set_parent, RID, RID, float)
+	BIND1(canvas_set_disable_scale, bool)
 
 	BIND0R(RID, canvas_item_create)
 	BIND2(canvas_item_set_parent, RID, RID)

@@ -4,7 +4,6 @@ import sys
 import re
 import glob
 import string
-import datetime
 import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
@@ -55,7 +54,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
-    f.write("#define VERSION_YEAR " + str(2018) + "\n")
+    f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
@@ -668,5 +667,8 @@ def get_compiler_version(env):
     else:
         return None
 
-def use_gcc(env):
+def using_gcc(env):
     return 'gcc' in os.path.basename(env["CC"])
+
+def using_clang(env):
+    return 'clang' in os.path.basename(env["CC"])

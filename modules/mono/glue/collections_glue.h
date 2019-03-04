@@ -51,11 +51,11 @@ void godot_icall_Array_SetAt(Array *ptr, int index, MonoObject *value);
 
 int godot_icall_Array_Count(Array *ptr);
 
-void godot_icall_Array_Add(Array *ptr, MonoObject *item);
+int godot_icall_Array_Add(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_Clear(Array *ptr);
 
-bool godot_icall_Array_Contains(Array *ptr, MonoObject *item);
+MonoBoolean godot_icall_Array_Contains(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_CopyTo(Array *ptr, MonoArray *array, int array_index);
 
@@ -63,7 +63,7 @@ int godot_icall_Array_IndexOf(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_Insert(Array *ptr, int index, MonoObject *item);
 
-bool godot_icall_Array_Remove(Array *ptr, MonoObject *item);
+MonoBoolean godot_icall_Array_Remove(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_RemoveAt(Array *ptr, int index);
 
@@ -93,17 +93,17 @@ void godot_icall_Dictionary_Add(Dictionary *ptr, MonoObject *key, MonoObject *va
 
 void godot_icall_Dictionary_Clear(Dictionary *ptr);
 
-bool godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value);
+MonoBoolean godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
-bool godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key);
+MonoBoolean godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key);
 
-bool godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
+MonoBoolean godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key);
 
-bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value);
+MonoBoolean godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value);
 
-bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value);
+MonoBoolean godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value);
 
-bool godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class);
+MonoBoolean godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class);
 
 void godot_icall_Dictionary_Generic_GetValueTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
 

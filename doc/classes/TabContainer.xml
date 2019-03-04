@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TabContainer" inherits="Container" category="Core" version="3.1">
+<class name="TabContainer" inherits="Container" category="Core" version="3.2">
 	<brief_description>
 		Tabbed Container.
 	</brief_description>
@@ -7,7 +7,7 @@
 		Sets the active tab's [code]visible[/code] property to the value [code]true[/code]. Sets all other children's to [code]false[/code].
 		Ignores non-[Control] children.
 		Individual tabs are always visible unless you use [method set_tab_disabled] and [method set_tab_title] to hide it.
-		To hide only a tab's content, nest the content inside a child [Control], so it receives the [code]TabContainer[/code]'s visibility setting instead.
+		To hide only a tab's content, nest the content inside a child [Control], so it receives the [TabContainer]'s visibility setting instead.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -82,7 +82,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the [code]TabContainer[/code] rearrange group id.
+				Returns the [TabContainer] rearrange group id.
 			</description>
 		</method>
 		<method name="set_popup">
@@ -91,7 +91,7 @@
 			<argument index="0" name="popup" type="Node">
 			</argument>
 			<description>
-				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [code]TabContainer[/code]. Clicking it will expand the [Popup] node.
+				If set on a [Popup] node instance, a popup menu icon appears in the top-right corner of the [TabContainer]. Clicking it will expand the [Popup] node.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -133,7 +133,7 @@
 			<argument index="0" name="group_id" type="int">
 			</argument>
 			<description>
-				Defines rearrange group id, choose for each [code]TabContainer[/code] the same value to enable tab drag between [code]TabContainer[/code]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
+				Defines rearrange group id, choose for each [TabContainer] the same value to enable tab drag between [TabContainer]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
 		</method>
 	</methods>
@@ -154,7 +154,7 @@
 	<signals>
 		<signal name="pre_popup_pressed">
 			<description>
-				Emitted when the [code]TabContainer[/code]'s [Popup] button is clicked. See [method set_popup] for details.
+				Emitted when the [TabContainer]'s [Popup] button is clicked. See [method set_popup] for details.
 			</description>
 		</signal>
 		<signal name="tab_changed">

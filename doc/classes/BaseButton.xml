@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BaseButton" inherits="Control" category="Core" version="3.1">
+<class name="BaseButton" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Base class for different kinds of buttons.
 	</brief_description>
@@ -48,7 +48,7 @@
 		</member>
 		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask">
 			Binary mask to choose which mouse buttons this button will respond to.
-			To allow both left-click and right-click, set this to 3, because it's BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT.
+			To allow both left-click and right-click, use [code]BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT[/code].
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled">
 			If [code]true[/code], the button is in disabled state and can't be clicked or toggled.

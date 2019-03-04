@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectBodyState" inherits="Object" category="Core" version="3.1">
+<class name="PhysicsDirectBodyState" inherits="Object" category="Core" version="3.2">
 	<brief_description>
+		Direct access object to a physics body in the [PhysicsServer].
 	</brief_description>
 	<description>
+		Provides direct access to a physics body in the [PhysicsServer], allowing safe changes to physics properties. This object is passed via the direct state callback of rigid/character bodies, and is intended for changing the direct state of that body. See [method RigidBody._integrate_forces].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -27,7 +29,7 @@
 			<argument index="1" name="position" type="Vector3">
 			</argument>
 			<description>
-				Adds a constant force (i.e. acceleration).
+				Adds a positioned force to the body. Both the force and the offset from the body origin are in global coordinates.
 			</description>
 		</method>
 		<method name="add_torque">
@@ -36,7 +38,7 @@
 			<argument index="0" name="torque" type="Vector3">
 			</argument>
 			<description>
-				Adds a constant rotational force (i.e. a motor) without affecting position.
+				Adds a constant rotational force without affecting position.
 			</description>
 		</method>
 		<method name="apply_central_impulse">
@@ -75,6 +77,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the collider's [RID].
 			</description>
 		</method>
 		<method name="get_contact_collider_id" qualifiers="const">
@@ -83,6 +86,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the collider's object id.
 			</description>
 		</method>
 		<method name="get_contact_collider_object" qualifiers="const">
@@ -91,6 +95,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the collider object.
 			</description>
 		</method>
 		<method name="get_contact_collider_position" qualifiers="const">
@@ -99,6 +104,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the contact position in the collider.
 			</description>
 		</method>
 		<method name="get_contact_collider_shape" qualifiers="const">
@@ -107,6 +113,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the collider's shape index.
 			</description>
 		</method>
 		<method name="get_contact_collider_velocity_at_position" qualifiers="const">
@@ -115,12 +122,14 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the linear velocity vector at the collider's contact point.
 			</description>
 		</method>
 		<method name="get_contact_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of contacts this body has with other bodies. Note that by default this returns 0 unless bodies are configured to log contacts. See [member RigidBody.contact_monitor].
 			</description>
 		</method>
 		<method name="get_contact_impulse" qualifiers="const">
@@ -138,6 +147,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the local normal at the contact point.
 			</description>
 		</method>
 		<method name="get_contact_local_position" qualifiers="const">
@@ -146,6 +156,7 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the local position of the contact point.
 			</description>
 		</method>
 		<method name="get_contact_local_shape" qualifiers="const">
@@ -154,24 +165,27 @@
 			<argument index="0" name="contact_idx" type="int">
 			</argument>
 			<description>
+				Returns the local shape index of the collision.
 			</description>
 		</method>
 		<method name="get_space_state">
 			<return type="PhysicsDirectSpaceState">
 			</return>
 			<description>
+				Returns the current state of the space, useful for queries.
 			</description>
 		</method>
 		<method name="integrate_forces">
 			<return type="void">
 			</return>
 			<description>
+				Calls the built-in force integration code.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity">
-			The angular velocity of the body.
+			The body's rotational velocity.
 		</member>
 		<member name="center_of_mass" type="Vector3" setter="" getter="get_center_of_mass">
 		</member>
@@ -182,12 +196,12 @@
 			The inverse of the mass of the body.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity">
-			The linear velocity of the body.
+			The body's linear velocity.
 		</member>
 		<member name="principal_inertia_axes" type="Basis" setter="" getter="get_principal_inertia_axes">
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleep_state" getter="is_sleeping">
-			[code]true[/code] if this body is currently sleeping (not active).
+			If [code]true[/code], this body is currently sleeping (not active).
 		</member>
 		<member name="step" type="float" setter="" getter="get_step">
 			The timestep (delta) used for the simulation.
@@ -202,7 +216,7 @@
 			The rate at which the body stops moving, if there are not any other forces moving it.
 		</member>
 		<member name="transform" type="Transform" setter="set_transform" getter="get_transform">
-			The transformation matrix of the body.
+			The body's transformation matrix.
 		</member>
 	</members>
 	<constants>

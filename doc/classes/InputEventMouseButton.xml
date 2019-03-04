@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventMouseButton" inherits="InputEventMouse" category="Core" version="3.1">
+<class name="InputEventMouseButton" inherits="InputEventMouse" category="Core" version="3.2">
 	<brief_description>
 		Input event type for mouse button events.
 	</brief_description>
@@ -15,7 +15,7 @@
 	</methods>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index">
-			Mouse button identifier, one of the BUTTON_* or BUTTON_WHEEL_* constants in [@GlobalScope].
+			Mouse button identifier, one of the [enum ButtonList] button or button wheel constants.
 		</member>
 		<member name="doubleclick" type="bool" setter="set_doubleclick" getter="is_doubleclick">
 			If [code]true[/code], the mouse button's state is a double-click.

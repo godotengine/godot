@@ -132,6 +132,11 @@ namespace Godot
                                 (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
         }
 
+        public Vector2 DirectionTo(Vector2 b)
+        {
+            return new Vector2(b.x - x, b.y - y).Normalized();
+        }
+
         public real_t DistanceSquaredTo(Vector2 to)
         {
             return (x - to.x) * (x - to.x) + (y - to.y) * (y - to.y);

@@ -47,6 +47,9 @@ Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 }
 void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
+	if (shader == p_shader) {
+		return;
+	}
 	shader = p_shader;
 
 	_load_theme_settings();
@@ -245,19 +248,19 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 		case EDIT_INDENT_LEFT: {
 
-			TextEdit *tx = shader_editor->get_text_edit();
 			if (shader.is_null())
 				return;
 
+			TextEdit *tx = shader_editor->get_text_edit();
 			tx->indent_left();
 
 		} break;
 		case EDIT_INDENT_RIGHT: {
 
-			TextEdit *tx = shader_editor->get_text_edit();
 			if (shader.is_null())
 				return;
 
+			TextEdit *tx = shader_editor->get_text_edit();
 			tx->indent_right();
 
 		} break;
@@ -269,54 +272,10 @@ void ShaderEditor::_menu_option(int p_option) {
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 
-			TextEdit *tx = shader_editor->get_text_edit();
 			if (shader.is_null())
 				return;
 
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				int begin = tx->get_selection_from_line();
-				int end = tx->get_selection_to_line();
-
-				// End of selection ends on the first column of the last line, ignore it.
-				if (tx->get_selection_to_column() == 0)
-					end -= 1;
-
-				// Check if all lines in the selected block are commented
-				bool is_commented = true;
-				for (int i = begin; i <= end; i++) {
-					if (!tx->get_line(i).begins_with("//")) {
-						is_commented = false;
-						break;
-					}
-				}
-				for (int i = begin; i <= end; i++) {
-					String line_text = tx->get_line(i);
-
-					if (line_text.strip_edges().empty()) {
-						line_text = "//";
-					} else {
-						if (is_commented) {
-							line_text = line_text.substr(2, line_text.length());
-						} else {
-							line_text = "//" + line_text;
-						}
-					}
-					tx->set_line(i, line_text);
-				}
-			} else {
-				int begin = tx->cursor_get_line();
-				String line_text = tx->get_line(begin);
-
-				if (line_text.begins_with("//"))
-					line_text = line_text.substr(2, line_text.length());
-				else
-					line_text = "//" + line_text;
-				tx->set_line(begin, line_text);
-			}
-			tx->end_complex_operation();
-			tx->update();
-			//tx->deselect();
+			shader_editor->toggle_inline_comment("//");
 
 		} break;
 		case EDIT_COMPLETE: {
@@ -352,8 +311,8 @@ void ShaderEditor::_menu_option(int p_option) {
 void ShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree())
-			shader_editor->get_text_edit()->grab_focus();
+		//if (is_visible_in_tree())
+		//	shader_editor->get_text_edit()->grab_focus();
 	}
 }
 
@@ -415,6 +374,9 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader())
 		return;
 
+	if (shader == p_shader)
+		return;
+
 	shader = p_shader;
 
 	shader_editor->set_edited_shader(p_shader);
@@ -438,8 +400,12 @@ void ShaderEditor::save_external_data() {
 void ShaderEditor::apply_shaders() {
 
 	if (shader.is_valid()) {
-		shader->set_code(shader_editor->get_text_edit()->get_text());
-		shader->set_edited(true);
+		String shader_code = shader->get_code();
+		String editor_code = shader_editor->get_text_edit()->get_text();
+		if (shader_code != editor_code) {
+			shader->set_code(editor_code);
+			shader->set_edited(true);
+		}
 	}
 }
 

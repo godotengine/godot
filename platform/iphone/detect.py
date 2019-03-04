@@ -1,5 +1,4 @@
 import os
-import string
 import sys
 from methods import detect_darwin_sdk_path
 

@@ -45,21 +45,6 @@ void EditorHelpSearch::_update_icons() {
 		_update_results();
 }
 
-void EditorHelpSearch::_load_settings() {
-
-	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
-	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
-
-	if (enable_rl) {
-		results_tree->add_constant_override("draw_relationship_lines", 1);
-		results_tree->add_color_override("relationship_line_color", rl_color);
-		results_tree->add_constant_override("draw_guides", 0);
-	} else {
-		results_tree->add_constant_override("draw_relationship_lines", 0);
-		results_tree->add_constant_override("draw_guides", 1);
-	}
-}
-
 void EditorHelpSearch::_update_results() {
 
 	String term = search_box->get_text();
@@ -120,7 +105,6 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			_load_settings();
 			_update_icons();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -264,8 +248,6 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->connect("item_activated", this, "_confirmed");
 	results_tree->connect("item_selected", get_ok(), "set_disabled", varray(false));
 	vbox->add_child(results_tree, true);
-
-	_load_settings();
 }
 
 bool EditorHelpSearch::Runner::_slice() {

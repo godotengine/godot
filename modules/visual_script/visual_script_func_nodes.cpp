@@ -129,9 +129,8 @@ StringName VisualScriptFunctionCall::_get_base_type() const {
 int VisualScriptFunctionCall::get_input_value_port_count() const {
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
-
-		Vector<StringName> names = Variant::get_method_argument_names(basic_type, function);
-		return names.size() + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) + 1;
+		Vector<Variant::Type> types = Variant::get_method_argument_types(basic_type, function);
+		return types.size() + (rpc_call_mode >= RPC_RELIABLE_TO_ID ? 1 : 0) + 1;
 
 	} else {
 

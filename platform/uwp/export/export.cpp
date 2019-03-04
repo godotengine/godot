@@ -505,7 +505,7 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 
 	while (p_len - step > 0) {
 
-		size_t block_size = (p_len - step) > BLOCK_SIZE ? BLOCK_SIZE : (p_len - step);
+		size_t block_size = (p_len - step) > BLOCK_SIZE ? (size_t)BLOCK_SIZE : (p_len - step);
 
 		for (uint32_t i = 0; i < block_size; i++) {
 			strm_in.write[i] = p_buffer[step + i];
@@ -1263,6 +1263,10 @@ public:
 				EditorNode::add_io_error(err);
 				return ERR_FILE_NOT_FOUND;
 			}
+		}
+
+		if (!DirAccess::exists(p_path.get_base_dir())) {
+			return ERR_FILE_BAD_PATH;
 		}
 
 		Error err = OK;

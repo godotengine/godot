@@ -114,6 +114,9 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 			r_features->push_back("etc");
 		} else if (driver == "GLES3") {
 			r_features->push_back("etc2");
+			if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
+				r_features->push_back("etc");
+			}
 		}
 	}
 }
@@ -209,6 +212,10 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
 		else
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
+	}
+
+	if (!DirAccess::exists(p_path.get_base_dir())) {
+		return ERR_FILE_BAD_PATH;
 	}
 
 	if (template_path != String() && !FileAccess::exists(template_path)) {
@@ -360,7 +367,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	if (err) {
 		return err;
 	}
-	OS::get_singleton()->shell_open(path);
+	OS::get_singleton()->shell_open(String("file://") + path);
 	return OK;
 }
 

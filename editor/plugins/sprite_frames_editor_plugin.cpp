@@ -347,9 +347,6 @@ void SpriteFramesEditor::_animation_name_edited() {
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 
 		String current = E->get()->call("get_animation");
-		if (current != edited_anim)
-			continue;
-
 		undo_redo->add_do_method(E->get(), "set_animation", name);
 		undo_redo->add_undo_method(E->get(), "set_animation", edited_anim);
 	}
@@ -382,9 +379,6 @@ void SpriteFramesEditor::_animation_add() {
 	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
 
 		String current = E->get()->call("get_animation");
-		if (frames->has_animation(current))
-			continue;
-
 		undo_redo->add_do_method(E->get(), "set_animation", name);
 		undo_redo->add_undo_method(E->get(), "set_animation", current);
 	}

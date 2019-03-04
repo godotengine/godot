@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="File" inherits="Reference" category="Core" version="3.1">
+<class name="File" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Type to handle file reading and writing operations.
 	</brief_description>
@@ -84,6 +84,7 @@
 			</return>
 			<description>
 				Returns the whole file as a [String].
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
@@ -102,6 +103,7 @@
 			</argument>
 			<description>
 				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
@@ -137,6 +139,7 @@
 			</return>
 			<description>
 				Returns the next line of the file as a [String].
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_md5" qualifiers="const">
@@ -162,6 +165,7 @@
 			</return>
 			<description>
 				Returns a [String] saved in Pascal format from the file.
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -204,8 +208,11 @@
 		<method name="get_var" qualifiers="const">
 			<return type="Variant">
 			</return>
+			<argument index="0" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Returns the next [Variant] value from the file.
+				Returns the next [Variant] value from the file. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="is_open" qualifiers="const">
@@ -337,6 +344,7 @@
 			</argument>
 			<description>
 				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_double">
@@ -364,6 +372,7 @@
 			</argument>
 			<description>
 				Stores the given [String] as a line in the file.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_pascal_string">
@@ -373,6 +382,7 @@
 			</argument>
 			<description>
 				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_real">
@@ -391,6 +401,7 @@
 			</argument>
 			<description>
 				Stores the given [String] in the file.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_var">
@@ -398,8 +409,10 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Stores any Variant value in the file.
+				Stores any Variant value in the file. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

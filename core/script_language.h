@@ -87,6 +87,7 @@ public:
 	static StringName get_global_class_language(const StringName &p_class);
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
+	static StringName get_global_class_native_base(const String &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void save_global_classes();
 
@@ -204,6 +205,8 @@ public:
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
 
 	ScriptCodeCompletionCache();
+
+	virtual ~ScriptCodeCompletionCache() {}
 };
 
 class ScriptLanguage {
@@ -336,6 +339,7 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 	Object *owner;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;
+	Map<StringName, Variant> constants;
 	ScriptLanguage *language;
 	Ref<Script> script;
 

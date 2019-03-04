@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="YSort" inherits="Node2D" category="Core" version="3.1">
+<class name="YSort" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Sort all child nodes based on their Y positions.
 	</brief_description>
 	<description>
 		Sort all child nodes based on their Y positions. The child node must inherit from [CanvasItem] for it to be sorted. Nodes that have a higher Y position will be drawn later, so they will appear on top of nodes that have a lower Y position.
+		Nesting of YSort nodes is possible. Children YSort nodes will be sorted in the same space as the parent YSort, allowing to better organize a scene or divide it in multiple ones, yet keep the unique sorting.
 	</description>
 	<tutorials>
 	</tutorials>

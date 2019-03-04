@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEvent" inherits="Resource" category="Core" version="3.1">
+<class name="InputEvent" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Generic input event
 	</brief_description>
@@ -13,6 +13,14 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="accumulate">
+			<return type="bool">
+			</return>
+			<argument index="0" name="with_event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="as_text" qualifiers="const">
 			<return type="String">
 			</return>
@@ -59,7 +67,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this input event's type is one of the [code]InputEvent[/code] constants.
+				Returns [code]true[/code] if this input event's type is one of the [InputEvent] constants.
 			</description>
 		</method>
 		<method name="is_echo" qualifiers="const">

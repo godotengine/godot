@@ -50,24 +50,24 @@ protected:
 public:
 	void edit(Ref<Texture> p_texture);
 	TextureEditor();
+	~TextureEditor();
+};
+
+class EditorInspectorPluginTexture : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin)
+public:
+	virtual bool can_handle(Object *p_object);
+	virtual void parse_begin(Object *p_object);
 };
 
 class TextureEditorPlugin : public EditorPlugin {
 
 	GDCLASS(TextureEditorPlugin, EditorPlugin);
 
-	TextureEditor *texture_editor;
-	EditorNode *editor;
-
 public:
 	virtual String get_name() const { return "Texture"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
 
 	TextureEditorPlugin(EditorNode *p_node);
-	~TextureEditorPlugin();
 };
 
 #endif // TEXTURE_EDITOR_PLUGIN_H

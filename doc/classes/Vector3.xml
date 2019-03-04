@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector3" category="Built-In Types" version="3.1">
+<class name="Vector3" category="Built-In Types" version="3.2">
 	<brief_description>
 		Vector class, which performs basic 3D vector math operations.
 	</brief_description>
@@ -79,6 +79,15 @@
 			</argument>
 			<description>
 				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="direction_to">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Returns the normalized vector pointing from this vector to [code]b[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRController" inherits="Spatial" category="Core" version="3.1">
+<class name="ARVRController" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		A spatial node representing a spatially tracked controller.
 	</brief_description>
@@ -50,6 +50,13 @@
 				Returns the ID of the joystick object bound to this. Every controller tracked by the ARVR Server that has buttons and axis will also be registered as a joystick within Godot. This means that all the normal joystick tracking and input mapping will work for buttons and axis found on the AR/VR controllers. This ID is purely offered as information so you can link up the controller with its joystick entry.
 			</description>
 		</method>
+		<method name="get_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<description>
+				If provided by the ARVR Interface this returns a mesh associated with the controller. This can be used to visualise the controller.
+			</description>
+		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="int">
 			</return>
@@ -84,6 +91,13 @@
 			</argument>
 			<description>
 				Emitted when a button on this controller is released.
+			</description>
+		</signal>
+		<signal name="mesh_updated">
+			<argument index="0" name="mesh" type="Mesh">
+			</argument>
+			<description>
+				Emitted when the mesh associated with the controller changes or when one becomes available. Generally speaking this will be a static mesh after becoming available.
 			</description>
 		</signal>
 	</signals>

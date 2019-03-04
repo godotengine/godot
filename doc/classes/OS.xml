@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OS" inherits="Object" category="Core" version="3.1">
+<class name="OS" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Operating System functions.
 	</brief_description>
@@ -682,6 +682,15 @@
 			</return>
 			<description>
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
+			</description>
+		</method>
+		<method name="request_permission">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
 			</description>
 		</method>
 		<method name="set_icon">

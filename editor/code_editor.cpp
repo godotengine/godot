@@ -30,6 +30,7 @@
 
 #include "code_editor.h"
 
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/string_builder.h"
 #include "editor/editor_scale.h"
@@ -432,7 +433,11 @@ void FindReplaceBar::_search_text_changed(const String &p_text) {
 
 void FindReplaceBar::_search_text_entered(const String &p_text) {
 
-	search_next();
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		search_prev();
+	} else {
+		search_next();
+	}
 }
 
 void FindReplaceBar::_replace_text_entered(const String &p_text) {
@@ -1081,6 +1086,79 @@ void CodeTextEditor::clone_lines_down() {
 		text_editor->select(to_line, to_column, 2 * to_line - from_line, 2 * to_column - from_column);
 	}
 
+	text_editor->end_complex_operation();
+	text_editor->update();
+}
+
+void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
+	text_editor->begin_complex_operation();
+	if (text_editor->is_selection_active()) {
+		int begin = text_editor->get_selection_from_line();
+		int end = text_editor->get_selection_to_line();
+
+		// End of selection ends on the first column of the last line, ignore it.
+		if (text_editor->get_selection_to_column() == 0)
+			end -= 1;
+
+		int col_to = text_editor->get_selection_to_column();
+		int cursor_pos = text_editor->cursor_get_column();
+
+		// Check if all lines in the selected block are commented
+		bool is_commented = true;
+		for (int i = begin; i <= end; i++) {
+			if (!text_editor->get_line(i).begins_with(delimiter)) {
+				is_commented = false;
+				break;
+			}
+		}
+		for (int i = begin; i <= end; i++) {
+			String line_text = text_editor->get_line(i);
+
+			if (line_text.strip_edges().empty()) {
+				line_text = delimiter;
+			} else {
+				if (is_commented) {
+					line_text = line_text.substr(delimiter.length(), line_text.length());
+				} else {
+					line_text = delimiter + line_text;
+				}
+			}
+			text_editor->set_line(i, line_text);
+		}
+
+		// Adjust selection & cursor position.
+		int offset = (is_commented ? -1 : 1) * delimiter.length();
+		int col_from = text_editor->get_selection_from_column() > 0 ? text_editor->get_selection_from_column() + offset : 0;
+
+		if (is_commented && text_editor->cursor_get_column() == text_editor->get_line(text_editor->cursor_get_line()).length() + 1)
+			cursor_pos += 1;
+
+		if (text_editor->get_selection_to_column() != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line()).length() + 1)
+			col_to += offset;
+
+		if (text_editor->cursor_get_column() != 0)
+			cursor_pos += offset;
+
+		text_editor->select(begin, col_from, text_editor->get_selection_to_line(), col_to);
+		text_editor->cursor_set_column(cursor_pos);
+
+	} else {
+		int begin = text_editor->cursor_get_line();
+		String line_text = text_editor->get_line(begin);
+		int delimiter_length = delimiter.length();
+
+		int col = text_editor->cursor_get_column();
+		if (line_text.begins_with(delimiter)) {
+			line_text = line_text.substr(delimiter_length, line_text.length());
+			col -= delimiter_length;
+		} else {
+			line_text = delimiter + line_text;
+			col += delimiter_length;
+		}
+
+		text_editor->set_line(begin, line_text);
+		text_editor->cursor_set_column(col);
+	}
 	text_editor->end_complex_operation();
 	text_editor->update();
 }

@@ -73,15 +73,16 @@ int godot_icall_Array_Count(Array *ptr) {
 	return ptr->size();
 }
 
-void godot_icall_Array_Add(Array *ptr, MonoObject *item) {
+int godot_icall_Array_Add(Array *ptr, MonoObject *item) {
 	ptr->append(GDMonoMarshal::mono_object_to_variant(item));
+	return ptr->size();
 }
 
 void godot_icall_Array_Clear(Array *ptr) {
 	ptr->clear();
 }
 
-bool godot_icall_Array_Contains(Array *ptr, MonoObject *item) {
+MonoBoolean godot_icall_Array_Contains(Array *ptr, MonoObject *item) {
 	return ptr->find(GDMonoMarshal::mono_object_to_variant(item)) != -1;
 }
 
@@ -113,7 +114,7 @@ void godot_icall_Array_Insert(Array *ptr, int index, MonoObject *item) {
 	ptr->insert(index, GDMonoMarshal::mono_object_to_variant(item));
 }
 
-bool godot_icall_Array_Remove(Array *ptr, MonoObject *item) {
+MonoBoolean godot_icall_Array_Remove(Array *ptr, MonoObject *item) {
 	int idx = ptr->find(GDMonoMarshal::mono_object_to_variant(item));
 	if (idx >= 0) {
 		ptr->remove(idx);
@@ -208,21 +209,21 @@ void godot_icall_Dictionary_Clear(Dictionary *ptr) {
 	ptr->clear();
 }
 
-bool godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value) {
+MonoBoolean godot_icall_Dictionary_Contains(Dictionary *ptr, MonoObject *key, MonoObject *value) {
 	// no dupes
 	Variant *ret = ptr->getptr(GDMonoMarshal::mono_object_to_variant(key));
 	return ret != NULL && *ret == GDMonoMarshal::mono_object_to_variant(value);
 }
 
-bool godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key) {
+MonoBoolean godot_icall_Dictionary_ContainsKey(Dictionary *ptr, MonoObject *key) {
 	return ptr->has(GDMonoMarshal::mono_object_to_variant(key));
 }
 
-bool godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key) {
+MonoBoolean godot_icall_Dictionary_RemoveKey(Dictionary *ptr, MonoObject *key) {
 	return ptr->erase(GDMonoMarshal::mono_object_to_variant(key));
 }
 
-bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value) {
+MonoBoolean godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject *value) {
 	Variant varKey = GDMonoMarshal::mono_object_to_variant(key);
 
 	// no dupes
@@ -235,7 +236,7 @@ bool godot_icall_Dictionary_Remove(Dictionary *ptr, MonoObject *key, MonoObject 
 	return false;
 }
 
-bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value) {
+MonoBoolean godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoObject **value) {
 	Variant *ret = ptr->getptr(GDMonoMarshal::mono_object_to_variant(key));
 	if (ret == NULL) {
 		*value = NULL;
@@ -245,7 +246,7 @@ bool godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key, MonoOb
 	return true;
 }
 
-bool godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class) {
+MonoBoolean godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class) {
 	Variant *ret = ptr->getptr(GDMonoMarshal::mono_object_to_variant(key));
 	if (ret == NULL) {
 		*value = NULL;

@@ -1,8 +1,8 @@
 import os
 import platform
 import sys
-from compat import decode_utf8
-from methods import get_compiler_version, use_gcc
+from methods import get_compiler_version, using_gcc
+
 
 def is_active():
     return True
@@ -160,7 +160,7 @@ def configure(env):
     env.Append(LINKFLAGS=['-pipe'])
 
     # Check for gcc version >= 6 before adding -no-pie
-    if use_gcc(env):
+    if using_gcc(env):
         version = get_compiler_version(env)
         if version != None and version[0] >= '6':
             env.Append(CCFLAGS=['-fpie'])
@@ -197,7 +197,7 @@ def configure(env):
         # We need at least version 2.88
         import subprocess
         bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
-        if bullet_version < "2.88":
+        if str(bullet_version) < "2.88":
             # Abort as system bullet was requested but too old
             print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.88"))
             sys.exit(255)

@@ -252,7 +252,7 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
 
-	if (MAX(0, from_port_type - 1) != (MAX(0, to_port_type - 1))) {
+	if (MAX(0, from_port_type - 2) != (MAX(0, to_port_type - 2))) {
 		return false;
 	}
 
@@ -278,8 +278,8 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
 
-	if (MAX(0, from_port_type - 1) != (MAX(0, to_port_type - 1))) {
-		ERR_EXPLAIN("Incompatible port types (scalar/vec with transform");
+	if (MAX(0, from_port_type - 2) != (MAX(0, to_port_type - 2))) {
+		ERR_EXPLAIN("Incompatible port types (scalar/vec/bool with transform");
 		ERR_FAIL_V(ERR_INVALID_PARAMETER)
 		return ERR_INVALID_PARAMETER;
 	}
@@ -456,6 +456,8 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 	if (node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_SCALAR) {
 		code += "\tCOLOR.rgb = vec3( n_out" + itos(p_node) + "p" + itos(p_port) + " );\n";
+	} else if (node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_BOOLEAN) {
+		code += "\tCOLOR.rgb = vec3( n_out" + itos(p_node) + "p" + itos(p_port) + " ? 1.0 : 0.0 );\n";
 	} else {
 		code += "\tCOLOR.rgb = n_out" + itos(p_node) + "p" + itos(p_port) + ";\n";
 	}
@@ -779,6 +781,14 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				inputs[i] = "dot(" + src_var + ",vec3(0.333333,0.333333,0.333333))";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_VECTOR && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
 				inputs[i] = "vec3(" + src_var + ")";
+			} else if (in_type == VisualShaderNode::PORT_TYPE_BOOLEAN && out_type == VisualShaderNode::PORT_TYPE_VECTOR) {
+				inputs[i] = "all(" + src_var + ")";
+			} else if (in_type == VisualShaderNode::PORT_TYPE_BOOLEAN && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
+				inputs[i] = src_var + ">0.0?true:false";
+			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR && out_type == VisualShaderNode::PORT_TYPE_BOOLEAN) {
+				inputs[i] = src_var + "?1.0:0.0";
+			} else if (in_type == VisualShaderNode::PORT_TYPE_VECTOR && out_type == VisualShaderNode::PORT_TYPE_BOOLEAN) {
+				inputs[i] = "vec3(" + src_var + "?1.0:0.0)";
 			}
 		} else {
 
@@ -787,6 +797,10 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				float val = defval;
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
 				code += "\tfloat " + inputs[i] + " = " + vformat("%.5f", val) + ";\n";
+			} else if (defval.get_type() == Variant::BOOL) {
+				bool val = defval;
+				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
+				code += "\nbool " + inputs[i] + " = " + (val ? "true" : "false") + ";\n";
 			} else if (defval.get_type() == Variant::VECTOR3) {
 				Vector3 val = defval;
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
@@ -823,6 +837,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		switch (vsnode->get_output_port_type(i)) {
 			case VisualShaderNode::PORT_TYPE_SCALAR: code += String() + "\tfloat " + outputs[i] + ";\n"; break;
 			case VisualShaderNode::PORT_TYPE_VECTOR: code += String() + "\tvec3 " + outputs[i] + ";\n"; break;
+			case VisualShaderNode::PORT_TYPE_BOOLEAN: code += String() + "\tbool " + outputs[i] + ";\n"; break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM: code += String() + "\tmat4 " + outputs[i] + ";\n"; break;
 			default: {}
 		}
@@ -1262,6 +1277,11 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 				case PORT_TYPE_TRANSFORM: {
 					code = "\t" + p_output_vars[0] + " = mat4( vec4(1.0,0.0,0.0,0.0), vec4(0.0,1.0,0.0,0.0), vec4(0.0,0.0,1.0,0.0), vec4(0.0,0.0,0.0,1.0) );\n";
 				} break; //default (none found) is scalar
+				case PORT_TYPE_BOOLEAN: {
+					code = "\t" + p_output_vars[0] + " = false;\n";
+				} break;
+				default:
+					break;
 			}
 		}
 

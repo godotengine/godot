@@ -203,6 +203,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture> &);

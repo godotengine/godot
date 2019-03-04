@@ -367,12 +367,12 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		joy.fd = fd;
 		joy.devpath = String(p_path);
 		setup_joypad_properties(joy_num);
-		sprintf(uid, "%04x%04x", __bswap_16(inpid.bustype), 0);
+		sprintf(uid, "%04x%04x", BSWAP16(inpid.bustype), 0);
 		if (inpid.vendor && inpid.product && inpid.version) {
 
-			uint16_t vendor = __bswap_16(inpid.vendor);
-			uint16_t product = __bswap_16(inpid.product);
-			uint16_t version = __bswap_16(inpid.version);
+			uint16_t vendor = BSWAP16(inpid.vendor);
+			uint16_t product = BSWAP16(inpid.product);
+			uint16_t version = BSWAP16(inpid.version);
 
 			sprintf(uid + String(uid).length(), "%04x%04x%04x%04x%04x%04x", vendor, 0, product, 0, version, 0);
 			input->joy_connection_changed(joy_num, true, name, uid);

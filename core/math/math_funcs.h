@@ -208,6 +208,17 @@ public:
 	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 
+	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_weight) {
+		if (is_equal_approx(p_from, p_to)) return p_from;
+		double x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0, 1.0);
+		return x * x * (3.0 - 2.0 * x);
+	}
+	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_weight) {
+		if (is_equal_approx(p_from, p_to)) return p_from;
+		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
+		return x * x * (3.0f - 2.0f * x);
+	}
+
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 
@@ -249,11 +260,11 @@ public:
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool is_equal_approx_ratio(real_t a, real_t b, real_t epsilon = CMP_EPSILON) {
+	static _ALWAYS_INLINE_ bool is_equal_approx_ratio(real_t a, real_t b, real_t epsilon = CMP_EPSILON, real_t min_epsilon = CMP_EPSILON) {
 		// this is an approximate way to check that numbers are close, as a ratio of their average size
 		// helps compare approximate numbers that may be very big or very small
 		real_t diff = abs(a - b);
-		if (diff == 0.0) {
+		if (diff == 0.0 || diff < min_epsilon) {
 			return true;
 		}
 		real_t avg_size = (abs(a) + abs(b)) / 2.0;

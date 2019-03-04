@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimatedTexture" inherits="Texture" category="Core" version="3.1">
+<class name="AnimatedTexture" inherits="Texture" category="Core" version="3.2">
 	<brief_description>
 		Proxy texture for simple frame-based animations.
 	</brief_description>
 	<description>
-		[code]AnimatedTexture[/code] is a resource format for simple frame-based animations, where multiple frames textures can be chained automatically with a predefined delay for each frame. It's not a [Node], contrarily to [AnimationPlayer] or [AnimatedSprite], but has the advantage of being usable at any place where a [Texture] resource can be used, e.g. in a [TileSet].
+		[AnimatedTexture] is a resource format for frame-based animations, where multiple textures can be chained automatically with a predefined delay for each frame. Unlike [AnimationPlayer] or [AnimatedSprite], it isn't a [Node], but has the advantage of being usable anywhere a [Texture] resource can be used, e.g. in a [TileSet].
 		The playback of the animation is controlled by the [member fps] property as well as each frame's optional delay (see [method set_frame_delay]). The animation loops, i.e. it will restart at frame 0 automatically after playing the last frame.
-		[code]AnimatedTexture[/code] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one.
+		[AnimatedTexture] currently requires all frame textures to have the same size, otherwise the bigger ones will be cropped to match the smallest one.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,7 +19,7 @@
 			<argument index="0" name="frame" type="int">
 			</argument>
 			<description>
-				Retrieves the delayed assigned to the given [code]frame[/code] ID.
+				Returns the given frame's delay value.
 			</description>
 		</method>
 		<method name="get_frame_texture" qualifiers="const">
@@ -28,7 +28,7 @@
 			<argument index="0" name="frame" type="int">
 			</argument>
 			<description>
-				Retrieves the [Texture] assigned to the given [code]frame[/code] ID.
+				Returns the given frame's [Texture].
 			</description>
 		</method>
 		<method name="set_frame_delay">
@@ -39,7 +39,7 @@
 			<argument index="1" name="delay" type="float">
 			</argument>
 			<description>
-				Defines an additional delay (in seconds) between this frame and the next one, that will be added to the time interval defined by [member fps]. By default, frames have no delay defined. If a delay value is defined, the final time interval between this frame and the next will be [code]1.0 / fps + delay[/code].
+				Sets an additional delay (in seconds) between this frame and the next one, that will be added to the time interval defined by [member fps]. By default, frames have no delay defined. If a delay value is defined, the final time interval between this frame and the next will be [code]1.0 / fps + delay[/code].
 				For example, for an animation with 3 frames, 2 FPS and a frame delay on the second frame of 1.2, the resulting playback will be:
 				[codeblock]
 				Frame 0: 0.5 s (1 / fps)
@@ -57,15 +57,15 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Assigns a [Texture] to the given [code]frame[/code] ID. IDs start at 0 (so the first frame has ID 0, and the last frame of the animation has ID [member frames] - 1).
-				You can define any frame texture up to [constant MAX_FRAMES], but keep in mind that only frames from 0 to [member frames] - 1 will be part of the animation.
+				Assigns a [Texture] to the given frame. Frame IDs start at 0, so the first frame has ID 0, and the last frame of the animation has ID [member frames] - 1.
+				You can define any number of textures up to [constant MAX_FRAMES], but keep in mind that only frames from 0 to [member frames] - 1 will be part of the animation.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="fps" type="float" setter="set_fps" getter="get_fps">
-			Number of frames per second. This value defines the default time interval between two frames of the animation, and thus the overall duration of the animation loop based on the [member frames] property. A value of 0 means no predefined number of frames per second, the animation will play according to each frame's frame delay (see [method set_frame_delay]). Default value: 4.
-			For example, an animation with 8 frames, no frame delay and a [code]fps[/code] value of 2 will run over 4 seconds, with one frame each 0.5 seconds.
+			Animation speed in frames per second. This value defines the default time interval between two frames of the animation, and thus the overall duration of the animation loop based on the [member frames] property. A value of 0 means no predefined number of frames per second, the animation will play according to each frame's frame delay (see [method set_frame_delay]). Default value: 4.
+			For example, an animation with 8 frames, no frame delay and a [code]fps[/code] value of 2 will run for 4 seconds, with each frame lasting 0.5 seconds.
 		</member>
 		<member name="frames" type="int" setter="set_frames" getter="get_frames">
 			Number of frames to use in the animation. While you can create the frames independently with [method set_frame_texture], you need to set this value for the animation to take new frames into account. The maximum number of frames is [constant MAX_FRAMES]. Default value: 1.
@@ -73,7 +73,7 @@
 	</members>
 	<constants>
 		<constant name="MAX_FRAMES" value="256">
-			The maximum number of frames supported by [code]AnimatedTexture[/code]. If you need more frames in your animation, use [AnimationPlayer] or [AnimatedSprite].
+			The maximum number of frames supported by [AnimatedTexture]. If you need more frames in your animation, use [AnimationPlayer] or [AnimatedSprite].
 		</constant>
 	</constants>
 </class>

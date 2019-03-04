@@ -675,15 +675,15 @@ VERTEX_SHADER_CODE
 /* clang-format off */
 [fragment]
 
+// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
+// Do not copy these defines in the vertex section.
 #ifndef USE_GLES_OVER_GL
-
 #ifdef GL_EXT_shader_texture_lod
 #extension GL_EXT_shader_texture_lod : enable
 #define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
 #define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
 #endif
-
-#endif
+#endif // !USE_GLES_OVER_GL
 
 #ifdef GL_ARB_shader_texture_lod
 #extension GL_ARB_shader_texture_lod : enable
@@ -693,9 +693,6 @@ VERTEX_SHADER_CODE
 #define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
 #define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
 #endif
-
-
-
 
 #ifdef USE_GLES_OVER_GL
 #define lowp
@@ -1469,6 +1466,9 @@ void main() {
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	float sss_strength = 0.0; //unused
+	// gl_FragDepth is not available in GLES2, so writing to DEPTH is not converted to gl_FragDepth by Godot compiler resulting in a
+	// compile error because DEPTH is not a variable.
+	float m_DEPTH = 0.0;
 
 	float alpha = 1.0;
 	float side = 1.0;

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasLayer" inherits="Node" category="Core" version="3.1">
+<class name="CanvasLayer" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		Canvas drawing layer.
 	</brief_description>
 	<description>
-		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [code]CanvasLayer[/code] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [code]CanvasLayer[/code] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
+		Canvas drawing layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
@@ -23,7 +23,7 @@
 	</methods>
 	<members>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
-			The custom [Viewport] node assigned to the [code]CanvasLayer[/code]. If null, uses the default viewport instead.
+			The custom [Viewport] node assigned to the [CanvasLayer]. If null, uses the default viewport instead.
 		</member>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer">
 			Layer index for draw order. Lower values are drawn first. Default value: [code]1[/code].

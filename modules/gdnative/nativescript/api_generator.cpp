@@ -279,7 +279,7 @@ List<ClassAPI> generate_c_api_classes() {
 				MethodInfo &method_info = m->get();
 
 				//method name
-				method_api.method_name = m->get().name;
+				method_api.method_name = method_info.name;
 				//method return type
 				if (method_api.method_name.find(":") != -1) {
 					method_api.return_type = method_api.method_name.get_slice(":", 1);
@@ -321,6 +321,11 @@ List<ClassAPI> generate_c_api_classes() {
 						arg_type = arg_info.hint_string;
 					} else if (arg_info.type == Variant::NIL) {
 						arg_type = "Variant";
+					} else if (arg_info.type == Variant::OBJECT) {
+						arg_type = arg_info.class_name;
+						if (arg_type == "") {
+							arg_type = Variant::get_type_name(arg_info.type);
+						}
 					} else {
 						arg_type = Variant::get_type_name(arg_info.type);
 					}

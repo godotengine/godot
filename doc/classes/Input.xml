@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Input" inherits="Object" category="Core" version="3.1">
+<class name="Input" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		A Singleton that deals with inputs.
 	</brief_description>
@@ -90,7 +90,7 @@
 			<argument index="1" name="axis" type="int">
 			</argument>
 			<description>
-				Returns the current value of the joypad axis at given index (see [code]JOY_*[/code] constants in [@GlobalScope])
+				Returns the current value of the joypad axis at given index (see [enum JoystickList]).
 			</description>
 		</method>
 		<method name="get_joy_axis_index_from_string">
@@ -108,7 +108,7 @@
 			<argument index="0" name="axis_index" type="int">
 			</argument>
 			<description>
-				Receives a [code]JOY_AXIS_*[/code] Enum and returns its equivalent name as a string.
+				Receives a [enum JoystickList] axis and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_button_index_from_string">
@@ -126,7 +126,7 @@
 			<argument index="0" name="button_index" type="int">
 			</argument>
 			<description>
-				Receives a [code]JOY_BUTTON_*[/code] Enum and returns its equivalent name as a string.
+				Receives a joy button from [enum JoystickList] and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -229,7 +229,7 @@
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the joypad button. (see [code]JOY_*[/code] constants in [@GlobalScope])
+				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoystickList]).
 			</description>
 		</method>
 		<method name="is_joy_known">
@@ -238,7 +238,7 @@
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in the [code]JOY_*[/code] constants (see [@GlobalScope]). Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in [enum JoystickList]. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">
@@ -247,7 +247,7 @@
 			<argument index="0" name="scancode" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the key. You can pass [code]KEY_*[/code], which are pre-defined constants listed in [@GlobalScope].
+				Returns [code]true[/code] if you are pressing the key. You can pass a [enum KeyList] constant.
 			</description>
 		</method>
 		<method name="is_mouse_button_pressed" qualifiers="const">
@@ -256,7 +256,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the mouse button. You can pass [code]BUTTON_*[/code], which are pre-defined constants listed in [@GlobalScope].
+				Returns [code]true[/code] if you are pressing the mouse button specified with [enum ButtonList].
 			</description>
 		</method>
 		<method name="joy_connection_changed">
@@ -323,6 +323,15 @@
 			</argument>
 			<description>
 				Set the mouse mode. See the constants for more information.
+			</description>
+		</method>
+		<method name="set_use_accumulated_input">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Whether to accumulate similar input events sent by the operating system. Defaults to [code]true[/code].
 			</description>
 		</method>
 		<method name="start_joy_vibration">

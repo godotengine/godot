@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 import os
 import re
 import xml.etree.ElementTree as ET
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 
 # Uncomment to do type checks. I have it commented out so it works below Python 3.5
 #from typing import List, Dict, TextIO, Tuple, Iterable, Optional, DefaultDict, Any, Union
@@ -702,7 +701,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
         escape_post = False
 
         if tag_text in state.classes:
-            tag_text = make_type(tag_text, state)
+            if tag_text == state.current_class:
+                # We don't want references to the same class
+                tag_text = '``{}``'.format(tag_text)
+            else:
+                tag_text = make_type(tag_text, state)
             escape_post = True
         else:  # command
             cmd = tag_text
@@ -757,14 +760,25 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
                     elif cmd.startswith("constant"):
                         found = False
-                        if method_param in class_def.constants:
-                            found = True
 
-                        else:
-                            for enum in class_def.enums.values():
-                                if method_param in enum.values:
-                                    found = True
-                                    break
+                        # Search in the current class
+                        search_class_defs = [class_def]
+
+                        if param.find('.') == -1:
+                            # Also search in @GlobalScope as a last resort if no class was specified
+                            search_class_defs.append(state.classes["@GlobalScope"])
+
+                        for search_class_def in search_class_defs:
+                            if method_param in search_class_def.constants:
+                                class_param = search_class_def.name
+                                found = True
+
+                            else:
+                                for enum in search_class_def.enums.values():
+                                    if method_param in enum.values:
+                                        class_param = search_class_def.name
+                                        found = True
+                                        break
 
                         if not found:
                             print_error("Unresolved constant '{}', file: {}".format(param, state.current_class), state)
@@ -917,6 +931,9 @@ def make_enum(t, state):  # type: (str, State) -> str
         if c in state.classes and e not in state.classes[c].enums:
             c = "@GlobalScope"
 
+    if not c in state.classes and c.startswith("_"):
+        c = c[1:] # Remove the underscore prefix
+
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
     print_error("Unresolved enum '{}', file: {}".format(t, state.current_class), state)
@@ -949,6 +966,12 @@ def make_method_signature(class_def, method_def, make_ref, state):  # type: (Cla
 
         if arg.default_value is not None:
             out += '=' + arg.default_value
+
+    if isinstance(method_def, MethodDef) and method_def.qualifiers is not None and 'vararg' in method_def.qualifiers:
+        if len(method_def.parameters) > 0:
+            out += ', ...'
+        else:
+            out += ' ...'
 
     out += ' **)**'
 

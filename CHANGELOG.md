@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [3.1] - 2019-03-13
 
 ### Added
 
@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - Support for RayCast shapes in kinematic bodies.
   - Support for synchronizing kinematic movement to physics, avoiding an one-frame delay.
 - WebSockets support using [libwebsockets](https://libwebsockets.org/).
+- UPnP support using [MiniUPnP](http://miniupnp.free.fr).
 - [Revamped inspector.](https://godotengine.org/article/godot-gets-new-inspector)
   - Improved visualization and editing of numeric properties.
   - Vector and matrix types can now be edited directly (no pop-ups).
@@ -128,6 +129,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Universal translation of touch input to mouse input.
 - AudioStreamPlayer, AudioStreamPlayer2D, and AudioStreamPlayer3D now have a pitch scale property.
 - Support for MIDI input.
+- Support for audio capture from microphones.
 - `GROW_DIRECTION_BOTH` for Controls.
 - Selected tiles can be moved in the tile map editor.
 - The editor can now be configured to display the project window on the previous or next monitor (relative to the editor).
@@ -165,6 +167,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - [Built-in vector types now use copy-on-write mode as originally intended](https://godotengine.org/article/why-we-broke-your-pr), resulting in increased engine performance.
 - The [mbedtls](https://tls.mbed.org/) library is now used instead of OpenSSL.
+- [Renamed several core files](https://github.com/godotengine/godot/pull/25821).
+  - Third-party modules may have to be updated to reflect this.
 - SSL certificates are now bundled in exported projects unless a custom bundle is specified.
 - Improved buffer writing performance on Windows and Linux.
 - Removed many debugging prints in the console.
@@ -183,10 +187,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Text editor themes are now sorted alphabetically in the selection dropdown.
 - The 3D manipulator gizmo now has a smoother, more detailed appearance.
 - The 3D viewport menu button now has a background to make it easier to read.
+- QuadMeshes are now built using two triangles (6 vertices) instead of one quad (4 vertices).
+  - This was done because quads are deprecated in OpenGL.
 - Controls inside containers are no longer movable or resizable but can still be selected.
 - The `is` GDScript keyword can now be used to compare a value against built-in types.
+- Exported variables with type hints are now always initialized.
+  - For example, `export(int) var a` will be initialized to `0`.
 - Named enums in GDScript no longer create script constants.
   - This means `enum Name { VALUE }` must now be accessed with `Name.VALUE` instead of `VALUE`.
+- Cyclic references to other scripts with `preload()` are no longer allowed.
+  - `load()` should be used in at least one of the scripts instead.
+- `switch`, `case` and `do` are no longer reserved identifiers in GDScript.
 - Shadowing variables from parent scopes is no longer allowed in GDScript.
 - Function parameters' default values can no longer depend on other parameters in GDScript.
 - Indentation guides are now displayed in a more subtle way in the script editor.
@@ -209,6 +220,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 ### Removed
 
+- Removed the RtAudio backend on Windows in favor of WASAPI, which is the default since 3.0.
 - **macOS:** Support for 32-bit and fat binaries.
 
 ### Fixed
@@ -220,6 +232,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - The animation editor time offset indicator no longer "walks" when resizing the editor.
 - Allow creation of a built-in GDScript file even if the filename suggested already exists.
 - Show tooltips in the editor when physics object picking is disabled.
+- Button shortcuts can now be triggered by gamepad buttons.
 - Fix a serialization bug that could cause TSCN files to grow very large.
 - Gizmos are now properly hidden on scene load if the object they control is hidden.
 - Camera gizmos in the 3D viewport no longer look twice as wide as they actually are.
@@ -231,6 +244,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - The Visual Studio Code external editor option now recognizes more binary names such as `code-oss`, making detection more reliable.
 - The `-ffast-math` flag is no longer used when compiling Godot, resulting in increased floating-point determinism.
 - Fix spelling of `apply_torque_impulse()` and deprecate the misspelled method.
+- Escape sequences like `\n` and `\t` are now recognized in CSV translation files.
 - Remove spurious errors when using a PanoramaSky without textures.
 - The lightmap baker will now use all available cores on Windows.
 - Bullet physics now correctly calculates effective gravity on KinematicBodies.

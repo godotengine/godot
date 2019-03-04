@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LargeTexture" inherits="Texture" category="Core" version="3.1">
+<class name="LargeTexture" inherits="Texture" category="Core" version="3.2">
 	<brief_description>
 		A Texture capable of storing many smaller Textures with offsets.
 	</brief_description>
 	<description>
 		A Texture capable of storing many smaller Textures with offsets.
-		You can dynamically add pieces([Texture]) to this [code]LargeTexture[/code] using different offsets.
+		You can dynamically add pieces([Texture]) to this [LargeTexture] using different offsets.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -20,21 +20,21 @@
 			<argument index="1" name="texture" type="Texture">
 			</argument>
 			<description>
-				Add another [Texture] to this [code]LargeTexture[/code], starting on offset "ofs".
+				Add another [Texture] to this [LargeTexture], starting on offset "ofs".
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void">
 			</return>
 			<description>
-				Clears the [code]LargeTexture[/code].
+				Clears the [LargeTexture].
 			</description>
 		</method>
 		<method name="get_piece_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of pieces currently in this [code]LargeTexture[/code].
+				Returns the number of pieces currently in this [LargeTexture].
 			</description>
 		</method>
 		<method name="get_piece_offset" qualifiers="const">
@@ -83,7 +83,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
-				Sets the size of this [code]LargeTexture[/code].
+				Sets the size of this [LargeTexture].
 			</description>
 		</method>
 	</methods>

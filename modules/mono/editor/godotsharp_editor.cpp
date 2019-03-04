@@ -185,6 +185,16 @@ void GodotSharpEditor::_toggle_about_dialog_on_start(bool p_enabled) {
 	}
 }
 
+void GodotSharpEditor::_build_solution_pressed() {
+
+	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path())) {
+		if (!_create_project_solution())
+			return; // Failed to create solution
+	}
+
+	MonoBottomPanel::get_singleton()->call("_build_project_pressed");
+}
+
 void GodotSharpEditor::_menu_option_pressed(int p_id) {
 
 	switch (p_id) {
@@ -220,6 +230,7 @@ void GodotSharpEditor::_notification(int p_notification) {
 
 void GodotSharpEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_build_solution_pressed"), &GodotSharpEditor::_build_solution_pressed);
 	ClassDB::bind_method(D_METHOD("_create_project_solution"), &GodotSharpEditor::_create_project_solution);
 	ClassDB::bind_method(D_METHOD("_make_api_solutions_if_needed"), &GodotSharpEditor::_make_api_solutions_if_needed);
 	ClassDB::bind_method(D_METHOD("_remove_create_sln_menu_option"), &GodotSharpEditor::_remove_create_sln_menu_option);
@@ -446,12 +457,12 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 		about_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		about_label->set_autowrap(true);
 		String about_text =
-				String("C# support in Godot Engine is a brand new feature and a work in progress.\n") +
-				"It is currently in an alpha stage and is not suitable for use in production.\n\n" +
-				"As of Godot 3.1, C# support is not feature-complete and may crash in some situations. " +
-				"Bugs and usability issues will be addressed gradually over future 3.x releases, " +
-				"including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
-				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, Mono version, IDE, etc:\n\n" +
+				String("C# support in Godot Engine is in late alpha stage and, while already usable, ") +
+				"it is not meant for use in production.\n\n" +
+				"Projects can be exported to Linux, macOS and Windows, but not yet to mobile or web platforms. " +
+				"Bugs and usability issues will be addressed gradually over future releases, " +
+				"potentially including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
+				"If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, MSBuild version, IDE, etc.:\n\n" +
 				"        https://github.com/godotengine/godot/issues\n\n" +
 				"Your critical feedback at this stage will play a great role in shaping the C# support in future releases, so thank you!";
 		about_label->set_text(about_text);
@@ -482,7 +493,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	build_button->set_text("Build");
 	build_button->set_tooltip("Build solution");
 	build_button->set_focus_mode(Control::FOCUS_NONE);
-	build_button->connect("pressed", MonoBottomPanel::get_singleton(), "_build_project_pressed");
+	build_button->connect("pressed", this, "_build_solution_pressed");
 	editor->get_menu_hb()->add_child(build_button);
 
 	// External editor settings
@@ -491,11 +502,11 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	String settings_hint_str = "Disabled";
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
 	settings_hint_str += ",MonoDevelop,Visual Studio Code";
-#elif OSX_ENABLED
+#elif defined(OSX_ENABLED)
 	settings_hint_str += ",Visual Studio,MonoDevelop,Visual Studio Code";
-#elif UNIX_ENABLED
+#elif defined(UNIX_ENABLED)
 	settings_hint_str += ",MonoDevelop,Visual Studio Code";
 #endif
 

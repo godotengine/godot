@@ -244,7 +244,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_tooltip(0, String(p_node->get_name()) + "\n" + TTR("Type:") + " " + p_node->get_class());
 	}
 
-	if (can_open_instance) {
+	if (can_open_instance && undo_redo) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
 
 		if (!p_node->is_connected("script_changed", this, "_node_script_changed"))
 			p_node->connect("script_changed", this, "_node_script_changed", varray(p_node));
@@ -549,32 +549,28 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 
 void SceneTreeEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 
-		get_tree()->connect("tree_changed", this, "_tree_changed");
-		get_tree()->connect("node_removed", this, "_node_removed");
-		get_tree()->connect("node_configuration_warning_changed", this, "_warning_changed");
+			get_tree()->connect("tree_changed", this, "_tree_changed");
+			get_tree()->connect("node_removed", this, "_node_removed");
+			get_tree()->connect("node_configuration_warning_changed", this, "_warning_changed");
 
-		tree->connect("item_collapsed", this, "_cell_collapsed");
+			tree->connect("item_collapsed", this, "_cell_collapsed");
 
-		EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
-		_editor_settings_changed();
+			_update_tree();
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
 
-		//get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
-		//get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
-		_update_tree();
-	}
-	if (p_what == NOTIFICATION_EXIT_TREE) {
+			get_tree()->disconnect("tree_changed", this, "_tree_changed");
+			get_tree()->disconnect("node_removed", this, "_node_removed");
+			tree->disconnect("item_collapsed", this, "_cell_collapsed");
+			get_tree()->disconnect("node_configuration_warning_changed", this, "_warning_changed");
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
 
-		get_tree()->disconnect("tree_changed", this, "_tree_changed");
-		get_tree()->disconnect("node_removed", this, "_node_removed");
-		tree->disconnect("item_collapsed", this, "_cell_collapsed");
-		get_tree()->disconnect("node_configuration_warning_changed", this, "_warning_changed");
-		EditorSettings::get_singleton()->disconnect("settings_changed", this, "_editor_settings_changed");
-	}
-	if (p_what == NOTIFICATION_THEME_CHANGED) {
-
-		_update_tree();
+			_update_tree();
+		} break;
 	}
 }
 
@@ -978,20 +974,6 @@ void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 	update_timer->start();
 }
 
-void SceneTreeEditor::_editor_settings_changed() {
-	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
-	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
-
-	if (enable_rl) {
-		tree->add_constant_override("draw_relationship_lines", 1);
-		tree->add_color_override("relationship_line_color", rl_color);
-		tree->add_constant_override("draw_guides", 0);
-	} else {
-		tree->add_constant_override("draw_relationship_lines", 0);
-		tree->add_constant_override("draw_guides", 1);
-	}
-}
-
 void SceneTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method("_tree_changed", &SceneTreeEditor::_tree_changed);
@@ -1011,8 +993,6 @@ void SceneTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method("_node_script_changed", &SceneTreeEditor::_node_script_changed);
 	ClassDB::bind_method("_node_visibility_changed", &SceneTreeEditor::_node_visibility_changed);
-
-	ClassDB::bind_method("_editor_settings_changed", &SceneTreeEditor::_editor_settings_changed);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);

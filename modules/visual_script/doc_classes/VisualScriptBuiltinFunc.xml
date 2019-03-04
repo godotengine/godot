@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" category="Core" version="3.1">
+<class name="VisualScriptBuiltinFunc" inherits="VisualScriptNode" category="Core" version="3.2">
 	<brief_description>
 		A Visual Script node used to call built-in functions.
 	</brief_description>
@@ -204,7 +204,14 @@
 		<constant name="COLORN" value="62" enum="BuiltinFunc">
 			Return the [Color] with the given name and alpha ranging from 0 to 1. Note: names are defined in color_names.inc.
 		</constant>
-		<constant name="FUNC_MAX" value="63" enum="BuiltinFunc">
+		<constant name="MATH_SMOOTHSTEP" value="63" enum="BuiltinFunc">
+			Return a number smoothly interpolated between the first two inputs, based on the third input. Similar to [code]MATH_LERP[/code], but interpolates faster at the beginning and slower at the end. Using Hermite interpolation formula:
+			[codeblock]
+			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
+			return t * t * (3.0 - 2.0 * t)
+			[/codeblock]
+		</constant>
+		<constant name="FUNC_MAX" value="64" enum="BuiltinFunc">
 			The maximum value the [member function] property can have.
 		</constant>
 	</constants>

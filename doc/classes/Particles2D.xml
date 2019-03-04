@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Particles2D" inherits="Node2D" category="Core" version="3.1">
+<class name="Particles2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		2D particle emitter.
 	</brief_description>
 	<description>
-		2D particle node used to create a variety of particle systems and effects. [code]Particles2D[/code] features an emitter that generates some number of particles at a given rate.
+		2D particle node used to create a variety of particle systems and effects. [Particles2D] features an emitter that generates some number of particles at a given rate.
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
 	</tutorials>
 	<demos>
 	</demos>

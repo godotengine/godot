@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxFlat" inherits="StyleBox" category="Core" version="3.1">
+<class name="StyleBoxFlat" inherits="StyleBox" category="Core" version="3.2">
 	<brief_description>
 		Customizable Stylebox with a given set of parameters. (no texture required)
 	</brief_description>
@@ -150,6 +150,9 @@
 		</member>
 		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size">
 			The shadow size in pixels.
+		</member>
+		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset">
+			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
 		</member>
 	</members>
 	<constants>

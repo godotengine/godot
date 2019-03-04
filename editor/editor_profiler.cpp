@@ -625,6 +625,63 @@ bool EditorProfiler::is_profiling() {
 	return activate->is_pressed();
 }
 
+Vector<Vector<String> > EditorProfiler::get_data_as_csv() const {
+	Vector<Vector<String> > res;
+
+	if (frame_metrics.empty()) {
+		return res;
+	}
+
+	// signatures
+	Vector<String> signatures;
+	const Vector<EditorProfiler::Metric::Category> &categories = frame_metrics[0].categories;
+
+	for (int j = 0; j < categories.size(); j++) {
+
+		const EditorProfiler::Metric::Category &c = categories[j];
+		signatures.push_back(c.signature);
+
+		for (int k = 0; k < c.items.size(); k++) {
+			signatures.push_back(c.items[k].signature);
+		}
+	}
+	res.push_back(signatures);
+
+	// values
+	Vector<String> values;
+	values.resize(signatures.size());
+
+	int index = last_metric;
+
+	for (int i = 0; i < frame_metrics.size(); i++) {
+
+		++index;
+
+		if (index >= frame_metrics.size()) {
+			index = 0;
+		}
+
+		if (!frame_metrics[index].valid) {
+			continue;
+		}
+		int it = 0;
+		const Vector<EditorProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
+
+		for (int j = 0; j < frame_cat.size(); j++) {
+
+			const EditorProfiler::Metric::Category &c = frame_cat[j];
+			values.write[it++] = String::num_real(c.total_time);
+
+			for (int k = 0; k < c.items.size(); k++) {
+				values.write[it++] = String::num_real(c.items[k].total);
+			}
+		}
+		res.push_back(values);
+	}
+
+	return res;
+}
+
 EditorProfiler::EditorProfiler() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);

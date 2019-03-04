@@ -45,9 +45,10 @@ public class GodotLib {
      * @param height the current view height
      */
 
-	public static native void initialize(Godot p_instance, boolean need_reload_hook, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void ondestroy(Godot p_instance);
 	public static native void setup(String[] p_cmdline);
-	public static native void resize(int width, int height, boolean reload);
+	public static native void resize(int width, int height);
 	public static native void newcontext(boolean p_32_bits);
 	public static native void back();
 	public static native void step();
@@ -69,6 +70,7 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 	public static native void callobject(int p_ID, String p_method, Object[] p_params);
 	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
+	public static native void requestPermissionResult(String p_permission, boolean p_result);
 
 	public static native void setVirtualKeyboardHeight(int p_height);
 }

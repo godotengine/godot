@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GDScript" category="Core" version="3.1">
+<class name="@GDScript" category="Core" version="3.2">
 	<brief_description>
 		Built-in GDScript functions.
 	</brief_description>
@@ -127,7 +127,7 @@
 			<description>
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				[codeblock]
-				a = atan(0, -1) # a is 3.141593
+				a = atan2(0, -1) # a is 3.141593
 				[/codeblock]
 			</description>
 		</method>
@@ -136,8 +136,11 @@
 			</return>
 			<argument index="0" name="bytes" type="PoolByteArray">
 			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Decodes a byte array back to a value.
+				Decodes a byte array back to a value. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="cartesian2polar">
@@ -972,6 +975,24 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="smoothstep">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Returns a number smoothly interpolated between the [code]from[/code] and [code]to[/code], based on the [code]weight[/code]. Similar to [method lerp], but interpolates faster at the beginning and slower at the end.
+				[codeblock]
+				smoothstep(0, 2, 0.5) # returns 0.15
+				smoothstep(0, 2, 1.0) # returns 0.5
+				smoothstep(0, 2, 2.0) # returns 1.0
+				[/codeblock]
+			</description>
+		</method>
 		<method name="sqrt">
 			<return type="float">
 			</return>
@@ -1112,8 +1133,10 @@
 			</return>
 			<argument index="0" name="var" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Encodes a variable value to a byte array.
+				Encodes a variable value to a byte array. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 		<method name="var2str">

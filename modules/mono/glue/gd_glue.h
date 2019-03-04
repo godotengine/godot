@@ -35,7 +35,7 @@
 
 #include "../mono_gd/gd_mono_marshal.h"
 
-MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes);
+MonoObject *godot_icall_GD_bytes2var(MonoArray *p_bytes, MonoBoolean p_allow_objects);
 
 MonoObject *godot_icall_GD_convert(MonoObject *p_what, int32_t p_type);
 
@@ -69,9 +69,9 @@ MonoString *godot_icall_GD_str(MonoArray *p_what);
 
 MonoObject *godot_icall_GD_str2var(MonoString *p_str);
 
-bool godot_icall_GD_type_exists(MonoString *p_type);
+MonoBoolean godot_icall_GD_type_exists(MonoString *p_type);
 
-MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var);
+MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_objects);
 
 MonoString *godot_icall_GD_var2str(MonoObject *p_var);
 

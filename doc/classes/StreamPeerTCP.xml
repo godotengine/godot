@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.1">
+<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.2">
 	<brief_description>
 		TCP Stream peer.
 	</brief_description>
@@ -70,16 +70,16 @@
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0" enum="Status">
-			The initial status of the [code]StreamPeerTCP[/code], also the status after a disconnect.
+			The initial status of the [StreamPeerTCP], also the status after a disconnect.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1" enum="Status">
-			A status representing a [code]StreamPeerTCP[/code] that is connecting to a host.
+			A status representing a [StreamPeerTCP] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2" enum="Status">
-			A status representing a [code]StreamPeerTCP[/code] that is connected to a host.
+			A status representing a [StreamPeerTCP] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A status representing a [code]StreamPeerTCP[/code] in error state.
+			A status representing a [StreamPeerTCP] in error state.
 		</constant>
 	</constants>
 </class>

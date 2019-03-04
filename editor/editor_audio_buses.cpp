@@ -34,6 +34,7 @@
 #include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "filesystem_dock.h"
+#include "scene/resources/font.h"
 #include "servers/audio_server.h"
 
 void EditorAudioBus::_update_visible_channels() {
@@ -71,7 +72,6 @@ void EditorAudioBus::_notification(int p_what) {
 			channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
 			channel[i].prev_active = true;
 		}
-		scale->set_texture(get_icon("BusVuDb", "EditorIcons"));
 
 		disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
 
@@ -167,7 +167,6 @@ void EditorAudioBus::_notification(int p_what) {
 			channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
 			channel[i].prev_active = true;
 		}
-		scale->set_texture(get_icon("BusVuDb", "EditorIcons"));
 
 		disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
 
@@ -211,7 +210,8 @@ void EditorAudioBus::update_bus() {
 
 	int index = get_index();
 
-	slider->set_value(AudioServer::get_singleton()->get_bus_volume_db(index));
+	float db_value = AudioServer::get_singleton()->get_bus_volume_db(index);
+	slider->set_value(_scaled_db_to_normalized_volume(db_value));
 	track_name->set_text(AudioServer::get_singleton()->get_bus_name(index));
 	if (is_master)
 		track_name->set_editable(false);
@@ -300,12 +300,14 @@ void EditorAudioBus::_name_changed(const String &p_new_name) {
 	track_name->release_focus();
 }
 
-void EditorAudioBus::_volume_db_changed(float p_db) {
+void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	if (updating_bus)
 		return;
 
 	updating_bus = true;
+
+	float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
 
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Change Audio Bus Volume"), UndoRedo::MERGE_ENDS);
@@ -317,6 +319,69 @@ void EditorAudioBus::_volume_db_changed(float p_db) {
 
 	updating_bus = false;
 }
+
+float EditorAudioBus::_normalized_volume_to_scaled_db(float normalized) {
+	/* There are three different formulas for the conversion from normalized
+     * values to relative decibal values.
+     * One formula is an exponential graph which intends to counteract
+     * the logorithmic nature of human hearing. This is an approximation
+     * of the behaviour of a 'logarithmic potentiometer' found on most
+     * musical instruments and also emulated in popular software.
+     * The other two equations are hand-tuned linear tapers that intend to
+     * try to ease the exponential equation in areas where it makes sense.*/
+
+	if (normalized > 0.6f) {
+		return 22.22f * normalized - 16.2f;
+	} else if (normalized < 0.05f) {
+		return 830.72 * normalized - 80.0f;
+	} else {
+		return 45.0f * Math::pow(normalized - 1.0, 3);
+	}
+}
+
+float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
+	/* Inversion of equations found in _normalized_volume_to_scaled_db.
+     * IMPORTANT: If one function changes, the other much change to reflect it. */
+	if (db > -2.88) {
+		return (db + 16.2f) / 22.22f;
+	} else if (db < -38.602f) {
+		return (db + 80.00f) / 830.72f;
+	} else {
+		if (db < 0.0) {
+			/* To acommodate for NaN on negative numbers for root, we will mirror the
+             * results of the postive db range in order to get the desired numerical
+             * value on the negative side. */
+			float positive_x = Math::pow(Math::abs(db) / 45.0f, 1.0f / 3.0f) + 1.0f;
+			Vector2 translation = Vector2(1.0f, 0.0f) - Vector2(positive_x, Math::abs(db));
+			Vector2 reflected_position = Vector2(1.0, 0.0f) + translation;
+			return reflected_position.x;
+		} else {
+			return Math::pow(db / 45.0f, 1.0f / 3.0f) + 1.0f;
+		}
+	}
+}
+
+void EditorAudioBus::_show_value(float slider_value) {
+	String text = vformat("%10.1f dB", _normalized_volume_to_scaled_db(slider_value));
+
+	audio_value_preview_label->set_text(text);
+	Vector2 slider_size = slider->get_size();
+	Vector2 slider_position = slider->get_global_position();
+	float left_padding = 5.0f;
+	float vert_padding = 10.0f;
+	Vector2 box_position = Vector2(slider_size.x + left_padding, (slider_size.y - vert_padding) * (1.0f - slider_value) - vert_padding);
+	audio_value_preview_box->set_position(slider_position + box_position);
+	audio_value_preview_box->set_size(audio_value_preview_label->get_size());
+	if (slider->has_focus() && !audio_value_preview_box->is_visible()) {
+		audio_value_preview_box->show();
+	}
+	preview_timer->start();
+}
+
+void EditorAudioBus::_hide_value_preview() {
+	audio_value_preview_box->hide();
+}
+
 void EditorAudioBus::_solo_toggled() {
 
 	updating_bus = true;
@@ -653,7 +718,9 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
 	ClassDB::bind_method("_name_changed", &EditorAudioBus::_name_changed);
-	ClassDB::bind_method("_volume_db_changed", &EditorAudioBus::_volume_db_changed);
+	ClassDB::bind_method("_volume_changed", &EditorAudioBus::_volume_changed);
+	ClassDB::bind_method("_show_value", &EditorAudioBus::_show_value);
+	ClassDB::bind_method("_hide_value_preview", &EditorAudioBus::_hide_value_preview);
 	ClassDB::bind_method("_solo_toggled", &EditorAudioBus::_solo_toggled);
 	ClassDB::bind_method("_mute_toggled", &EditorAudioBus::_mute_toggled);
 	ClassDB::bind_method("_bypass_toggled", &EditorAudioBus::_bypass_toggled);
@@ -738,11 +805,42 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
 	slider = memnew(VSlider);
-	slider->set_min(-80);
-	slider->set_max(24);
-	slider->set_step(0.1);
+	slider->set_min(0.0);
+	slider->set_max(1.0);
+	slider->set_step(0.0001);
+	slider->set_clip_contents(false);
 
-	slider->connect("value_changed", this, "_volume_db_changed");
+	audio_value_preview_box = memnew(Panel);
+	{
+		HBoxContainer *audioprev_hbc = memnew(HBoxContainer);
+		audioprev_hbc->set_v_size_flags(SIZE_EXPAND_FILL);
+		audioprev_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
+		audioprev_hbc->set_mouse_filter(MOUSE_FILTER_PASS);
+		audio_value_preview_box->add_child(audioprev_hbc);
+
+		audio_value_preview_label = memnew(Label);
+		audio_value_preview_label->set_v_size_flags(SIZE_EXPAND_FILL);
+		audio_value_preview_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		audio_value_preview_label->set_mouse_filter(MOUSE_FILTER_PASS);
+
+		audioprev_hbc->add_child(audio_value_preview_label);
+	}
+	slider->add_child(audio_value_preview_box);
+	audio_value_preview_box->set_as_toplevel(true);
+	Ref<StyleBoxFlat> panel_style = memnew(StyleBoxFlat);
+	panel_style->set_bg_color(Color(0.0f, 0.0f, 0.0f, 0.8f));
+	audio_value_preview_box->add_style_override("panel", panel_style);
+	audio_value_preview_box->set_mouse_filter(MOUSE_FILTER_PASS);
+	audio_value_preview_box->hide();
+
+	preview_timer = memnew(Timer);
+	preview_timer->set_wait_time(0.8f);
+	preview_timer->set_one_shot(true);
+	add_child(preview_timer);
+
+	slider->connect("value_changed", this, "_volume_changed");
+	slider->connect("value_changed", this, "_show_value");
+	preview_timer->connect("timeout", this, "_hide_value_preview");
 	hb->add_child(slider);
 
 	cc = 0;
@@ -765,7 +863,12 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].peak_r = 0.0f;
 	}
 
-	scale = memnew(TextureRect);
+	scale = memnew(EditorAudioMeterNotches);
+
+	for (float db = 6.0f; db >= -80.0f; db -= 6.0f) {
+		bool renderNotch = (db >= -6.0f || db == -24.0f || db == -72.0f);
+		scale->add_notch(_scaled_db_to_normalized_volume(db), db, renderNotch);
+	}
 	hb->add_child(scale);
 
 	effects = memnew(Tree);
@@ -1077,14 +1180,16 @@ void EditorAudioBuses::_load_layout() {
 
 void EditorAudioBuses::_load_default_layout() {
 
-	Ref<AudioBusLayout> state = ResourceLoader::load("res://default_bus_layout.tres");
+	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
+
+	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path);
 	if (state.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("There is no 'res://default_bus_layout.tres' file."));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("There is no '%s' file."), layout_path));
 		return;
 	}
 
-	edited_path = "res://default_bus_layout.tres";
-	file->set_text(edited_path.get_file());
+	edited_path = layout_path;
+	file->set_text(layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_update_buses();
 	EditorNode::get_singleton()->get_undo_redo()->clear_history();
@@ -1213,7 +1318,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
-	edited_path = "res://default_bus_layout.tres";
+	edited_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;
@@ -1226,6 +1331,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	set_process(true);
 }
+
 void EditorAudioBuses::open_layout(const String &p_path) {
 
 	EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
@@ -1269,4 +1375,51 @@ AudioBusesEditorPlugin::AudioBusesEditorPlugin(EditorAudioBuses *p_node) {
 }
 
 AudioBusesEditorPlugin::~AudioBusesEditorPlugin() {
+}
+
+void EditorAudioMeterNotches::add_notch(float normalized_offset, float db_value, bool render_value) {
+	notches.push_back(AudioNotch(normalized_offset, db_value, render_value));
+}
+
+void EditorAudioMeterNotches::_bind_methods() {
+	ClassDB::bind_method("add_notch", &EditorAudioMeterNotches::add_notch);
+	ClassDB::bind_method("_draw_audio_notches", &EditorAudioMeterNotches::_draw_audio_notches);
+}
+
+void EditorAudioMeterNotches::_notification(int p_what) {
+	if (p_what == NOTIFICATION_DRAW) {
+		notch_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0f, 1.0f, 1.0f, 0.8f) : Color(0.0f, 0.0f, 0.0f, 0.8f);
+		_draw_audio_notches();
+	}
+}
+
+void EditorAudioMeterNotches::_draw_audio_notches() {
+	Ref<Font> font = get_font("source", "EditorFonts");
+	float font_height = font->get_height();
+
+	for (uint8_t i = 0; i < notches.size(); i++) {
+		AudioNotch n = notches[i];
+		draw_line(Vector2(0.0f, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+				Vector2(line_length, (1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + top_padding),
+				notch_color,
+				1.0f);
+
+		if (n.render_db_value) {
+			draw_string(font,
+					Vector2(line_length + label_space,
+							(1.0f - n.relative_position) * (get_size().y - btm_padding - top_padding) + (font_height / 4) + top_padding),
+					String("{0}dB").format(varray(Math::abs(n.db_value))),
+					notch_color);
+		}
+	}
+}
+
+EditorAudioMeterNotches::EditorAudioMeterNotches() :
+		line_length(5.0f),
+		label_space(2.0f),
+		btm_padding(9.0f),
+		top_padding(5.0f) {
+	this->set_v_size_flags(SIZE_EXPAND_FILL);
+	this->set_h_size_flags(SIZE_EXPAND_FILL);
+	notch_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0f, 1.0f, 1.0f, 0.8f) : Color(0.0f, 0.0f, 0.0f, 0.8f);
 }

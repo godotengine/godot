@@ -702,9 +702,11 @@ public:
 		/* if we can assume that the line segment starts outside the circle (e.g. for continuous time collision detection) then the following can be skipped and we can just return the equivalent of res1 */
 		sqrtterm = Math::sqrt(sqrtterm);
 		real_t res1 = (-b - sqrtterm) / (2 * a);
-		//real_t res2 = ( -b + sqrtterm ) / (2 * a);
+		real_t res2 = (-b + sqrtterm) / (2 * a);
 
-		return (res1 >= 0 && res1 <= 1) ? res1 : -1;
+		if (res1 >= 0 && res1 <= 1) return res1;
+		if (res2 >= 0 && res2 <= 1) return res2;
+		return -1;
 	}
 
 	static inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
@@ -949,6 +951,8 @@ public:
 		H.resize(k);
 		return H;
 	}
+
+	static Vector<Vector<Vector2> > decompose_polygon_in_convex(Vector<Point2> polygon);
 
 	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
 	static PoolVector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);

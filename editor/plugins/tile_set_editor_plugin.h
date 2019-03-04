@@ -126,7 +126,7 @@ class TileSetEditor : public HSplitContainer {
 	Vector2 edited_shape_coord;
 	PoolVector2Array current_shape;
 	Map<Vector2i, SubtileData> current_tile_data;
-	Map<Vector2, uint16_t> bitmask_map_copy;
+	Map<Vector2, uint32_t> bitmask_map_copy;
 
 	Vector2 snap_step;
 	Vector2 snap_offset;

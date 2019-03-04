@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="KinematicBody" inherits="PhysicsBody" category="Core" version="3.1">
+<class name="KinematicBody" inherits="PhysicsBody" category="Core" version="3.2">
 	<brief_description>
 		Kinematic body 3D node.
 	</brief_description>
@@ -65,7 +65,9 @@
 			</argument>
 			<argument index="1" name="infinite_inertia" type="bool" default="true">
 			</argument>
-			<argument index="2" name="test_only" type="bool" default="false">
+			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="3" name="test_only" type="bool" default="false">
 			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision], which contains information about the collision.
@@ -88,13 +90,14 @@
 			<argument index="5" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
-				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [code]KinematicBody[/code] or [RigidBody], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
+				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody] or [RigidBody], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
 				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity.
 				[code]floor_normal[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.
-				[i]TODO: Update for new stop_on_slode argument.[/i] If the body is standing on a slope and the horizontal speed (relative to the floor's speed) goes below [code]slope_stop_min_velocity[/code], the body will stop completely. This prevents the body from sliding down slopes when you include gravity in [code]linear_velocity[/code]. When set to lower values, the body will not be able to stand still on steep slopes.
+				If [code]stop_on_slope[/code] is true, body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
-				Returns the movement that remained when the body stopped. To get more detailed information about collisions that occurred, use [method get_slide_collision].
+				If [code]infinite_inertia[/code] is true, body will be able to push [RigidBody] nodes, but it won't also detect any collisions with them. When false, it will interact with [RigidBody] nodes like with [StaticBody].
+				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
 		</method>
 		<method name="move_and_slide_with_snap">

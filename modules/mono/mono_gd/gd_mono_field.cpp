@@ -49,7 +49,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 #define SET_FROM_ARRAY(m_type)                                                                   \
 	{                                                                                            \
 		MonoArray *managed = GDMonoMarshal::m_type##_to_mono_array(p_value.operator ::m_type()); \
-		mono_field_set_value(p_object, mono_field, &managed);                                    \
+		mono_field_set_value(p_object, mono_field, managed);                                     \
 	}
 
 	switch (type.type_encoding) {
@@ -313,6 +313,18 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), CACHED_CLASS(Dictionary));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
 			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + type_class->get_name());
 			ERR_FAIL();
 		} break;
@@ -422,8 +434,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 			MonoException *exc = NULL;
 
-			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, (MonoObject **)&exc);
+			GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
+			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
@@ -434,12 +446,24 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 
 			exc = NULL;
 
-			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, (MonoObject **)&exc);
+			GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
+			MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {
 				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), type.type_class);
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), CACHED_CLASS(Dictionary));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}

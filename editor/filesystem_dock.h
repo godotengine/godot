@@ -181,7 +181,7 @@ private:
 	void _tree_gui_input(Ref<InputEvent> p_event);
 
 	void _update_file_list(bool p_keep_selection);
-	void _toggle_file_display(bool p_active);
+	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
 
@@ -267,6 +267,10 @@ private:
 	void _update_display_mode(bool p_force = false);
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
+
+	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
+
+	void _feature_profile_changed();
 
 protected:
 	void _notification(int p_what);

@@ -479,10 +479,28 @@ void TileMap::update_dirty_quadrants() {
 							vs->canvas_item_add_set_transform(debug_canvas_item, xform);
 							shape->draw(debug_canvas_item, debug_collision_color);
 						}
-						ps->body_add_shape(q.body, shape->get_rid(), xform);
-						ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
-						ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
-						shape_idx++;
+
+						if (shape->has_meta("decomposed")) {
+							Array _shapes = shape->get_meta("decomposed");
+							for (int k = 0; k < _shapes.size(); k++) {
+								Ref<ConvexPolygonShape2D> convex = _shapes[k];
+								if (convex.is_valid()) {
+									ps->body_add_shape(q.body, convex->get_rid(), xform);
+									ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
+									ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
+									shape_idx++;
+#ifdef DEBUG_ENABLED
+								} else {
+									print_error("The TileSet asigned to the TileMap " + get_name() + " has an invalid convex shape.");
+#endif
+								}
+							}
+						} else {
+							ps->body_add_shape(q.body, shape->get_rid(), xform);
+							ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
+							ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
+							shape_idx++;
+						}
 					}
 				}
 			}
@@ -755,6 +773,7 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 		else
 			_make_quadrant_dirty(Q);
 
+		used_size_cache_dirty = true;
 		return;
 	}
 
@@ -1373,15 +1392,17 @@ Vector2 TileMap::_map_to_world(int p_x, int p_y, bool p_ignore_ofs) const {
 	if (!p_ignore_ofs) {
 		switch (half_offset) {
 
-			case HALF_OFFSET_X: {
+			case HALF_OFFSET_X:
+			case HALF_OFFSET_NEGATIVE_X: {
 				if (ABS(p_y) & 1) {
 
-					ret += get_cell_transform()[0] * 0.5;
+					ret += get_cell_transform()[0] * (half_offset == HALF_OFFSET_X ? 0.5 : -0.5);
 				}
 			} break;
-			case HALF_OFFSET_Y: {
+			case HALF_OFFSET_Y:
+			case HALF_OFFSET_NEGATIVE_Y: {
 				if (ABS(p_x) & 1) {
-					ret += get_cell_transform()[1] * 0.5;
+					ret += get_cell_transform()[1] * (half_offset == HALF_OFFSET_Y ? 0.5 : -0.5);
 				}
 			} break;
 			default: {}
@@ -1444,9 +1465,19 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 				ret.x -= 0.5;
 			}
 		} break;
+		case HALF_OFFSET_NEGATIVE_X: {
+			if (ret.y > 0 ? int(ret.y) & 1 : (int(ret.y) - 1) & 1) {
+				ret.x += 0.5;
+			}
+		} break;
 		case HALF_OFFSET_Y: {
 			if (ret.x > 0 ? int(ret.x) & 1 : (int(ret.x) - 1) & 1) {
 				ret.y -= 0.5;
+			}
+		} break;
+		case HALF_OFFSET_NEGATIVE_Y: {
+			if (ret.x > 0 ? int(ret.x) & 1 : (int(ret.x) - 1) & 1) {
+				ret.y += 0.5;
 			}
 		} break;
 		default: {}
@@ -1659,7 +1690,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size", PROPERTY_HINT_RANGE, "1,8192,1"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "cell_custom_transform"), "set_custom_transform", "get_custom_transform");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled"), "set_half_offset", "get_half_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled,Offset Negative X,Offset Negative Y"), "set_half_offset", "get_half_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_tile_origin", PROPERTY_HINT_ENUM, "Top Left,Center,Bottom Left"), "set_tile_origin", "get_tile_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_mode", "is_y_sort_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_clip_uv"), "set_clip_uv", "get_clip_uv");
@@ -1685,6 +1716,8 @@ void TileMap::_bind_methods() {
 	BIND_ENUM_CONSTANT(HALF_OFFSET_X);
 	BIND_ENUM_CONSTANT(HALF_OFFSET_Y);
 	BIND_ENUM_CONSTANT(HALF_OFFSET_DISABLED);
+	BIND_ENUM_CONSTANT(HALF_OFFSET_NEGATIVE_X);
+	BIND_ENUM_CONSTANT(HALF_OFFSET_NEGATIVE_Y);
 
 	BIND_ENUM_CONSTANT(TILE_ORIGIN_TOP_LEFT);
 	BIND_ENUM_CONSTANT(TILE_ORIGIN_CENTER);

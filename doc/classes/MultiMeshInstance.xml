@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMeshInstance" inherits="GeometryInstance" category="Core" version="3.1">
+<class name="MultiMeshInstance" inherits="GeometryInstance" category="Core" version="3.2">
 	<brief_description>
 		Node that instances a [MultiMesh].
 	</brief_description>
 	<description>
-		[code]MultiMeshInstance[/code] is a specialized node to instance [GeometryInstance]s based on a [MultiMesh] resource.
+		[MultiMeshInstance] is a specialized node to instance [GeometryInstance]s based on a [MultiMesh] resource.
 		This is useful to optimize the rendering of a high amount of instances of a given mesh (for example tree in a forest or grass strands).
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
+		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_multi_mesh_instance.html</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -15,7 +17,7 @@
 	</methods>
 	<members>
 		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
-			The [MultiMesh] resource that will be used and shared among all instances of the [code]MultiMeshInstance[/code].
+			The [MultiMesh] resource that will be used and shared among all instances of the [MultiMeshInstance].
 		</member>
 	</members>
 	<constants>

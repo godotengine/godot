@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Dictionary" category="Built-In Types" version="3.1">
+<class name="Dictionary" category="Built-In Types" version="3.2">
 	<brief_description>
 		Dictionary type.
 	</brief_description>
 	<description>
 		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are always passed by reference.
 		Erasing elements while iterating over them [b]is not supported[/b].
+		Creating a dictionary:
+		[codeblock]
+		var d = {4: 5, "A key": "A value", 28: [1, 2, 3]}
+		[/codeblock]
+		To add a key to an existing dictionary, access it like an existing key and assign to it:
+		[codeblock]
+		d[4] = "hello"  # Add integer 4 as a key and assign the String "hello" as its value.
+		d["Godot"] = 3.01  # Add String "Godot" as a key and assign the value 3.01 to it.
+		[/codeblock]
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_basics.html#dictionary</link>
 	</tutorials>
 	<demos>
 	</demos>
@@ -50,7 +60,7 @@
 			<argument index="1" name="default" type="Variant" default="Null">
 			</argument>
 			<description>
-				Returns the current value for the specified key in the [code]Dictionary[/code]. If the key does not exist, the method returns the value of the optional default argument, or Null if it is omitted.
+				Returns the current value for the specified key in the [Dictionary]. If the key does not exist, the method returns the value of the optional default argument, or Null if it is omitted.
 			</description>
 		</method>
 		<method name="has">
@@ -82,7 +92,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of keys in the [code]Dictionary[/code].
+				Return the list of keys in the [Dictionary].
 			</description>
 		</method>
 		<method name="size">
@@ -96,7 +106,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return the list of values in the [code]Dictionary[/code].
+				Return the list of values in the [Dictionary].
 			</description>
 		</method>
 	</methods>

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.1">
+<class name="ArrayMesh" inherits="Mesh" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
-		The [code]ArrayMesh[/code] is used to construct a [Mesh] by specifying the attributes as arrays. The most basic example is the creation of a single triangle
+		The [ArrayMesh] is used to construct a [Mesh] by specifying the attributes as arrays. The most basic example is the creation of a single triangle
 		[codeblock]
 		var vertices = PoolVector3Array()
 		vertices.push_back(Vector3(0, 1, 0))
@@ -53,25 +53,18 @@
 				Godot uses clockwise winding order for front faces of triangle primitive modes.
 			</description>
 		</method>
-		<method name="center_geometry">
-			<return type="void">
-			</return>
-			<description>
-				Centers the geometry.
-			</description>
-		</method>
 		<method name="clear_blend_shapes">
 			<return type="void">
 			</return>
 			<description>
-				Remove all blend shapes from this [code]ArrayMesh[/code].
+				Remove all blend shapes from this [ArrayMesh].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of blend shapes that the [code]ArrayMesh[/code] holds.
+				Returns the number of blend shapes that the [ArrayMesh] holds.
 			</description>
 		</method>
 		<method name="get_blend_shape_name" qualifiers="const">
@@ -91,14 +84,14 @@
 			<argument index="1" name="texel_size" type="float">
 			</argument>
 			<description>
-				Will perform a UV unwrap on the [code]ArrayMesh[/code] to prepare the mesh for lightmapping.
+				Will perform a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
 		<method name="regen_normalmaps">
 			<return type="void">
 			</return>
 			<description>
-				Will regenerate normal maps for the [code]ArrayMesh[/code].
+				Will regenerate normal maps for the [ArrayMesh].
 			</description>
 		</method>
 		<method name="surface_find_by_name" qualifiers="const">
@@ -107,7 +100,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return the index of the first surface with this name held within this [code]ArrayMesh[/code]. If none are found -1 is returned.
+				Return the index of the first surface with this name held within this [ArrayMesh]. If none are found -1 is returned.
 			</description>
 		</method>
 		<method name="surface_get_array_index_len" qualifiers="const">

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConeTwistJoint" inherits="Joint" category="Core" version="3.1">
+<class name="ConeTwistJoint" inherits="Joint" category="Core" version="3.2">
 	<brief_description>
 		A twist joint between two 3D bodies.
 	</brief_description>
@@ -28,7 +28,7 @@
 		<member name="swing_span" type="float" setter="_set_swing_span" getter="_get_swing_span">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
-			Could be defined as looseness in the [code]ConeTwistJoint[/code].
+			Could be defined as looseness in the [ConeTwistJoint].
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</member>
 		<member name="twist_span" type="float" setter="_set_twist_span" getter="_get_twist_span">
@@ -40,7 +40,7 @@
 		<constant name="PARAM_SWING_SPAN" value="0" enum="Param">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
-			Could be defined as looseness in the [code]ConeTwistJoint[/code].
+			Could be defined as looseness in the [ConeTwistJoint].
 			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
 		</constant>
 		<constant name="PARAM_TWIST_SPAN" value="1" enum="Param">

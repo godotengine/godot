@@ -849,8 +849,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 			file->close();
 			memdelete(file);
-
-			// fallthrough to open the file.
+			FALLTHROUGH;
 		}
 		case FILE_OPEN: {
 
@@ -978,6 +977,10 @@ void ScriptEditor::_menu_option(int p_option) {
 		case SEARCH_WEBSITE: {
 
 			OS::get_singleton()->shell_open("https://docs.godotengine.org/");
+		} break;
+		case REQUEST_DOCS: {
+
+			OS::get_singleton()->shell_open("https://github.com/godotengine/godot-docs/issues/new");
 		} break;
 
 		case WINDOW_NEXT: {
@@ -1308,6 +1311,7 @@ void ScriptEditor::_notification(int p_what) {
 			EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
+			request_docs->set_icon(get_icon("Issue", "EditorIcons"));
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
@@ -1951,8 +1955,9 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 				if (is_visible_in_tree())
 					se->ensure_focus();
 
-				if (p_line >= 0)
+				if (p_line > 0) {
 					se->goto_line(p_line - 1);
+				}
 			}
 			return true;
 		}
@@ -2012,8 +2017,9 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	_test_script_times_on_disk(p_resource);
 	_update_modified_scripts_for_external_editor(p_resource);
 
-	if (p_line >= 0)
+	if (p_line > 0) {
 		se->goto_line(p_line - 1);
+	}
 
 	notify_script_changed(p_resource);
 	_add_recent_script(p_resource->get_path());
@@ -2205,6 +2211,9 @@ void ScriptEditor::_script_split_dragged(float) {
 }
 
 Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+	if (tab_container->get_child_count() == 0)
+		return Variant();
 
 	Node *cur_node = tab_container->get_child(tab_container->get_current_tab());
 
@@ -3074,7 +3083,13 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	site_search->set_text(TTR("Online Docs"));
 	site_search->connect("pressed", this, "_menu_option", varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip(TTR("Open Godot online documentation"));
+	site_search->set_tooltip(TTR("Open Godot online documentation."));
+
+	request_docs = memnew(ToolButton);
+	request_docs->set_text(TTR("Request Docs"));
+	request_docs->connect("pressed", this, "_menu_option", varray(REQUEST_DOCS));
+	menu_hb->add_child(request_docs);
+	request_docs->set_tooltip(TTR("Help improve the Godot documentation by giving feedback."));
 
 	help_search = memnew(ToolButton);
 	help_search->set_text(TTR("Search Help"));

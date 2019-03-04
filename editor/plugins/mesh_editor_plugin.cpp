@@ -80,26 +80,21 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
 
-	if (mesh.is_null()) {
+	rot_x = Math::deg2rad(-15.0);
+	rot_y = Math::deg2rad(30.0);
+	_update_rotation();
 
-		hide();
-	} else {
-		rot_x = 0;
-		rot_y = 0;
-		_update_rotation();
-
-		AABB aabb = mesh->get_aabb();
-		Vector3 ofs = aabb.position + aabb.size * 0.5;
-		float m = aabb.get_longest_axis_size();
-		if (m != 0) {
-			m = 1.0 / m;
-			m *= 0.5;
-			Transform xform;
-			xform.basis.scale(Vector3(m, m, m));
-			xform.origin = -xform.basis.xform(ofs); //-ofs*m;
-			//xform.origin.z -= aabb.get_longest_axis_size() * 2;
-			mesh_instance->set_transform(xform);
-		}
+	AABB aabb = mesh->get_aabb();
+	Vector3 ofs = aabb.position + aabb.size * 0.5;
+	float m = aabb.get_longest_axis_size();
+	if (m != 0) {
+		m = 1.0 / m;
+		m *= 0.5;
+		Transform xform;
+		xform.basis.scale(Vector3(m, m, m));
+		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
+		//xform.origin.z -= aabb.get_longest_axis_size() * 2;
+		mesh_instance->set_transform(xform);
 	}
 }
 
@@ -128,8 +123,8 @@ MeshEditor::MeshEditor() {
 	viewport->set_world(world); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
+	viewport->set_msaa(Viewport::MSAA_2X);
 	set_stretch(true);
-
 	camera = memnew(Camera);
 	camera->set_transform(Transform(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
@@ -176,39 +171,29 @@ MeshEditor::MeshEditor() {
 	rot_y = 0;
 }
 
-void MeshEditorPlugin::edit(Object *p_object) {
+///////////////////////
 
-	Mesh *s = Object::cast_to<Mesh>(p_object);
-	if (!s)
+bool EditorInspectorPluginMesh::can_handle(Object *p_object) {
+
+	return Object::cast_to<Mesh>(p_object) != NULL;
+}
+
+void EditorInspectorPluginMesh::parse_begin(Object *p_object) {
+
+	Mesh *mesh = Object::cast_to<Mesh>(p_object);
+	if (!mesh) {
 		return;
-
-	mesh_editor->edit(Ref<Mesh>(s));
-}
-
-bool MeshEditorPlugin::handles(Object *p_object) const {
-
-	return p_object->is_class("Mesh");
-}
-
-void MeshEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		mesh_editor->show();
-		//mesh_editor->set_process(true);
-	} else {
-
-		mesh_editor->hide();
-		//mesh_editor->set_process(false);
 	}
+	Ref<Mesh> m(mesh);
+
+	MeshEditor *editor = memnew(MeshEditor);
+	editor->edit(m);
+	add_custom_control(editor);
 }
 
 MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 
-	editor = p_node;
-	mesh_editor = memnew(MeshEditor);
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, mesh_editor);
-	mesh_editor->hide();
-}
-
-MeshEditorPlugin::~MeshEditorPlugin() {
+	Ref<EditorInspectorPluginMesh> plugin;
+	plugin.instance();
+	add_inspector_plugin(plugin);
 }

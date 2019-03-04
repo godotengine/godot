@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AStar" inherits="Reference" category="Core" version="3.1">
+<class name="AStar" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		AStar class representation that uses vectors as edges.
 	</brief_description>
@@ -226,6 +226,15 @@
 				Returns whether a point associated with the given id exists.
 			</description>
 		</method>
+		<method name="is_point_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+				Returns whether a point is disabled or not for pathfinding. By default, all points are enabled.
+			</description>
+		</method>
 		<method name="remove_point">
 			<return type="void">
 			</return>
@@ -233,6 +242,17 @@
 			</argument>
 			<description>
 				Removes the point associated with the given id from the points pool.
+			</description>
+		</method>
+		<method name="set_point_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="disabled" type="bool" default="true">
+			</argument>
+			<description>
+				Disables or enables the specified point for pathfinding. Useful for making a temporary obstacle.
 			</description>
 		</method>
 		<method name="set_point_position">

@@ -56,7 +56,7 @@ public:
 	virtual void initialize();
 	virtual void begin_frame(double frame_step);
 	virtual void set_current_render_target(RID p_render_target);
-	virtual void restore_render_target();
+	virtual void restore_render_target(bool p_3d_was_drawn);
 	virtual void clear_render_target(const Color &p_color);
 	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0);
 	virtual void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);

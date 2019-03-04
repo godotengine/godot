@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeer" inherits="Reference" category="Core" version="3.1">
+<class name="PacketPeer" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Abstraction and base class for packet-based protocols.
 	</brief_description>
@@ -35,8 +35,11 @@
 		<method name="get_var">
 			<return type="Variant">
 			</return>
+			<argument index="0" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Get a Variant.
+				Get a Variant. When [code]allow_objects[/code] (or [member allow_object_decoding]) is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="put_packet">
@@ -53,13 +56,18 @@
 			</return>
 			<argument index="0" name="var" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Send a Variant as a packet.
+				Send a Variant as a packet. When [code]full_objects[/code] (or [member allow_object_decoding]) is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed">
+			Deprecated. Use [code]get_var[/code] and [code]put_var[/code] parameters instead.
+			If [code]true[/code] the PacketPeer will allow encoding and decoding of object via [method get_var] and [method put_var].
+			[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 		</member>
 	</members>
 	<constants>

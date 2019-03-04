@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.1">
+<class name="AudioStreamSample" inherits="AudioStream" category="Core" version="3.2">
 	<brief_description>
 		Plays audio.
 	</brief_description>
@@ -12,11 +12,13 @@
 	</demos>
 	<methods>
 		<method name="save_to_wav">
-			<return type="void">
+			<return type="int" enum="Error">
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Saves the AudioStreamSample as a WAV file to [code]path[/code]. Samples with IMA ADPCM format can't be saved.
+				Note that a [code].wav[/code] extension is automatically appended to [code]path[/code] if it is missing.
 			</description>
 		</method>
 	</methods>

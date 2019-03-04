@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "mono_reg_utils.h"
+#include "core/os/dir_access.h"
 
 #ifdef WINDOWS_ENABLED
 
@@ -200,6 +201,13 @@ String find_msbuild_tools_path() {
 						val += "\\";
 					}
 
+					// Since VS2019, the directory is simply named "Current"
+					String msbuild_dir = val + "MSBuild\\Current\\Bin";
+					if (DirAccess::exists(msbuild_dir)) {
+						return msbuild_dir;
+					}
+
+					// Directory name "15.0" is used in VS 2017
 					return val + "MSBuild\\15.0\\Bin";
 				}
 			}

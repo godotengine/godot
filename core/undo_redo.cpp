@@ -90,7 +90,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 			actions.write[actions.size() - 1].last_tick = ticks;
 
 			merge_mode = p_mode;
-
+			merging = true;
 		} else {
 
 			Action new_action;
@@ -250,8 +250,14 @@ void UndoRedo::commit_action() {
 	if (action_level > 0)
 		return; //still nested
 
-	redo(); // perform action
+	if (merging) {
+		version--;
+		merging = false;
+	}
 
+	commiting++;
+	redo(); // perform action
+	commiting--;
 	if (callback && actions.size() > 0) {
 		callback(callback_ud, actions[actions.size() - 1].name);
 	}
@@ -326,12 +332,10 @@ bool UndoRedo::redo() {
 	if ((current_action + 1) >= actions.size())
 		return false; //nothing to redo
 
-	commiting++;
 	current_action++;
 
 	_process_operation_list(actions.write[current_action].do_ops.front());
 	version++;
-	commiting--;
 
 	return true;
 }
@@ -341,11 +345,9 @@ bool UndoRedo::undo() {
 	ERR_FAIL_COND_V(action_level > 0, false);
 	if (current_action < 0)
 		return false; //nothing to redo
-	commiting++;
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
-	commiting--;
 	return true;
 }
 
@@ -399,6 +401,7 @@ UndoRedo::UndoRedo() {
 	action_level = 0;
 	current_action = -1;
 	merge_mode = MERGE_DISABLE;
+	merging = false;
 	callback = NULL;
 	callback_ud = NULL;
 

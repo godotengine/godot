@@ -65,6 +65,8 @@ class GodotSharpEditor : public Node {
 
 	void _menu_option_pressed(int p_id);
 
+	void _build_solution_pressed();
+
 	static GodotSharpEditor *singleton;
 
 protected:
@@ -79,15 +81,15 @@ public:
 
 	enum ExternalEditor {
 		EDITOR_NONE,
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
 		//EDITOR_VISUALSTUDIO, // TODO
 		EDITOR_MONODEVELOP,
 		EDITOR_VSCODE
-#elif OSX_ENABLED
+#elif defined(OSX_ENABLED)
 		EDITOR_VISUALSTUDIO_MAC,
 		EDITOR_MONODEVELOP,
 		EDITOR_VSCODE
-#elif UNIX_ENABLED
+#elif defined(UNIX_ENABLED)
 		EDITOR_MONODEVELOP,
 		EDITOR_VSCODE
 #endif

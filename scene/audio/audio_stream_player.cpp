@@ -91,8 +91,10 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
 void AudioStreamPlayer::_mix_audio() {
 
-	if (!stream_playback.is_valid() || !active)
+	if (!stream_playback.is_valid() || !active ||
+			(stream_paused && !stream_fade)) {
 		return;
+	}
 
 	if (stream_fade) {
 		_mix_internal(true);

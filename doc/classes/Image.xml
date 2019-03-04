@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" category="Core" version="3.1">
+<class name="Image" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [code]Image[/code] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -477,10 +477,10 @@
 	</members>
 	<constants>
 		<constant name="MAX_WIDTH" value="16384">
-			The maximal width allowed for [code]Image[/code] resources.
+			The maximal width allowed for [Image] resources.
 		</constant>
 		<constant name="MAX_HEIGHT" value="16384">
-			The maximal height allowed for [code]Image[/code] resources.
+			The maximal height allowed for [Image] resources.
 		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
 		</constant>

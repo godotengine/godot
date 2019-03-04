@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="BitmapFont" inherits="Font" category="Core" version="3.1">
+<class name="BitmapFont" inherits="Font" category="Core" version="3.2">
 	<brief_description>
 		Renders text using [code]*.fnt[/code] fonts.
 	</brief_description>
@@ -38,7 +38,7 @@
 			<argument index="2" name="kerning" type="int">
 			</argument>
 			<description>
-				Adds a kerning pair to the [code]BitmapFont[/code] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
+				Adds a kerning pair to the [BitmapFont] as a difference. Kerning pairs are special cases where a typeface advance is determined by the next character.
 			</description>
 		</method>
 		<method name="add_texture">
@@ -47,7 +47,7 @@
 			<argument index="0" name="texture" type="Texture">
 			</argument>
 			<description>
-				Adds a texture to the [code]BitmapFont[/code].
+				Adds a texture to the [BitmapFont].
 			</description>
 		</method>
 		<method name="clear">

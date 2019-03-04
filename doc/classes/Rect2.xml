@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Rect2" category="Built-In Types" version="3.1">
+<class name="Rect2" category="Built-In Types" version="3.2">
 	<brief_description>
 		2D Axis-aligned bounding box.
 	</brief_description>
@@ -20,7 +20,7 @@
 			<argument index="1" name="size" type="Vector2">
 			</argument>
 			<description>
-				Constructs a [code]Rect2[/code] by position and size.
+				Constructs a [Rect2] by position and size.
 			</description>
 		</method>
 		<method name="Rect2">
@@ -35,14 +35,14 @@
 			<argument index="3" name="height" type="float">
 			</argument>
 			<description>
-				Constructs a [code]Rect2[/code] by x, y, width, and height.
+				Constructs a [Rect2] by x, y, width, and height.
 			</description>
 		</method>
 		<method name="abs">
 			<return type="Rect2">
 			</return>
 			<description>
-				Returns a [code]Rect2[/code] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
+				Returns a [Rect2] with equivalent position and area, modified so that the top-left corner is the origin and [code]width[/code] and [code]height[/code] are positive.
 			</description>
 		</method>
 		<method name="clip">
@@ -51,7 +51,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns the intersection of this [code]Rect2[/code] and b.
+				Returns the intersection of this [Rect2] and b.
 			</description>
 		</method>
 		<method name="encloses">
@@ -60,7 +60,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this [code]Rect2[/code] completely encloses another one.
+				Returns [code]true[/code] if this [Rect2] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand">
@@ -69,14 +69,14 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Returns this [code]Rect2[/code] expanded to include a given point.
+				Returns this [Rect2] expanded to include a given point.
 			</description>
 		</method>
 		<method name="get_area">
 			<return type="float">
 			</return>
 			<description>
-				Returns the area of the [code]Rect2[/code].
+				Returns the area of the [Rect2].
 			</description>
 		</method>
 		<method name="grow">
@@ -85,7 +85,7 @@
 			<argument index="0" name="by" type="float">
 			</argument>
 			<description>
-				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards all the sides.
+				Returns a copy of the [Rect2] grown a given amount of units towards all the sides.
 			</description>
 		</method>
 		<method name="grow_individual">
@@ -100,7 +100,7 @@
 			<argument index="3" name=" bottom" type="float">
 			</argument>
 			<description>
-				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards each direction individually.
+				Returns a copy of the [Rect2] grown a given amount of units towards each direction individually.
 			</description>
 		</method>
 		<method name="grow_margin">
@@ -111,14 +111,14 @@
 			<argument index="1" name="by" type="float">
 			</argument>
 			<description>
-				Returns a copy of the [code]Rect2[/code] grown a given amount of units towards the [enum Margin] direction.
+				Returns a copy of the [Rect2] grown a given amount of units towards the [enum Margin] direction.
 			</description>
 		</method>
 		<method name="has_no_area">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the [code]Rect2[/code] is flat or empty.
+				Returns [code]true[/code] if the [Rect2] is flat or empty.
 			</description>
 		</method>
 		<method name="has_point">
@@ -127,7 +127,7 @@
 			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]Rect2[/code] contains a point.
+				Returns [code]true[/code] if the [Rect2] contains a point.
 			</description>
 		</method>
 		<method name="intersects">
@@ -136,7 +136,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]Rect2[/code] overlaps with another.
+				Returns [code]true[/code] if the [Rect2] overlaps with another.
 			</description>
 		</method>
 		<method name="merge">
@@ -145,7 +145,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns a larger Rect2 that contains this Rect2 and [code]with[/code].
+				Returns a larger Rect2 that contains this Rect2 and [code]b[/code].
 			</description>
 		</method>
 	</methods>

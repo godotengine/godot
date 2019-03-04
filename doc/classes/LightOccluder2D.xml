@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LightOccluder2D" inherits="Node2D" category="Core" version="3.1">
+<class name="LightOccluder2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Occludes light cast by a Light2D, casting shadows.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Occludes light cast by a Light2D, casting shadows. The LightOccluder2D must be provided with an [OccluderPolygon2D] in order for the shadow to be computed.
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
 	</tutorials>
 	<demos>
 	</demos>

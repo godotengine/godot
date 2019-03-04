@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConvexPolygonShape2D" inherits="Shape2D" category="Core" version="3.1">
+<class name="ConvexPolygonShape2D" inherits="Shape2D" category="Core" version="3.2">
 	<brief_description>
 		Convex Polygon Shape for 2D physics.
 	</brief_description>
 	<description>
 		Convex Polygon Shape for 2D physics. A convex polygon, whatever its shape, is internally decomposed into as many convex polygons as needed to ensure all collision checks against it are always done on convex polygons (which are faster to check).
-		The main difference between a [code]ConvexPolygonShape2D[/code] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
+		The main difference between a [ConvexPolygonShape2D] and a [ConcavePolygonShape2D] is that a concave polygon assumes it is concave and uses a more complex method of collision detection, and a convex one forces itself to be convex in order to speed up collision detection.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -31,6 +31,7 @@
 #include "geometry.h"
 
 #include "core/print_string.h"
+#include "thirdparty/misc/triangulator.h"
 
 /* this implementation is very inefficient, commenting unless bugs happen. See the other one.
 bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
@@ -514,7 +515,7 @@ static inline void _build_faces(uint8_t ***p_cell_status, int x, int y, int z, i
 		Vector3(1,1,1),
 	};
 */
-#define vert(m_idx) Vector3((m_idx & 4) >> 2, (m_idx & 2) >> 1, m_idx & 1)
+#define vert(m_idx) Vector3(((m_idx)&4) >> 2, ((m_idx)&2) >> 1, (m_idx)&1)
 
 	static const uint8_t indices[6][4] = {
 		{ 7, 6, 4, 5 },
@@ -735,6 +736,40 @@ PoolVector<Face3> Geometry::wrap_geometry(PoolVector<Face3> p_array, real_t *p_e
 		*p_error = voxelsize.length();
 
 	return wrapped_faces;
+}
+
+Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> polygon) {
+	Vector<Vector<Vector2> > decomp;
+	List<TriangulatorPoly> in_poly, out_poly;
+
+	TriangulatorPoly inp;
+	inp.Init(polygon.size());
+	for (int i = 0; i < polygon.size(); i++) {
+		inp.GetPoint(i) = polygon[i];
+	}
+	inp.SetOrientation(TRIANGULATOR_CCW);
+	in_poly.push_back(inp);
+	TriangulatorPartition tpart;
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
+		ERR_PRINT("Convex decomposing failed!");
+		return decomp;
+	}
+
+	decomp.resize(out_poly.size());
+	int idx = 0;
+	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
+		TriangulatorPoly &tp = I->get();
+
+		decomp.write[idx].resize(tp.GetNumPoints());
+
+		for (int i = 0; i < tp.GetNumPoints(); i++) {
+			decomp.write[idx].write[i] = tp.GetPoint(i);
+		}
+
+		idx++;
+	}
+
+	return decomp;
 }
 
 Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes) {

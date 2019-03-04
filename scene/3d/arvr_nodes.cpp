@@ -233,6 +233,13 @@ void ARVRController::_notification(int p_what) {
 				} else {
 					button_states = 0;
 				};
+
+				// check for an updated mesh
+				Ref<Mesh> trackerMesh = tracker->get_mesh();
+				if (mesh != trackerMesh) {
+					mesh = trackerMesh;
+					emit_signal("mesh_updated", mesh);
+				}
 			};
 		}; break;
 		default:
@@ -258,8 +265,11 @@ void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRController::set_rumble);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
 
+	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRController::get_mesh);
+
 	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::INT, "button")));
 	ADD_SIGNAL(MethodInfo("button_release", PropertyInfo(Variant::INT, "button")));
+	ADD_SIGNAL(MethodInfo("mesh_updated", PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh")));
 };
 
 void ARVRController::set_controller_id(int p_controller_id) {
@@ -340,6 +350,10 @@ void ARVRController::set_rumble(real_t p_rumble) {
 		tracker->set_rumble(p_rumble);
 	};
 };
+
+Ref<Mesh> ARVRController::get_mesh() const {
+	return mesh;
+}
 
 bool ARVRController::get_is_active() const {
 	return is_active;
@@ -423,6 +437,13 @@ void ARVRAnchor::_notification(int p_what) {
 
 				// apply our reference frame and set our transform
 				set_transform(arvr_server->get_reference_frame() * transform);
+
+				// check for an updated mesh
+				Ref<Mesh> trackerMesh = tracker->get_mesh();
+				if (mesh != trackerMesh) {
+					mesh = trackerMesh;
+					emit_signal("mesh_updated", mesh);
+				}
 			};
 		}; break;
 		default:
@@ -441,6 +462,9 @@ void ARVRAnchor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_size"), &ARVRAnchor::get_size);
 
 	ClassDB::bind_method(D_METHOD("get_plane"), &ARVRAnchor::get_plane);
+
+	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRAnchor::get_mesh);
+	ADD_SIGNAL(MethodInfo("mesh_updated", PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh")));
 };
 
 void ARVRAnchor::set_anchor_id(int p_anchor_id) {
@@ -500,6 +524,10 @@ Plane ARVRAnchor::get_plane() const {
 
 	return plane;
 };
+
+Ref<Mesh> ARVRAnchor::get_mesh() const {
+	return mesh;
+}
 
 ARVRAnchor::ARVRAnchor() {
 	anchor_id = 0;

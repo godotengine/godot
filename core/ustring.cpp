@@ -3748,6 +3748,24 @@ bool String::is_valid_html_color() const {
 	return Color::html_is_valid(*this);
 }
 
+bool String::is_valid_filename() const {
+
+	String stripped = strip_edges();
+	if (*this != stripped) {
+		return false;
+	}
+
+	if (stripped == String()) {
+		return false;
+	}
+
+	if (find(":") != -1 || find("/") != -1 || find("\\") != -1 || find("?") != -1 || find("*") != -1 || find("\"") != -1 || find("|") != -1 || find("%") != -1 || find("<") != -1 || find(">") != -1) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 bool String::is_valid_ip_address() const {
 
 	if (find(":") >= 0) {

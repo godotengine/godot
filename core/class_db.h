@@ -214,6 +214,7 @@ public:
 
 	static void get_class_list(List<StringName> *p_classes);
 	static void get_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
+	static void get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes);
 	static StringName get_parent_class_nocheck(const StringName &p_class);
 	static StringName get_parent_class(const StringName &p_class);
 	static bool class_exists(const StringName &p_class);
@@ -371,6 +372,7 @@ public:
 	static void init();
 
 	static void set_current_api(APIType p_api);
+	static APIType get_current_api();
 	static void cleanup();
 };
 

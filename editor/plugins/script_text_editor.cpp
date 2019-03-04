@@ -620,7 +620,9 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (p_symbol.is_resource_file()) {
+	if (ScriptServer::is_global_class(p_symbol)) {
+		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
+	} else if (p_symbol.is_resource_file()) {
 		List<String> scene_extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
 
@@ -794,92 +796,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 
-			Ref<Script> scr = script;
-			if (scr.is_null())
-				return;
-
-			String delimiter = "#";
-			List<String> comment_delimiters;
-			scr->get_language()->get_comment_delimiters(&comment_delimiters);
-
-			for (List<String>::Element *E = comment_delimiters.front(); E; E = E->next()) {
-				String script_delimiter = E->get();
-				if (script_delimiter.find(" ") == -1) {
-					delimiter = script_delimiter;
-					break;
-				}
-			}
-
-			tx->begin_complex_operation();
-			if (tx->is_selection_active()) {
-				int begin = tx->get_selection_from_line();
-				int end = tx->get_selection_to_line();
-
-				// End of selection ends on the first column of the last line, ignore it.
-				if (tx->get_selection_to_column() == 0)
-					end -= 1;
-
-				int col_to = tx->get_selection_to_column();
-				int cursor_pos = tx->cursor_get_column();
-
-				// Check if all lines in the selected block are commented
-				bool is_commented = true;
-				for (int i = begin; i <= end; i++) {
-					if (!tx->get_line(i).begins_with(delimiter)) {
-						is_commented = false;
-						break;
-					}
-				}
-				for (int i = begin; i <= end; i++) {
-					String line_text = tx->get_line(i);
-
-					if (line_text.strip_edges().empty()) {
-						line_text = delimiter;
-					} else {
-						if (is_commented) {
-							line_text = line_text.substr(delimiter.length(), line_text.length());
-						} else {
-							line_text = delimiter + line_text;
-						}
-					}
-					tx->set_line(i, line_text);
-				}
-
-				// Adjust selection & cursor position.
-				int offset = is_commented ? -1 : 1;
-				int col_from = tx->get_selection_from_column() > 0 ? tx->get_selection_from_column() + offset : 0;
-
-				if (is_commented && tx->cursor_get_column() == tx->get_line(tx->cursor_get_line()).length() + 1)
-					cursor_pos += 1;
-
-				if (tx->get_selection_to_column() != 0 && col_to != tx->get_line(tx->get_selection_to_line()).length() + 1)
-					col_to += offset;
-
-				if (tx->cursor_get_column() != 0)
-					cursor_pos += offset;
-
-				tx->select(begin, col_from, tx->get_selection_to_line(), col_to);
-				tx->cursor_set_column(cursor_pos);
-
-			} else {
-				int begin = tx->cursor_get_line();
-				String line_text = tx->get_line(begin);
-
-				int col = tx->cursor_get_column();
-				if (line_text.begins_with(delimiter)) {
-					line_text = line_text.substr(delimiter.length(), line_text.length());
-					col -= 1;
-				} else {
-					line_text = delimiter + line_text;
-					col += 1;
-				}
-
-				tx->set_line(begin, line_text);
-				tx->cursor_set_column(col);
-			}
-			tx->end_complex_operation();
-			tx->update();
-
+			_edit_option_toggle_inline_comment();
 		} break;
 		case EDIT_COMPLETE: {
 
@@ -993,7 +910,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->set_line_as_breakpoint(line, dobreak);
 				ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), line + 1, dobreak);
 			}
-		}
+		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
 
 			List<int> bpoints;
@@ -1064,6 +981,25 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 		} break;
 	}
+}
+
+void ScriptTextEditor::_edit_option_toggle_inline_comment() {
+	if (script.is_null())
+		return;
+
+	String delimiter = "#";
+	List<String> comment_delimiters;
+	script->get_language()->get_comment_delimiters(&comment_delimiters);
+
+	for (List<String>::Element *E = comment_delimiters.front(); E; E = E->next()) {
+		String script_delimiter = E->get();
+		if (script_delimiter.find(" ") == -1) {
+			delimiter = script_delimiter;
+			break;
+		}
+	}
+
+	code_editor->toggle_inline_comment(delimiter);
 }
 
 void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {

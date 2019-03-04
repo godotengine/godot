@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Skeleton" inherits="Spatial" category="Core" version="3.1">
+<class name="Skeleton" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		Skeleton for characters and animated objects.
 	</brief_description>
@@ -259,6 +259,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="bones_in_world_transform" type="bool" setter="set_use_bones_in_world_transform" getter="is_using_bones_in_world_transform">
+		</member>
+	</members>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>

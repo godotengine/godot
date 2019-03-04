@@ -735,6 +735,10 @@ static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst,
 	}
 }
 
+bool Image::is_size_po2() const {
+	return uint32_t(width) == next_power_of_2(width) && uint32_t(height) == next_power_of_2(height);
+}
+
 void Image::resize_to_po2(bool p_square) {
 
 	if (!_can_modify(format)) {

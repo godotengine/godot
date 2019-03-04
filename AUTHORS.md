@@ -25,16 +25,16 @@ name is available.
 
 ## Developers
 
-(in alphabetical order, with 10 commits or more excluding merges)
+(in alphabetical order, with over 10 commits excluding merges)
 
     Aaron Franke (aaronfranke)
     Alexander Holland (AlexHolly)
-    Alexey Velikiy (jonyrock)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
     Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
+    Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
@@ -45,7 +45,9 @@ name is available.
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     bruvzg
+    Camille Mohr-Daurat (pouleyKetchoupp)
     Carl Olsson (not-surt)
+    Carter Anderson (cart)
     Chris Bradfield (cbscribe)
     Clay John (clayjohn)
     Dana Olson (adolson)
@@ -61,13 +63,13 @@ name is available.
     Ferenc Arn (tagcup)
     Franklin Sobrinho (TheHX)
     Geequlim
-    Gen (dbsGen)
     George Marques (vnen)
     Gerrit Großkopf (Grosskopf)
     Gilles Roudiere (groud)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
     Hein-Pieter van Braam (hpvb)
     Hiroshi Ogawa (hi-ogawa)
+    homer666
     Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
@@ -76,7 +78,7 @@ name is available.
     Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
-    Jérôme GULLY (Nutriz)
+    Jérôme Gully (Nutriz)
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
@@ -94,6 +96,7 @@ name is available.
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Capitanio (capnm)
+    Martin Liška (marxin)
     Martin Sjursen (binbitten)
     marynate
     Masoud BH (masoudbh3)
@@ -113,6 +116,7 @@ name is available.
     Pieter-Jan Briers (PJB3005)
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
+    Rafał Mikrut (qarmin)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
     Ray Koopa (RayKoopa)
@@ -124,6 +128,7 @@ name is available.
     Saniko (sanikoyes)
     SaracenOne
     sersoong
+    Simon Wenner (swenner)
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo (toger5)

@@ -261,6 +261,16 @@ namespace Godot
             return (real_t)Math.Sinh(s);
         }
 
+        public static real_t SmoothStep(real_t from, real_t to, real_t weight)
+        {
+            if (IsEqualApprox(from, to))
+            {
+                return from;
+            }
+            real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
+            return x * x * (3 - 2 * x);
+        }
+
         public static real_t Sqrt(real_t s)
         {
             return (real_t)Math.Sqrt(s);
@@ -289,13 +299,13 @@ namespace Godot
         public static int Wrap(int value, int min, int max)
         {
             int rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
+            return rng != 0 ? min + ((value - min) % rng + rng) % rng : min;
         }
 
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
+            return !IsEqualApprox(rng, default(real_t)) ? min + ((value - min) % rng + rng) % rng : min;
         }
     }
 }

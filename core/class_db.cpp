@@ -249,6 +249,11 @@ void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
 }
 
+ClassDB::APIType ClassDB::get_current_api() {
+
+	return current_api;
+}
+
 HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
@@ -303,6 +308,19 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 	while ((k = classes.next(k))) {
 
 		if (*k != p_class && is_parent_class(*k, p_class))
+			p_classes->push_back(*k);
+	}
+}
+
+void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
+
+	OBJTYPE_RLOCK;
+
+	const StringName *k = NULL;
+
+	while ((k = classes.next(k))) {
+
+		if (*k != p_class && get_parent_class(*k) == p_class)
 			p_classes->push_back(*k);
 	}
 }

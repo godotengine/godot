@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Camera2D" inherits="Node2D" category="Core" version="3.1">
+<class name="Camera2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Camera node for 2D scenes.
 	</brief_description>
@@ -23,7 +23,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Removes any [code]Camera2D[/code] from the ancestor [Viewport]'s internal currently-assigned camera.
+				Removes any [Camera2D] from the ancestor [Viewport]'s internal currently-assigned camera.
 			</description>
 		</method>
 		<method name="force_update_scroll">
@@ -44,7 +44,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the location of the [code]Camera2D[/code]'s screen-center, relative to the origin.
+				Returns the location of the [Camera2D]'s screen-center, relative to the origin.
 			</description>
 		</method>
 		<method name="make_current">
@@ -71,7 +71,7 @@
 			If [code]true[/code], the camera is the active camera for the current scene. Only one camera can be current, so setting a different camera [code]current[/code] will disable this one.
 		</member>
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
-			The custom [Viewport] node attached to the [code]Camera2D[/code]. If null or not a [Viewport], uses the default viewport instead.
+			The custom [Viewport] node attached to the [Camera2D]. If null or not a [Viewport], uses the default viewport instead.
 		</member>
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin">
 			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.

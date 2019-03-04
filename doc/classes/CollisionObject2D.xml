@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionObject2D" inherits="Node2D" category="Core" version="3.1">
+<class name="CollisionObject2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Base node for 2D collision objects.
 	</brief_description>
@@ -70,7 +70,7 @@
 			<argument index="0" name="owner_id" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if collisions for the shape owner originating from this [code]CollisionObject2D[/code] will not be reported to collided with [code]CollisionObject2D[/code]s.
+				Returns [code]true[/code] if collisions for the shape owner originating from this [CollisionObject2D] will not be reported to collided with [CollisionObject2D]s.
 			</description>
 		</method>
 		<method name="remove_shape_owner">
@@ -190,7 +190,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]enable[/code] is [code]true[/code], collisions for the shape owner originating from this [code]CollisionObject2D[/code] will not be reported to collided with [code]CollisionObject2D[/code]s.
+				If [code]enable[/code] is [code]true[/code], collisions for the shape owner originating from this [CollisionObject2D] will not be reported to collided with [CollisionObject2D]s.
 			</description>
 		</method>
 		<method name="shape_owner_set_one_way_collision_margin">

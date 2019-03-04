@@ -87,8 +87,13 @@ class BindingsGenerator {
 		StringName cname;
 		bool is_enum;
 
-		TypeReference() {
-			is_enum = false;
+		TypeReference() :
+				is_enum(false) {
+		}
+
+		TypeReference(const StringName &p_cname) :
+				cname(p_cname),
+				is_enum(false) {
 		}
 	};
 
@@ -321,6 +326,15 @@ class BindingsGenerator {
 			return NULL;
 		}
 
+		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
+			for (const List<PropertyInterface>::Element *E = properties.front(); E; E = E->next()) {
+				if (E->get().cname == p_cname)
+					return &E->get();
+			}
+
+			return NULL;
+		}
+
 		const PropertyInterface *find_property_by_proxy_name(const String &p_proxy_name) const {
 			for (const List<PropertyInterface>::Element *E = properties.front(); E; E = E->next()) {
 				if (E->get().proxy_name == p_proxy_name)
@@ -482,6 +496,8 @@ class BindingsGenerator {
 		StringName type_VarArg;
 		StringName type_Object;
 		StringName type_Reference;
+		StringName type_String;
+		StringName type_at_GlobalScope;
 		StringName enum_Error;
 
 		NameCache() {
@@ -493,6 +509,8 @@ class BindingsGenerator {
 			type_VarArg = StaticCString::create("VarArg");
 			type_Object = StaticCString::create("Object");
 			type_Reference = StaticCString::create("Reference");
+			type_String = StaticCString::create("String");
+			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
 		}
 
@@ -511,6 +529,15 @@ class BindingsGenerator {
 		return NULL;
 	}
 
+	const ConstantInterface *find_constant_by_name(const String &p_name, const List<ConstantInterface> &p_constants) const {
+		for (const List<ConstantInterface>::Element *E = p_constants.front(); E; E = E->next()) {
+			if (E->get().name == p_name)
+				return &E->get();
+		}
+
+		return NULL;
+	}
+
 	inline String get_unique_sig(const TypeInterface &p_type) {
 		if (p_type.is_reference)
 			return "Ref";
@@ -521,6 +548,8 @@ class BindingsGenerator {
 
 		return p_type.name;
 	}
+
+	String bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);

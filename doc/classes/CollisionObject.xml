@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CollisionObject" inherits="Spatial" category="Core" version="3.1">
+<class name="CollisionObject" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		Base node for collision objects.
 	</brief_description>
@@ -183,7 +183,7 @@
 	</methods>
 	<members>
 		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag">
-			If [code]true[/code], the [code]CollisionObject[/code] will continue to receive input events as the mouse is dragged across its shapes. Default value: [code]false[/code].
+			If [code]true[/code], the [CollisionObject] will continue to receive input events as the mouse is dragged across its shapes. Default value: [code]false[/code].
 		</member>
 		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable">
 			If [code]true[/code], the [CollisionObject]'s shapes will respond to [RayCast]s. Default value: [code]true[/code].
