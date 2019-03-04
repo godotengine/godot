@@ -73,7 +73,11 @@ static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsag
 		usage.vram = E->get().bytes;
 		usage.id = E->get().texture;
 		usage.type = "Texture";
-		usage.format = itos(E->get().width) + "x" + itos(E->get().height) + " " + Image::get_format_name(E->get().format);
+		if (E->get().depth == 0) {
+			usage.format = itos(E->get().width) + "x" + itos(E->get().height) + " " + Image::get_format_name(E->get().format);
+		} else {
+			usage.format = itos(E->get().width) + "x" + itos(E->get().height) + "x" + itos(E->get().depth) + " " + Image::get_format_name(E->get().format);
+		}
 		r_usage->push_back(usage);
 	}
 }
