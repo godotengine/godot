@@ -5444,7 +5444,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 				String script_path = ScriptServer::get_global_class_path(id);
 				if (script_path == self_path) {
 					result.kind = DataType::CLASS;
-					result.class_type = current_class;
+					result.class_type = static_cast<ClassNode *>(head);
 				} else {
 					Ref<Script> script = ResourceLoader::load(script_path);
 					Ref<GDScript> gds = script;
