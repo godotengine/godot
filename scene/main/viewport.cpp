@@ -1783,12 +1783,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				*/
 
 				gui.mouse_focus = _gui_find_control(pos);
-				gui.mouse_focus_mask = 1 << (mb->get_button_index() - 1);
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
+					gui.mouse_focus_mask = 0;
 					return;
 				}
+
+				gui.mouse_focus_mask = 1 << (mb->get_button_index() - 1);
 
 				if (mb->get_button_index() == BUTTON_LEFT) {
 					gui.drag_accum = Vector2();
