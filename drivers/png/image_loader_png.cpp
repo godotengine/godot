@@ -63,7 +63,11 @@ static void _png_error_function(png_structp, png_const_charp text) {
 }
 
 static void _png_warn_function(png_structp, png_const_charp text) {
-
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (String(text).begins_with("iCCP")) return; // silences annoying spam emitted to output every time the user opened assetlib
+	}
+#endif
 	WARN_PRINT(text);
 }
 
