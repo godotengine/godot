@@ -173,6 +173,9 @@ VERTEX_SHADER_CODE
 
 #ifdef USE_PIXEL_SNAP
 	outvec.xy = floor(outvec + 0.5).xy;
+	// precision issue on some hardware creates artifacts within texture
+	// offset uv by a small amount to avoid
+	uv_interp += 1e-5;
 #endif
 
 #ifdef USE_SKELETON
