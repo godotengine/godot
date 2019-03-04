@@ -195,6 +195,11 @@ MonoBoolean godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows() {
 #endif
 }
 
+MonoBoolean godot_icall_BuildInstance_get_PrintBuildOutput() {
+
+	return (bool)EDITOR_GET("mono/builds/print_build_output");
+}
+
 void GodotSharpBuilds::register_internal_calls() {
 
 	static bool registered = false;
@@ -205,6 +210,7 @@ void GodotSharpBuilds::register_internal_calls() {
 	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MSBuildPath", (void *)godot_icall_BuildInstance_get_MSBuildPath);
 	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_MonoWindowsBinDir", (void *)godot_icall_BuildInstance_get_MonoWindowsBinDir);
 	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows", (void *)godot_icall_BuildInstance_get_UsingMonoMSBuildOnWindows);
+	mono_add_internal_call("GodotSharpTools.Build.BuildInstance::godot_icall_BuildInstance_get_PrintBuildOutput", (void *)godot_icall_BuildInstance_get_PrintBuildOutput);
 }
 
 void GodotSharpBuilds::show_build_error_dialog(const String &p_message) {
@@ -457,6 +463,8 @@ GodotSharpBuilds::GodotSharpBuilds() {
 			"," PROP_NAME_MSBUILD_VS
 #endif
 			"," PROP_NAME_XBUILD));
+
+	EDITOR_DEF("mono/builds/print_build_output", false);
 }
 
 GodotSharpBuilds::~GodotSharpBuilds() {
