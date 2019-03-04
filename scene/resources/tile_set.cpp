@@ -30,6 +30,7 @@
 
 #include "tile_set.h"
 #include "core/array.h"
+#include "core/engine.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -662,6 +663,7 @@ void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_sha
 	if (tile_map[p_id].shapes_data.size() <= p_shape_id)
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
 	tile_map[p_id].shapes_data.write[p_shape_id].shape = p_shape;
+	_decompose_convex_shape(p_shape);
 	emit_changed();
 }
 
@@ -844,6 +846,9 @@ void TileSet::tile_set_shapes(int p_id, const Vector<ShapeData> &p_shapes) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].shapes_data = p_shapes;
+	for (int i = 0; i < p_shapes.size(); i++) {
+		_decompose_convex_shape(p_shapes[i].shape);
+	}
 	emit_changed();
 }
 
@@ -888,9 +893,10 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 		} else if (p_shapes[i].get_type() == Variant::DICTIONARY) {
 			Dictionary d = p_shapes[i];
 
-			if (d.has("shape") && d["shape"].get_type() == Variant::OBJECT)
+			if (d.has("shape") && d["shape"].get_type() == Variant::OBJECT) {
 				s.shape = d["shape"];
-			else
+				_decompose_convex_shape(s.shape);
+			} else
 				continue;
 
 			if (d.has("shape_transform") && d["shape_transform"].get_type() == Variant::TRANSFORM2D)
@@ -954,6 +960,26 @@ Array TileSet::_get_tiles_ids() const {
 	}
 
 	return arr;
+}
+
+void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+	Ref<ConvexPolygonShape2D> convex = p_shape;
+	if (!convex.is_valid())
+		return;
+	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(convex->get_points());
+	if (decomp.size() > 1) {
+		Array sub_shapes;
+		for (int i = 0; i < decomp.size(); i++) {
+			Ref<ConvexPolygonShape2D> _convex = memnew(ConvexPolygonShape2D);
+			_convex->set_points(decomp[i]);
+			sub_shapes.append(_convex);
+		}
+		convex->set_meta("decomposed", sub_shapes);
+	} else {
+		convex->set_meta("decomposed", Variant());
+	}
 }
 
 void TileSet::get_tile_list(List<int> *p_tiles) const {

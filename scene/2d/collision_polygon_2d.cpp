@@ -78,40 +78,7 @@ void CollisionPolygon2D::_build_polygon() {
 }
 
 Vector<Vector<Vector2> > CollisionPolygon2D::_decompose_in_convex() {
-
-	Vector<Vector<Vector2> > decomp;
-	List<TriangulatorPoly> in_poly, out_poly;
-
-	TriangulatorPoly inp;
-	inp.Init(polygon.size());
-	for (int i = 0; i < polygon.size(); i++) {
-		inp.GetPoint(i) = polygon[i];
-	}
-	inp.SetOrientation(TRIANGULATOR_CCW);
-	in_poly.push_back(inp);
-	TriangulatorPartition tpart;
-	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		ERR_PRINT("Convex decomposing failed!");
-		return decomp;
-	}
-
-	decomp.resize(out_poly.size());
-	int idx = 0;
-
-	for (List<TriangulatorPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-
-		TriangulatorPoly &tp = I->get();
-
-		decomp.write[idx].resize(tp.GetNumPoints());
-
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
-
-			decomp.write[idx].write[i] = tp.GetPoint(i);
-		}
-
-		idx++;
-	}
-
+	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon_in_convex(polygon);
 	return decomp;
 }
 
