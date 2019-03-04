@@ -44,7 +44,7 @@ Source: https://github.com/godotengine/godot
 Files: *
 Comment: Godot Engine
 Copyright: 2007-2019, Juan Linietsky, Ariel Manzur.
-  2014-2019, Godot Engine contributors.
+ 2014-2019, Godot Engine contributors.
 License: Expat
 
 Files: ./icon.png
@@ -77,8 +77,8 @@ Files: ./platform/android/power_android.cpp
  ./platform/x11/power_x11.cpp
 Comment: Simple DirectMedia Layer
 Copyright: 1997-2017, Sam Lantinga
-  2007-2019, Juan Linietsky, Ariel Manzur.
-  2014-2019, Godot Engine contributors.
+ 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./scene/animation/tween_interpolaters.cpp
@@ -98,27 +98,27 @@ Files: ./servers/physics/gjk_epa.cpp
  ./servers/physics/joints/slider_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2008, Erwin Coumans
-  2007-2019, Juan Linietsky, Ariel Manzur.
-  2014-2019, Godot Engine contributors.
+ 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./servers/physics/joints/cone_twist_joint_sw.cpp
  ./servers/physics/joints/cone_twist_joint_sw.h
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2007, Starbreeze Studios
-  2007-2019, Juan Linietsky, Ariel Manzur.
-  2014-2019, Godot Engine contributors.
+ 2007-2019, Juan Linietsky, Ariel Manzur.
+ 2014-2019, Godot Engine contributors.
 License: Expat and Zlib
 
 Files: ./thirdparty/b2d_convexdecomp/
 Comment: Box2D (ConvexDecomp)
 Copyright: 2007, Eric Jordan
-  2006-2009, Erin Catto
+ 2006-2009, Erin Catto
 License: Zlib
 
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
-Copyright: 2003-2008, Erwin Coumans
+Copyright: 2003-2013, Erwin Coumans
 License: Zlib
 
 Files: ./thirdparty/certs/ca-certificates.crt
@@ -129,7 +129,7 @@ License: MPL-2.0
 Files: ./thirdparty/cvtt/
 Comment: Convection Texture Tools Stand-Alone Kernels
 Copyright: 2018, Eric Lasota
-  2018, Microsoft Corp.
+ 2018, Microsoft Corp.
 License: Expat
 
 Files: ./thirdparty/enet/
@@ -160,12 +160,12 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2017, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2018, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
 Comment: glad
-Copyright: 2013, David Herberth
+Copyright: 2013-2018, David Herberth
 License: Expat
 
 Files: ./thirdparty/jpeg_compressor/
@@ -180,9 +180,11 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libpng/
 Comment: libpng
-Copyright: 1995-1996, Guy Eric Schalnat, Group 42, Inc.
- 1996-1997, Andreas Dilger
- 1998-2018, Glenn Randers-Pehrson
+Copyright: 1995-2018, The PNG Reference Library Authors.
+ 2018, Cosmin Truta.
+ 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
+ 1996-1997, Andreas Dilger.
+ 1995-1996, Guy Eric Schalnat, Group 42, Inc.
 License: Zlib
 
 Files: ./thirdparty/libsimplewebm/
@@ -223,24 +225,24 @@ License: BSD-3-clause
 
 Files: ./thirdparty/libwebsockets/
 Comment: libwebsockets
-Copyright: 2010-2017, Andy Green
+Copyright: 2010-2018, Andy Green
 License: LGPL-2.1+SLE (libwebsockets)
 
 Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
-Copyright: 2006-2015, ARM Limited
+Copyright: 2006-2018, Arm Limited (or its affiliates)
 License: Apache-2.0
 
 Files: ./thirdparty/miniupnpc/
 Comment: MiniUPnPc
-Copyright: 2005-2016, Thomas Bernard
+Copyright: 2005-2018, Thomas Bernard
 License: BSD-3-clause
 
 Files: ./thirdparty/minizip/
 Comment: MiniZip
 Copyright: 1998-2010, Gilles Vollant
-  2007-2008, Even Rouault
-  2009-2010, Mathias Svensson
+ 2007-2008, Even Rouault
+ 2009-2010, Mathias Svensson
 License: Zlib
 
 Files: ./thirdparty/misc/aes256.cpp
@@ -348,8 +350,8 @@ License: BSD-3-clause
 
 Files: ./thirdparty/pcre2/
 Comment: PCRE2
-Copyright: 1997-2017, University of Cambridge,
- 2009-2017, Zoltan Herczeg
+Copyright: 1997-2018, University of Cambridge,
+ 2009-2018, Zoltan Herczeg
 License: BSD-3-clause
 
 Files: ./thirdparty/pvrtccompressor/
@@ -385,7 +387,7 @@ License: Zlib
 
 Files: ./thirdparty/zstd/
 Comment: Zstandard
-Copyright: 2016-2018, Facebook, Inc.
+Copyright: 2016-2019, Facebook, Inc.
 License: BSD-3-clause
 
 
