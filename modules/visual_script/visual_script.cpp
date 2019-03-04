@@ -48,22 +48,12 @@ bool VisualScriptNode::is_breakpoint() const {
 void VisualScriptNode::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		_update_input_ports();
-	}
-}
-
-void VisualScriptNode::_update_input_ports() {
-	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
-	int port_count = get_input_value_port_count();
-	for (int i = 0; i < port_count; i++) {
-		Variant::Type expected = get_input_value_port_info(i).type;
-		Variant::CallError ce;
-		set_default_input_value(i, Variant::construct(expected, NULL, 0, ce, false));
+		validate_input_default_values();
 	}
 }
 
 void VisualScriptNode::ports_changed_notify() {
-	_update_input_ports();
+	validate_input_default_values();
 	emit_signal("ports_changed");
 }
 
@@ -92,8 +82,7 @@ void VisualScriptNode::_set_default_input_values(Array p_values) {
 }
 
 void VisualScriptNode::validate_input_default_values() {
-
-	default_input_values.resize(get_input_value_port_count());
+	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
 
 	//actually validate on save
 	for (int i = 0; i < get_input_value_port_count(); i++) {
@@ -119,8 +108,10 @@ void VisualScriptNode::validate_input_default_values() {
 Array VisualScriptNode::_get_default_input_values() const {
 
 	//validate on save, since on load there is little info about this
+	Array values = default_input_values;
+	values.resize(get_input_value_port_count());
 
-	return default_input_values;
+	return values;
 }
 
 String VisualScriptNode::get_text() const {
