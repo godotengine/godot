@@ -262,6 +262,16 @@ void CPUParticles2D::restart() {
 	}
 }
 
+void CPUParticles2D::set_direction(Vector2 p_direction) {
+
+	direction = p_direction;
+}
+
+Vector2 CPUParticles2D::get_direction() const {
+
+	return direction;
+}
+
 void CPUParticles2D::set_spread(float p_spread) {
 
 	spread = p_spread;
@@ -631,7 +641,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			p.hue_rot_rand = Math::randf();
 			p.anim_offset_rand = Math::randf();
 
-			float angle1_rad = (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+			float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
 			Vector2 rot = Vector2(Math::cos(angle1_rad), Math::sin(angle1_rad));
 			p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
 
@@ -1121,6 +1131,8 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	if (material.is_null())
 		return;
 
+	Vector3 dir = material->get_direction();
+	set_direction(Vector2(dir.x, dir.y));
 	set_spread(material->get_spread());
 	set_flatness(material->get_flatness());
 
@@ -1226,6 +1238,9 @@ void CPUParticles2D::_bind_methods() {
 
 	////////////////////////////////
 
+	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles2D::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &CPUParticles2D::get_direction);
+
 	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &CPUParticles2D::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &CPUParticles2D::get_spread);
 
@@ -1284,7 +1299,8 @@ void CPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "emission_colors"), "set_emission_colors", "get_emission_colors");
 	ADD_GROUP("Flags", "flag_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
-	ADD_GROUP("Spread", "");
+	ADD_GROUP("Direction", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
 	ADD_GROUP("Gravity", "");
@@ -1392,6 +1408,7 @@ CPUParticles2D::CPUParticles2D() {
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
 
+	set_direction(Vector2(1, 0));
 	set_spread(45);
 	set_flatness(0);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);

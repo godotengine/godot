@@ -129,6 +129,7 @@ private:
 	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
+		StringName direction;
 		StringName spread;
 		StringName flatness;
 		StringName initial_linear_velocity;
@@ -194,6 +195,7 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	Vector3 direction;
 	float spread;
 	float flatness;
 
@@ -230,6 +232,9 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
+	void set_direction(Vector3 p_direction);
+	Vector3 get_direction() const;
+
 	void set_spread(float p_spread);
 	float get_spread() const;
 
