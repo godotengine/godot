@@ -1,10 +1,10 @@
 
 /* pngstruct.h - header file for PNG reference library
  *
- * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -228,6 +228,10 @@ struct png_struct_def
                                * big_row_buf; while writing it is separately
                                * allocated.
                                */
+#ifdef PNG_READ_EXPAND_SUPPORTED
+   /* Buffer to accelerate palette transformations. */
+   png_bytep riffled_palette;
+#endif
 #ifdef PNG_WRITE_FILTER_SUPPORTED
    png_bytep try_row;    /* buffer to save trial row when filtering */
    png_bytep tst_row;    /* buffer to save best trial row when filtering */
