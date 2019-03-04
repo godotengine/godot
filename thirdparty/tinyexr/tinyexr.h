@@ -274,6 +274,12 @@ extern int LoadEXR(float **out_rgba, int *width, int *height,
                    const char *filename, const char **err);
 
 // @deprecated { to be removed. }
+// Simple wrapper API for ParseEXRHeaderFromFile.
+// checking given file is a EXR file(by just look up header)
+// @return TINYEXR_SUCCEES for EXR image, TINYEXR_ERROR_INVALID_HEADER for others
+extern int IsEXR(const char *filename);
+
+// @deprecated { to be removed. }
 // Saves single-frame OpenEXR image. Assume EXR image contains RGB(A) channels.
 // components must be 1(Grayscale), 3(RGB) or 4(RGBA).
 // Input image format is: `float x width x height`, or `float x RGB(A) x width x
@@ -6998,6 +7004,10 @@ static void swap2(unsigned short *val) {
 #endif
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
 static void cpy4(int *dst_val, const int *src_val) {
   unsigned char *dst = reinterpret_cast<unsigned char *>(dst_val);
   const unsigned char *src = reinterpret_cast<const unsigned char *>(src_val);
@@ -7027,6 +7037,10 @@ static void cpy4(float *dst_val, const float *src_val) {
   dst[2] = src[2];
   dst[3] = src[3];
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 static void swap4(unsigned int *val) {
 #ifdef MINIZ_LITTLE_ENDIAN
@@ -8840,7 +8854,8 @@ static bool getCode(int po, int rlc, long long &c, int &lc, const char *&in,
     if (out + cs > oe) return false;
 
     // Bounds check for safety
-    if ((out - 1) <= ob) return false;
+    // Issue 100.  
+    if ((out - 1) < ob) return false;
     unsigned short s = out[-1];
 
     while (cs-- > 0) *out++ = s;
@@ -10721,6 +10736,15 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
   int data_width = exr_header->data_window[2] - exr_header->data_window[0] + 1;
   int data_height = exr_header->data_window[3] - exr_header->data_window[1] + 1;
 
+  if ((data_width < 0) || (data_height < 0)) {
+    if (err) {
+      std::stringstream ss;
+      ss << "Invalid data width or data height: " << data_width << ", " << data_height << std::endl;
+      (*err) += ss.str();
+    }
+    return TINYEXR_ERROR_INVALID_DATA;
+  }
+
   size_t num_blocks = offsets.size();
 
   std::vector<size_t> channel_offset_list;
@@ -10815,6 +10839,17 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
       exr_image->num_tiles = static_cast<int>(num_tiles);
     }
   } else {  // scanline format
+
+    // Don't allow too large image(256GB * pixel_data_size or more). Workaround for #104.
+    size_t data_len = size_t(data_width) * size_t(data_height) * size_t(num_channels);
+    if ((data_len == 0) || (data_len >= 0x4000000000)) {
+      if (err) {
+        std::stringstream ss;
+        ss << "Image data size is zero or too large: width = " << data_width << ", height = " << data_height << ", channels = " << num_channels << std::endl;
+        (*err) += ss.str();
+      }
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
 
     exr_image->images = tinyexr::AllocateImage(
         num_channels, exr_header->channels, exr_header->requested_pixel_types,
@@ -11155,7 +11190,6 @@ int LoadEXR(float **out_rgba, int *width, int *height, const char *filename,
                static_cast<size_t>(exr_image.height)));
 
     if (exr_header.tiled) {
-      // todo.implement this
 
       for (int it = 0; it < exr_image.num_tiles; it++) {
         for (int j = 0; j < exr_header.tile_size_y; j++) {
@@ -11284,6 +11318,17 @@ int LoadEXR(float **out_rgba, int *width, int *height, const char *filename,
   return TINYEXR_SUCCESS;
 }
 
+int IsEXR(const char *filename) {
+  EXRVersion exr_version;
+
+  int ret = ParseEXRVersionFromFile(&exr_version, filename);
+  if (ret != TINYEXR_SUCCESS) {
+    return TINYEXR_ERROR_INVALID_HEADER;
+  }
+  
+  return TINYEXR_SUCCESS;
+}
+
 int ParseEXRHeaderFromMemory(EXRHeader *exr_header, const EXRVersion *version,
                              const unsigned char *memory, size_t size,
                              const char **err) {
@@ -11380,75 +11425,128 @@ int LoadEXRFromMemory(float **out_rgba, int *width, int *height,
     }
   }
 
-  if (idxR == -1) {
-    tinyexr::SetErrorMessage("R channel not found", err);
+  // TODO(syoyo): Refactor removing same code as used in LoadEXR().
+  if (exr_header.num_channels == 1) {
+    // Grayscale channel only.
 
-    // @todo { free exr_image }
-    return TINYEXR_ERROR_INVALID_DATA;
-  }
+    (*out_rgba) = reinterpret_cast<float *>(
+        malloc(4 * sizeof(float) * static_cast<size_t>(exr_image.width) *
+               static_cast<size_t>(exr_image.height)));
 
-  if (idxG == -1) {
-    tinyexr::SetErrorMessage("G channel not found", err);
-    // @todo { free exr_image }
-    return TINYEXR_ERROR_INVALID_DATA;
-  }
+    if (exr_header.tiled) {
 
-  if (idxB == -1) {
-    tinyexr::SetErrorMessage("B channel not found", err);
-    // @todo { free exr_image }
-    return TINYEXR_ERROR_INVALID_DATA;
-  }
+      for (int it = 0; it < exr_image.num_tiles; it++) {
+        for (int j = 0; j < exr_header.tile_size_y; j++) {
+          for (int i = 0; i < exr_header.tile_size_x; i++) {
+            const int ii =
+                exr_image.tiles[it].offset_x * exr_header.tile_size_x + i;
+            const int jj =
+                exr_image.tiles[it].offset_y * exr_header.tile_size_y + j;
+            const int idx = ii + jj * exr_image.width;
 
-  (*out_rgba) = reinterpret_cast<float *>(
-      malloc(4 * sizeof(float) * static_cast<size_t>(exr_image.width) *
-             static_cast<size_t>(exr_image.height)));
-
-  if (exr_header.tiled) {
-    for (int it = 0; it < exr_image.num_tiles; it++) {
-      for (int j = 0; j < exr_header.tile_size_y; j++)
-        for (int i = 0; i < exr_header.tile_size_x; i++) {
-          const int ii =
-              exr_image.tiles[it].offset_x * exr_header.tile_size_x + i;
-          const int jj =
-              exr_image.tiles[it].offset_y * exr_header.tile_size_y + j;
-          const int idx = ii + jj * exr_image.width;
-
-          // out of region check.
-          if (ii >= exr_image.width) {
-            continue;
-          }
-          if (jj >= exr_image.height) {
-            continue;
-          }
-          const int srcIdx = i + j * exr_header.tile_size_x;
-          unsigned char **src = exr_image.tiles[it].images;
-          (*out_rgba)[4 * idx + 0] =
-              reinterpret_cast<float **>(src)[idxR][srcIdx];
-          (*out_rgba)[4 * idx + 1] =
-              reinterpret_cast<float **>(src)[idxG][srcIdx];
-          (*out_rgba)[4 * idx + 2] =
-              reinterpret_cast<float **>(src)[idxB][srcIdx];
-          if (idxA != -1) {
+            // out of region check.
+            if (ii >= exr_image.width) {
+              continue;
+            }
+            if (jj >= exr_image.height) {
+              continue;
+            }
+            const int srcIdx = i + j * exr_header.tile_size_x;
+            unsigned char **src = exr_image.tiles[it].images;
+            (*out_rgba)[4 * idx + 0] =
+                reinterpret_cast<float **>(src)[0][srcIdx];
+            (*out_rgba)[4 * idx + 1] =
+                reinterpret_cast<float **>(src)[0][srcIdx];
+            (*out_rgba)[4 * idx + 2] =
+                reinterpret_cast<float **>(src)[0][srcIdx];
             (*out_rgba)[4 * idx + 3] =
-                reinterpret_cast<float **>(src)[idxA][srcIdx];
-          } else {
-            (*out_rgba)[4 * idx + 3] = 1.0;
+                reinterpret_cast<float **>(src)[0][srcIdx];
           }
         }
+      }
+    } else {
+      for (int i = 0; i < exr_image.width * exr_image.height; i++) {
+        const float val = reinterpret_cast<float **>(exr_image.images)[0][i];
+        (*out_rgba)[4 * i + 0] = val;
+        (*out_rgba)[4 * i + 1] = val;
+        (*out_rgba)[4 * i + 2] = val;
+        (*out_rgba)[4 * i + 3] = val;
+      }
     }
+
   } else {
-    for (int i = 0; i < exr_image.width * exr_image.height; i++) {
-      (*out_rgba)[4 * i + 0] =
-          reinterpret_cast<float **>(exr_image.images)[idxR][i];
-      (*out_rgba)[4 * i + 1] =
-          reinterpret_cast<float **>(exr_image.images)[idxG][i];
-      (*out_rgba)[4 * i + 2] =
-          reinterpret_cast<float **>(exr_image.images)[idxB][i];
-      if (idxA != -1) {
-        (*out_rgba)[4 * i + 3] =
-            reinterpret_cast<float **>(exr_image.images)[idxA][i];
-      } else {
-        (*out_rgba)[4 * i + 3] = 1.0;
+    // TODO(syoyo): Support non RGBA image.
+
+    if (idxR == -1) {
+      tinyexr::SetErrorMessage("R channel not found", err);
+
+      // @todo { free exr_image }
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+
+    if (idxG == -1) {
+      tinyexr::SetErrorMessage("G channel not found", err);
+      // @todo { free exr_image }
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+
+    if (idxB == -1) {
+      tinyexr::SetErrorMessage("B channel not found", err);
+      // @todo { free exr_image }
+      return TINYEXR_ERROR_INVALID_DATA;
+    }
+
+    (*out_rgba) = reinterpret_cast<float *>(
+        malloc(4 * sizeof(float) * static_cast<size_t>(exr_image.width) *
+               static_cast<size_t>(exr_image.height)));
+
+    if (exr_header.tiled) {
+      for (int it = 0; it < exr_image.num_tiles; it++) {
+        for (int j = 0; j < exr_header.tile_size_y; j++)
+          for (int i = 0; i < exr_header.tile_size_x; i++) {
+            const int ii =
+                exr_image.tiles[it].offset_x * exr_header.tile_size_x + i;
+            const int jj =
+                exr_image.tiles[it].offset_y * exr_header.tile_size_y + j;
+            const int idx = ii + jj * exr_image.width;
+
+            // out of region check.
+            if (ii >= exr_image.width) {
+              continue;
+            }
+            if (jj >= exr_image.height) {
+              continue;
+            }
+            const int srcIdx = i + j * exr_header.tile_size_x;
+            unsigned char **src = exr_image.tiles[it].images;
+            (*out_rgba)[4 * idx + 0] =
+                reinterpret_cast<float **>(src)[idxR][srcIdx];
+            (*out_rgba)[4 * idx + 1] =
+                reinterpret_cast<float **>(src)[idxG][srcIdx];
+            (*out_rgba)[4 * idx + 2] =
+                reinterpret_cast<float **>(src)[idxB][srcIdx];
+            if (idxA != -1) {
+              (*out_rgba)[4 * idx + 3] =
+                  reinterpret_cast<float **>(src)[idxA][srcIdx];
+            } else {
+              (*out_rgba)[4 * idx + 3] = 1.0;
+            }
+          }
+      }
+    } else {
+      for (int i = 0; i < exr_image.width * exr_image.height; i++) {
+        (*out_rgba)[4 * i + 0] =
+            reinterpret_cast<float **>(exr_image.images)[idxR][i];
+        (*out_rgba)[4 * i + 1] =
+            reinterpret_cast<float **>(exr_image.images)[idxG][i];
+        (*out_rgba)[4 * i + 2] =
+            reinterpret_cast<float **>(exr_image.images)[idxB][i];
+        if (idxA != -1) {
+          (*out_rgba)[4 * i + 3] =
+              reinterpret_cast<float **>(exr_image.images)[idxA][i];
+        } else {
+          (*out_rgba)[4 * i + 3] = 1.0;
+        }
       }
     }
   }
