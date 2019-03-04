@@ -415,7 +415,6 @@ void main() {
 		world_matrix = world_matrix * bone_transform;
 	}
 
-
 #endif
 
 #ifdef USE_INSTANCING
