@@ -328,8 +328,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						continue;
 					}
 
-					if (!argument_types[i].is_type(*p_args[i])) {
-						if (argument_types[i].is_type(Variant())) {
+					if (!argument_types[i].is_type(*p_args[i], true)) {
+						if (argument_types[i].is_type(Variant(), true)) {
 							memnew_placement(&stack[i], Variant);
 							continue;
 						} else {
@@ -339,7 +339,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							return Variant();
 						}
 					}
-					memnew_placement(&stack[i], Variant(*p_args[i]));
+					if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
+						Variant arg = Variant::construct(argument_types[i].builtin_type, &p_args[i], 1, r_err);
+						memnew_placement(&stack[i], Variant(arg));
+					} else {
+						memnew_placement(&stack[i], Variant(*p_args[i]));
+					}
 				}
 				for (int i = p_argcount; i < _stack_size; i++) {
 					memnew_placement(&stack[i], Variant);
