@@ -780,12 +780,6 @@ void EditorSettings::create() {
 		// Validate/create data dir and subdirectories
 
 		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (dir->change_dir(data_path) != OK) {
-			ERR_PRINT("Cannot find path for data directory!");
-			memdelete(dir);
-			goto fail;
-		}
-
 		if (dir->change_dir(data_dir) != OK) {
 			dir->make_dir_recursive(data_dir);
 			if (dir->change_dir(data_dir) != OK) {
