@@ -41,7 +41,7 @@ NoiseTexture::NoiseTexture() {
 	size = Vector2i(512, 512);
 	seamless = false;
 	as_normalmap = false;
-	bump_strength = 1.0; //1.0 is a little low. Keep at 1.0 for compatibility for now. For 3.2 increase to 8.0.
+	bump_strength = 8.0;
 	flags = FLAGS_DEFAULT;
 
 	noise = Ref<OpenSimplexNoise>();
