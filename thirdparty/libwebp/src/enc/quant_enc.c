@@ -15,6 +15,7 @@
 #include <math.h>
 #include <stdlib.h>  // for abs()
 
+#include "src/dsp/quant.h"
 #include "src/enc/vp8i_enc.h"
 #include "src/enc/cost_enc.h"
 
@@ -975,19 +976,6 @@ static void SwapPtr(uint8_t** a, uint8_t** b) {
 
 static void SwapOut(VP8EncIterator* const it) {
   SwapPtr(&it->yuv_out_, &it->yuv_out2_);
-}
-
-static score_t IsFlat(const int16_t* levels, int num_blocks, score_t thresh) {
-  score_t score = 0;
-  while (num_blocks-- > 0) {      // TODO(skal): refine positional scoring?
-    int i;
-    for (i = 1; i < 16; ++i) {    // omit DC, we're only interested in AC
-      score += (levels[i] != 0);
-      if (score > thresh) return 0;
-    }
-    levels += 16;
-  }
-  return 1;
 }
 
 static void PickBestIntra16(VP8EncIterator* const it, VP8ModeScore* rd) {

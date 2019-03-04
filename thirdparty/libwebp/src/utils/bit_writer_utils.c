@@ -248,6 +248,7 @@ int VP8LBitWriterClone(const VP8LBitWriter* const src,
   dst->bits_ = src->bits_;
   dst->used_ = src->used_;
   dst->error_ = src->error_;
+  dst->cur_ = dst->buf_ + current_size;
   return 1;
 }
 

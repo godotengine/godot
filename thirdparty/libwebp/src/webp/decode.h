@@ -42,6 +42,12 @@ WEBP_EXTERN int WebPGetDecoderVersion(void);
 // This function will also validate the header, returning true on success,
 // false otherwise. '*width' and '*height' are only valid on successful return.
 // Pointers 'width' and 'height' can be passed NULL if deemed irrelevant.
+// Note: The following chunk sequences (before the raw VP8/VP8L data) are
+// considered valid by this function:
+// RIFF + VP8(L)
+// RIFF + VP8X + (optional chunks) + VP8(L)
+// ALPH + VP8 <-- Not a valid WebP format: only allowed for internal purpose.
+// VP8(L)     <-- Not a valid WebP format: only allowed for internal purpose.
 WEBP_EXTERN int WebPGetInfo(const uint8_t* data, size_t data_size,
                             int* width, int* height);
 
@@ -425,6 +431,12 @@ WEBP_EXTERN VP8StatusCode WebPGetFeaturesInternal(
 // Returns VP8_STATUS_OK when the features are successfully retrieved. Returns
 // VP8_STATUS_NOT_ENOUGH_DATA when more data is needed to retrieve the
 // features from headers. Returns error in other cases.
+// Note: The following chunk sequences (before the raw VP8/VP8L data) are
+// considered valid by this function:
+// RIFF + VP8(L)
+// RIFF + VP8X + (optional chunks) + VP8(L)
+// ALPH + VP8 <-- Not a valid WebP format: only allowed for internal purpose.
+// VP8(L)     <-- Not a valid WebP format: only allowed for internal purpose.
 static WEBP_INLINE VP8StatusCode WebPGetFeatures(
     const uint8_t* data, size_t data_size,
     WebPBitstreamFeatures* features) {
