@@ -2465,14 +2465,14 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 		return;
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 
+	opened_editor = false;
+
 	if (unfolded) {
 		//refold
 		assign->set_pressed(false);
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
 		update_property();
 	}
-
-	opened_editor = false;
 }
 
 void EditorPropertyResource::update_property() {
