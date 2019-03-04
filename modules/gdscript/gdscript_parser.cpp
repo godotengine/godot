@@ -3057,7 +3057,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 
 				DataType iter_type;
-				iter_type.is_constant = true;
 
 				if (container->type == Node::TYPE_OPERATOR) {
 
