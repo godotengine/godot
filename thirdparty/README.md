@@ -507,7 +507,7 @@ changes are marked with `// -- GODOT --` comments.
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr
-- Version: git (5ae30aa, 2018)
+- Version: git (65f9859, 2018)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
