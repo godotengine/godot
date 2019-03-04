@@ -1,10 +1,10 @@
 
 /* pngwtran.c - transforms the data in a row for PNG writers
  *
- * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2016,2018 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -254,8 +254,7 @@ png_do_shift(png_row_infop row_info, png_bytep row,
 
          for (i = 0; i < istop; i++, bp++)
          {
-
-            const unsigned int c = i%channels;
+            unsigned int c = i%channels;
             int j;
             unsigned int v, out;
 
@@ -283,7 +282,7 @@ png_do_shift(png_row_infop row_info, png_bytep row,
 
          for (bp = row, i = 0; i < istop; i++)
          {
-            const unsigned int c = i%channels;
+            unsigned int c = i%channels;
             int j;
             unsigned int value, v;
 

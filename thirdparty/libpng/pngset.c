@@ -1,10 +1,10 @@
 
 /* pngset.c - storage of image information into info struct
  *
- * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 1998-2018 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -137,7 +137,7 @@ png_set_cHRM_XYZ(png_const_structrp png_ptr, png_inforp info_ptr, double red_X,
 #ifdef PNG_eXIf_SUPPORTED
 void PNGAPI
 png_set_eXIf(png_const_structrp png_ptr, png_inforp info_ptr,
-    const png_bytep eXIf_buf)
+    png_bytep eXIf_buf)
 {
   png_warning(png_ptr, "png_set_eXIf does not work; use png_set_eXIf_1");
   PNG_UNUSED(info_ptr)
@@ -146,7 +146,7 @@ png_set_eXIf(png_const_structrp png_ptr, png_inforp info_ptr,
 
 void PNGAPI
 png_set_eXIf_1(png_const_structrp png_ptr, png_inforp info_ptr,
-    const png_uint_32 num_exif, const png_bytep eXIf_buf)
+    png_uint_32 num_exif, png_bytep eXIf_buf)
 {
    int i;
 
@@ -1399,7 +1399,7 @@ png_set_keep_unknown_chunks(png_structrp png_ptr, int keep,
       /* Ignore all unknown chunks and all chunks recognized by
        * libpng except for IHDR, PLTE, tRNS, IDAT, and IEND
        */
-      static PNG_CONST png_byte chunks_to_ignore[] = {
+      static const png_byte chunks_to_ignore[] = {
          98,  75,  71,  68, '\0',  /* bKGD */
          99,  72,  82,  77, '\0',  /* cHRM */
         101,  88,  73, 102, '\0',  /* eXIf */
