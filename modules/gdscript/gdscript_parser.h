@@ -607,7 +607,7 @@ private:
 	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
 	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
 	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
-	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression) const;
+	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
 
 	DataType _reduce_node_type(Node *p_node);
 	DataType _reduce_function_call_type(const OperatorNode *p_call);
