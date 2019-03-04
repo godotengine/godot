@@ -148,6 +148,7 @@ private:
 
 	////////
 
+	Vector2 direction;
 	float spread;
 	float flatness;
 
@@ -226,6 +227,9 @@ public:
 	Ref<Texture> get_normalmap() const;
 
 	///////////////////
+
+	void set_direction(Vector2 p_direction);
+	Vector2 get_direction() const;
 
 	void set_spread(float p_spread);
 	float get_spread() const;

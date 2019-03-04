@@ -247,6 +247,16 @@ void CPUParticles::restart() {
 	}
 }
 
+void CPUParticles::set_direction(Vector3 p_direction) {
+
+	direction = p_direction;
+}
+
+Vector3 CPUParticles::get_direction() const {
+
+	return direction;
+}
+
 void CPUParticles::set_spread(float p_spread) {
 
 	spread = p_spread;
@@ -606,13 +616,13 @@ void CPUParticles::_particles_process(float p_delta) {
 			p.anim_offset_rand = Math::randf();
 
 			if (flags[FLAG_DISABLE_Z]) {
-				float angle1_rad = (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+				float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
 				Vector3 rot = Vector3(Math::cos(angle1_rad), Math::sin(angle1_rad), 0.0);
 				p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
 			} else {
 				//initiate velocity spread in 3D
-				float angle1_rad = (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
-				float angle2_rad = (Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * Math_PI * spread / 180.0;
+				float angle1_rad = Math::atan2(direction.x, direction.z) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+				float angle2_rad = Math::atan2(direction.y, Math::abs(direction.z)) + (Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * Math_PI * spread / 180.0;
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
@@ -1156,6 +1166,7 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 	if (material.is_null())
 		return;
 
+	set_direction(material->get_direction());
 	set_spread(material->get_spread());
 	set_flatness(material->get_flatness());
 
@@ -1257,6 +1268,9 @@ void CPUParticles::_bind_methods() {
 
 	////////////////////////////////
 
+	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &CPUParticles::get_direction);
+
 	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &CPUParticles::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &CPUParticles::get_spread);
 
@@ -1317,7 +1331,8 @@ void CPUParticles::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_particle_flag", "get_particle_flag", FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_disable_z"), "set_particle_flag", "get_particle_flag", FLAG_DISABLE_Z);
-	ADD_GROUP("Spread", "");
+	ADD_GROUP("Direction", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
 	ADD_GROUP("Gravity", "");
@@ -1424,6 +1439,7 @@ CPUParticles::CPUParticles() {
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
 
+	set_direction(Vector3(1, 0, 0));
 	set_spread(45);
 	set_flatness(0);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 1);
