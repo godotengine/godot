@@ -2580,7 +2580,6 @@ void OS_OSX::force_process_input() {
 
 	process_events(); // get rid of pending events
 	joypad_osx->process_joypads();
-
 }
 
 void OS_OSX::run() {
