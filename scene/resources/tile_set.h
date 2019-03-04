@@ -35,6 +35,7 @@
 #include "core/resource.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/2d/navigation_polygon.h"
+#include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/shape_2d.h"
 #include "scene/resources/texture.h"
 
@@ -134,6 +135,7 @@ protected:
 	void _tile_set_shapes(int p_id, const Array &p_shapes);
 	Array _tile_get_shapes(int p_id) const;
 	Array _get_tiles_ids() const;
+	void _decompose_convex_shape(Ref<Shape2D> p_shape);
 
 	static void _bind_methods();
 
