@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -238,10 +238,12 @@ PCRE2_SPTR repend;
 PCRE2_SIZE extra_needed = 0;
 PCRE2_SIZE buff_offset, buff_length, lengthleft, fraglength;
 PCRE2_SIZE *ovector;
+PCRE2_SIZE ovecsave[3];
 
 buff_offset = 0;
 lengthleft = buff_length = *blength;
 *blength = PCRE2_UNSET;
+ovecsave[0] = ovecsave[1] = ovecsave[2] = PCRE2_UNSET;
 
 /* Partial matching is not valid. */
 
@@ -361,13 +363,33 @@ do
     }
 
   /* Handle a successful match. Matches that use \K to end before they start
-  are not supported. */
-
-  if (ovector[1] < ovector[0])
+  or start before the current point in the subject are not supported. */
+  
+  if (ovector[1] < ovector[0] || ovector[0] < start_offset)
     {
     rc = PCRE2_ERROR_BADSUBSPATTERN;
     goto EXIT;
     }
+    
+  /* Check for the same match as previous. This is legitimate after matching an 
+  empty string that starts after the initial match offset. We have tried again
+  at the match point in case the pattern is one like /(?<=\G.)/ which can never
+  match at its starting point, so running the match achieves the bumpalong. If
+  we do get the same (null) match at the original match point, it isn't such a
+  pattern, so we now do the empty string magic. In all other cases, a repeat
+  match should never occur. */
+    
+  if (ovecsave[0] == ovector[0] && ovecsave[1] == ovector[1])
+    {                                                                        
+    if (ovector[0] == ovector[1] && ovecsave[2] != start_offset)     
+      {                                                                   
+      goptions = PCRE2_NOTEMPTY_ATSTART | PCRE2_ANCHORED;                 
+      ovecsave[2] = start_offset;                                     
+      continue;    /* Back to the top of the loop */                        
+      }
+    rc = PCRE2_ERROR_INTERNAL_DUPMATCH;
+    goto EXIT;   
+    }   
 
   /* Count substitutions with a paranoid check for integer overflow; surely no
   real call to this function would ever hit this! */
@@ -799,13 +821,18 @@ do
       } /* End handling a literal code unit */
     }   /* End of loop for scanning the replacement. */
 
-  /* The replacement has been copied to the output. Update the start offset to
-  point to the rest of the subject string. If we matched an empty string,
-  do the magic for global matches. */
-
-  start_offset = ovector[1];
-  goptions = (ovector[0] != ovector[1])? 0 :
+  /* The replacement has been copied to the output. Save the details of this
+  match. See above for how this data is used. If we matched an empty string, do
+  the magic for global matches. Finally, update the start offset to point to
+  the rest of the subject string. */
+  
+  ovecsave[0] = ovector[0];                                
+  ovecsave[1] = ovector[1];                                        
+  ovecsave[2] = start_offset;
+   
+  goptions = (ovector[0] != ovector[1] || ovector[0] > start_offset)? 0 :
     PCRE2_ANCHORED|PCRE2_NOTEMPTY_ATSTART;
+  start_offset = ovector[1];
   } while ((suboptions & PCRE2_SUBSTITUTE_GLOBAL) != 0);  /* Repeat "do" loop */
 
 /* Copy the rest of the subject. */
