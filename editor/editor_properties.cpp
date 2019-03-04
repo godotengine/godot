@@ -2443,6 +2443,38 @@ void EditorPropertyResource::_open_editor_pressed() {
 	}
 }
 
+void EditorPropertyResource::_fold_other_editors(Object *p_self) {
+
+	if (this == p_self) {
+		return;
+	}
+
+	RES res = get_edited_object()->get(get_edited_property());
+
+	if (!res.is_valid())
+		return;
+	bool use_editor = false;
+	for (int i = 0; i < EditorNode::get_singleton()->get_editor_data().get_editor_plugin_count(); i++) {
+		EditorPlugin *ep = EditorNode::get_singleton()->get_editor_data().get_editor_plugin(i);
+		if (ep->handles(res.ptr())) {
+			use_editor = true;
+		}
+	}
+
+	if (!use_editor)
+		return;
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+
+	if (unfolded) {
+		//refold
+		assign->set_pressed(false);
+		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
+		update_property();
+	}
+
+	opened_editor = false;
+}
+
 void EditorPropertyResource::update_property() {
 
 	RES res = get_edited_object()->get(get_edited_property());
@@ -2487,12 +2519,20 @@ void EditorPropertyResource::update_property() {
 				}
 
 				if (use_editor) {
+					//open editor directly and hide other open of these
+					_open_editor_pressed();
+					if (is_inside_tree()) {
+						get_tree()->call_deferred("call_group", "_editor_resource_properties", "_fold_other_editors", this);
+					}
+					opened_editor = true;
+					/*
 					Button *open_in_editor = memnew(Button);
 					open_in_editor->set_text(TTR("Open Editor"));
 					open_in_editor->set_icon(get_icon("Edit", "EditorIcons"));
 					sub_inspector_vbox->add_child(open_in_editor);
 					open_in_editor->connect("pressed", this, "_open_editor_pressed");
 					open_in_editor->set_h_size_flags(SIZE_SHRINK_CENTER);
+					*/
 				}
 			}
 
@@ -2506,6 +2546,10 @@ void EditorPropertyResource::update_property() {
 				memdelete(sub_inspector_vbox);
 				sub_inspector = NULL;
 				sub_inspector_vbox = NULL;
+				if (opened_editor) {
+					EditorNode::get_singleton()->hide_top_editors();
+					opened_editor = false;
+				}
 			}
 		}
 #endif
@@ -2726,10 +2770,12 @@ void EditorPropertyResource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_button_draw"), &EditorPropertyResource::_button_draw);
 	ClassDB::bind_method(D_METHOD("_open_editor_pressed"), &EditorPropertyResource::_open_editor_pressed);
 	ClassDB::bind_method(D_METHOD("_button_input"), &EditorPropertyResource::_button_input);
+	ClassDB::bind_method(D_METHOD("_fold_other_editors"), &EditorPropertyResource::_fold_other_editors);
 }
 
 EditorPropertyResource::EditorPropertyResource() {
 
+	opened_editor = true;
 	sub_inspector = NULL;
 	sub_inspector_vbox = NULL;
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
@@ -2766,6 +2812,8 @@ EditorPropertyResource::EditorPropertyResource() {
 	file = NULL;
 	scene_tree = NULL;
 	dropping = false;
+
+	add_to_group("_editor_resource_properties");
 }
 
 ////////////// DEFAULT PLUGIN //////////////////////

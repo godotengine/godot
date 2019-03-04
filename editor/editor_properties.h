@@ -581,6 +581,9 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _button_input(const Ref<InputEvent> &p_event);
 	void _open_editor_pressed();
+	void _fold_other_editors(Object *p_self);
+
+	bool opened_editor;
 
 protected:
 	static void _bind_methods();
