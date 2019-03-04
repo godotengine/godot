@@ -2591,7 +2591,8 @@ void EditorPropertyResource::_resource_selected() {
 
 	if (use_sub_inspector) {
 
-		get_edited_object()->editor_set_section_unfold(get_edited_property(), assign->is_pressed());
+		bool unfold = !get_edited_object()->editor_is_section_unfolded(get_edited_property());
+		get_edited_object()->editor_set_section_unfold(get_edited_property(), unfold);
 		update_property();
 	} else {
 
@@ -2775,7 +2776,7 @@ void EditorPropertyResource::_bind_methods() {
 
 EditorPropertyResource::EditorPropertyResource() {
 
-	opened_editor = true;
+	opened_editor = false;
 	sub_inspector = NULL;
 	sub_inspector_vbox = NULL;
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
