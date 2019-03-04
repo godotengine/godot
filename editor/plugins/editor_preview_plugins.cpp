@@ -634,6 +634,7 @@ Ref<Texture> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const S
 	Vector<AudioFrame> frames;
 	frames.resize(frame_length);
 
+	//if (!playback.is_null()) {
 	playback->start();
 	playback->mix(frames.ptrw(), 1, frames.size());
 	playback->stop();

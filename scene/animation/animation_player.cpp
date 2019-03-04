@@ -338,11 +338,6 @@ if (a->track_get_type(i) == Animation::TYPE_BEZIER && leftover_path.size()) {
 }
 
 void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started) {
-	//print_line(String("{0}, {1}").format(varray("p_time=", p_time)));
-
-	//if (p_time == 2.4) {
-	//	int a = 0;
-	//}
 
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
@@ -629,12 +624,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 						nc->audio_playing = true;
 						playing_caches.insert(nc);
-						if (len && end_ofs > 0) { //force a end at a time
-							nc->audio_len = len - start_ofs - end_ofs;
-						} else {
-							nc->audio_len = 0;
-						}
 
+						nc->audio_len = MIN(MAX(0, len - start_ofs - end_ofs), len);
 						nc->audio_start = p_time;
 					}
 
@@ -660,12 +651,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 							nc->audio_playing = true;
 							playing_caches.insert(nc);
-							if (len && end_ofs > 0) { //force a end at a time
-								nc->audio_len = len - start_ofs - end_ofs;
-							} else {
-								nc->audio_len = 0;
-							}
 
+							nc->audio_len = MIN(MAX(0, len - start_ofs - end_ofs), len);
 							nc->audio_start = p_time;
 						}
 					} else if (nc->audio_playing) {
@@ -674,14 +661,29 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 						bool stop = false;
 
-						if (!loop && p_time < nc->audio_start) {
+						if (!loop && (p_time < nc->audio_start || p_time >= a->get_length())) { //p_time < nc->audio_start) {
 							stop = true;
-						} else if (nc->audio_len > 0) {
-							float len = nc->audio_start > p_time ? (a->get_length() - nc->audio_start) + p_time : p_time - nc->audio_start;
 
-							if (len > nc->audio_len) {
+						} else if (nc->audio_len > 0) {
+							float len = (p_time < nc->audio_start) ? ((a->get_length() - nc->audio_start) + p_time) - nc->audio_len : (nc->audio_start + nc->audio_len) - p_time;
+							if (len < 0) {
 								stop = true;
 							}
+
+							/*
+							if (p_time < nc->audio_start) {
+								float value = ((a->get_length() - nc->audio_start) + p_time) - nc->audio_len;
+								if (value < 0) {
+									stop = true;
+								}
+
+							} else {
+								float value = (nc->audio_start + nc->audio_len) - p_time;
+								if (value < 0) {
+									stop = true;
+								}
+							}
+							*/
 						}
 
 						if (stop) {
