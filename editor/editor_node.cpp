@@ -1460,7 +1460,7 @@ void EditorNode::edit_item(Object *p_object) {
 		_set_editing_top_editors(p_object);
 		_display_top_editors(true);
 	} else {
-		_hide_top_editors();
+		hide_top_editors();
 	}
 }
 
@@ -1498,7 +1498,7 @@ void EditorNode::_save_default_environment() {
 	}
 }
 
-void EditorNode::_hide_top_editors() {
+void EditorNode::hide_top_editors() {
 
 	_display_top_editors(false);
 
@@ -1675,7 +1675,7 @@ void EditorNode::_edit_current() {
 
 		} else if (!editor_plugins_over->get_plugins_list().empty()) {
 
-			_hide_top_editors();
+			hide_top_editors();
 		}
 	}
 
