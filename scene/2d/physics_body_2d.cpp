@@ -1198,6 +1198,9 @@ bool KinematicBody2D::separate_raycast_shapes(bool p_infinite_inertia, Collision
 
 bool KinematicBody2D::move_and_collide(const Vector2 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
 
+	if (sync_to_physics) {
+		ERR_PRINT("Functions move_and_slide and move_and_collide do not work together with 'sync to physics' option. Please read the documentation.");
+	}
 	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
 	bool colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, margin, &result, p_exclude_raycast_shapes);
