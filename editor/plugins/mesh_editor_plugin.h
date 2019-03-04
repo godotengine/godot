@@ -72,22 +72,21 @@ public:
 	MeshEditor();
 };
 
+class EditorInspectorPluginMesh : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin)
+public:
+	virtual bool can_handle(Object *p_object);
+	virtual void parse_begin(Object *p_object);
+};
+
 class MeshEditorPlugin : public EditorPlugin {
 
 	GDCLASS(MeshEditorPlugin, EditorPlugin);
 
-	MeshEditor *mesh_editor;
-	EditorNode *editor;
-
 public:
 	virtual String get_name() const { return "Mesh"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
 
 	MeshEditorPlugin(EditorNode *p_node);
-	~MeshEditorPlugin();
 };
 
 #endif

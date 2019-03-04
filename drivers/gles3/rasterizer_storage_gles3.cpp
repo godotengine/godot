@@ -5460,6 +5460,8 @@ RID RasterizerStorageGLES3::reflection_probe_create() {
 	reflection_probe->intensity = 1.0;
 	reflection_probe->interior_ambient = Color();
 	reflection_probe->interior_ambient_energy = 1.0;
+	reflection_probe->interior_ambient_probe_contrib = 0.0;
+
 	reflection_probe->max_distance = 0;
 	reflection_probe->extents = Vector3(1, 1, 1);
 	reflection_probe->origin_offset = Vector3(0, 0, 0);
