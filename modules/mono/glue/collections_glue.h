@@ -51,7 +51,7 @@ void godot_icall_Array_SetAt(Array *ptr, int index, MonoObject *value);
 
 int godot_icall_Array_Count(Array *ptr);
 
-void godot_icall_Array_Add(Array *ptr, MonoObject *item);
+int godot_icall_Array_Add(Array *ptr, MonoObject *item);
 
 void godot_icall_Array_Clear(Array *ptr);
 
