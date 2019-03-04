@@ -1835,7 +1835,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 
 	PoolVector<uint8_t> sourcef;
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
 		return String();
 	}
@@ -1869,11 +1869,12 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 						} else {
 							Vector<StringName> extend_classes = subclass->extends_class;
 
-							FileAccess *subfile = FileAccess::open(subclass->extends_file, FileAccess::READ);
+							FileAccessRef subfile = FileAccess::open(subclass->extends_file, FileAccess::READ);
 							if (!subfile) {
 								break;
 							}
 							String subsource = subfile->get_as_utf8_string();
+
 							if (subsource.empty()) {
 								break;
 							}
@@ -2203,7 +2204,7 @@ String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) con
 
 void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
 
-	FileAccess *file = FileAccess::open(p_path, FileAccess::READ);
+	FileAccessRef file = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND(!file);
 
 	String source = file->get_as_utf8_string();
