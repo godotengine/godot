@@ -980,6 +980,84 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	emit_changed();
 }
 
+int Animation::track_find_prev_key(int p_track, float p_time) const {
+
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
+	Track *t = tracks[p_track];
+
+	int prev_idx = track_find_key(p_track, p_time, false) - 1;
+	if (prev_idx < 0) {
+		return -1;
+	}
+
+	return prev_idx;
+}
+
+int Animation::track_find_next_key(int p_track, float p_time) const {
+
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
+	Track *t = tracks[p_track];
+
+	int next_idx = track_find_key(p_track, p_time, false);
+	if (next_idx < 0) {
+		return -1;
+	}
+
+	next_idx = next_idx + 1;
+
+	switch (t->type) {
+		case TYPE_TRANSFORM: {
+			TransformTrack *tt = static_cast<TransformTrack *>(t);
+			if (next_idx >= tt->transforms.size()) {
+				return -1;
+			}
+
+		} break;
+		case TYPE_VALUE: {
+
+			ValueTrack *vt = static_cast<ValueTrack *>(t);
+			if (next_idx >= vt->values.size()) {
+				return -1;
+			}
+
+		} break;
+		case TYPE_METHOD: {
+
+			MethodTrack *mt = static_cast<MethodTrack *>(t);
+			if (next_idx >= mt->methods.size()) {
+				return -1;
+			}
+
+		} break;
+		case TYPE_BEZIER: {
+
+			BezierTrack *bt = static_cast<BezierTrack *>(t);
+			if (next_idx >= bt->values.size()) {
+				return -1;
+			}
+
+		} break;
+		case TYPE_AUDIO: {
+
+			AudioTrack *at = static_cast<AudioTrack *>(t);
+			if (next_idx >= at->values.size()) {
+				return -1;
+			}
+
+		} break;
+		case TYPE_ANIMATION: {
+
+			AnimationTrack *at = static_cast<AnimationTrack *>(t);
+			if (next_idx >= at->values.size()) {
+				return -1;
+			}
+
+		} break;
+	}
+
+	return next_idx;
+}
+
 int Animation::track_find_key(int p_track, float p_time, bool p_exact) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
@@ -2810,6 +2888,9 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_get_key_value", "idx", "key_idx"), &Animation::track_get_key_value);
 	ClassDB::bind_method(D_METHOD("track_get_key_time", "idx", "key_idx"), &Animation::track_get_key_time);
 	ClassDB::bind_method(D_METHOD("track_find_key", "idx", "time", "exact"), &Animation::track_find_key, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("track_find_prev_key", "idx", "time"), &Animation::track_find_key);
+	ClassDB::bind_method(D_METHOD("track_find_curr_key", "idx", "time"), &Animation::track_find_key);
+	ClassDB::bind_method(D_METHOD("track_find_next_key", "idx", "time"), &Animation::track_find_key);
 
 	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "idx", "interpolation"), &Animation::track_set_interpolation_type);
 	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "idx"), &Animation::track_get_interpolation_type);

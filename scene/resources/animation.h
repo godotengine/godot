@@ -316,6 +316,8 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, float p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	int track_find_key(int p_track, float p_time, bool p_exact = false) const;
+	int track_find_prev_key(int p_track, float p_time) const;
+	int track_find_next_key(int p_track, float p_time) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_position(int p_track, float p_pos);
 	int track_get_key_count(int p_track) const;

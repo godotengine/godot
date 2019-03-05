@@ -239,101 +239,100 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		p_anim->node_cache.write[i] = NULL;
 		RES resource;
 		Vector<StringName> leftover_path;
-Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
-if (!child) {
-	ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
-}
-ERR_CONTINUE(!child); // couldn't find the child node
-uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
-int bone_idx = -1;
+		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
+		if (!child) {
+			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
+		}
+		ERR_CONTINUE(!child); // couldn't find the child node
+		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
+		int bone_idx = -1;
 
-if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
+		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
 
-	Skeleton *sk = Object::cast_to<Skeleton>(child);
-	bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
-	if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
+			Skeleton *sk = Object::cast_to<Skeleton>(child);
+			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
+			if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
 
-		continue;
-	}
-}
-
-{
-	if (!child->is_connected("tree_exiting", this, "_node_removed"))
-		child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
-}
-
-TrackNodeCacheKey key;
-key.id = id;
-key.bone_idx = bone_idx;
-
-if (!node_cache_map.has(key))
-node_cache_map[key] = TrackNodeCache();
-
-p_anim->node_cache.write[i] = &node_cache_map[key];
-p_anim->node_cache[i]->path = a->track_get_path(i);
-p_anim->node_cache[i]->node = child;
-p_anim->node_cache[i]->resource = resource;
-p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
-if (a->track_get_type(i) == Animation::TYPE_TRANSFORM) {
-	// special cases and caches for transform tracks
-
-	// cache spatial
-	p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
-	// cache skeleton
-	p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
-	if (p_anim->node_cache[i]->skeleton) {
-		if (a->track_get_path(i).get_subname_count() == 1) {
-			StringName bone_name = a->track_get_path(i).get_subname(0);
-
-			p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
-			if (p_anim->node_cache[i]->bone_idx < 0) {
-				// broken track (nonexistent bone)
-				p_anim->node_cache[i]->skeleton = NULL;
-				p_anim->node_cache[i]->spatial = NULL;
-				ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
+				continue;
 			}
 		}
-		else {
-			// no property, just use spatialnode
-			p_anim->node_cache[i]->skeleton = NULL;
+
+		{
+			if (!child->is_connected("tree_exiting", this, "_node_removed"))
+				child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
 		}
-	}
-}
 
-if (a->track_get_type(i) == Animation::TYPE_VALUE) {
+		TrackNodeCacheKey key;
+		key.id = id;
+		key.bone_idx = bone_idx;
 
-	if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+		if (!node_cache_map.has(key))
+			node_cache_map[key] = TrackNodeCache();
 
-		TrackNodeCache::PropertyAnim pa;
-		pa.subpath = leftover_path;
-		pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
-		pa.special = SP_NONE;
-		pa.owner = p_anim->node_cache[i];
-		if (false && p_anim->node_cache[i]->node_2d) {
+		p_anim->node_cache.write[i] = &node_cache_map[key];
+		p_anim->node_cache[i]->path = a->track_get_path(i);
+		p_anim->node_cache[i]->node = child;
+		p_anim->node_cache[i]->resource = resource;
+		p_anim->node_cache[i]->node_2d = Object::cast_to<Node2D>(child);
+		if (a->track_get_type(i) == Animation::TYPE_TRANSFORM) {
+			// special cases and caches for transform tracks
 
-			if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos)
-				pa.special = SP_NODE2D_POS;
-			else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot)
-				pa.special = SP_NODE2D_ROT;
-			else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale)
-				pa.special = SP_NODE2D_SCALE;
+			// cache spatial
+			p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
+			// cache skeleton
+			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
+			if (p_anim->node_cache[i]->skeleton) {
+				if (a->track_get_path(i).get_subname_count() == 1) {
+					StringName bone_name = a->track_get_path(i).get_subname(0);
+
+					p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
+					if (p_anim->node_cache[i]->bone_idx < 0) {
+						// broken track (nonexistent bone)
+						p_anim->node_cache[i]->skeleton = NULL;
+						p_anim->node_cache[i]->spatial = NULL;
+						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
+					}
+				} else {
+					// no property, just use spatialnode
+					p_anim->node_cache[i]->skeleton = NULL;
+				}
+			}
 		}
-		p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
-	}
-}
 
-if (a->track_get_type(i) == Animation::TYPE_BEZIER && leftover_path.size()) {
+		if (a->track_get_type(i) == Animation::TYPE_VALUE) {
 
-	if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+			if (!p_anim->node_cache[i]->property_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
 
-		TrackNodeCache::BezierAnim ba;
-		ba.bezier_property = leftover_path;
-		ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
-		ba.owner = p_anim->node_cache[i];
+				TrackNodeCache::PropertyAnim pa;
+				pa.subpath = leftover_path;
+				pa.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
+				pa.special = SP_NONE;
+				pa.owner = p_anim->node_cache[i];
+				if (false && p_anim->node_cache[i]->node_2d) {
 
-		p_anim->node_cache[i]->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
-	}
-}
+					if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_pos)
+						pa.special = SP_NODE2D_POS;
+					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_rot)
+						pa.special = SP_NODE2D_ROT;
+					else if (leftover_path.size() == 1 && leftover_path[0] == SceneStringNames::get_singleton()->transform_scale)
+						pa.special = SP_NODE2D_SCALE;
+				}
+				p_anim->node_cache[i]->property_anim[a->track_get_path(i).get_concatenated_subnames()] = pa;
+			}
+		}
+
+		if (a->track_get_type(i) == Animation::TYPE_BEZIER && leftover_path.size()) {
+
+			if (!p_anim->node_cache[i]->bezier_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+
+				TrackNodeCache::BezierAnim ba;
+				ba.bezier_property = leftover_path;
+				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
+				ba.owner = p_anim->node_cache[i];
+
+				p_anim->node_cache[i]->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
+			}
+		}
 	}
 }
 
@@ -588,64 +587,36 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-
 				if (!nc->node)
 					continue;
 				if (p_delta == 0) {
 					continue;
 				}
 
-				if (p_seeked) {
-					//find whathever should be playing
-					int idx = a->track_find_key(i, p_time);
-					if (idx < 0)
-						continue;
+				int idx = -1;
+				if (p_seeked) { //find whathever should be playing
+					idx = a->track_find_key(i, p_time);
+				} else { //find stuff to play
+					List<int> to_play;
+					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play); //not working for backward playing. Looking for different solution. Maybe using only track_find_key and check idx if left or enter
+					if (to_play.size()) {
+						idx = to_play.back()->get();
+					}
+				}
 
+				bool stop = false;
+				if (idx != -1) {
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-					if (!stream.is_valid()) {
-						nc->node->call("stop");
-						nc->audio_playing = false;
-						playing_caches.erase(nc);
-					} else {
+					if (stream.is_valid()) {
 						float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-						start_ofs += p_time - a->track_get_key_time(i, idx);
+						if (p_seeked) {
+							start_ofs += p_time - a->track_get_key_time(i, idx);
+						}
 						float end_ofs = a->audio_track_get_key_end_offset(i, idx);
 						float len = stream->get_length();
 
-						if (start_ofs > len - end_ofs) {
-							nc->node->call("stop");
-							nc->audio_playing = false;
-							playing_caches.erase(nc);
-							continue;
-						}
-
-						nc->node->call("set_stream", stream);
-						nc->node->call("play", start_ofs);
-
-						nc->audio_playing = true;
-						playing_caches.insert(nc);
-
-						nc->audio_len = MIN(MAX(0, len - start_ofs - end_ofs), len);
-						nc->audio_start = p_time;
-					}
-
-				} else {
-					//find stuff to play
-					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play);
-					if (to_play.size()) {
-						int idx = to_play.back()->get();
-
-						Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-						if (!stream.is_valid()) {
-							nc->node->call("stop");
-							nc->audio_playing = false;
-							playing_caches.erase(nc);
-						} else {
-							float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-							float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-							float len = stream->get_length();
-
+						float diff = (len - end_ofs) - start_ofs;
+						if (diff > 0) { //if (start_ofs > len - end_ofs) {
 							nc->node->call("set_stream", stream);
 							nc->node->call("play", start_ofs);
 
@@ -654,45 +625,31 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 							nc->audio_len = MIN(MAX(0, len - start_ofs - end_ofs), len);
 							nc->audio_start = p_time;
-						}
-					} else if (nc->audio_playing) {
-
-						bool loop = a->has_loop();
-
-						bool stop = false;
-
-						if (!loop && (p_time < nc->audio_start || p_time >= a->get_length())) { //p_time < nc->audio_start) {
+						} else {
 							stop = true;
-
-						} else if (nc->audio_len > 0) {
-							float len = (p_time < nc->audio_start) ? ((a->get_length() - nc->audio_start) + p_time) - nc->audio_len : (nc->audio_start + nc->audio_len) - p_time;
-							if (len < 0) {
-								stop = true;
-							}
-
-							/*
-							if (p_time < nc->audio_start) {
-								float value = ((a->get_length() - nc->audio_start) + p_time) - nc->audio_len;
-								if (value < 0) {
-									stop = true;
-								}
-
-							} else {
-								float value = (nc->audio_start + nc->audio_len) - p_time;
-								if (value < 0) {
-									stop = true;
-								}
-							}
-							*/
-						}
-
-						if (stop) {
-							//time to stop
-							nc->node->call("stop");
-							nc->audio_playing = false;
-							playing_caches.erase(nc);
 						}
 					}
+				}
+
+				if(!stop && nc->audio_playing) {
+					int dir = sgn(p_delta);
+					if ((dir > 0 && p_time < nc->audio_start) || (dir > 0 && p_time >= a->get_length()) || (dir < 0 && p_time > nc->audio_start) || (dir < 0 && p_time <= 0)) {
+						stop = true;
+
+					} else {
+						float audio_clamp_len = MAX(MIN((nc->audio_start + nc->audio_len), a->get_length()), 0);
+						float value = audio_clamp_len - p_time;
+						if (value <= 0) {
+							stop = true;
+						}
+					}
+				}
+
+				if (stop) {
+					//time to stop
+					nc->node->call("stop");
+					nc->audio_playing = false;
+					playing_caches.erase(nc);
 				}
 
 			} break;
@@ -805,8 +762,15 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 			// Loop multiples of the length to it, rather than 0
 			// so state at time=length is previewable in the editor
 			next_pos = len;
+
 		} else {
 			next_pos = looped_next_pos;
+		}
+
+		//
+		bool changeDir = (sgn(delta) != sgn(next_pos - cd.pos)); //print_line(String("{0}, {1}, {2}, {3}").format(varray("B", dir1, dir2, changeDir)));
+		if (changeDir && cd.pos != next_pos) { //if (cd.pos != next_pos && next_pos < cd.pos) {
+			p_seeked = true;
 		}
 	}
 
