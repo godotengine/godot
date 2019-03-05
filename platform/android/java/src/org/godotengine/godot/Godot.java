@@ -38,6 +38,7 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -318,6 +319,23 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		});
 	}
 
+	public void restart() {
+		// HACK:
+		//
+		// Currently it's very hard to properly deinitialize Godot on Android to restart the game
+		// from scratch. Therefore, we need to kill the whole app process and relaunch it.
+		//
+		// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
+		// releasing and reloading native libs or resetting their state somehow and clearing statics).
+		//
+		// Using instrumentation is a way of making the whole app process restart, because Android
+		// will kill any process of the same package which was already running.
+		//
+		Bundle args = new Bundle();
+		args.putParcelable("intent", mCurrentIntent);
+		startInstrumentation(new ComponentName(Godot.this, GodotInstrumentation.class), null, args);
+	}
+
 	public void alert(final String message, final String title) {
 		final Activity activity = this;
 		runOnUiThread(new Runnable() {
@@ -415,7 +433,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 		mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
 
-		GodotLib.initialize(this, io.needsReloadHooks(), getAssets(), use_apk_expansion);
+		GodotLib.initialize(this, getAssets(), use_apk_expansion);
 
 		result_callback = null;
 
@@ -921,10 +939,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	// Audio
 
 	/**
-     * The download state should trigger changes in the UI --- it may be useful
-     * to show the state as being indeterminate at times. This sample can be
-     * considered a guideline.
-     */
+	 * The download state should trigger changes in the UI --- it may be useful
+	 * to show the state as being indeterminate at times. This sample can be
+	 * considered a guideline.
+	 */
 	@Override
 	public void onDownloadStateChanged(int newState) {
 		setState(newState);
