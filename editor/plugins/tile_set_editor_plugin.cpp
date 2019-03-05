@@ -2918,7 +2918,8 @@ void TileSetEditor::update_texture_list_icon() {
 	for (int current_idx = 0; current_idx < texture_list->get_item_count(); current_idx++) {
 		RID rid = texture_list->get_item_metadata(current_idx);
 		texture_list->set_item_icon(current_idx, texture_map[rid]);
-		texture_list->set_item_icon_region(current_idx, Rect2(0, 0, 150, 100));
+		Size2 texture_size = texture_map[rid]->get_size();
+		texture_list->set_item_icon_region(current_idx, Rect2(0, 0, MIN(texture_size.x, 150), MIN(texture_size.y, 100)));
 	}
 	texture_list->update();
 }
