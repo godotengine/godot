@@ -135,6 +135,8 @@ public:
 	void fetch_attributes();
 	void fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base);
 
+	bool implements_interface(GDMonoClass *p_interface);
+
 	GDMonoMethod *get_method(const StringName &p_name, int p_params_count = 0);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method, const StringName &p_name);

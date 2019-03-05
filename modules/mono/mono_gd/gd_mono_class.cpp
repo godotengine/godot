@@ -260,6 +260,11 @@ bool GDMonoClass::has_fetched_method_unknown_params(const StringName &p_name) {
 	return get_fetched_method_unknown_params(p_name) != NULL;
 }
 
+bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
+
+	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
+}
+
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
 
 	MethodKey key = MethodKey(p_name, p_params_count);

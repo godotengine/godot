@@ -40,6 +40,14 @@ namespace Godot.Collections
             safeHandle = new DictionarySafeHandle(godot_icall_Dictionary_Ctor());
         }
 
+        public Dictionary(IDictionary dictionary) : this()
+        {
+            if (dictionary == null)
+                throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
+
+            MarshalUtils.IDictionaryToDictionary(dictionary, GetPtr());
+        }
+
         internal Dictionary(DictionarySafeHandle handle)
         {
             safeHandle = handle;
@@ -253,6 +261,23 @@ namespace Godot.Collections
         public Dictionary()
         {
             objectDict = new Dictionary();
+        }
+
+        public Dictionary(IDictionary<TKey, TValue> dictionary)
+        {
+            objectDict = new Dictionary();
+
+            if (dictionary == null)
+                throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
+
+            // TODO: Can be optimized
+
+            IntPtr godotDictionaryPtr = GetPtr();
+
+            foreach (KeyValuePair<TKey, TValue> entry in dictionary)
+            {
+                Dictionary.godot_icall_Dictionary_Add(godotDictionaryPtr, entry.Key, entry.Value);
+            }
         }
 
         public Dictionary(Dictionary dictionary)
