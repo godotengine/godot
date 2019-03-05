@@ -34,8 +34,6 @@
 	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>$camera_usage_description</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>$microphone_usage_description</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>$photolibrary_usage_description</string>
 	<key>UIRequiresFullScreen</key>
