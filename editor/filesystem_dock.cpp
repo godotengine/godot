@@ -350,7 +350,7 @@ void FileSystemDock::_notification(int p_what) {
 			button_toggle_display_mode->set_icon(get_icon("Panels2", ei));
 			button_hist_next->set_icon(get_icon("Forward", ei));
 			button_hist_prev->set_icon(get_icon("Back", ei));
-			if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS) {
+			if (file_list_display_mode == FILE_LIST_DISPLAY_LIST) {
 				button_file_list_display_mode->set_icon(get_icon("FileThumbnail", "EditorIcons"));
 			} else {
 				button_file_list_display_mode->set_icon(get_icon("FileList", "EditorIcons"));
