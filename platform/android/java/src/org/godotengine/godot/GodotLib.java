@@ -69,6 +69,7 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 	public static native void callobject(int p_ID, String p_method, Object[] p_params);
 	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
+	public static native void requestPermissionResult(String p_permission, boolean p_result);
 
 	public static native void setVirtualKeyboardHeight(int p_height);
 }

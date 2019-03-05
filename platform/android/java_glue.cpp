@@ -621,6 +621,7 @@ static jmethodID _pauseVideo = 0;
 static jmethodID _stopVideo = 0;
 static jmethodID _setKeepScreenOn = 0;
 static jmethodID _alertDialog = 0;
+static jmethodID _requestPermission = 0;
 
 static void _gfx_init_func(void *ud, bool gl2) {
 }
@@ -746,6 +747,12 @@ static void _alert(const String &p_message, const String &p_title) {
 	env->CallVoidMethod(_godot_instance, _alertDialog, jStrMessage, jStrTitle);
 }
 
+static bool _request_permission(const String &p_name) {
+	JNIEnv *env = ThreadAndroid::get_env();
+	jstring jStrName = env->NewStringUTF(p_name.utf8().get_data());
+	return env->CallBooleanMethod(_godot_instance, _requestPermission, jStrName);
+}
+
 // volatile because it can be changed from non-main thread and we need to
 // ensure the change is immediately visible to other threads.
 static volatile int virtual_keyboard_height;
@@ -790,6 +797,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		_getGLESVersionCode = env->GetMethodID(cls, "getGLESVersionCode", "()I");
 		_getClipboard = env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 		_setClipboard = env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
+		_requestPermission = env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
 
 		if (cls) {
 			jclass c = env->GetObjectClass(gob);
@@ -822,7 +830,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		AudioDriverAndroid::setup(gob);
 	}
 
-	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, _set_clipboard, _get_clipboard, p_use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, _set_clipboard, _get_clipboard, _request_permission, p_use_apk_expansion);
 
 	char wd[500];
 	getcwd(wd, 500);
@@ -1571,4 +1579,11 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	obj->call_deferred(str_method, args[0], args[1], args[2], args[3], args[4]);
 	// something
 	env->PopLocalFrame(NULL);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jobject p_obj, jstring p_permission, jboolean p_result) {
+	String permission = jstring_to_string(p_permission, env);
+	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
+		AudioDriver::get_singleton()->capture_start();
+	}
 }
