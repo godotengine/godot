@@ -49,7 +49,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 #define SET_FROM_ARRAY(m_type)                                                                   \
 	{                                                                                            \
 		MonoArray *managed = GDMonoMarshal::m_type##_to_mono_array(p_value.operator ::m_type()); \
-		mono_field_set_value(p_object, mono_field, &managed);                                    \
+		mono_field_set_value(p_object, mono_field, managed);                                     \
 	}
 
 	switch (type.type_encoding) {
