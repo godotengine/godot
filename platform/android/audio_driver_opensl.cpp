@@ -230,7 +230,7 @@ void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf q
 	ad->_record_buffer_callback(queueItf);
 }
 
-Error AudioDriverOpenSL::capture_start() {
+Error AudioDriverOpenSL::capture_init_device() {
 
 	SLDataLocator_IODevice loc_dev = {
 		SL_DATALOCATOR_IODEVICE,
@@ -294,6 +294,15 @@ Error AudioDriverOpenSL::capture_start() {
 
 	res = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_RECORDING);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
+
+	return OK;
+}
+
+Error AudioDriverOpenSL::capture_start() {
+
+	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
+		return capture_init_device();
+	}
 
 	return OK;
 }

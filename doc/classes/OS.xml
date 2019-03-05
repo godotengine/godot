@@ -684,6 +684,13 @@
 				Request the user attention to the window. It'll flash the taskbar button on Windows or bounce the dock icon on OSX.
 			</description>
 		</method>
+		<method name="request_permission">
+			<return type="bool">
+			</return>
+			<description>
+				At the moment this function is only used by the AudioDriverOpenSL to request permission for RECORD_AUDIO on Android.
+			</description>
+		</method>
 		<method name="set_icon">
 			<return type="void">
 			</return>

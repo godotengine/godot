@@ -356,6 +356,8 @@ public:
 
 	bool has_feature(const String &p_feature) const;
 
+	bool request_permission(const String &p_name);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

@@ -45,6 +45,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ConfigurationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -52,11 +53,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Messenger;
 import android.provider.Settings.Secure;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -99,6 +102,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 
 	static final int MAX_SINGLETONS = 64;
+	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	private IStub mDownloaderClientStub;
 	private IDownloaderService mRemoteService;
 	private TextView mStatusText;
@@ -258,6 +262,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainRequestPermissionsResult(requestCode, permissions, grantResults);
+		}
+
+		for (int i = 0; i < permissions.length; i++) {
+			GodotLib.requestPermissionResult(permissions[i], grantResults[i] == PackageManager.PERMISSION_GRANTED);
 		}
 	};
 
@@ -936,7 +944,21 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	}
 	*/
 
-	// Audio
+	public boolean requestPermission(String p_name) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			// Not necessary, asked on install already
+			return true;
+		}
+
+		if (p_name.equals("RECORD_AUDIO")) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.RECORD_AUDIO }, REQUEST_RECORD_AUDIO_PERMISSION);
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	/**
 	 * The download state should trigger changes in the UI --- it may be useful
