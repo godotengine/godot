@@ -768,8 +768,8 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 		}
 
 		//
-		bool changeDir = (sgn(delta) != sgn(next_pos - cd.pos)); //print_line(String("{0}, {1}, {2}, {3}").format(varray("B", dir1, dir2, changeDir)));
-		if (changeDir && cd.pos != next_pos) { //if (cd.pos != next_pos && next_pos < cd.pos) {
+		bool changeDir = (sgn(delta) != sgn(next_pos - cd.pos));
+		if (changeDir && cd.pos != next_pos) {
 			p_seeked = true;
 		}
 	}

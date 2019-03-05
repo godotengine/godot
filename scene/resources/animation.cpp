@@ -2888,9 +2888,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_get_key_value", "idx", "key_idx"), &Animation::track_get_key_value);
 	ClassDB::bind_method(D_METHOD("track_get_key_time", "idx", "key_idx"), &Animation::track_get_key_time);
 	ClassDB::bind_method(D_METHOD("track_find_key", "idx", "time", "exact"), &Animation::track_find_key, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("track_find_prev_key", "idx", "time"), &Animation::track_find_key);
-	ClassDB::bind_method(D_METHOD("track_find_curr_key", "idx", "time"), &Animation::track_find_key);
-	ClassDB::bind_method(D_METHOD("track_find_next_key", "idx", "time"), &Animation::track_find_key);
+	ClassDB::bind_method(D_METHOD("track_find_prev_key", "idx", "time"), &Animation::track_find_prev_key);
+	ClassDB::bind_method(D_METHOD("track_find_next_key", "idx", "time"), &Animation::track_find_next_key);
 
 	ClassDB::bind_method(D_METHOD("track_set_interpolation_type", "idx", "interpolation"), &Animation::track_set_interpolation_type);
 	ClassDB::bind_method(D_METHOD("track_get_interpolation_type", "idx"), &Animation::track_get_interpolation_type);
