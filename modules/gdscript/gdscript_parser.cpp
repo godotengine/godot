@@ -815,6 +815,16 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 
 				if (!dependencies_only) {
+					if (!bfn && ScriptServer::is_global_class(identifier)) {
+						Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
+						if (scr.is_valid() && scr->is_valid()) {
+							ConstantNode *constant = alloc_node<ConstantNode>();
+							constant->value = scr;
+							expr = constant;
+							bfn = true;
+						}
+					}
+
 					// Check parents for the constant
 					if (!bfn && cln->extends_file != StringName()) {
 						Ref<GDScript> parent = ResourceLoader::load(cln->extends_file);
@@ -7247,6 +7257,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				DataType result;
 				result.has_type = true;
 				result.script_type = scr;
+				result.is_constant = true;
 				result.is_meta_type = true;
 				Ref<GDScript> gds = scr;
 				if (gds.is_valid()) {
@@ -7297,6 +7308,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				if (singleton.is_valid()) {
 					DataType result;
 					result.has_type = true;
+					result.is_constant = true;
 					result.script_type = singleton;
 
 					Ref<GDScript> gds = singleton;
