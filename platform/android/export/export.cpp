@@ -658,6 +658,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		int orientation = p_preset->get("screen/orientation");
 
+		bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES3" &&
+						 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
 		bool screen_support_small = p_preset->get("screen/support_small");
 		bool screen_support_normal = p_preset->get("screen/support_normal");
 		bool screen_support_large = p_preset->get("screen/support_large");
@@ -813,6 +815,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 								encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 							}
+						}
+
+						if (tname == "uses-feature" && attrname == "glEsVersion") {
+
+							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
 						iofs += 20;
@@ -1119,6 +1126,9 @@ public:
 			r_features->push_back("etc");
 		} else if (driver == "GLES3") {
 			r_features->push_back("etc2");
+			if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
+				r_features->push_back("etc");
+			}
 		}
 
 		Vector<String> abis = get_enabled_abis(p_preset);
