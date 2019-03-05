@@ -299,7 +299,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			memdelete(context_gl);
 			context_gl = NULL;
 
-			if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
 				if (p_video_driver == VIDEO_DRIVER_GLES2) {
 					gl_initialization_error = true;
 					break;
@@ -321,7 +321,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
 					continue;

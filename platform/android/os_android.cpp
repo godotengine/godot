@@ -131,7 +131,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					use_gl3 = false;
 					continue;
