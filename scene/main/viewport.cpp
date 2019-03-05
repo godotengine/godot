@@ -251,31 +251,6 @@ void Viewport::_collision_object_input_event(CollisionObject *p_object, Camera *
 	physics_last_id = id;
 }
 
-void Viewport::_test_new_mouseover(ObjectID new_collider) {
-#ifndef _3D_DISABLED
-	if (new_collider != physics_object_over) {
-
-		if (physics_object_over) {
-
-			CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
-			if (co) {
-				co->_mouse_exit();
-			}
-		}
-
-		if (new_collider) {
-
-			CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(new_collider));
-			if (co) {
-				co->_mouse_enter();
-			}
-		}
-
-		physics_object_over = new_collider;
-	}
-#endif
-}
-
 void Viewport::_notification(int p_what) {
 
 	switch (p_what) {
@@ -424,18 +399,19 @@ void Viewport::_notification(int p_what) {
 
 				bool discard_empty_motion = false;
 
-				{ // if no motion event exists, create a new one. This is necessary because objects or camera may have moved.
+				if (physics_has_last_mousepos) {
+					// if no mouse event exists, create a motion one. This is necessary because objects or camera may have moved.
 					// while this extra event is sent, it is checked if both camera and last object and last ID did not move. If nothing changed, the event is discarded to avoid flooding with unnecessary motion events every frame
-					bool has_mouse_motion = false;
+					bool has_mouse_event = false;
 					for (List<Ref<InputEvent> >::Element *E = physics_picking_events.front(); E; E = E->next()) {
-						Ref<InputEventMouseMotion> mm = E->get();
-						if (mm.is_valid()) {
-							has_mouse_motion = true;
+						Ref<InputEventMouse> m = E->get();
+						if (m.is_valid()) {
+							has_mouse_event = true;
 							break;
 						}
 					}
 
-					if (!has_mouse_motion && physics_has_last_mousepos) {
+					if (!has_mouse_event) {
 						Ref<InputEventMouseMotion> mm;
 						mm.instance();
 						mm->set_global_position(physics_last_mousepos);
@@ -450,21 +426,21 @@ void Viewport::_notification(int p_what) {
 					}
 				}
 
-				bool motion_tested = false;
-
 				while (physics_picking_events.size()) {
 
 					Ref<InputEvent> ev = physics_picking_events.front()->get();
 					physics_picking_events.pop_front();
 
 					Vector2 pos;
+					bool is_mouse = false;
 
 					Ref<InputEventMouseMotion> mm = ev;
 
 					if (mm.is_valid()) {
 
 						pos = mm->get_position();
-						motion_tested = true;
+						is_mouse = true;
+
 						physics_has_last_mousepos = true;
 						physics_last_mousepos = pos;
 						physics_last_mouse_state.alt = mm->get_alt();
@@ -477,7 +453,12 @@ void Viewport::_notification(int p_what) {
 					Ref<InputEventMouseButton> mb = ev;
 
 					if (mb.is_valid()) {
+
 						pos = mb->get_position();
+						is_mouse = true;
+
+						physics_has_last_mousepos = true;
+						physics_last_mousepos = pos;
 						physics_last_mouse_state.alt = mb->get_alt();
 						physics_last_mouse_state.shift = mb->get_shift();
 						physics_last_mouse_state.control = mb->get_control();
@@ -487,6 +468,11 @@ void Viewport::_notification(int p_what) {
 							physics_last_mouse_state.mouse_mask |= (1 << (mb->get_button_index() - 1));
 						} else {
 							physics_last_mouse_state.mouse_mask &= ~(1 << (mb->get_button_index() - 1));
+
+							// If touch mouse raised, assume we don't know last mouse pos until new events come
+							if (mb->get_device() == -1) {
+								physics_has_last_mousepos = false;
+							}
 						}
 					}
 
@@ -540,12 +526,14 @@ void Viewport::_notification(int p_what) {
 									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
 									if (co) {
 
-										Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
-										if (!F) {
-											F = physics_2d_mouseover.insert(res[i].collider_id, frame);
-											co->_mouse_enter();
-										} else {
-											F->get() = frame;
+										if (is_mouse) {
+											Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
+											if (!F) {
+												F = physics_2d_mouseover.insert(res[i].collider_id, frame);
+												co->_mouse_enter();
+											} else {
+												F->get() = frame;
+											}
 										}
 
 										co->_input_event(this, ev, res[i].shape);
@@ -554,25 +542,27 @@ void Viewport::_notification(int p_what) {
 							}
 						}
 
-						List<Map<ObjectID, uint64_t>::Element *> to_erase;
+						if (is_mouse) {
+							List<Map<ObjectID, uint64_t>::Element *> to_erase;
 
-						for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
-							if (E->get() != frame) {
-								Object *o = ObjectDB::get_instance(E->key());
-								if (o) {
+							for (Map<ObjectID, uint64_t>::Element *E = physics_2d_mouseover.front(); E; E = E->next()) {
+								if (E->get() != frame) {
+									Object *o = ObjectDB::get_instance(E->key());
+									if (o) {
 
-									CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
-									if (co) {
-										co->_mouse_exit();
+										CollisionObject2D *co = Object::cast_to<CollisionObject2D>(o);
+										if (co) {
+											co->_mouse_exit();
+										}
 									}
+									to_erase.push_back(E);
 								}
-								to_erase.push_back(E);
 							}
-						}
 
-						while (to_erase.size()) {
-							physics_2d_mouseover.erase(to_erase.front()->get());
-							to_erase.pop_front();
+							while (to_erase.size()) {
+								physics_2d_mouseover.erase(to_erase.front()->get());
+								to_erase.pop_front();
+							}
 						}
 					}
 
@@ -634,35 +624,30 @@ void Viewport::_notification(int p_what) {
 									}
 								}
 
-								if (mm.is_valid()) {
-									_test_new_mouseover(new_collider);
+								if (is_mouse && new_collider != physics_object_over) {
+
+									if (physics_object_over) {
+
+										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_over));
+										if (co) {
+											co->_mouse_exit();
+										}
+									}
+
+									if (new_collider) {
+
+										CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(new_collider));
+										if (co) {
+											co->_mouse_enter();
+										}
+									}
+
+									physics_object_over = new_collider;
 								}
 							}
 
 							last_pos = pos;
 						}
-					}
-				}
-
-				if (!motion_tested && camera && physics_has_last_mousepos) {
-
-					//test anyway for mouseenter/exit because objects might move
-					Vector3 from = camera->project_ray_origin(physics_last_mousepos);
-					Vector3 dir = camera->project_ray_normal(physics_last_mousepos);
-
-					PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
-					if (space) {
-
-						bool col = space->intersect_ray(from, from + dir * 10000, result, Set<RID>(), 0xFFFFFFFF, true, true, true);
-						ObjectID new_collider = 0;
-						if (col) {
-							CollisionObject *co = Object::cast_to<CollisionObject>(result.collider);
-							if (co) {
-								new_collider = result.collider_id;
-							}
-						}
-
-						_test_new_mouseover(new_collider);
 					}
 #endif
 				}
