@@ -55,7 +55,7 @@ def update_version(module_version_string=""):
     f.write("#define VERSION_STATUS \"" + str(version.status) + "\"\n")
     f.write("#define VERSION_BUILD \"" + str(build_name) + "\"\n")
     f.write("#define VERSION_MODULE_CONFIG \"" + str(version.module_config) + module_version_string + "\"\n")
-    f.write("#define VERSION_YEAR " + str(2018) + "\n")
+    f.write("#define VERSION_YEAR " + str(version.year) + "\n")
     f.close()
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
