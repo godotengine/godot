@@ -69,6 +69,7 @@ public:
 	virtual bool is_import_valid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual bool is_imported(const String &p_path) const { return recognize_path(p_path); }
+	virtual bool exists(const String &p_path) const;
 
 	virtual bool can_be_imported(const String &p_path) const;
 	virtual int get_import_order(const String &p_path) const;
