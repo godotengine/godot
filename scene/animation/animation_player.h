@@ -107,6 +107,7 @@ private:
 		bool audio_playing;
 		float audio_start;
 		float audio_len;
+		int audio_idx;
 
 		bool animation_playing;
 
@@ -154,6 +155,7 @@ private:
 				skeleton(NULL),
 				bone_idx(-1),
 				accum_pass(0),
+				audio_idx(-1),
 				audio_playing(false),
 				audio_start(0.0),
 				audio_len(0.0),
@@ -195,6 +197,16 @@ private:
 		StringName next;
 		Vector<TrackNodeCache *> node_cache;
 		Ref<Animation> animation;
+	};
+
+	struct BlockData {
+		float pos;
+		float length;
+
+		BlockData(float pos, float length) {
+			this->pos = pos;
+			this->length = length;
+		}
 	};
 
 	Map<StringName, AnimationData> animation_set;
@@ -266,6 +278,10 @@ private:
 
 	void _node_removed(Node *p_node);
 	void _stop_playing_caches();
+
+	float get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time);
+	BlockData get_audio_play_block(Animation *a, int p_track, int p_key, float p_time);
+	BlockData get_audio_block(Animation *a, int p_track, int p_key);
 
 	// bind helpers
 	PoolVector<String> _get_animation_list() const {

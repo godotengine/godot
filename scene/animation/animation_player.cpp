@@ -593,45 +593,38 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					continue;
 				}
 
-				int idx = -1;
-				if (p_seeked) { //find whathever should be playing
-					idx = a->track_find_key(i, p_time);
-				} else { //find stuff to play
-					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play); //not working for backward playing. Looking for different solution. Maybe using only track_find_key and check idx if left or enter
-					if (to_play.size()) {
-						idx = to_play.back()->get();
-					}
+				
+				bool stop = false;
+
+				if (p_seeked) {
+					nc->audio_idx = -1;
 				}
 
-				bool stop = false;
+				int idx = a->track_find_key(i, p_time);
 				if (idx != -1) {
+					BlockData audioblock = get_audio_play_block(a, i, idx, p_time);
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-					if (stream.is_valid()) {
-						float start_ofs = a->audio_track_get_key_start_offset(i, idx);
-						if (p_seeked) {
-							start_ofs += p_time - a->track_get_key_time(i, idx);
-						}
-						float end_ofs = a->audio_track_get_key_end_offset(i, idx);
-						float len = stream->get_length();
+					if (stream.is_valid() && audioblock.length > 0) {
+						if (nc->audio_idx != idx) {
+							nc->audio_idx = idx;
 
-						float diff = (len - end_ofs) - start_ofs;
-						if (diff > 0) { //if (start_ofs > len - end_ofs) {
+							float local_start_pos = get_local_audio_pos(a, i, idx, p_time);
+							
 							nc->node->call("set_stream", stream);
-							nc->node->call("play", start_ofs);
+							nc->node->call("play", local_start_pos);
 
 							nc->audio_playing = true;
 							playing_caches.insert(nc);
 
-							nc->audio_len = MIN(MAX(0, len - start_ofs - end_ofs), len);
-							nc->audio_start = p_time;
-						} else {
-							stop = true;
+							nc->audio_start = audioblock.pos;
+							nc->audio_len = audioblock.length;
 						}
+					} else {
+						stop = true;
 					}
 				}
 
-				if(!stop && nc->audio_playing) {
+				if (!stop && nc->audio_playing) {
 					int dir = sgn(p_delta);
 					if ((dir > 0 && p_time < nc->audio_start) || (dir > 0 && p_time >= a->get_length()) || (dir < 0 && p_time > nc->audio_start) || (dir < 0 && p_time <= 0)) {
 						stop = true;
@@ -720,6 +713,36 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 	}
 }
 
+float AnimationPlayer::get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time) {
+	return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->audio_track_get_key_start_offset(p_track, p_key);
+}
+
+AnimationPlayer::BlockData AnimationPlayer::get_audio_play_block(Animation *a, int p_track, int p_key, float p_time) {
+
+	BlockData audio_block = get_audio_block(a, p_track, p_key);
+	float local_pos = p_time - audio_block.pos;
+	float newLen = audio_block.length - local_pos;
+
+	return BlockData(p_time, newLen);
+}
+
+AnimationPlayer::BlockData AnimationPlayer::get_audio_block(Animation *a, int p_track, int p_key) {
+
+	float start_time = a->track_get_key_time(p_track, p_key);
+
+	Ref<AudioStream> stream = a->audio_track_get_key_stream(p_track, p_key);
+	if (stream.is_valid()) {
+		float start_ofs = a->audio_track_get_key_start_offset(p_track, p_key);
+		float end_ofs = a->audio_track_get_key_end_offset(p_track, p_key);
+		float length = stream->get_length();
+
+		length = MIN(MAX(0, length - start_ofs - end_ofs), length);
+		return BlockData(start_time, length);
+	}
+
+	return BlockData(start_time, 0);
+}
+
 void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started) {
 
 	float delta = p_delta * speed_scale * cd.speed_scale;
@@ -766,12 +789,12 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 		} else {
 			next_pos = looped_next_pos;
 		}
+	}
 
-		//
-		bool changeDir = (sgn(delta) != sgn(next_pos - cd.pos));
-		if (changeDir && cd.pos != next_pos) {
-			p_seeked = true;
-		}
+	//
+	bool has_dir_changed = (sgn(delta) != sgn(next_pos - cd.pos));
+	if (has_dir_changed || cd.pos == 0 || cd.pos == len) {
+		p_seeked = true;
 	}
 
 	cd.pos = next_pos;
@@ -1108,6 +1131,8 @@ void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_bl
 }
 
 void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
+
+	//nc->audio_idx
 
 	StringName name = p_name;
 

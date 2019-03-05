@@ -196,8 +196,8 @@ void AnimationPlayerEditor::_play_pressed() {
 			player->stop(); //so it won't blend with itself
 		player->play(current);
 
-		float time = player->get_current_animation_position();
-		player->seek(time);
+		//float time = player->get_current_animation_position();
+		//player->seek(time);
 	}
 
 	//unstop
@@ -246,6 +246,9 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 		if (current == player->get_assigned_animation())
 			player->stop(); //so it won't blend with itself
 		player->play(current, -1, -1, true);
+
+		//float time = player->get_current_animation_position();
+		//player->seek(time);
 	}
 
 	//unstop
