@@ -599,6 +599,7 @@ static jobject godot_io;
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 
 static jmethodID _on_video_init = 0;
+static jmethodID _restart = 0;
 static jobject _godot_instance;
 
 static jmethodID _openURI = 0;
@@ -757,7 +758,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	virtual_keyboard_height = p_height;
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jboolean p_need_reload_hook, jobject p_asset_manager, jboolean p_use_apk_expansion) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jobject p_asset_manager, jboolean p_use_apk_expansion) {
 
 	initialized = true;
 
@@ -783,6 +784,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		godot_io = gob;
 
 		_on_video_init = env->GetMethodID(cls, "onVideoInit", "()V");
+		_restart = env->GetMethodID(cls, "restart", "()V");
 		_setKeepScreenOn = env->GetMethodID(cls, "setKeepScreenOn", "(Z)V");
 		_alertDialog = env->GetMethodID(cls, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 		_getGLESVersionCode = env->GetMethodID(cls, "getGLESVersionCode", "()I");
@@ -821,7 +823,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	}
 
 	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, _set_clipboard, _get_clipboard, p_use_apk_expansion);
-	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
 	getcwd(wd, 500);
@@ -932,7 +933,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jo
 	_initialize_java_modules();
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height, jboolean reload) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height) {
 
 	if (os_android)
 		os_android->set_display_size(Size2(width, height));
@@ -941,12 +942,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, j
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits) {
 
 	if (os_android) {
-		os_android->set_context_is_16_bits(!p_32_bits);
-	}
-
-	if (os_android && step > 0) {
-
-		os_android->reload_gfx();
+		if (step == 0) {
+			// During startup
+			os_android->set_context_is_16_bits(!p_32_bits);
+		} else {
+			// GL context recreated because it was lost; restart app to let it reload everything
+			os_android->main_loop_end();
+			env->CallVoidMethod(_godot_instance, _restart);
+			step = -1; // Ensure no further steps are attempted
+		}
 	}
 }
 
@@ -958,6 +962,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, job
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jobject obj) {
+	if (step == -1)
+		return;
+
 	if (step == 0) {
 
 		// Since Godot is initialized on the UI thread, _main_thread_id was set to that thread's id,

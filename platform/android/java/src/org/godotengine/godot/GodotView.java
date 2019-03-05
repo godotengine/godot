@@ -79,7 +79,6 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	private Context ctx;
 
 	private GodotIO io;
-	private static boolean firsttime = true;
 	private static boolean use_gl3 = false;
 	private static boolean use_32 = false;
 	private static boolean use_debug_opengl = false;
@@ -97,10 +96,8 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 		activity = p_activity;
 
-		if (!p_io.needsReloadHooks()) {
-			//will only work on SDK 11+!!
-			setPreserveEGLContextOnPause(true);
-		}
+		setPreserveEGLContextOnPause(true);
+
 		mInputManager = InputManagerCompat.Factory.getInputManager(this.getContext());
 		mInputManager.registerInputDeviceListener(this, null);
 		init(false, 16, 0);
@@ -718,8 +715,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 		public void onSurfaceChanged(GL10 gl, int width, int height) {
 
-			GodotLib.resize(width, height, !firsttime);
-			firsttime = false;
+			GodotLib.resize(width, height);
 			for (int i = 0; i < Godot.singleton_count; i++) {
 				Godot.singletons[i].onGLSurfaceChanged(gl, width, height);
 			}

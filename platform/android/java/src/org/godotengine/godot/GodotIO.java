@@ -500,11 +500,6 @@ public class GodotIO {
 		return (int)(metrics.density * 160f);
 	}
 
-	public boolean needsReloadHooks() {
-
-		return false;
-	}
-
 	public void showKeyboard(String p_existing_text) {
 		if (edit != null)
 			edit.showKeyboard(p_existing_text);

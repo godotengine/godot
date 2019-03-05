@@ -36,4 +36,9 @@ $$ADD_APPLICATION_CHUNKS$$
 
     </application>
 
+    <instrumentation android:icon="@drawable/icon"
+                     android:label="@string/godot_project_name_string"
+                     android:name="org.godotengine.godot.GodotInstrumentation"
+                     android:targetPackage="com.godot.game" />
+
 </manifest>

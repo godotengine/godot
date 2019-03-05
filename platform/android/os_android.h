@@ -94,7 +94,6 @@ private:
 	void *gfx_init_ud;
 
 	bool use_gl2;
-	bool use_reload_hooks;
 	bool use_apk_expansion;
 
 	bool use_16bits_fbo;
@@ -203,10 +202,8 @@ public:
 	void set_opengl_extensions(const char *p_gl_extensions);
 	void set_display_size(Size2 p_size);
 
-	void reload_gfx();
 	void set_context_is_16_bits(bool p_is_16);
 
-	void set_need_reload_hooks(bool p_needs_them);
 	virtual void set_screen_orientation(ScreenOrientation p_orientation);
 
 	virtual Error shell_open(String p_uri);

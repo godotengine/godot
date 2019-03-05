@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotLib.java                                                        */
+/*  GodotInstrumentation.java                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,45 +30,21 @@
 
 package org.godotengine.godot;
 
-// Wrapper for native library
+import android.app.Instrumentation;
+import android.content.Intent;
+import android.os.Bundle;
 
-public class GodotLib {
+public class GodotInstrumentation extends Instrumentation {
+	private Intent intent;
 
-	public static GodotIO io;
-
-	static {
-		System.loadLibrary("godot_android");
+	@Override
+	public void onCreate(Bundle arguments) {
+		intent = arguments.getParcelable("intent");
+		start();
 	}
 
-	/**
-     * @param width the current view width
-     * @param height the current view height
-     */
-
-	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
-	public static native void setup(String[] p_cmdline);
-	public static native void resize(int width, int height);
-	public static native void newcontext(boolean p_32_bits);
-	public static native void back();
-	public static native void step();
-	public static native void touch(int what, int pointer, int howmany, int[] arr);
-	public static native void accelerometer(float x, float y, float z);
-	public static native void gravity(float x, float y, float z);
-	public static native void magnetometer(float x, float y, float z);
-	public static native void gyroscope(float x, float y, float z);
-	public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
-	public static native void joybutton(int p_device, int p_but, boolean p_pressed);
-	public static native void joyaxis(int p_device, int p_axis, float p_value);
-	public static native void joyhat(int p_device, int p_hat_x, int p_hat_y);
-	public static native void joyconnectionchanged(int p_device, boolean p_connected, String p_name);
-	public static native void focusin();
-	public static native void focusout();
-	public static native void audio();
-	public static native void singleton(String p_name, Object p_object);
-	public static native void method(String p_sname, String p_name, String p_ret, String[] p_params);
-	public static native String getGlobal(String p_key);
-	public static native void callobject(int p_ID, String p_method, Object[] p_params);
-	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
-
-	public static native void setVirtualKeyboardHeight(int p_height);
+	@Override
+	public void onStart() {
+		startActivitySync(intent);
+	}
 }
