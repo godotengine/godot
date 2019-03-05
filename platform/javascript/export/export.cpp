@@ -360,7 +360,7 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 	if (err) {
 		return err;
 	}
-	OS::get_singleton()->shell_open(path);
+	OS::get_singleton()->shell_open(String("file://") + path);
 	return OK;
 }
 
