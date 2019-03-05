@@ -840,6 +840,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		}
 	}
 
+	if (!FileAccess::exists(dest_dir)) {
+		return ERR_FILE_BAD_PATH;
+	}
+
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (da) {
 		String current_dir = da->get_current_dir();

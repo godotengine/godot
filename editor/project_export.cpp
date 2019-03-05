@@ -1012,7 +1012,11 @@ void ProjectExportDialog::_export_all(bool p_debug) {
 
 		Error err = platform->export_project(preset, p_debug, preset->get_export_path(), 0);
 		if (err != OK) {
-			error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " " + platform->get_name());
+			if (err == ERR_FILE_BAD_PATH) {
+				error_dialog->set_text(TTR("The given export path doesn't exist:") + "\n" + preset->get_export_path().get_base_dir());
+			} else {
+				error_dialog->set_text(TTR("Export templates for this platform are missing/corrupted:") + " " + platform->get_name());
+			}
 			error_dialog->show();
 			error_dialog->popup_centered_minsize(Size2(300, 80));
 			ERR_PRINT("Failed to export project");
