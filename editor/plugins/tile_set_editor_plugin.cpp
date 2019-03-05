@@ -337,13 +337,13 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SELECT_NEXT] = memnew(ToolButton);
 	tool_hb->add_child(tools[SELECT_NEXT]);
 	tool_hb->move_child(tools[SELECT_NEXT], WORKSPACE_CREATE_SINGLE);
-	tools[SELECT_NEXT]->set_shortcut(ED_SHORTCUT("tileset_editor/next_shape", TTR("Select next coordinate"), KEY_PAGEDOWN));
+	tools[SELECT_NEXT]->set_shortcut(ED_SHORTCUT("tileset_editor/next_shape", TTR("Next Coordinate"), KEY_PAGEDOWN));
 	tools[SELECT_NEXT]->connect("pressed", this, "_on_tool_clicked", varray(SELECT_NEXT));
 	tools[SELECT_NEXT]->set_tooltip(TTR("Select the next shape, subtile, or Tile."));
 	tools[SELECT_PREVIOUS] = memnew(ToolButton);
 	tool_hb->add_child(tools[SELECT_PREVIOUS]);
 	tool_hb->move_child(tools[SELECT_PREVIOUS], WORKSPACE_CREATE_SINGLE);
-	tools[SELECT_PREVIOUS]->set_shortcut(ED_SHORTCUT("tileset_editor/previous_shape", TTR("Select previous coordinate"), KEY_PAGEUP));
+	tools[SELECT_PREVIOUS]->set_shortcut(ED_SHORTCUT("tileset_editor/previous_shape", TTR("Previous Coordinate"), KEY_PAGEUP));
 	tools[SELECT_PREVIOUS]->set_tooltip(TTR("Select the previous shape, subtile, or Tile."));
 	tools[SELECT_PREVIOUS]->connect("pressed", this, "_on_tool_clicked", varray(SELECT_PREVIOUS));
 
@@ -2931,10 +2931,14 @@ void TileSetEditor::update_workspace_tile_mode() {
 		for (int i = 1; i < WORKSPACE_MODE_MAX; i++) {
 			tool_workspacemode[i]->set_disabled(true);
 		}
+		tools[SELECT_NEXT]->set_disabled(true);
+		tools[SELECT_PREVIOUS]->set_disabled(true);
 	} else {
 		for (int i = 1; i < WORKSPACE_MODE_MAX; i++) {
 			tool_workspacemode[i]->set_disabled(false);
 		}
+		tools[SELECT_NEXT]->set_disabled(false);
+		tools[SELECT_PREVIOUS]->set_disabled(false);
 	}
 
 	if (workspace_mode != WORKSPACE_EDIT) {
