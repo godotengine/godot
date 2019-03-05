@@ -183,6 +183,11 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_
 	}
 }
 
+bool ResourceFormatImporter::exists(const String &p_path) const {
+
+	return FileAccess::exists(p_path + ".import");
+}
+
 bool ResourceFormatImporter::recognize_path(const String &p_path, const String &p_for_type) const {
 
 	return FileAccess::exists(p_path + ".import");
