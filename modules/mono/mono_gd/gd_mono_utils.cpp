@@ -153,6 +153,8 @@ void MonoCache::clear_members() {
 
 	methodthunk_MarshalUtils_TypeIsGenericArray = NULL;
 	methodthunk_MarshalUtils_TypeIsGenericDictionary = NULL;
+	methodthunk_MarshalUtils_ArrayGetElementType = NULL;
+	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes = NULL;
 	methodthunk_MarshalUtils_EnumerableToArray = NULL;
 	methodthunk_MarshalUtils_IDictionaryToDictionary = NULL;
 
@@ -258,6 +260,8 @@ void update_godot_api_cache() {
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericArray, (TypeIsGenericArray)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("TypeIsGenericArray", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericDictionary, (TypeIsGenericDictionary)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("TypeIsGenericDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, (ArrayGetElementType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("ArrayGetElementType", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, (DictionaryGetKeyValueTypes)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("DictionaryGetKeyValueTypes", 3));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, EnumerableToArray, (EnumerableToArray)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("EnumerableToArray", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IDictionaryToDictionary, (IDictionaryToDictionary)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IDictionaryToDictionary", 2));
 

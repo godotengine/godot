@@ -2166,7 +2166,8 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 		CRASH_NOW();
 	}
 
-	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type);
+	GDMonoMarshal::ExportInfo export_info;
+	Variant::Type variant_type = GDMonoMarshal::managed_to_variant_type(type, &export_info);
 
 	if (!p_member->has_attribute(CACHED_CLASS(ExportAttribute))) {
 		r_prop_info = PropertyInfo(variant_type, name.operator String(), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_SCRIPT_VARIABLE);
@@ -2191,6 +2192,7 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 		ERR_PRINTS("Unknown type of exported member: " + p_class->get_full_name() + "." + name.operator String());
 		return false;
 	} else if (variant_type == Variant::INT && type.type_encoding == MONO_TYPE_VALUETYPE && mono_class_is_enum(type.type_class->get_mono_ptr())) {
+		// TODO: Move to ExportInfo?
 		variant_type = Variant::INT;
 		hint = PROPERTY_HINT_ENUM;
 
@@ -2257,6 +2259,11 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 
 		hint = PROPERTY_HINT_RESOURCE_TYPE;
 		hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
+	} else if (variant_type == Variant::ARRAY && export_info.array.element_type != Variant::NIL) {
+		hint = PROPERTY_HINT_TYPE_STRING;
+		hint_string = itos(export_info.array.element_type) + ":";
+	} else if (variant_type == Variant::DICTIONARY && export_info.dictionary.key_type != Variant::NIL && export_info.dictionary.value_type != Variant::NIL) {
+		// TODO: There is no hint for this yet
 	} else {
 		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);

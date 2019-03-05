@@ -35,7 +35,7 @@
 
 namespace GDMonoMarshal {
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type) {
+Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_export_info) {
 	switch (p_type.type_encoding) {
 		case MONO_TYPE_BOOLEAN:
 			return Variant::BOOL;
@@ -171,19 +171,43 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 
 			MonoException *exc = NULL;
 			GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
-			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, &exc);
+			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
+				if (r_export_info) {
+					MonoReflectionType *key_reftype;
+					MonoReflectionType *value_reftype;
+
+					exc = NULL;
+					invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes),
+							reftype, &key_reftype, &value_reftype, &exc);
+					UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+					r_export_info->dictionary.key_type = managed_to_variant_type(ManagedType::from_reftype(key_reftype));
+					r_export_info->dictionary.value_type = managed_to_variant_type(ManagedType::from_reftype(value_reftype));
+				}
+
 				return Variant::DICTIONARY;
 			}
 
 			exc = NULL;
 			GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
-			MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, &exc);
+			MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {
+				if (r_export_info) {
+					MonoReflectionType *elem_reftype;
+
+					exc = NULL;
+					invoke_method_thunk(CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType),
+							reftype, &elem_reftype, &exc);
+					UNLIKELY_UNHANDLED_EXCEPTION(exc);
+
+					r_export_info->array.element_type = managed_to_variant_type(ManagedType::from_reftype(elem_reftype));
+				}
+
 				return Variant::ARRAY;
 			}
 
@@ -573,7 +597,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 				MonoException *exc = NULL;
 				GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
-				MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, &exc);
+				MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 				if (is_dict) {
@@ -582,7 +606,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 				exc = NULL;
 				GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
-				MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, &exc);
+				MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
 				UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 				if (is_array) {
@@ -609,15 +633,9 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 	if (!p_obj)
 		return Variant();
 
-	GDMonoClass *tclass = GDMono::get_singleton()->get_class(mono_object_get_class(p_obj));
-	ERR_FAIL_COND_V(!tclass, Variant());
+	ManagedType type = ManagedType::from_class(mono_object_get_class(p_obj));
 
-	MonoType *raw_type = tclass->get_mono_type();
-
-	ManagedType type;
-
-	type.type_encoding = mono_type_get_type(raw_type);
-	type.type_class = tclass;
+	ERR_FAIL_COND_V(!type.type_class, Variant());
 
 	switch (type.type_encoding) {
 		case MONO_TYPE_BOOLEAN:
@@ -784,7 +802,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			MonoException *exc = NULL;
 
 			GDMonoUtils::TypeIsGenericDictionary type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary);
-			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, (MonoObject *)reftype, &exc);
+			MonoBoolean is_dict = invoke_method_thunk(type_is_dict, reftype, &exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_dict) {
@@ -797,7 +815,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			exc = NULL;
 
 			GDMonoUtils::TypeIsGenericArray type_is_array = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray);
-			MonoBoolean is_array = invoke_method_thunk(type_is_array, (MonoObject *)reftype, &exc);
+			MonoBoolean is_array = invoke_method_thunk(type_is_array, reftype, &exc);
 			UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
 			if (is_array) {
