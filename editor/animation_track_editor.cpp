@@ -404,7 +404,7 @@ public:
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					float prev = animation->audio_track_get_key_start_offset(track, key);
+					float prev = animation->animation_track_get_key_start_offset(track, key);
 					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_start_offset", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_start_offset", track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
@@ -420,7 +420,7 @@ public:
 
 					setting = true;
 					undo_redo->create_action(TTR("Anim Change Keyframe Value"), UndoRedo::MERGE_ENDS);
-					float prev = animation->audio_track_get_key_end_offset(track, key);
+					float prev = animation->animation_track_get_key_end_offset(track, key);
 					undo_redo->add_do_method(animation.ptr(), "animation_track_set_key_end_offset", track, key, value);
 					undo_redo->add_undo_method(animation.ptr(), "animation_track_set_key_end_offset", track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
