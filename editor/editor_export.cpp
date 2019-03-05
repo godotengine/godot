@@ -1456,6 +1456,10 @@ List<String> EditorExportPlatformPC::get_binary_extensions(const Ref<EditorExpor
 Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
+	if (!FileAccess::exists(p_path.get_base_dir())) {
+		return ERR_FILE_BAD_PATH;
+	}
+
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 
