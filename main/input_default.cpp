@@ -685,7 +685,7 @@ void InputDefault::set_use_accumulated_input(bool p_enable) {
 
 InputDefault::InputDefault() {
 
-	use_accumulated_input = false;
+	use_accumulated_input = true;
 	mouse_button_mask = 0;
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;
