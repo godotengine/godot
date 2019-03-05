@@ -571,7 +571,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 
 	MonoException *exc = NULL;
 
-	MonoArray *frames = invoke_method_thunk(CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames), p_stack_trace, (MonoObject **)&exc);
+	MonoArray *frames = invoke_method_thunk(CACHED_METHOD_THUNK(System_Diagnostics_StackTrace, GetFrames), p_stack_trace, &exc);
 
 	if (exc) {
 		GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -595,7 +595,7 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::stack_trace_get_info(MonoObjec
 		MonoString *file_name;
 		int file_line_num;
 		MonoString *method_decl;
-		invoke_method_thunk(get_sf_info, frame, &file_name, &file_line_num, &method_decl, (MonoObject **)&exc);
+		invoke_method_thunk(get_sf_info, frame, &file_name, &file_line_num, &method_decl, &exc);
 
 		if (exc) {
 			GDMonoUtils::debug_print_unhandled_exception(exc);
@@ -625,7 +625,7 @@ void CSharpLanguage::frame() {
 
 			if (task_scheduler) {
 				MonoException *exc = NULL;
-				invoke_method_thunk(CACHED_METHOD_THUNK(GodotTaskScheduler, Activate), task_scheduler, (MonoObject **)&exc);
+				invoke_method_thunk(CACHED_METHOD_THUNK(GodotTaskScheduler, Activate), task_scheduler, &exc);
 
 				if (exc) {
 					GDMonoUtils::debug_unhandled_exception(exc);

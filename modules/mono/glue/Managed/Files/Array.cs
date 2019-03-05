@@ -38,6 +38,14 @@ namespace Godot.Collections
             safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor());
         }
 
+        public Array(IEnumerable collection) : this()
+        {
+            if (collection == null)
+                throw new NullReferenceException($"Parameter '{nameof(collection)} cannot be null.'");
+
+            MarshalUtils.EnumerableToArray(collection, GetPtr());
+        }
+
         internal Array(ArraySafeHandle handle)
         {
             safeHandle = handle;
@@ -199,6 +207,14 @@ namespace Godot.Collections
         public Array()
         {
             objectArray = new Array();
+        }
+
+        public Array(IEnumerable<T> collection)
+        {
+            if (collection == null)
+                throw new NullReferenceException($"Parameter '{nameof(collection)} cannot be null.'");
+
+            objectArray = new Array(collection);
         }
 
         public Array(Array array)
