@@ -950,6 +950,12 @@ def make_method_signature(class_def, method_def, make_ref, state):  # type: (Cla
         if arg.default_value is not None:
             out += '=' + arg.default_value
 
+    if isinstance(method_def, MethodDef) and method_def.qualifiers is not None and 'vararg' in method_def.qualifiers:
+        if len(method_def.parameters) > 0:
+            out += ', ...'
+        else:
+            out += '...'
+
     out += ' **)**'
 
     if isinstance(method_def, MethodDef) and method_def.qualifiers is not None:
