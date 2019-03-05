@@ -55,7 +55,8 @@ String GDMonoClass::get_full_name() const {
 }
 
 MonoType *GDMonoClass::get_mono_type() {
-	// Care, you cannot compare MonoType pointers
+	// Careful, you cannot compare two MonoType*.
+	// There is mono_metadata_type_equal, how is this different from comparing two MonoClass*?
 	return get_mono_type(mono_class);
 }
 

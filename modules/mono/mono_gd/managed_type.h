@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gd_mono_header.h                                                     */
+/*  managed_type.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GD_MONO_HEADER_H
-#define GD_MONO_HEADER_H
+#ifndef MANAGED_TYPE_H
+#define MANAGED_TYPE_H
 
-#include "core/int_types.h"
+#include <mono/metadata/object.h>
 
-class GDMonoAssembly;
-class GDMonoClass;
-class GDMonoField;
-class GDMonoMethod;
-class GDMonoProperty;
+#include "gd_mono_header.h"
 
-class IMonoClassMember;
+struct ManagedType {
+	int type_encoding;
+	GDMonoClass *type_class;
 
-#include "managed_type.h"
+	static ManagedType from_class(GDMonoClass *p_class);
+	static ManagedType from_class(MonoClass *p_mono_class);
+	static ManagedType from_type(MonoType *p_mono_type);
+	static ManagedType from_reftype(MonoReflectionType *p_mono_reftype);
 
-#endif // GD_MONO_HEADER_H
+	ManagedType() :
+			type_encoding(0),
+			type_class(NULL) {
+	}
+
+	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :
+			type_encoding(p_type_encoding),
+			type_class(p_type_class) {
+	}
+};
+
+#endif // MANAGED_TYPE_H

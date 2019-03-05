@@ -32,6 +32,7 @@
 #define GDMONOMARSHAL_H
 
 #include "core/variant.h"
+
 #include "gd_mono.h"
 #include "gd_mono_utils.h"
 
@@ -56,7 +57,25 @@ T unbox(MonoObject *p_obj) {
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
 #define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type);
+// FIXME: Made this struct in a hurry. It could be done differently.
+struct ExportInfo {
+	struct ArrayInfo {
+		Variant::Type element_type;
+
+		ArrayInfo() :
+				element_type(Variant::NIL) {}
+	} array;
+	struct DictionaryInfo {
+		Variant::Type key_type;
+		Variant::Type value_type;
+
+		DictionaryInfo() :
+				key_type(Variant::NIL),
+				value_type(Variant::NIL) {}
+	} dictionary;
+};
+
+Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_export_info = NULL);
 
 // String
 

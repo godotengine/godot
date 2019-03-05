@@ -58,8 +58,10 @@ typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoException *
 typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoException **);
 typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoException **);
 
-typedef MonoBoolean (*TypeIsGenericArray)(MonoObject *, MonoException **);
-typedef MonoBoolean (*TypeIsGenericDictionary)(MonoObject *, MonoException **);
+typedef MonoBoolean (*TypeIsGenericArray)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*TypeIsGenericDictionary)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef MonoBoolean (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
 typedef void (*EnumerableToArray)(MonoObject *, Array *, MonoException **);
 typedef void (*IDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
 
@@ -156,6 +158,8 @@ struct MonoCache {
 
 	TypeIsGenericArray methodthunk_MarshalUtils_TypeIsGenericArray;
 	TypeIsGenericDictionary methodthunk_MarshalUtils_TypeIsGenericDictionary;
+	ArrayGetElementType methodthunk_MarshalUtils_ArrayGetElementType;
+	DictionaryGetKeyValueTypes methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
 	EnumerableToArray methodthunk_MarshalUtils_EnumerableToArray;
 	IDictionaryToDictionary methodthunk_MarshalUtils_IDictionaryToDictionary;
 

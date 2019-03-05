@@ -18,6 +18,20 @@ namespace Godot
             return type.GetGenericTypeDefinition() == typeof(Godot.Collections.Dictionary<,>);
         }
 
+        static void ArrayGetElementType(Type type, out Type elementType)
+        {
+            elementType = type.GetGenericArguments()[0];
+        }
+
+        static void DictionaryGetKeyValueTypes(Type type, out Type keyType, out Type valueType)
+        {
+            var genericArgs = type.GetGenericArguments();
+
+            keyType = genericArgs[0];
+            valueType = genericArgs[1];
+        }
+
+        // TODO Add support for IEnumerable<T> and IDictionary<TKey, TValue>
         // TODO: EnumerableToArray and IDictionaryToDictionary can be optimized
 
         internal static void EnumerableToArray(IEnumerable enumerable, IntPtr godotArrayPtr)
