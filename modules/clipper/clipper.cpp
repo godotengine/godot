@@ -63,7 +63,7 @@ void Clipper::execute(bool build_hierarchy) {
 	}
 }
 
-int Clipper::get_solution_count(SolutionType type) const {
+size_t Clipper::get_solution_count(SolutionType type) const {
 
 	switch (type) {
 
@@ -78,7 +78,7 @@ int Clipper::get_solution_count(SolutionType type) const {
 	return -1;
 }
 
-Vector<Vector2> Clipper::get_solution(int idx, SolutionType type) {
+Vector<Vector2> Clipper::get_solution(size_t idx, SolutionType type) {
 
 	switch (type) {
 
@@ -421,7 +421,7 @@ _FORCE_INLINE_ Vector<Vector2> Clipper::_scale_down(const cl::Path &path, real_t
 	Vector<Vector2> points;
 	points.resize(path.size());
 
-	for (int i = 0; i != path.size(); ++i) {
+	for (size_t i = 0; i != path.size(); ++i) {
 		points.write[i] = Point2(
 				static_cast<real_t>(path[i].x) / scale,
 				static_cast<real_t>(path[i].y) / scale);
@@ -431,7 +431,7 @@ _FORCE_INLINE_ Vector<Vector2> Clipper::_scale_down(const cl::Path &path, real_t
 
 _FORCE_INLINE_ void Clipper::_scale_down_paths(const cl::Paths &paths, Array &dest, real_t scale) {
 
-	for (int i = 0; i < paths.size(); ++i) {
+	for (size_t i = 0; i < paths.size(); ++i) {
 		const Vector<Vector2> poly = _scale_down(paths[i], scale);
 		dest.push_back(poly);
 	}
@@ -439,7 +439,7 @@ _FORCE_INLINE_ void Clipper::_scale_down_paths(const cl::Paths &paths, Array &de
 
 _FORCE_INLINE_ void Clipper::_scale_down_paths(const cl::Paths &paths, Vector<Vector2> &dest, real_t scale) {
 
-	for (int i = 0; i < paths.size(); ++i) {
+	for (size_t i = 0; i < paths.size(); ++i) {
 		const Vector<Vector2> poly = _scale_down(paths[i], scale);
 
 		for (int j = 0; j < poly.size(); ++j) {

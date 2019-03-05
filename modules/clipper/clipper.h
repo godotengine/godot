@@ -32,8 +32,8 @@ public:
 	void add_points(const Vector<Vector2> &points);
 	void execute(bool build_hierarchy = false);
 
-	int get_solution_count(SolutionType type = TYPE_CLOSED) const;
-	Vector<Vector2> get_solution(int idx, SolutionType type = TYPE_CLOSED);
+	size_t get_solution_count(SolutionType type = TYPE_CLOSED) const;
+	Vector<Vector2> get_solution(size_t idx, SolutionType type = TYPE_CLOSED);
 
 	Rect2 get_bounds();
 	void clear();
