@@ -259,11 +259,13 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 
 					float l = CLAMP(buf[from + j].l, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl << 11;
+					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
+					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 0] = vl2;
 
 					float r = CLAMP(buf[from + j].r, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
-					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr << 11;
+					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
+					p_buffer[(from_buf + j) * (cs * 2) + k * 2 + 1] = vr2;
 				}
 
 			} else {
