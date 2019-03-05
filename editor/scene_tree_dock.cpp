@@ -336,9 +336,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
 
+			List<Node *> selection = editor_selection->get_selected_node_list();
+			if (selection.empty())
+				break;
+
 			Node *selected = scene_tree->get_selected();
 			if (!selected)
-				break;
+				selected = selection.front()->get();
 
 			Ref<Script> existing = selected->get_script();
 
