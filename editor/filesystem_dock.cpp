@@ -2023,10 +2023,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() >= 1) {
 		if (!all_favorites) {
-			p_popup->add_item(TTR("Add to favorites"), FILE_ADD_FAVORITE);
+			p_popup->add_item(TTR("Add to Favorites"), FILE_ADD_FAVORITE);
 		}
 		if (!all_not_favorites) {
-			p_popup->add_item(TTR("Remove from favorites"), FILE_REMOVE_FAVORITE);
+			p_popup->add_item(TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
 		}
 		p_popup->add_separator();
 	}
@@ -2336,13 +2336,13 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_hist_prev = memnew(ToolButton);
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
-	button_hist_prev->set_tooltip(TTR("Previous Directory"));
+	button_hist_prev->set_tooltip(TTR("Previous Folder/File"));
 	toolbar_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(ToolButton);
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
-	button_hist_next->set_tooltip(TTR("Next Directory"));
+	button_hist_next->set_tooltip(TTR("Next Folder/File"));
 	toolbar_hbc->add_child(button_hist_next);
 
 	current_path = memnew(LineEdit);
@@ -2363,7 +2363,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_toggle_display_mode->set_toggle_mode(true);
 	button_toggle_display_mode->connect("toggled", this, "_toggle_split_mode");
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
-	button_toggle_display_mode->set_tooltip(TTR("Toggle split mode"));
+	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
 	toolbar_hbc->add_child(button_toggle_display_mode);
 
 	HBoxContainer *toolbar2_hbc = memnew(HBoxContainer);
