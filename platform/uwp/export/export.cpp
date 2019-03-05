@@ -1265,6 +1265,10 @@ public:
 			}
 		}
 
+		if (!FileAccess::exists(p_path.get_base_dir())) {
+			return ERR_FILE_BAD_PATH;
+		}
+
 		Error err = OK;
 
 		FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);

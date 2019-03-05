@@ -1489,6 +1489,10 @@ public:
 			}
 		}
 
+		if (!FileAccess::exists(p_path.get_base_dir())) {
+			return ERR_FILE_BAD_PATH;
+		}
+
 		FileAccess *src_f = NULL;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
