@@ -688,10 +688,13 @@
 		</member>
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="">
 		</member>
-		<member name="rendering/quality/driver/driver_fallback" type="String" setter="" getter="">
-			Whether to allow falling back to other graphics drivers if the preferred driver is not available. Best means use the best working driver (this is the default). Never means never fall back to another driver even if it does not work. This means the project will not run if the preferred driver does not function.
-		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
+			Name of the configured video driver ("GLES2" or "GLES3").
+			Note that the backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at runtime.
+		</member>
+		<member name="rendering/quality/driver/fallback_to_gles2" type="bool" setter="" getter="">
+			Whether to allow falling back to the GLES2 driver if the GLES3 driver is not supported. Default value: [code]false[/code].
+			Note that the two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the size of the game data pack.
 		</member>
 		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="">
 			Maximum Anisotropic filter level used for textures when anisotropy enabled.

@@ -202,7 +202,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 			memdelete(gl_context);
 			gl_context = NULL;
 
-			if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
 				if (p_video_driver == VIDEO_DRIVER_GLES2) {
 					gl_initialization_error = true;
 					break;
@@ -224,7 +224,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					opengl_api_type = ContextEGL_UWP::GLES_2_0;
 					continue;

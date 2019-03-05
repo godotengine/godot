@@ -1420,7 +1420,7 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best" || editor) {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					gles3 = false;
 					continue;
