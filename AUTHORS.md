@@ -95,8 +95,8 @@ name is available.
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
     Martin Capitanio (capnm)
+    Martin Liška (marxin)
     Martin Sjursen (binbitten)
-    Marxin Liška (marxin)
     marynate
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
