@@ -409,6 +409,11 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 		return true;
 	}
 
+	if (constants.has(p_name)) {
+		r_ret = constants[p_name];
+		return true;
+	}
+
 	if (!script->is_placeholder_fallback_enabled()) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
@@ -444,6 +449,13 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 			*r_is_valid = true;
 		return values[p_name].get_type();
 	}
+
+	if (constants.has(p_name)) {
+		if (r_is_valid)
+			*r_is_valid = true;
+		return constants[p_name].get_type();
+	}
+
 	if (r_is_valid)
 		*r_is_valid = false;
 
@@ -513,6 +525,9 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		owner->_change_notify();
 	}
 	//change notify
+
+	constants.clear();
+	script->get_constants(&constants);
 }
 
 void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) {
@@ -547,6 +562,13 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 	if (script->is_placeholder_fallback_enabled()) {
 		const Map<StringName, Variant>::Element *E = values.find(p_name);
 
+		if (E) {
+			if (r_valid)
+				*r_valid = true;
+			return E->value();
+		}
+
+		E = constants.find(p_name);
 		if (E) {
 			if (r_valid)
 				*r_valid = true;
