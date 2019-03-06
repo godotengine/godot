@@ -188,6 +188,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 
 void EditorResourcePreview::_thread() {
 
+#ifndef SERVER_ENABLED
 	while (!exit) {
 
 		preview_sem->wait();
@@ -313,7 +314,7 @@ void EditorResourcePreview::_thread() {
 			preview_mutex->unlock();
 		}
 	}
-
+#endif
 	exited = true;
 }
 
