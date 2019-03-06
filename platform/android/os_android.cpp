@@ -548,14 +548,6 @@ void OS_Android::set_display_size(Size2 p_size) {
 	default_videomode.height = p_size.y;
 }
 
-void OS_Android::reload_gfx() {
-
-	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud, use_gl2);
-	//if (rasterizer)
-	//	rasterizer->reload_vram();
-}
-
 Error OS_Android::shell_open(String p_uri) {
 
 	if (open_uri_func)
@@ -605,11 +597,6 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 		return get_screen_dpi_func();
 	}
 	return 160;
-}
-
-void OS_Android::set_need_reload_hooks(bool p_needs_them) {
-
-	use_reload_hooks = p_needs_them;
 }
 
 String OS_Android::get_user_data_dir() const {
@@ -765,7 +752,6 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	set_screen_orientation_func = p_screen_orient;
 	set_keep_screen_on_func = p_set_keep_screen_on_func;
 	alert_func = p_alert_func;
-	use_reload_hooks = false;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(AndroidLogger));
