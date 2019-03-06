@@ -1454,9 +1454,21 @@ void EditorNode::edit_item(Object *p_object) {
 	}
 
 	if (!sub_plugins.empty()) {
-		_display_top_editors(false);
 
-		_set_top_editors(sub_plugins);
+		bool same = true;
+		if (sub_plugins.size() == editor_plugins_over->get_plugins_list().size()) {
+			for (int i = 0; i < sub_plugins.size(); i++) {
+				if (sub_plugins[i] != editor_plugins_over->get_plugins_list()[i]) {
+					same = false;
+				}
+			}
+		} else {
+			same = false;
+		}
+		if (!same) {
+			_display_top_editors(false);
+			_set_top_editors(sub_plugins);
+		}
 		_set_editing_top_editors(p_object);
 		_display_top_editors(true);
 	} else {
