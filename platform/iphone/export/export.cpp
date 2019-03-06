@@ -839,7 +839,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		}
 	}
 
-	if (!FileAccess::exists(dest_dir)) {
+	if (!DirAccess::exists(dest_dir)) {
 		return ERR_FILE_BAD_PATH;
 	}
 
