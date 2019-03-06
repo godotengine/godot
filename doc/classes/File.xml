@@ -84,6 +84,7 @@
 			</return>
 			<description>
 				Returns the whole file as a [String].
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
@@ -102,6 +103,7 @@
 			</argument>
 			<description>
 				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_double" qualifiers="const">
@@ -137,6 +139,7 @@
 			</return>
 			<description>
 				Returns the next line of the file as a [String].
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_md5" qualifiers="const">
@@ -162,6 +165,7 @@
 			</return>
 			<description>
 				Returns a [String] saved in Pascal format from the file.
+				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">
@@ -337,6 +341,7 @@
 			</argument>
 			<description>
 				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_double">
@@ -364,6 +369,7 @@
 			</argument>
 			<description>
 				Stores the given [String] as a line in the file.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_pascal_string">
@@ -373,6 +379,7 @@
 			</argument>
 			<description>
 				Stores the given [String] as a line in the file in Pascal format (i.e. also store the length of the string).
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_real">
@@ -391,6 +398,7 @@
 			</argument>
 			<description>
 				Stores the given [String] in the file.
+				Text will be encoded as UTF-8.
 			</description>
 		</method>
 		<method name="store_var">
