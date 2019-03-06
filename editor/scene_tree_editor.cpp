@@ -979,17 +979,6 @@ void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 }
 
 void SceneTreeEditor::_editor_settings_changed() {
-	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
-	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
-
-	if (enable_rl) {
-		tree->add_constant_override("draw_relationship_lines", 1);
-		tree->add_color_override("relationship_line_color", rl_color);
-		tree->add_constant_override("draw_guides", 0);
-	} else {
-		tree->add_constant_override("draw_relationship_lines", 0);
-		tree->add_constant_override("draw_guides", 1);
-	}
 }
 
 void SceneTreeEditor::_bind_methods() {

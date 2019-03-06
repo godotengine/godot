@@ -5073,7 +5073,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
 	EDITOR_DEF("interface/inspector/horizontal_vector_types_editing", true);
 	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
-	EDITOR_DEF("interface/inspector/resources_types_to_open_in_new_inspector", "SpatialMaterial,Script");
+	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "SpatialMaterial,Script,MeshLibrary,TileSet");
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 
 	theme_base = memnew(Control);

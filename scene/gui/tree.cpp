@@ -1416,12 +1416,15 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		TreeItem *c = p_item->children;
 
+		int prev_ofs = children_pos.y - cache.offset.y + p_draw_ofs.y;
+
 		while (c) {
 
 			if (cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root)) {
 				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
 				int parent_ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? cache.hseparation : cache.item_margin);
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + label_h / 2) - cache.offset + p_draw_ofs;
+
 				if (c->get_children() != NULL)
 					root_pos -= Point2i(cache.arrow->get_width(), 0);
 
@@ -1434,12 +1437,13 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				if (root_pos.y + line_width >= 0) {
 					VisualServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x - Math::floor(line_width / 2), root_pos.y), cache.relationship_line_color, line_width);
-					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), parent_pos, cache.relationship_line_color, line_width);
+					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y), Point2i(parent_pos.x, prev_ofs), cache.relationship_line_color, line_width);
 				}
 
 				if (htotal < 0) {
 					return -1;
 				}
+				prev_ofs = root_pos.y;
 			}
 
 			if (htotal >= 0) {
