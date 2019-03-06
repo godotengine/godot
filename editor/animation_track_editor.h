@@ -141,6 +141,7 @@ class AnimationTrackEdit : public Control {
 	Node *root;
 	Control *play_position; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos;
+	NodePath node_path;
 
 	Ref<Animation> animation;
 	int track;
@@ -212,7 +213,7 @@ public:
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
 	UndoRedo *get_undo_redo() const { return undo_redo; }
-
+	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
 	virtual Size2 get_minimum_size() const;
 
@@ -306,6 +307,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<AnimationTrackEdit *> track_edits;
 	Vector<AnimationTrackEditGroup *> groups;
 
+	bool animation_changing_awaiting_update;
+	void _animation_update();
 	int _get_track_selected();
 	void _animation_changed();
 	void _update_tracks();

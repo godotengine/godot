@@ -1621,8 +1621,13 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 
 	ERR_FAIL_INDEX(track, animation->get_track_count());
 
+	node_path = animation->track_get_path(p_track);
 	type_icon = type_icons[animation->track_get_type(track)];
 	selected_icon = get_icon("KeySelected", "EditorIcons");
+}
+
+NodePath AnimationTrackEdit::get_path() const {
+	return node_path;
 }
 
 Size2 AnimationTrackEdit::get_minimum_size() const {
@@ -1945,6 +1950,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (remove_rect.has_point(pos)) {
 			emit_signal("remove_request", track);
 			accept_event();
+			return;
 		}
 
 		if (bezier_edit_rect.has_point(pos)) {
@@ -2533,7 +2539,10 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 
 	int idx = p_track;
 	if (idx >= 0 && idx < animation->get_track_count()) {
-		_clear_selection();
+		selection.clear();
+		_clear_key_edit();
+		//all will be updated after remove anyway, and triggering update here raises error on tracks already removed
+
 		undo_redo->create_action(TTR("Remove Anim Track"));
 		undo_redo->add_do_method(animation.ptr(), "remove_track", idx);
 		undo_redo->add_undo_method(animation.ptr(), "add_track", animation->track_get_type(idx), idx);
@@ -3392,6 +3401,10 @@ void AnimationTrackEditor::_update_tracks() {
 
 void AnimationTrackEditor::_animation_changed() {
 
+	if (animation_changing_awaiting_update) {
+		return; //all will be updated, dont bother with anything
+	}
+
 	if (key_edit && key_edit->setting) {
 		//if editing a key, just update the edited track, makes refresh less costly
 		if (key_edit->track < track_edits.size()) {
@@ -3400,9 +3413,31 @@ void AnimationTrackEditor::_animation_changed() {
 		return;
 	}
 
+	animation_changing_awaiting_update = true;
+	call_deferred("_animation_update");
+}
+
+void AnimationTrackEditor::_animation_update() {
+
 	timeline->update();
 	timeline->update_values();
-	if (undo_redo->is_commiting_action()) {
+
+	bool same = true;
+
+	if (track_edits.size() == animation->get_track_count()) {
+		//check tracks are the same
+
+		for (int i = 0; i < track_edits.size(); i++) {
+			if (track_edits[i]->get_path() != animation->track_get_path(i)) {
+				same = false;
+				break;
+			}
+		}
+	} else {
+		same = false;
+	}
+
+	if (same) {
 		for (int i = 0; i < track_edits.size(); i++) {
 			track_edits[i]->update();
 		}
@@ -3418,6 +3453,8 @@ void AnimationTrackEditor::_animation_changed() {
 	step->set_block_signals(true);
 	step->set_value(animation->get_step());
 	step->set_block_signals(false);
+
+	animation_changing_awaiting_update = false;
 }
 
 MenuButton *AnimationTrackEditor::get_edit_menu() {
@@ -4712,10 +4749,12 @@ float AnimationTrackEditor::snap_time(float p_value) {
 void AnimationTrackEditor::_bind_methods() {
 
 	ClassDB::bind_method("_animation_changed", &AnimationTrackEditor::_animation_changed);
+	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
 	ClassDB::bind_method("_timeline_changed", &AnimationTrackEditor::_timeline_changed);
 	ClassDB::bind_method("_track_remove_request", &AnimationTrackEditor::_track_remove_request);
 	ClassDB::bind_method("_name_limit_changed", &AnimationTrackEditor::_name_limit_changed);
 	ClassDB::bind_method("_update_scroll", &AnimationTrackEditor::_update_scroll);
+	ClassDB::bind_method("_update_tracks", &AnimationTrackEditor::_update_tracks);
 	ClassDB::bind_method("_update_step", &AnimationTrackEditor::_update_step);
 	ClassDB::bind_method("_update_length", &AnimationTrackEditor::_update_length);
 	ClassDB::bind_method("_dropped_track", &AnimationTrackEditor::_dropped_track);
@@ -5017,6 +5056,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_copy_select->set_hide_root(true);
 	track_copy_dialog->add_child(track_copy_select);
 	track_copy_dialog->connect("confirmed", this, "_edit_menu_pressed", varray(EDIT_COPY_TRACKS_CONFIRM));
+	animation_changing_awaiting_update = false;
 }
 
 AnimationTrackEditor::~AnimationTrackEditor() {
