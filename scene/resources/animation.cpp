@@ -316,12 +316,15 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 							continue;
 						if (!d2.has("animation"))
 							continue;
+						if (!d2.has("loop"))
+							continue;
 
 						TKey<AnimationKey> ak;
 						ak.time = rt[i];
 						ak.value.start_offset = d2["start_offset"];
 						ak.value.end_offset = d2["end_offset"];
 						ak.value.animation = d2["animation"];
+						ak.value.loop = d2["loop"];
 
 						an->values.push_back(ak);
 					}
@@ -605,6 +608,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					clip["start_offset"] = vls[i].value.start_offset;
 					clip["end_offset"] = vls[i].value.end_offset;
 					clip["animation"] = vls[i].value.animation;
+					clip["loop"] = vls[i].value.loop;
 					clips.push_back(clip);
 					idx++;
 				}
@@ -1234,12 +1238,14 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 			ERR_FAIL_COND(!k.has("start_offset"));
 			ERR_FAIL_COND(!k.has("end_offset"));
 			ERR_FAIL_COND(!k.has("animation"));
+			ERR_FAIL_COND(!k.has("loop"));
 
 			TKey<AnimationKey> ak;
 			ak.time = p_time;
 			ak.value.start_offset = k["start_offset"];
 			ak.value.end_offset = k["end_offset"];
 			ak.value.animation = k["animation"];
+			ak.value.loop = k["loop"];
 			_insert(p_time, at->values, ak);
 
 			/*
@@ -1371,6 +1377,7 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			k["start_offset"] = at->values[p_key_idx].value.start_offset;
 			k["end_offset"] = at->values[p_key_idx].value.end_offset;
 			k["animation"] = at->values[p_key_idx].value.animation;
+			k["loop"] = at->values[p_key_idx].value.loop;
 			return k;
 
 			//return at->values[p_key_idx].value;
@@ -1552,10 +1559,12 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(!k.has("start_offset"));
 			ERR_FAIL_COND(!k.has("end_offset"));
 			ERR_FAIL_COND(!k.has("animation"));
+			ERR_FAIL_COND(!k.has("loop"));
 
 			at->values.write[p_key_idx].value.start_offset = k["start_offset"];
 			at->values.write[p_key_idx].value.end_offset = k["end_offset"];
 			at->values.write[p_key_idx].value.animation = k["animation"];
+			at->values.write[p_key_idx].value.animation = k["loop"];
 
 			//at->values.write[p_key_idx].value = p_value;
 
@@ -2636,11 +2645,11 @@ float Animation::audio_track_get_key_end_offset(int p_track, int p_key) const {
 
 //
 
-int Animation::animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, float p_start_offset, float p_end_offset) {
+int Animation::animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, float p_start_offset, float p_end_offset) { //, bool p_loop) {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
-	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, -1);
+	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, -1);
 
 	AnimationTrack *at = static_cast<AnimationTrack *>(t);
 
@@ -2653,6 +2662,7 @@ int Animation::animation_track_insert_key(int p_track, float p_time, const Strin
 	k.value.end_offset = p_end_offset;
 	if (k.value.end_offset < 0)
 		k.value.end_offset = 0;
+	k.value.loop = false;  //p_loop;
 
 	int key = _insert(p_time, at->values, k);
 
@@ -2690,6 +2700,21 @@ void Animation::animation_track_set_key_start_offset(int p_track, int p_key, flo
 		p_offset = 0;
 
 	at->values.write[p_key].value.start_offset = p_offset;
+
+	emit_changed();
+}
+
+void Animation::animation_track_set_key_loop(int p_track, int p_key, bool p_loop) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_ANIMATION);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+
+	ERR_FAIL_INDEX(p_key, at->values.size());
+
+	at->values.write[p_key].value.loop = p_loop;
 
 	emit_changed();
 }
@@ -2747,6 +2772,18 @@ float Animation::animation_track_get_key_end_offset(int p_track, int p_key) cons
 	ERR_FAIL_INDEX_V(p_key, at->values.size(), 0);
 
 	return at->values[p_key].value.end_offset;
+}
+bool Animation::animation_track_get_key_loop(int p_track, int p_key) const {
+
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
+	const Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, 0);
+
+	const AnimationTrack *at = static_cast<const AnimationTrack *>(t);
+
+	ERR_FAIL_INDEX_V(p_key, at->values.size(), 0);
+
+	return at->values[p_key].value.loop;
 }
 
 void Animation::set_length(float p_length) {
@@ -2927,13 +2964,16 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_start_offset", "idx", "key_idx"), &Animation::audio_track_get_key_start_offset);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_end_offset", "idx", "key_idx"), &Animation::audio_track_get_key_end_offset);
 
-	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track", "time", "animation", "start_offset", "end_offset"), &Animation::animation_track_insert_key, DEFVAL(0), DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track", "time", "animation", "start_offset", "end_offset"), &Animation::animation_track_insert_key, DEFVAL(0), DEFVAL(0)); //, "loop", DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_start_offset", "idx", "key_idx", "offset"), &Animation::animation_track_set_key_start_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_end_offset", "idx", "key_idx", "offset"), &Animation::animation_track_set_key_end_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_set_key_loop", "idx", "key_idx", "loop"), &Animation::animation_track_set_key_loop);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "idx", "key_idx"), &Animation::animation_track_get_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_start_offset", "idx", "key_idx"), &Animation::animation_track_get_key_start_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_end_offset", "idx", "key_idx"), &Animation::animation_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_loop", "idx", "key_idx"), &Animation::animation_track_get_key_loop);
 
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);

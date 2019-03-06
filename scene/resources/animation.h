@@ -185,9 +185,11 @@ private:
 		StringName animation;
 		float start_offset; //offset from start
 		float end_offset; //offset from end, if 0 then full length or infinite
+		bool loop;
 		AnimationKey() {
 			start_offset = 0;
 			end_offset = 0;
+			loop = false;
 		}
 	};
 
@@ -348,13 +350,15 @@ public:
 	float audio_track_get_key_start_offset(int p_track, int p_key) const;
 	float audio_track_get_key_end_offset(int p_track, int p_key) const;
 
-	int animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, float p_start_offset = 0, float p_end_offset = 0); //, float p_start_offset = 0, float p_end_offset = 0
+	int animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, float p_start_offset = 0, float p_end_offset = 0); //, bool p_loop = false); 
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
 	void animation_track_set_key_start_offset(int p_track, int p_key, float p_offset);
 	void animation_track_set_key_end_offset(int p_track, int p_key, float p_offset);
+	void animation_track_set_key_loop(int p_track, int p_key, bool p_loop);
 	StringName animation_track_get_key_animation(int p_track, int p_key) const;
 	float animation_track_get_key_start_offset(int p_track, int p_key) const;
 	float animation_track_get_key_end_offset(int p_track, int p_key) const;
+	bool animation_track_get_key_loop(int p_track, int p_key) const;
 
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
