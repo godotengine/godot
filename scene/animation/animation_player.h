@@ -104,15 +104,17 @@ private:
 		Vector3 scale_accum;
 		uint64_t accum_pass;
 
+		bool audio_playing;
+		float audio_start;
+		float audio_len;
+
 		bool animation_playing;
+
+		int audio_idx;
 		int animation_idx;
 		float animation_start;
 		float animation_len;
-
-		bool audio_playing;
-		int audio_idx;
-		float audio_start;
-		float audio_len;
+		
 
 		struct PropertyAnim {
 
@@ -158,12 +160,14 @@ private:
 				skeleton(NULL),
 				bone_idx(-1),
 				accum_pass(0),
-				audio_idx(-1),
 				audio_playing(false),
 				audio_start(0.0),
 				audio_len(0.0),
+				animation_playing(false),
+				audio_idx(-1),
 				animation_idx(-1),
-				animation_playing(false) {}
+				animation_start(0.0),
+				animation_len(0.0) {}
 	};
 
 	struct TrackNodeCacheKey {
