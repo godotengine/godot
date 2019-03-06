@@ -1215,23 +1215,14 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				if (OS::get_singleton()->get_ticks_msec() > until)
 					break;
 			}
-
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+
 			tabs->add_style_override("panel", editor->get_gui_base()->get_stylebox("DebuggerPanel", "EditorStyles"));
 			tabs->add_style_override("tab_fg", editor->get_gui_base()->get_stylebox("DebuggerTabFG", "EditorStyles"));
 			tabs->add_style_override("tab_bg", editor->get_gui_base()->get_stylebox("DebuggerTabBG", "EditorStyles"));
 			tabs->set_margin(MARGIN_LEFT, -EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_LEFT));
 			tabs->set_margin(MARGIN_RIGHT, EditorNode::get_singleton()->get_gui_base()->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles")->get_margin(MARGIN_RIGHT));
-
-			bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
-			Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
-
-			if (enable_rl) {
-				inspect_scene_tree->add_constant_override("draw_relationship_lines", 1);
-				inspect_scene_tree->add_color_override("relationship_line_color", rl_color);
-			} else
-				inspect_scene_tree->add_constant_override("draw_relationship_lines", 0);
 
 			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
 			step->set_icon(get_icon("DebugStep", "EditorIcons"));
@@ -1241,7 +1232,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
 			vmem_refresh->set_icon(get_icon("Reload", "EditorIcons"));
-
 		} break;
 	}
 }
