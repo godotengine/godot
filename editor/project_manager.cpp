@@ -1234,6 +1234,9 @@ void ProjectManager::_load_recent_projects() {
 	List<ProjectItem> projects;
 	List<ProjectItem> favorite_projects;
 
+	invalid_list.clear();
+	bool has_invalid = false;
+
 	for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 
 		String _name = E->get().name;
@@ -1261,7 +1264,9 @@ void ProjectManager::_load_recent_projects() {
 					last_modified = cache_modified;
 			}
 		} else {
+			has_invalid = true;
 			grayed = true;
+			invalid_list.push_back(project);
 		}
 
 		ProjectItem item(project, path, conf, config_version, last_modified, favorite, grayed, set_ordered_latest_modification);
@@ -1270,6 +1275,9 @@ void ProjectManager::_load_recent_projects() {
 		else
 			projects.push_back(item);
 	}
+
+	erase_invalid_btn->set_visible(has_invalid);
+
 	projects.sort();
 	favorite_projects.sort();
 
@@ -1700,6 +1708,21 @@ void ProjectManager::_erase_project_confirm() {
 	_load_recent_projects();
 }
 
+void ProjectManager::_erase_invalid_projects_confirm() {
+
+	if (invalid_list.size() == 0) {
+		return;
+	}
+	for (List<String>::Element *E = invalid_list.front(); E; E = E->next()) {
+		EditorSettings::get_singleton()->erase("projects/" + E->get());
+		EditorSettings::get_singleton()->erase("favorite_projects/" + E->get());
+	}
+	EditorSettings::get_singleton()->save();
+	invalid_list.clear();
+	last_clicked = "";
+	_load_recent_projects();
+}
+
 void ProjectManager::_erase_project() {
 
 	if (selected_list.size() == 0)
@@ -1707,6 +1730,15 @@ void ProjectManager::_erase_project() {
 
 	erase_ask->set_text(TTR("Remove project from the list? (Folder contents will not be modified)"));
 	erase_ask->popup_centered_minsize();
+}
+
+void ProjectManager::_erase_invalid_projects() {
+
+	if (invalid_list.size() == 0)
+		return;
+
+	erase_invalid_ask->set_text(TTR("Remove projects with invalid paths from the list?"));
+	erase_invalid_ask->popup_centered_minsize();
 }
 
 void ProjectManager::_language_selected(int p_id) {
@@ -1805,6 +1837,8 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_rename_project", &ProjectManager::_rename_project);
 	ClassDB::bind_method("_erase_project", &ProjectManager::_erase_project);
 	ClassDB::bind_method("_erase_project_confirm", &ProjectManager::_erase_project_confirm);
+	ClassDB::bind_method("_erase_invalid_projects", &ProjectManager::_erase_invalid_projects);
+	ClassDB::bind_method("_erase_invalid_projects_confirm", &ProjectManager::_erase_invalid_projects_confirm);
 	ClassDB::bind_method("_language_selected", &ProjectManager::_language_selected);
 	ClassDB::bind_method("_restart_confirm", &ProjectManager::_restart_confirm);
 	ClassDB::bind_method("_exit_dialog", &ProjectManager::_exit_dialog);
@@ -2042,6 +2076,12 @@ ProjectManager::ProjectManager() {
 	erase->connect("pressed", this, "_erase_project");
 	erase_btn = erase;
 
+	Button *erase_invalid = memnew(Button);
+	erase_invalid->set_text(TTR("Clean"));
+	tree_vb->add_child(erase_invalid);
+	erase_invalid->connect("pressed", this, "_erase_invalid_projects");
+	erase_invalid_btn = erase_invalid;
+
 	tree_vb->add_spacer();
 
 	if (StreamPeerSSL::is_available()) {
@@ -2109,6 +2149,11 @@ ProjectManager::ProjectManager() {
 	erase_ask->get_ok()->set_text(TTR("Remove"));
 	erase_ask->get_ok()->connect("pressed", this, "_erase_project_confirm");
 	gui_base->add_child(erase_ask);
+
+	erase_invalid_ask = memnew(ConfirmationDialog);
+	erase_invalid_ask->get_ok()->set_text(TTR("Remove"));
+	erase_invalid_ask->get_ok()->connect("pressed", this, "_erase_invalid_projects_confirm");
+	gui_base->add_child(erase_invalid_ask);
 
 	multi_open_ask = memnew(ConfirmationDialog);
 	multi_open_ask->get_ok()->set_text(TTR("Edit"));
