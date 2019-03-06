@@ -602,11 +602,14 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
 
+    const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
+    const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
+    
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(index);
 	mb->set_pressed(pressed);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
+	mb->set_position(pos);
+	mb->set_global_position(pos);
 	mb->set_button_mask(button_mask);
 	if (index == BUTTON_LEFT && pressed) {
 		mb->set_doubleclick([event clickCount] == 2);
