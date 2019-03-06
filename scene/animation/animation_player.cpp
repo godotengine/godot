@@ -761,8 +761,6 @@ AnimationPlayer::BlockData AnimationPlayer::get_animation_play_block(Animation *
 
 AnimationPlayer::BlockData AnimationPlayer::get_animation_block(Animation *a, int p_track, int p_key, AnimationPlayer *player) {
 
-	float start_time = a->track_get_key_time(p_track, p_key);
-
 	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
 	Ref<Animation> anim = player->get_animation(anim_name);
 	if(String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
@@ -771,10 +769,10 @@ AnimationPlayer::BlockData AnimationPlayer::get_animation_block(Animation *a, in
 		float length = anim->get_length();
 
 		length = MIN(MAX(0, length - start_ofs - end_ofs), length);
-		return BlockData(start_time, length);
+		return BlockData(a->track_get_key_time(p_track, p_key), length);
 	}
 
-	return BlockData(start_time, 0);
+	return BlockData(a->track_get_key_time(p_track, p_key), 0);
 }
 
 float AnimationPlayer::get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time) {

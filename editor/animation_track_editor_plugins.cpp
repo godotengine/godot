@@ -1061,22 +1061,12 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 			ofs += get_timeline()->get_name_limit();
 
 			int end = ofs + len * get_timeline()->get_zoom_scale();
-			int start = ofs;
 
 			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
 				use_hsize_cursor = true;
 				len_resizing_index = i;
 
-				//if (!editor->is_key_selected(get_track(), i)) {
-					//editor->_key_selected(i, true, get_track())
-				//	emit_signal("select_key", i, true);
-				//}
-
-			} /*else if (start >= get_timeline()->get_name_limit() && start <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - start) < 5 * EDSCALE) {
-				use_hsize_cursor = true;
-				len_resizing_index = i;
 			}
-			*/
 		}
 
 		if (use_hsize_cursor) {
@@ -1331,9 +1321,9 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 
 			for (int i = 0; i < animation->get_track_count(); i++) {
 
-				float h = (rect.size.height - 2) / animation->get_track_count();
+				float height = (rect.size.height - 2) / animation->get_track_count();
 
-				int y = 2 + h * i + h / 2;
+				int y = 2 + height * i + height / 2;
 
 				for (int j = 0; j < animation->track_get_key_count(i); j++) {
 
@@ -1434,22 +1424,12 @@ void AnimationTrackEditTypeAnimation::_gui_input(const Ref<InputEvent> &p_event)
 			ofs += get_timeline()->get_name_limit();
 
 			int end = ofs + len * get_timeline()->get_zoom_scale();
-			int start = ofs;
 
 			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
 				use_hsize_cursor = true;
 				len_resizing_index = i;
 
-				//if (!editor->is_key_selected(get_track(), i)) {
-				//editor->_key_selected(i, true, get_track())
-				//	emit_signal("select_key", i, true);
-				//}
-
-			} /*else if (start >= get_timeline()->get_name_limit() && start <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - start) < 5 * EDSCALE) {
-				use_hsize_cursor = true;
-				len_resizing_index = i;
 			}
-			*/
 		}
 
 		if (use_hsize_cursor) {
