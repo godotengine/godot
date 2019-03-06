@@ -211,7 +211,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
 	}
 
-	if (!FileAccess::exists(p_path.get_base_dir())) {
+	if (!DirAccess::exists(p_path.get_base_dir())) {
 		return ERR_FILE_BAD_PATH;
 	}
 

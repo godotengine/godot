@@ -1499,7 +1499,7 @@ public:
 			}
 		}
 
-		if (!FileAccess::exists(p_path.get_base_dir())) {
+		if (!DirAccess::exists(p_path.get_base_dir())) {
 			return ERR_FILE_BAD_PATH;
 		}
 
