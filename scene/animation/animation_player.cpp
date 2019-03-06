@@ -602,22 +602,26 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				int idx = a->track_find_key(i, p_time);
 				if (idx != -1) {
-					BlockData audioblock = get_audio_play_block(a, i, idx, p_time);
 					Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-					if (stream.is_valid() && audioblock.length > 0) {
-						if (nc->audio_idx != idx) {
-							nc->audio_idx = idx;
+					if (stream.is_valid()) {
+						BlockData audioblock = get_audio_play_block(a, i, idx, p_time);
+						if (audioblock.length > 0) {
+							if (nc->audio_idx != idx) {
+								nc->audio_idx = idx;
 
-							float local_start_pos = get_local_audio_pos(a, i, idx, p_time);
+								float local_pos = get_local_audio_pos(a, i, idx, p_time);
 							
-							nc->node->call("set_stream", stream);
-							nc->node->call("play", local_start_pos);
+								nc->node->call("set_stream", stream);
+								nc->node->call("play", local_pos);
 
-							nc->audio_playing = true;
-							playing_caches.insert(nc);
+								nc->audio_playing = true;
+								playing_caches.insert(nc);
 
-							nc->audio_start = audioblock.pos;
-							nc->audio_len = audioblock.length;
+								nc->audio_start = audioblock.pos;
+								nc->audio_len = audioblock.length;
+							}
+						} else {
+							stop = true;
 						}
 					} else {
 						stop = true;
@@ -647,64 +651,76 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_ANIMATION: {
-
 				AnimationPlayer *player = Object::cast_to<AnimationPlayer>(nc->node);
 				if (!player)
 					continue;
 
-				if (p_delta == 0 || p_seeked) {
-					//seek
-					int idx = a->track_find_key(i, p_time);
-					if (idx < 0)
-						continue;
+				bool stop = false;
 
-					float pos = a->track_get_key_time(i, idx);
+				if (p_seeked) {
+					nc->animation_idx = -1;
+				}
 
+				int idx = a->track_find_key(i, p_time);
+				if (idx != -1) {
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
-					if (String(anim_name) == "[stop]" || !player->has_animation(anim_name))
-						continue;
+					if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
+						BlockData animationblock = get_animation_play_block(a, i, idx, p_time, player);
+						if (animationblock.length > 0) {
+							if (p_delta == 0 || p_seeked) {
+								stop = true;
 
-					Ref<Animation> anim = player->get_animation(anim_name);
+								float local_pos = get_local_animation_pos(a, i, idx, p_time);
+								player->set_assigned_animation(anim_name);
+								player->seek(local_pos, true);
 
-					float at_anim_pos;
+							} else if (nc->animation_idx != idx) {
+								nc->animation_idx = idx;
 
-					if (anim->has_loop()) {
-						at_anim_pos = Math::fposmod(p_time - pos, anim->get_length()); //seek to loop
-					} else {
-						at_anim_pos = MIN(anim->get_length(), p_time - pos); //seek to end
-					}
+								float local_pos = get_local_animation_pos(a, i, idx, p_time);
 
-					if (player->is_playing() || p_seeked) {
-						player->play(anim_name);
-						player->seek(at_anim_pos);
-						nc->animation_playing = true;
-						playing_caches.insert(nc);
+								player->play(anim_name);
+								player->seek(local_pos);
 
-					} else {
-						player->set_assigned_animation(anim_name);
+								nc->animation_playing = true;
+								playing_caches.insert(nc);
 
-						player->seek(at_anim_pos, true);
-					}
-				} else {
-					//find stuff to play
-					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play);
-					if (to_play.size()) {
-						int idx = to_play.back()->get();
-
-						StringName anim_name = a->animation_track_get_key_animation(i, idx);
-						if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
-
-							if (playing_caches.has(nc)) {
-								playing_caches.erase(nc);
-								player->stop();
-								nc->animation_playing = false;
+								nc->animation_start = animationblock.pos;
+								nc->animation_len = animationblock.length;
 							}
 						} else {
-							player->play(anim_name);
-							nc->animation_playing = true;
-							playing_caches.insert(nc);
+							if ((p_delta == 0 || p_seeked) || nc->animation_playing) {
+								stop = true;
+
+								float local_length = get_local_animation_end_pos(a, i, idx, player);
+								player->set_assigned_animation(anim_name);
+								player->seek(local_length, true);
+							}
 						}
+					} else {
+						stop = true;
+					}
+				}
+
+				if (!stop && nc->animation_playing) {
+					int dir = sgn(p_delta);
+					if ((dir > 0 && p_time < nc->animation_start) || (dir > 0 && p_time >= a->get_length()) || (dir < 0 && p_time > nc->animation_start) || (dir < 0 && p_time <= 0)) {
+						stop = true;
+
+					} else {
+						float animation_clamp_len = MAX(MIN((nc->animation_start + nc->animation_len), a->get_length()), 0);
+						float value = animation_clamp_len - p_time;
+						if (value <= 0) {
+							stop = true;
+						}
+					}
+				}
+
+				if (stop) {
+					if (playing_caches.has(nc)) {
+						playing_caches.erase(nc);
+						player->stop();
+						nc->animation_playing = false;
 					}
 				}
 
@@ -713,15 +729,63 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 	}
 }
 
+float AnimationPlayer::get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player) {
+	float start_time = a->track_get_key_time(p_track, p_key);
+
+	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
+	Ref<Animation> anim = player->get_animation(anim_name);
+	if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
+		float end_ofs = a->animation_track_get_key_end_offset(p_track, p_key);
+		float length = anim->get_length();
+
+		return MIN(MAX(0, length - end_ofs), length);
+	}
+
+	return 0;
+
+	//return get_animation_block(a, p_track, p_key, player).length;
+}
+
+float AnimationPlayer::get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time) {
+	return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->animation_track_get_key_start_offset(p_track, p_key);
+}
+
+AnimationPlayer::BlockData AnimationPlayer::get_animation_play_block(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player) {
+
+	BlockData blockData = get_animation_block(a, p_track, p_key, player);
+	float local_pos = p_time - blockData.pos;
+	float newLen = blockData.length - local_pos;
+
+	return BlockData(p_time, newLen);
+}
+
+AnimationPlayer::BlockData AnimationPlayer::get_animation_block(Animation *a, int p_track, int p_key, AnimationPlayer *player) {
+
+	float start_time = a->track_get_key_time(p_track, p_key);
+
+	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
+	Ref<Animation> anim = player->get_animation(anim_name);
+	if(String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
+		float start_ofs = a->animation_track_get_key_start_offset(p_track, p_key);
+		float end_ofs = a->animation_track_get_key_end_offset(p_track, p_key);
+		float length = anim->get_length();
+
+		length = MIN(MAX(0, length - start_ofs - end_ofs), length);
+		return BlockData(start_time, length);
+	}
+
+	return BlockData(start_time, 0);
+}
+
 float AnimationPlayer::get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time) {
 	return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->audio_track_get_key_start_offset(p_track, p_key);
 }
 
 AnimationPlayer::BlockData AnimationPlayer::get_audio_play_block(Animation *a, int p_track, int p_key, float p_time) {
 
-	BlockData audio_block = get_audio_block(a, p_track, p_key);
-	float local_pos = p_time - audio_block.pos;
-	float newLen = audio_block.length - local_pos;
+	BlockData blockData = get_audio_block(a, p_track, p_key);
+	float local_pos = p_time - blockData.pos;
+	float newLen = blockData.length - local_pos;
 
 	return BlockData(p_time, newLen);
 }

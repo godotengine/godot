@@ -104,12 +104,15 @@ private:
 		Vector3 scale_accum;
 		uint64_t accum_pass;
 
+		bool animation_playing;
+		int animation_idx;
+		float animation_start;
+		float animation_len;
+
 		bool audio_playing;
+		int audio_idx;
 		float audio_start;
 		float audio_len;
-		int audio_idx;
-
-		bool animation_playing;
 
 		struct PropertyAnim {
 
@@ -159,6 +162,7 @@ private:
 				audio_playing(false),
 				audio_start(0.0),
 				audio_len(0.0),
+				animation_idx(-1),
 				animation_playing(false) {}
 	};
 
@@ -282,6 +286,11 @@ private:
 	float get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time);
 	BlockData get_audio_play_block(Animation *a, int p_track, int p_key, float p_time);
 	BlockData get_audio_block(Animation *a, int p_track, int p_key);
+
+	float get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time);
+	float get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player);
+	BlockData get_animation_play_block(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
+	BlockData get_animation_block(Animation *a, int p_track, int p_key, AnimationPlayer *player);
 
 	// bind helpers
 	PoolVector<String> _get_animation_list() const {

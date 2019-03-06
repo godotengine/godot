@@ -152,6 +152,8 @@ public:
 	virtual bool is_key_selectable_by_distance() const;
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right);
 
+	//float alterLength(float len, float start_ofs, float end_ofs);
+
 	void set_node(Object *p_object);
 	AnimationTrackEditTypeAnimation();
 };

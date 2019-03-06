@@ -832,22 +832,6 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		return;
 	}
 
-	float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), p_index);
-	float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), p_index);
-
-	if (len_resizing && p_index == len_resizing_index) {
-		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
-		if (len_resizing_start) {
-			start_ofs += ofs_local;
-			if (start_ofs < 0)
-				start_ofs = 0;
-		} else {
-			end_ofs += ofs_local;
-			if (end_ofs < 0)
-				end_ofs = 0;
-		}
-	}
-
 	Ref<Font> font = get_font("font", "Label");
 	float fh = int(font->get_height() * 1.5);
 
@@ -862,6 +846,24 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	}
 
 	int pixel_total_len = len * p_pixels_sec;
+
+	float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), p_index);
+	float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), p_index);
+
+	//////////////
+
+	if (len_resizing && p_index == len_resizing_index) {
+		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
+		if (len_resizing_start) {
+			start_ofs += ofs_local;
+			if (start_ofs < 0)
+				start_ofs = 0;
+		} else {
+			end_ofs += ofs_local;
+			if (end_ofs < 0)
+				end_ofs = 0;
+		}
+	}
 
 	len -= end_ofs;
 	len -= start_ofs;
@@ -893,6 +895,8 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	if (to_x <= from_x) {
 		to_x = from_x + 1;
 	}
+
+	//////////////
 
 	int h = get_size().height;
 	Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh);
@@ -1165,8 +1169,24 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
 
 	if (anim != "[stop]" && ap->has_animation(anim)) {
+		float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+		float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
 
 		float len = ap->get_animation(anim)->get_length();
+
+		/*
+		if (len == 0) {
+
+			Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
+			len = preview->get_length();
+		}
+		*/
+
+		len -= end_ofs;
+		len -= start_ofs;
+		if (len <= 0.001) {
+			len = 0.001;
+		}
 
 		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
 			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
@@ -1184,6 +1204,42 @@ bool AnimationTrackEditTypeAnimation::is_key_selectable_by_distance() const {
 
 	return false;
 }
+
+/*
+float AnimationTrackEditTypeAnimation::alterLength(float len, float start_ofs, float end_ofs) {
+	len -= end_ofs;
+	len -= start_ofs;
+
+	if (len <= 0.001) {
+		len = 0.001;
+	}
+
+	int pixel_len = len * p_pixels_sec;
+
+	int pixel_begin = p_x;
+	int pixel_end = p_x + pixel_len;
+
+	if (pixel_end < p_clip_left)
+		return;
+
+	if (pixel_begin > p_clip_right)
+		return;
+
+	int from_x = MAX(pixel_begin, p_clip_left);
+	int to_x = MIN(pixel_end, p_clip_right);
+
+	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+		float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+		int limit_x = pixel_begin + limit * p_pixels_sec;
+		to_x = MIN(limit_x, to_x);
+	}
+
+	if (to_x <= from_x) {
+		to_x = from_x + 1; //return;
+	}
+}
+*/
+
 void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
 	Object *object = ObjectDB::get_instance(id);
@@ -1201,13 +1257,38 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 	}
 
 	String anim = get_animation()->animation_track_get_key_animation(get_track(), p_index);
-
 	if (anim != "[stop]" && ap->has_animation(anim)) {
-
 		float len = ap->get_animation(anim)->get_length();
 
-		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
-			len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+		//if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+		//	len = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+		//}
+
+		//int pixel_total_len = len * p_pixels_sec;
+
+		float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), p_index);
+		float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), p_index);
+
+		/////////////
+
+		if (len_resizing && p_index == len_resizing_index) {
+			float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
+			if (len_resizing_start) {
+				start_ofs += ofs_local;
+				if (start_ofs < 0)
+					start_ofs = 0;
+			} else {
+				end_ofs += ofs_local;
+				if (end_ofs < 0)
+					end_ofs = 0;
+			}
+		}
+
+		len -= end_ofs;
+		len -= start_ofs;
+
+		if (len <= 0.001) {
+			len = 0.001;
 		}
 
 		int pixel_len = len * p_pixels_sec;
@@ -1224,13 +1305,23 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
 
-		if (to_x <= from_x)
-			return;
+		if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
+			float limit = MIN(len, get_animation()->track_get_key_time(get_track(), p_index + 1) - get_animation()->track_get_key_time(get_track(), p_index));
+			int limit_x = pixel_begin + limit * p_pixels_sec;
+			to_x = MIN(limit_x, to_x);
+		}
+
+		if (to_x <= from_x) {
+			to_x = from_x + 1; //return;
+		}
+
+		/////////////
 
 		Ref<Font> font = get_font("font", "Label");
 		int fh = font->get_height() * 1.5;
 
-		Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
+		int h = get_size().height;
+		Rect2 rect = Rect2(from_x, (h - fh) / 2, to_x - from_x, fh); //Rect2 rect(from_x, int(get_size().height - fh) / 2, to_x - from_x, fh);
 
 		Color color = get_color("font_color", "Label");
 		Color bg = color;
@@ -1253,6 +1344,8 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 				for (int j = 0; j < animation->track_get_key_count(i); j++) {
 
 					float ofs = animation->track_get_key_time(i, j);
+					//ofs += start_ofs;
+
 					int x = p_x + ofs * p_pixels_sec + 2;
 
 					if (x < from_x || x >= (to_x - 4))
@@ -1273,6 +1366,15 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		int limit = to_x - from_x - 4;
 		if (limit > 0) {
 			draw_string(font, Point2(from_x + 2, int(get_size().height - font->get_height()) / 2 + font->get_ascent()), anim, color);
+		}
+
+		Color cut_color = get_color("accent_color", "Editor");
+		cut_color.a = 0.7;
+		if (start_ofs > 0 && pixel_begin > p_clip_left) {
+			draw_rect(Rect2(pixel_begin, rect.position.y, 1, rect.size.y), cut_color);
+		}
+		if (end_ofs > 0 && pixel_end < p_clip_right) {
+			draw_rect(Rect2(pixel_end, rect.position.y, 1, rect.size.y), cut_color);
 		}
 
 		if (p_selected) {
@@ -1300,15 +1402,14 @@ void AnimationTrackEditTypeAnimation::_gui_input(const Ref<InputEvent> &p_event)
 	if (!len_resizing && mm.is_valid()) {
 		bool use_hsize_cursor = false;
 		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
-			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
-			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
-
 			Object *object = ObjectDB::get_instance(id);
 
 			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(object);
 
 			String anim = get_animation()->animation_track_get_key_animation(get_track(), i);
 
+			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
+			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
 			float len = 0;
 			if (anim != "[stop]" && ap->has_animation(anim)) {
 				len = ap->get_animation(anim)->get_length();
