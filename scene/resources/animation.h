@@ -354,11 +354,11 @@ public:
 	void animation_track_set_key_animation(int p_track, int p_key, const StringName &p_animation);
 	void animation_track_set_key_start_offset(int p_track, int p_key, float p_offset);
 	void animation_track_set_key_end_offset(int p_track, int p_key, float p_offset);
-	void animation_track_set_key_loop(int p_track, int p_key, bool p_loop);
+	//void animation_track_set_key_loop(int p_track, int p_key, bool p_loop);
 	StringName animation_track_get_key_animation(int p_track, int p_key) const;
 	float animation_track_get_key_start_offset(int p_track, int p_key) const;
 	float animation_track_get_key_end_offset(int p_track, int p_key) const;
-	bool animation_track_get_key_loop(int p_track, int p_key) const;
+	//bool animation_track_get_key_loop(int p_track, int p_key) const;
 
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);

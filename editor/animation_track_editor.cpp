@@ -430,6 +430,7 @@ public:
 					setting = false;
 					return true;
 				}
+				/*
 				if (name == "loop") {
 
 					float value = p_value;
@@ -446,6 +447,7 @@ public:
 					setting = false;
 					return true;
 				}
+				*/
 
 			} break;
 		}
@@ -569,10 +571,12 @@ public:
 					r_ret = animation->animation_track_get_key_end_offset(track, key);
 					return true;
 				}
+				/*
 				if (name == "loop") {
 					r_ret = animation->animation_track_get_key_loop(track, key);
 					return true;
 				}
+				*/
 
 			} break;
 		}
@@ -694,7 +698,7 @@ public:
 				p_list->push_back(PropertyInfo(Variant::STRING, "animation", PROPERTY_HINT_ENUM, animations));
 				p_list->push_back(PropertyInfo(Variant::REAL, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 				p_list->push_back(PropertyInfo(Variant::REAL, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
-				p_list->push_back(PropertyInfo(Variant::BOOL, "loop")); //, PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
+				//p_list->push_back(PropertyInfo(Variant::BOOL, "loop")); //, PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 
 			} break;
 		}
@@ -1921,9 +1925,9 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += "Start (s): " + rtos(so) + "\n";
 					float eo = animation->animation_track_get_key_end_offset(track, key_idx);
 					text += "End (s): " + rtos(eo) + "\n";
-					bool lo = animation->animation_track_get_key_loop(track, key_idx);
-					String value = lo ? "true" : "false";
-					text += "Loop (s): " + value + "\n";
+					//bool lo = animation->animation_track_get_key_loop(track, key_idx);
+					//String value = lo ? "true" : "false";
+					//text += "Loop (s): " + value + "\n";
 
 				} break;
 			}
@@ -3861,7 +3865,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			ak["animation"] = "[stop]";
 			ak["start_offset"] = 0;
 			ak["end_offset"] = 0;
-			ak["loop"] = false;
+			//ak["loop"] = false;
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, ak);

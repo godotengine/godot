@@ -316,15 +316,15 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 							continue;
 						if (!d2.has("animation"))
 							continue;
-						if (!d2.has("loop"))
-							continue;
+						//if (!d2.has("loop"))
+						//	continue;
 
 						TKey<AnimationKey> ak;
 						ak.time = rt[i];
 						ak.value.start_offset = d2["start_offset"];
 						ak.value.end_offset = d2["end_offset"];
 						ak.value.animation = d2["animation"];
-						ak.value.loop = d2["loop"];
+						//ak.value.loop = d2["loop"];
 
 						an->values.push_back(ak);
 					}
@@ -608,7 +608,7 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 					clip["start_offset"] = vls[i].value.start_offset;
 					clip["end_offset"] = vls[i].value.end_offset;
 					clip["animation"] = vls[i].value.animation;
-					clip["loop"] = vls[i].value.loop;
+					//clip["loop"] = vls[i].value.loop;
 					clips.push_back(clip);
 					idx++;
 				}
@@ -1238,14 +1238,14 @@ void Animation::track_insert_key(int p_track, float p_time, const Variant &p_key
 			ERR_FAIL_COND(!k.has("start_offset"));
 			ERR_FAIL_COND(!k.has("end_offset"));
 			ERR_FAIL_COND(!k.has("animation"));
-			ERR_FAIL_COND(!k.has("loop"));
+			//ERR_FAIL_COND(!k.has("loop"));
 
 			TKey<AnimationKey> ak;
 			ak.time = p_time;
 			ak.value.start_offset = k["start_offset"];
 			ak.value.end_offset = k["end_offset"];
 			ak.value.animation = k["animation"];
-			ak.value.loop = k["loop"];
+			//ak.value.loop = k["loop"];
 			_insert(p_time, at->values, ak);
 
 			/*
@@ -1377,7 +1377,7 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			k["start_offset"] = at->values[p_key_idx].value.start_offset;
 			k["end_offset"] = at->values[p_key_idx].value.end_offset;
 			k["animation"] = at->values[p_key_idx].value.animation;
-			k["loop"] = at->values[p_key_idx].value.loop;
+			//k["loop"] = at->values[p_key_idx].value.loop;
 			return k;
 
 			//return at->values[p_key_idx].value;
@@ -1559,12 +1559,12 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			ERR_FAIL_COND(!k.has("start_offset"));
 			ERR_FAIL_COND(!k.has("end_offset"));
 			ERR_FAIL_COND(!k.has("animation"));
-			ERR_FAIL_COND(!k.has("loop"));
+			//ERR_FAIL_COND(!k.has("loop"));
 
 			at->values.write[p_key_idx].value.start_offset = k["start_offset"];
 			at->values.write[p_key_idx].value.end_offset = k["end_offset"];
 			at->values.write[p_key_idx].value.animation = k["animation"];
-			at->values.write[p_key_idx].value.animation = k["loop"];
+			//at->values.write[p_key_idx].value.animation = k["loop"];
 
 			//at->values.write[p_key_idx].value = p_value;
 
@@ -2662,7 +2662,7 @@ int Animation::animation_track_insert_key(int p_track, float p_time, const Strin
 	k.value.end_offset = p_end_offset;
 	if (k.value.end_offset < 0)
 		k.value.end_offset = 0;
-	k.value.loop = false;  //p_loop;
+	//k.value.loop = false;  //p_loop;
 
 	int key = _insert(p_time, at->values, k);
 
@@ -2704,6 +2704,7 @@ void Animation::animation_track_set_key_start_offset(int p_track, int p_key, flo
 	emit_changed();
 }
 
+/*
 void Animation::animation_track_set_key_loop(int p_track, int p_key, bool p_loop) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
@@ -2718,6 +2719,7 @@ void Animation::animation_track_set_key_loop(int p_track, int p_key, bool p_loop
 
 	emit_changed();
 }
+*/
 
 void Animation::animation_track_set_key_end_offset(int p_track, int p_key, float p_offset) {
 
@@ -2773,6 +2775,7 @@ float Animation::animation_track_get_key_end_offset(int p_track, int p_key) cons
 
 	return at->values[p_key].value.end_offset;
 }
+/*
 bool Animation::animation_track_get_key_loop(int p_track, int p_key) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
@@ -2785,6 +2788,7 @@ bool Animation::animation_track_get_key_loop(int p_track, int p_key) const {
 
 	return at->values[p_key].value.loop;
 }
+*/
 
 void Animation::set_length(float p_length) {
 
@@ -2969,11 +2973,11 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_start_offset", "idx", "key_idx", "offset"), &Animation::animation_track_set_key_start_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_end_offset", "idx", "key_idx", "offset"), &Animation::animation_track_set_key_end_offset);
-	ClassDB::bind_method(D_METHOD("animation_track_set_key_loop", "idx", "key_idx", "loop"), &Animation::animation_track_set_key_loop);
+	//ClassDB::bind_method(D_METHOD("animation_track_set_key_loop", "idx", "key_idx", "loop"), &Animation::animation_track_set_key_loop);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "idx", "key_idx"), &Animation::animation_track_get_key_animation);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_start_offset", "idx", "key_idx"), &Animation::animation_track_get_key_start_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_end_offset", "idx", "key_idx"), &Animation::animation_track_get_key_end_offset);
-	ClassDB::bind_method(D_METHOD("animation_track_get_key_loop", "idx", "key_idx"), &Animation::animation_track_get_key_loop);
+	//ClassDB::bind_method(D_METHOD("animation_track_get_key_loop", "idx", "key_idx"), &Animation::animation_track_get_key_loop);
 
 	ClassDB::bind_method(D_METHOD("set_length", "time_sec"), &Animation::set_length);
 	ClassDB::bind_method(D_METHOD("get_length"), &Animation::get_length);

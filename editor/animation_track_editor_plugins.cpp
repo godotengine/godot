@@ -1294,6 +1294,128 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 	}
 }
 
+void AnimationTrackEditTypeAnimation::_gui_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (!len_resizing && mm.is_valid()) {
+		bool use_hsize_cursor = false;
+		for (int i = 0; i < get_animation()->track_get_key_count(get_track()); i++) {
+			float start_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), i);
+			float end_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), i);
+
+			Object *object = ObjectDB::get_instance(id);
+
+			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(object);
+
+			String anim = get_animation()->animation_track_get_key_animation(get_track(), i);
+
+			float len = 0;
+			if (anim != "[stop]" && ap->has_animation(anim)) {
+				len = ap->get_animation(anim)->get_length();
+			}
+
+			/*
+			if (len == 0) {
+				Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
+				float preview_len = preview->get_length();
+				len = preview_len;
+			}
+			*/
+
+			len -= end_ofs;
+			len -= start_ofs;
+			if (len <= 0.001) {
+				len = 0.001;
+			}
+
+			if (get_animation()->track_get_key_count(get_track()) > i + 1) {
+				len = MIN(len, get_animation()->track_get_key_time(get_track(), i + 1) - get_animation()->track_get_key_time(get_track(), i));
+			}
+
+			float ofs = get_animation()->track_get_key_time(get_track(), i);
+
+			ofs -= get_timeline()->get_value();
+			ofs *= get_timeline()->get_zoom_scale();
+			ofs += get_timeline()->get_name_limit();
+
+			int end = ofs + len * get_timeline()->get_zoom_scale();
+			int start = ofs;
+
+			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+
+				//if (!editor->is_key_selected(get_track(), i)) {
+				//editor->_key_selected(i, true, get_track())
+				//	emit_signal("select_key", i, true);
+				//}
+
+			} /*else if (start >= get_timeline()->get_name_limit() && start <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - start) < 5 * EDSCALE) {
+				use_hsize_cursor = true;
+				len_resizing_index = i;
+			}
+			*/
+		}
+
+		if (use_hsize_cursor) {
+			set_default_cursor_shape(CURSOR_HSIZE);
+		} else {
+			set_default_cursor_shape(CURSOR_ARROW);
+		}
+	}
+
+	if (len_resizing && mm.is_valid()) {
+		len_resizing_rel += mm->get_relative().x;
+		len_resizing_start = mm->get_shift();
+		update();
+		accept_event();
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && get_default_cursor_shape() == CURSOR_HSIZE) {
+
+		len_resizing = true;
+		len_resizing_start = mb->get_shift();
+		len_resizing_from_px = mb->get_position().x;
+		len_resizing_rel = 0;
+		update();
+		accept_event();
+		return;
+	}
+
+	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+
+		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
+		if (len_resizing_start) {
+			float prev_ofs = get_animation()->animation_track_get_key_start_offset(get_track(), len_resizing_index);
+			*get_block_animation_update_ptr() = true;
+			get_undo_redo()->create_action(TTR("Change Animation Track Clip Start Offset"));
+			get_undo_redo()->add_do_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
+			get_undo_redo()->add_undo_method(get_animation().ptr(), "animation_track_set_key_start_offset", get_track(), len_resizing_index, prev_ofs);
+			get_undo_redo()->commit_action();
+			*get_block_animation_update_ptr() = false;
+
+		} else {
+			float prev_ofs = get_animation()->animation_track_get_key_end_offset(get_track(), len_resizing_index);
+			*get_block_animation_update_ptr() = true;
+			get_undo_redo()->create_action(TTR("Change Animation Track Clip End Offset"));
+			get_undo_redo()->add_do_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs + ofs_local);
+			get_undo_redo()->add_undo_method(get_animation().ptr(), "animation_track_set_key_end_offset", get_track(), len_resizing_index, prev_ofs);
+			get_undo_redo()->commit_action();
+			*get_block_animation_update_ptr() = false;
+		}
+
+		len_resizing = false;
+		len_resizing_index = -1;
+		update();
+		accept_event();
+		return;
+	}
+
+	AnimationTrackEdit::_gui_input(p_event);
+}
+
 void AnimationTrackEditTypeAnimation::set_node(Object *p_object) {
 
 	id = p_object->get_instance_id();
