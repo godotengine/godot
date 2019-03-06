@@ -702,9 +702,11 @@ public:
 		/* if we can assume that the line segment starts outside the circle (e.g. for continuous time collision detection) then the following can be skipped and we can just return the equivalent of res1 */
 		sqrtterm = Math::sqrt(sqrtterm);
 		real_t res1 = (-b - sqrtterm) / (2 * a);
-		//real_t res2 = ( -b + sqrtterm ) / (2 * a);
+		real_t res2 = (-b + sqrtterm) / (2 * a);
 
-		return (res1 >= 0 && res1 <= 1) ? res1 : -1;
+		if (res1 >= 0 && res1 <= 1) return res1;
+		if (res2 >= 0 && res2 <= 1) return res2;
+		return -1;
 	}
 
 	static inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
