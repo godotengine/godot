@@ -34,7 +34,10 @@
 #include "core/io/ip.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/project_settings.h"
-#include "tls/mbedtls/wrapper/include/openssl/ssl.h"
+#if defined(LWS_OPENSSL_SUPPORT)
+// Not openssl, just the mbedtls wrapper
+#include "openssl/ssl.h"
+#endif
 
 Error LWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
 
@@ -121,6 +124,7 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 	LWSPeer::PeerData *peer_data = (LWSPeer::PeerData *)user;
 
 	switch (reason) {
+#if defined(LWS_OPENSSL_SUPPORT)
 		case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS: {
 			PoolByteArray arr = StreamPeerSSL::get_project_cert_array();
 			if (arr.size() > 0)
@@ -128,7 +132,7 @@ int LWSClient::_handle_cb(struct lws *wsi, enum lws_callback_reasons reason, voi
 			else if (verify_ssl)
 				WARN_PRINTS("No CA cert specified in project settings, SSL will not work");
 		} break;
-
+#endif
 		case LWS_CALLBACK_CLIENT_ESTABLISHED:
 			peer->set_wsi(wsi, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 			peer_data->peer_id = 0;
