@@ -124,6 +124,10 @@ String CollisionShape::get_configuration_warning() const {
 		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it!");
 	}
 
+	if (shape->is_class("PlaneShape")) {
+		return TTR("Plane shapes don't work well and will be removed in future versions. Please don't use them.");
+	}
+
 	return String();
 }
 

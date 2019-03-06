@@ -238,16 +238,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float default_contrast = 0.25;
 
 	//Theme settings
-	Color accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
-	Color base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
-	float contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+	Color accent_color = EDITOR_GET("interface/theme/accent_color");
+	Color base_color = EDITOR_GET("interface/theme/base_color");
+	float contrast = EDITOR_GET("interface/theme/contrast");
+	float relationship_line_opacity = EDITOR_GET("interface/theme/relationship_line_opacity");
 
-	String preset = EDITOR_DEF("interface/theme/preset", "Default");
+	String preset = EDITOR_GET("interface/theme/preset");
 
-	bool highlight_tabs = EDITOR_DEF("interface/theme/highlight_tabs", false);
-	int border_size = EDITOR_DEF("interface/theme/border_size", 1);
+	bool highlight_tabs = EDITOR_GET("interface/theme/highlight_tabs");
+	int border_size = EDITOR_GET("interface/theme/border_size");
 
-	bool use_gn_headers = EDITOR_DEF("interface/theme/use_graph_node_headers", false);
+	bool use_gn_headers = EDITOR_GET("interface/theme/use_graph_node_headers");
 
 	Color preset_accent_color;
 	Color preset_base_color;
@@ -260,9 +261,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_base_color = Color::html("#323b4f");
 		preset_contrast = default_contrast;
 	} else if (preset == "Custom") {
-		accent_color = EDITOR_DEF("interface/theme/accent_color", Color::html("#699ce8"));
-		base_color = EDITOR_DEF("interface/theme/base_color", Color::html("#323b4f"));
-		contrast = EDITOR_DEF("interface/theme/contrast", default_contrast);
+		accent_color = EDITOR_GET("interface/theme/accent_color");
+		base_color = EDITOR_GET("interface/theme/base_color");
+		contrast = EDITOR_GET("interface/theme/contrast");
 	} else if (preset == "Alien") {
 		preset_accent_color = Color::html("#1bfe99");
 		preset_base_color = Color::html("#2f373f");
@@ -368,7 +369,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("error_color", "Editor", error_color);
 	theme->set_color("property_color", "Editor", property_color);
 
-	const int thumb_size = EDITOR_DEF("filesystem/file_dialog/thumbnail_size", 64);
+	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
 	theme->set_constant("dark_theme", "Editor", dark_theme);
@@ -641,9 +642,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
 	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
 
-	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1, 2, 0, 0, 0);
+	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(accent_color, 0.08), 2, 0, 2, 2);
 	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
 	sub_inspector_bg->set_border_color(MARGIN_LEFT, accent_color * Color(1, 1, 1, 0.3));
+	sub_inspector_bg->set_border_width(MARGIN_RIGHT, 2);
+	sub_inspector_bg->set_border_color(MARGIN_RIGHT, accent_color * Color(1, 1, 1, 0.3));
+	sub_inspector_bg->set_border_width(MARGIN_BOTTOM, 2);
+	sub_inspector_bg->set_border_color(MARGIN_BOTTOM, accent_color * Color(1, 1, 1, 0.3));
 	sub_inspector_bg->set_draw_center(true);
 
 	theme->set_stylebox("sub_inspector_bg", "Editor", sub_inspector_bg);
@@ -656,6 +661,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("bg", "Tree", style_tree_bg);
 
 	const Color guide_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.05);
+	Color relationship_line_color = Color(mono_color.r, mono_color.g, mono_color.b, relationship_line_opacity);
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
@@ -674,13 +680,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_selected", "Tree", mono_color);
 	theme->set_color("title_button_color", "Tree", font_color);
 	theme->set_color("guide_color", "Tree", guide_color);
+	theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
 	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_constant("hseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_constant("guide_width", "Tree", border_width);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
-	theme->set_constant("draw_relationship_lines", "Tree", 0);
+	theme->set_constant("draw_relationship_lines", "Tree", relationship_line_opacity >= 0.01);
+	theme->set_constant("draw_guides", "Tree", relationship_line_opacity < 0.01);
 	theme->set_constant("scroll_border", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
 

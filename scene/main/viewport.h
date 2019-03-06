@@ -226,7 +226,6 @@ private:
 	bool handle_input_locally;
 	bool local_input_handled;
 
-	void _test_new_mouseover(ObjectID new_collider);
 	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
 	Ref<World2D> world_2d;
@@ -390,6 +389,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	Listener *get_listener() const;

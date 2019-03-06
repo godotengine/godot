@@ -658,6 +658,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		int orientation = p_preset->get("screen/orientation");
 
+		bool min_gles3 = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name") == "GLES3" &&
+						 !ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2");
 		bool screen_support_small = p_preset->get("screen/support_small");
 		bool screen_support_normal = p_preset->get("screen/support_normal");
 		bool screen_support_large = p_preset->get("screen/support_large");
@@ -813,6 +815,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 								encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 							}
+						}
+
+						if (tname == "uses-feature" && attrname == "glEsVersion") {
+
+							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
 						iofs += 20;
@@ -1114,17 +1121,14 @@ public:
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-		// Re-enable when a GLES 2.0 backend is read
-		/*int api = p_preset->get("graphics/api");
-		if (api == 0)
-			r_features->push_back("etc");
-		else*/
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
-		if (driver == "GLES2" || driver == "GLES3") {
+		if (driver == "GLES2") {
 			r_features->push_back("etc");
-		}
-		if (driver == "GLES3") {
+		} else if (driver == "GLES3") {
 			r_features->push_back("etc2");
+			if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
+				r_features->push_back("etc");
+			}
 		}
 
 		Vector<String> abis = get_enabled_abis(p_preset);
@@ -1493,6 +1497,10 @@ public:
 				EditorNode::add_io_error("Package not found: " + src_apk);
 				return ERR_FILE_NOT_FOUND;
 			}
+		}
+
+		if (!DirAccess::exists(p_path.get_base_dir())) {
+			return ERR_FILE_BAD_PATH;
 		}
 
 		FileAccess *src_f = NULL;

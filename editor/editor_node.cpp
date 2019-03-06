@@ -619,7 +619,11 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	if (err != OK) {
-		show_accept(TTR("Error saving resource!"), TTR("OK"));
+		if (ResourceLoader::is_imported(p_resource->get_path())) {
+			show_accept(TTR("Imported resources can't be saved."), TTR("OK"));
+		} else {
+			show_accept(TTR("Error saving resource!"), TTR("OK"));
+		}
 		return;
 	}
 
@@ -638,6 +642,18 @@ void EditorNode::save_resource(const Ref<Resource> &p_resource) {
 }
 
 void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path) {
+
+	{
+		String path = p_resource->get_path();
+		int srpos = path.find("::");
+		if (srpos != -1) {
+			String base = path.substr(0, srpos);
+			if (!get_edited_scene() || get_edited_scene()->get_filename() != base) {
+				show_warning(TTR("This resource can't be saved because it does not belong to the edited scene. Make it unique first."));
+				return;
+			}
+		}
+	}
 
 	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	saving_resource = p_resource;
@@ -1438,13 +1454,25 @@ void EditorNode::edit_item(Object *p_object) {
 	}
 
 	if (!sub_plugins.empty()) {
-		_display_top_editors(false);
 
-		_set_top_editors(sub_plugins);
+		bool same = true;
+		if (sub_plugins.size() == editor_plugins_over->get_plugins_list().size()) {
+			for (int i = 0; i < sub_plugins.size(); i++) {
+				if (sub_plugins[i] != editor_plugins_over->get_plugins_list()[i]) {
+					same = false;
+				}
+			}
+		} else {
+			same = false;
+		}
+		if (!same) {
+			_display_top_editors(false);
+			_set_top_editors(sub_plugins);
+		}
 		_set_editing_top_editors(p_object);
 		_display_top_editors(true);
 	} else {
-		_hide_top_editors();
+		hide_top_editors();
 	}
 }
 
@@ -1482,7 +1510,7 @@ void EditorNode::_save_default_environment() {
 	}
 }
 
-void EditorNode::_hide_top_editors() {
+void EditorNode::hide_top_editors() {
 
 	_display_top_editors(false);
 
@@ -1659,7 +1687,7 @@ void EditorNode::_edit_current() {
 
 		} else if (!editor_plugins_over->get_plugins_list().empty()) {
 
-			_hide_top_editors();
+			hide_top_editors();
 		}
 	}
 
@@ -4850,6 +4878,7 @@ void EditorNode::_print_handler(void *p_this, const String &p_string, bool p_err
 
 EditorNode::EditorNode() {
 
+	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
 	VisualServer::get_singleton()->textures_keep_original(true);
@@ -5056,7 +5085,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
 	EDITOR_DEF("interface/inspector/horizontal_vector_types_editing", true);
 	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
-	EDITOR_DEF("interface/inspector/resources_types_to_open_in_new_inspector", "SpatialMaterial,Script");
+	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "SpatialMaterial,Script,MeshLibrary,TileSet");
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 
 	theme_base = memnew(Control);
@@ -5659,7 +5688,6 @@ EditorNode::EditorNode() {
 
 	filesystem_dock = memnew(FileSystemDock(this));
 	filesystem_dock->connect("open", this, "open_request");
-	filesystem_dock->set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 	filesystem_dock->connect("instance", this, "_instance_request");
 	filesystem_dock->connect("display_mode_changed", this, "_save_docks");
 
@@ -5888,6 +5916,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(SkeletonEditorPlugin(this)));
 	add_editor_plugin(memnew(SkeletonIKEditorPlugin(this)));
 	add_editor_plugin(memnew(PhysicalBonePlugin(this)));
+	add_editor_plugin(memnew(MeshEditorPlugin(this)));
+	add_editor_plugin(memnew(MaterialEditorPlugin(this)));
 
 	for (int i = 0; i < EditorPlugins::get_plugin_count(); i++)
 		add_editor_plugin(EditorPlugins::create(i, this));

@@ -65,6 +65,8 @@ class GodotSharpEditor : public Node {
 
 	void _menu_option_pressed(int p_id);
 
+	void _build_solution_pressed();
+
 	static GodotSharpEditor *singleton;
 
 protected:

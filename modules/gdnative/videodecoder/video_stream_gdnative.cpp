@@ -355,9 +355,9 @@ RES ResourceFormatLoaderVideoStreamGDNative::load(const String &p_path, const St
 		if (r_error) {
 			*r_error = ERR_CANT_OPEN;
 		}
-		memdelete(f);
 		return RES();
 	}
+	memdelete(f);
 	VideoStreamGDNative *stream = memnew(VideoStreamGDNative);
 	stream->set_file(p_path);
 	Ref<VideoStreamGDNative> ogv_stream = Ref<VideoStreamGDNative>(stream);

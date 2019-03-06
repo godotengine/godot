@@ -666,7 +666,7 @@ void TextEdit::_notification(int p_what) {
 			bool brace_close_matching = false;
 			bool brace_close_mismatch = false;
 
-			if (brace_matching_enabled) {
+			if (brace_matching_enabled && cursor.line >= 0 && cursor.line < text.size() && cursor.column >= 0) {
 
 				if (cursor.column < text[cursor.line].length()) {
 					//check for open

@@ -1199,11 +1199,11 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 		if (t) {
 
-			t = t->get_ptr(); //resolve for proxies
-
 			if (t->redraw_if_visible) { //must check before proxy because this is often used with proxies
 				VisualServerRaster::redraw_request();
 			}
+
+			t = t->get_ptr(); //resolve for proxies
 
 #ifdef TOOLS_ENABLED
 			if (t->detect_3d) {
@@ -1629,11 +1629,10 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 					RasterizerStorageGLES3::Texture *t = storage->texture_owner.get(c.texture);
 
-					t = t->get_ptr(); //resolve for proxies
-
 					if (t->redraw_if_visible) {
 						VisualServerRaster::redraw_request();
 					}
+					t = t->get_ptr(); //resolve for proxies
 
 #ifdef TOOLS_ENABLED
 					if (t->detect_3d) {
@@ -2044,7 +2043,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	int current_blend_mode = -1;
 
 	int prev_shading = -1;
-	RID prev_skeleton;
+	RasterizerStorageGLES3::Skeleton *prev_skeleton = NULL;
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true); //by default unshaded (easier to set)
 
@@ -2058,7 +2057,10 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		RenderList::Element *e = p_elements[i];
 		RasterizerStorageGLES3::Material *material = e->material;
-		RID skeleton = e->instance->skeleton;
+		RasterizerStorageGLES3::Skeleton *skeleton = NULL;
+		if (e->instance->skeleton.is_valid()) {
+			skeleton = storage->skeleton_owner.getornull(e->instance->skeleton);
+		}
 
 		bool rebind = first;
 
@@ -2205,15 +2207,14 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		}
 
 		if (prev_skeleton != skeleton) {
-			if (prev_skeleton.is_valid() != skeleton.is_valid()) {
-				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, skeleton.is_valid());
+			if ((prev_skeleton == NULL) != (skeleton == NULL)) {
+				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, skeleton != NULL);
 				rebind = true;
 			}
 
-			if (skeleton.is_valid()) {
-				RasterizerStorageGLES3::Skeleton *sk = storage->skeleton_owner.getornull(skeleton);
+			if (skeleton) {
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
-				glBindTexture(GL_TEXTURE_2D, sk->texture);
+				glBindTexture(GL_TEXTURE_2D, skeleton->texture);
 			}
 		}
 
@@ -2239,6 +2240,11 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		}
 
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
+
+		if (skeleton) {
+			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_TRANSFORM, skeleton->world_transform);
+			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_IN_WORLD_COORDS, skeleton->use_world_transform);
+		}
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
@@ -4250,7 +4256,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	} else {
 
-		use_mrt = env && (state.used_sss || env->ssao_enabled || env->ssr_enabled); //only enable MRT rendering if any of these is enabled
+		use_mrt = env && (state.used_sss || env->ssao_enabled || env->ssr_enabled || env->dof_blur_far_enabled || env->dof_blur_near_enabled); //only enable MRT rendering if any of these is enabled
 		//effects disabled and transparency also prevent using MRTs
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];

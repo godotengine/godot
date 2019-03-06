@@ -473,27 +473,29 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 
 			Ref<Resource> res;
-			if (!validating) {
+			dependencies.push_back(path);
+			if (!dependencies_only) {
+				if (!validating) {
 
-				//this can be too slow for just validating code
-				if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
-					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
-				} else if (!for_completion || FileAccess::exists(path)) {
-					res = ResourceLoader::load(path);
+					//this can be too slow for just validating code
+					if (for_completion && ScriptCodeCompletionCache::get_singleton() && FileAccess::exists(path)) {
+						res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
+					} else if (!for_completion || FileAccess::exists(path)) {
+						res = ResourceLoader::load(path);
+					}
+				} else {
+
+					if (!FileAccess::exists(path)) {
+						_set_error("Can't preload resource at path: " + path);
+						return NULL;
+					} else if (ScriptCodeCompletionCache::get_singleton()) {
+						res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
+					}
 				}
-			} else {
-
-				if (!FileAccess::exists(path)) {
+				if (!res.is_valid()) {
 					_set_error("Can't preload resource at path: " + path);
 					return NULL;
-				} else if (ScriptCodeCompletionCache::get_singleton()) {
-					res = ScriptCodeCompletionCache::get_singleton()->get_cached_resource(path);
 				}
-			}
-
-			if (!res.is_valid()) {
-				_set_error("Can't preload resource at path: " + path);
-				return NULL;
 			}
 
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -812,17 +814,29 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					bfn = true;
 				}
 
-				// Check parents for the constant
-				if (!bfn && cln->extends_file != StringName()) {
-					Ref<GDScript> parent = ResourceLoader::load(cln->extends_file);
-					if (parent.is_valid() && parent->is_valid()) {
-						Map<StringName, Variant> parent_constants;
-						parent->get_constants(&parent_constants);
-						if (parent_constants.has(identifier)) {
+				if (!dependencies_only) {
+					if (!bfn && ScriptServer::is_global_class(identifier)) {
+						Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
+						if (scr.is_valid() && scr->is_valid()) {
 							ConstantNode *constant = alloc_node<ConstantNode>();
-							constant->value = parent_constants[identifier];
+							constant->value = scr;
 							expr = constant;
 							bfn = true;
+						}
+					}
+
+					// Check parents for the constant
+					if (!bfn && cln->extends_file != StringName()) {
+						Ref<GDScript> parent = ResourceLoader::load(cln->extends_file);
+						if (parent.is_valid() && parent->is_valid()) {
+							Map<StringName, Variant> parent_constants;
+							parent->get_constants(&parent_constants);
+							if (parent_constants.has(identifier)) {
+								ConstantNode *constant = alloc_node<ConstantNode>();
+								constant->value = parent_constants[identifier];
+								expr = constant;
+								bfn = true;
+							}
 						}
 					}
 				}
@@ -2082,7 +2096,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 				return NULL;
 			}
 			pattern->pt_type = GDScriptParser::PatternNode::PT_BIND;
-			pattern->bind = tokenizer->get_token_identifier();
+			pattern->bind = tokenizer->get_token_literal();
 			// Check if variable name is already used
 			BlockNode *bl = current_block;
 			while (bl) {
@@ -3053,7 +3067,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 
 				DataType iter_type;
-				iter_type.is_constant = true;
 
 				if (container->type == Node::TYPE_OPERATOR) {
 
@@ -3377,6 +3390,13 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 
 		p_class->extends_file = constant;
 		tokenizer->advance();
+
+		// Add parent script as a dependency
+		String parent = constant;
+		if (parent.is_rel_path()) {
+			parent = base_path.plus_file(parent).simplify_path();
+		}
+		dependencies.push_back(parent);
 
 		if (tokenizer->get_token() != GDScriptTokenizer::TK_PERIOD) {
 			return;
@@ -5434,7 +5454,7 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 				String script_path = ScriptServer::get_global_class_path(id);
 				if (script_path == self_path) {
 					result.kind = DataType::CLASS;
-					result.class_type = current_class;
+					result.class_type = static_cast<ClassNode *>(head);
 				} else {
 					Ref<Script> script = ResourceLoader::load(script_path);
 					Ref<GDScript> gds = script;
@@ -7237,6 +7257,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				DataType result;
 				result.has_type = true;
 				result.script_type = scr;
+				result.is_constant = true;
 				result.is_meta_type = true;
 				Ref<GDScript> gds = scr;
 				if (gds.is_valid()) {
@@ -7287,6 +7308,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 				if (singleton.is_valid()) {
 					DataType result;
 					result.has_type = true;
+					result.is_constant = true;
 					result.script_type = singleton;
 
 					Ref<GDScript> gds = singleton;
@@ -7842,13 +7864,16 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							return;
 						}
 
-						if (!lh_type.has_type && check_types) {
-							if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
-								_mark_line_as_unsafe(op->line);
+						if (check_types) {
+							if (!lh_type.has_type) {
+								if (op->arguments[0]->type == Node::TYPE_OPERATOR) {
+									_mark_line_as_unsafe(op->line);
+								}
 							}
-						} else if (lh_type.is_constant) {
-							_set_error("Cannot assign a new value to a constant.", op->line);
-							return;
+							if (lh_type.is_constant) {
+								_set_error("Cannot assign a new value to a constant.", op->line);
+								return;
+							}
 						}
 
 						DataType rh_type;
@@ -8149,6 +8174,10 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 		return ERR_PARSE_ERROR;
 	}
 
+	if (dependencies_only) {
+		return OK;
+	}
+
 	_determine_inheritance(main_class);
 
 	if (error_set) {
@@ -8227,7 +8256,7 @@ Error GDScriptParser::parse_bytecode(const Vector<uint8_t> &p_bytecode, const St
 	return ret;
 }
 
-Error GDScriptParser::parse(const String &p_code, const String &p_base_path, bool p_just_validate, const String &p_self_path, bool p_for_completion, Set<int> *r_safe_lines) {
+Error GDScriptParser::parse(const String &p_code, const String &p_base_path, bool p_just_validate, const String &p_self_path, bool p_for_completion, Set<int> *r_safe_lines, bool p_dependencies_only) {
 
 	clear();
 
@@ -8237,6 +8266,7 @@ Error GDScriptParser::parse(const String &p_code, const String &p_base_path, boo
 
 	validating = p_just_validate;
 	for_completion = p_for_completion;
+	dependencies_only = p_dependencies_only;
 #ifdef DEBUG_ENABLED
 	safe_lines = r_safe_lines;
 #endif // DEBUG_ENABLED
@@ -8293,6 +8323,8 @@ void GDScriptParser::clear() {
 	parenthesis = 0;
 	current_export.type = Variant::NIL;
 	check_types = true;
+	dependencies_only = false;
+	dependencies.clear();
 	error = "";
 #ifdef DEBUG_ENABLED
 	safe_lines = NULL;

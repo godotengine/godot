@@ -138,39 +138,28 @@ TextureEditor::TextureEditor() {
 	set_custom_minimum_size(Size2(1, 150));
 }
 
-void TextureEditorPlugin::edit(Object *p_object) {
+//
+bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
-	Texture *s = Object::cast_to<Texture>(p_object);
-	if (!s)
+	return Object::cast_to<Texture>(p_object) != NULL;
+}
+
+void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
+
+	Texture *texture = Object::cast_to<Texture>(p_object);
+	if (!texture) {
 		return;
-
-	texture_editor->edit(Ref<Texture>(s));
-}
-
-bool TextureEditorPlugin::handles(Object *p_object) const {
-
-	return p_object->is_class("Texture");
-}
-
-void TextureEditorPlugin::make_visible(bool p_visible) {
-
-	if (p_visible) {
-		texture_editor->show();
-		//texture_editor->set_process(true);
-	} else {
-
-		texture_editor->hide();
-		//texture_editor->set_process(false);
 	}
+	Ref<Texture> m(texture);
+
+	TextureEditor *editor = memnew(TextureEditor);
+	editor->edit(m);
+	add_custom_control(editor);
 }
 
 TextureEditorPlugin::TextureEditorPlugin(EditorNode *p_node) {
 
-	editor = p_node;
-	texture_editor = memnew(TextureEditor);
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, texture_editor);
-	texture_editor->hide();
-}
-
-TextureEditorPlugin::~TextureEditorPlugin() {
+	Ref<EditorInspectorPluginTexture> plugin;
+	plugin.instance();
+	add_inspector_plugin(plugin);
 }

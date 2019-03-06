@@ -138,7 +138,7 @@ of sljitConfigInternal.h */
   be specified as scratch registers and the fifth one as saved register
   on the CPU above and any user code which requires four scratch
   registers can run unmodified. The SLJIT compiler automatically saves
-  the content of the two extra scrath register on the stack. Scratch
+  the content of the two extra scratch register on the stack. Scratch
   registers can also be preserved by saving their value on the stack
   but this needs to be done manually.
 
@@ -746,7 +746,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
    be mixed. The only exception is SLJIT_MOV32 and SLJIT_MOVU32 whose source
    register can hold any 32 or 64 bit value, and it is converted to a 32 bit
    compatible format first. This conversion is free (no instructions are
-   emitted) on most CPUs. A 32 bit value can also be coverted to a 64 bit
+   emitted) on most CPUs. A 32 bit value can also be converted to a 64 bit
    value by SLJIT_MOV_S32 (sign extension) or SLJIT_MOV_U32 (zero extension).
 
    Note: memory addressing always uses 64 bit values on 64 bit systems so
@@ -773,8 +773,8 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
  */
 #define SLJIT_F32_OP		SLJIT_I32_OP
 
-/* Many CPUs (x86, ARM, PPC) has status flags which can be set according
-   to the result of an operation. Other CPUs (MIPS) does not have status
+/* Many CPUs (x86, ARM, PPC) have status flags which can be set according
+   to the result of an operation. Other CPUs (MIPS) do not have status
    flags, and results must be stored in registers. To cover both architecture
    types efficiently only two flags are defined by SLJIT:
 
@@ -810,14 +810,14 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_fast_return(struct sljit_compiler 
 
    Using these flags can reduce the number of emitted instructions. E.g. a
    fast loop can be implemented by decreasing a counter register and set the
-   zero flag to jump back if the counter register is not reached zero.
+   zero flag to jump back if the counter register has not reached zero.
 
    Motivation: although CPUs can set a large number of flags, usually their
    values are ignored or only one of them is used. Emulating a large number
    of flags on systems without flag register is complicated so SLJIT
    instructions must specify the flag they want to use and only that flag
    will be emulated. The last arithmetic instruction can be repeated if
-   multiple flags needs to be checked.
+   multiple flags need to be checked.
 */
 
 /* Set Zero status flag. */
@@ -884,7 +884,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_op0(struct sljit_compiler *compile
 /* Starting index of opcodes for sljit_emit_op1. */
 #define SLJIT_OP1_BASE			32
 
-/* The MOV instruction transfer data from source to destination.
+/* The MOV instruction transfers data from source to destination.
 
    MOV instruction suffixes:
 
@@ -1156,7 +1156,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_label* sljit_emit_label(struct sljit_compi
 #define SLJIT_FAST_CALL			25
 	/* Called function must be declared with the SLJIT_FUNC attribute. */
 #define SLJIT_CALL			26
-	/* Called function must be decalred with cdecl attribute.
+	/* Called function must be declared with cdecl attribute.
 	   This is the default attribute for C functions. */
 #define SLJIT_CALL_CDECL		27
 
@@ -1210,7 +1210,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_label(struct sljit_jump *jump, struct sl
 /* Set the destination address of the jump to this label. */
 SLJIT_API_FUNC_ATTRIBUTE void sljit_set_target(struct sljit_jump *jump, sljit_uw target);
 
-/* Emit an indirect jump or fast call. Both direct and indirect form
+/* Emit an indirect jump or fast call.
    Direct form: set src to SLJIT_IMM() and srcw to the address
    Indirect form: any other valid addressing mode
     type must be between SLJIT_JUMP and SLJIT_FAST_CALL
@@ -1274,7 +1274,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_cmov(struct sljit_compiler *compil
 #define SLJIT_MEM_POST		0x1000
 
 /* Emit a single memory load or store with update instruction. When the
-   requested instruction from is not supported by the CPU, it returns
+   requested instruction form is not supported by the CPU, it returns
    with SLJIT_ERR_UNSUPPORTED instead of emulating the instruction. This
    allows specializing tight loops based on the supported instruction
    forms (see SLJIT_MEM_SUPP flag).

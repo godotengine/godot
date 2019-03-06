@@ -41,6 +41,7 @@ NoiseTexture::NoiseTexture() {
 	size = Vector2i(512, 512);
 	seamless = false;
 	as_normalmap = false;
+	bump_strength = 8.0;
 	flags = FLAGS_DEFAULT;
 
 	noise = Ref<OpenSimplexNoise>();
@@ -68,6 +69,9 @@ void NoiseTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_as_normalmap", "as_normalmap"), &NoiseTexture::set_as_normalmap);
 	ClassDB::bind_method(D_METHOD("is_normalmap"), &NoiseTexture::is_normalmap);
 
+	ClassDB::bind_method(D_METHOD("set_bump_strength", "bump_strength"), &NoiseTexture::set_bump_strength);
+	ClassDB::bind_method(D_METHOD("get_bump_strength"), &NoiseTexture::get_bump_strength);
+
 	ClassDB::bind_method(D_METHOD("_update_texture"), &NoiseTexture::_update_texture);
 	ClassDB::bind_method(D_METHOD("_generate_texture"), &NoiseTexture::_generate_texture);
 	ClassDB::bind_method(D_METHOD("_thread_done", "image"), &NoiseTexture::_thread_done);
@@ -76,7 +80,17 @@ void NoiseTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normalmap"), "set_as_normalmap", "is_normalmap");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "noise", PROPERTY_HINT_RESOURCE_TYPE, "OpenSimplexNoise"), "set_noise", "get_noise");
+}
+
+void NoiseTexture::_validate_property(PropertyInfo &property) const {
+
+	if (property.name == "bump_strength") {
+		if (!as_normalmap) {
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		}
+	}
 }
 
 void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
@@ -129,7 +143,7 @@ Ref<Image> NoiseTexture::_generate_texture() {
 	}
 
 	if (as_normalmap) {
-		image->bumpmap_to_normalmap();
+		image->bumpmap_to_normalmap(bump_strength);
 	}
 
 	return image;
@@ -202,10 +216,24 @@ void NoiseTexture::set_as_normalmap(bool p_as_normalmap) {
 	if (p_as_normalmap == as_normalmap) return;
 	as_normalmap = p_as_normalmap;
 	_queue_update();
+	_change_notify();
 }
 
 bool NoiseTexture::is_normalmap() {
 	return as_normalmap;
+}
+
+void NoiseTexture::set_bump_strength(float p_bump_strength) {
+
+	if (p_bump_strength == bump_strength) return;
+	bump_strength = p_bump_strength;
+	if (as_normalmap)
+		_queue_update();
+}
+
+float NoiseTexture::get_bump_strength() {
+
+	return bump_strength;
 }
 
 int NoiseTexture::get_width() const {

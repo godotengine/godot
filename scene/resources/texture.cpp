@@ -842,6 +842,12 @@ void StreamTexture::reload_from_file() {
 	load(path);
 }
 
+void StreamTexture::_validate_property(PropertyInfo &property) const {
+	if (property.name == "flags") {
+		property.usage = PROPERTY_USAGE_NOEDITOR;
+	}
+}
+
 void StreamTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTexture::load);

@@ -36,24 +36,6 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-/* make previews for:
-*packdscene
-*wav
-*image
-*mesh
--font
-*script
-*material
--shader
--shader graph?
--navigation mesh
--collision?
--occluder polygon
--navigation polygon
--tileset
--curve and curve2D
-*/
-
 class EditorResourcePreviewGenerator : public Reference {
 
 	GDCLASS(EditorResourcePreviewGenerator, Reference);

@@ -185,6 +185,16 @@ void GodotSharpEditor::_toggle_about_dialog_on_start(bool p_enabled) {
 	}
 }
 
+void GodotSharpEditor::_build_solution_pressed() {
+
+	if (!FileAccess::exists(GodotSharpDirs::get_project_sln_path())) {
+		if (!_create_project_solution())
+			return; // Failed to create solution
+	}
+
+	MonoBottomPanel::get_singleton()->call("_build_project_pressed");
+}
+
 void GodotSharpEditor::_menu_option_pressed(int p_id) {
 
 	switch (p_id) {
@@ -220,6 +230,7 @@ void GodotSharpEditor::_notification(int p_notification) {
 
 void GodotSharpEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_build_solution_pressed"), &GodotSharpEditor::_build_solution_pressed);
 	ClassDB::bind_method(D_METHOD("_create_project_solution"), &GodotSharpEditor::_create_project_solution);
 	ClassDB::bind_method(D_METHOD("_make_api_solutions_if_needed"), &GodotSharpEditor::_make_api_solutions_if_needed);
 	ClassDB::bind_method(D_METHOD("_remove_create_sln_menu_option"), &GodotSharpEditor::_remove_create_sln_menu_option);
@@ -482,7 +493,7 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 	build_button->set_text("Build");
 	build_button->set_tooltip("Build solution");
 	build_button->set_focus_mode(Control::FOCUS_NONE);
-	build_button->connect("pressed", MonoBottomPanel::get_singleton(), "_build_project_pressed");
+	build_button->connect("pressed", this, "_build_solution_pressed");
 	editor->get_menu_hb()->add_child(build_button);
 
 	// External editor settings

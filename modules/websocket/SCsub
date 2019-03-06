@@ -9,85 +9,90 @@ env_lws = env_modules.Clone()
 
 if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # already builtin for javascript
     thirdparty_dir = "#thirdparty/libwebsockets/"
-    helper_dir = "win32helpers/"
+    helper_dir = "#thirdparty/libwebsockets/win32helpers/"
     thirdparty_sources = [
 
-        "core/alloc.c",
-        "core/context.c",
-        "core/libwebsockets.c",
-        "core/output.c",
-        "core/pollfd.c",
-        "core/service.c",
+        "lib/core/adopt.c",
+        "lib/core/alloc.c",
+        "lib/core/connect.c",
+        "lib/core/context.c",
+        "lib/core/dummy-callback.c",
+        "lib/core/libwebsockets.c",
+        "lib/core/output.c",
+        "lib/core/pollfd.c",
+        "lib/core/service.c",
 
-        "event-libs/poll/poll.c",
+        "lib/event-libs/poll/poll.c",
 
-        "misc/base64-decode.c",
-        "misc/lejp.c",
-        "misc/sha-1.c",
+        "lib/misc/base64-decode.c",
+        "lib/misc/lejp.c",
+        "lib/misc/sha-1.c",
 
-        "roles/h1/ops-h1.c",
-        "roles/http/header.c",
-        "roles/http/client/client.c",
-        "roles/http/client/client-handshake.c",
-        "roles/http/server/fops-zip.c",
-        "roles/http/server/lejp-conf.c",
-        "roles/http/server/parsers.c",
-        "roles/http/server/server.c",
-        "roles/listen/ops-listen.c",
-        "roles/pipe/ops-pipe.c",
-        "roles/raw/ops-raw.c",
+        "lib/roles/h1/ops-h1.c",
+        "lib/roles/http/header.c",
+        "lib/roles/http/client/client.c",
+        "lib/roles/http/client/client-handshake.c",
+        "lib/roles/http/server/fops-zip.c",
+        "lib/roles/http/server/lejp-conf.c",
+        "lib/roles/http/server/parsers.c",
+        "lib/roles/http/server/server.c",
+        "lib/roles/listen/ops-listen.c",
+        "lib/roles/pipe/ops-pipe.c",
+        "lib/roles/raw-skt/ops-raw-skt.c",
+        "lib/roles/raw-file/ops-raw-file.c",
 
-        "roles/ws/client-ws.c",
-        "roles/ws/client-parser-ws.c",
-        "roles/ws/ops-ws.c",
-        "roles/ws/server-ws.c",
+        "lib/roles/ws/client-ws.c",
+        "lib/roles/ws/client-parser-ws.c",
+        "lib/roles/ws/ops-ws.c",
+        "lib/roles/ws/server-ws.c",
 
-        "tls/tls.c",
-        "tls/tls-client.c",
-        "tls/tls-server.c",
+        "lib/tls/tls.c",
+        "lib/tls/tls-client.c",
+        "lib/tls/tls-server.c",
 
-        "tls/mbedtls/wrapper/library/ssl_cert.c",
-        "tls/mbedtls/wrapper/library/ssl_pkey.c",
-        "tls/mbedtls/wrapper/library/ssl_stack.c",
-        "tls/mbedtls/wrapper/library/ssl_methods.c",
-        "tls/mbedtls/wrapper/library/ssl_lib.c",
-        "tls/mbedtls/wrapper/library/ssl_x509.c",
-        "tls/mbedtls/wrapper/platform/ssl_port.c",
-        "tls/mbedtls/wrapper/platform/ssl_pm.c",
-        "tls/mbedtls/lws-genhash.c",
-        "tls/mbedtls/mbedtls-client.c",
-        "tls/mbedtls/lws-genrsa.c",
-        "tls/mbedtls/ssl.c",
-        "tls/mbedtls/mbedtls-server.c"
+        "lib/tls/mbedtls/wrapper/library/ssl_cert.c",
+        "lib/tls/mbedtls/wrapper/library/ssl_pkey.c",
+        "lib/tls/mbedtls/wrapper/library/ssl_stack.c",
+        "lib/tls/mbedtls/wrapper/library/ssl_methods.c",
+        "lib/tls/mbedtls/wrapper/library/ssl_lib.c",
+        "lib/tls/mbedtls/wrapper/library/ssl_x509.c",
+        "lib/tls/mbedtls/wrapper/platform/ssl_port.c",
+        "lib/tls/mbedtls/wrapper/platform/ssl_pm.c",
+        "lib/tls/mbedtls/lws-genhash.c",
+        "lib/tls/mbedtls/mbedtls-client.c",
+        "lib/tls/mbedtls/lws-genrsa.c",
+        "lib/tls/mbedtls/ssl.c",
+        "lib/tls/mbedtls/mbedtls-server.c"
     ]
 
     if env["platform"] == "android": # Builtin getifaddrs
-        thirdparty_sources += ["misc/getifaddrs.c"]
-
-    if env["platform"] == "windows" or env["platform"] == "uwp": # Winsock
-        thirdparty_sources += ["plat/lws-plat-win.c", helper_dir + "getopt.c", helper_dir + "getopt_long.c", helper_dir + "gettimeofday.c"]
-    else: # Unix socket
-        thirdparty_sources += ["plat/lws-plat-unix.c"]
+        thirdparty_sources += ["lib/misc/getifaddrs.c"]
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_lws.Append(CPPPATH=[thirdparty_dir])
+    if env["platform"] == "windows" or env["platform"] == "uwp": # Winsock
+        thirdparty_sources += Glob(thirdparty_dir + "lib/plat/windows/*.c") + [helper_dir + src for src in ["getopt.c", "getopt_long.c", "gettimeofday.c"]]
+    else: # Unix socket
+        thirdparty_sources += Glob(thirdparty_dir + "lib/plat/unix/*.c")
+
+    env_lws.Append(CPPPATH=[thirdparty_dir + 'include/'])
 
     if env['builtin_mbedtls']:
         mbedtls_includes = "#thirdparty/mbedtls/include"
         env_lws.Prepend(CPPPATH=[mbedtls_includes])
 
-    wrapper_includes = ["#thirdparty/libwebsockets/tls/mbedtls/wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
+    wrapper_includes = ["#thirdparty/libwebsockets/lib/tls/mbedtls/wrapper/include/" + inc for inc in ["internal", "openssl", "platform", ""]]
     env_lws.Prepend(CPPPATH=wrapper_includes)
 
     if env["platform"] == "windows" or env["platform"] == "uwp":
-        env_lws.Append(CPPPATH=[thirdparty_dir + helper_dir])
+        env_lws.Append(CPPPATH=[helper_dir])
 
     if env["platform"] == "uwp":
         env_lws.Append(CCFLAGS=["/DLWS_MINGW_SUPPORT"])
 
     env_thirdparty = env_lws.Clone()
     env_thirdparty.disable_warnings()
+    env_thirdparty.Append(CPPPATH=[thirdparty_dir + 'lib/'])
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 env_lws.add_source_files(env.modules_sources, "*.cpp")

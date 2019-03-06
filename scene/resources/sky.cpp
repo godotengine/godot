@@ -536,7 +536,7 @@ void ProceduralSky::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_SIZE_MAX);
 }
 
-ProceduralSky::ProceduralSky() {
+ProceduralSky::ProceduralSky(bool p_desaturate) {
 
 	sky = VS::get_singleton()->sky_create();
 	texture = VS::get_singleton()->texture_create();
@@ -552,6 +552,12 @@ ProceduralSky::ProceduralSky() {
 	ground_curve = 0.02;
 	ground_energy = 1;
 
+	if (p_desaturate) {
+		sky_top_color.set_hsv(sky_top_color.get_h(),0,sky_top_color.get_v());
+		sky_horizon_color.set_hsv(sky_horizon_color.get_h(),0,sky_horizon_color.get_v());
+		ground_bottom_color.set_hsv(ground_bottom_color.get_h(),0,ground_bottom_color.get_v());
+		ground_horizon_color.set_hsv(ground_horizon_color.get_h(),0,ground_horizon_color.get_v());
+	}
 	sun_color = Color(1, 1, 1);
 	sun_latitude = 35;
 	sun_longitude = 0;

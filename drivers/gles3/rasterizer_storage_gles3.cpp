@@ -702,14 +702,18 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 
 		int mipmaps = 0;
 
-		while (width != 1 && height != 1) {
-			glTexImage3D(texture->target, 0, internal_format, width, height, depth, 0, format, type, NULL);
+		while (width > 0 || height > 0 || (p_type == VS::TEXTURE_TYPE_3D && depth > 0)) {
+			width = MAX(1, width);
+			height = MAX(1, height);
+			depth = MAX(1, depth);
 
-			width = MAX(1, width / 2);
-			height = MAX(1, height / 2);
+			glTexImage3D(texture->target, mipmaps, internal_format, width, height, depth, 0, format, type, NULL);
+
+			width /= 2;
+			height /= 2;
 
 			if (p_type == VS::TEXTURE_TYPE_3D) {
-				depth = MAX(1, depth / 2);
+				depth /= 2;
 			}
 
 			mipmaps++;
@@ -925,6 +929,9 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 		w = MAX(1, w >> 1);
 		h = MAX(1, h >> 1);
 	}
+
+	// Handle array and 3D textures, as those set their data per layer.
+	tsize *= MAX(texture->alloc_depth, 1);
 
 	info.texture_mem -= texture->total_data_size;
 	texture->total_data_size = tsize;
@@ -1496,7 +1503,7 @@ void RasterizerStorageGLES3::texture_debug_usage(List<VS::TextureInfo> *r_info) 
 		tinfo.format = t->format;
 		tinfo.width = t->alloc_width;
 		tinfo.height = t->alloc_height;
-		tinfo.depth = 0;
+		tinfo.depth = t->alloc_depth;
 		tinfo.bytes = t->total_data_size;
 		r_info->push_back(tinfo);
 	}
@@ -5135,6 +5142,20 @@ void RasterizerStorageGLES3::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
+void RasterizerStorageGLES3::skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(skeleton->use_2d);
+
+	skeleton->world_transform = p_world_transform;
+	skeleton->use_world_transform = p_enable;
+
+	if (!skeleton->update_list.in_list()) {
+		skeleton_update_list.add(&skeleton->update_list);
+	}
+}
+
 void RasterizerStorageGLES3::update_dirty_skeletons() {
 
 	glActiveTexture(GL_TEXTURE0);
@@ -5439,6 +5460,8 @@ RID RasterizerStorageGLES3::reflection_probe_create() {
 	reflection_probe->intensity = 1.0;
 	reflection_probe->interior_ambient = Color();
 	reflection_probe->interior_ambient_energy = 1.0;
+	reflection_probe->interior_ambient_probe_contrib = 0.0;
+
 	reflection_probe->max_distance = 0;
 	reflection_probe->extents = Vector3(1, 1, 1);
 	reflection_probe->origin_offset = Vector3(0, 0, 0);

@@ -479,10 +479,28 @@ void TileMap::update_dirty_quadrants() {
 							vs->canvas_item_add_set_transform(debug_canvas_item, xform);
 							shape->draw(debug_canvas_item, debug_collision_color);
 						}
-						ps->body_add_shape(q.body, shape->get_rid(), xform);
-						ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
-						ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
-						shape_idx++;
+
+						if (shape->has_meta("decomposed")) {
+							Array _shapes = shape->get_meta("decomposed");
+							for (int k = 0; k < _shapes.size(); k++) {
+								Ref<ConvexPolygonShape2D> convex = _shapes[k];
+								if (convex.is_valid()) {
+									ps->body_add_shape(q.body, convex->get_rid(), xform);
+									ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
+									ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
+									shape_idx++;
+#ifdef DEBUG_ENABLED
+								} else {
+									print_error("The TileSet asigned to the TileMap " + get_name() + " has an invalid convex shape.");
+#endif
+								}
+							}
+						} else {
+							ps->body_add_shape(q.body, shape->get_rid(), xform);
+							ps->body_set_shape_metadata(q.body, shape_idx, Vector2(E->key().x, E->key().y));
+							ps->body_set_shape_as_one_way_collision(q.body, shape_idx, shapes[j].one_way_collision, shapes[j].one_way_collision_margin);
+							shape_idx++;
+						}
 					}
 				}
 			}

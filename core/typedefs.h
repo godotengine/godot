@@ -250,21 +250,34 @@ static inline int get_shift_from_power_of_2(unsigned int p_pixel) {
 }
 
 /** Swap 16 bits value for endianness */
+#if defined(__GNUC__) || _llvm_has_builtin(__builtin_bswap16)
+#define BSWAP16(x) __builtin_bswap16(x)
+#else
 static inline uint16_t BSWAP16(uint16_t x) {
 	return (x >> 8) | (x << 8);
 }
+#endif
+
 /** Swap 32 bits value for endianness */
+#if defined(__GNUC__) || _llvm_has_builtin(__builtin_bswap32)
+#define BSWAP32(x) __builtin_bswap32(x)
+#else
 static inline uint32_t BSWAP32(uint32_t x) {
 	return ((x << 24) | ((x << 8) & 0x00FF0000) | ((x >> 8) & 0x0000FF00) | (x >> 24));
 }
-/** Swap 64 bits value for endianness */
+#endif
 
+/** Swap 64 bits value for endianness */
+#if defined(__GNUC__) || _llvm_has_builtin(__builtin_bswap64)
+#define BSWAP64(x) __builtin_bswap64(x)
+#else
 static inline uint64_t BSWAP64(uint64_t x) {
 	x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
 	x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
 	x = (x & 0x00FF00FF00FF00FF) << 8 | (x & 0xFF00FF00FF00FF00) >> 8;
 	return x;
 }
+#endif
 
 /** When compiling with RTTI, we can add an "extra"
  * layer of safeness in many operations, so dynamic_cast

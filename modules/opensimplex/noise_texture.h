@@ -58,6 +58,7 @@ private:
 	Vector2i size;
 	bool seamless;
 	bool as_normalmap;
+	float bump_strength;
 
 	void _thread_done(const Ref<Image> &p_image);
 	static void _thread_function(void *p_ud);
@@ -69,6 +70,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_noise(Ref<OpenSimplexNoise> p_noise);
@@ -82,6 +84,9 @@ public:
 
 	void set_as_normalmap(bool p_seamless);
 	bool is_normalmap();
+
+	void set_bump_strength(float p_bump_strength);
+	float get_bump_strength();
 
 	int get_width() const;
 	int get_height() const;

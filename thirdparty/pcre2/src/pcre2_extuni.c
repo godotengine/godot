@@ -129,11 +129,11 @@ while (eptr < end_subject)
     if ((ricount & 1) != 0) break;  /* Grapheme break required */
     }
 
-  /* If Extend follows E_Base[_GAZ] do not update lgb; this allows
-  any number of Extend before a following E_Modifier. */
+  /* If Extend or ZWJ follows Extended_Pictographic, do not update lgb; this
+  allows any number of them before a following Extended_Pictographic. */
 
-  if (rgb != ucp_gbExtend ||
-      (lgb != ucp_gbE_Base && lgb != ucp_gbE_Base_GAZ))
+  if ((rgb != ucp_gbExtend && rgb != ucp_gbZWJ) ||
+       lgb != ucp_gbExtended_Pictographic)
     lgb = rgb;
 
   eptr += len;

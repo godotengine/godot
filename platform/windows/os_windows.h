@@ -127,6 +127,7 @@ class OS_Windows : public OS {
 	bool window_has_focus;
 	uint32_t last_button_state;
 	bool use_raw_input;
+	bool drop_events;
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
@@ -329,6 +330,8 @@ public:
 	void force_process_input();
 
 	virtual Error move_to_trash(const String &p_path);
+
+	virtual void process_and_drop_events();
 
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();

@@ -355,6 +355,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				Ref<InputEventMouseButton> button_event;
 				button_event.instance();
 
+				button_event->set_device(-1);
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
@@ -383,6 +384,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instance();
 
+			motion_event->set_device(-1);
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
@@ -600,6 +602,7 @@ void InputDefault::ensure_touch_mouse_raised() {
 		Ref<InputEventMouseButton> button_event;
 		button_event.instance();
 
+		button_event->set_device(-1);
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
@@ -657,8 +660,35 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 	*/
 }
 
+void InputDefault::accumulate_input_event(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (!use_accumulated_input) {
+		parse_input_event(p_event);
+		return;
+	}
+	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
+		return; //event was accumulated, exit
+	}
+
+	accumulated_events.push_back(p_event);
+}
+void InputDefault::flush_accumulated_events() {
+
+	while (accumulated_events.front()) {
+		parse_input_event(accumulated_events.front()->get());
+		accumulated_events.pop_front();
+	}
+}
+
+void InputDefault::set_use_accumulated_input(bool p_enable) {
+
+	use_accumulated_input = p_enable;
+}
+
 InputDefault::InputDefault() {
 
+	use_accumulated_input = true;
 	mouse_button_mask = 0;
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;

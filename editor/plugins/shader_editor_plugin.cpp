@@ -47,6 +47,9 @@ Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 }
 void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 
+	if (shader == p_shader) {
+		return;
+	}
 	shader = p_shader;
 
 	_load_theme_settings();
@@ -352,8 +355,8 @@ void ShaderEditor::_menu_option(int p_option) {
 void ShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree())
-			shader_editor->get_text_edit()->grab_focus();
+		//if (is_visible_in_tree())
+		//	shader_editor->get_text_edit()->grab_focus();
 	}
 }
 
@@ -415,6 +418,9 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader())
 		return;
 
+	if (shader == p_shader)
+		return;
+
 	shader = p_shader;
 
 	shader_editor->set_edited_shader(p_shader);
@@ -438,8 +444,12 @@ void ShaderEditor::save_external_data() {
 void ShaderEditor::apply_shaders() {
 
 	if (shader.is_valid()) {
-		shader->set_code(shader_editor->get_text_edit()->get_text());
-		shader->set_edited(true);
+		String shader_code = shader->get_code();
+		String editor_code = shader_editor->get_text_edit()->get_text();
+		if (shader_code != editor_code) {
+			shader->set_code(editor_code);
+			shader->set_edited(true);
+		}
 	}
 }
 

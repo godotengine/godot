@@ -2121,6 +2121,7 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 	Vector<Skeleton *> skeletons;
 	for (int i = 0; i < state.skins.size(); i++) {
 		Skeleton *s = memnew(Skeleton);
+		s->set_use_bones_in_world_transform(false); //GLTF does not need this since meshes are always local
 		String name = state.skins[i].name;
 		if (name == "") {
 			name = _gen_unique_name(state, "Skeleton");
