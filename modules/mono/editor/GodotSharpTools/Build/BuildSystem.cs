@@ -92,6 +92,9 @@ namespace GodotSharpTools.Build
 
             bool redirectOutput = !IsDebugMSBuildRequested() && !PrintBuildOutput;
 
+            if (!redirectOutput) // TODO: or if stdout verbose
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
+
             startInfo.RedirectStandardOutput = redirectOutput;
             startInfo.RedirectStandardError = redirectOutput;
             startInfo.UseShellExecute = false;
@@ -144,6 +147,9 @@ namespace GodotSharpTools.Build
             ProcessStartInfo startInfo = new ProcessStartInfo(GetMSBuildPath(), compilerArgs);
 
             bool redirectOutput = !IsDebugMSBuildRequested() && !PrintBuildOutput;
+
+            if (!redirectOutput) // TODO: or if stdout verbose
+                Console.WriteLine($"Running: \"{startInfo.FileName}\" {startInfo.Arguments}");
 
             startInfo.RedirectStandardOutput = redirectOutput;
             startInfo.RedirectStandardError = redirectOutput;
