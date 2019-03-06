@@ -355,8 +355,8 @@ void ShaderEditor::_menu_option(int p_option) {
 void ShaderEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		if (is_visible_in_tree())
-			shader_editor->get_text_edit()->grab_focus();
+		//if (is_visible_in_tree())
+		//	shader_editor->get_text_edit()->grab_focus();
 	}
 }
 
