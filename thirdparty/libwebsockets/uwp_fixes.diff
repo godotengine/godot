@@ -1,8 +1,8 @@
-diff --git a/thirdparty/libwebsockets/plat/lws-plat-win.c b/thirdparty/libwebsockets/plat/lws-plat-win.c
-index bd513b494..1850b6425 100644
---- a/thirdparty/libwebsockets/plat/lws-plat-win.c
-+++ b/thirdparty/libwebsockets/plat/lws-plat-win.c
-@@ -641,9 +641,20 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
+diff --git a/thirdparty/libwebsockets/lib/plat/windows/windows-file.c b/thirdparty/libwebsockets/lib/plat/windows/windows-file.c
+index 6516b70b0..eb73aab7f 100644
+--- a/thirdparty/libwebsockets/lib/plat/windows/windows-file.c
++++ b/thirdparty/libwebsockets/lib/plat/windows/windows-file.c
+@@ -36,9 +36,20 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
  	HANDLE ret;
  	WCHAR buf[MAX_PATH];
  	lws_fop_fd_t fop_fd;
@@ -24,7 +24,7 @@ index bd513b494..1850b6425 100644
  	if (((*flags) & 7) == _O_RDONLY) {
  		ret = CreateFileW(buf, GENERIC_READ, FILE_SHARE_READ,
  			  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-@@ -651,6 +662,7 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
+@@ -46,6 +57,7 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
  		ret = CreateFileW(buf, GENERIC_WRITE, 0, NULL,
  			  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
  	}
@@ -32,7 +32,7 @@ index bd513b494..1850b6425 100644
  
  	if (ret == LWS_INVALID_FILE)
  		goto bail;
-@@ -663,9 +675,9 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
+@@ -58,9 +70,9 @@ _lws_plat_file_open(const struct lws_plat_file_ops *fops, const char *filename,
  	fop_fd->fd = ret;
  	fop_fd->filesystem_priv = NULL; /* we don't use it */
  	fop_fd->flags = *flags;
