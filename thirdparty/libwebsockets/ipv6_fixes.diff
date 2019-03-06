@@ -1,0 +1,32 @@
+diff --git a/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c b/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c
+index 693efd28e..192dddee6 100644
+--- a/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c
++++ b/thirdparty/libwebsockets/lib/plat/unix/unix-sockets.c
+@@ -73,6 +73,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, int fd, int unix_skt)
+ 	int optval = 1;
+ 	socklen_t optlen = sizeof(optval);
+ 
++#ifdef LWS_WITH_IPV6
++	optval = 0;
++	setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const void*)&optval, optlen);
++#endif
++
+ #if defined(__APPLE__) || \
+     defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
+     defined(__NetBSD__) || \
+diff --git a/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c b/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c
+index bf0935057..62a0a4984 100644
+--- a/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c
++++ b/thirdparty/libwebsockets/lib/plat/windows/windows-sockets.c
+@@ -56,6 +56,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, lws_sockfd_type fd,
+ 	struct protoent *tcp_proto;
+ #endif
+ 
++#ifdef LWS_WITH_IPV6
++	optval = 0;
++	setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const void*)&optval, optlen);
++#endif
++
+ 	if (vhost->ka_time) {
+ 		/* enable keepalive on this socket */
+ 		optval = 1;
