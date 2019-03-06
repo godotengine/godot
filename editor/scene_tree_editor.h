@@ -124,8 +124,6 @@ class SceneTreeEditor : public Control {
 
 	void _warning_changed(Node *p_for_node);
 
-	void _editor_settings_changed();
-
 	Timer *update_timer;
 
 	List<StringName> *script_types;
