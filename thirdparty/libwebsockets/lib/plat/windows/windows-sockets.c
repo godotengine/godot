@@ -56,6 +56,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, lws_sockfd_type fd,
 	struct protoent *tcp_proto;
 #endif
 
+#ifdef LWS_WITH_IPV6
+	optval = 0;
+	setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const void*)&optval, optlen);
+#endif
+
 	if (vhost->ka_time) {
 		/* enable keepalive on this socket */
 		optval = 1;

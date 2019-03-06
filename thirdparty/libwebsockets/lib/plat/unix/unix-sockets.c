@@ -73,6 +73,11 @@ lws_plat_set_socket_options(struct lws_vhost *vhost, int fd, int unix_skt)
 	int optval = 1;
 	socklen_t optlen = sizeof(optval);
 
+#ifdef LWS_WITH_IPV6
+	optval = 0;
+	setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const void*)&optval, optlen);
+#endif
+
 #if defined(__APPLE__) || \
     defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || \
     defined(__NetBSD__) || \
