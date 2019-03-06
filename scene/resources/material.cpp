@@ -458,6 +458,18 @@ void SpatialMaterial::_update_shader() {
 	if (flags[FLAG_ENSURE_CORRECT_NORMALS]) {
 		code += ",ensure_correct_normals";
 	}
+	if (flags[FLAG_DISABLE_COLOR_WRITE_RED]) {
+		code += ",color_write_red_disable";
+	}
+	if (flags[FLAG_DISABLE_COLOR_WRITE_GREEN]) {
+		code += ",color_write_green_disable";
+	}
+	if (flags[FLAG_DISABLE_COLOR_WRITE_BLUE]) {
+		code += ",color_write_blue_disable";
+	}
+	if (flags[FLAG_DISABLE_COLOR_WRITE_ALPHA]) {
+		code += ",color_write_alpha_disable";
+	}
 	code += ";\n";
 
 	code += "uniform vec4 albedo : hint_color;\n";
@@ -2060,6 +2072,11 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_do_not_receive_shadows"), "set_flag", "get_flag", FLAG_DONT_RECEIVE_SHADOWS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_ambient_light"), "set_flag", "get_flag", FLAG_DISABLE_AMBIENT_LIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_ensure_correct_normals"), "set_flag", "get_flag", FLAG_ENSURE_CORRECT_NORMALS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_color_write_red"), "set_flag", "get_flag", FLAG_DISABLE_COLOR_WRITE_RED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_color_write_green"), "set_flag", "get_flag", FLAG_DISABLE_COLOR_WRITE_GREEN);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_color_write_blue"), "set_flag", "get_flag", FLAG_DISABLE_COLOR_WRITE_BLUE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flags_disable_color_write_alpha"), "set_flag", "get_flag", FLAG_DISABLE_COLOR_WRITE_ALPHA);
+
 	ADD_GROUP("Vertex Color", "vertex_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_use_as_albedo"), "set_flag", "get_flag", FLAG_ALBEDO_FROM_VERTEX_COLOR);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "vertex_color_is_srgb"), "set_flag", "get_flag", FLAG_SRGB_VERTEX_COLOR);
@@ -2256,6 +2273,10 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DONT_RECEIVE_SHADOWS);
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_AMBIENT_LIGHT);
 	BIND_ENUM_CONSTANT(FLAG_ENSURE_CORRECT_NORMALS);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_COLOR_WRITE_RED);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_COLOR_WRITE_GREEN);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_COLOR_WRITE_BLUE);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_COLOR_WRITE_ALPHA);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);

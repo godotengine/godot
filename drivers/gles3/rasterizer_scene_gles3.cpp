@@ -1130,6 +1130,24 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_depth_draw = p_material->shader->spatial.depth_draw_mode;
 	}
 
+	if (state.current_color_mask_unknown ||
+			state.current_color_mask_red != !p_material->shader->spatial.no_color_write_red ||
+			state.current_color_mask_green != !p_material->shader->spatial.no_color_write_green ||
+			state.current_color_mask_blue != !p_material->shader->spatial.no_color_write_blue ||
+			state.current_color_mask_alpha != !p_material->shader->spatial.no_color_write_alpha) {
+		glColorMask(
+				p_material->shader->spatial.no_color_write_red ? GL_FALSE : GL_TRUE,
+				p_material->shader->spatial.no_color_write_green ? GL_FALSE : GL_TRUE,
+				p_material->shader->spatial.no_color_write_blue ? GL_FALSE : GL_TRUE,
+				p_material->shader->spatial.no_color_write_alpha ? GL_FALSE : GL_TRUE);
+
+		state.current_color_mask_unknown = false;
+		state.current_color_mask_red = !p_material->shader->spatial.no_color_write_red;
+		state.current_color_mask_green = !p_material->shader->spatial.no_color_write_green;
+		state.current_color_mask_blue = !p_material->shader->spatial.no_color_write_blue;
+		state.current_color_mask_alpha = !p_material->shader->spatial.no_color_write_alpha;
+	}
+
 #if 0
 	//blend mode
 	if (state.current_blend_mode!=p_material->shader->spatial.blend_mode) {
@@ -2035,6 +2053,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	state.current_blend_mode = -1;
 	state.current_line_width = -1;
 	state.current_depth_draw = -1;
+	state.current_color_mask_unknown = true;
 
 	RasterizerStorageGLES3::Material *prev_material = NULL;
 	RasterizerStorageGLES3::Geometry *prev_geometry = NULL;

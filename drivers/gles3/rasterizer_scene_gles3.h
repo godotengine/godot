@@ -100,6 +100,11 @@ public:
 		int current_depth_draw;
 		bool current_depth_test;
 		GLuint current_main_tex;
+		bool current_color_mask_unknown;
+		bool current_color_mask_red;
+		bool current_color_mask_green;
+		bool current_color_mask_blue;
+		bool current_color_mask_alpha;
 
 		SceneShaderGLES3 scene_shader;
 		CubeToDpShaderGLES3 cube_to_dp_shader;

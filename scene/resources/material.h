@@ -196,6 +196,12 @@ public:
 		FLAG_DONT_RECEIVE_SHADOWS,
 		FLAG_ENSURE_CORRECT_NORMALS,
 		FLAG_DISABLE_AMBIENT_LIGHT,
+		FLAG_DISABLE_COLOR_WRITE_RED,
+		FLAG_DISABLE_COLOR_WRITE_BLUE,
+		FLAG_DISABLE_COLOR_WRITE_GREEN,
+		FLAG_DISABLE_COLOR_WRITE_ALPHA,
+		// When adding flags, make sure the bit-field
+		// width in SpatialMaterial::MaterialKey is increased
 		FLAG_MAX
 	};
 
@@ -251,7 +257,8 @@ private:
 			uint64_t blend_mode : 2;
 			uint64_t depth_draw_mode : 2;
 			uint64_t cull_mode : 2;
-			uint64_t flags : 18;
+			// This has to have enough bits to store up to FLAG_MAX bits
+			uint64_t flags : 22;
 			uint64_t detail_blend_mode : 2;
 			uint64_t diffuse_mode : 3;
 			uint64_t specular_mode : 2;

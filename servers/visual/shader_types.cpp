@@ -163,6 +163,11 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("depth_test_disable");
 
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("color_write_red_disable");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("color_write_green_disable");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("color_write_blue_disable");
+	shader_modes[VS::SHADER_SPATIAL].modes.push_back("color_write_alpha_disable");
+
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_back");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_front");
 	shader_modes[VS::SHADER_SPATIAL].modes.push_back("cull_disabled");

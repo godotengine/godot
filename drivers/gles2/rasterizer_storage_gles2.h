@@ -473,6 +473,10 @@ public:
 			bool writes_modelview_or_projection;
 			bool uses_vertex_lighting;
 			bool uses_world_coordinates;
+			bool no_color_write_red;
+			bool no_color_write_green;
+			bool no_color_write_blue;
+			bool no_color_write_alpha;
 
 		} spatial;
 

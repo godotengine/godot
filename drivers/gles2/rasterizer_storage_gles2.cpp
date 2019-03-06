@@ -1267,6 +1267,10 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_vertex = false;
 			p_shader->spatial.writes_modelview_or_projection = false;
 			p_shader->spatial.uses_world_coordinates = false;
+			p_shader->spatial.no_color_write_red = false;
+			p_shader->spatial.no_color_write_green = false;
+			p_shader->spatial.no_color_write_blue = false;
+			p_shader->spatial.no_color_write_alpha = false;
 
 			shaders.actions_scene.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_ADD);
 			shaders.actions_scene.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_MIX);
@@ -1284,6 +1288,11 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 			shaders.actions_scene.render_mode_flags["unshaded"] = &p_shader->spatial.unshaded;
 			shaders.actions_scene.render_mode_flags["depth_test_disable"] = &p_shader->spatial.no_depth_test;
+
+			shaders.actions_scene.render_mode_flags["color_write_red_disable"] = &p_shader->spatial.no_color_write_red;
+			shaders.actions_scene.render_mode_flags["color_write_green_disable"] = &p_shader->spatial.no_color_write_green;
+			shaders.actions_scene.render_mode_flags["color_write_blue_disable"] = &p_shader->spatial.no_color_write_blue;
+			shaders.actions_scene.render_mode_flags["color_write_alpha_disable"] = &p_shader->spatial.no_color_write_alpha;
 
 			shaders.actions_scene.render_mode_flags["vertex_lighting"] = &p_shader->spatial.uses_vertex_lighting;
 

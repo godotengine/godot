@@ -1264,6 +1264,12 @@ bool RasterizerSceneGLES2::_setup_material(RasterizerStorageGLES2::Material *p_m
 		} break;
 	}
 
+	glColorMask(
+			p_material->shader->spatial.no_color_write_red ? GL_FALSE : GL_TRUE,
+			p_material->shader->spatial.no_color_write_green ? GL_FALSE : GL_TRUE,
+			p_material->shader->spatial.no_color_write_blue ? GL_FALSE : GL_TRUE,
+			p_material->shader->spatial.no_color_write_alpha ? GL_FALSE : GL_TRUE);
+
 	int tc = p_material->textures.size();
 	Pair<StringName, RID> *textures = p_material->textures.ptrw();
 
