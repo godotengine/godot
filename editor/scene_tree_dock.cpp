@@ -377,7 +377,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
 
-			List<Node *> selection = editor_selection->get_selected_node_list();
+			Array selection = editor_selection->get_selected_nodes();
 
 			if (selection.empty())
 				return;
@@ -385,13 +385,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().create_action(TTR("Clear Script"));
 			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)NULL);
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			for (int i = 0; i < selection.size(); i++) {
 
-				Ref<Script> existing = E->get()->get_script();
+				Node *n = Object::cast_to<Node>(selection[i]);
+				Ref<Script> existing = n->get_script();
 				if (existing.is_valid()) {
 					const RefPtr empty;
-					editor_data->get_undo_redo().add_do_method(E->get(), "set_script", empty);
-					editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+					editor_data->get_undo_redo().add_do_method(n, "set_script", empty);
+					editor_data->get_undo_redo().add_undo_method(n, "set_script", existing);
 				}
 			}
 
@@ -1653,9 +1654,9 @@ void SceneTreeDock::_update_script_button() {
 		}
 	} else {
 		button_create_script->show();
-		List<Node *> selection = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
-		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			Node *n = E->get();
+		Array selection = editor_selection->get_selected_nodes();
+		for (int i = 0; i < selection.size(); i++) {
+			Node *n = Object::cast_to<Node>(selection[i]);
 			if (!n->get_script().is_null()) {
 				button_clear_script->show();
 				return;
