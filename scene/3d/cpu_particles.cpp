@@ -901,7 +901,7 @@ void CPUParticles::_particles_process(float p_delta) {
 			p.transform.origin.z = 0.0;
 		}
 
-		p.transform.origin += p.velocity * local_delta;
+		p.transform.origin += p.velocity * p_delta;
 	}
 }
 

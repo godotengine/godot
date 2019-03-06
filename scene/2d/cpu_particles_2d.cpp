@@ -856,7 +856,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 		p.transform.elements[0] *= base_scale;
 		p.transform.elements[1] *= base_scale;
 
-		p.transform[2] += p.velocity * local_delta;
+		p.transform[2] += p.velocity * p_delta;
 	}
 }
 
