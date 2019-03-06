@@ -82,7 +82,10 @@ Size2 EditorProperty::get_minimum_size() const {
 
 void EditorProperty::emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field, bool p_changing) {
 
-	emit_signal("property_changed", p_property, p_value, p_field, p_changing);
+	Variant args[4] = { p_property, p_value, p_field, p_changing };
+	const Variant *argptrs[4] = { &args[0], &args[1], &args[2], &args[3] };
+
+	emit_signal("property_changed", (const Variant **)argptrs, 4);
 }
 
 void EditorProperty::_notification(int p_what) {
