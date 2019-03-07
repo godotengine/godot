@@ -259,6 +259,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="bones_in_world_transform" type="bool" setter="set_use_bones_in_world_transform" getter="is_using_bones_in_world_transform">
+		</member>
+	</members>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>

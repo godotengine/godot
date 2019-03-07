@@ -325,6 +325,15 @@
 				Set the mouse mode. See the constants for more information.
 			</description>
 		</method>
+		<method name="set_use_accumulated_input">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Whether to accumulate similar input events sent by the operating system. Defaults to [code]true[/code].
+			</description>
+		</method>
 		<method name="start_joy_vibration">
 			<return type="void">
 			</return>

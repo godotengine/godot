@@ -53,13 +53,6 @@
 				Godot uses clockwise winding order for front faces of triangle primitive modes.
 			</description>
 		</method>
-		<method name="center_geometry">
-			<return type="void">
-			</return>
-			<description>
-				Centers the geometry.
-			</description>
-		</method>
 		<method name="clear_blend_shapes">
 			<return type="void">
 			</return>
