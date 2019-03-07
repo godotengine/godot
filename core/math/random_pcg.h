@@ -37,7 +37,7 @@
 
 class RandomPCG {
 	pcg32_random_t pcg;
-	uint64_t current_seed = DEFAULT_SEED; // seed with this to get the same state
+	uint64_t current_seed; // seed with this to get the same state
 
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
