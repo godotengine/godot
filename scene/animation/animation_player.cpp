@@ -763,7 +763,7 @@ AnimationPlayer::BlockData AnimationPlayer::get_animation_block(Animation *a, in
 
 	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
 	Ref<Animation> anim = player->get_animation(anim_name);
-	if(String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
+	if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
 		float start_ofs = a->animation_track_get_key_start_offset(p_track, p_key);
 		float end_ofs = a->animation_track_get_key_end_offset(p_track, p_key);
 		float length = anim->get_length();
@@ -790,8 +790,6 @@ AnimationPlayer::BlockData AnimationPlayer::get_audio_play_block(Animation *a, i
 
 AnimationPlayer::BlockData AnimationPlayer::get_audio_block(Animation *a, int p_track, int p_key) {
 
-	float start_time = a->track_get_key_time(p_track, p_key);
-
 	Ref<AudioStream> stream = a->audio_track_get_key_stream(p_track, p_key);
 	if (stream.is_valid()) {
 		float start_ofs = a->audio_track_get_key_start_offset(p_track, p_key);
@@ -799,10 +797,10 @@ AnimationPlayer::BlockData AnimationPlayer::get_audio_block(Animation *a, int p_
 		float length = stream->get_length();
 
 		length = MIN(MAX(0, length - start_ofs - end_ofs), length);
-		return BlockData(start_time, length);
+		return BlockData(a->track_get_key_time(p_track, p_key), length);
 	}
 
-	return BlockData(start_time, 0);
+	return BlockData(a->track_get_key_time(p_track, p_key), 0);
 }
 
 void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, float p_blend, bool p_seeked, bool p_started) {

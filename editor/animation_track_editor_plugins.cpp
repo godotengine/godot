@@ -1399,14 +1399,6 @@ void AnimationTrackEditTypeAnimation::_gui_input(const Ref<InputEvent> &p_event)
 				len = ap->get_animation(anim)->get_length();
 			}
 
-			/*
-			if (len == 0) {
-				Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
-				float preview_len = preview->get_length();
-				len = preview_len;
-			}
-			*/
-
 			len -= end_ofs;
 			len -= start_ofs;
 			if (len <= 0.001) {
