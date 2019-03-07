@@ -1236,6 +1236,7 @@ EditorInspectorSection::EditorInspectorSection() {
 }
 
 EditorInspectorSection::~EditorInspectorSection() {
+
 	if (!vbox_added) {
 		memdelete(vbox);
 	}
@@ -2139,6 +2140,9 @@ void EditorInspector::_notification(int p_what) {
 			add_style_override("bg", get_stylebox("bg", "Tree"));
 			get_tree()->connect("node_removed", this, "_node_removed");
 		}
+	}
+	if (p_what == NOTIFICATION_PREDELETE) {
+		edit(NULL); //just in case
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
