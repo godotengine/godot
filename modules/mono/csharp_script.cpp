@@ -2699,6 +2699,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 			}
 
 			load_script_signals(script_class, native);
+			_update_exports();
 		}
 
 		return OK;
