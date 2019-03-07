@@ -309,6 +309,9 @@ class CSharpLanguage : public ScriptLanguage {
 
 	Dictionary scripts_metadata;
 
+	friend class GDMono;
+	void _uninitialize_script_bindings();
+
 public:
 	StringNameCache string_names;
 

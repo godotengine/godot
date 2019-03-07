@@ -848,6 +848,8 @@ Error GDMono::reload_scripts_domain() {
 		}
 	}
 
+	CSharpLanguage::get_singleton()->_uninitialize_script_bindings();
+
 	Error err = _load_scripts_domain();
 	if (err != OK) {
 		ERR_PRINT("Mono: Failed to load scripts domain");
