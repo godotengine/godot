@@ -295,6 +295,8 @@ private:
 	BlockData get_animation_play_block(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
 	BlockData get_animation_block(Animation *a, int p_track, int p_key, AnimationPlayer *player);
 
+	float animation_track_get_overlapping(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
+
 	// bind helpers
 	PoolVector<String> _get_animation_list() const {
 

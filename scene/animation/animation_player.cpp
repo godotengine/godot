@@ -336,6 +336,24 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 	}
 }
 
+float AnimationPlayer::animation_track_get_overlapping(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player) {
+	/*
+	int prev_key = p_key - 1;
+
+	if (prev_key > 0) {
+		BlockData blockData_key_a = get_animation_block(a, p_track, prev_key, player);
+		BlockData blockData_key_b = get_animation_block(a, p_track, p_key, player);
+
+		print_line(String("{0}, {1}, {2}").format(varray("blockData_key_a", blockData_key_a.pos, blockData_key_a.length)));
+		print_line(String("{0}, {1}, {2}").format(varray("blockData_key_b", blockData_key_b.pos, blockData_key_b.length)));
+
+		return 0.0;
+	}
+	*/
+
+	return 0.0;
+}
+
 void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started) {
 
 	_ensure_node_caches(p_anim);
