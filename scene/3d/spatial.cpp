@@ -178,7 +178,7 @@ void Spatial::_notification(int p_what) {
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_enter_world, NULL, 0);
 			}
 #ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
+			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
 
 				//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);

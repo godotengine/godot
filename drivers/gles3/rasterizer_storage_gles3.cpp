@@ -752,7 +752,11 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	if (config.keep_original_textures && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
 		texture->images.write[p_layer] = p_image;
 	}
-
+#ifndef GLES_OVER_GL
+	if (p_image->is_compressed() && p_image->has_mipmaps() && !p_image->is_size_po2()) {
+		ERR_PRINTS("Texuture '" + texture->path + "' is compressed, has mipmaps but is not of powerf-of-2 size. This does not work on OpenGL ES 3.0.");
+	}
+#endif
 	Image::Format real_format;
 	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb);
 
