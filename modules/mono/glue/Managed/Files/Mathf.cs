@@ -289,13 +289,13 @@ namespace Godot
         public static int Wrap(int value, int min, int max)
         {
             int rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
+            return rng != 0 ? min + ((value - min) % rng + rng) % rng : min;
         }
 
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
             real_t rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
+            return !IsEqualApprox(rng, default(real_t)) ? min + ((value - min) % rng + rng) % rng : min;
         }
     }
 }
