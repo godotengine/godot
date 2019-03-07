@@ -94,6 +94,7 @@ public:
 
 		GLuint depth_internalformat;
 		GLuint depth_type;
+
 	} config;
 
 	struct Resources {

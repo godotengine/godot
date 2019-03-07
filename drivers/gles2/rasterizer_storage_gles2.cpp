@@ -1176,18 +1176,20 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	int mipmaps = 6;
 	int lod = 0;
 	int mm_level = mipmaps;
-	size = p_radiance_size;
+	size = p_radiance_size / 4;
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_SOURCE_PANORAMA, true);
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_DIRECT_WRITE, true);
 	shaders.cubemap_filter.bind();
 
 	// third, render to the framebuffer using separate textures, then copy to mipmaps
 	while (size >= 1) {
+
 		//make framebuffer size the texture size, need to use a separate texture for compatibility
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, resources.mipmap_blur_color);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resources.mipmap_blur_color, 0);
+
 		if (lod == 1) {
 			//bind panorama for smaller lods
 
@@ -1213,7 +1215,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 
 			glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-			glCopyTexImage2D(_cube_side_enum[i], lod, GL_RGB, 0, 0, size, size, 0);
+			glCopyTexSubImage2D(_cube_side_enum[i], lod, 0, 0, 0, 0, size, size);
 		}
 
 		size >>= 1;
