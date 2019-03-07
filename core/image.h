@@ -223,6 +223,7 @@ public:
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	void expand_x2_hq2x();
+	bool is_size_po2() const;
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
 	 */
