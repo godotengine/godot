@@ -499,6 +499,47 @@ String CSharpLanguage::_get_indentation() const {
 	return "\t";
 }
 
+String CSharpLanguage::debug_get_error() const {
+
+	return _debug_error;
+}
+
+int CSharpLanguage::debug_get_stack_level_count() const {
+
+	if (_debug_parse_err_line >= 0)
+		return 1;
+
+	// TODO: StackTrace
+	return 1;
+}
+
+int CSharpLanguage::debug_get_stack_level_line(int p_level) const {
+
+	if (_debug_parse_err_line >= 0)
+		return _debug_parse_err_line;
+
+	// TODO: StackTrace
+	return 1;
+}
+
+String CSharpLanguage::debug_get_stack_level_function(int p_level) const {
+
+	if (_debug_parse_err_line >= 0)
+		return String();
+
+	// TODO: StackTrace
+	return String();
+}
+
+String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
+
+	if (_debug_parse_err_line >= 0)
+		return _debug_parse_err_file;
+
+	// TODO: StackTrace
+	return String();
+}
+
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
 
 #ifdef DEBUG_ENABLED
@@ -958,12 +999,11 @@ void CSharpLanguage::thread_exit() {
 
 bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
 
-	// Break because of parse error
+	// Not a parser error in our case, but it's still used for other type of errors
 	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
-		// TODO
-		//_debug_parse_err_line = p_line;
-		//_debug_parse_err_file = p_file;
-		//_debug_error = p_error;
+		_debug_parse_err_line = p_line;
+		_debug_parse_err_file = p_file;
+		_debug_error = p_error;
 		ScriptDebugger::get_singleton()->debug(this, false);
 		return true;
 	} else {
@@ -974,10 +1014,9 @@ bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const S
 bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 
 	if (ScriptDebugger::get_singleton() && Thread::get_caller_id() == Thread::get_main_id()) {
-		// TODO
-		//_debug_parse_err_line = -1;
-		//_debug_parse_err_file = "";
-		//_debug_error = p_error;
+		_debug_parse_err_line = -1;
+		_debug_parse_err_file = "";
+		_debug_error = p_error;
 		ScriptDebugger::get_singleton()->debug(this, p_allow_continue);
 		return true;
 	} else {
