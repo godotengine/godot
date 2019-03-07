@@ -13,6 +13,14 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="accumulate">
+			<return type="bool">
+			</return>
+			<argument index="0" name="with_event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="as_text" qualifiers="const">
 			<return type="String">
 			</return>

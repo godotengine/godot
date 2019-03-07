@@ -65,7 +65,9 @@
 			</argument>
 			<argument index="1" name="infinite_inertia" type="bool" default="true">
 			</argument>
-			<argument index="2" name="test_only" type="bool" default="false">
+			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="3" name="test_only" type="bool" default="false">
 			</argument>
 			<description>
 				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision], which contains information about the collision.
