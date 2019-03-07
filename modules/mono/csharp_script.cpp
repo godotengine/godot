@@ -1315,14 +1315,14 @@ bool CSharpInstance::set(const StringName &p_name, const Variant &p_value) {
 	GDMonoClass *top = script->script_class;
 
 	while (top && top != script->native) {
-		GDMonoField *field = script->script_class->get_field(p_name);
+		GDMonoField *field = top->get_field(p_name);
 
 		if (field) {
 			field->set_value_from_variant(mono_object, p_value);
 			return true;
 		}
 
-		GDMonoProperty *property = script->script_class->get_property(p_name);
+		GDMonoProperty *property = top->get_property(p_name);
 
 		if (property) {
 			property->set_value(mono_object, GDMonoMarshal::variant_to_mono_object(p_value, property->get_type()));
