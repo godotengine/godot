@@ -987,7 +987,6 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 int Animation::track_find_prev_key(int p_track, float p_time) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
-	Track *t = tracks[p_track];
 
 	int prev_idx = track_find_key(p_track, p_time, false) - 1;
 	if (prev_idx < 0) {
@@ -1000,7 +999,6 @@ int Animation::track_find_prev_key(int p_track, float p_time) const {
 int Animation::track_find_next_key(int p_track, float p_time) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
-	Track *t = tracks[p_track];
 
 	int next_idx = track_find_key(p_track, p_time, false);
 	if (next_idx < 0) {
@@ -1009,6 +1007,7 @@ int Animation::track_find_next_key(int p_track, float p_time) const {
 
 	next_idx = next_idx + 1;
 
+	Track *t = tracks[p_track];
 	switch (t->type) {
 		case TYPE_TRANSFORM: {
 			TransformTrack *tt = static_cast<TransformTrack *>(t);
