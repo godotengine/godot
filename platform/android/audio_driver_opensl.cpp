@@ -326,7 +326,7 @@ Error AudioDriverOpenSL::capture_stop() {
 
 int AudioDriverOpenSL::get_mix_rate() const {
 
-	return 44100;
+	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }
 
 AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {

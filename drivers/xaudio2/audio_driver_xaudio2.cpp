@@ -45,12 +45,12 @@ Error AudioDriverXAudio2::init() {
 	pcm_open = false;
 	samples_in = NULL;
 
-	mix_rate = 48000;
+	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
+	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
