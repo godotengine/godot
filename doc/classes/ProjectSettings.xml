@@ -163,7 +163,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="android/modules" type="String" setter="" getter="">
+			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]org/godotengine/org/GodotPaymentV3,org/godotengine/godot/MyCustomSingleton"[/code].
+		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="">
+			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
 			Scale the boot splash image to the full window length when engine starts (will leave it as default pixel size otherwise).

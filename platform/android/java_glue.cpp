@@ -833,7 +833,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 static void _initialize_java_modules() {
 
 	if (!ProjectSettings::get_singleton()->has_setting("android/modules")) {
-		print_line("Android modules: Nothing to load, aborting");
 		return;
 	}
 
@@ -853,19 +852,16 @@ static void _initialize_java_modules() {
 		jmethodID getClassLoader = env->GetMethodID(activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
 
 		jobject cls = env->CallObjectMethod(_godot_instance, getClassLoader);
-		//cls=env->NewGlobalRef(cls);
 
 		jclass classLoader = env->FindClass("java/lang/ClassLoader");
-		//classLoader=(jclass)env->NewGlobalRef(classLoader);
 
 		jmethodID findClass = env->GetMethodID(classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
 		for (int i = 0; i < mods.size(); i++) {
 
 			String m = mods[i];
-			//jclass singletonClass = env->FindClass(m.utf8().get_data());
 
-			print_line("Loading module: " + m);
+			print_line("Loading Android module: " + m);
 			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
 			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
 
@@ -874,7 +870,6 @@ static void _initialize_java_modules() {
 				ERR_EXPLAIN("Couldn't find singleton for class: " + m);
 				ERR_CONTINUE(!singletonClass);
 			}
-			//singletonClass=(jclass)env->NewGlobalRef(singletonClass);
 
 			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
 
@@ -1577,7 +1572,3 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 	// something
 	env->PopLocalFrame(NULL);
 }
-
-//Main::cleanup();
-
-//return os.get_exit_code();
