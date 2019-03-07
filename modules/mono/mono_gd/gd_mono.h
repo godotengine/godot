@@ -125,6 +125,8 @@ class GDMono {
 	String _get_api_assembly_metadata_path();
 #endif
 
+	void _install_trace_listener();
+
 	void _register_internal_calls();
 
 	Error _load_scripts_domain();

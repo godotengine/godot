@@ -587,6 +587,8 @@ bool GDMono::_load_core_api_assembly() {
 										CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
 		if (!core_api_assembly_out_of_sync) {
 			GDMonoUtils::update_godot_api_cache();
+
+			_install_trace_listener();
 		}
 #else
 		GDMonoUtils::update_godot_api_cache();
@@ -688,6 +690,23 @@ bool GDMono::_load_api_assemblies() {
 #endif
 
 	return true;
+}
+
+void GDMono::_install_trace_listener() {
+
+#ifdef DEBUG_ENABLED
+	// Install the trace listener now before the project assembly is loaded
+	typedef void (*DebuggingUtils_InstallTraceListener)(MonoObject **);
+	MonoException *exc = NULL;
+	GDMonoClass *debug_utils = core_api_assembly->get_class(BINDINGS_NAMESPACE, "DebuggingUtils");
+	DebuggingUtils_InstallTraceListener install_func =
+			(DebuggingUtils_InstallTraceListener)debug_utils->get_method_thunk("InstallTraceListener");
+	install_func((MonoObject **)&exc);
+	if (exc) {
+		ERR_PRINT("Failed to install System.Diagnostics.Trace listener");
+		GDMonoUtils::debug_print_unhandled_exception(exc);
+	}
+#endif
 }
 
 #ifdef TOOLS_ENABLED
