@@ -900,7 +900,7 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
 
-	if (!underline_meta || selection.click)
+	if (selection.click)
 		return CURSOR_ARROW;
 
 	if (main->first_invalid_line < main->lines.size())
@@ -914,7 +914,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const 
 	if (item && ((RichTextLabel *)(this))->_find_meta(item, NULL))
 		return CURSOR_POINTING_HAND;
 
-	return CURSOR_ARROW;
+	return get_default_cursor_shape();
 }
 
 void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
