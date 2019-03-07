@@ -2280,7 +2280,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_list_activate_file"), &FileSystemDock::_file_list_activate_file);
 	ClassDB::bind_method(D_METHOD("_tree_activate_file"), &FileSystemDock::_tree_activate_file);
 	ClassDB::bind_method(D_METHOD("_select_file"), &FileSystemDock::_select_file);
-	ClassDB::bind_method(D_METHOD("_navigate_to_path"), &FileSystemDock::_navigate_to_path);
+	ClassDB::bind_method(D_METHOD("_navigate_to_path"), &FileSystemDock::_navigate_to_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_toggle_file_display"), &FileSystemDock::_toggle_file_display);
 	ClassDB::bind_method(D_METHOD("_fw_history"), &FileSystemDock::_fw_history);
 	ClassDB::bind_method(D_METHOD("_bw_history"), &FileSystemDock::_bw_history);
