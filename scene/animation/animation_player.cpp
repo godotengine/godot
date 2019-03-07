@@ -596,9 +596,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				
 				bool stop = false;
 
-				if (p_seeked) {
+				if (p_seeked)
 					nc->audio_idx = -1;
-				}
 
 				int idx = a->track_find_key(i, p_time);
 				if (idx != -1) {
@@ -657,9 +656,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				bool stop = false;
 
-				if (p_seeked) {
+				if (p_seeked)
 					nc->animation_idx = -1;
-				}
 
 				int idx = a->track_find_key(i, p_time);
 				if (idx != -1) {
@@ -730,8 +728,6 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 }
 
 float AnimationPlayer::get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player) {
-	float start_time = a->track_get_key_time(p_track, p_key);
-
 	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
 	Ref<Animation> anim = player->get_animation(anim_name);
 	if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
