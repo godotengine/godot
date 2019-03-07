@@ -2206,6 +2206,9 @@ void ScriptEditor::_script_split_dragged(float) {
 
 Variant ScriptEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 
+	if (tab_container->get_child_count() == 0)
+		return Variant();
+
 	Node *cur_node = tab_container->get_child(tab_container->get_current_tab());
 
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
