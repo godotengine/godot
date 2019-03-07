@@ -2210,8 +2210,11 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 			hint_string = name_only_hint_string;
 		}
 	} else if (variant_type == Variant::OBJECT && CACHED_CLASS(GodotReference)->is_assignable_from(type.type_class)) {
+		GDMonoClass *field_native_class = GDMonoUtils::get_class_native_base(type.type_class);
+		CRASH_COND(field_native_class == NULL);
+
 		hint = PROPERTY_HINT_RESOURCE_TYPE;
-		hint_string = NATIVE_GDMONOCLASS_NAME(type.type_class);
+		hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
 	} else {
 		hint = PropertyHint(CACHED_FIELD(ExportAttribute, hint)->get_int_value(attr));
 		hint_string = CACHED_FIELD(ExportAttribute, hintString)->get_string_value(attr);
