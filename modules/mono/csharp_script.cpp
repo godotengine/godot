@@ -985,6 +985,13 @@ bool CSharpLanguage::debug_break(const String &p_error, bool p_allow_continue) {
 	}
 }
 
+void CSharpLanguage::_uninitialize_script_bindings() {
+	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
+		CSharpScriptBinding &script_binding = E->value();
+		script_binding.inited = false;
+	}
+}
+
 void CSharpLanguage::set_language_index(int p_idx) {
 
 	ERR_FAIL_COND(lang_idx != -1);
