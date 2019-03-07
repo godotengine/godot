@@ -39,11 +39,11 @@ int32_t *AudioDriverMediaKit::samples_in = NULL;
 Error AudioDriverMediaKit::init() {
 	active = false;
 
-	mix_rate = 44100;
+	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
+	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
 	buffer_size = next_power_of_2(latency * mix_rate / 1000);
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
 
