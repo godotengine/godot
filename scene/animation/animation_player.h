@@ -115,7 +115,6 @@ private:
 		float animation_start;
 		float animation_len;
 		
-
 		struct PropertyAnim {
 
 			TrackNodeCache *owner;

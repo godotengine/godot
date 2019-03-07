@@ -620,33 +620,6 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 				r_ret = d;
 
-
-				/*
-				int kk = an->values.size();
-
-				key_times.resize(kk);
-				clips.resize(kk);
-
-				PoolVector<float>::Write wti = key_times.write();
-				PoolVector<String>::Write wcl = clips.write();
-
-				const TKey<StringName> *vls = an->values.ptr();
-
-				for (int i = 0; i < kk; i++) {
-
-					wti[i] = vls[i].time;
-					wcl[i] = vls[i].value;
-				}
-
-				wti = PoolVector<float>::Write();
-				wcl = PoolVector<String>::Write();
-
-				d["times"] = key_times;
-				d["clips"] = clips;
-
-				r_ret = d;
-				*/
-
 				return true;
 			}
 		} else
@@ -2644,7 +2617,7 @@ float Animation::audio_track_get_key_end_offset(int p_track, int p_key) const {
 
 //
 
-int Animation::animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, float p_start_offset, float p_end_offset) { //, bool p_loop) {
+int Animation::animation_track_insert_key(int p_track, float p_time, const StringName &p_animation, float p_start_offset, float p_end_offset) {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
@@ -2661,7 +2634,6 @@ int Animation::animation_track_insert_key(int p_track, float p_time, const Strin
 	k.value.end_offset = p_end_offset;
 	if (k.value.end_offset < 0)
 		k.value.end_offset = 0;
-	//k.value.loop = false;  //p_loop;
 
 	int key = _insert(p_time, at->values, k);
 
@@ -2679,7 +2651,7 @@ void Animation::animation_track_set_key_animation(int p_track, int p_key, const 
 	AnimationTrack *at = static_cast<AnimationTrack *>(t);
 
 	ERR_FAIL_INDEX(p_key, at->values.size());
-	
+
 	at->values.write[p_key].value.animation = p_animation;
 
 	emit_changed();

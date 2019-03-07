@@ -593,7 +593,6 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					continue;
 				}
 
-				
 				bool stop = false;
 
 				if (p_seeked)
@@ -609,7 +608,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								nc->audio_idx = idx;
 
 								float local_pos = get_local_audio_pos(a, i, idx, p_time);
-							
+
 								nc->node->call("set_stream", stream);
 								nc->node->call("play", local_pos);
 

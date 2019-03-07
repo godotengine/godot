@@ -1065,7 +1065,6 @@ void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {
 			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
 				use_hsize_cursor = true;
 				len_resizing_index = i;
-
 			}
 		}
 
@@ -1420,7 +1419,6 @@ void AnimationTrackEditTypeAnimation::_gui_input(const Ref<InputEvent> &p_event)
 			if (end >= get_timeline()->get_name_limit() && end <= get_size().width - get_timeline()->get_buttons_width() && ABS(mm->get_position().x - end) < 5 * EDSCALE) {
 				use_hsize_cursor = true;
 				len_resizing_index = i;
-
 			}
 		}
 
