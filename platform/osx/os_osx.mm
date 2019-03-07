@@ -102,8 +102,6 @@ static void push_to_key_event_buffer(const OS_OSX::KeyEvent &p_event) {
 
 static int mouse_x = 0;
 static int mouse_y = 0;
-static int prev_mouse_x = 0;
-static int prev_mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
 
@@ -601,12 +599,13 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 
 	Ref<InputEventMouseButton> mb;
 	mb.instance();
-
+	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
+	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	get_key_modifier_state([event modifierFlags], mb);
 	mb->set_button_index(index);
 	mb->set_pressed(pressed);
-	mb->set_position(Vector2(mouse_x, mouse_y));
-	mb->set_global_position(Vector2(mouse_x, mouse_y));
+	mb->set_position(pos);
+	mb->set_global_position(pos);
 	mb->set_button_mask(button_mask);
 	if (index == BUTTON_LEFT && pressed) {
 		mb->set_doubleclick([event clickCount] == 2);
@@ -642,8 +641,6 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm.instance();
 
 	mm->set_button_mask(button_mask);
-	prev_mouse_x = mouse_x;
-	prev_mouse_y = mouse_y;
 	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
 	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
