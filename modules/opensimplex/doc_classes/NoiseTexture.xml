@@ -17,6 +17,8 @@
 		<member name="as_normalmap" type="bool" setter="set_as_normalmap" getter="is_normalmap">
 			If true, the resulting texture contains a normal map created from the original noise interpreted as a bump map.
 		</member>
+		<member name="bump_strength" type="float" setter="set_bump_strength" getter="get_bump_strength">
+		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height">
 			Height of the generated texture.
 		</member>
