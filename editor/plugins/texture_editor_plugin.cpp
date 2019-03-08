@@ -138,6 +138,11 @@ TextureEditor::TextureEditor() {
 	set_custom_minimum_size(Size2(1, 150));
 }
 
+TextureEditor::~TextureEditor() {
+	if (!texture.is_null()) {
+		texture->remove_change_receptor(this);
+	}
+}
 //
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
