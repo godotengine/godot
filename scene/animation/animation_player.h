@@ -210,7 +210,14 @@ private:
 		float pos;
 		float length;
 
+		BlockData() {
+
+			this->pos = -1;
+			this->length = -1;
+		}
+
 		BlockData(float pos, float length) {
+
 			this->pos = pos;
 			this->length = length;
 		}
@@ -265,6 +272,21 @@ private:
 
 	List<StringName> queued;
 
+	/*
+	struct BlendData {
+
+		int idx;
+		BlockData blockData;
+
+		BlendData() {
+
+			idx = -1;
+		}
+	};
+
+	List<BlendData> blend_datas;
+	*/
+
 	bool end_reached;
 	bool end_notify;
 
@@ -291,11 +313,16 @@ private:
 	BlockData get_audio_block(Animation *a, int p_track, int p_key);
 
 	float get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time);
+	float get_local_animation_start_pos(Animation *a, int p_track, int p_key);
+	float get_local_animation_length(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
 	float get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player);
 	BlockData get_animation_play_block(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
 	BlockData get_animation_block(Animation *a, int p_track, int p_key, AnimationPlayer *player);
+	BlockData animation_track_get_overlapping(Animation *a, int p_track, int p_key, AnimationPlayer *player);
 
-	float animation_track_get_overlapping(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player);
+	float Interpolate(float p_min_in, float p_max_in, float p_min_out, float p_max_out, float p_value);
+	float Normalize(float p_value, float p_min_value, float p_max_value);
+	float Lerp(float p_min_value, float p_max_value, float p_alpha);
 
 	// bind helpers
 	PoolVector<String> _get_animation_list() const {

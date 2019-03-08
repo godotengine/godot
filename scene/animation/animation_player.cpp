@@ -336,22 +336,29 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 	}
 }
 
-float AnimationPlayer::animation_track_get_overlapping(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player) {
-	/*
-	int prev_key = p_key - 1;
+AnimationPlayer::BlockData AnimationPlayer::animation_track_get_overlapping(Animation *a, int p_track, int p_key, AnimationPlayer *player) {
 
-	if (prev_key > 0) {
-		BlockData blockData_key_a = get_animation_block(a, p_track, prev_key, player);
-		BlockData blockData_key_b = get_animation_block(a, p_track, p_key, player);
-
-		print_line(String("{0}, {1}, {2}").format(varray("blockData_key_a", blockData_key_a.pos, blockData_key_a.length)));
-		print_line(String("{0}, {1}, {2}").format(varray("blockData_key_b", blockData_key_b.pos, blockData_key_b.length)));
-
-		return 0.0;
+	if ((p_key - 1) < 0) {
+		return BlockData();
 	}
-	*/
 
-	return 0.0;
+	BlockData blockData_key_prev = get_animation_block(a, p_track, p_key - 1, player);
+	BlockData blockData_key_curr = get_animation_block(a, p_track, p_key, player);
+
+	float global_start_pos = blockData_key_curr.pos;
+
+	float curr_end_pos = blockData_key_curr.pos + blockData_key_curr.length;
+	if (a->track_get_key_count(p_track) > (p_key + 1)) {
+		float pos_next = a->track_get_key_time(p_track, p_key + 1);
+		curr_end_pos = MIN(curr_end_pos, pos_next);
+	}
+
+	float global_end_pos = MIN(blockData_key_prev.pos + blockData_key_prev.length, curr_end_pos);
+	if (global_end_pos < global_start_pos) {
+		return BlockData();
+	}
+
+	return BlockData(global_start_pos, global_end_pos - global_start_pos);
 }
 
 void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float p_time, float p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started) {
@@ -694,7 +701,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 								float local_pos = get_local_animation_pos(a, i, idx, p_time);
 
-								player->play(anim_name);
+								float custom_blend = -1;
+
+								BlockData blockData = animation_track_get_overlapping(a, i, idx, player);
+								if (blockData.length > 0) {
+									custom_blend = blockData.length;
+								}
+
+								player->play(anim_name, custom_blend);
 								player->seek(local_pos);
 
 								nc->animation_playing = true;
@@ -703,6 +717,24 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								nc->animation_start = animationblock.pos;
 								nc->animation_len = animationblock.length;
 							}
+
+							BlockData blockData = animation_track_get_overlapping(a, i, idx, player);
+							if (blockData.length > 0) {
+								if (p_time > blockData.pos && p_time <= (blockData.pos + blockData.length)) {
+									float value = Interpolate(blockData.pos, blockData.pos + blockData.length, 0.0, 1.0, p_time);
+									if (value) {
+										float local_pos_prev = get_local_animation_pos(a, i, idx - 1, p_time);
+										float local_pos_curr = get_local_animation_pos(a, i, idx, p_time);
+
+										float weight_prev = value;
+										float weight_curr = 1.0 - value;
+
+										print_line(String("{0}, {1}, {2}, {3}").format(varray("BLOCK", idx, blockData.pos, blockData.length)));
+										print_line(String("{0}, {1}, {2}").format(varray("!", local_pos_prev, local_pos_curr)));
+									}
+								}
+							}
+
 						} else {
 							if ((p_delta == 0 || p_seeked) || nc->animation_playing) {
 								stop = true;
@@ -744,7 +776,42 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 	}
 }
 
+float AnimationPlayer::Interpolate(float p_min_in, float p_max_in, float p_min_out, float p_max_out, float p_value) {
+
+	float normed_value = Normalize(p_value, p_min_in, p_max_in);
+	if (normed_value < 0) {
+		normed_value = 0;
+	}
+	if (normed_value > 1) {
+		normed_value = 1;
+	}
+
+	return Lerp(p_min_out, p_max_out, normed_value);
+}
+
+float AnimationPlayer::Normalize(float p_value, float p_min_value, float p_max_value) {
+
+	float normed_value = (1.0 / (p_max_value - p_min_value)) * (p_value - p_min_value);
+	return normed_value;
+}
+
+float AnimationPlayer::Lerp(float p_min_value, float p_max_value, float p_alpha) {
+	return p_min_value + (p_max_value - p_min_value) * p_alpha;
+}
+
+float AnimationPlayer::get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time) {
+
+	//return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->animation_track_get_key_start_offset(p_track, p_key);
+	return (p_time - a->track_get_key_time(p_track, p_key)) + a->animation_track_get_key_start_offset(p_track, p_key);
+}
+
+float AnimationPlayer::get_local_animation_start_pos(Animation *a, int p_track, int p_key) {
+
+	return a->animation_track_get_key_start_offset(p_track, p_key);
+}
+
 float AnimationPlayer::get_local_animation_end_pos(Animation *a, int p_track, int p_key, AnimationPlayer *player) {
+
 	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
 	Ref<Animation> anim = player->get_animation(anim_name);
 	if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
@@ -755,12 +822,21 @@ float AnimationPlayer::get_local_animation_end_pos(Animation *a, int p_track, in
 	}
 
 	return 0;
-
-	//return get_animation_block(a, p_track, p_key, player).length;
 }
 
-float AnimationPlayer::get_local_animation_pos(Animation *a, int p_track, int p_key, float p_time) {
-	return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->animation_track_get_key_start_offset(p_track, p_key);
+float AnimationPlayer::get_local_animation_length(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player) {
+
+	StringName anim_name = a->animation_track_get_key_animation(p_track, p_key);
+	Ref<Animation> anim = player->get_animation(anim_name);
+	if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
+		float start_ofs = a->animation_track_get_key_start_offset(p_track, p_key);
+		float end_ofs = a->animation_track_get_key_end_offset(p_track, p_key);
+		float length = anim->get_length();
+
+		return MIN(MAX(0, length - start_ofs - end_ofs), length);
+	}
+
+	return 0;
 }
 
 AnimationPlayer::BlockData AnimationPlayer::get_animation_play_block(Animation *a, int p_track, int p_key, float p_time, AnimationPlayer *player) {
@@ -789,7 +865,9 @@ AnimationPlayer::BlockData AnimationPlayer::get_animation_block(Animation *a, in
 }
 
 float AnimationPlayer::get_local_audio_pos(Animation *a, int p_track, int p_key, float p_time) {
-	return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->audio_track_get_key_start_offset(p_track, p_key);
+
+	return (p_time - a->track_get_key_time(p_track, p_key)) + a->audio_track_get_key_start_offset(p_track, p_key);
+	//return MAX(p_time - a->track_get_key_time(p_track, p_key), 0) + a->audio_track_get_key_start_offset(p_track, p_key);
 }
 
 AnimationPlayer::BlockData AnimationPlayer::get_audio_play_block(Animation *a, int p_track, int p_key, float p_time) {
