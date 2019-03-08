@@ -33,7 +33,8 @@
 #include "core/os/os.h"
 
 RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
-		pcg() {
+		pcg(),
+		current_seed(DEFAULT_SEED) {
 	pcg.inc = p_inc;
 	seed(p_seed);
 }
