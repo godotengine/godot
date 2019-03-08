@@ -50,6 +50,7 @@ protected:
 public:
 	void edit(Ref<Texture> p_texture);
 	TextureEditor();
+	~TextureEditor();
 };
 
 class EditorInspectorPluginTexture : public EditorInspectorPlugin {
