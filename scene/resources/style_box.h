@@ -58,7 +58,7 @@ public:
 	float get_margin(Margin p_margin) const;
 	virtual Size2 get_center_size() const;
 
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const = 0;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	CanvasItem *get_current_item_drawn() const;
 
@@ -74,7 +74,7 @@ class StyleBoxEmpty : public StyleBox {
 	virtual float get_style_margin(Margin p_margin) const { return 0; }
 
 public:
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const {}
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const { StyleBox::draw(p_canvas_item, p_rect); }
 	StyleBoxEmpty() {}
 };
 

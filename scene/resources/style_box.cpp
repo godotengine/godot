@@ -30,7 +30,7 @@
 
 #include "style_box.h"
 #include "scene/2d/canvas_item.h"
-
+#include "scene/scene_string_names.h"
 #include <limits.h>
 
 bool StyleBox::test_mask(const Point2 &p_point, const Rect2 &p_rect) const {
@@ -60,6 +60,12 @@ CanvasItem *StyleBox::get_current_item_drawn() const {
 	return CanvasItem::get_current_item_drawn();
 }
 
+void StyleBox::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+
+	if (get_script_instance()) {
+		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
+	}
+}
 Size2 StyleBox::get_minimum_size() const {
 
 	return Size2(get_margin(MARGIN_LEFT) + get_margin(MARGIN_RIGHT), get_margin(MARGIN_TOP) + get_margin(MARGIN_BOTTOM));
@@ -98,6 +104,8 @@ void StyleBox::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "content_margin_right", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", MARGIN_RIGHT);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "content_margin_top", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", MARGIN_TOP);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "content_margin_bottom", PROPERTY_HINT_RANGE, "-1,2048,1"), "set_default_margin", "get_default_margin", MARGIN_BOTTOM);
+
+	BIND_VMETHOD(MethodInfo("_draw"));
 }
 
 StyleBox::StyleBox() {
@@ -166,6 +174,7 @@ float StyleBoxTexture::get_style_margin(Margin p_margin) const {
 }
 
 void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	StyleBox::draw(p_canvas_item, p_rect);
 	if (texture.is_null())
 		return;
 
@@ -655,7 +664,7 @@ inline void adapt_values(int p_index_a, int p_index_b, int *adapted_values, cons
 	adapted_values[p_index_b] = MIN(p_max_b, adapted_values[p_index_b]);
 }
 void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
-
+	StyleBox::draw(p_canvas_item, p_rect);
 	//PREPARATIONS
 
 	bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
@@ -952,6 +961,7 @@ Size2 StyleBoxLine::get_center_size() const {
 }
 
 void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
+	StyleBox::draw(p_canvas_item, p_rect);
 	VisualServer *vs = VisualServer::get_singleton();
 	Rect2i r = p_rect;
 
