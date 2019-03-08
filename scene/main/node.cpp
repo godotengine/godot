@@ -1313,6 +1313,10 @@ Node *Node::_get_child_by_name(const StringName &p_name) const {
 
 Node *Node::get_node_or_null(const NodePath &p_path) const {
 
+	if (p_path.is_empty()) {
+		return NULL;
+	}
+
 	if (!data.inside_tree && p_path.is_absolute()) {
 		ERR_EXPLAIN("Can't use get_node() with absolute paths from outside the active scene tree.");
 		ERR_FAIL_V(NULL);
