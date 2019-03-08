@@ -109,6 +109,15 @@ class GDMono {
 
 	HashMap<uint32_t, HashMap<String, GDMonoAssembly *> > assemblies;
 
+	// Allows for a custom script instance factory to be defined in the project assembly
+	// Arguments: factoryThis, scriptObj, ctorArgs, exc
+	typedef void (*ScriptInstanceFactory)(MonoObject *, MonoObject *, MonoObject *, MonoObject **);
+	Ref<MonoGCHandle> script_instance_factory_handle;
+	MonoObject *script_instance_factory;
+	ScriptInstanceFactory script_instance_factory_thunk;
+	void _find_script_instance_factory();
+	void _free_script_instance_factory();
+
 	void _domain_assemblies_cleanup(uint32_t p_domain_id);
 
 	bool _load_corlib_assembly();
@@ -200,6 +209,15 @@ public:
 #if defined(WINDOWS_ENABLED) && defined(TOOLS_ENABLED)
 	const MonoRegInfo &get_mono_reg_info() { return mono_reg_info; }
 #endif
+
+	/**
+	 * Constructs and initializes a Mono object from a user-defined class, which derives from a C++-owned 
+	 * Godot.Object and properly links it to this Godot object.
+	 * Returns false in case allocation of a new Mono object, or the constructor invocation failed.
+	 * Optionally takes constructor arguments in case a specific constructor should be called.
+	 * This is used if the Godot Object is being constructed from within a GDScript.
+	 */
+	MonoObject *construct_godot_object(GDMonoClass *class_obj, Object *owner, const Variant **p_args = NULL, int p_argcount = 0);
 
 	GDMonoClass *get_class(MonoClass *p_raw_class);
 

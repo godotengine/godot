@@ -388,6 +388,8 @@ GDMonoClass *type_get_proxy_class(const StringName &p_type) {
 	return klass;
 }
 
+// For the given class, find the first base class (including itself)
+// that is defined in the core or editor assemblies.
 GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 	GDMonoClass *klass = p_class;
 
@@ -415,15 +417,7 @@ MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringNa
 		ERR_FAIL_V(NULL);
 	}
 
-	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, p_class->get_mono_ptr());
-	ERR_FAIL_NULL_V(mono_object, NULL);
-
-	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, p_object);
-
-	// Construct
-	GDMonoUtils::runtime_object_init(mono_object);
-
-	return mono_object;
+	return GDMono::get_singleton()->construct_godot_object(p_class, p_object);
 }
 
 MonoObject *create_managed_from(const NodePath &p_from) {
@@ -450,6 +444,7 @@ MonoObject *create_managed_from(const RID &p_from) {
 	return mono_object;
 }
 
+// p_class will only ever be Godot.Collections.Array or Godot.Collections.Array<T>
 MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class) {
 	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, NULL);
@@ -480,6 +475,7 @@ MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class) {
 	return mono_object;
 }
 
+// p_class will only ever be Godot.Collections.Dictionary or Godot.Collections.Dictionary<K,V>
 MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) {
 	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, NULL);

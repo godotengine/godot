@@ -231,7 +231,7 @@ void GDMonoAssembly::_wrap_mono_assembly(MonoAssembly *assembly) {
 	String name = mono_assembly_name_get_name(mono_assembly_get_name(assembly));
 
 	MonoImage *image = mono_assembly_get_image(assembly);
-
+		
 	GDMonoAssembly *gdassembly = memnew(GDMonoAssembly(name, mono_image_get_filename(image)));
 	Error err = gdassembly->wrapper_for_image(image);
 
@@ -346,7 +346,11 @@ void GDMonoAssembly::unload() {
 	cached_classes.clear();
 	cached_raw.clear();
 
-	mono_image_close(image);
+	// Dynamic images cannot be closed and will be cleaned up
+	// when the AppDomain is unloaded
+	if (!mono_image_is_dynamic(image)) {
+		mono_image_close(image);
+	}
 
 	assembly = NULL;
 	image = NULL;

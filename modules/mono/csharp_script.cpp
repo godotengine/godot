@@ -1588,7 +1588,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	ERR_FAIL_NULL_V(owner, NULL);
 	ERR_FAIL_COND_V(script.is_null(), NULL);
 
-	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, script->script_class->get_mono_ptr());
+	MonoObject *mono_object = GDMono::get_singleton()->construct_godot_object(script->script_class, owner);
 
 	if (!mono_object) {
 		// Important to clear this before destroying the script instance here
@@ -1599,7 +1599,6 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 		// Not ok for the owner to die here. If there is a situation where this can happen, it will be considered a bug.
 		CRASH_COND(die == true);
 
-		ERR_EXPLAIN("Failed to allocate memory for the object");
 		ERR_FAIL_V(NULL);
 	}
 
@@ -1608,11 +1607,6 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 
 	if (base_ref)
 		_reference_owner_unsafe(); // Here, after assigning the gchandle (for the refcount_incremented callback)
-
-	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, owner);
-
-	// Construct
-	ctor->invoke_raw(mono_object, NULL);
 
 	return mono_object;
 }
@@ -1951,35 +1945,14 @@ bool CSharpScript::_update_exports() {
 
 		// Here we create a temporary managed instance of the class to get the initial values
 
-		MonoObject *tmp_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_mono_ptr());
+		MonoObject *tmp_object = GDMono::get_singleton()->construct_godot_object(script_class, NULL);
 
 		if (!tmp_object) {
 			ERR_PRINT("Failed to allocate temporary MonoObject");
 			return false;
 		}
 
-		uint32_t tmp_pinned_gchandle = MonoGCHandle::new_strong_handle_pinned(tmp_object); // pin it (not sure if needed)
-
-		GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
-
-		if (ctor == NULL) {
-			ERR_PRINTS("Cannot construct temporary MonoObject because the class does not define a default constructor: " + get_path());
-
-			ERR_EXPLAIN("Constructor not found");
-			ERR_FAIL_V(NULL);
-		}
-
-		MonoException *ctor_exc = NULL;
-		ctor->invoke(tmp_object, NULL, &ctor_exc);
-
-		if (ctor_exc) {
-			MonoGCHandle::free_handle(tmp_pinned_gchandle);
-			tmp_object = NULL;
-
-			ERR_PRINT("Exception thrown from constructor of temporary MonoObject:");
-			GDMonoUtils::debug_print_unhandled_exception(ctor_exc);
-			return false;
-		}
+		uint32_t tmp_gchandle = MonoGCHandle::new_strong_handle(tmp_object);
 
 		GDMonoClass *top = script_class;
 
@@ -2049,7 +2022,7 @@ bool CSharpScript::_update_exports() {
 			GDMonoUtils::debug_print_unhandled_exception(exc);
 		}
 
-		MonoGCHandle::free_handle(tmp_pinned_gchandle);
+		MonoGCHandle::free_handle(tmp_gchandle);
 		tmp_object = NULL;
 	}
 
@@ -2452,18 +2425,7 @@ StringName CSharpScript::get_instance_base_type() const {
 CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Variant::CallError &r_error) {
 
 	/* STEP 1, CREATE */
-
-	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
-	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
-	if (ctor == NULL) {
-		if (p_argcount == 0) {
-			ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + get_path());
-		}
-
-		ERR_EXPLAIN("Constructor not found");
-		ERR_FAIL_V(NULL);
-	}
-
+	
 	Ref<Reference> ref;
 	if (p_isref) {
 		// Hold it alive. Important if we have to dispose a script instance binding before creating the CSharpInstance.
@@ -2499,8 +2461,8 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 
 	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, script_class->get_mono_ptr());
-
+	MonoObject *mono_object = GDMono::get_singleton()->construct_godot_object(script_class, p_owner, p_args, p_argcount);
+			
 	if (!mono_object) {
 		// Important to clear this before destroying the script instance here
 		instance->script = Ref<CSharpScript>();
@@ -2526,11 +2488,6 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 		SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->script_instances_mutex);
 		instances.insert(instance->owner);
 	}
-
-	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, instance->owner);
-
-	// Construct
-	ctor->invoke(mono_object, p_args);
 
 	/* STEP 3, PARTY */
 

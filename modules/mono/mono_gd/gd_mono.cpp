@@ -35,6 +35,7 @@
 #include <mono/metadata/mono-debug.h>
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/profiler.h>
+#include <mono/metadata/reflection.h>
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
@@ -658,13 +659,111 @@ bool GDMono::_load_project_assembly() {
 	if (success) {
 		mono_assembly_set_main(project_assembly->get_assembly());
 
+		_find_script_instance_factory();
+
 		CSharpLanguage::get_singleton()->project_assembly_loaded();
+
 	} else {
 		if (OS::get_singleton()->is_stdout_verbose())
 			print_error("Mono: Failed to load project assembly");
 	}
 
 	return success;
+}
+
+void GDMono::_find_script_instance_factory() {
+	// Try to determine if there's a custom factory function
+	// for script instances
+	GDMonoClass *factory_if = core_api_assembly->get_class(BINDINGS_NAMESPACE, "IScriptInstanceFactory");
+	GDMonoMethod *factory_meth = factory_if->get_method("Initialize", 2);
+
+	GDMonoClass *internals = core_api_assembly->get_class(BINDINGS_NAMESPACE, "GDInternal");
+	GDMonoMethod *find_method = internals->get_method("FindScriptInstanceFactory", 1);
+	MonoReflectionAssembly *assembly_object = mono_assembly_get_object(scripts_domain, project_assembly->get_assembly());
+	script_instance_factory = find_method->invoke_raw(NULL, (void **)&assembly_object);
+	if (script_instance_factory) {
+		script_instance_factory_handle = MonoGCHandle::create_strong(script_instance_factory);
+		script_instance_factory_thunk = (ScriptInstanceFactory)factory_meth->get_thunk();
+	}
+}
+
+void GDMono::_free_script_instance_factory() {
+	if (script_instance_factory_handle.is_valid()) {
+		script_instance_factory_handle->release();
+	}
+	script_instance_factory = NULL;
+	script_instance_factory_thunk = NULL;
+}
+
+MonoObject *GDMono::construct_godot_object(GDMonoClass *class_obj, Object *owner, const Variant **p_args, int p_argcount) {
+
+	//
+	// 1) Allocate the Mono object's memory
+	//
+	MonoObject *mono_object = mono_object_new(SCRIPTS_DOMAIN, class_obj->get_mono_ptr());
+
+	if (!mono_object) {
+		ERR_EXPLAIN("Failed to allocate memory for the object");
+		ERR_FAIL_V(NULL);
+	}
+
+	//
+	// 2) Set Godot.Object.ptr to the C++ object's pointer, which
+	//    will cause Godot.Object's constructor to NOT allocate another
+	//    C++ object. It also allows the user's constructor to
+	//    make use of methods from the Godot base class, which will call
+	//    back into C++ using this pointer.
+	//
+	if (owner != NULL) {
+		CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, owner);
+	}
+
+	//
+	// 3) Invoke the appropriate constructor now.
+	//    Developer's can set their own custom factory (we call it a factory
+	//    even though the memory's already been allocated, and the factory
+	//    is only responsible for initializing the object by calling the
+	//    appropriate constructor), or we call the appropriate constructor
+	//    ourselves.
+	//
+	if (script_instance_factory_thunk) {
+
+		// Pass null for performance reasons if the default constructor is being used
+		MonoArray *args = NULL;
+		if (p_argcount > 0) {
+			args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), p_argcount);
+			for (int i = 0; i < p_argcount; i++) {
+				MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_args[i]);
+				mono_array_set(args, MonoObject *, i, boxed_param);
+			}
+		}
+
+		MonoException *exc = NULL;
+		script_instance_factory_thunk(script_instance_factory, mono_object, (MonoObject *)args, (MonoObject **)&exc);
+
+		if (exc) {
+			GDMonoUtils::set_pending_exception(exc);
+			ERR_EXPLAIN("Failed to call the user-defined object factory for class " + class_obj->get_name());
+			ERR_FAIL_V(NULL);
+		}
+
+	} else {
+
+		// Search the constructor first, to fail with an error if it's not found before allocating anything else.
+		GDMonoMethod *ctor = class_obj->get_method(CSharpLanguage::get_singleton()->get_string_names().dotctor, 0);
+		if (ctor == NULL) {
+			ERR_PRINTS("Cannot create Godot object because the class " + class_obj->get_name() + " does not have a default constructor.");
+
+			ERR_EXPLAIN("Constructor not found");
+			ERR_FAIL_V(NULL);
+		}
+
+		ctor->invoke(mono_object, p_args);
+
+	}
+
+	return mono_object;
+
 }
 
 bool GDMono::_load_api_assemblies() {
@@ -795,6 +894,10 @@ Error GDMono::_unload_scripts_domain() {
 
 	print_verbose("Mono: Unloading scripts domain...");
 
+	// Free the handles used by the script instance factory
+	// since it comes from the project assembly
+	_free_script_instance_factory();
+
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
 
@@ -814,6 +917,7 @@ Error GDMono::_unload_scripts_domain() {
 
 	core_api_assembly = NULL;
 	project_assembly = NULL;
+	script_instance_factory = NULL;
 #ifdef TOOLS_ENABLED
 	editor_api_assembly = NULL;
 #endif
@@ -1035,6 +1139,9 @@ GDMono::GDMono() {
 	editor_api_assembly = NULL;
 	editor_tools_assembly = NULL;
 #endif
+
+	script_instance_factory = NULL;
+	script_instance_factory_thunk = NULL;
 
 	api_core_hash = 0;
 #ifdef TOOLS_ENABLED
