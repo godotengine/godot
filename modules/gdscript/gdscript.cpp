@@ -1965,7 +1965,7 @@ String GDScriptWarning::get_message() const {
 			return "Assignment operation, but the function '" + symbols[0] + "()' returns void.";
 		} break;
 		case NARROWING_CONVERSION: {
-			return "Narrowing coversion (float is converted to int and lose precision).";
+			return "Narrowing conversion (float is converted to int and loses precision).";
 		} break;
 		case FUNCTION_MAY_YIELD: {
 			CHECK_SYMBOLS(1);
