@@ -47,6 +47,8 @@ public:
 
 	_FORCE_INLINE_ uint64_t get_seed() { return randbase.get_seed(); }
 
+	_FORCE_INLINE_ bool randb() { return randbase.randb(); }
+
 	_FORCE_INLINE_ void randomize() { return randbase.randomize(); }
 
 	_FORCE_INLINE_ uint32_t randi() { return randbase.rand(); }

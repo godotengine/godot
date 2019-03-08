@@ -58,6 +58,9 @@ public:
 		current_seed = pcg.state;
 		return pcg32_random_r(&pcg);
 	}
+
+	_FORCE_INLINE_ bool randb() { return (bool)(rand() % 2); }
+
 	_FORCE_INLINE_ double randd() { return (double)rand() / (double)RANDOM_MAX; }
 	_FORCE_INLINE_ float randf() { return (float)rand() / (float)RANDOM_MAX; }
 

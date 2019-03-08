@@ -10,6 +10,13 @@
 	<demos>
 	</demos>
 	<methods>
+		<method name="randb">
+			<return type="bool">
+			</return>
+			<description>
+				Generates pseudo-random boolean.
+			</description>
+		</method>
 		<method name="randf">
 			<return type="float">
 			</return>
