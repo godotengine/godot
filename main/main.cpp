@@ -856,6 +856,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (editor || project_manager) {
+		Engine::get_singleton()->set_editor_hint(true);
 		use_custom_res = false;
 		input_map->load_default(); //keys for editor
 	} else {
