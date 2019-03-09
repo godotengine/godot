@@ -4733,6 +4733,7 @@ void RasterizerStorageGLES2::render_target_set_flag(RID p_render_target, RenderT
 	rt->flags[p_flag] = p_value;
 
 	switch (p_flag) {
+		case RENDER_TARGET_TRANSPARENT:
 		case RENDER_TARGET_HDR:
 		case RENDER_TARGET_NO_3D:
 		case RENDER_TARGET_NO_SAMPLING:
