@@ -288,7 +288,7 @@ void GDMono::initialize() {
 
 	mono_install_unhandled_exception_hook(&unhandled_exception_hook, NULL);
 
-#ifdef TOOLS_ENABLED
+#ifndef TOOLS_ENABLED
 	if (!DirAccess::exists("res://.mono")) {
 		// 'res://.mono/' is missing so there is nothing to load. We don't need to initialize mono, but
 		// we still do so unless mscorlib is missing (which is the case for projects that don't use C#).
