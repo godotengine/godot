@@ -103,6 +103,7 @@ private:
 	float inactive_time;
 	float frame_remainder;
 	int cycle;
+	bool redraw;
 
 	RID mesh;
 	RID multimesh;
@@ -178,6 +179,8 @@ private:
 	void _update_render_thread();
 
 	void _update_mesh_texture();
+
+	void _set_redraw(bool p_redraw);
 
 protected:
 	static void _bind_methods();
