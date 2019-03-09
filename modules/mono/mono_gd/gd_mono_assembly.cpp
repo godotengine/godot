@@ -50,7 +50,7 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 
 	const char *rootdir = mono_assembly_getrootdir();
 	if (rootdir) {
-		String framework_dir = String(rootdir).plus_file("mono").plus_file("4.5");
+		String framework_dir = String::utf8(rootdir).plus_file("mono").plus_file("4.5");
 		r_search_dirs.push_back(framework_dir);
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}
