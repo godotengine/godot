@@ -47,20 +47,7 @@ PoolVector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
 void CPUParticles::set_emitting(bool p_emitting) {
 
 	emitting = p_emitting;
-	if (!is_processing_internal()) {
-		set_process_internal(true);
-		if (is_inside_tree()) {
-#ifndef NO_THREADS
-			update_mutex->lock();
-#endif
-			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-
-#ifndef NO_THREADS
-			update_mutex->unlock();
-#endif
-		}
-	}
+	set_process_internal(true);
 }
 
 void CPUParticles::set_amount(int p_amount) {
@@ -343,7 +330,8 @@ void CPUParticles::set_param_curve(Parameter p_param, const Ref<Curve> &p_curve)
 		} break;
 		case PARAM_ANIM_OFFSET: {
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 Ref<Curve> CPUParticles::get_param_curve(Parameter p_param) const {
@@ -1004,6 +992,25 @@ void CPUParticles::_update_particle_data_buffer() {
 #endif
 }
 
+void CPUParticles::_set_redraw(bool p_redraw) {
+	if (redraw == p_redraw)
+		return;
+	redraw = p_redraw;
+#ifndef NO_THREADS
+	update_mutex->lock();
+#endif
+	if (redraw) {
+		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
+		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+	} else {
+		VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
+		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+	}
+#ifndef NO_THREADS
+	update_mutex->unlock();
+#endif
+}
+
 void CPUParticles::_update_render_thread() {
 
 #ifndef NO_THREADS
@@ -1022,31 +1029,11 @@ void CPUParticles::_update_render_thread() {
 void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (is_processing_internal()) {
-
-#ifndef NO_THREADS
-			update_mutex->lock();
-#endif
-			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-#ifndef NO_THREADS
-			update_mutex->unlock();
-#endif
-		}
+		_set_redraw(true);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (is_processing_internal()) {
-
-#ifndef NO_THREADS
-			update_mutex->lock();
-#endif
-			VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
-#ifndef NO_THREADS
-			update_mutex->unlock();
-#endif
-		}
+		_set_redraw(false);
 	}
 
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
@@ -1054,26 +1041,22 @@ void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 
-		if (particles.size() == 0 || !is_visible_in_tree())
+		if (particles.size() == 0 || !is_visible_in_tree()) {
+			_set_redraw(false);
 			return;
+		}
 
 		float delta = get_process_delta_time();
 		if (emitting) {
 
+			_set_redraw(true);
 			inactive_time = 0;
 		} else {
 			inactive_time += delta;
 			if (inactive_time > lifetime * 1.2) {
 				set_process_internal(false);
-#ifndef NO_THREADS
-				update_mutex->lock();
-#endif
-				VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
-				VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+				_set_redraw(false);
 
-#ifndef NO_THREADS
-				update_mutex->unlock();
-#endif
 				//reset variables
 				time = 0;
 				inactive_time = 0;
@@ -1406,6 +1389,7 @@ CPUParticles::CPUParticles() {
 	inactive_time = 0;
 	frame_remainder = 0;
 	cycle = 0;
+	redraw = false;
 
 	multimesh = VisualServer::get_singleton()->multimesh_create();
 	set_base(multimesh);

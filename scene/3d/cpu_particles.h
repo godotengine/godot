@@ -104,6 +104,7 @@ private:
 	float inactive_time;
 	float frame_remainder;
 	int cycle;
+	bool redraw;
 
 	RID multimesh;
 
@@ -177,6 +178,8 @@ private:
 	Mutex *update_mutex;
 
 	void _update_render_thread();
+
+	void _set_redraw(bool p_redraw);
 
 protected:
 	static void _bind_methods();
