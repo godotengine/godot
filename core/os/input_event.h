@@ -165,6 +165,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	static const int DEVICE_ID_TOUCH_MOUSE;
+	static const int DEVICE_ID_INTERNAL;
+
 	void set_device(int p_device);
 	int get_device() const;
 
