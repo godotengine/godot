@@ -895,7 +895,7 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 Object *EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Object *obj = ClassDB::instance(ScriptServer::get_global_class_base(p_class));
+		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			RES script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
 			if (script.is_valid())

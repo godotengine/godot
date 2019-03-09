@@ -190,6 +190,14 @@ StringName ScriptServer::get_global_class_base(const String &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	return global_classes[p_class].base;
 }
+StringName ScriptServer::get_global_class_native_base(const String &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+	String base = global_classes[p_class].base;
+	while (global_classes.has(base)) {
+		base = global_classes[base].base;
+	}
+	return base;
+}
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = NULL;
 	List<StringName> classes;

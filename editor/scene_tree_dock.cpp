@@ -827,7 +827,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (TOOL_CREATE_FAVORITE == p_tool) {
 				String name = selected_favorite_root.get_slicec(' ', 0);
 				if (ScriptServer::is_global_class(name)) {
-					new_node = Object::cast_to<Node>(ClassDB::instance(ScriptServer::get_global_class_base(name)));
+					new_node = Object::cast_to<Node>(ClassDB::instance(ScriptServer::get_global_class_native_base(name)));
 					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(name), "Script");
 					if (new_node && script.is_valid()) {
 						new_node->set_script(script.get_ref_ptr());
@@ -2294,7 +2294,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 					button->set_text(TTR(l));
 					String name = l.get_slicec(' ', 0);
 					if (ScriptServer::is_global_class(name))
-						name = ScriptServer::get_global_class_base(name);
+						name = ScriptServer::get_global_class_native_base(name);
 					button->set_icon(EditorNode::get_singleton()->get_class_icon(name));
 					button->connect("pressed", this, "_favorite_root_selected", make_binds(l));
 				}

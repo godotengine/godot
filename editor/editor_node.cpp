@@ -3354,7 +3354,7 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 			icon = ResourceLoader::load(icon_path);
 		}
 		if (!icon.is_valid()) {
-			icon = gui_base->get_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
+			icon = gui_base->get_icon(ScriptServer::get_global_class_native_base(p_class), "EditorIcons");
 		}
 		return icon;
 	}
