@@ -2290,32 +2290,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = NULL;
 
-			if (p_event->is_action("ui_focus_next")) {
+			if (p_event->is_action_pressed("ui_focus_next")) {
 
 				next = from->find_next_valid_focus();
 			}
 
-			if (p_event->is_action("ui_focus_prev")) {
+			if (p_event->is_action_pressed("ui_focus_prev")) {
 
 				next = from->find_prev_valid_focus();
 			}
 
-			if (!mods && p_event->is_action("ui_up")) {
+			if (!mods && p_event->is_action_pressed("ui_up")) {
 
 				next = from->_get_focus_neighbour(MARGIN_TOP);
 			}
 
-			if (!mods && p_event->is_action("ui_left")) {
+			if (!mods && p_event->is_action_pressed("ui_left")) {
 
 				next = from->_get_focus_neighbour(MARGIN_LEFT);
 			}
 
-			if (!mods && p_event->is_action("ui_right")) {
+			if (!mods && p_event->is_action_pressed("ui_right")) {
 
 				next = from->_get_focus_neighbour(MARGIN_RIGHT);
 			}
 
-			if (!mods && p_event->is_action("ui_down")) {
+			if (!mods && p_event->is_action_pressed("ui_down")) {
 
 				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
 			}
