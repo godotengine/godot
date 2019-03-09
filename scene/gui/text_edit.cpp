@@ -4196,17 +4196,22 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 void TextEdit::set_text(String p_text) {
 
 	setting_text = true;
-	_clear();
-	_insert_text_at_cursor(p_text);
-	clear_undo_history();
-	cursor.column = 0;
-	cursor.line = 0;
-	cursor.x_ofs = 0;
-	cursor.line_ofs = 0;
-	cursor.wrap_ofs = 0;
-	cursor.last_fit_x = 0;
-	cursor_set_line(0);
-	cursor_set_column(0);
+	if (!undo_enabled) {
+		_clear();
+		_insert_text_at_cursor(p_text);
+	}
+
+	if (undo_enabled) {
+		cursor_set_line(0);
+		cursor_set_column(0);
+
+		begin_complex_operation();
+		_remove_text(0, 0, MAX(0, get_line_count() - 1), MAX(get_line(MAX(get_line_count() - 1, 0)).size() - 1, 0));
+		_insert_text_at_cursor(p_text);
+		end_complex_operation();
+		selection.active = false;
+	}
+
 	update();
 	setting_text = false;
 

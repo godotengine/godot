@@ -201,7 +201,6 @@ void TextEditor::reload_text() {
 	int v = te->get_v_scroll();
 
 	te->set_text(text_file->get_text());
-	te->clear_undo_history();
 	te->cursor_set_line(row);
 	te->cursor_set_column(column);
 	te->set_h_scroll(h);
