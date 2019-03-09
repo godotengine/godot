@@ -516,6 +516,141 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			constant->datatype = _type_from_variant(constant->value);
 
 			expr = constant;
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_SLEEP) {
+
+			if (!current_function) {
+				_set_error("sleep() can only be used inside function blocks.");
+				return NULL;
+			}
+
+			current_function->has_yield = true;
+
+			tokenizer->advance();
+			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+				_set_error("Expected '(' after 'sleep'");
+				return NULL;
+			}
+
+			tokenizer->advance();
+
+			OperatorNode *yield = alloc_node<OperatorNode>();
+			yield->op = OperatorNode::OP_YIELD;
+
+			while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+
+			parenthesis++;
+
+			if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+				_set_error("Expected format: sleep(<number>) or, for non-Node types, sleep(<number>, <SceneTree>).");
+				return NULL;
+			}
+
+			Node *object = _parse_and_reduce_expression(p_parent, p_static);
+			if (!object)
+				return NULL;
+
+			StringName cpp_class = current_class->extends_class.size() ? current_class->extends_class.get(0) : StringName();
+			if (cpp_class == StringName()) {
+				cpp_class = current_class->extends_file;
+			} else if (ScriptServer::is_global_class(cpp_class)) {
+				cpp_class = ScriptServer::get_global_class_path(cpp_class);
+			}
+			if (FileAccess::exists(cpp_class)) {
+				Ref<Script> s = ResourceLoader::load(cpp_class, "Script");
+				cpp_class = (s.is_valid()) ? s->get_instance_base_type() : "Object";
+			}
+
+			DataType datatype = object->get_datatype();
+			Variant::Type vtype = object->get_datatype().builtin_type;
+
+			if (!(vtype == Variant::INT || vtype == Variant::REAL)) {
+				_set_error("Expected numeric value for first argument of 'sleep'.");
+				return NULL;
+			}
+
+			int line = tokenizer->get_token_line();
+			bool is_node = ClassDB::is_parent_class(cpp_class, "Node");
+			if (is_node) {
+				OperatorNode *tree_op = alloc_node<OperatorNode>();
+				tree_op->op = OperatorNode::OP_CALL;
+				tree_op->line = line;
+				tree_op->arguments.push_back(alloc_node<SelfNode>());
+				tree_op->arguments[0]->line = line;
+
+				IdentifierNode *tree_method = alloc_node<IdentifierNode>();
+				tree_method->name = "get_tree";
+				tree_method->line = line;
+				tree_op->arguments.push_back(tree_method);
+
+				OperatorNode *timer_op = alloc_node<OperatorNode>();
+				timer_op->op = OperatorNode::OP_CALL;
+				timer_op->arguments.push_back(tree_op);
+
+				IdentifierNode *timer_method = alloc_node<IdentifierNode>();
+				timer_method->name = "create_timer";
+				timer_method->line = line;
+				timer_op->arguments.push_back(timer_method);
+
+				timer_op->arguments.push_back(object);
+
+				yield->arguments.push_back(timer_op);
+
+				ConstantNode *timeout_signal = alloc_node<ConstantNode>();
+				timeout_signal->value = "timeout";
+				timeout_signal->datatype = _type_from_variant(timeout_signal->value);
+				timeout_signal->line = line;
+				yield->arguments.push_back(timeout_signal);
+
+			} else {
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+					_set_error("Expected ',' after first argument of 'sleep' in non-Node types. Must provide SceneTree instance for second argument.");
+					return NULL;
+				}
+
+				tokenizer->advance();
+				Node *object2 = _parse_and_reduce_expression(p_parent, p_static);
+				if (!object2)
+					return NULL;
+
+				OperatorNode *timer_op = alloc_node<OperatorNode>();
+				timer_op->op = OperatorNode::OP_CALL;
+				timer_op->line = line;
+				timer_op->arguments.push_back(object2);
+
+				IdentifierNode *timer_method = alloc_node<IdentifierNode>();
+				timer_method->name = "create_timer";
+				timer_method->line = line;
+				timer_op->arguments.push_back(timer_method);
+
+				timer_op->arguments.push_back(object);
+
+				yield->arguments.push_back(timer_op);
+
+				ConstantNode *timeout_signal = alloc_node<ConstantNode>();
+				timeout_signal->value = "timeout";
+				timeout_signal->datatype = _type_from_variant(timeout_signal->value);
+				timeout_signal->line = line;
+				yield->arguments.push_back(timeout_signal);
+			}
+
+			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_CLOSE) {
+				if (is_node) {
+					_set_error("Expected ')' after first argument of 'sleep'");
+					return NULL;
+				} else {
+					_set_error("Expected ')' after second argument of 'sleep'");
+					return NULL;
+				}
+			}
+
+			parenthesis--;
+
+			tokenizer->advance();
+
+			expr = yield;
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_YIELD) {
 
 			if (!current_function) {

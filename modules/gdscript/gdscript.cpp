@@ -1784,6 +1784,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"signal",
 		"tool",
 		"yield",
+		"sleep",
 		// var
 		"const",
 		"enum",

@@ -410,6 +410,15 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	}
 	{
 		MethodInfo mi;
+		mi.name = "sleep";
+		mi.arguments.push_back(PropertyInfo(Variant::REAL, "seconds"));
+		mi.arguments.push_back(PropertyInfo(Variant::OBJECT, "tree"));
+		mi.default_arguments.push_back(Variant());
+		mi.return_val = PropertyInfo(Variant::OBJECT, "", PROPERTY_HINT_RESOURCE_TYPE, "GDScriptFunctionState");
+		p_functions->push_back(mi);
+	}
+	{
+		MethodInfo mi;
 		mi.name = "assert";
 		mi.return_val.type = Variant::NIL;
 		mi.arguments.push_back(PropertyInfo(Variant::BOOL, "condition"));
@@ -2122,7 +2131,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 
 	static const char *_keywords[] = {
 		"and", "in", "not", "or", "false", "PI", "TAU", "INF", "NAN", "self", "true", "as", "assert",
-		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
+		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield", "sleep",
 		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
 		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
 		"remotesync", "mastersync", "puppetsync",

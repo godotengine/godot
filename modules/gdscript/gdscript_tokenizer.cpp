@@ -203,6 +203,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_PRELOAD, "preload" },
 	{ GDScriptTokenizer::TK_PR_ASSERT, "assert" },
 	{ GDScriptTokenizer::TK_PR_YIELD, "yield" },
+	{ GDScriptTokenizer::TK_PR_SLEEP, "sleep" },
 	{ GDScriptTokenizer::TK_PR_SIGNAL, "signal" },
 	{ GDScriptTokenizer::TK_PR_BREAKPOINT, "breakpoint" },
 	{ GDScriptTokenizer::TK_PR_REMOTE, "remote" },
@@ -278,6 +279,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_EXTENDS:
 		case TK_PR_ASSERT:
 		case TK_PR_YIELD:
+		case TK_PR_SLEEP:
 		case TK_PR_VAR:
 
 		case TK_CF_IF:
