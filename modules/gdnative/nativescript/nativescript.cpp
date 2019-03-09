@@ -1036,8 +1036,16 @@ NativeScriptLanguage::~NativeScriptLanguage() {
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
-		if (L->get().is_valid())
-			L->get()->terminate();
+		Ref<GDNative> lib = L->get();
+		// only shut down valid libs, duh!
+		if (lib.is_valid()) {
+
+			// If it's a singleton-library then the gdnative module
+			// manages the destruction at engine shutdown, not NativeScript.
+			if (!lib->get_library()->is_singleton()) {
+				lib->terminate();
+			}
+		}
 	}
 
 	NSL->library_classes.clear();
@@ -1641,7 +1649,16 @@ void NativeReloadNode::_notification(int p_what) {
 					continue;
 				}
 
+				// Don't unload what should not be reloaded!
 				if (!gdn->get_library()->is_reloadable()) {
+					continue;
+				}
+
+				// singleton libraries might have alive pointers living inside the
+				// editor. Also reloading a singleton library would mean that
+				// the singleton entry will not be called again, as this only
+				// happens at engine startup.
+				if (gdn->get_library()->is_singleton()) {
 					continue;
 				}
 
@@ -1669,6 +1686,12 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				if (!gdn->get_library()->is_reloadable()) {
+					continue;
+				}
+
+				// since singleton libraries are not unloaded there is no point
+				// in loading them again.
+				if (!gdn->get_library()->is_singleton()) {
 					continue;
 				}
 
