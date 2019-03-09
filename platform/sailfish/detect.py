@@ -24,22 +24,27 @@ def can_build():
 
     sdl_error = os.system("pkg-config sdl2 --modversion > /dev/null ")
     if (sdl_error):
-        print("SDL2 not found.. sdl disabled.")
+        print("SDL2 not found. Sailfish build disabled. Install SDL2-devel for all your targets in MerSDK ")
         return False
 
     ar_error = os.system("pkg-config audioresource --modversion > /dev/null")
     if(ar_error):
-        print("libaudioresource-devel not found. Install libaudioresource-devel on your target in MerSDK")
+        print("libaudioresource-devel not found. Install libaudioresource-devel for all your targets in MerSDK")
         # return False;
 
     glib_error = os.system("pkg-config glib-2.0 --modversion > /dev/null")
     if(glib_error):
-        print("glib2-devel not found. Install glib2-devel on your target in MerSDK")
+        print("glib2-devel not found. Install glib2-devel for all your targets in MerSDK")
         # return False;
 
     vpx_error = os.system("pkg-config vpx --modversion > /dev/null")
     if(vpx_error):
-        print("libvpx-devel not found. Install libvpx-devel on your target in MerSDK")
+        print("libvpx-devel not found. Install libvpx-devel for all your targets in MerSDK")
+        return False;
+
+    webp_error = os.system("pkg-config libwebp --modversion > /dev/null")
+    if(webp_error):
+        print("libwebp-devel not found. Install libwebp-devel for all your targets in MerSDK\n")
         return False;
 
     return True
@@ -68,7 +73,8 @@ def get_flags():
         ('builtin_libpng', False),
         ('builtin_openssl', False),
         ('builtin_zlib', False),
-        ('builtin_libvpx', False)
+        ('builtin_libvpx', False),
+        ('builtin_libwebp', False)
     ]
 
 
