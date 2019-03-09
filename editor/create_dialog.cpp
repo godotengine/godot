@@ -204,7 +204,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		if (cpp_type) {
 			String cpp_to_select_type = to_select_type;
 			if (ScriptServer::is_global_class(to_select_type))
-				cpp_to_select_type = ScriptServer::get_global_class_base(to_select_type);
+				cpp_to_select_type = ScriptServer::get_global_class_native_base(to_select_type);
 			current_item_is_preferred = ClassDB::is_parent_class(p_type, preferred_search_result_type) && !ClassDB::is_parent_class(cpp_to_select_type, preferred_search_result_type);
 		} else {
 			current_item_is_preferred = ed.script_class_is_parent(p_type, preferred_search_result_type) && !ed.script_class_is_parent(to_select_type, preferred_search_result_type) && search_box->get_text() != to_select_type;
