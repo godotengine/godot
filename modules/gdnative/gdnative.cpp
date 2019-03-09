@@ -414,6 +414,7 @@ bool GDNative::terminate() {
 	if (error || !library_terminate) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
+		initialized = false;
 		return true;
 	}
 
