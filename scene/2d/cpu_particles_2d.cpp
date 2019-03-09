@@ -574,7 +574,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			if (restart_time >= prev_time && restart_time < time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (time - restart_time) * lifetime;
+					local_delta = time - restart_time;
 				}
 			}
 
@@ -582,13 +582,13 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			if (restart_time >= prev_time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (lifetime - restart_time + time) * lifetime;
+					local_delta = lifetime - restart_time + time;
 				}
 
 			} else if (restart_time < time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (time - restart_time) * lifetime;
+					local_delta = time - restart_time;
 				}
 			}
 		}
