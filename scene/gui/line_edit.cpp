@@ -43,7 +43,7 @@
 
 static bool _is_text_char(CharType c) {
 
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+	return !is_symbol(c);
 }
 
 void LineEdit::_gui_input(Ref<InputEvent> p_event) {
