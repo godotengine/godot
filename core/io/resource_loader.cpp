@@ -946,7 +946,7 @@ void ResourceLoader::add_custom_loaders() {
 	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
 
 		StringName class_name = E->get();
-		StringName base_class = ScriptServer::get_global_class_base(class_name);
+		StringName base_class = ScriptServer::get_global_class_native_base(class_name);
 
 		if (base_class == custom_loader_base_class) {
 			String path = ScriptServer::get_global_class_path(class_name);
