@@ -50,7 +50,7 @@ inline bool _is_symbol(CharType c) {
 
 static bool _is_text_char(CharType c) {
 
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+	return !is_symbol(c);
 }
 
 static bool _is_whitespace(CharType c) {
