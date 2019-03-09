@@ -221,7 +221,7 @@ private:
 
 	} physics_last_mouse_state;
 
-	void _collision_object_input_event(CollisionObject *p_object, Camera *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape, bool p_discard_empty_motion);
+	void _collision_object_input_event(CollisionObject *p_object, Camera *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 
 	bool handle_input_locally;
 	bool local_input_handled;
