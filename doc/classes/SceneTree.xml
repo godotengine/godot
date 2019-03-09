@@ -55,6 +55,26 @@
 				Changes to the given [PackedScene].
 			</description>
 		</method>
+		<method name="swap_scene">
+			<return type="Node">
+			</return>
+			<argument index="0" name="instanced_scene" type="Node">
+			</argument>
+			<description>
+				Changes current scene to given [Node], i.e. diffrent already instanced scene and returns the previous scene. The previous scene is removed from [SceneTree], but not freed. Useful when you need the old scene for later use.
+				[b]Note:[/b] Since the current scene is removed from tree, it stops all processing, so it's effectively "paused".
+				[b]Example:[/b] You want to change current scene to pause menu, but you need to keep your game scene and return to it later:
+				[codeblock]
+				var pause_menu = preload("res://PauseMenu.tscn").instance()
+				pause_menu.game = get_tree().swap_scene(pause_menu) #game variable in pause menu will hold the old (game) scene
+				[/codeblock]
+				[b]Note:[/b] The variable is set after new scene calls [method Node._ready]. If you need to use the old scene for some initialization, you could use [method Object.call_deferred] or a setter.
+				[b]Important:[/b] Since the old scene is not freed, you have to remember to free it yourself in case you don't need it after swapping. The easiest way to do so is:
+				[codeblock]
+				get_tree().swap_scene(new_scene).queue_free()
+				[/codeblock]
+			</description>
+		</method>
 		<method name="create_timer">
 			<return type="SceneTreeTimer">
 			</return>

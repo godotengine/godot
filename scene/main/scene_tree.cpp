@@ -1312,6 +1312,20 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	call_deferred("_change_scene", new_scene);
 	return OK;
 }
+Node *SceneTree::swap_scene(Node *p_to) {
+
+	root->add_child(p_to);
+
+	Node *old_scene = NULL;
+	if (current_scene) {
+		old_scene = current_scene;
+		root->remove_child(current_scene);
+	}
+
+	current_scene = p_to;
+
+	return old_scene;
+}
 Error SceneTree::reload_current_scene() {
 
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
@@ -1852,6 +1866,7 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("change_scene", "path"), &SceneTree::change_scene);
 	ClassDB::bind_method(D_METHOD("change_scene_to", "packed_scene"), &SceneTree::change_scene_to);
+	ClassDB::bind_method(D_METHOD("swap_scene", "instanced_scene"), &SceneTree::swap_scene);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 

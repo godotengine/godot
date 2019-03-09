@@ -399,6 +399,7 @@ public:
 	Node *get_current_scene() const;
 	Error change_scene(const String &p_path);
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
+	Node *swap_scene(Node *p_to);
 	Error reload_current_scene();
 
 	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_pause = true);
