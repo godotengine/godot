@@ -29,12 +29,13 @@
 # Peter Goelst <muis24@gmail.com>, 2019.
 # Wouter Buckens <wou.buc@gmail.com>, 2019.
 # Stijn Hinlopen <f.a.hinlopen@gmail.com>, 2019.
+# jef dered <themen098s@vivaldi.net>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
+"PO-Revision-Date: 2019-03-08 15:03+0000\n"
+"Last-Translator: jef dered <themen098s@vivaldi.net>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -42,11 +43,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Ongeldig argumenttype aan convert(), gebruik TYPE_* constanten."
 
@@ -111,14 +111,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Geselecteerde Key(s) Verwijderen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Punt toevoegen"
+msgstr "Bézierpunt toevoegen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Beweeg Punt"
+msgstr "Beweeg Bézierpunten"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -149,9 +147,8 @@ msgid "Anim Change Call"
 msgstr "Anim Wijzig Aanroep"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Verander Animatie Lus"
+msgstr "Verander Animatielengte"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -240,7 +237,7 @@ msgstr "Tijd (s): "
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Inschakelen Doppler"
+msgstr "Verander de ingeschakelde track"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -293,19 +290,16 @@ msgid "Delete Key(s)"
 msgstr "Verwijder Key(s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Verander Animatie Naam:"
+msgstr "Verander animatie update modus"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Interpolatiemodus"
+msgstr "Verander Animatie Interpolatiemodus"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Verander Animatie Lus"
+msgstr "Verander Animatie lus Modus"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -349,14 +343,13 @@ msgid "Anim Insert Key"
 msgstr "Anim Key Invoegen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Verander Animatie FPS"
+msgstr "Verander Animatiestappen"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Herschik Autoloads"
+msgstr "Herschik Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -389,9 +382,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Niet mogelijk om een nieuwe track toe te voegen zonder een root"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Track Toevoegen"
+msgstr "Voeg Bézierbaan Toe"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."

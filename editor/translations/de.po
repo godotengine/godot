@@ -38,12 +38,13 @@
 # Rémi Verschelde <akien@godotengine.org>, 2019.
 # Martin <martinreininger@gmx.net>, 2019.
 # Andreas During <anduring@web.de>, 2019.
+# Arthur S. Muszynski <artism90@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-01 11:59+0000\n"
-"Last-Translator: Andreas During <anduring@web.de>\n"
+"PO-Revision-Date: 2019-03-08 15:04+0000\n"
+"Last-Translator: Arthur S. Muszynski <artism90@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -120,14 +121,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Ausgewählte Schlüssel löschen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Punkt hinzufügen"
+msgstr "Bezierpunkt hinzufügen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Punkte Verschieben"
+msgstr "Bezierpunkt verschieben"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -158,9 +157,8 @@ msgid "Anim Change Call"
 msgstr "Aufruf ändern"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Bearbeite Animationsschleife"
+msgstr "Animationslänge ändern"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -217,9 +215,8 @@ msgid "Anim Clips:"
 msgstr "Animationsschnipsel:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Array-Wert ändern"
+msgstr "Spurpfad ändern"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -246,9 +243,8 @@ msgid "Time (s): "
 msgstr "Zeit (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Dopplereffekt aktivieren"
+msgstr "Spur ein-/ausschalten"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -301,19 +297,16 @@ msgid "Delete Key(s)"
 msgstr "Schlüsselbilder entfernen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Animationsname ändern:"
+msgstr "Animationsaktualisierungsmoduls ändern"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Interpolationsmodus"
+msgstr "Animationsinterpolationsmodus ändern"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Bearbeite Animationsschleife"
+msgstr "Animationswiederholungsmodus ändern"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -357,14 +350,12 @@ msgid "Anim Insert Key"
 msgstr "Schlüsselbild einfügen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Ändere FPS-Wert der Animation"
+msgstr "Animationsschrittweite ändern"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Autoloads neu anordnen"
+msgstr "Spuren neu anordnen"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -396,9 +387,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Ohne eine Wurzel kann keine neue Spur hinzugefügt werden"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Spur hinzufügen"
+msgstr "Bezierspur hinzufügen"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -410,14 +400,12 @@ msgstr ""
 "Spur ist nicht vom Typ Spatial, Schlüssel kann nicht hinzugefügt werden"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "3D-Transformspur"
+msgstr "Transformationsspurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "Spur hinzufügen"
+msgstr "Spurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
@@ -425,9 +413,8 @@ msgstr ""
 "Spurpfad ist ungültig, Methoden-Schlüssel kann nicht hinzugefügt werden."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Methodenaufrufsspur"
+msgstr "Methodenaufrufsspurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -590,17 +577,16 @@ msgid "Copy"
 msgstr "Kopieren"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Audioschnipsel:"
+msgstr "Tonspurclip hinzufügen"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Tonspurclip-Startversatz ändern"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Tonspurclip-Endversatz ändern"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -676,15 +662,15 @@ msgstr "Zeilen- und Spaltennummern."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
-msgstr "In der Ziel-Node muss eine Methode angegeben werden!"
+msgstr "Im Ziel-Node muss eine Methode angegeben werden!"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
-"Zielmethode nicht gefunden! Bitte geben Sie eine gültige Methode an oder "
-"fügen Sie ein Skript zur Ziel-Node hinzu."
+"Zielmethode nicht gefunden! Bitte eine gültige Methode angeben oder ein "
+"Skript dem Ziel-Node anhängen."
 
 #: editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -1422,6 +1408,8 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable support "
 "in Project Settings."
 msgstr ""
+"Die Zielplattform benötigt ‚ETC‘-Texturkompression für GLES2. Bitte in den "
+"Projekteinstellungen aktivieren."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -2002,14 +1990,12 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Änderungen in ‚%s‘ vor dem Schließen speichern?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Saved %s modified resource(s)."
-msgstr "Laden der Ressource gescheitert."
+msgstr "%s veränderte Ressource(n) gespeichert."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "A root node is required to save the scene."
-msgstr "Es ist nur eine Datei für eine große Textur erforderlich."
+msgstr "Ein Wurzel-Node wird benötigt um diese Szene zu speichern."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -3661,47 +3647,41 @@ msgstr "Lade..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Move Node Point"
-msgstr "Punkte Verschieben"
+msgstr "Node-Punkt verschieben"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Limits"
-msgstr "Überblendungszeit ändern"
+msgstr "BlendSpace1D-Grenzwerte ändern"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "Überblendungszeit ändern"
+msgstr "BlendSpace1D-Beschriftungen ändern"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
-"Dieser Node-Type kann nicht verwendet werden. Nur Wurzel-Nodes sind möglich."
+"Dieser Node-Typ kann nicht verwendet werden. Nur Wurzel-Nodes sind möglich."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Node Point"
-msgstr "Node hinzufügen"
+msgstr "Node-Punkt hinzufügen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Animation Point"
-msgstr "Animation hinzufügen"
+msgstr "Animationspunkt hinzufügen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace1D Point"
-msgstr "Pfadpunkt entfernen"
+msgstr "BlendSpace1D-Punkt entfernen"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
-msgstr ""
+msgstr "BlendSpace1D-Node-Punkt verschieben"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3747,29 +3727,24 @@ msgid "Triangle already exists"
 msgstr "Dreieck existiert bereits"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Triangle"
-msgstr "Variable hinzufügen"
+msgstr "Dreieck hinzufügen"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Limits"
-msgstr "Überblendungszeit ändern"
+msgstr "BlendSpace2D-Grenzwerte ändern"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Labels"
-msgstr "Überblendungszeit ändern"
+msgstr "BlendSpace2D-Beschriftungen ändern"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Point"
-msgstr "Pfadpunkt entfernen"
+msgstr "BlendSpace2D-Punkt entfernen"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Triangle"
-msgstr "Variable entfernen"
+msgstr "BlendSpace2D-Dreieck entfernen"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
@@ -3780,9 +3755,8 @@ msgid "No triangles exist, so no blending can take place."
 msgstr "Es existieren keine Dreiecke, Vermischen nicht möglich."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Toggle Auto Triangles"
-msgstr "Autoload-Globals umschalten"
+msgstr "Automatische Dreiecke umschalten"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3802,9 +3776,8 @@ msgid "Blend:"
 msgstr "Blende:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed"
-msgstr "Materialänderungen"
+msgstr "Parameter geändert"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3816,15 +3789,13 @@ msgid "Output node can't be added to the blend tree."
 msgstr "Ausgabe-Node kann nicht zum Mischungsbaum hinzugefügt werden."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to BlendTree"
-msgstr "Node(s) aus Szenenbaum hinzufügen"
+msgstr "Node zu BlendTree hinzufügen"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node Moved"
-msgstr "Bewegungsmodus"
+msgstr "Node verschoben"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3835,36 +3806,30 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Connected"
-msgstr "Verbunden"
+msgstr "Nodes verbunden"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Disconnected"
-msgstr "Getrennt"
+msgstr "Nodes getrennt"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Set Animation"
-msgstr "Neue Animation"
+msgstr "Animation setzen"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Node(s) löschen"
+msgstr "Node löschen"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Filter On/Off"
-msgstr "Diese Spur an-/abschalten."
+msgstr "Filter ein-/ausschalten"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Change Filter"
-msgstr "Sprachfilter geändert"
+msgstr "Filter ändern"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3887,14 +3852,13 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Renamed"
-msgstr "Node-Name"
+msgstr "Node umbenannt"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add Node..."
-msgstr "Knoten hinzufügen....."
+msgstr "Knoten hinzufügen..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -4005,7 +3969,7 @@ msgstr "Position der Animation (in Sekunden)."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Scale animation playback globally for the node."
-msgstr "Animationsablauf für dieses Node global skalieren."
+msgstr "Animationsablauf für diesen Node global skalieren."
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation Tools"
@@ -4117,14 +4081,12 @@ msgid "Cross-Animation Blend Times"
 msgstr "Übergangszeiten kreuzender Animationen"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "Bewegungsmodus"
+msgstr "Node verschieben"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Add Transition"
-msgstr "Übersetzung hinzufügen"
+msgstr "Übergang hinzufügen"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -4160,18 +4122,16 @@ msgid "No playback resource set at path: %s."
 msgstr "Keine Abspiel-Ressource festgelegt im Pfad: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "Entfernt:"
+msgstr "Node entfernt"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "Übergangs-Node"
+msgstr "Übergang entfernt"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
-msgstr ""
+msgstr "Start-Node setzen (Automatisches Abspielen)"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid ""
@@ -4193,7 +4153,7 @@ msgstr "Nodes verbinden."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Remove selected node or transition."
-msgstr "Ausgewähltes Node oder Übergang entfernen."
+msgstr "Ausgewählten Node oder Übergang entfernen."
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
@@ -4314,15 +4274,15 @@ msgstr "Misch-Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr "Blende2-Node"
+msgstr "Blend2-Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr "Blende3-Node"
+msgstr "Blend3-Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr "Blende4-Node"
+msgstr "Blend4-Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
@@ -4334,7 +4294,7 @@ msgstr "Zeitsuch-Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr "Übergangs-Node"
+msgstr "Übergang-Node"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
@@ -4897,7 +4857,7 @@ msgid ""
 "Drag & drop + Alt : Change node type"
 msgstr ""
 "Ziehen + Umschalt: Node auf gleicher Ebene einfügen\n"
-"Ziehen + Alt: Nodetyp ändern"
+"Ziehen + Alt: Node-Typ ändern"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Create Polygon3D"
@@ -4999,7 +4959,7 @@ msgstr "GI Sonde vorrendern"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
-msgstr ""
+msgstr "Gradient bearbeitet"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -5507,7 +5467,7 @@ msgstr "Gelenk verschieben"
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
 msgstr ""
-"Die Skeleton-Eigenschaft des Polygon2Ds zeigt nicht auf ein Skeleton2D-Node"
+"Die Skeleton-Eigenschaft des Polygon2D zeigt nicht auf ein Skeleton2D-Node"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Sync Bones"
@@ -6154,14 +6114,12 @@ msgstr ""
 "hinzugefügt werden."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Rest Pose from Bones"
-msgstr "Ruhe-Pose erstellen (aus Knochen)"
+msgstr "Ruhe-Pose aus Knochen erstellen"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Set Rest Pose to Bones"
-msgstr "Ruhe-Pose erstellen (aus Knochen)"
+msgstr "Knochen in Ruhe-Pose setzen"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -6316,17 +6274,17 @@ msgid "Rear"
 msgstr "Hinten"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align with View"
-msgstr "Auf Sicht ausrichten"
+msgstr "Mit Sicht ausrichten"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr "Kein Node unter dem Unterobjekt instantiiert werden könnte vorhanden."
+msgstr ""
+"Kein Node, unter dem Unterobjekt instantiiert werden könnte, vorhanden."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
-msgstr "Diese Aktion benötigt ein einzelnes ausgewähltes Node."
+msgstr "Diese Aktion benötigt einen einzelnen ausgewählten Node."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -6413,6 +6371,8 @@ msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
+"Hinweis: Die FPS-Anzeige stellt die Editor-Framerate dar.\n"
+"Sie ist kein zuverlässiger Vergleichswert für die In-Spiel-Leistung."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -6423,9 +6383,8 @@ msgid "XForm Dialog"
 msgstr "Transformationsdialog"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes To Floor"
-msgstr "Am Boden einrasten"
+msgstr "Nodes am Boden einrasten"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -7034,9 +6993,8 @@ msgid "Erase bitmask."
 msgstr "Bitmaske löschen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Create a new rectangle."
-msgstr "Neue Nodes erstellen."
+msgstr "Neues Rechteck erstellen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
@@ -7220,26 +7178,23 @@ msgstr "TileSet"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
-msgstr ""
+msgstr "Uniform-Name festlegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Set Input Default Port"
-msgstr "Als Standard für ‚%s‘ setzen"
+msgstr "Eingabestandardport festlegen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to Visual Shader"
-msgstr "VisualShader"
+msgstr "Visual Shader-Node hinzufügen"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Duplicate Nodes"
-msgstr "Dupliziere Node(s)"
+msgstr "Nodes duplizieren"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr ""
+msgstr "Visual-Shader-Eingabetyp geändert"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -7258,14 +7213,12 @@ msgid "VisualShader"
 msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property"
-msgstr "Kachelpriorität bearbeiten"
+msgstr "Visuelle Eigenschaft bearbeiten"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Visual Shader Mode Changed"
-msgstr "Shader-Änderungen"
+msgstr "Visual-Shader-Modus geändert"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -7284,6 +7237,8 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
+"Export des Projekts für die Plattform ‚%s‘ fehlgeschlagen.\n"
+"Exportvorlagen scheinen zu fehlen oder ungültig zu sein."
 
 #: editor/project_export.cpp
 msgid ""
@@ -7291,6 +7246,9 @@ msgid ""
 "This might be due to a configuration issue in the export preset or your "
 "export settings."
 msgstr ""
+"Export des Projekts für die Plattform ‚%s‘ fehlgeschlagen.\n"
+"Es könnte an einen fehlerhaften Einstellung in den Voreinstellungen oder den "
+"individuellen Exporteinstellugen liegen."
 
 #: editor/project_export.cpp
 msgid "Release"
@@ -8345,9 +8303,8 @@ msgid "Instantiated scenes can't become root"
 msgstr "Instantiierte Szenen können keine Wurzel werden"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Make node as Root"
-msgstr "Szenen-Wurzel erstellen"
+msgstr "Node zur Szenenwurzel machen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
@@ -8386,9 +8343,8 @@ msgid "Make Local"
 msgstr "Lokal machen"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "New Scene Root"
-msgstr "Szenen-Wurzel erstellen"
+msgstr "Neue Szenenwurzel"
 
 #: editor/scene_tree_dock.cpp
 msgid "Create Root Node:"
@@ -8820,19 +8776,16 @@ msgid "Set From Tree"
 msgstr "Nach Szenenbaum einstellen"
 
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Erase Shortcut"
-msgstr "Ausspannen"
+msgstr "Tastenkürzel entfernen"
 
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Restore Shortcut"
-msgstr "Tastenkürzel"
+msgstr "Tastenkürzel wiederherstellen"
 
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Change Shortcut"
-msgstr "Ankerpunkte ändern"
+msgstr "Tastenkürzel ändern"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -9431,9 +9384,8 @@ msgid "Change Input Value"
 msgstr "Eingabewert ändern"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Resize Comment"
-msgstr "CanvasItem in Größe anpassen"
+msgstr "Kommentargröße ändern"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't copy the function node."
@@ -9872,8 +9824,8 @@ msgid ""
 "CPUParticles\" option for this purpose."
 msgstr ""
 "GPU-basierte Partikel werden vom GLES2-Grafiktreiber nicht unterstützt.\n"
-"Verwenden Sie stattdessen den CPUParticles2D Node. Sie können dazu die "
-"Option \"In CPUPartikel konvertieren\" verwenden."
+"Stattdessen bitte CPUParticles2D-Nodes verwenden. Die „In CPU-Partikel "
+"konvertieren“-Funktion kann dazu verwendet werden."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -10075,8 +10027,8 @@ msgid ""
 "\" option for this purpose."
 msgstr ""
 "GPU-basierte Partikel werden vom GLES2-Grafiktreiber nicht unterstützt.\n"
-"Verwenden Sie stattdessen den CPUParticles Knoten. Sie können dazu die "
-"Option \"In CPUPartikel konvertieren\" verwenden."
+"Stattdessen bitte CPUParticles-Nodes verwenden. Die „In CPU-Partikel "
+"konvertieren“-Funktion kann dazu verwendet werden."
 
 #: scene/3d/particles.cpp
 msgid ""
