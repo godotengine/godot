@@ -224,6 +224,7 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		case ATTENUATION_LOGARITHMIC: {
 			att = -20 * Math::log(p_distance / unit_size + CMP_EPSILON);
 		} break;
+		case ATTENUATION_DISABLED: break;
 		default: {
 			ERR_PRINT("Unknown attenuation type");
 			break;
@@ -831,7 +832,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 }
 
 void AudioStreamPlayer3D::set_attenuation_model(AttenuationModel p_model) {
-	ERR_FAIL_INDEX(p_model, 3);
+	ERR_FAIL_INDEX((int)p_model, 4);
 	attenuation_model = p_model;
 }
 
@@ -962,7 +963,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer3D::_bus_layout_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,InverseSquare,Log"), "set_attenuation_model", "get_attenuation_model");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,InverseSquare,Log,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_db", PROPERTY_HINT_RANGE, "-80,80"), "set_unit_db", "get_unit_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.1"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_db", PROPERTY_HINT_RANGE, "-24,6"), "set_max_db", "get_max_db");
@@ -987,6 +988,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_INVERSE_SQUARE_DISTANCE);
 	BIND_ENUM_CONSTANT(ATTENUATION_LOGARITHMIC);
+	BIND_ENUM_CONSTANT(ATTENUATION_DISABLED);
 
 	BIND_ENUM_CONSTANT(OUT_OF_RANGE_MIX);
 	BIND_ENUM_CONSTANT(OUT_OF_RANGE_PAUSE);
