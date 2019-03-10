@@ -118,7 +118,7 @@ String DirAccessWindows::get_drive(int p_drive) {
 	if (p_drive < 0 || p_drive >= drive_count)
 		return "";
 
-	return String::chr(drives[p_drive]) + ":";
+	return String::chr(drives[p_drive]).to_upper() + ":";
 }
 
 Error DirAccessWindows::change_dir(String p_dir) {
