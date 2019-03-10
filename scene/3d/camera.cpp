@@ -99,9 +99,15 @@ void Camera::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			bool first_camera = get_viewport()->_camera_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
-				make_current();
+			// Needs to track the Viewport  because it's needed on NOTIFICATION_EXIT_WORLD
+			// and Spatial will handle it first, including clearing its reference to the Viewport,
+			// therefore making it impossible to subclasses to access it
+			viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+
+			bool first_camera = viewport->_camera_add(this);
+			if (current || first_camera)
+				viewport->_camera_set(this);
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -123,17 +129,20 @@ void Camera::_notification(int p_what) {
 				}
 			}
 
-			get_viewport()->_camera_remove(this);
+			if (viewport) {
+				viewport->_camera_remove(this);
+				viewport = NULL;
+			}
 
 		} break;
 		case NOTIFICATION_BECAME_CURRENT: {
-			if (get_world().is_valid()) {
-				get_world()->_register_camera(this);
+			if (viewport) {
+				viewport->find_world()->_register_camera(this);
 			}
 		} break;
 		case NOTIFICATION_LOST_CURRENT: {
-			if (get_world().is_valid()) {
-				get_world()->_remove_camera(this);
+			if (viewport) {
+				viewport->find_world()->_remove_camera(this);
 			}
 		} break;
 	}
@@ -232,8 +241,6 @@ bool Camera::is_current() const {
 		return get_viewport()->get_camera() == this;
 	} else
 		return current;
-
-	return false;
 }
 
 bool Camera::_can_gizmo_scale() const {
@@ -651,6 +658,7 @@ Camera::Camera() {
 	near = 0;
 	far = 0;
 	current = false;
+	viewport = NULL;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(70.0, 0.05, 100.0);
