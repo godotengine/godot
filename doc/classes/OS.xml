@@ -687,8 +687,10 @@
 		<method name="request_permission">
 			<return type="bool">
 			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
 			<description>
-				At the moment this function is only used by the AudioDriverOpenSL to request permission for RECORD_AUDIO on Android.
+				At the moment this function is only used by [code]AudioDriverOpenSL[/code] to request permission for [code]RECORD_AUDIO[/code] on Android.
 			</description>
 		</method>
 		<method name="set_icon">
