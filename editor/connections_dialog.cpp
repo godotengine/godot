@@ -764,6 +764,8 @@ void ConnectionsDock::update_tree() {
 	bool did_script = false;
 	StringName base = selectedNode->get_class();
 
+	// Walk through all class hierarchy levels of the selected node
+	// starting with the local script.
 	while (base) {
 
 		List<MethodInfo> node_signals2;
@@ -771,7 +773,7 @@ void ConnectionsDock::update_tree() {
 		String name;
 
 		if (!did_script) {
-
+			// Get signals, name and icon from attached Script
 			Ref<Script> scr = selectedNode->get_script();
 			if (scr.is_valid()) {
 				scr->get_script_signal_list(&node_signals2);
@@ -786,7 +788,7 @@ void ConnectionsDock::update_tree() {
 			}
 
 		} else {
-
+			// Get signals, name and icon from registered Class
 			ClassDB::get_signal_list(base, &node_signals2, true);
 			if (has_icon(base, "EditorIcons")) {
 				icon = get_icon(base, "EditorIcons");
@@ -808,16 +810,18 @@ void ConnectionsDock::update_tree() {
 
 		for (List<MethodInfo>::Element *E = node_signals2.front(); E; E = E->next()) {
 
-			MethodInfo &mi = E->get();
+			MethodInfo &signal_mi = E->get();
 
+			// Create descriptor string for Signal
+			// (Also collects names of all arguments)
 			String signaldesc;
-			signaldesc = mi.name + "(";
+			signaldesc = signal_mi.name + "(";
 			PoolStringArray argnames;
-			if (mi.arguments.size()) {
+			if (signal_mi.arguments.size()) {
 				signaldesc += " ";
-				for (int i = 0; i < mi.arguments.size(); i++) {
+				for (int i = 0; i < signal_mi.arguments.size(); i++) {
 
-					PropertyInfo &pi = mi.arguments[i];
+					PropertyInfo &pi = signal_mi.arguments[i];
 
 					if (i > 0)
 						signaldesc += ", ";
@@ -835,17 +839,18 @@ void ConnectionsDock::update_tree() {
 
 			signaldesc += ")";
 
+			// Create UI item for the Signal
 			TreeItem *item = tree->create_item(pitem);
 			item->set_text(0, signaldesc);
 			Dictionary sinfo;
-			sinfo["name"] = mi.name;
+			sinfo["name"] = signal_mi.name;
 			sinfo["args"] = argnames;
 			item->set_metadata(0, sinfo);
 			item->set_icon(0, get_icon("Signal", "EditorIcons"));
 
+			// Iterate over all the Connections of the current Signal
 			List<Object::Connection> connections;
-			selectedNode->get_signal_connection_list(mi.name, &connections);
-
+			selectedNode->get_signal_connection_list(signal_mi.name, &connections);
 			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
 
 				Object::Connection &c = F->get();
@@ -873,6 +878,7 @@ void ConnectionsDock::update_tree() {
 					path += " )";
 				}
 
+				// Create UI item for the Connection
 				TreeItem *item2 = tree->create_item(item);
 				item2->set_text(0, path);
 				item2->set_metadata(0, c);
