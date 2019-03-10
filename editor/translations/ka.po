@@ -5,12 +5,13 @@
 # Giorgi Beriashvili <giorgi.beriashvili@outlook.com>, 2018.
 # George Dzavashvili <dzavashviligeorge@gmail.com>, 2018.
 # დემეტრე შონია <blender.animation.maker@gmail.com>, 2019.
+# Rati Nikolaishvili <rati.nikolaishvili@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-10 12:01+0000\n"
-"Last-Translator: დემეტრე შონია <blender.animation.maker@gmail.com>\n"
+"PO-Revision-Date: 2019-03-10 09:58+0000\n"
+"Last-Translator: Rati Nikolaishvili <rati.nikolaishvili@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
 "Language: ka\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -62,11 +63,11 @@ msgstr ""
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "თავისუფალი"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "დაბალანსებული"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -75,7 +76,7 @@ msgstr "სარკე"
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
 msgid "Insert Key Here"
-msgstr "ანიმ გასაღების ჩაყენება"
+msgstr "აქ ჩასვით გასაღები"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
