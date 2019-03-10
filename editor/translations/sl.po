@@ -1401,8 +1401,22 @@ msgstr "Pakiranje"
 
 #: editor/editor_export.cpp
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1454,7 +1468,7 @@ msgstr "Pokaži V Upravitelju Datotek"
 msgid "New Folder..."
 msgstr "Nova Mapa..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "Osveži"
 
@@ -1529,9 +1543,34 @@ msgstr "Premakni Priljubljeno Navzgor"
 msgid "Move Favorite Down"
 msgstr "Premakni Priljubljeno Navzdol"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "Prejšnji zavihek"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "Ustvarite Mapo"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Pojdi v nadrejeno mapo"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "Mape ni mogoče ustvariti."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "View items as a grid of thumbnails."
+msgstr "Oglejte si elemente, kot mrežo sličic"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "View items as a list."
+msgstr "Oglejte si elemente v seznamu"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1772,13 +1811,23 @@ msgstr "Počisti Izhod"
 msgid "Project export failed with error code %d."
 msgstr "Izvoz projekta ni uspelo s kodno napako %d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "Napaka pri shranjevanju virov!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "Napaka pri shranjevanju virov!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
@@ -3099,16 +3148,6 @@ msgstr ""
 "sistemu!"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "View items as a grid of thumbnails."
-msgstr "Oglejte si elemente, kot mrežo sličic"
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "View items as a list."
-msgstr "Oglejte si elemente v seznamu"
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Stanje: Uvoz datoteke ni uspel. Popravi datoteko in ponovno ročno uvozi."
@@ -3251,11 +3290,6 @@ msgstr "Preklopi Način"
 #, fuzzy
 msgid "Search files"
 msgstr "Išči Razrede"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-"Naredi primer iz izbranih prizorov, ki bo naslednik izbranega gradnika."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5296,6 +5330,10 @@ msgid "Generating Visibility Rect"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr ""
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
@@ -5305,10 +5343,6 @@ msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5399,11 +5433,11 @@ msgid "Generating AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
+msgid "Generate Visibility AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate Visibility AABB"
+msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -7103,6 +7137,23 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Next Coordinate"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "Prejšnji zavihek"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr ""
 
@@ -7258,6 +7309,15 @@ msgid "Clear Tile Bitmask"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Make Polygon Concave"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "Ustvarite Poligon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Remove Tile"
 msgstr "Odstrani Predlogo"
@@ -7387,6 +7447,10 @@ msgstr ""
 #, fuzzy
 msgid "Exporting All"
 msgstr "Izvozi"
+
+#: editor/project_export.cpp
+msgid "The given export path doesn't exist:"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10015,6 +10079,12 @@ msgid ""
 "shape resource for it!"
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -10027,6 +10097,12 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -10179,6 +10255,14 @@ msgstr ""
 msgid "Add current color as a preset."
 msgstr "Dodaj trenutno barvo kot prednastavljeno"
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Opozorilo!"
@@ -10186,6 +10270,11 @@ msgstr "Opozorilo!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Prosimo Potrdite..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "Pojdi v nadrejeno mapo"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10262,6 +10351,10 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr ""
+#~ "Naredi primer iz izbranih prizorov, ki bo naslednik izbranega gradnika."
 
 #~ msgid "Line:"
 #~ msgstr "Vrstica:"

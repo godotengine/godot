@@ -1388,8 +1388,22 @@ msgstr "Πακετάρισμα"
 
 #: editor/editor_export.cpp
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1442,7 +1456,7 @@ msgstr "Εμφάνιση στη διαχείριση αρχείων"
 msgid "New Folder..."
 msgstr "Νέος φάκελος..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "Αναναίωση"
 
@@ -1517,9 +1531,32 @@ msgstr "Μετακίνηση αγαπημένου πάνω"
 msgid "Move Favorite Down"
 msgstr "Μετακίνηση αγαπημένου κάτω"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "Προηγούμενο πάτωμα"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "Επόμενο πάτωμα"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Πήγαινε στον γονικό φάκελο"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "Αδύνατη η δημιουργία φακέλου."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails."
+msgstr "Εμφάνιση αντικειμένων σε πλέγμα μικργραφιών."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a list."
+msgstr "Εμφάνιση αντικειμένων σε λίστα."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1761,14 +1798,24 @@ msgstr "Εκκαθάριση εξόδου"
 msgid "Project export failed with error code %d."
 msgstr "Η εξαγωγή του έργου απέτυχε με κωδικό %d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "Σφάλμα κατά την αποθήκευση πόρου!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "Εντάξει"
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "Σφάλμα κατά την αποθήκευση πόρου!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -3099,14 +3146,6 @@ msgstr ""
 "Δεν ήταν δυνατή η πλοήγηση στο '%s', καθώς δεν βρέθηκε στο σύστημα αρχείων!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails."
-msgstr "Εμφάνιση αντικειμένων σε πλέγμα μικργραφιών."
-
-#: editor/filesystem_dock.cpp
-msgid "View items as a list."
-msgstr "Εμφάνιση αντικειμένων σε λίστα."
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Κατάσταση: Η εισαγωγή απέτυχε. Παρακαλούμε διορθώστε το αρχείο και "
@@ -3247,12 +3286,6 @@ msgstr "Εναλλαγή λειτουργίας"
 #: editor/filesystem_dock.cpp
 msgid "Search files"
 msgstr "Αναζήτηση αρχείων"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-"Δημιουργία στιγμιοτύπων των επιλεγμένων σκηνών ως παιδιά του επιλεγμένου "
-"κόμβου."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5272,6 +5305,10 @@ msgid "Generating Visibility Rect"
 msgstr "Δημιουργία ορθογωνίου ορατότητας"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "Δημιουργία ορθογωνίου ορατότητας"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 "Ο ορισμός σημείου είναι δυνατός μόνο σε ένα υλικό επεξεργασίας "
@@ -5284,10 +5321,6 @@ msgstr "Σφάλμα κατά την φόρτωση εικόνας:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "Δεν υπάρχουν εικονοστοιχεία με διαφάνεια >128 στην εικόνα..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "Δημιουργία ορθογωνίου ορατότητας"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5377,12 +5410,12 @@ msgid "Generating AABB"
 msgstr "Δημιουρία AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Δημιουρία AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Δημιουρία AABB ορατότητας"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "Δημιουρία AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -7104,6 +7137,24 @@ msgid "Merge from Scene"
 msgstr "Συγχώνευση από σκηνή"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Next Coordinate"
+msgstr "Επόμενο πάτωμα"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "Προηγούμενο πάτωμα"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr ""
 
@@ -7267,6 +7318,16 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Make Polygon Concave"
+msgstr "Μετακίνηση πολυγώνου"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "Μετακίνηση πολυγώνου"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Remove Tile"
 msgstr "Αφαίρεση προτύπου"
 
@@ -7401,6 +7462,11 @@ msgstr "μόλις απελευθερώθηκε"
 #, fuzzy
 msgid "Exporting All"
 msgstr "Εξαγωγή για %s"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "Η διαδρομή δεν υπάρχει."
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10153,6 +10219,12 @@ msgstr ""
 "Ένα σχήμα πρέπει να δοθεί στο CollisionShape για να λειτουργήσει. "
 "Δημιουργήστε ένα πόρο σχήματος για αυτό!"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
 msgid "Nothing is visible because no mesh has been assigned."
@@ -10168,6 +10240,12 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Τοποθέτηση πλεγμάτων"
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10343,6 +10421,14 @@ msgstr ""
 msgid "Add current color as a preset."
 msgstr "Προσθήκη του τρέχοντος χρώματος ως προκαθορισμένο"
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Ειδοποίηση!"
@@ -10350,6 +10436,11 @@ msgstr "Ειδοποίηση!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "Πήγαινε στον γονικό φάκελο"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10437,6 +10528,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr ""
+#~ "Δημιουργία στιγμιοτύπων των επιλεγμένων σκηνών ως παιδιά του επιλεγμένου "
+#~ "κόμβου."
 
 #~ msgid "FPS"
 #~ msgstr "FPS"

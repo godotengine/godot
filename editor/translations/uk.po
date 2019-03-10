@@ -1371,9 +1371,30 @@ msgid "Packing"
 msgstr "Пакування"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+"Платформа призначення потребує стискання текстур «ETC» для GLES2. Увімкніть "
+"підтримку у параметрах проекту."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+"Платформа призначення потребує стискання текстур «ETC» для GLES2. Увімкніть "
+"підтримку у параметрах проекту."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 "Платформа призначення потребує стискання текстур «ETC» для GLES2. Увімкніть "
 "підтримку у параметрах проекту."
@@ -1423,7 +1444,7 @@ msgstr "Показати у менеджері файлів"
 msgid "New Folder..."
 msgstr "Створити теку..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "Оновити"
 
@@ -1498,9 +1519,32 @@ msgstr "Перемістити вибране вгору"
 msgid "Move Favorite Down"
 msgstr "Перемістити вибране вниз"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "Попередній поверх"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "Наступний поверх"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Перейти до батьківської теки"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "Неможливо створити теку."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails."
+msgstr "Перегляд елементів у вигляді сітки ескізів."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a list."
+msgstr "Перегляд елементів як список."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1724,14 +1768,24 @@ msgstr "Очистити вивід"
 msgid "Project export failed with error code %d."
 msgstr "Не вдалося експортувати проект, код помилки — %d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "Помилка збереження ресурсу!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "Гаразд"
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "Помилка збереження ресурсу!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -3051,14 +3105,6 @@ msgstr ""
 "Неможливо перейти до '%s' , оскільки він не був знайдений в файловій системі!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails."
-msgstr "Перегляд елементів у вигляді сітки ескізів."
-
-#: editor/filesystem_dock.cpp
-msgid "View items as a list."
-msgstr "Перегляд елементів як список."
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Статус: не вдалося імпортувати файл. Будь ласка, виправте файл та повторно "
@@ -3194,10 +3240,6 @@ msgstr "Перемкнути режим поділу"
 #: editor/filesystem_dock.cpp
 msgid "Search files"
 msgstr "Шукати файли"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Додати вибрану сцену(и), як нащадка вибраного вузла."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5173,6 +5215,10 @@ msgid "Generating Visibility Rect"
 msgstr "Створення області видимості"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "Створити область видимості"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 "Поставити точку можна тільки в процедурному матеріалі ParticlesMaterial"
@@ -5184,10 +5230,6 @@ msgstr "Помилка завантаження зображення:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "В зображенні немає пікселів з прозорістю > 128..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "Створити область видимості"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5277,11 +5319,11 @@ msgid "Generating AABB"
 msgstr "Створення AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
+msgid "Generate Visibility AABB"
 msgstr "Генерувати AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate Visibility AABB"
+msgid "Generate AABB"
 msgstr "Генерувати AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -6931,6 +6973,24 @@ msgid "Merge from Scene"
 msgstr "Об'єднати зі сцени"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Next Coordinate"
+msgstr "Наступний поверх"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "Попередній поверх"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr "Копіювати бітову маску."
 
@@ -7088,6 +7148,16 @@ msgid "Clear Tile Bitmask"
 msgstr "Спорожнити бітову маску плитки"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Concave"
+msgstr "Перемістити полігон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "Перемістити полігон"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
 msgstr "Вилучити плитку"
 
@@ -7208,6 +7278,11 @@ msgstr "Випуск"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Експортування усього"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "Шляху не існує."
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -9936,6 +10011,12 @@ msgstr ""
 "Для забезпечення працездатності CollisionShape слід надати форму. Будь "
 "ласка, створіть ресурс форми для цього елемента!"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Нічого не видно, оскільки не призначено сітки."
@@ -9951,6 +10032,12 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Побудова сітки"
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10126,6 +10213,14 @@ msgstr "Перемикання між шістнадцятковими знач�
 msgid "Add current color as a preset."
 msgstr "Додати поточний колір як шаблон."
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Увага!"
@@ -10133,6 +10228,11 @@ msgstr "Увага!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "Перейти до батьківської теки"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10218,6 +10318,9 @@ msgstr "Призначення однорідного."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Змінні величини можна пов'язувати лише із функцією вузлів."
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr "Додати вибрану сцену(и), як нащадка вибраного вузла."
 
 #~ msgid "FPS"
 #~ msgstr "Кадри за секунду"

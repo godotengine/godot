@@ -1375,9 +1375,30 @@ msgid "Packing"
 msgstr "Empacotamento"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+"Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative suporte "
+"nas Configurações do Projeto."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+"Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative suporte "
+"nas Configurações do Projeto."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 "Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative suporte "
 "nas Configurações do Projeto."
@@ -1427,7 +1448,7 @@ msgstr "Mostrar no Gestor de Ficheiros"
 msgid "New Folder..."
 msgstr "Nova Diretoria..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "Atualizar"
 
@@ -1502,9 +1523,32 @@ msgstr "Mover Favorito para Cima"
 msgid "Move Favorite Down"
 msgstr "Mover Favorito para Baixo"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "Piso anterior"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "Próximo Piso"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Ir para a pasta acima"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "Não foi possível criar pasta."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails."
+msgstr "Visualizar itens como grelha de miniaturas."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a list."
+msgstr "Visualizar itens como lista."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1728,14 +1772,24 @@ msgstr "Limpar Saída"
 msgid "Project export failed with error code %d."
 msgstr "Exportação do projeto falhou com código de erro %d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "Erro ao guardar recurso!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "OK"
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "Erro ao guardar recurso!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -3052,14 +3106,6 @@ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
 msgstr "'%s' não foi encontrado no Sistema de Ficheiros!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails."
-msgstr "Visualizar itens como grelha de miniaturas."
-
-#: editor/filesystem_dock.cpp
-msgid "View items as a list."
-msgstr "Visualizar itens como lista."
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Estado: A importação do Ficheiro falhou. Corrija o Ficheiro e importe "
@@ -3195,10 +3241,6 @@ msgstr "Alternar modo de divisão"
 #: editor/filesystem_dock.cpp
 msgid "Search files"
 msgstr "Procurar ficheiros"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Instancie a(s) Cena(s) selecionada(s) como filha(s) do Nó selecionado."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5164,6 +5206,10 @@ msgid "Generating Visibility Rect"
 msgstr "A Gerar Visibilidade Rect"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "Gerar Visibilidade do Rect"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Só pode definir um Ponto num Material ParticlesMaterial"
 
@@ -5174,10 +5220,6 @@ msgstr "Erro ao carregar imagem:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "Sem pixeis com transparência > 128 na imagem..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "Gerar Visibilidade do Rect"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5267,12 +5309,12 @@ msgid "Generating AABB"
 msgstr "A gerar AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Gerar AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Gerar visibilidade AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "Gerar AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -6917,6 +6959,24 @@ msgid "Merge from Scene"
 msgstr "Fundir a partir da Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Next Coordinate"
+msgstr "Próximo Piso"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "Piso anterior"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr "Copiar bitmask."
 
@@ -7070,6 +7130,16 @@ msgid "Clear Tile Bitmask"
 msgstr "Limpar Bitmask de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Concave"
+msgstr "Mover Polígono"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "Mover Polígono"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
 msgstr "Remover Tile"
 
@@ -7190,6 +7260,11 @@ msgstr "Libertar"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "A Exportar Tudo"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "O Caminho não existe."
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -9907,6 +9982,12 @@ msgstr ""
 "Uma forma tem de ser fornecida para CollisionShape funcionar. Crie um "
 "recurso forma!"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nada é visível porque nenhuma Malha foi atribuída."
@@ -9922,6 +10003,12 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "A desenhar Meshes"
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10096,6 +10183,14 @@ msgstr "Alternar valores entre hexadecimal e código."
 msgid "Add current color as a preset."
 msgstr "Adicionar cor atual como predefinição."
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Alerta!"
@@ -10103,6 +10198,11 @@ msgstr "Alerta!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Confirme por favor..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "Ir para a pasta acima"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10187,6 +10287,10 @@ msgstr "Atribuição a uniforme."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Variações só podem ser atribuídas na função vértice."
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr ""
+#~ "Instancie a(s) Cena(s) selecionada(s) como filha(s) do Nó selecionado."
 
 #~ msgid "FPS"
 #~ msgstr "FPS"
