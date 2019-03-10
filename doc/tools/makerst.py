@@ -954,7 +954,7 @@ def make_method_signature(class_def, method_def, make_ref, state):  # type: (Cla
         if len(method_def.parameters) > 0:
             out += ', ...'
         else:
-            out += '...'
+            out += ' ...'
 
     out += ' **)**'
 
