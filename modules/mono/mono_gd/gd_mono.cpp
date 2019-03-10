@@ -798,8 +798,6 @@ Error GDMono::_unload_scripts_domain() {
 	if (mono_domain_get() != root_domain)
 		mono_domain_set(root_domain, true);
 
-	mono_gc_collect(mono_gc_max_generation());
-
 	finalizing_scripts_domain = true;
 
 	if (!mono_domain_finalize(scripts_domain, 2000)) {
@@ -937,13 +935,19 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 	if (mono_domain_get() == p_domain)
 		mono_domain_set(root_domain, true);
 
-	mono_gc_collect(mono_gc_max_generation());
 	if (!mono_domain_finalize(p_domain, 2000)) {
 		ERR_PRINT("Mono: Domain finalization timeout");
 	}
+
 	mono_gc_collect(mono_gc_max_generation());
 
 	_domain_assemblies_cleanup(mono_domain_get_id(p_domain));
+
+#ifdef TOOLS_ENABLED
+	if (p_domain == tools_domain) {
+		editor_tools_assembly = NULL;
+	}
+#endif
 
 	MonoException *exc = NULL;
 	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
@@ -1046,11 +1050,19 @@ GDMono::~GDMono() {
 
 	if (is_runtime_initialized()) {
 
-		if (scripts_domain) {
+#ifdef TOOLS_ENABLED
+		if (tools_domain) {
+			Error err = finalize_and_unload_domain(tools_domain);
+			if (err != OK) {
+				ERR_PRINT("Mono: Failed to unload tools domain");
+			}
+		}
+#endif
 
+		if (scripts_domain) {
 			Error err = _unload_scripts_domain();
 			if (err != OK) {
-				WARN_PRINT("Mono: Failed to unload scripts domain");
+				ERR_PRINT("Mono: Failed to unload scripts domain");
 			}
 		}
 
@@ -1070,6 +1082,8 @@ GDMono::~GDMono() {
 		print_verbose("Mono: Runtime cleanup...");
 
 		mono_jit_cleanup(root_domain);
+
+		print_verbose("Mono: Finalized");
 
 		runtime_initialized = false;
 	}

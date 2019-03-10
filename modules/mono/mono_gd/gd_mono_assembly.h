@@ -84,10 +84,6 @@ class GDMonoAssembly {
 	bool gdobject_class_cache_updated;
 	Map<StringName, GDMonoClass *> gdobject_class_cache;
 
-#ifdef DEBUG_ENABLED
-	Vector<uint8_t> pdb_data;
-#endif
-
 	static bool no_search;
 	static bool in_preload;
 	static Vector<String> search_dirs;
