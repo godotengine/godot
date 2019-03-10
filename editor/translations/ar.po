@@ -1406,8 +1406,22 @@ msgstr "يَحزم\"ينتج الملف المضغوط\""
 
 #: editor/editor_export.cpp
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1459,7 +1473,7 @@ msgstr "أظهر في مدير الملفات"
 msgid "New Folder..."
 msgstr "مجلد جديد..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "تحديث"
 
@@ -1534,9 +1548,34 @@ msgstr "حرك المُفضلة للأعلي"
 msgid "Move Favorite Down"
 msgstr "حرك المُفضلة للأسفل"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "التبويب السابق"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "أنشئ مجلد"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "إذهب إلي المجلد السابق"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "لا يمكن إنشاء المجلد."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "View items as a grid of thumbnails."
+msgstr "أظهر العناصر كشبكة من الصور المصغرة"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "View items as a list."
+msgstr "أظهر العناصر كقائمة"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1778,13 +1817,23 @@ msgstr "أخلاء الخرج"
 msgid "Project export failed with error code %d."
 msgstr "تصدير المشروع فشل, رمز الخطأ % d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "خطأ في حفظ المورد!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
+msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "خطأ في حفظ المورد!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
@@ -3099,16 +3148,6 @@ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
 msgstr "لا يمكن التنقل إلي '%s' حيث لم يتم العثور عليها في نظام الملفات!"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "View items as a grid of thumbnails."
-msgstr "أظهر العناصر كشبكة من الصور المصغرة"
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "View items as a list."
-msgstr "أظهر العناصر كقائمة"
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "الحالة: إستيراد الملف فشل. من فضلك أصلح الملف و أعد إستيراده يدوياً."
 
@@ -3250,10 +3289,6 @@ msgstr "أظهر المود"
 #, fuzzy
 msgid "Search files"
 msgstr "إبحث في الأصناف"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "نمذج المشهد(المشاهد) المحددة كطفل للعقدة المحددة."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5292,6 +5327,10 @@ msgid "Generating Visibility Rect"
 msgstr "توليد Rect الرؤية"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "توليد Rect الرؤية"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "لا يمكن إنشاء سوى نقطة وحيدة داخل ParticlesMaterial معالج المواد"
 
@@ -5302,10 +5341,6 @@ msgstr "خطأ تحميل الصورة:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "لا بيكسل بشفافية > 128 في الصورة..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "توليد Rect الرؤية"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5396,12 +5431,12 @@ msgid "Generating AABB"
 msgstr "توليد AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "ولد AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "ولد رؤية AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "ولد AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -7113,6 +7148,23 @@ msgid "Merge from Scene"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Next Coordinate"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "التبويب السابق"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr ""
 
@@ -7268,6 +7320,15 @@ msgid "Clear Tile Bitmask"
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Make Polygon Concave"
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "إنشاء بولي"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Remove Tile"
 msgstr "مسح القالب"
@@ -7397,6 +7458,11 @@ msgstr ""
 #, fuzzy
 msgid "Exporting All"
 msgstr "التصدير كـ %s"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "هذا المسار غير موجود."
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10012,6 +10078,12 @@ msgid ""
 "shape resource for it!"
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -10024,6 +10096,12 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -10175,6 +10253,14 @@ msgstr ""
 msgid "Add current color as a preset."
 msgstr "أضف اللون الحالي كإعداد مسبق"
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "تنبيه!"
@@ -10182,6 +10268,11 @@ msgstr "تنبيه!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "يرجى التاكيد..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "إذهب إلي المجلد السابق"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10256,6 +10347,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr "نمذج المشهد(المشاهد) المحددة كطفل للعقدة المحددة."
 
 #, fuzzy
 #~ msgid "Font Size:"
