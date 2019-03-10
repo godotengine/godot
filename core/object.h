@@ -251,7 +251,7 @@ private:                                                                        
                                                                                                                                         \
 public:                                                                                                                                 \
 	virtual String get_class() const {                                                                                                  \
-		return String(#m_class);                                                                                                        \
+		return get_class_static();                                                                                                      \
 	}                                                                                                                                   \
 	virtual const StringName *_get_class_namev() const {                                                                                \
 		if (!_class_name)                                                                                                               \
@@ -263,14 +263,15 @@ public:                                                                         
 		return &ptr;                                                                                                                    \
 	}                                                                                                                                   \
 	static _FORCE_INLINE_ String get_class_static() {                                                                                   \
-		return String(#m_class);                                                                                                        \
+		/* Remove underscore from proxy classes */                                                                                      \
+		return String(#m_class[0] == '_' ? &(#m_class[1]) : #m_class);                                                                  \
 	}                                                                                                                                   \
 	static _FORCE_INLINE_ String get_parent_class_static() {                                                                            \
 		return m_inherits::get_class_static();                                                                                          \
 	}                                                                                                                                   \
 	static void get_inheritance_list_static(List<String> *p_inheritance_list) {                                                         \
 		m_inherits::get_inheritance_list_static(p_inheritance_list);                                                                    \
-		p_inheritance_list->push_back(String(#m_class));                                                                                \
+		p_inheritance_list->push_back(get_class_static());                                                                              \
 	}                                                                                                                                   \
 	static String get_category_static() {                                                                                               \
 		String category = m_inherits::get_category_static();                                                                            \
@@ -282,9 +283,10 @@ public:                                                                         
 		return category;                                                                                                                \
 	}                                                                                                                                   \
 	static String inherits_static() {                                                                                                   \
-		return String(#m_inherits);                                                                                                     \
+		/* Remove underscore from proxy classes */                                                                                      \
+		return String(#m_inherits[0] == '_' ? &(#m_inherits[1]) : #m_inherits);                                                         \
 	}                                                                                                                                   \
-	virtual bool is_class(const String &p_class) const { return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class); }       \
+	virtual bool is_class(const String &p_str) const { return (p_str == get_class_static()) ? true : m_inherits::is_class(p_str); }     \
 	virtual bool is_class_ptr(void *p_ptr) const { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
                                                                                                                                         \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                     \
@@ -346,12 +348,12 @@ protected:                                                                      
 		}                                                                                                                               \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));       \
 		if (!_is_gpl_reversed())                                                                                                        \
-			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                   \
+			ClassDB::get_property_list(get_class_static(), p_list, true, this);                                                         \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                \
 			_get_property_list(p_list);                                                                                                 \
 		}                                                                                                                               \
 		if (_is_gpl_reversed())                                                                                                         \
-			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                   \
+			ClassDB::get_property_list(get_class_static(), p_list, true, this);                                                         \
 		if (p_reversed) {                                                                                                               \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                        \
 		}                                                                                                                               \
