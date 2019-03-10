@@ -21,12 +21,13 @@
 # nitenook <admin@alterbaum.net>, 2018, 2019.
 # Rob Matych <robertsmatych@gmail.com>, 2018.
 # Hidetsugu Takahashi <manzyun@gmail.com>, 2019.
+# Wataru Onuki <watonu@magadou.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-01 11:59+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2019-03-05 17:55+0000\n"
+"Last-Translator: Wataru Onuki <watonu@magadou.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.5\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -101,14 +102,12 @@ msgid "Delete Selected Key(s)"
 msgstr "選択中のキーを削除"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "点を追加"
+msgstr "ベジェポイントを追加"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "ポイントを移動"
+msgstr "ベジェポイントを移動"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -1392,6 +1391,8 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable support "
 "in Project Settings."
 msgstr ""
+"対象プラットフォームではGLES2のために'ETC'テクスチャ圧縮が必要です。プロジェ"
+"クト設定より有効にしてください。"
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1806,6 +1807,8 @@ msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"このシーンにはインスタンスの循環参照が含まれているため保存できません。\n"
+"それをまず解消してから、また保存してみてください。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2715,6 +2718,8 @@ msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
+"選択されたリソース (%s) は、このプロパティ (%s) が求める型に一致していませ"
+"ん。"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -10392,6 +10397,7 @@ msgstr ""
 "いる環境(Environment)は読み込めませんでした."
 
 #: scene/main/viewport.cpp
+#, fuzzy
 msgid ""
 "This viewport is not set as render target. If you intend for it to display "
 "its contents directly to the screen, make it a child of a Control so it can "

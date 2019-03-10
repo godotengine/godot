@@ -21,12 +21,13 @@
 # Oğuzhan Özdemir <ozdemiroguzhan0@gmail.com>, 2018.
 # Alper Çitmen <alper.citmen@gmail.com>, 2019.
 # ege1212 <owlphp@gmail.com>, 2019.
+# Ömer YAZICIOĞLU <oyazicioglu@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-13 07:10+0000\n"
-"Last-Translator: ege1212 <owlphp@gmail.com>\n"
+"PO-Revision-Date: 2019-03-08 15:04+0000\n"
+"Last-Translator: Ömer YAZICIOĞLU <oyazicioglu@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -34,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -63,22 +64,20 @@ msgid "Invalid operands to operator %s, %s and %s."
 msgstr "%s düğümünde geçersiz indeks özelliği ismi '%s'."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "%s düğümünde geçersiz indeks özelliği ismi '%s'."
+msgstr "%s temel tipi için, %s tipinde geçersiz index."
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "%s temel tipi için, geçersiz isimlendirilmiş index %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": Şu tür için geçersiz değiştirgen: "
+msgstr "'%s' oluşturulurken geçersiz argümanlar atandı."
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "'%s': çağrıldığında."
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -147,9 +146,8 @@ msgid "Anim Change Call"
 msgstr "Animasyon Değişikliği Çağrısı"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Animasyon Döngüsünü Değiştir"
+msgstr "Animasyon Uzunluğunu Değiştir"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -162,41 +160,36 @@ msgid "Property Track"
 msgstr "Özellik:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "3D Transform Track"
-msgstr "Dönüştürme Türü"
+msgstr "3D Dönüştürücü İzi"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Yöntem Çağırma İzi"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "Bezier Eğri İzi"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Ses Oynatıcı İzi"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Playback Track"
-msgstr "Animasyonu oynatmayı durdur. (S)"
+msgstr "Animasyon Oynatıcı İzi"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track"
-msgstr "Animasyon İz Ekle"
+msgstr "İz Ekle"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Length Time (seconds)"
-msgstr "Animasyon uzunluğu (saniye)."
+msgstr "Animasyon Uzunluğu (saniye)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Animasyon yaklaş."
+msgstr "Animasyon Döngüsü"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -204,52 +197,44 @@ msgid "Functions:"
 msgstr "İşlevler:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Clips:"
-msgstr "Ses Dinleyici"
+msgstr "Ses Klipsi:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Clips:"
-msgstr "Parçalar"
+msgstr "Animasyon Klipsleri:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Dizi Değerini Değiştir"
+msgstr "İz Yolunu Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Dikkat-Dağıtmayan Kipine geç."
+msgstr "Bu izi Aç/Kapat."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "Güncelleme Kipi (Bu özellik nasıl belirlenir)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "Animasyon Düğümü"
+msgstr "Aradeğerleme Kipi"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "Döngü Örtü Kipi (Döngünün başlangıcını sonu ile aradeğerle)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "Seçilen izleri sil."
+msgstr "Bu izi sil."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "X-Sönülme Süresi (sn):"
+msgstr "Süresi (sn): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Çoğaltıcı Aktif"
+msgstr "İz Dönüştürücü Etkin"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -264,13 +249,12 @@ msgid "Trigger"
 msgstr "Tetikleyici"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "Özellikler"
+msgstr "Yakala"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "En Yakın"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -279,15 +263,15 @@ msgstr "Doğrusal"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kübik"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "Döngü Aradeğerlemesini Kıskaçla"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "Döngü Aradeğerlemesin Sar"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -305,19 +289,16 @@ msgid "Delete Key(s)"
 msgstr "Düğümleri Sil"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Animasyonun Adını Değiştir:"
+msgstr "Animasyonun Güncelleme Kipini Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Animasyon Düğümü"
+msgstr "Animasyon Aradeğerleme Kipini Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Animasyon Döngüsünü Değiştir"
+msgstr "Animasyon Döngü Kipini Değiştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -347,6 +328,7 @@ msgstr "Animasyon Gir"
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr ""
+"Animasyon Oynatıcısı kendisini oynatamaz, sadece diğer oynatıcılar yapabilir."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -366,9 +348,8 @@ msgid "Change Animation Step"
 msgstr "Animasyon FPS'sini Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "KendindenYüklenme'leri Yeniden Sırala"
+msgstr "İzleri Yeniden Sırala"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -381,69 +362,68 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"Ses izleri sadece şu düğüm tiplerini işaret edebilir:\n"
+"-SesAkışOynatıcı\n"
+"-SesAkışOynatıcı2D\n"
+"-SesAkışOynatıcı3D"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Animasyon izleri sadece AnimasyonOynatıcı düğümlerini işaret edebilir."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
 msgstr ""
+"Bir animasyon oynatıcı kendisini oynamataz, sadece diğer oynatıcılar "
+"yapaibilir."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "Bir kök olmadan yeni bir iz eklemek mümkün değildir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Animasyon İz Ekle"
+msgstr "Bezier İz Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "Bu yol geçersizdir, dolayısı ile anahtar eklenemez."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "İz, Spatial tipinde değildir, anahtar eklenemez"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "Dönüştürme Türü"
+msgstr "Dönüştürme İz Anahtarı Ekle"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "Animasyon İz Ekle"
+msgstr "İz Anahtarı Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "İz yolu geçersizdir, dolayısı ile yöntem anahtarı eklenemez."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Animasyon İz & Anahtar Gir"
+msgstr "Yöntem İz Anahtarı Ekle"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object: "
-msgstr "VariableGet betikte bulunamadı: "
+msgstr "Yöntem, nesne içinde bulunamadı "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
 msgstr "Animasyon Anahtarları Taşı"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Clipboard is empty"
-msgstr "Pano boş!"
+msgstr "Pano boş"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "Parametreleri Yapıştır"
+msgstr "İzleri Yapıştır"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -453,14 +433,15 @@ msgstr "Animasyon Anahtarı Ölçekle"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
+"Bu seçenek yalnızca tek izli olduğundan, Bezier düzenlemede işe yaramaz."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "sadece ağaç'ta seçili düğümlerdeki izleri göster."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "İzleri düğüme göre grupla veya onları düz liste olarak göster."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -468,9 +449,8 @@ msgid "Snap (s): "
 msgstr "Yapış (Noktalara):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Animasyon ağacı geçerlidir."
+msgstr "Animasyon adım değeri."
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -482,14 +462,12 @@ msgid "Edit"
 msgstr "Düzenle"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "AnimasyonAğacı"
+msgstr "Animasyon özellikleri."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "Değişkenleri Tıpkıla"
+msgstr "İzleri Kopyala"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -532,11 +510,11 @@ msgstr "Animasyonda temizlik yap"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "Anime edilecek düğümü seç:"
 
 #: editor/animation_track_editor.cpp
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "Bezier Eğrileri Kullan"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -584,7 +562,7 @@ msgstr "Ölçek Oranı:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Kopyalanacak izleri seç:"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -595,17 +573,16 @@ msgid "Copy"
 msgstr "Tıpkıla"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Ses Dinleyici"
+msgstr "Ses İz Klipsi Ekle"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Ses İz Klipsi Başlangıç Kaymasını Değiştir"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Ses İz Klipsi Bitiş Kaymasını Değiştir"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -677,7 +654,7 @@ msgstr "Uyarılar"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Satır ve sütun numaraları."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -761,9 +738,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Şunun: '%s' şununla: '%s' bağlantısını kes"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
-msgstr "Şunun: '%s' şununla: '%s' bağlantısını kes"
+msgstr "'%s' sinyali ile tüm bağlantıları kes"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -777,17 +753,17 @@ msgstr "Bağlantıyı kes"
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Connect Signal: "
-msgstr "Bağlantı Sinyali:"
+msgstr "Bağlantı Sinyali: "
 
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Edit Connection: "
-msgstr "Bağlantıları Düzenle"
+msgstr "Bağlantıları Düzenle "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Birden fazla projeyi çalıştırmaya kararlı mısınız?"
+msgstr ""
+"\"%s\" sinyalinden tüm bağlantıları kaldırmak istediğinizden emin misiniz?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -795,12 +771,11 @@ msgstr "Sinyaller"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr ""
+msgstr "Bu sinyalden, tüm bağlantıları kaldırmak istediğinizden emin misiniz?"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "Bağlantıyı kes"
+msgstr "Tüm Bağlantıları Kes"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -808,13 +783,12 @@ msgid "Edit..."
 msgstr "Düzenle"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "Metotlar"
+msgstr "Yönteme Git"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "%s Tipini değiştir"
+msgstr "%s Tipini Değiştir"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -823,7 +797,7 @@ msgstr "Değiştir"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr "Yeni %s oluştur"
+msgstr "Yeni %s Oluştur"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -957,7 +931,7 @@ msgstr "Hangi eylem alınmalı?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr "Bağımlılıkları düzelt"
+msgstr "Bağımlılıkları Düzelt"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
@@ -1096,7 +1070,6 @@ msgid "Uncompressing Assets"
 msgstr "Varlıklar Çıkartılıyor"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
 msgstr "Paket Başarı ile Kuruldu!"
 
