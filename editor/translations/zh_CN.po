@@ -1394,8 +1394,22 @@ msgstr "打包中"
 
 #: editor/editor_export.cpp
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1443,7 +1457,7 @@ msgstr "在文件管理器中显示"
 msgid "New Folder..."
 msgstr "新建文件夹 ..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "刷新"
 
@@ -1518,9 +1532,32 @@ msgstr "向上移动收藏"
 msgid "Move Favorite Down"
 msgstr "向下移动收藏"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "上一个层"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "下一层"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "转到上层文件夹"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "无法创建目录。"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails."
+msgstr "以网格缩略图形式查看所有项。"
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a list."
+msgstr "以列表的形式查看所有项。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1743,14 +1780,25 @@ msgstr "清空输出"
 msgid "Project export failed with error code %d."
 msgstr "项目导出失败，错误代码 %d。"
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "保存资源出错！"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Imported resources can't be saved."
+msgstr "已导入的资源"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "好的"
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "保存资源出错！"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -3025,14 +3073,6 @@ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
 msgstr "因为文件系统没找到文件，不能定位到'%s'！"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails."
-msgstr "以网格缩略图形式查看所有项。"
-
-#: editor/filesystem_dock.cpp
-msgid "View items as a list."
-msgstr "以列表的形式查看所有项。"
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr "状态: 导入文件失败。请手动修复文件后重新导入。"
 
@@ -3166,10 +3206,6 @@ msgstr "切换拆分模式"
 #: editor/filesystem_dock.cpp
 msgid "Search files"
 msgstr "搜索文件"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "将选中的场景实例为选中节点的子节点。"
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5141,6 +5177,10 @@ msgid "Generating Visibility Rect"
 msgstr "生成可视化区域"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "生成可视化区域"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "可以设置ParticlesMaterial 点的材质"
 
@@ -5151,10 +5191,6 @@ msgstr "加载图片出错:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "图片中没有透明度> 128的像素..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "生成可视化区域"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5244,12 +5280,12 @@ msgid "Generating AABB"
 msgstr "正在生成AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "生成AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "生成可见的AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "生成AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -6890,6 +6926,24 @@ msgid "Merge from Scene"
 msgstr "从场景中合并"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Next Coordinate"
+msgstr "下一层"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "上一个层"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr "复制位掩码。"
 
@@ -7044,6 +7098,16 @@ msgid "Clear Tile Bitmask"
 msgstr "清除位掩码"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Concave"
+msgstr "移动多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "移动多边形"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
 msgstr "移除磁贴"
 
@@ -7164,6 +7228,11 @@ msgstr "发行"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "全部导出"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "路径不存在。"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -9797,6 +9866,12 @@ msgstr ""
 "CollisionShape节点必须拥有一个形状才能进行碰撞检测工作，请为它创建一个形状资"
 "源！"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "无物可见，因为没有指定网格。"
@@ -9810,6 +9885,12 @@ msgstr "CPUParticles动画需要使用启动了“Billboard Particles”的Spati
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "正在绘制网格"
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -9969,6 +10050,14 @@ msgstr "在十六进制值和代码值之间切换。"
 msgid "Add current color as a preset."
 msgstr "将当前颜色添加为预设。"
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "提示！"
@@ -9976,6 +10065,11 @@ msgstr "提示！"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "请确认..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "转到上层文件夹"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10055,6 +10149,9 @@ msgstr "对uniform的赋值。"
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr "将选中的场景实例为选中节点的子节点。"
 
 #~ msgid "FPS"
 #~ msgstr "帧数"
@@ -11581,9 +11678,6 @@ msgstr "变量只能在顶点函数中指定。"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "无法打开目录:"
-
-#~ msgid "Imported Resources"
-#~ msgstr "已导入的资源"
 
 #~ msgid "Insert Keys (Ins)"
 #~ msgstr "插入关键帧（ 创建轨道）"

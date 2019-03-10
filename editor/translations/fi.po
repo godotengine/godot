@@ -1364,9 +1364,30 @@ msgid "Packing"
 msgstr "Pakataan"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+"GLES2 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke tuki päälle "
+"projektin asetuksista."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+"GLES2 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke tuki päälle "
+"projektin asetuksista."
+
+#: editor/editor_export.cpp
+#, fuzzy
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 "GLES2 tarvitsee kohdealustalla 'ETC' tekstuuripakkausta. Kytke tuki päälle "
 "projektin asetuksista."
@@ -1416,7 +1437,7 @@ msgstr "Näytä tiedostonhallinnassa"
 msgid "New Folder..."
 msgstr "Uusi kansio..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "Päivitä"
 
@@ -1491,9 +1512,32 @@ msgstr "Siirrä suosikkia ylös"
 msgid "Move Favorite Down"
 msgstr "Siirrä suosikkia alas"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "Edellinen kerros"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "Seuraava kerros"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Siirry yläkansioon"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "Kansiota ei voitu luoda."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails."
+msgstr "Ruudukkonäkymä esikatselukuvilla."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a list."
+msgstr "Listanäkymä."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1717,14 +1761,24 @@ msgstr "Tyhjennä tuloste"
 msgid "Project export failed with error code %d."
 msgstr "Projektin vienti epäonnistui virhekoodilla %d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "Virhe tallennettaessa resurssia!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "OK"
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "Virhe tallennettaessa resurssia!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -3035,14 +3089,6 @@ msgstr ""
 "tiedostojärjestelmästäsi!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails."
-msgstr "Ruudukkonäkymä esikatselukuvilla."
-
-#: editor/filesystem_dock.cpp
-msgid "View items as a list."
-msgstr "Listanäkymä."
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Tila: Tuonti epäonnistui. Ole hyvä, korjaa tiedosto ja tuo se uudelleen."
@@ -3177,10 +3223,6 @@ msgstr "Aseta jaettu tila"
 #: editor/filesystem_dock.cpp
 msgid "Search files"
 msgstr "Etsi tiedostoista"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr "Luo valituista skeneistä ilmentymä valitun solmun alle."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5155,6 +5197,10 @@ msgid "Generating Visibility Rect"
 msgstr "Kartoitetaan näkyvää aluetta"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "Kartoita näkyvä alue"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 "Piste voidaan asettaa ainoastaan ParticlesMaterial käsittelyn materiaaliin"
@@ -5166,10 +5212,6 @@ msgstr "Virhe ladattaessa kuvaa:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "Kuvassa ei ole pikseleitä, joiden läpinäkyvyys on enemmän kuin 128…"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "Kartoita näkyvä alue"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5259,12 +5301,12 @@ msgid "Generating AABB"
 msgstr "Luodaan AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Luo AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Kartoita näkyvä alue"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "Luo AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -6910,6 +6952,24 @@ msgid "Merge from Scene"
 msgstr "Yhdistä skenestä"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Next Coordinate"
+msgstr "Seuraava kerros"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "Edellinen kerros"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr "Kopioi bittimaski."
 
@@ -7063,6 +7123,16 @@ msgid "Clear Tile Bitmask"
 msgstr "Tyhjennä ruudun bittimaski"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Concave"
+msgstr "Siirrä polygonia"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "Siirrä polygonia"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
 msgstr "Poista ruutu"
 
@@ -7183,6 +7253,11 @@ msgstr "Julkaisuversio"
 #: editor/project_export.cpp
 msgid "Exporting All"
 msgstr "Viedään kaikki"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "Polkua ei ole olemassa."
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -9893,6 +9968,12 @@ msgstr ""
 "CollisionShape solmulle täytyy antaa muoto, jotta se toimisi. Ole hyvä ja "
 "luo sille muotoresurssi!"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Mitään ei näy, koska meshiä ei ole asetettu."
@@ -9908,6 +9989,12 @@ msgstr ""
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
 msgstr "Piirretään meshejä"
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10080,6 +10167,14 @@ msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
 msgid "Add current color as a preset."
 msgstr "Lisää nykyinen väri esiasetukseksi."
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Huomio!"
@@ -10087,6 +10182,11 @@ msgstr "Huomio!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Ole hyvä ja vahvista..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "Siirry yläkansioon"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10171,6 +10271,9 @@ msgstr "Sijoitus uniformille."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr "Luo valituista skeneistä ilmentymä valitun solmun alle."
 
 #~ msgid "FPS"
 #~ msgstr "FPS"
