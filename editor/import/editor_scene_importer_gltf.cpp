@@ -1698,6 +1698,22 @@ void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
 	}
 }
 
+void EditorSceneImporterGLTF::_reparent_skeleton(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
+	//reparent skeletons to proper place
+	Vector<int> nodes = state.skeleton_nodes[p_node];
+	for (int i = 0; i < nodes.size(); i++) {
+		Skeleton *skeleton = skeletons[nodes[i]];
+		Node *owner = skeleton->get_owner();
+		skeleton->get_parent()->remove_child(skeleton);
+		p_parent_node->add_child(skeleton);
+		skeleton->set_owner(owner);
+		//may have meshes as children, set owner in them too
+		for (int j = 0; j < skeleton->get_child_count(); j++) {
+			skeleton->get_child(j)->set_owner(owner);
+		}
+	}
+}
+
 void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons) {
 	ERR_FAIL_INDEX(p_node, state.nodes.size());
 
@@ -1769,24 +1785,17 @@ void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node 
 			_generate_node(state, n->children[i], node, p_owner, skeletons);
 		}
 	}
+
+	if (state.skeleton_nodes.has(p_node)) {
+		_reparent_skeleton(state, p_node, skeletons, node);
+	}
 }
 
 void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
 	ERR_FAIL_INDEX(p_node, state.nodes.size());
 
 	if (state.skeleton_nodes.has(p_node)) {
-		//reparent skeletons to proper place
-		Vector<int> nodes = state.skeleton_nodes[p_node];
-		for (int i = 0; i < nodes.size(); i++) {
-			Node *owner = skeletons[i]->get_owner();
-			skeletons[i]->get_parent()->remove_child(skeletons[i]);
-			p_parent_node->add_child(skeletons[i]);
-			skeletons[i]->set_owner(owner);
-			//may have meshes as children, set owner in them too
-			for (int j = 0; j < skeletons[i]->get_child_count(); j++) {
-				skeletons[i]->get_child(j)->set_owner(owner);
-			}
-		}
+		_reparent_skeleton(state, p_node, skeletons, p_parent_node);
 	}
 
 	GLTFNode *n = state.nodes[p_node];
