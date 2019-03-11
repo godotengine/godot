@@ -25,6 +25,8 @@ void main() {
 /* clang-format off */
 [fragment]
 
+// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
+// Do not copy these defines in the [vertex] section.
 #ifndef USE_GLES_OVER_GL
 #ifdef GL_EXT_shader_texture_lod
 #extension GL_EXT_shader_texture_lod : enable
@@ -54,7 +56,8 @@ precision highp int;
 precision mediump float;
 precision mediump int;
 #endif
-#endif // USE_GLES_OVER_GL
+
+#endif
 
 #ifdef USE_SOURCE_PANORAMA
 uniform sampler2D source_panorama; //texunit:0

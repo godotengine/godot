@@ -1,6 +1,3 @@
-// Our GLSL "stdlib"
-// texture2DLod defines *must* be done before including this,
-// but before any non-preprocessor statement.
 
 vec2 select2(vec2 a, vec2 b, bvec2 c) {
 	vec2 ret;
