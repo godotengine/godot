@@ -42,6 +42,7 @@ class CSGShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 public:
 	bool has_gizmo(Spatial *p_spatial);
 	String get_name() const;
+	int get_priority() const;
 	bool is_selectable_when_hidden() const;
 	void redraw(EditorSpatialGizmo *p_gizmo);
 

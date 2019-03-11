@@ -638,6 +638,10 @@ String PathSpatialGizmoPlugin::get_name() const {
 	return "Path";
 }
 
+int PathSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 PathSpatialGizmoPlugin::PathSpatialGizmoPlugin() {
 
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
