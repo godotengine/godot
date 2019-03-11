@@ -3424,6 +3424,10 @@ void AnimationTrackEditor::_animation_update() {
 
 	bool same = true;
 
+	if (animation.is_null()) {
+		return;
+	}
+
 	if (track_edits.size() == animation->get_track_count()) {
 		//check tracks are the same
 
