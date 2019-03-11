@@ -620,7 +620,9 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	}
 
 	ScriptLanguage::LookupResult result;
-	if (p_symbol.is_resource_file()) {
+	if (ScriptServer::is_global_class(p_symbol)) {
+		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
+	} else if (p_symbol.is_resource_file()) {
 		List<String> scene_extensions;
 		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
 
