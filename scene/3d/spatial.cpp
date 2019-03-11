@@ -675,8 +675,7 @@ void Spatial::set_identity() {
 
 void Spatial::look_at(const Vector3 &p_target, const Vector3 &p_up) {
 
-	Transform lookat;
-	lookat.origin = get_global_transform().origin;
+	Transform lookat(get_global_transform());
 	if (lookat.origin == p_target) {
 		ERR_EXPLAIN("Node origin and target are in the same position, look_at() failed");
 		ERR_FAIL();
@@ -686,7 +685,10 @@ void Spatial::look_at(const Vector3 &p_target, const Vector3 &p_up) {
 		ERR_EXPLAIN("Up vector and direction between node origin and target are aligned, look_at() failed");
 		ERR_FAIL();
 	}
+	Vector3 original_scale(lookat.basis.get_scale());
 	lookat = lookat.looking_at(p_target, p_up);
+	// as basis was normalized, we just need to apply original scale back
+	lookat.basis.scale(original_scale);
 	set_global_transform(lookat);
 }
 
