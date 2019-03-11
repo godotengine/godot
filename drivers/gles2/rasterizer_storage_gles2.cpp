@@ -5469,7 +5469,9 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef GLES_OVER_GL
 	//this needs to be enabled manually in OpenGL 2.1
 
-	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+	if (config.extensions.has("GL_ARB_seamless_cube_map")) {
+		glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
 	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 #endif
