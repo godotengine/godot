@@ -120,9 +120,13 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_RG8: {
-
-			ERR_EXPLAIN("RG texture not supported");
-			ERR_FAIL_V(image);
+			ERR_PRINT("RG texture not supported, converting to RGB8.");
+			if (image.is_valid())
+				image->convert(Image::FORMAT_RGB8);
+			r_real_format = Image::FORMAT_RGB8;
+			r_gl_internal_format = GL_RGB;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_RGB8: {
@@ -155,42 +159,57 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RF: {
 			if (!config.float_texture_supported) {
-				ERR_EXPLAIN("R float texture not supported");
-				ERR_FAIL_V(image);
+				ERR_PRINT("R float texture not supported, converting to RGB8.");
+				if (image.is_valid())
+					image->convert(Image::FORMAT_RGB8);
+				r_real_format = Image::FORMAT_RGB8;
+				r_gl_internal_format = GL_RGB;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_ALPHA;
+				r_gl_format = GL_ALPHA;
+				r_gl_type = GL_FLOAT;
 			}
-
-			r_gl_internal_format = GL_ALPHA;
-			r_gl_format = GL_ALPHA;
-			r_gl_type = GL_FLOAT;
 		} break;
 		case Image::FORMAT_RGF: {
-			ERR_EXPLAIN("RG float texture not supported");
-			ERR_FAIL_V(image);
-
+			ERR_PRINT("RG float texture not supported, converting to RGB8.");
+			if (image.is_valid())
+				image->convert(Image::FORMAT_RGB8);
+			r_real_format = Image::FORMAT_RGB8;
+			r_gl_internal_format = GL_RGB;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_UNSIGNED_BYTE;
 		} break;
 		case Image::FORMAT_RGBF: {
 			if (!config.float_texture_supported) {
-
-				ERR_EXPLAIN("RGB float texture not supported");
-				ERR_FAIL_V(image);
+				ERR_PRINT("RGB float texture not supported, converting to RGB8.");
+				if (image.is_valid())
+					image->convert(Image::FORMAT_RGB8);
+				r_real_format = Image::FORMAT_RGB8;
+				r_gl_internal_format = GL_RGB;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_RGB;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_FLOAT;
 			}
-
-			r_gl_internal_format = GL_RGB;
-			r_gl_format = GL_RGB;
-			r_gl_type = GL_FLOAT;
-
 		} break;
 		case Image::FORMAT_RGBAF: {
 			if (!config.float_texture_supported) {
-
-				ERR_EXPLAIN("RGBA float texture not supported");
-				ERR_FAIL_V(image);
+				ERR_PRINT("RGBA float texture not supported, converting to RGBA8.");
+				if (image.is_valid())
+					image->convert(Image::FORMAT_RGBA8);
+				r_real_format = Image::FORMAT_RGBA8;
+				r_gl_internal_format = GL_RGBA;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_RGBA;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_FLOAT;
 			}
-
-			r_gl_internal_format = GL_RGBA;
-			r_gl_format = GL_RGBA;
-			r_gl_type = GL_FLOAT;
-
 		} break;
 		case Image::FORMAT_RH: {
 			need_decompress = true;
