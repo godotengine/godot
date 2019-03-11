@@ -283,6 +283,10 @@ String CSGShapeSpatialGizmoPlugin::get_name() const {
 	return "CSGShapes";
 }
 
+int CSGShapeSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 bool CSGShapeSpatialGizmoPlugin::is_selectable_when_hidden() const {
 	return true;
 }
