@@ -1299,6 +1299,17 @@ void AnimationTree::_notification(int p_what) {
 			}
 		}
 	}
+	
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		_clear_caches();
+		if (last_animation_player) {
+
+			Object *old_player = ObjectDB::get_instance(last_animation_player);
+			if (old_player) {
+				old_player->connect("caches_cleared", this, "_clear_caches");
+			}
+		}
+	}
 }
 
 void AnimationTree::set_animation_player(const NodePath &p_player) {
