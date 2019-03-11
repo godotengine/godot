@@ -594,7 +594,7 @@ void PopupMenu::add_item(const String &p_label, int p_ID, uint32_t p_accel) {
 	item.text = p_label;
 	item.xl_text = tr(p_label);
 	item.accel = p_accel;
-	item.ID = p_ID;
+	item.ID = p_ID == -1 ? items.size() : p_ID;
 	items.push_back(item);
 	update();
 	minimum_size_changed();
@@ -632,7 +632,7 @@ void PopupMenu::add_check_item(const String &p_label, int p_ID, uint32_t p_accel
 	item.text = p_label;
 	item.xl_text = tr(p_label);
 	item.accel = p_accel;
-	item.ID = p_ID;
+	item.ID = p_ID == -1 ? items.size() : p_ID;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 	update();
