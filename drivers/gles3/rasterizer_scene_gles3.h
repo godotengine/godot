@@ -204,7 +204,7 @@ public:
 		bool cull_disabled;
 		bool used_sss;
 		bool used_screen_texture;
-		bool used_depth_texture;
+
 		bool used_depth_prepass;
 		bool used_depth_prepass_and_resolved;
 
