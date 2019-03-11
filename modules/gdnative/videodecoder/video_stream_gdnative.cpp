@@ -117,18 +117,20 @@ bool VideoStreamPlaybackGDNative::open_file(const String &p_file) {
 	file = FileAccess::open(p_file, FileAccess::READ);
 	bool file_opened = interface->open_file(data_struct, file);
 
-	num_channels = interface->get_channels(data_struct);
-	mix_rate = interface->get_mix_rate(data_struct);
+	if (file_opened) {
+		num_channels = interface->get_channels(data_struct);
+		mix_rate = interface->get_mix_rate(data_struct);
 
-	godot_vector2 vec = interface->get_texture_size(data_struct);
-	texture_size = *(Vector2 *)&vec;
+		godot_vector2 vec = interface->get_texture_size(data_struct);
+		texture_size = *(Vector2 *)&vec;
 
-	pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
-	memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
-	pcm_write_idx = -1;
-	samples_decoded = 0;
+		pcm = (float *)memalloc(num_channels * AUX_BUFFER_SIZE * sizeof(float));
+		memset(pcm, 0, num_channels * AUX_BUFFER_SIZE * sizeof(float));
+		pcm_write_idx = -1;
+		samples_decoded = 0;
 
-	texture->create((int)texture_size.width, (int)texture_size.height, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+		texture->create((int)texture_size.width, (int)texture_size.height, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+	}
 
 	return file_opened;
 }
