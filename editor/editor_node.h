@@ -550,7 +550,7 @@ private:
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
-	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
+	void _set_main_scene_state(Dictionary p_state);
 
 	int _get_current_main_editor();
 

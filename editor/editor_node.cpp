@@ -2816,10 +2816,7 @@ Dictionary EditorNode::_get_main_scene_state() {
 	return state;
 }
 
-void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
-
-	if (get_edited_scene() != p_for_scene && p_for_scene != NULL)
-		return; //not for this scene
+void EditorNode::_set_main_scene_state(Dictionary p_state) {
 
 	changing_scene = false;
 
@@ -2919,7 +2916,7 @@ void EditorNode::set_current_scene(int p_idx) {
 
 	_update_title();
 
-	call_deferred("_set_main_scene_state", state, get_edited_scene()); //do after everything else is done setting up
+	call_deferred("_set_main_scene_state", state); //do after everything else is done setting up
 }
 
 bool EditorNode::is_scene_open(const String &p_path) {
