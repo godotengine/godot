@@ -3048,11 +3048,12 @@ void OS_X11::set_context(int p_context) {
 
 		if (p_context == CONTEXT_ENGINE) {
 			classHint->res_name = (char *)"Godot_Engine";
-			char *config_name_tmp = (char *)((String)GLOBAL_GET("application/config/name")).utf8().ptrw();
-			if (config_name_tmp)
-				config_name = strdup(config_name_tmp);
-			else
+			String config_name_tmp = GLOBAL_GET("application/config/name");
+			if (config_name_tmp.length() > 0) {
+				config_name = strdup(config_name_tmp.utf8().get_data());
+			} else {
 				config_name = strdup("Godot Engine");
+			}
 
 			wm_class = config_name;
 		}
