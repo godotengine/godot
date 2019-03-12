@@ -230,8 +230,13 @@ void GDScript::get_script_method_list(List<MethodInfo> *p_list) const {
 			GDScriptFunction *func = E->get();
 			MethodInfo mi;
 			mi.name = E->key();
+
 			for (int i = 0; i < func->get_argument_count(); i++) {
 				mi.arguments.push_back(func->get_argument_type(i));
+			}
+
+			for(int i =0; i < func->get_default_argument_count(); i++) {
+				mi.default_arguments.push_back(func->get_default_argument(i) );
 			}
 
 			mi.return_val = func->get_return_type();
