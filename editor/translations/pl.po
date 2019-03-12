@@ -35,7 +35,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-08 15:04+0000\n"
+"PO-Revision-Date: 2019-03-12 15:36+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -114,14 +114,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Usuń klucz(e)"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Dodaj punkt"
+msgstr "Dodaj punkt krzywej Beziera"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Przesuń punkty"
+msgstr "Przesuń punkty krzywej Beziera"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -210,9 +208,8 @@ msgid "Anim Clips:"
 msgstr "Klipy animacji:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Zmień Wartość Tablicy"
+msgstr "Zmień adres ścieżki"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -239,9 +236,8 @@ msgid "Time (s): "
 msgstr "Czas (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Efekt Dopplera"
+msgstr "Przełącz aktywność ścieżki"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -294,9 +290,8 @@ msgid "Delete Key(s)"
 msgstr "Usuń klucz(e)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Zmień nazwę animacji:"
+msgstr "Zmień tryb zmiany animacji"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
@@ -386,9 +381,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Nie da się dodać nowej ścieżki bez korzenia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Dodaj ścieżkę"
+msgstr "Dodaj ścieżkę krzywej Beziera"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -399,23 +393,20 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "Ścieżka nie jest typu Spatial, nie można wstawić klucza"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "Ścieżka przekształcenia 3D"
+msgstr "Dodaj klucz ścieżki transformacji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "Dodaj ścieżkę"
+msgstr "Dodaj klucz ścieżki"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Ścieżka jest nieprawidłowa, więc nie można wstawić klucza metody."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Ścieżka wywołania metody"
+msgstr "Dodaj klucz ścieżki metody"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -577,17 +568,16 @@ msgid "Copy"
 msgstr "Kopiuj"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Klipy dźwiękowe:"
+msgstr "Dodaj klip ścieżki audio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Zmień początkowe przesunięcie klipu ścieżki audio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Zmień końcowe przesunięcie klipu ścieżki audio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -658,9 +648,8 @@ msgid "Warnings"
 msgstr "Ostrzeżenia"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "Line and column numbers."
-msgstr "Numery linii i kolumn"
+msgstr "Numery linii i kolumn."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -1218,9 +1207,8 @@ msgid "Add Bus"
 msgstr "Dodaj magistralę"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Zapisz układ magistrali audio jako..."
+msgstr "Dodaj nową Szynę Audio do tego układu."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1401,12 +1389,16 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"Platforma docelowa wymaga dla GLES2 kompresji tekstur 'ETC'. Włącz 'Import "
+"Etc' w Ustawieniach Projektu."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"Platforma docelowa wymaga dla GLES3 kompresji tekstur 'ETC2'. Włącz 'Import "
+"Etc 2' w Ustawieniach Projektu."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -7016,14 +7008,12 @@ msgid "Clear transform"
 msgstr "Wyczyść przekształcenie"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Add Texture(s) to TileSet."
-msgstr "Dodaj teksturę/tekstury do TileSet."
+msgstr "Dodaj teksturę/y do TileSetu."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Remove selected Texture from TileSet."
-msgstr "Usuń zaznaczoną teksturę z TileSet."
+msgstr "Usuń zaznaczoną Teksturę z TileSetu."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create from Scene"
@@ -7034,22 +7024,20 @@ msgid "Merge from Scene"
 msgstr "Połącz ze sceny"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Następny poziom"
+msgstr "Następny koordynat"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr ""
+msgstr "Wybierz następny kształt, podkafelek lub Kafelek."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "Poprzedni poziom"
+msgstr "Poprzedni koordynat"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr ""
+msgstr "Wybierz poprzedni kształt, podkafelek lub Kafelek."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7283,14 +7271,12 @@ msgid "Set Input Default Port"
 msgstr "Ustaw jako domyślne dla '%s'"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to Visual Shader"
-msgstr "Shader wizualny"
+msgstr "Dodaj Węzeł do Wizualnego Shadera"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Duplicate Nodes"
-msgstr "Duplikuj węzeł(y)"
+msgstr "Duplikuj węzły"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -7313,14 +7299,12 @@ msgid "VisualShader"
 msgstr "Shader wizualny"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property"
-msgstr "Edytuj filtry"
+msgstr "Edytuj Wizualną Właściwość"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Visual Shader Mode Changed"
-msgstr "Zmiany Shadera"
+msgstr "Zmiana Trybu Wizualnego Shadera"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -7356,9 +7340,8 @@ msgid "Exporting All"
 msgstr "Eksportowanie wszystkiego"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist:"
-msgstr "Ścieżka nie istnieje."
+msgstr "Podana ścieżka eksportu nie istnieje:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -7601,11 +7584,11 @@ msgstr "Szukaj"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Renderer:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7614,10 +7597,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Wyższa jakość wizualna\n"
+"Wszystkie funkcjonalności dostępne\n"
+"Niekompatybilne ze starszym sprzętem\n"
+"Niezalecane dla gier przeglądarkowych"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7626,17 +7613,22 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Mniejsza jakość wizualna\n"
+"Niektóre funkcjonalności niedostępne\n"
+"Działa na większości sprzętu\n"
+"Rekomendowane dla gier przeglądarkowych"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Renderer może zostać później zmieniony, ale sceny mogą potrzebować "
+"dostosowania."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "Projekt bez nazwy"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
 msgstr "Nie można otworzyć projektu w '%s'."
 
