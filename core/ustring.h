@@ -101,12 +101,17 @@ public:
 		_cowdata._ref(p_str._cowdata);
 		return *this;
 	}
+	_FORCE_INLINE_ CharString(const char *p_cstr) { copy_from(p_cstr); }
 
+	CharString &operator=(const char *p_cstr);
 	bool operator<(const CharString &p_right) const;
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
 	operator const char *() const { return get_data(); };
+
+protected:
+	void copy_from(const char *p_cstr);
 };
 
 typedef wchar_t CharType;
