@@ -1094,53 +1094,55 @@ GDMono::~GDMono() {
 	singleton = NULL;
 }
 
-_GodotSharp *_GodotSharp::singleton = NULL;
+namespace mono_bind {
 
-void _GodotSharp::attach_thread() {
+GodotSharp *GodotSharp::singleton = NULL;
+
+void GodotSharp::attach_thread() {
 
 	GDMonoUtils::attach_current_thread();
 }
 
-void _GodotSharp::detach_thread() {
+void GodotSharp::detach_thread() {
 
 	GDMonoUtils::detach_current_thread();
 }
 
-int32_t _GodotSharp::get_domain_id() {
+int32_t GodotSharp::get_domain_id() {
 
 	MonoDomain *domain = mono_domain_get();
 	CRASH_COND(!domain); // User must check if runtime is initialized before calling this method
 	return mono_domain_get_id(domain);
 }
 
-int32_t _GodotSharp::get_scripts_domain_id() {
+int32_t GodotSharp::get_scripts_domain_id() {
 
 	MonoDomain *domain = SCRIPTS_DOMAIN;
 	CRASH_COND(!domain); // User must check if scripts domain is loaded before calling this method
 	return mono_domain_get_id(domain);
 }
 
-bool _GodotSharp::is_scripts_domain_loaded() {
+bool GodotSharp::is_scripts_domain_loaded() {
 
 	return GDMono::get_singleton()->is_runtime_initialized() && SCRIPTS_DOMAIN != NULL;
 }
 
-bool _GodotSharp::_is_domain_finalizing_for_unload(int32_t p_domain_id) {
+bool GodotSharp::_is_domain_finalizing_for_unload(int32_t p_domain_id) {
 
 	return is_domain_finalizing_for_unload(p_domain_id);
 }
 
-bool _GodotSharp::is_domain_finalizing_for_unload() {
+bool GodotSharp::is_domain_finalizing_for_unload() {
 
 	return is_domain_finalizing_for_unload(mono_domain_get());
 }
 
-bool _GodotSharp::is_domain_finalizing_for_unload(int32_t p_domain_id) {
+bool GodotSharp::is_domain_finalizing_for_unload(int32_t p_domain_id) {
 
 	return is_domain_finalizing_for_unload(mono_domain_get_by_id(p_domain_id));
 }
 
-bool _GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
+bool GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
 
 	if (!p_domain)
 		return true;
@@ -1149,36 +1151,38 @@ bool _GodotSharp::is_domain_finalizing_for_unload(MonoDomain *p_domain) {
 	return mono_domain_is_unloading(p_domain);
 }
 
-bool _GodotSharp::is_runtime_shutting_down() {
+bool GodotSharp::is_runtime_shutting_down() {
 
 	return mono_runtime_is_shutting_down();
 }
 
-bool _GodotSharp::is_runtime_initialized() {
+bool GodotSharp::is_runtime_initialized() {
 
 	return GDMono::get_singleton()->is_runtime_initialized();
 }
 
-void _GodotSharp::_bind_methods() {
+void GodotSharp::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("attach_thread"), &_GodotSharp::attach_thread);
-	ClassDB::bind_method(D_METHOD("detach_thread"), &_GodotSharp::detach_thread);
+	ClassDB::bind_method(D_METHOD("attach_thread"), &GodotSharp::attach_thread);
+	ClassDB::bind_method(D_METHOD("detach_thread"), &GodotSharp::detach_thread);
 
-	ClassDB::bind_method(D_METHOD("get_domain_id"), &_GodotSharp::get_domain_id);
-	ClassDB::bind_method(D_METHOD("get_scripts_domain_id"), &_GodotSharp::get_scripts_domain_id);
-	ClassDB::bind_method(D_METHOD("is_scripts_domain_loaded"), &_GodotSharp::is_scripts_domain_loaded);
-	ClassDB::bind_method(D_METHOD("is_domain_finalizing_for_unload", "domain_id"), &_GodotSharp::_is_domain_finalizing_for_unload);
+	ClassDB::bind_method(D_METHOD("get_domain_id"), &GodotSharp::get_domain_id);
+	ClassDB::bind_method(D_METHOD("get_scripts_domain_id"), &GodotSharp::get_scripts_domain_id);
+	ClassDB::bind_method(D_METHOD("is_scripts_domain_loaded"), &GodotSharp::is_scripts_domain_loaded);
+	ClassDB::bind_method(D_METHOD("is_domain_finalizing_for_unload", "domain_id"), &GodotSharp::_is_domain_finalizing_for_unload);
 
-	ClassDB::bind_method(D_METHOD("is_runtime_shutting_down"), &_GodotSharp::is_runtime_shutting_down);
-	ClassDB::bind_method(D_METHOD("is_runtime_initialized"), &_GodotSharp::is_runtime_initialized);
+	ClassDB::bind_method(D_METHOD("is_runtime_shutting_down"), &GodotSharp::is_runtime_shutting_down);
+	ClassDB::bind_method(D_METHOD("is_runtime_initialized"), &GodotSharp::is_runtime_initialized);
 }
 
-_GodotSharp::_GodotSharp() {
+GodotSharp::GodotSharp() {
 
 	singleton = this;
 }
 
-_GodotSharp::~_GodotSharp() {
+GodotSharp::~GodotSharp() {
 
 	singleton = NULL;
 }
+
+} // namespace mono_bind

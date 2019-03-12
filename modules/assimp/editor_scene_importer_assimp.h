@@ -167,7 +167,7 @@ private:
 	void _calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w);
 	void _set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<Texture> texture);
 	void _find_texture_path(const String &p_path, String &path, bool &r_found);
-	void _find_texture_path(const String &p_path, _Directory &dir, String &path, bool &found, String extension);
+	void _find_texture_path(const String &p_path, core_bind::Directory &dir, String &path, bool &found, String extension);
 	String _ai_string_to_string(const aiString p_string) const;
 	String _ai_anim_string_to_string(const aiString p_string) const;
 	String _ai_raw_string_to_string(const aiString p_string) const;

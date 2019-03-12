@@ -126,10 +126,10 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_NOEDITOR = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_NETWORK,
 };
 
-#define ADD_SIGNAL(m_signal) ClassDB::add_signal(get_class_static(), m_signal)
-#define ADD_PROPERTY(m_property, m_setter, m_getter) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
-#define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
-#define ADD_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
+#define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
+#define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
+#define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
+#define ADD_GROUP(m_name, m_prefix) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
 
 struct PropertyInfo {
 
@@ -247,7 +247,7 @@ private:
 private:                                                                                                                                \
 	void operator=(const m_class &p_rval) {}                                                                                            \
 	mutable StringName _class_name;                                                                                                     \
-	friend class ClassDB;                                                                                                               \
+	friend class ::ClassDB;                                                                                                             \
                                                                                                                                         \
 public:                                                                                                                                 \
 	virtual String get_class() const {                                                                                                  \
@@ -307,7 +307,7 @@ public:                                                                         
 		if (initialized)                                                                                                                \
 			return;                                                                                                                     \
 		m_inherits::initialize_class();                                                                                                 \
-		ClassDB::_add_class<m_class>();                                                                                                 \
+		::ClassDB::_add_class<m_class>();                                                                                               \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods())                                                            \
 			_bind_methods();                                                                                                            \
 		initialized = true;                                                                                                             \
@@ -346,12 +346,12 @@ protected:                                                                      
 		}                                                                                                                               \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));       \
 		if (!_is_gpl_reversed())                                                                                                        \
-			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                   \
+			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                 \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                \
 			_get_property_list(p_list);                                                                                                 \
 		}                                                                                                                               \
 		if (_is_gpl_reversed())                                                                                                         \
-			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                   \
+			::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                 \
 		if (p_reversed) {                                                                                                               \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                        \
 		}                                                                                                                               \

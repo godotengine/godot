@@ -266,8 +266,10 @@ public:
 	gdmono::ScopeExitDomainUnload __gdmono__scope__exit__domain__unload__(m_mono_domain); \
 	(void)__gdmono__scope__exit__domain__unload__;
 
-class _GodotSharp : public Object {
-	GDCLASS(_GodotSharp, Object)
+namespace mono_bind {
+
+class GodotSharp : public Object {
+	GDCLASS(GodotSharp, Object)
 
 	friend class GDMono;
 
@@ -277,11 +279,11 @@ class _GodotSharp : public Object {
 	List<RID *> rid_delete_queue;
 
 protected:
-	static _GodotSharp *singleton;
+	static GodotSharp *singleton;
 	static void _bind_methods();
 
 public:
-	static _GodotSharp *get_singleton() { return singleton; }
+	static GodotSharp *get_singleton() { return singleton; }
 
 	void attach_thread();
 	void detach_thread();
@@ -298,8 +300,10 @@ public:
 	bool is_runtime_shutting_down();
 	bool is_runtime_initialized();
 
-	_GodotSharp();
-	~_GodotSharp();
+	GodotSharp();
+	~GodotSharp();
 };
+
+} // namespace mono_bind
 
 #endif // GD_MONO_H

@@ -43,7 +43,7 @@
 
 VisualScriptLanguage *visual_script_language = NULL;
 #ifdef TOOLS_ENABLED
-static _VisualScriptEditor *vs_editor_singleton = NULL;
+static vs_bind::VisualScriptEditor *vs_editor_singleton = NULL;
 #endif
 
 void register_visual_script_types() {
@@ -113,10 +113,10 @@ void register_visual_script_types() {
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
-	ClassDB::register_class<_VisualScriptEditor>();
+	ClassDB::register_class<vs_bind::VisualScriptEditor>();
 	ClassDB::set_current_api(ClassDB::API_CORE);
-	vs_editor_singleton = memnew(_VisualScriptEditor);
-	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptEditor", _VisualScriptEditor::get_singleton()));
+	vs_editor_singleton = memnew(vs_bind::VisualScriptEditor);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualScriptEditor", vs_bind::VisualScriptEditor::get_singleton()));
 
 	VisualScriptEditor::register_editor();
 #endif
