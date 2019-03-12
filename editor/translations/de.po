@@ -43,8 +43,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-08 15:04+0000\n"
-"Last-Translator: Arthur S. Muszynski <artism90@gmail.com>\n"
+"PO-Revision-Date: 2019-03-12 15:26+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1404,33 +1404,31 @@ msgid "Packing"
 msgstr "Packe"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
 "Die Zielplattform benötigt ‚ETC‘-Texturkompression für GLES2. Bitte in den "
-"Projekteinstellungen aktivieren."
+"Projekteinstellungen ‚Import Etc‘ aktivieren."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"Die Zielplattform benötigt ‚ETC‘-Texturkompression für GLES2. Bitte in den "
+"Die Zielplattform benötigt ‚ETC2‘-Texturkompression für GLES2. Bitte in den "
 "Projekteinstellungen aktivieren."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"Die Zielplattform benötigt ‚ETC‘-Texturkompression für GLES2. Bitte in den "
-"Projekteinstellungen aktivieren."
+"Die Zielplattform benötigt ‚ETC‘-Texturkompression für den Treiber-Fallback "
+"auf GLES2. Bitte ‚Import Etc‘ in den Projekteinstellungen aktivieren oder ‚"
+"Driver Fallback Enabled‘ ausschalten."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1553,23 +1551,20 @@ msgid "Move Favorite Down"
 msgstr "Favorit nach unten schieben"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "Vorherige Ebene"
+msgstr "Vorheriger Ordner"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "Nächste Ebene"
+msgstr "Nächster Ordner"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Gehe zu übergeordnetem Ordner"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "Ordner konnte nicht erstellt werden."
+msgstr "Gegenwärtigen Ordner (de)favorisieren."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1802,9 +1797,8 @@ msgid "Project export failed with error code %d."
 msgstr "Projekt-Export ist fehlgeschlagen mit Fehlercode %d."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Imported resources can't be saved."
-msgstr "Importierte Ressourcen"
+msgstr "Importierte Ressourcen können nicht abgespeichert werden."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -1820,6 +1814,8 @@ msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
+"Diese Ressource kann nicht abgespeichert werden, da sie nicht Teil der "
+"bearbeiteten Szene ist. Ressource muss vorher einzigartig gemacht werden."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -7024,22 +7020,20 @@ msgid "Merge from Scene"
 msgstr "Aus Szene zusammenführen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Nächste Ebene"
+msgstr "Nächste Koordinate"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr ""
+msgstr "Die nächste Form oder Kachel auswählen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "Vorherige Ebene"
+msgstr "Vorherige Koordinate"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr ""
+msgstr "Die vorherige Form oder Kachel auswählen."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7198,14 +7192,12 @@ msgid "Clear Tile Bitmask"
 msgstr "Kachel Bitmaske löschen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Concave"
-msgstr "Polygon verschieben"
+msgstr "Polygon konkav machen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Convex"
-msgstr "Polygon verschieben"
+msgstr "Polygon konvex machen"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -7330,9 +7322,8 @@ msgid "Exporting All"
 msgstr "Exportiere alles"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist:"
-msgstr "Dieser Pfad existiert nicht."
+msgstr "Der angegebene Export-Pfad existiert nicht:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10071,6 +10062,8 @@ msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr ""
+"Plane-Shapes funktionieren nicht gut und werden in einer zukünftigen Version "
+"entfernt. Von der Nutzung wird abgeraten."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -10093,6 +10086,8 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"GIProbes werden vom GLES2-Videotreiber nicht unterstützt.\n"
+"BakedLightmaps können als Alternative verwendet werden."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10282,6 +10277,10 @@ msgid ""
 "If you dont't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
+"Einfache Container sind unnötig solange ihnen kein Skript angehängt ist das "
+"die Platzierung der Inhalte vornimmt.\n"
+"Falls kein Skript angehängt werden soll wird empfohlen ein einfaches "
+"‚Control‘-Node zu verwenden."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -10292,9 +10291,8 @@ msgid "Please Confirm..."
 msgstr "Bitte bestätigen..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Gehe zu übergeordnetem Ordner"
+msgstr "Gehe zu übergeordnetem Ordner."
 
 #: scene/gui/popup.cpp
 msgid ""

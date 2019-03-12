@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-08 15:04+0000\n"
+"PO-Revision-Date: 2019-03-12 15:26+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1375,33 +1375,32 @@ msgid "Packing"
 msgstr "Empacotamento"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
-"Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative suporte "
-"nas Configurações do Projeto."
+"Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative "
+"'Importar Etc' nas Configurações do Projeto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative suporte "
-"nas Configurações do Projeto."
+"Plataforma Alvo exige compressão de textura 'ETC2' para GLES3. Ative "
+"'Importar Etc 2' nas Configurações do Projeto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"Plataforma Alvo exige compressão de textura 'ETC' para GLES2. Ative suporte "
-"nas Configurações do Projeto."
+"Plataforma Alvo exige compressão de textura 'ETC' para o driver de recurso "
+"em GLES2.\n"
+"Ative 'Importar Etc' nas Configurações do Projeto, ou desative 'Driver de "
+"Recurso ativo'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1524,23 +1523,20 @@ msgid "Move Favorite Down"
 msgstr "Mover Favorito para Baixo"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "Piso anterior"
+msgstr "Pasta Anterior"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "Próximo Piso"
+msgstr "Próxima Pasta"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Ir para a pasta acima"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "Não foi possível criar pasta."
+msgstr "(Não) tornar favorita atual pasta."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -6959,18 +6955,16 @@ msgid "Merge from Scene"
 msgstr "Fundir a partir da Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Próximo Piso"
+msgstr "Próxima Coordenada"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
 msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "Piso anterior"
+msgstr "Coordenada Anterior"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
@@ -7130,14 +7124,12 @@ msgid "Clear Tile Bitmask"
 msgstr "Limpar Bitmask de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Concave"
-msgstr "Mover Polígono"
+msgstr "Fazer Polígono Côncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Convex"
-msgstr "Mover Polígono"
+msgstr "Fazer Polígono Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -7262,9 +7254,8 @@ msgid "Exporting All"
 msgstr "A Exportar Tudo"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist:"
-msgstr "O Caminho não existe."
+msgstr "O caminho de exportação não existe:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10200,9 +10191,8 @@ msgid "Please Confirm..."
 msgstr "Confirme por favor..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Ir para a pasta acima"
+msgstr "Ir para a pasta acima."
 
 #: scene/gui/popup.cpp
 msgid ""

@@ -26,7 +26,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-05 17:55+0000\n"
+"PO-Revision-Date: 2019-03-12 15:26+0000\n"
 "Last-Translator: Wataru Onuki <watonu@magadou.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -35,7 +35,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.5\n"
+"X-Generator: Weblate 3.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -138,9 +138,8 @@ msgid "Anim Change Call"
 msgstr "アニメーション呼出しの変更"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "アニメーションのループを変更"
+msgstr "アニメーションの長さを変更"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -3194,7 +3193,7 @@ msgstr "依存関係の編集..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr "所有者を見る..."
+msgstr "オーナーを見る..."
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
@@ -4673,9 +4672,8 @@ msgid "Click to change object's rotation pivot."
 msgstr "クリックでオブジェクトの回転ピボットを変更する。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan Mode"
-msgstr "パン・モード"
+msgstr "パンモード"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle snapping."
@@ -6015,9 +6013,8 @@ msgid "Go to next edited document."
 msgstr "次の編集したドキュメントへ移動。"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Discard"
-msgstr "離散"
+msgstr "破棄"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6249,7 +6246,7 @@ msgstr "平行投影"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Perspective"
-msgstr "透視投影（遠近法）"
+msgstr "透視投影"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -10471,7 +10468,7 @@ msgstr ""
 
 #: scene/gui/range.cpp
 msgid "If exp_edit is true min_value must be > 0."
-msgstr ""
+msgstr "exp_edit がtrueの場合、min_value は0より大きい必要があります。"
 
 #: scene/gui/scroll_container.cpp
 msgid ""

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-10 09:58+0000\n"
+"PO-Revision-Date: 2019-03-12 15:25+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -131,9 +131,8 @@ msgid "Anim Change Call"
 msgstr "Animace: změna volání"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Změnit smyčku animace"
+msgstr "Změnit délku animace"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -190,9 +189,8 @@ msgid "Anim Clips:"
 msgstr "Animační klipy:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Změnit hodnotu pole"
+msgstr "Změnit cestu stopy"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -274,14 +272,12 @@ msgid "Delete Key(s)"
 msgstr "Odstranit klíč(e)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Změnit název animace:"
+msgstr "Změnit režim aktualizace animace"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Interpolační režim"
+msgstr "Změnit režim interpolace animace"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -330,14 +326,12 @@ msgid "Anim Insert Key"
 msgstr "Animace: vložit klíč"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Změnit FPS animace"
+msgstr "Změnit krok animace"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Přeskupit Autoloady"
+msgstr "Přeskupit stopy"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -368,9 +362,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Není možné přidat novou stopu bez kořenového uzlu"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Přidat stopu"
+msgstr "Přidat Bézierovu stopu"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -1385,12 +1378,16 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"Cílová platforma vyžaduje kompresi textur 'ETC' pro GLES2. Povolte 'Import "
+"Etc' v nastaveních projektu."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"Cílová platforma vyžaduje kompresi textur 'ETC2' pro GLES3. Povolte 'Import "
+"Etc 2' v nastaveních projektu."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1521,14 +1518,12 @@ msgid "Move Favorite Down"
 msgstr "Přesunout oblíbenou položku dolů"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "Předchozí záložka"
+msgstr "Předchozí složka"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "Vytvořit složku"
+msgstr "Další složka"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
@@ -1772,7 +1767,7 @@ msgstr "Export projektu selhal s chybovým kódem %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr ""
+msgstr "Nelze uložit importované zdroje."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -2003,7 +1998,7 @@ msgstr "Selhalo nahrání zdroje."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr ""
+msgstr "Pro uložení scény je vyžadován kořenový uzel."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
@@ -2744,6 +2739,8 @@ msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
+"Vybraný zdroj (%s) neodpovídá žádnému očekávanému typu pro tuto vlastnost "
+"(%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3407,11 +3404,11 @@ msgstr "Ukládání..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr ""
+msgstr "Nastavit jako výchozí pro '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
+msgstr "Vyčistit výchozí pro '%s'"
 
 #: editor/import_dock.cpp
 msgid " Files"
@@ -3498,9 +3495,8 @@ msgid "Load an existing resource from disk and edit it."
 msgstr "Nahrát existující zdroj z disku a editovat ho."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Save the currently edited resource."
-msgstr "Uložit vybranou animaci"
+msgstr "Uložit právě editovaný zdroj."
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
@@ -3574,16 +3570,14 @@ msgid "Create points."
 msgstr "Vytvořit body."
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
-#, fuzzy
 msgid ""
 "Edit points.\n"
 "LMB: Move Point\n"
 "RMB: Erase Point"
 msgstr ""
-"Upravit existující polygon:\n"
-"LMB: Přesunout bod.\n"
-"Ctrl+LMB: Rozdělit segment.\n"
-"RMB: Vymazat bod."
+"Upravit body.\n"
+"LMB: Přesunout bod\n"
+"RMB: Vymazat bod"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -3684,7 +3678,7 @@ msgstr "Zvolte a přesuňte body. Nové uzly vytvořte pomocí RMB."
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "Aktivovat přichytávání a zobrazit mřížku."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3703,9 +3697,8 @@ msgid "Triangle already exists"
 msgstr "Trojúhelník již existuje"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Triangle"
-msgstr "Přidat proměnnou"
+msgstr "Přidat trojúhelník"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Limits"
@@ -3740,11 +3733,11 @@ msgstr "Zobrazit oblíbené"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
-msgstr ""
+msgstr "Vytvořit trojúhelníky spojováním bodů."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Erase points and triangles."
-msgstr ""
+msgstr "Odstranit body a trojúhelníky."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
@@ -3756,9 +3749,8 @@ msgid "Blend:"
 msgstr "Prolínání:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed"
-msgstr "Změny materiálu"
+msgstr "Parametr změněn"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3770,43 +3762,37 @@ msgid "Output node can't be added to the blend tree."
 msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to BlendTree"
-msgstr "Přidat uzel(y) ze stromu"
+msgstr "Přidat uzel do BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Node Moved"
-msgstr "Režim přesouvání"
+msgstr "Uzel přesunut"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
-msgstr ""
+msgstr "Nelze se připojit, port může být používán nebo připojení není platné."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Connected"
-msgstr "Připojeno"
+msgstr "Připojené uzly"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Disconnected"
-msgstr "Odpojeno"
+msgstr "Odpojené uzly"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Set Animation"
-msgstr "Nová animace"
+msgstr "Nastavit animaci"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Odstranit uzel/uzly"
+msgstr "Smazat uzel"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
@@ -3814,9 +3800,8 @@ msgid "Toggle Filter On/Off"
 msgstr "Aktivovat/Deaktivovat tuto stopu."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Change Filter"
-msgstr "Změnit typ hodnot pole"
+msgstr "Změnit filtr"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3835,9 +3820,8 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Renamed"
-msgstr "Název uzlu"
+msgstr "Uzel přejmenován"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4066,9 +4050,8 @@ msgid "Cross-Animation Blend Times"
 msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "Režim přesouvání"
+msgstr "Přesunout uzel"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #, fuzzy
@@ -4090,7 +4073,7 @@ msgstr ""
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Sync"
-msgstr ""
+msgstr "Synchronizovat"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "At End"
@@ -4110,14 +4093,12 @@ msgid "No playback resource set at path: %s."
 msgstr "Není v cestě ke zdroji."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "Odebrat"
+msgstr "Uzel odebrán"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "Přechod: "
+msgstr "Přechod odebrán"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
@@ -4247,39 +4228,39 @@ msgstr "Strom animace je neplatný."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
-msgstr "Uzel animace"
+msgstr "Uzel Animation"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "OneShot Node"
-msgstr ""
+msgstr "Uzel OneShot"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Mix Node"
-msgstr ""
+msgstr "Uzel Mix"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend2 Node"
-msgstr ""
+msgstr "Uzel Blend2"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend3 Node"
-msgstr ""
+msgstr "Uzel Blend3"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend4 Node"
-msgstr ""
+msgstr "Uzel Blend4"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeScale Node"
-msgstr ""
+msgstr "Uzel TimeScale"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "TimeSeek Node"
-msgstr ""
+msgstr "Uzel TimeSeek"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Transition Node"
-msgstr ""
+msgstr "Uzel Transition"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Import Animations..."
@@ -5207,11 +5188,11 @@ msgstr "Žádný pixel s průhledností > 128 v obrázku..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr ""
+msgstr "Načíst emisní masku"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
-msgstr ""
+msgstr "Vyčistit emisní masku"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5234,7 +5215,7 @@ msgstr "Čas generování (sec):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr ""
+msgstr "Emisní maska"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"

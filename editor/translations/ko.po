@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-08 15:04+0000\n"
+"PO-Revision-Date: 2019-03-12 15:26+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.5.1\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1363,33 +1363,27 @@ msgid "Packing"
 msgstr "패킹 중"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
-msgstr ""
-"대상 플랫폼은 GLES2를 위해 'ETC' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 "
-"지원을 사용하세요."
+msgstr "대상 플랫폼은 GLES2를 위해 'ETC' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 'Import Etc'을 사용하세요."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"대상 플랫폼은 GLES2를 위해 'ETC' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 "
-"지원을 사용하세요."
+"대상 플랫폼은 GLES3를 위해 'ETC2' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 'Import Etc 2'를 사용하세요."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"대상 플랫폼은 GLES2를 위해 'ETC' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 "
-"지원을 사용하세요."
+"대상 플랫폼은 드라이버가 GLES2로 폴백하기 위해 'ETC' 텍스쳐 압축이 필요합니다.\n"
+"프로젝트 설정에서 'Import Etc'을 키거나, 'Driver Fallback Enabled'를 비활성화하세요."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1512,23 +1506,20 @@ msgid "Move Favorite Down"
 msgstr "즐겨찾기 아래로 이동"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "이전 층"
+msgstr "이전 폴더"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "다음 층"
+msgstr "다음 폴더"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "부모 폴더로 이동"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "폴더를 만들 수 없습니다."
+msgstr "현재 폴더를 즐겨찾기 (안) 합니다."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1761,9 +1752,8 @@ msgid "Project export failed with error code %d."
 msgstr "프로젝트 내보내기가 오류 코드 %d 로 실패했습니다."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Imported resources can't be saved."
-msgstr "가져온 리소스"
+msgstr "가져온 리소스를 저장할 수 없습니다."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -1778,7 +1768,7 @@ msgstr "리소스 저장 중 오류!"
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
-msgstr ""
+msgstr "이 리소스는 편집된 씬에 속해있지 않기 때문에 저장할 수 없습니다. 먼저 리소스를 유일하게 만드세요."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -4599,8 +4589,8 @@ msgid ""
 "Show a list of all objects at the position clicked\n"
 "(same as Alt+RMB in select mode)."
 msgstr ""
-"클릭한 위치에 있는 모든 오브젝트들의 목록을 보여줍니다.\n"
-"(선택모드에서 알트+우클릭과 같습니다.)"
+"클릭한 위치에 있는 모든 오브젝트들의 목록을 보여줍니다\n"
+"(선택모드에서 Alt+우클릭과 같습니다)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Click to change object's rotation pivot."
@@ -6929,22 +6919,20 @@ msgid "Merge from Scene"
 msgstr "씬으로부터 병합하기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "다음 층"
+msgstr "다음 좌표"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr ""
+msgstr "다음 모양, 하위 타일, 혹은 타일을 선택하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "이전 층"
+msgstr "이전 좌표"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr ""
+msgstr "이전 모양, 하위 타일, 혹은 타일을 선택하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7101,14 +7089,12 @@ msgid "Clear Tile Bitmask"
 msgstr "타일 비트 마스크 지우기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Concave"
-msgstr "폴리곤 이동"
+msgstr "오목한 폴리곤 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Convex"
-msgstr "폴리곤 이동"
+msgstr "볼록한 폴리곤 만들기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -7232,9 +7218,8 @@ msgid "Exporting All"
 msgstr "모두 내보내기"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist:"
-msgstr "경로가 존재하지 않습니다."
+msgstr "주어진 내보내기 경로가 존재하지 않습니다:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -9923,7 +9908,7 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
-msgstr ""
+msgstr "평면 모양은 잘 작동하지 않으며 이후 버전에서 제거될 예정입니다. 사용하지 말아주세요."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -9946,6 +9931,8 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"GIProbe는 GLES2 비디오 드라이버에서 지원하지 않습니다.\n"
+"BakedLightmap을 사용하세요."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10123,6 +10110,8 @@ msgid ""
 "If you dont't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
+"컨테이너 자체는 자식 배치 행동을 구성하지 않는 한 용도가 없습니다.\n"
+"스크립트를 추가하지 않는 경우, 순수한 'Control' 노드를 사용해주세요."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -10133,9 +10122,8 @@ msgid "Please Confirm..."
 msgstr "확인해주세요..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "부모 폴더로 이동"
+msgstr "부모 폴더로 이동합니다."
 
 #: scene/gui/popup.cpp
 msgid ""
