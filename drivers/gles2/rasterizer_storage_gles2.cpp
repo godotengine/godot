@@ -71,6 +71,7 @@ GLuint RasterizerStorageGLES2::system_fbo = 0;
 
 #ifdef GLES_OVER_GL
 #define _GL_HALF_FLOAT_OES 0x140B
+#define GL_POINT_SPRITE 0x8861
 #else
 #define _GL_HALF_FLOAT_OES 0x8D61
 #endif
@@ -5491,6 +5492,10 @@ void RasterizerStorageGLES2::initialize() {
 	if (config.extensions.has("GL_ARB_seamless_cube_map")) {
 		glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
+
+	// See https://www.khronos.org/registry/OpenGL/specs/gl/glspec32.core.pdf pg. 331
+	// Since we are content with OpenGL 2.1 for emulating GLES 2, we have to enable
+	// GL_POINT_SPRITE which was removed from OpenGL 3.2 core.
 	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 #endif

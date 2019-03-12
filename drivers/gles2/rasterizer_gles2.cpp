@@ -28,122 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include <glad/glad.h>
+
 #include "rasterizer_gles2.h"
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "drivers/gl_context/context_gl.h"
-
-#define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
-#define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
-#define _EXT_DEBUG_CALLBACK_FUNCTION_ARB 0x8244
-#define _EXT_DEBUG_CALLBACK_USER_PARAM_ARB 0x8245
-#define _EXT_DEBUG_SOURCE_API_ARB 0x8246
-#define _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB 0x8247
-#define _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB 0x8248
-#define _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB 0x8249
-#define _EXT_DEBUG_SOURCE_APPLICATION_ARB 0x824A
-#define _EXT_DEBUG_SOURCE_OTHER_ARB 0x824B
-#define _EXT_DEBUG_TYPE_ERROR_ARB 0x824C
-#define _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB 0x824D
-#define _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB 0x824E
-#define _EXT_DEBUG_TYPE_PORTABILITY_ARB 0x824F
-#define _EXT_DEBUG_TYPE_PERFORMANCE_ARB 0x8250
-#define _EXT_DEBUG_TYPE_OTHER_ARB 0x8251
-#define _EXT_MAX_DEBUG_MESSAGE_LENGTH_ARB 0x9143
-#define _EXT_MAX_DEBUG_LOGGED_MESSAGES_ARB 0x9144
-#define _EXT_DEBUG_LOGGED_MESSAGES_ARB 0x9145
-#define _EXT_DEBUG_SEVERITY_HIGH_ARB 0x9146
-#define _EXT_DEBUG_SEVERITY_MEDIUM_ARB 0x9147
-#define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
-#define _EXT_DEBUG_OUTPUT 0x92E0
-
-#ifndef GLAPIENTRY
-#if defined(WINDOWS_ENABLED) && !defined(UWP_ENABLED)
-#define GLAPIENTRY APIENTRY
-#else
-#define GLAPIENTRY
-#endif
-#endif
-
-#ifndef IPHONE_ENABLED
-// We include EGL below to get debug callback on GLES2 platforms,
-// but EGL is not available on iOS.
-#define CAN_DEBUG
-#endif
-
-#if !defined(GLES_OVER_GL) && defined(CAN_DEBUG)
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <GLES2/gl2platform.h>
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#endif
-
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define strcpy strcpy_s
-#endif
-
-#ifdef CAN_DEBUG
-static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
-		return;
-
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
-		return; //these are ultimately annoying, so removing for now
-
-	char debSource[256], debType[256], debSev[256];
-
-	if (source == _EXT_DEBUG_SOURCE_API_ARB)
-		strcpy(debSource, "OpenGL");
-	else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
-		strcpy(debSource, "Windows");
-	else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB)
-		strcpy(debSource, "Shader Compiler");
-	else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB)
-		strcpy(debSource, "Third Party");
-	else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB)
-		strcpy(debSource, "Application");
-	else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB)
-		strcpy(debSource, "Other");
-
-	if (type == _EXT_DEBUG_TYPE_ERROR_ARB)
-		strcpy(debType, "Error");
-	else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
-		strcpy(debType, "Deprecated behavior");
-	else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
-		strcpy(debType, "Undefined behavior");
-	else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB)
-		strcpy(debType, "Portability");
-	else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
-		strcpy(debType, "Performance");
-	else if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
-		strcpy(debType, "Other");
-
-	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB)
-		strcpy(debSev, "High");
-	else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB)
-		strcpy(debSev, "Medium");
-	else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB)
-		strcpy(debSev, "Low");
-
-	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
-
-	ERR_PRINTS(output);
-}
-#endif // CAN_DEBUG
-
-typedef void (*DEBUGPROCARB)(GLenum source,
-		GLenum type,
-		GLuint id,
-		GLenum severity,
-		GLsizei length,
-		const char *message,
-		const void *userParam);
-
-typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
+#include "drivers/gl_context/debug_gl.h"
 
 RasterizerStorage *RasterizerGLES2::get_storage() {
 
@@ -162,22 +53,12 @@ RasterizerScene *RasterizerGLES2::get_scene() {
 
 Error RasterizerGLES2::is_viable() {
 
-#ifdef GLAD_ENABLED
-	if (!gladLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
-		return ERR_UNAVAILABLE;
-	}
-
-// GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
-#ifdef OPENGL_ENABLED // OpenGL 2.1 Profile required
-	if (GLVersion.major < 2 || (GLVersion.major == 2 && GLVersion.minor < 1)) {
-#else // OpenGL ES 2.0
-	if (GLVersion.major < 2) {
-#endif
-		return ERR_UNAVAILABLE;
-	}
-
 #ifdef GLES_OVER_GL
+	// On Desktop OpenGL, we use OpenGL 2.1 to emulate OpenGL ES 2
+	if (!GLAD_GL_VERSION_2_1) {
+		return ERR_UNAVAILABLE;
+	}
+
 	//Test GL_ARB_framebuffer_object extension
 	if (!GLAD_GL_ARB_framebuffer_object) {
 		//Try older GL_EXT_framebuffer_object extension
@@ -200,12 +81,15 @@ Error RasterizerGLES2::is_viable() {
 			glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameterivEXT;
 			glGenerateMipmap = glGenerateMipmapEXT;
 		} else {
+			print_verbose("No OpenGL framebuffer extension is available. Cannot use the GLES2 rasterizer.");
 			return ERR_UNAVAILABLE;
 		}
 	}
-#endif // GLES_OVER_GL
-
-#endif // GLAD_ENABLED
+#else
+	if (!GLAD_GL_ES_VERSION_2_0) {
+		return ERR_UNAVAILABLE;
+	}
+#endif
 
 	return OK;
 }
@@ -214,51 +98,7 @@ void RasterizerGLES2::initialize() {
 
 	print_verbose("Using GLES2 video driver");
 
-#ifdef GLAD_ENABLED
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		if (GLAD_GL_ARB_debug_output) {
-			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
-			glEnable(_EXT_DEBUG_OUTPUT);
-		} else {
-			print_line("OpenGL debugging not supported!");
-		}
-	}
-#endif // GLAD_ENABLED
-
-	// For debugging
-#ifdef CAN_DEBUG
-#ifdef GLES_OVER_GL
-	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		/* glDebugMessageInsertARB(
-			GL_DEBUG_SOURCE_API_ARB,
-			GL_DEBUG_TYPE_OTHER_ARB, 1,
-			GL_DEBUG_SEVERITY_HIGH_ARB, 5, "hello");
-		*/
-	}
-#else
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");
-		if (!callback) {
-			callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallbackKHR");
-		}
-
-		if (callback) {
-
-			print_line("godot: ENABLING GL DEBUG");
-			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			callback(_gl_debug_print, NULL);
-			glEnable(_EXT_DEBUG_OUTPUT);
-		}
-	}
-#endif // GLES_OVER_GL
-#endif // CAN_DEBUG
+	DebugGL::initialize();
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 2.0 Renderer: " + String((const char *)renderer));

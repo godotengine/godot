@@ -101,10 +101,6 @@
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
-#ifndef GLES_OVER_GL
-#define glClearDepth glClearDepthf
-#endif
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 

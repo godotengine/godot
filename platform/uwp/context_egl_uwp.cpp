@@ -180,6 +180,11 @@ Error ContextEGL_UWP::initialize() {
 		return FAILED;
 	};
 
+	if (!gladLoadGLLoader(eglGetProcAddress)) {
+		ERR_PRINT("Failed to initialize Glad");
+		return ERR_CANT_CREATE;
+	}
+
 	mEglDisplay = display;
 	mEglSurface = surface;
 	mEglContext = context;

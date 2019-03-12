@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// This needs to come first because it includes the OpenGL headers itself
+#include <EGL/egl.h>
+#include <glad/glad.h>
+
 #include "os_android.h"
 
 #include "core/io/file_access_buffered_fa.h"
@@ -116,13 +120,24 @@ int OS_Android::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+static void *opengl_get_proc_address(const char *name) {
+	return (void *)eglGetProcAddress(name);
+}
+
 Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	bool use_gl3 = get_gl_version_code_func() >= 0x00030000;
 	use_gl3 = use_gl3 && (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3");
 	bool gl_initialization_error = false;
 
-	while (true) {
+	// Initialize Glad first, using EGL to look up the
+	// OpenGL function pointers.
+	if (!gladLoadGLES2Loader(opengl_get_proc_address)) {
+		ERR_PRINT("Failed to initialize Glad");
+		gl_initialization_error = true;
+	}
+
+	while (!gl_initialization_error) {
 		if (use_gl3) {
 			if (RasterizerGLES3::is_viable() == OK) {
 				if (gfx_init_func)

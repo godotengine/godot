@@ -36,6 +36,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <glad/glad.h>
+
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #include <GL/glxext.h>
@@ -82,6 +84,10 @@ static void set_class_hint(Display *p_display, Window p_window) {
 	}
 	XSetClassHint(p_display, p_window, classHint);
 	XFree(classHint);
+}
+
+static void *opengl_get_proc_address(const char *name) {
+	return (void *)glXGetProcAddress((const GLubyte *)name);
 }
 
 Error ContextGL_X11::initialize() {
@@ -202,6 +208,12 @@ Error ContextGL_X11::initialize() {
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 
 	XFree(vi);
+
+	// Try initializing Glad for Desktop OpenGL here, using GLX as the function loader
+	if (!gladLoadGLLoader(opengl_get_proc_address)) {
+		ERR_PRINT("Failed to initialize Glad");
+		return ERR_CANT_CREATE;
+	}
 
 	return OK;
 }

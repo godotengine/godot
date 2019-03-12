@@ -35,10 +35,6 @@
 #include "rasterizer_scene_gles2.h"
 #include "servers/visual/visual_server_raster.h"
 
-#ifndef GLES_OVER_GL
-#define glClearDepth glClearDepthf
-#endif
-
 RID RasterizerCanvasGLES2::light_internal_create() {
 
 	return RID();

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include <glad/glad.h>
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
@@ -42,6 +43,8 @@
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
 
 typedef HGLRC(APIENTRY *PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC, HGLRC, const int *);
+
+static HMODULE lib_opengl32 = NULL;
 
 void ContextGL_Windows::release_current() {
 
@@ -82,6 +85,23 @@ bool ContextGL_Windows::is_using_vsync() const {
 }
 
 #define _WGL_CONTEXT_DEBUG_BIT_ARB 0x0001
+
+// Wraps wglGetProcAddress to avoid calling convention mismatches with
+// what Glad expects.
+static void *get_proc_address(const char *name) {
+	void *ptr = reinterpret_cast<void *>(wglGetProcAddress(name));
+	if (!ptr) {
+		// wglGetProcAddress does not return function pointers for functions
+		// that are imported from opengl32.dll
+		if (!lib_opengl32) {
+			// We never free this reference because it will only ever be
+			// unloaded when the process exits.
+			lib_opengl32 = GetModuleHandleA("opengl32.dll");
+		}
+		ptr = reinterpret_cast<void *>(GetProcAddress(lib_opengl32, name));
+	}
+	return ptr;
+}
 
 Error ContextGL_Windows::initialize() {
 
@@ -166,8 +186,12 @@ Error ContextGL_Windows::initialize() {
 		}
 	}
 
+	if (!gladLoadGLLoader(get_proc_address)) {
+		ERR_PRINT("Failed to initialize Glad");
+		return ERR_CANT_CREATE;
+	}
+
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-	//glWrapperInit(wrapper_get_proc_address);
 
 	return OK;
 }

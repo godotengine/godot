@@ -1266,7 +1266,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 			MessageBoxW(NULL, L"Window Creation Error.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 			return ERR_UNAVAILABLE;
 		}
-	};
+	}
 
 	if (video_mode.always_on_top) {
 		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -1305,7 +1305,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		}
 	}
 
-	while (true) {
+	while (!gl_initialization_error) {
 		if (gles3_context) {
 			if (RasterizerGLES3::is_viable() == OK) {
 				RasterizerGLES3::register_config();
@@ -1334,8 +1334,9 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	}
 
 	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
+		String requested_version = gles3_context ? "OpenGL 3.3 Core" : "OpenGL 2.1 with FBOs";
+		alert("Your video card driver does not support " + requested_version + " or newer.\n"
+																			   "Please update your drivers or if you have a very old or integrated GPU, upgrade it.",
 				"Unable to initialize Video driver");
 		return ERR_UNAVAILABLE;
 	}

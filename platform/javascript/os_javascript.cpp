@@ -39,6 +39,7 @@
 #include "servers/visual/visual_server_raster.h"
 
 #include <emscripten.h>
+#include <glad/glad.h>
 #include <png.h>
 #include <stdlib.h>
 
@@ -821,7 +822,13 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 
 	bool gl_initialization_error = false;
 
-	while (true) {
+	// Try initializing Glade with the EGL facade provided by Emscripten
+	if (!gladLoadGLES2Loader(eglGetProcAddress)) {
+		ERR_PRINT("Failed to initialize Glad");
+		gl_initialization_error = true;
+	}
+
+	while (!gl_initialization_error) {
 		if (gles3) {
 			if (RasterizerGLES3::is_viable() == OK) {
 				attributes.majorVersion = 2;

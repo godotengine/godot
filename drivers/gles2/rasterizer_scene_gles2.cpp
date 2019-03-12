@@ -38,10 +38,6 @@
 #include "rasterizer_canvas_gles2.h"
 #include "servers/visual/visual_server_raster.h"
 
-#ifndef GLES_OVER_GL
-#define glClearDepth glClearDepthf
-#endif
-
 static const GLenum _cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,

@@ -33,12 +33,9 @@
 #include "core/math/math_funcs.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "drivers/gl_context/debug_gl.h"
 #include "rasterizer_canvas_gles3.h"
 #include "servers/visual/visual_server_raster.h"
-
-#ifndef GLES_OVER_GL
-#define glClearDepth glClearDepthf
-#endif
 
 static const GLenum _cube_side_enum[6] = {
 
@@ -1545,6 +1542,8 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 		case VS::INSTANCE_MESH: {
 
+			DEBUG_GL_REGION("_render_geometry (mesh)");
+
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
 
 #ifdef DEBUG_ENABLED
@@ -1570,6 +1569,8 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 		} break;
 		case VS::INSTANCE_MULTIMESH: {
+
+			DEBUG_GL_REGION("_render_geometry (multi-mesh)");
 
 			RasterizerStorageGLES3::MultiMesh *multi_mesh = static_cast<RasterizerStorageGLES3::MultiMesh *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
@@ -1602,6 +1603,8 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 		} break;
 		case VS::INSTANCE_IMMEDIATE: {
+
+			DEBUG_GL_REGION("_render_geometry (immediate)");
 
 			bool restore_tex = false;
 			const RasterizerStorageGLES3::Immediate *im = static_cast<const RasterizerStorageGLES3::Immediate *>(e->geometry);
@@ -1730,6 +1733,8 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			}
 		} break;
 		case VS::INSTANCE_PARTICLES: {
+
+			DEBUG_GL_REGION("_render_geometry (particles)");
 
 			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
@@ -2450,6 +2455,7 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 }
 
 void RasterizerSceneGLES3::_draw_sky(RasterizerStorageGLES3::Sky *p_sky, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_custom_fov, float p_energy, const Basis &p_sky_orientation) {
+	DEBUG_GL_REGION("_draw_sky");
 
 	ERR_FAIL_COND(!p_sky);
 
@@ -3613,6 +3619,7 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 }
 
 void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p_cam_projection) {
+	DEBUG_GL_REGION("_post_process");
 
 	//copy to front buffer
 
@@ -4095,6 +4102,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 }
 
 void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+	DEBUG_GL_REGION("render_scene");
 
 	//first of all, make a new render pass
 	render_pass++;
@@ -4162,6 +4170,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	if (!storage->config.no_depth_prepass && storage->frame.current_rt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS]) { //detect with state.used_contact_shadows too
+		DEBUG_GL_REGION("depth pre-pass");
+
 		//pre z pass
 
 		glDisable(GL_BLEND);
@@ -4556,7 +4566,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 }
 
 void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
-
+	DEBUG_GL_REGION("render_shadow");
 	render_pass++;
 
 	directional_light = NULL;

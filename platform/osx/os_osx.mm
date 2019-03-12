@@ -40,6 +40,7 @@
 #include "semaphore_osx.h"
 #include "servers/visual/visual_server_raster.h"
 
+#include <glad/glad.h>
 #include <mach-o/dyld.h>
 
 #include <Carbon/Carbon.h>
@@ -1279,6 +1280,21 @@ int OS_OSX::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+static void *lib_gl = NULL;
+static const char *lib_gl_names[] = {
+	"../Frameworks/OpenGL.framework/OpenGL",
+	"/Library/Frameworks/OpenGL.framework/OpenGL",
+	"/System/Library/Frameworks/OpenGL.framework/OpenGL",
+	"/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL"
+};
+
+static void *opengl_get_proc_address(const char *name) {
+	if (!lib_gl) {
+		return NULL;
+	}
+	return dlsym(lib_gl, name);
+}
+
 Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
@@ -1450,6 +1466,25 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	bool editor = Engine::get_singleton()->is_editor_hint();
 	bool gl_initialization_error = false;
 
+	// Attempt to find the OpenGL library. We need it to provide Glad with a function loader
+	for (uint32_t index = 0; index < (sizeof(lib_gl_names) / sizeof(lib_gl_names[0])); index++) {
+		lib_gl = dlopen(lib_gl_names[index], RTLD_NOW | RTLD_GLOBAL);
+
+		if (lib_gl != NULL) {
+			break;
+		}
+	}
+	if (!lib_gl) {
+		ERR_PRINT("Failed to load OpenGL framework");
+		gl_initialization_error = true;
+	}
+
+	// Initialize Glad using Desktop GL
+	if (!gl_initialization_error && !gladLoadGLLoader(opengl_get_proc_address)) {
+		ERR_PRINT("Failed to initialize Glad");
+		gl_initialization_error = true;
+	}
+
 	while (true) {
 		if (gles3) {
 			if (RasterizerGLES3::is_viable() == OK) {
@@ -1532,6 +1567,11 @@ void OS_OSX::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
+
+	if (lib_gl) {
+		dlclose(lib_gl);
+		lib_gl = NULL;
+	}
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {

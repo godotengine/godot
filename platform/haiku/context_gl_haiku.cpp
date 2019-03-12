@@ -32,6 +32,8 @@
 
 #if defined(OPENGL_ENABLED)
 
+#include <glad/glad.h>
+
 ContextGL_Haiku::ContextGL_Haiku(HaikuDirectWindow *p_window) {
 	window = p_window;
 
@@ -45,9 +47,25 @@ ContextGL_Haiku::~ContextGL_Haiku() {
 	delete view;
 }
 
+static HaikuGLView *gl_view = NULL;
+static void *opengl_get_proc_address(const char *name) {
+	if (!gl_view) {
+		return NULL;
+	}
+	return gl_view->GetGLProcAddress(name);
+}
+
 Error ContextGL_Haiku::initialize() {
 	window->AddChild(view);
 	window->SetHaikuGLView(view);
+
+	gl_view = view;
+	if (!gladLoadGLLoader(opengl_get_proc_address)) {
+		gl_view = NULL;
+		ERR_PRINT("Failed to initialize Glad");
+		return ERR_CANT_CREATE;
+	}
+	gl_view = NULL;
 
 	return OK;
 }

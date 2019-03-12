@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include <glad/glad.h>
+
 #include "rasterizer_gles3.h"
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "drivers/gl_context/context_gl.h"
+#include "drivers/gl_context/debug_gl.h"
 
 RasterizerStorage *RasterizerGLES3::get_storage() {
 
@@ -49,110 +51,20 @@ RasterizerScene *RasterizerGLES3::get_scene() {
 	return scene;
 }
 
-#define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
-#define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
-#define _EXT_DEBUG_CALLBACK_FUNCTION_ARB 0x8244
-#define _EXT_DEBUG_CALLBACK_USER_PARAM_ARB 0x8245
-#define _EXT_DEBUG_SOURCE_API_ARB 0x8246
-#define _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB 0x8247
-#define _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB 0x8248
-#define _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB 0x8249
-#define _EXT_DEBUG_SOURCE_APPLICATION_ARB 0x824A
-#define _EXT_DEBUG_SOURCE_OTHER_ARB 0x824B
-#define _EXT_DEBUG_TYPE_ERROR_ARB 0x824C
-#define _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB 0x824D
-#define _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB 0x824E
-#define _EXT_DEBUG_TYPE_PORTABILITY_ARB 0x824F
-#define _EXT_DEBUG_TYPE_PERFORMANCE_ARB 0x8250
-#define _EXT_DEBUG_TYPE_OTHER_ARB 0x8251
-#define _EXT_MAX_DEBUG_MESSAGE_LENGTH_ARB 0x9143
-#define _EXT_MAX_DEBUG_LOGGED_MESSAGES_ARB 0x9144
-#define _EXT_DEBUG_LOGGED_MESSAGES_ARB 0x9145
-#define _EXT_DEBUG_SEVERITY_HIGH_ARB 0x9146
-#define _EXT_DEBUG_SEVERITY_MEDIUM_ARB 0x9147
-#define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
-#define _EXT_DEBUG_OUTPUT 0x92E0
-
-#if defined(MINGW_ENABLED) || defined(_MSC_VER)
-#define strcpy strcpy_s
-#endif
-
-#ifdef GLAD_ENABLED
-// Restricting to GLAD as only used in initialize() with GLAD_GL_ARB_debug_output
-static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
-
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB)
-		return;
-
-	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
-		return; //these are ultimately annoying, so removing for now
-
-	char debSource[256], debType[256], debSev[256];
-	if (source == _EXT_DEBUG_SOURCE_API_ARB)
-		strcpy(debSource, "OpenGL");
-	else if (source == _EXT_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)
-		strcpy(debSource, "Windows");
-	else if (source == _EXT_DEBUG_SOURCE_SHADER_COMPILER_ARB)
-		strcpy(debSource, "Shader Compiler");
-	else if (source == _EXT_DEBUG_SOURCE_THIRD_PARTY_ARB)
-		strcpy(debSource, "Third Party");
-	else if (source == _EXT_DEBUG_SOURCE_APPLICATION_ARB)
-		strcpy(debSource, "Application");
-	else if (source == _EXT_DEBUG_SOURCE_OTHER_ARB)
-		strcpy(debSource, "Other");
-
-	if (type == _EXT_DEBUG_TYPE_ERROR_ARB)
-		strcpy(debType, "Error");
-	else if (type == _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)
-		strcpy(debType, "Deprecated behavior");
-	else if (type == _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)
-		strcpy(debType, "Undefined behavior");
-	else if (type == _EXT_DEBUG_TYPE_PORTABILITY_ARB)
-		strcpy(debType, "Portability");
-	else if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
-		strcpy(debType, "Performance");
-
-	if (severity == _EXT_DEBUG_SEVERITY_HIGH_ARB)
-		strcpy(debSev, "High");
-	else if (severity == _EXT_DEBUG_SEVERITY_MEDIUM_ARB)
-		strcpy(debSev, "Medium");
-	else if (severity == _EXT_DEBUG_SEVERITY_LOW_ARB)
-		strcpy(debSev, "Low");
-
-	String output = String() + "GL ERROR: Source: " + debSource + "\tType: " + debType + "\tID: " + itos(id) + "\tSeverity: " + debSev + "\tMessage: " + message;
-
-	ERR_PRINTS(output);
-}
-#endif // GLAD_ENABLED
-
-typedef void (*DEBUGPROCARB)(GLenum source,
-		GLenum type,
-		GLuint id,
-		GLenum severity,
-		GLsizei length,
-		const char *message,
-		const void *userParam);
-
-typedef void (*DebugMessageCallbackARB)(DEBUGPROCARB callback, const void *userParam);
-
 Error RasterizerGLES3::is_viable() {
 
-#ifdef GLAD_ENABLED
-	if (!gladLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
+#ifdef GLES_OVER_GL
+	// On Desktop OpenGL, we require OpenGL 3.3
+	if (!GLAD_GL_VERSION_3_3) {
 		return ERR_UNAVAILABLE;
 	}
-
-// GLVersion seems to be used for both GL and GL ES, so we need different version checks for them
-#ifdef OPENGL_ENABLED // OpenGL 3.3 Core Profile required
-	if (GLVersion.major < 3 || (GLVersion.major == 3 && GLVersion.minor < 3)) {
-#else // OpenGL ES 3.0
-	if (GLVersion.major < 3) {
+#else
+	// Otherwise we require OpenGL ES 3.0
+	if (!GLAD_GL_ES_VERSION_3_0) {
+		return ERR_UNAVAILABLE;
+	}
 #endif
-		return ERR_UNAVAILABLE;
-	}
 
-#endif // GLAD_ENABLED
 	return OK;
 }
 
@@ -160,32 +72,7 @@ void RasterizerGLES3::initialize() {
 
 	print_verbose("Using GLES3 video driver");
 
-#ifdef GLAD_ENABLED
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		if (GLAD_GL_ARB_debug_output) {
-			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
-			glEnable(_EXT_DEBUG_OUTPUT);
-		} else {
-			print_line("OpenGL debugging not supported!");
-		}
-	}
-#endif // GLAD_ENABLED
-
-	/* // For debugging
-	if (GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_ERROR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
-		glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
-		glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
-		glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_PORTABILITY_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
-		glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_PERFORMANCE_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
-		glDebugMessageControlARB(GL_DEBUG_SOURCE_API_ARB,GL_DEBUG_TYPE_OTHER_ARB,GL_DEBUG_SEVERITY_HIGH_ARB,0,NULL,GL_TRUE);
-		glDebugMessageInsertARB(
-				GL_DEBUG_SOURCE_API_ARB,
-				GL_DEBUG_TYPE_OTHER_ARB, 1,
-				GL_DEBUG_SEVERITY_HIGH_ARB,5, "hello");
-	}
-	*/
+	DebugGL::initialize();
 
 	const GLubyte *renderer = glGetString(GL_RENDERER);
 	print_line("OpenGL ES 3.0 Renderer: " + String((const char *)renderer));
@@ -330,6 +217,8 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 }
 
 void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
+
+	DEBUG_GL_REGION("blit_render_target_to_screen");
 
 	ERR_FAIL_COND(storage->frame.current_rt);
 

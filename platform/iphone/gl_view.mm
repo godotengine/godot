@@ -37,6 +37,7 @@
 
 #import <OpenGLES/EAGLDrawable.h>
 #import <QuartzCore/QuartzCore.h>
+#include <dlfcn.h>
 
 /*
 @interface GLView (private)
@@ -272,6 +273,25 @@ static void clear_touches() {
 	return self;
 }
 
+/*
+	On iOS we assume that the program binary actually is linked
+	against the OpenGL ES framework. This means the symbol lookup
+	will work against the already loaded libGLESv2.dylib.
+ */
+static void *lib_gl = NULL;
+
+static void *opengl_get_proc_address(const char *name) {
+	if (!lib_gl) {
+		return NULL;
+	}
+	return dlsym(lib_gl, name);
+}
+
+// Forward declare this here because glad.h collides with iOS
+// GLES framework headers
+typedef void *(*GLADloadproc)(const char *name);
+extern int gladLoadGLES2Loader(GLADloadproc);
+
 - (id)initGLES {
 	// Get our backing layer
 	CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
@@ -295,6 +315,21 @@ static void clear_touches() {
 			[self release];
 			return nil;
 		}
+	}
+
+	// Load libGLESv2, which we should have linked against due to linking against the OpenGL ES framework
+	lib_gl = dlopen("libGLESv2.dylib", RTLD_LAZY | RTLD_LOCAL);
+	if (!lib_gl) {
+		ERR_PRINT("Failed to load libGLESv2.dylib");
+		[self release];
+		return nil;
+	}
+
+	// Initialize Glad
+	if (!gladLoadGLES2Loader(opengl_get_proc_address)) {
+		ERR_PRINT("Failed to initialize Glad");
+		[self release];
+		return nil;
 	}
 
 	// Default the animation interval to 1/60th of a second.
@@ -674,6 +709,11 @@ static void clear_touches() {
 
 	[context release];
 	context = nil;
+
+	if (lib_gl) {
+		dlclose(lib_gl);
+		lib_gl = NULL;
+	}
 
 	[super dealloc];
 }
