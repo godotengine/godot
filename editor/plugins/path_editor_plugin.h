@@ -62,6 +62,7 @@ protected:
 
 public:
 	String get_name() const;
+	int get_priority() const;
 	PathSpatialGizmoPlugin();
 };
 

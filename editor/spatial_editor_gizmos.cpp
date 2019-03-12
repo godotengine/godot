@@ -805,6 +805,10 @@ String LightSpatialGizmoPlugin::get_name() const {
 	return "Lights";
 }
 
+int LightSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 String LightSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
 
 	if (p_idx == 0)
@@ -1062,6 +1066,10 @@ String AudioStreamPlayer3DSpatialGizmoPlugin::get_name() const {
 	return "AudioStreamPlayer3D";
 }
 
+int AudioStreamPlayer3DSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 String AudioStreamPlayer3DSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
 
 	return "Emission Radius";
@@ -1200,6 +1208,10 @@ bool CameraSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String CameraSpatialGizmoPlugin::get_name() const {
 	return "Camera";
+}
+
+int CameraSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 String CameraSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
@@ -1425,6 +1437,10 @@ String MeshInstanceSpatialGizmoPlugin::get_name() const {
 	return "MeshInstance";
 }
 
+int MeshInstanceSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 bool MeshInstanceSpatialGizmoPlugin::can_be_hidden() const {
 	return false;
 }
@@ -1456,6 +1472,10 @@ bool Sprite3DSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String Sprite3DSpatialGizmoPlugin::get_name() const {
 	return "Sprite3D";
+}
+
+int Sprite3DSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 bool Sprite3DSpatialGizmoPlugin::can_be_hidden() const {
@@ -1517,6 +1537,10 @@ String Position3DSpatialGizmoPlugin::get_name() const {
 	return "Position3D";
 }
 
+int Position3DSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 void Position3DSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	p_gizmo->clear();
@@ -1538,6 +1562,10 @@ bool SkeletonSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String SkeletonSpatialGizmoPlugin::get_name() const {
 	return "Skeleton";
+}
+
+int SkeletonSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
@@ -1741,6 +1769,10 @@ bool PhysicalBoneSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String PhysicalBoneSpatialGizmoPlugin::get_name() const {
 	return "PhysicalBones";
+}
+
+int PhysicalBoneSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 void PhysicalBoneSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
@@ -1982,6 +2014,10 @@ String RayCastSpatialGizmoPlugin::get_name() const {
 	return "RayCast";
 }
 
+int RayCastSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	RayCast *raycast = Object::cast_to<RayCast>(p_gizmo->get_spatial_node());
@@ -2031,6 +2067,10 @@ String SpringArmSpatialGizmoPlugin::get_name() const {
 	return "SpringArm";
 }
 
+int SpringArmSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 /////
 
 VehicleWheelSpatialGizmoPlugin::VehicleWheelSpatialGizmoPlugin() {
@@ -2045,6 +2085,10 @@ bool VehicleWheelSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String VehicleWheelSpatialGizmoPlugin::get_name() const {
 	return "VehicleWheel";
+}
+
+int VehicleWheelSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 void VehicleWheelSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
@@ -2117,6 +2161,10 @@ String SoftBodySpatialGizmoPlugin::get_name() const {
 	return "SoftBody";
 }
 
+int SoftBodySpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 bool SoftBodySpatialGizmoPlugin::is_selectable_when_hidden() const {
 	return true;
 }
@@ -2187,6 +2235,10 @@ bool VisibilityNotifierGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String VisibilityNotifierGizmoPlugin::get_name() const {
 	return "VisibilityNotifier";
+}
+
+int VisibilityNotifierGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 String VisibilityNotifierGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
@@ -2337,6 +2389,10 @@ bool ParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String ParticlesGizmoPlugin::get_name() const {
 	return "Particles";
+}
+
+int ParticlesGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 bool ParticlesGizmoPlugin::is_selectable_when_hidden() const {
@@ -2496,6 +2552,10 @@ bool ReflectionProbeGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String ReflectionProbeGizmoPlugin::get_name() const {
 	return "ReflectionProbe";
+}
+
+int ReflectionProbeGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 String ReflectionProbeGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
@@ -2672,6 +2732,10 @@ bool GIProbeGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String GIProbeGizmoPlugin::get_name() const {
 	return "GIProbe";
+}
+
+int GIProbeGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 String GIProbeGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
@@ -2908,6 +2972,10 @@ String BakedIndirectLightGizmoPlugin::get_name() const {
 	return "BakedLightmap";
 }
 
+int BakedIndirectLightGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 void BakedIndirectLightGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
@@ -2963,6 +3031,10 @@ bool CollisionShapeSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String CollisionShapeSpatialGizmoPlugin::get_name() const {
 	return "CollisionShape";
+}
+
+int CollisionShapeSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 String CollisionShapeSpatialGizmoPlugin::get_handle_name(const EditorSpatialGizmo *p_gizmo, int p_idx) const {
@@ -3557,6 +3629,10 @@ String CollisionPolygonSpatialGizmoPlugin::get_name() const {
 	return "CollisionPolygon";
 }
 
+int CollisionPolygonSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 void CollisionPolygonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	CollisionPolygon *polygon = Object::cast_to<CollisionPolygon>(p_gizmo->get_spatial_node());
@@ -3599,6 +3675,10 @@ bool NavigationMeshSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String NavigationMeshSpatialGizmoPlugin::get_name() const {
 	return "NavigationMeshInstance";
+}
+
+int NavigationMeshSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 void NavigationMeshSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
@@ -3959,6 +4039,10 @@ bool JointSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
 
 String JointSpatialGizmoPlugin::get_name() const {
 	return "Joints";
+}
+
+int JointSpatialGizmoPlugin::get_priority() const {
+	return -1;
 }
 
 void JointSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
