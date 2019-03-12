@@ -326,6 +326,11 @@ void Light2D::_notification(int p_what) {
 
 		VS::get_singleton()->canvas_light_attach_to_canvas(canvas_light, get_canvas());
 		_update_light_visibility();
+		// Effectively causes _update_light_visibility() to be called deferred.
+		// This is necessary, because duplicating or reparenting a light will first
+		// issue NOTIFICATION_ENTER_TREE, and only afterwards call set_owner(). But
+		// _update_light_visibility() relies on a properly set owner.
+		call_deferred("set_editor_only", editor_only);
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
