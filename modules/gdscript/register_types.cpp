@@ -43,6 +43,7 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 
 #ifdef TOOLS_ENABLED
 
+#include "unittest/register_types.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -130,6 +131,7 @@ static void _editor_init() {
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
+    register_unittest_types();
 }
 
 #endif

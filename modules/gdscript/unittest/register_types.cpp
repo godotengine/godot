@@ -35,12 +35,14 @@
 #include "test_documentation.h"
 #include "test_error.h"
 #include "test_loader.h"
+#include "test_log.h"
+#include "test_plugin.h"
 #include "test_result.h"
 #include "test_runner.h"
 #include "test_suite.h"
 
-
 #include "core/class_db.h"
+#include "editor/editor_node.h"
 
 void register_unittest_types() {
     ClassDB::register_class<Mock>();
@@ -48,9 +50,14 @@ void register_unittest_types() {
     ClassDB::register_class<TestCoverage>();
     ClassDB::register_class<TestDocumentation>();
     ClassDB::register_class<TestError>();
+    ClassDB::register_class<TestLoader>();
+    ClassDB::register_class<TestLog>();
     ClassDB::register_class<TestResult>();
     ClassDB::register_class<TestRunner>();
     ClassDB::register_class<TestSuite>();
+
+    TestPlugin* test_plugin = memnew(TestPlugin);
+    EditorNode::get_singleton()->add_editor_plugin(test_plugin);
 }
 
 void unregister_unittest_types() {

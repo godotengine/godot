@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_runner.cpp                                                      */
+/*  test_plugin.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_runner.h"
-#include "test_loader.h"
-#include "test_result.h"
+#include "test_plugin.h"
 
-void TestRunner::init() {
+#include "editor/editor_node.h"
+
+DebugButton::DebugButton() {
+	set_text(TTR("Test"));
 }
 
-bool TestRunner::iteration(float p_time) {
-	Ref<TestLoader> loader(memnew(TestLoader));
-	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, "res://")) {
-		Ref<TestResult> test_result(memnew(TestResult));
-		test_suite->run(*test_result);
-	}
-	return true;
+void DebugButton::_bind_methods() {
 }
 
-void TestRunner::finish() {
+TestToolbar::TestToolbar() {
 }
 
-void TestRunner::_bind_methods() {
+void TestToolbar::_bind_methods() {
+}
+
+CoverageToolbar::CoverageToolbar() {
+}
+
+void CoverageToolbar::_bind_methods() {
+}
+
+DocumentationToolbar::DocumentationToolbar() {
+}
+
+void DocumentationToolbar::_bind_methods() {
+}
+
+TestPlugin::TestPlugin() {
+	m_debug_button = memnew(DebugButton);
+	add_control_to_container(CONTAINER_TOOLBAR, m_debug_button);
+	m_test_toolbar = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Test"), memnew(TestToolbar));
+	m_coverage_toolbar = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Coverage"), memnew(TestToolbar));
+	m_documentation_toolbar = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Documentation"), memnew(TestToolbar));
+}
+
+TestPlugin::~TestPlugin() {
+}
+
+void TestPlugin::_bind_methods() {
 }

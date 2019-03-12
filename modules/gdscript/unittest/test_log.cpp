@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_runner.cpp                                                      */
+/*  test_log.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_runner.h"
-#include "test_loader.h"
-#include "test_result.h"
+#include "test_log.h"
 
-void TestRunner::init() {
+void TestLog::log(LogLevel lvl, const String &msg) {
 }
 
-bool TestRunner::iteration(float p_time) {
-	Ref<TestLoader> loader(memnew(TestLoader));
-	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, "res://")) {
-		Ref<TestResult> test_result(memnew(TestResult));
-		test_suite->run(*test_result);
-	}
-	return true;
+void TestLog::trace(const String &msg) {
+    log(TRACE, msg);
 }
 
-void TestRunner::finish() {
+void TestLog::debug(const String &msg) {
+    log(DEBUG, msg);
 }
 
-void TestRunner::_bind_methods() {
+void TestLog::info(const String &msg) {
+    log(INFO, msg);
+}
+
+void TestLog::warn(const String &msg) {
+    log(WARN, msg);
+}
+
+void TestLog::error(const String &msg) {
+    log(ERROR, msg);
+}
+
+void TestLog::fatal(const String &msg) {
+    log(FATAL, msg);
+}
+
+
+void TestLog::_bind_methods() {
+    BIND_ENUM_CONSTANT(TRACE);
+    BIND_ENUM_CONSTANT(DEBUG);
+    BIND_ENUM_CONSTANT(INFO);
+    BIND_ENUM_CONSTANT(WARN);
+    BIND_ENUM_CONSTANT(ERROR);
+    BIND_ENUM_CONSTANT(FATAL);
+
+	ClassDB::bind_method(D_METHOD("log", "level", "msg"), &TestLog::log);
+    ClassDB::bind_method(D_METHOD("trace", "msg"), &TestLog::trace);
+    ClassDB::bind_method(D_METHOD("debug", "msg"), &TestLog::debug);
+    ClassDB::bind_method(D_METHOD("info", "msg"), &TestLog::info);
+    ClassDB::bind_method(D_METHOD("warn", "msg"), &TestLog::warn);
+    ClassDB::bind_method(D_METHOD("error", "msg"), &TestLog::error);
+    ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestLog::fatal);
 }

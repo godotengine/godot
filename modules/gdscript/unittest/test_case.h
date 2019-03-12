@@ -44,6 +44,25 @@ class TestCase : public MainLoop {
 	GDCLASS(TestCase, MainLoop);
 
 public:
+	class State : public Reference {
+		GDCLASS(State, Reference);
+
+	public:
+		bool init(Object *object);
+		const String &get();
+		bool next();
+
+	private:
+		bool next_test();
+
+		List<MethodInfo> m_methods;
+		List<MethodInfo>::Element *m_method_info;
+	};
+
+	virtual void init();
+	virtual bool iteration(float p_time);
+	virtual void finish();
+
 	virtual void setup();
 	virtual void teardown();
 	void run(Ref<TestResult> test_result = NULL);
@@ -89,6 +108,7 @@ protected:
 	static void _bind_methods();
 
 private:
+	Ref<State> m_state;
 	bool m_can_assert;
 };
 

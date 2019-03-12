@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_runner.cpp                                                      */
+/*  test_plugin.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_runner.h"
-#include "test_loader.h"
-#include "test_result.h"
+#ifndef TEST_PLUGIN_H
+#define TEST_PLUGIN_H
 
-void TestRunner::init() {
-}
+#include "editor/editor_plugin.h"
+#include "editor/editor_run.h"
+#include "scene/gui/button.h"
 
-bool TestRunner::iteration(float p_time) {
-	Ref<TestLoader> loader(memnew(TestLoader));
-	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, "res://")) {
-		Ref<TestResult> test_result(memnew(TestResult));
-		test_suite->run(*test_result);
-	}
-	return true;
-}
+class DebugButton : public Button {
+	GDCLASS(DebugButton, Button);
 
-void TestRunner::finish() {
-}
+public:
+	DebugButton();
 
-void TestRunner::_bind_methods() {
-}
+protected:
+	static void _bind_methods();
+
+private:
+	EditorRun editor_run;
+};
+
+class TestToolbar : public HBoxContainer {
+	GDCLASS(TestToolbar, HBoxContainer);
+
+public:
+	TestToolbar();
+
+protected:
+	static void _bind_methods();
+};
+
+class CoverageToolbar : public HBoxContainer {
+	GDCLASS(CoverageToolbar, HBoxContainer);
+
+public:
+	CoverageToolbar();
+
+protected:
+	static void _bind_methods();
+};
+
+class DocumentationToolbar : public HBoxContainer {
+	GDCLASS(DocumentationToolbar, HBoxContainer);
+
+public:
+	DocumentationToolbar();
+
+protected:
+	static void _bind_methods();
+};
+
+class TestPlugin : public EditorPlugin {
+	GDCLASS(TestPlugin, EditorPlugin);
+
+public:
+	TestPlugin();
+	virtual ~TestPlugin();
+
+protected:
+	static void _bind_methods();
+
+private:
+	DebugButton *m_debug_button;
+	ToolButton *m_test_toolbar;
+	ToolButton *m_coverage_toolbar;
+	ToolButton *m_documentation_toolbar;
+};
+
+#endif // TEST_PLUGIN_H

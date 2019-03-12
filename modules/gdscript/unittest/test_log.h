@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_runner.cpp                                                      */
+/*  test_log.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_runner.h"
-#include "test_loader.h"
-#include "test_result.h"
+#ifndef TEST_LOG_H
+#define TEST_LOG_H
 
-void TestRunner::init() {
-}
+#include "core/reference.h"
 
-bool TestRunner::iteration(float p_time) {
-	Ref<TestLoader> loader(memnew(TestLoader));
-	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, "res://")) {
-		Ref<TestResult> test_result(memnew(TestResult));
-		test_suite->run(*test_result);
-	}
-	return true;
-}
+class TestLog : public Reference {
+    GDCLASS(TestLog, Reference);
+public:
+    enum LogLevel {
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        FATAL
+    };
 
-void TestRunner::finish() {
-}
+    class LogMessage : public Reference {
+        GDCLASS(LogMessage, Reference);
+    };
 
-void TestRunner::_bind_methods() {
-}
+    void log(LogLevel lvl, const String &msg);
+    void trace(const String &msg);
+    void debug(const String &msg);
+    void info(const String &msg);
+    void warn(const String &msg);
+    void error(const String &msg);
+    void fatal(const String &msg);
+
+protected:
+    static void _bind_methods();
+};
+
+VARIANT_ENUM_CAST(TestLog::LogLevel);
+
+#endif // TEST_LOG_H

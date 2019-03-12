@@ -71,6 +71,41 @@ void assert(const Variant &a, const Variant &b, const String &custom_msg, const 
 	assert(input, custom_msg, default_msg);
 }
 
+bool TestCase::State::next_test() {
+	while (m_method_info) {
+		if (m_method_info->get().name.begins_with("test_")) {
+			return true;
+		}
+		m_method_info = m_method_info->next();
+	}
+	return false;
+}
+
+bool TestCase::State::init(Object *object) {
+	object->get_method_list(&m_methods);
+	m_method_info = m_methods.front();
+	return next_test();
+}
+
+const String &TestCase::State::get() {
+	return m_method_info->get().name;
+}
+
+bool TestCase::State::next() {
+	m_method_info = m_method_info->next();
+	return next_test();
+}
+
+void TestCase::init() {
+}
+
+bool TestCase::iteration(float p_time) {
+	return true;
+}
+
+void TestCase::finish() {
+}
+
 void TestCase::setup() {
 	if (get_script_instance() && get_script_instance()->has_method("setup")) {
 		get_script_instance()->call("setup");
@@ -88,24 +123,20 @@ void TestCase::run(Ref<TestResult> test_result) {
 		test_result.instance();
 	}
 	test_result->start_test(this);
-	List<MethodInfo> methods;
-	this->get_method_list(&methods);
-	List<MethodInfo>::Element *method_info = methods.front();
-	while (method_info) {
-		const String &method_name = method_info->get().name;
-		if (method_name.begins_with("test_")) {
-			setup();
-			try {
-				AssertGuard guard(&m_can_assert);
-				get_script_instance()->call(method_name);
-			} catch (const Failure &failure) {
-				TestError *error = memnew(TestError);
-				test_result->add_failure(this, error);
-			}
-			teardown();
-			test_result->add_success(this);
+	Ref<State> state = memnew(State);
+	bool has_next = state->init(this);
+	while (has_next) {
+		setup();
+		try {
+			AssertGuard guard(&m_can_assert);
+			get_script_instance()->call(state->get());
+		} catch (const Failure &failure) {
+			TestError *error = memnew(TestError);
+			test_result->add_failure(this, error);
 		}
-		method_info = method_info->next();
+		teardown();
+		test_result->add_success(this);
+		has_next = state->next();
 	}
 	test_result->stop_test(this);
 }
