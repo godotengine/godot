@@ -328,6 +328,10 @@ void Light2D::_notification(int p_what) {
 		_update_light_visibility();
 	}
 
+	if (p_what == NOTIFICATION_OWNER_CHANGED) {
+		_update_light_visibility();
+	}
+
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 
 		VS::get_singleton()->canvas_light_set_transform(canvas_light, get_global_transform());

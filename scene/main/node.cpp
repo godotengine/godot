@@ -1524,6 +1524,8 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 	data.owner = p_owner;
 	data.owner->data.owned.push_back(this);
 	data.OW = data.owner->data.owned.back();
+
+	notification(NOTIFICATION_OWNER_CHANGED);
 }
 
 void Node::set_owner(Node *p_owner) {

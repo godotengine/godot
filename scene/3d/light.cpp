@@ -195,6 +195,10 @@ void Light::_notification(int p_what) {
 		_update_visibility();
 	}
 
+	if (p_what == NOTIFICATION_OWNER_CHANGED) {
+		_update_visibility();
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 	}
 }
