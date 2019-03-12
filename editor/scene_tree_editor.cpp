@@ -84,6 +84,13 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			}
 		}
 		undo_redo->commit_action();
+	} else if (p_id == BUTTON_LOCK_SELECTION) {
+
+		if (n->is_class("Spatial")) {
+			n->set_meta("_edit_selection_lock_", Variant());
+			_update_tree();
+			emit_signal("node_changed");
+		}
 	} else if (p_id == BUTTON_LOCK) {
 
 		if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
@@ -279,6 +286,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			bool is_locked = p_node->has_meta("_edit_lock_");
 			if (is_locked)
 				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+
+			bool is_selection_locked = p_node->has_meta("_edit_selection_lock_"); //_edit_group_
+			if (is_selection_locked)
+				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK_SELECTION, false, TTR("Node cannot be selected in the viewport.\nClick to make selectable."));
 
 			bool v = p_node->call("is_visible");
 			if (v)

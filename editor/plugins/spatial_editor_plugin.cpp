@@ -82,6 +82,16 @@
 #define get_local_gizmo_transform get_transform
 #endif
 
+static bool is_selectable(Spatial *spatial) {
+
+	if (!spatial || spatial->has_meta("_edit_selection_lock_")) {
+		return false;
+	}
+
+	Spatial *parent = spatial->get_parent_spatial();
+	return !parent || is_selectable(parent);
+}
+
 void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
 	bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
@@ -270,7 +280,7 @@ void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single) {
 		return;
 
 	Spatial *sp = Object::cast_to<Spatial>(ObjectDB::get_instance(clicked));
-	if (!sp)
+	if (!is_selectable(sp))
 		return;
 
 	_select(sp, clicked_wants_append, true);
@@ -317,7 +327,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 
 		Spatial *spat = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
 
-		if (!spat)
+		if (!is_selectable(spat))
 			continue;
 
 		Ref<EditorSpatialGizmo> seg = spat->get_gizmo();
@@ -503,7 +513,7 @@ void SpatialEditorViewport::_select_region() {
 	for (int i = 0; i < instances.size(); i++) {
 
 		Spatial *sp = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
-		if (!sp)
+		if (!is_selectable(sp))
 			continue;
 
 		Node *item = Object::cast_to<Node>(sp);
@@ -4513,6 +4523,44 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			_refresh_menu_icons();
 		} break;
+		case MENU_LOCK_SELECTION_SELECTED: {
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *spatial = Object::cast_to<Spatial>(E->get());
+				if (!spatial || !spatial->is_visible_in_tree())
+					continue;
+
+				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
+					continue;
+
+				spatial->set_meta("_edit_selection_lock_", true);
+				emit_signal("item_lock_status_changed");
+			}
+
+			_refresh_menu_icons();
+		} break;
+		case MENU_UNLOCK_SELECTION_SELECTED: {
+
+			List<Node *> &selection = editor_selection->get_selected_node_list();
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *spatial = Object::cast_to<Spatial>(E->get());
+				if (!spatial || !spatial->is_visible_in_tree())
+					continue;
+
+				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
+					continue;
+
+				spatial->set_meta("_edit_selection_lock_", Variant());
+				emit_signal("item_lock_status_changed");
+			}
+
+			_refresh_menu_icons();
+		} break;
 	}
 }
 
@@ -4955,15 +5003,23 @@ bool SpatialEditor::is_any_freelook_active() const {
 void SpatialEditor::_refresh_menu_icons() {
 
 	bool all_locked = true;
+	bool all_selection_locked = true;
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
 
 	if (selection.empty()) {
 		all_locked = false;
+		all_selection_locked = false;
 	} else {
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-			if (Object::cast_to<Spatial>(E->get()) && !Object::cast_to<Spatial>(E->get())->has_meta("_edit_lock_")) {
+			Spatial *spatial = Object::cast_to<Spatial>(E->get());
+			if (spatial && !spatial->has_meta("_edit_lock_")) {
 				all_locked = false;
+			}
+			if (spatial && !spatial->has_meta("_edit_selection_lock_")) {
+				all_selection_locked = false;
+			}
+			if (!all_locked && !all_selection_locked) {
 				break;
 			}
 		}
@@ -4972,6 +5028,10 @@ void SpatialEditor::_refresh_menu_icons() {
 	tool_button[TOOL_LOCK_SELECTED]->set_visible(!all_locked);
 	tool_button[TOOL_LOCK_SELECTED]->set_disabled(selection.empty());
 	tool_button[TOOL_UNLOCK_SELECTED]->set_visible(all_locked);
+
+	tool_button[TOOL_LOCK_SELECTION_SELECTED]->set_visible(!all_selection_locked);
+	tool_button[TOOL_LOCK_SELECTION_SELECTED]->set_disabled(selection.empty());
+	tool_button[TOOL_UNLOCK_SELECTION_SELECTED]->set_visible(all_selection_locked);
 }
 
 template <typename T>
@@ -5141,6 +5201,8 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_LIST_SELECT]->set_icon(get_icon("ListSelect", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_LOCK_SELECTED]->set_icon(get_icon("Lock", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_UNLOCK_SELECTED]->set_icon(get_icon("Unlock", "EditorIcons"));
+		tool_button[SpatialEditor::TOOL_LOCK_SELECTION_SELECTED]->set_icon(get_icon("Lock", "EditorIcons"));
+		tool_button[SpatialEditor::TOOL_UNLOCK_SELECTION_SELECTED]->set_icon(get_icon("Unlock", "EditorIcons"));
 
 		tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_icon("Object", "EditorIcons"));
 		tool_option_button[SpatialEditor::TOOL_OPT_USE_SNAP]->set_icon(get_icon("Snap", "EditorIcons"));
@@ -5447,6 +5509,18 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	button_binds.write[0] = MENU_UNLOCK_SELECTED;
 	tool_button[TOOL_UNLOCK_SELECTED]->connect("pressed", this, "_menu_item_pressed", button_binds);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip(TTR("Unlock the selected object (can be moved)."));
+
+	tool_button[TOOL_LOCK_SELECTION_SELECTED] = memnew(ToolButton);
+	hbc_menu->add_child(tool_button[TOOL_LOCK_SELECTION_SELECTED]);
+	button_binds.write[0] = MENU_LOCK_SELECTION_SELECTED;
+	tool_button[TOOL_LOCK_SELECTION_SELECTED]->connect("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_LOCK_SELECTION_SELECTED]->set_tooltip(TTR("Make the selected object unselectable in the 3D viewports."));
+
+	tool_button[TOOL_UNLOCK_SELECTION_SELECTED] = memnew(ToolButton);
+	hbc_menu->add_child(tool_button[TOOL_UNLOCK_SELECTION_SELECTED]);
+	button_binds.write[0] = MENU_UNLOCK_SELECTION_SELECTED;
+	tool_button[TOOL_UNLOCK_SELECTION_SELECTED]->connect("pressed", this, "_menu_item_pressed", button_binds);
+	tool_button[TOOL_UNLOCK_SELECTION_SELECTED]->set_tooltip(TTR("Make the selected object selectable in the 3D viewports."));
 
 	hbc_menu->add_child(memnew(VSeparator));
 
