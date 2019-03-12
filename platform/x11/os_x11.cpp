@@ -1176,15 +1176,28 @@ Point2 OS_X11::get_window_position() const {
 	int x, y;
 	Window child;
 	XTranslateCoordinates(x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
-
-	int screen = get_current_screen();
-	Point2i screen_position = get_screen_position(screen);
-
-	return Point2i(x - screen_position.x, y - screen_position.y);
+	return Point2i(x, y);
 }
 
 void OS_X11::set_window_position(const Point2 &p_position) {
-	XMoveWindow(x11_display, x11_window, p_position.x, p_position.y);
+	int x = 0;
+	int y = 0;
+	if (get_borderless_window() == false) {
+		//exclude window decorations
+		XSync(x11_display, False);
+		Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = NULL;
+		if (XGetWindowProperty(x11_display, x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+			long *extents = (long *)data;
+			x = extents[0];
+			y = extents[2];
+		}
+	}
+	XMoveWindow(x11_display, x11_window, p_position.x - x, p_position.y - y);
 	update_real_mouse_position();
 }
 
