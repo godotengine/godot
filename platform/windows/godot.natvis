@@ -2,92 +2,109 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	<Type Name="Vector&lt;*&gt;">
 		<Expand>
-			<Item Name="size">(_cowdata &amp;&amp; _cowdata-&gt;_ptr) ? (((const unsigned int *)(_cowdata-&gt;_ptr))[-1]) : 0</Item>
+			<Item Name="[size]">_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Item>
 			<ArrayItems>
-				<Size>(_cowdata &amp;&amp; _cowdata-&gt;_ptr) ? (((const unsigned int *)(_cowdata-&gt;_ptr))[-1]) : 0</Size>
-				<ValuePointer>(_cowdata) ? (_cowdata-&gt;_ptr) : 0</ValuePointer>
+				<Size>_cowdata._ptr ? (((const unsigned int *)(_cowdata._ptr))[-1]) : 0</Size>
+				<ValuePointer>_cowdata._ptr</ValuePointer>
 			</ArrayItems>
 		</Expand>
 	</Type>
 
 	<Type Name="PoolVector&lt;*&gt;">
 		<Expand>
-			<Item Name="size">alloc ? (alloc-&gt;size / sizeof($T1)) : 0</Item>
+			<Item Name="[size]">alloc ? (alloc-&gt;size / sizeof($T1)) : 0</Item>
 			<ArrayItems>
 				<Size>alloc ? (alloc-&gt;size / sizeof($T1)) : 0</Size>
 				<ValuePointer>alloc ? (($T1 *)alloc-&gt;mem) : 0</ValuePointer>
 			</ArrayItems>
 		</Expand>
 	</Type>
+	
+	<Type Name="List&lt;*&gt;">
+		<Expand>
+			<Item Name="[size]">_data ? (_data->size_cache) : 0</Item>
+			<LinkedListItems>
+				<Size>_data ? (_data->size_cache) : 0</Size>
+				<HeadPointer>_data->first</HeadPointer>
+				<NextPointer>next_ptr</NextPointer>
+				<ValueNode>value</ValueNode>
+			</LinkedListItems>
+		</Expand>
+	</Type>
 
 	<Type Name="Variant">
-		<DisplayString Condition="this-&gt;type == Variant::NIL">nil</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::BOOL">{_data._bool}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::INT">{_data._int}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::REAL">{_data._real}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::TRANSFORM2D">{_data._transform2d}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::AABB">{_data._aabb}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::BASIS">{_data._basis}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::TRANSFORM">{_data._transform}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::STRING &amp;&amp; ((String *)(&amp;_data._mem[0]))-&gt;_cowdata._ptr == 0">""</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::STRING &amp;&amp; ((String *)(&amp;_data._mem[0]))-&gt;_cowdata._ptr != 0">{((String *)(&amp;_data._mem[0]))-&gt;_cowdata._ptr,su}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::VECTOR2">{*(Vector2 *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::RECT2">{*(Rect2 *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::VECTOR3">{*(Vector3 *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::PLANE">{*(Plane *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::QUAT">{*(Quat *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::_RID">{*(RID *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::OBJECT">{*(Object *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::DICTIONARY">{*(Dictionary *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_BYTE_ARRAY">{*(PoolByteArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_INT_ARRAY">{*(PoolIntArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_REAL_ARRAY">{*(PoolRealArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_STRING_ARRAY">{*(PoolStringArray *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_VECTOR2_ARRAY">{*(PoolVector2Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_VECTOR3_ARRAY">{*(PoolVector3Array *)_data._mem}</DisplayString>
-		<DisplayString Condition="this-&gt;type == Variant::POOL_COLOR_ARRAY">{*(PoolColorArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::NIL">nil</DisplayString>
+		<DisplayString Condition="type == Variant::BOOL">{_data._bool}</DisplayString>
+		<DisplayString Condition="type == Variant::INT">{_data._int}</DisplayString>
+		<DisplayString Condition="type == Variant::REAL">{_data._real}</DisplayString>
+		<DisplayString Condition="type == Variant::TRANSFORM2D">{_data._transform2d}</DisplayString>
+		<DisplayString Condition="type == Variant::AABB">{_data._aabb}</DisplayString>
+		<DisplayString Condition="type == Variant::BASIS">{_data._basis}</DisplayString>
+		<DisplayString Condition="type == Variant::TRANSFORM">{_data._transform}</DisplayString>
+		<DisplayString Condition="type == Variant::STRING">{*(String *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR2">{*(Vector2 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::RECT2">{*(Rect2 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::VECTOR3">{*(Vector3 *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::PLANE">{*(Plane *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::QUAT">{*(Quat *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::COLOR">{*(Color *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::NODE_PATH">{*(NodePath *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::_RID">{*(RID *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::OBJECT">{*(Object *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::DICTIONARY">{*(Dictionary *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::ARRAY">{*(Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_BYTE_ARRAY">{*(PoolByteArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_INT_ARRAY">{*(PoolIntArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_REAL_ARRAY">{*(PoolRealArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_STRING_ARRAY">{*(PoolStringArray *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_VECTOR2_ARRAY">{*(PoolVector2Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_VECTOR3_ARRAY">{*(PoolVector3Array *)_data._mem}</DisplayString>
+		<DisplayString Condition="type == Variant::POOL_COLOR_ARRAY">{*(PoolColorArray *)_data._mem}</DisplayString>
 
-		<StringView Condition="this-&gt;type == Variant::STRING &amp;&amp; ((String *)(&amp;_data._mem[0]))-&gt;_cowdata._ptr != 0">((String *)(&amp;_data._mem[0]))-&gt;_cowdata._ptr,su</StringView>
-
+		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,su</StringView>
+		
 		<Expand>
-			<Item Name="value" Condition="this-&gt;type == Variant::BOOL">_data._bool</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::INT">_data._int</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::REAL">_data._real</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::TRANSFORM2D">_data._transform2d</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::AABB">_data._aabb</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::BASIS">_data._basis</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::TRANSFORM">_data._transform</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::ARRAY">*(Array *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::STRING">*(String *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::VECTOR2">*(Vector2 *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::RECT2">*(Rect2 *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::VECTOR3">*(Vector3 *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::PLANE">*(Plane *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::QUAT">*(Quat *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::COLOR">*(Color *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::_RID">*(RID *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::OBJECT">*(Object *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::DICTIONARY">*(Dictionary *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::ARRAY">*(Array *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_BYTE_ARRAY">*(PoolByteArray *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_INT_ARRAY">*(PoolIntArray *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_REAL_ARRAY">*(PoolRealArray *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_STRING_ARRAY">*(PoolStringArray *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_VECTOR2_ARRAY">*(PoolVector2Array *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_VECTOR3_ARRAY">*(PoolVector3Array *)_data._mem</Item>
-			<Item Name="value" Condition="this-&gt;type == Variant::POOL_COLOR_ARRAY">*(PoolColorArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::BOOL">_data._bool</Item>
+			<Item Name="[value]" Condition="type == Variant::INT">_data._int</Item>
+			<Item Name="[value]" Condition="type == Variant::REAL">_data._real</Item>
+			<Item Name="[value]" Condition="type == Variant::TRANSFORM2D">_data._transform2d</Item>
+			<Item Name="[value]" Condition="type == Variant::AABB">_data._aabb</Item>
+			<Item Name="[value]" Condition="type == Variant::BASIS">_data._basis</Item>
+			<Item Name="[value]" Condition="type == Variant::TRANSFORM">_data._transform</Item>
+			<Item Name="[value]" Condition="type == Variant::STRING">*(String *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::VECTOR2">*(Vector2 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::RECT2">*(Rect2 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::VECTOR3">*(Vector3 *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PLANE">*(Plane *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::QUAT">*(Quat *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::COLOR">*(Color *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::NODE_PATH">*(NodePath *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::_RID">*(RID *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::OBJECT">*(Object *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::DICTIONARY">*(Dictionary *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::ARRAY">*(Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_BYTE_ARRAY">*(PoolByteArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_INT_ARRAY">*(PoolIntArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_REAL_ARRAY">*(PoolRealArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_STRING_ARRAY">*(PoolStringArray *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_VECTOR2_ARRAY">*(PoolVector2Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_VECTOR3_ARRAY">*(PoolVector3Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::POOL_COLOR_ARRAY">*(PoolColorArray *)_data._mem</Item>
 		</Expand>
 	</Type>
 
 	<Type Name="String">
-		<DisplayString Condition="this-&gt;_cowdata._ptr == 0">empty</DisplayString>
-		<DisplayString Condition="this-&gt;_cowdata._ptr != 0">{this->_cowdata._ptr,su}</DisplayString>
-		<StringView Condition="this-&gt;_cowdata._ptr != 0">this->_cowdata._ptr,su</StringView>
+		<DisplayString Condition="_cowdata._ptr == 0">[empty]</DisplayString>
+		<DisplayString Condition="_cowdata._ptr != 0">{_cowdata._ptr,su}</DisplayString>
+		<StringView Condition="_cowdata._ptr != 0">_cowdata._ptr,su</StringView>
+	</Type>
+
+	<Type Name="StringName">
+		<DisplayString Condition="_data &amp;&amp; _data->cname">{_data->cname}</DisplayString>
+		<DisplayString Condition="_data &amp;&amp; !_data->cname">{_data->name,su}</DisplayString>
+		<DisplayString Condition="!_data">[empty]</DisplayString>
+		<StringView Condition="_data &amp;&amp; _data->cname">_data->cname</StringView>
+		<StringView Condition="_data &amp;&amp; !_data->cname">_data->name,su</StringView>
 	</Type>
 
 	<Type Name="Vector2">
