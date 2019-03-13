@@ -440,6 +440,12 @@ void MobileVRInterface::process() {
 	};
 };
 
+void MobileVRInterface::notification(int p_what){
+	_THREAD_SAFE_METHOD_
+
+	// nothing to do here, I guess we could pauze our sensors...
+}
+
 MobileVRInterface::MobileVRInterface() {
 	initialized = false;
 

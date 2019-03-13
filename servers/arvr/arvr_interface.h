@@ -112,6 +112,7 @@ public:
 	virtual void commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) = 0; /* output the left or right eye */
 
 	virtual void process() = 0;
+	virtual void notification(int p_what) = 0;
 
 	ARVRInterface();
 	~ARVRInterface();

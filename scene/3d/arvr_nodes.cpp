@@ -583,6 +583,10 @@ void ARVROrigin::set_world_scale(float p_world_scale) {
 };
 
 void ARVROrigin::_notification(int p_what) {
+	// get our ARVRServer
+	ARVRServer *arvr_server = ARVRServer::get_singleton();
+	ERR_FAIL_NULL(arvr_server);
+
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			set_process_internal(true);
@@ -591,10 +595,6 @@ void ARVROrigin::_notification(int p_what) {
 			set_process_internal(false);
 		}; break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			// get our ARVRServer
-			ARVRServer *arvr_server = ARVRServer::get_singleton();
-			ERR_FAIL_NULL(arvr_server);
-
 			// set our world origin to our node transform
 			arvr_server->set_world_origin(get_global_transform());
 
@@ -611,6 +611,14 @@ void ARVROrigin::_notification(int p_what) {
 		default:
 			break;
 	};
+
+	// send our notification to all active ARVR interfaces, they may need to react to it also
+	for (int i = 0; i < arvr_server->get_interface_count(); i++) {
+		Ref<ARVRInterface> interface = arvr_server->get_interface(i);
+		if (interface.is_valid() && interface->is_initialized()) {
+			interface->notification(p_what);
+		}
+	}
 };
 
 ARVROrigin::ARVROrigin() {
