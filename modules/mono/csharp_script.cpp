@@ -1933,6 +1933,9 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 bool CSharpScript::_update_exports() {
 
 #ifdef TOOLS_ENABLED
+	if (!Engine::get_singleton()->is_editor_hint())
+		return false;
+
 	placeholder_fallback_enabled = true; // until proven otherwise
 
 	if (!valid)
