@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
   - Support for RayCast shapes in kinematic bodies.
   - Support for synchronizing kinematic movement to physics, avoiding an one-frame delay.
 - WebSockets support using [libwebsockets](https://libwebsockets.org/).
+- UPnP support using [MiniUPnP](http://miniupnp.free.fr).
 - [Revamped inspector.](https://godotengine.org/article/godot-gets-new-inspector)
   - Improved visualization and editing of numeric properties.
   - Vector and matrix types can now be edited directly (no pop-ups).
@@ -128,6 +129,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 - Universal translation of touch input to mouse input.
 - AudioStreamPlayer, AudioStreamPlayer2D, and AudioStreamPlayer3D now have a pitch scale property.
 - Support for MIDI input.
+- Support for audio capture from microphones.
 - `GROW_DIRECTION_BOTH` for Controls.
 - Selected tiles can be moved in the tile map editor.
 - The editor can now be configured to display the project window on the previous or next monitor (relative to the editor).
