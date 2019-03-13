@@ -239,6 +239,8 @@ private:
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
 
+	_FORCE_INLINE_ void _animation_track_get_key_indices_in_range(const AnimationTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
+
 	float length;
 	float step;
 	bool loop;
@@ -273,6 +275,18 @@ private:
 
 		List<int> idxs;
 		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
+		PoolVector<int> idxr;
+
+		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
+
+			idxr.push_back(E->get());
+		}
+		return idxr;
+	}
+	PoolVector<int> _animation_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+
+		List<int> idxs;
+		animation_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		PoolVector<int> idxr;
 
 		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
@@ -371,6 +385,8 @@ public:
 	void method_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
+
+	void animation_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 

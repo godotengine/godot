@@ -1961,10 +1961,88 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 	return Variant();
 }
 
+void Animation::_animation_track_get_key_indices_in_range(const AnimationTrack *vt, float from_time, float to_time, List<int> *p_indices) const {
+
+	if (from_time != length && to_time == length)
+		to_time = length * 1.001; //include a little more if at the end
+
+	int to = _find(vt->values, to_time);
+
+	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
+		//find exact (0 delta), return if found
+		p_indices->push_back(to);
+		return;
+	}
+	// can't really send the events == time, will be sent in the next frame.
+	// if event>=len then it will probably never be requested by the anim player.
+
+	if (to >= 0 && vt->values[to].time >= to_time)
+		to--;
+
+	if (to < 0)
+		return; // not bother
+
+	int from = _find(vt->values, from_time);
+
+	// position in the right first event.+
+	if (from < 0 || vt->values[from].time < from_time)
+		from++;
+
+	int max = vt->values.size();
+
+	for (int i = from; i <= to; i++) {
+
+		ERR_CONTINUE(i < 0 || i >= max); // shouldn't happen
+		p_indices->push_back(i);
+	}
+}
+
+void Animation::animation_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_ANIMATION);
+
+	AnimationTrack *vt = static_cast<AnimationTrack *>(t);
+
+	float from_time = p_time - p_delta;
+	float to_time = p_time;
+
+	if (from_time > to_time)
+		SWAP(from_time, to_time);
+
+	if (loop) {
+
+		from_time = Math::fposmod(from_time, length);
+		to_time = Math::fposmod(to_time, length);
+
+		if (from_time > to_time) {
+			// handle loop by splitting
+			_animation_track_get_key_indices_in_range(vt, from_time, length, p_indices);
+			_animation_track_get_key_indices_in_range(vt, 0, to_time, p_indices);
+			return;
+		}
+	} else {
+
+		if (from_time < 0)
+			from_time = 0;
+		if (from_time > length)
+			from_time = length;
+
+		if (to_time < 0)
+			to_time = 0;
+		if (to_time > length)
+			to_time = length;
+	}
+
+	_animation_track_get_key_indices_in_range(vt, from_time, to_time, p_indices);
+}
+
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const {
 
 	if (from_time != length && to_time == length)
 		to_time = length * 1.001; //include a little more if at the end
+
 	int to = _find(vt->values, to_time);
 
 	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
@@ -2918,6 +2996,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("method_track_get_key_indices", "idx", "time_sec", "delta"), &Animation::_method_track_get_key_indices);
 	ClassDB::bind_method(D_METHOD("method_track_get_name", "idx", "key_idx"), &Animation::method_track_get_name);
 	ClassDB::bind_method(D_METHOD("method_track_get_params", "idx", "key_idx"), &Animation::method_track_get_params);
+
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_indices", "idx", "time_sec", "delta"), &Animation::_animation_track_get_key_indices);
 
 	ClassDB::bind_method(D_METHOD("bezier_track_insert_key", "track", "time", "value", "in_handle", "out_handle"), &Animation::bezier_track_insert_key, DEFVAL(Vector2()), DEFVAL(Vector2()));
 

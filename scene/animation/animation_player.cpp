@@ -688,24 +688,33 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 					StringName anim_name = a->animation_track_get_key_animation(i, idx);
 					if (String(anim_name) != "[stop]" && player->has_animation(anim_name)) {
 						BlockData animationblock = get_animation_play_block(a, i, idx, p_time, player);
-						if (animationblock.length > 0) {
-							if (p_delta == 0 || p_seeked) {
+						if (animationblock.length > 0) { //inside of clip
+							if (p_delta == 0 || p_seeked) { //on seeking
 								stop = true;
 
 								float local_pos = get_local_animation_pos(a, i, idx, p_time);
+
+								//set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
+
+								//float custom_blend = -1;
+								//BlockData blockData = animation_track_get_overlapping(a, i, idx, player);
+								//if (blockData.length > 0) {
+								//	custom_blend = blockData.length - (p_time - blockData.pos); //custom_blend = blockData.length;
+								//}
+
 								player->set_assigned_animation(anim_name);
 								player->seek(local_pos, true);
+								//player->seek_blend(a, player, i, p_time, custom_blend, true);
 
-							} else if (nc->animation_idx != idx) {
+							} else if (nc->animation_idx != idx) { //on playing
 								nc->animation_idx = idx;
 
 								float local_pos = get_local_animation_pos(a, i, idx, p_time);
 
 								float custom_blend = -1;
-
 								BlockData blockData = animation_track_get_overlapping(a, i, idx, player);
 								if (blockData.length > 0) {
-									custom_blend = blockData.length;
+									custom_blend = blockData.length - (p_time - blockData.pos); //custom_blend = blockData.length;
 								}
 
 								player->play(anim_name, custom_blend);
@@ -718,6 +727,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 								nc->animation_len = animationblock.length;
 							}
 
+							/*
 							BlockData blockData = animation_track_get_overlapping(a, i, idx, player);
 							if (blockData.length > 0) {
 								if (p_time > blockData.pos && p_time <= (blockData.pos + blockData.length)) {
@@ -729,19 +739,28 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 										float weight_prev = value;
 										float weight_curr = 1.0 - value;
 
-										print_line(String("{0}, {1}, {2}, {3}").format(varray("BLOCK", idx, blockData.pos, blockData.length)));
-										print_line(String("{0}, {1}, {2}").format(varray("!", local_pos_prev, local_pos_curr)));
+										//print_line(String("{0}, {1}, {2}, {3}").format(varray("BLOCK", idx, blockData.pos, blockData.length)));
+										//print_line(String("{0}, {1}, {2}").format(varray("!", local_pos_prev, local_pos_curr)));
 									}
 								}
 							}
+							*/
 
-						} else {
+						} else { //outside of clip
 							if ((p_delta == 0 || p_seeked) || nc->animation_playing) {
 								stop = true;
 
+								//float custom_blend = -1;
+								//BlockData blockData = animation_track_get_overlapping(a, i, idx, player);
+								//if (blockData.length > 0) {
+								//	custom_blend = blockData.length - (p_time - blockData.pos); //custom_blend = blockData.length;
+								//}
+
 								float local_length = get_local_animation_end_pos(a, i, idx, player);
+
 								player->set_assigned_animation(anim_name);
 								player->seek(local_length, true);
+								//player->seek_blend(a, player, i, p_time, custom_blend, true);
 							}
 						}
 					} else {
@@ -1283,8 +1302,6 @@ void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_bl
 
 void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
 
-	//nc->audio_idx
-
 	StringName name = p_name;
 
 	if (String(name) == "")
@@ -1472,6 +1489,125 @@ void AnimationPlayer::seek(float p_time, bool p_update) {
 	playback.seeked = true;
 	if (p_update) {
 		_animation_process(0);
+	}
+}
+
+//, float p_custom_scale, bool p_from_end
+void AnimationPlayer::seek_blend(Animation *a, AnimationPlayer *player, int p_track, float p_time, float p_custom_blend, bool p_update) {
+	int idx = a->track_find_key(p_track, p_time);
+	if ((idx - 1) < 0) {
+		StringName anim_name = a->animation_track_get_key_animation(p_track, idx);
+		if (String(anim_name) != "[stop]" && has_animation(anim_name)) {
+			set_assigned_animation(anim_name);
+
+			float local_pos = get_local_animation_pos(a, p_track, idx, p_time);
+			seek(local_pos, p_update);
+		}
+
+	} else {
+		float local_pos = get_local_animation_pos(a, p_track, idx, p_time);
+
+		float custom_blend = -1;
+		BlockData blockData = animation_track_get_overlapping(a, p_track, idx, player);
+		if (blockData.length > 0) {
+			custom_blend = blockData.length - (p_time - blockData.pos); //custom_blend = blockData.length;
+		}
+
+		StringName anim_name = a->animation_track_get_key_animation(p_track, idx);
+		player->stop();
+		player->play(anim_name, custom_blend);
+		player->seek(local_pos, true);
+		
+
+		//return;
+
+		/*
+		StringName curr_anim = a->animation_track_get_key_animation(p_track, idx);
+		StringName prev_anim = a->animation_track_get_key_animation(p_track, idx - 1);
+
+		ERR_FAIL_COND(!animation_set.has(prev_anim));
+
+		playback.current.from = &animation_set[prev_anim];
+		playback.assigned = curr_anim;
+
+		playback.current.pos = p_time;
+
+		Playback &c = playback;
+
+		if (c.current.from) {
+
+			float blend_time = 0;
+			// find if it can blend
+			BlendKey bk;
+			bk.from = c.current.from->name;
+			bk.to = curr_anim;
+
+			if (p_custom_blend >= 0) {
+				blend_time = p_custom_blend;
+			} else if (blend_times.has(bk)) {
+
+				blend_time = blend_times[bk];
+			} else {
+
+				bk.from = "*";
+				if (blend_times.has(bk)) {
+
+					blend_time = blend_times[bk];
+				} else {
+
+					bk.from = c.current.from->name;
+					bk.to = "*";
+
+					if (blend_times.has(bk)) {
+
+						blend_time = blend_times[bk];
+					}
+				}
+			}
+
+			if (p_custom_blend < 0 && blend_time == 0 && default_blend_time)
+				blend_time = default_blend_time;
+			if (blend_time > 0) {
+
+				Blend b;
+				b.data = c.current;
+				b.blend_time = b.blend_left = blend_time;
+				c.blend.push_back(b);
+			}
+		}
+
+		//_stop_playing_caches();
+
+		//c.current.from = &animation_set[name];
+
+		bool p_from_end = false;
+		float p_custom_scale = 1.0;
+
+		if (c.assigned != curr_anim) { // reset
+			c.current.pos = p_from_end ? c.current.from->animation->get_length() : 0;
+		} else {
+			if (p_from_end && c.current.pos == 0) {
+				// Animation reset BUT played backwards, set position to the end
+				c.current.pos = c.current.from->animation->get_length();
+			} else if (!p_from_end && c.current.pos == c.current.from->animation->get_length()) {
+				// Animation resumed but already ended, set position to the beggining
+				c.current.pos = 0;
+			}
+		}
+
+		c.current.pos = p_time;
+		c.current.speed_scale = p_custom_scale;
+		c.assigned = curr_anim;
+		c.seeked = true;
+		//c.started = true;
+
+		//if (!end_reached)
+		//	queued.clear();
+
+		if (p_update) {
+			_animation_process(0);
+		}
+		*/
 	}
 }
 

@@ -401,6 +401,7 @@ public:
 	AnimationProcessMode get_animation_process_mode() const;
 
 	void seek(float p_time, bool p_update = false);
+	void seek_blend(Animation *a, AnimationPlayer *player, int p_track, float p_time, float p_custom_blend, bool p_update = false);
 	void seek_delta(float p_time, float p_delta);
 	float get_current_animation_position() const;
 	float get_current_animation_length() const;
