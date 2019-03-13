@@ -57,10 +57,17 @@ protected:
     static void _bind_methods();
 
 private:
+	void _start_test(const Object *test_state) {start_test(cast_to<TestState>(test_state));}
+	void _stop_test(const Object *test_state) {stop_test(cast_to<TestState>(test_state));}
+	void _add_error(const Object *test_state, Object *error) {add_error(cast_to<TestState>(test_state), cast_to<TestError>(error));}
+	void _add_failure(const Object *test_state, Object *error) {add_failure(cast_to<TestState>(test_state), cast_to<TestError>(error));}
+	void _add_success(const Object *test_state) {add_success(cast_to<TestState>(test_state));}
+
 	bool m_should_stop;
 	int m_tests_run;
 	Vector<TestError *> m_errors;
 	Vector<TestError *> m_failures;
 };
+
 
 #endif // TEST_RESULT_H

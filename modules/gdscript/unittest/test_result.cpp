@@ -92,11 +92,11 @@ bool TestResult::should_stop() const {
 }
 
 void TestResult::_bind_methods() {
-	//ClassDB::bind_method(D_METHOD("start_test", "test_state"), &TestResult::start_test);
-	//ClassDB::bind_method(D_METHOD("stop_test", "test_state"), &TestResult::stop_test);
-	//ClassDB::bind_method(D_METHOD("add_error", "test_state", "error"), &TestResult::add_error);
-	//ClassDB::bind_method(D_METHOD("add_failure", "test_state", "error"), &TestResult::add_failure);
-	//ClassDB::bind_method(D_METHOD("add_success", "test_state"), &TestResult::add_success);
+	ClassDB::bind_method(D_METHOD("start_test", "test_state"), &TestResult::_start_test);
+	ClassDB::bind_method(D_METHOD("stop_test", "test_state"), &TestResult::_stop_test);
+	ClassDB::bind_method(D_METHOD("add_error", "test_state", "error"), &TestResult::_add_error);
+	ClassDB::bind_method(D_METHOD("add_failure", "test_state", "error"), &TestResult::_add_failure);
+	ClassDB::bind_method(D_METHOD("add_success", "test_state"), &TestResult::_add_success);
 	ClassDB::bind_method(D_METHOD("was_successful"), &TestResult::was_successful);
 	ClassDB::bind_method(D_METHOD("stop"), &TestResult::stop);
 	ClassDB::bind_method(D_METHOD("should_stop"), &TestResult::should_stop);
