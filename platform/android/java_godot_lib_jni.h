@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  java_glue.h                                                          */
+/*  java_godot_lib_jni.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVA_GLUE_H
-#define JAVA_GLUE_H
+#ifndef JAVA_GODOT_LIB_JNI_H
+#define JAVA_GODOT_LIB_JNI_H
 
 #include <android/log.h>
 #include <jni.h>
 
+// These functions can be called from within JAVA and are the means by which our JAVA implementation calls back into our C++ code.
+// See java/src/org/godotengine/godot/GodotLib.java for the JAVA side of this (yes thats why we have the long names)
 extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jobject p_asset_manager, jboolean p_use_apk_expansion);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jobject obj, jobjectArray p_cmdline);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits);
@@ -63,4 +66,4 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jobject p_obj, jstring p_permission, jboolean p_result);
 }
 
-#endif // JAVA_GLUE_H
+#endif /* !JAVA_GODOT_LIB_JNI_H */
