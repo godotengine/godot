@@ -518,6 +518,8 @@ public:
 	bool is_restart_on_exit_set() const;
 	List<String> get_restart_on_exit_arguments() const;
 
+	virtual bool request_permission(const String &p_name) { return true; }
+
 	virtual void process_and_drop_events() {}
 	OS();
 	virtual ~OS();

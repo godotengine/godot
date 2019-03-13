@@ -120,9 +120,13 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 
 		} break;
 		case Image::FORMAT_RG8: {
-
-			ERR_EXPLAIN("RG texture not supported");
-			ERR_FAIL_V(image);
+			ERR_PRINT("RG texture not supported, converting to RGB8.");
+			if (image.is_valid())
+				image->convert(Image::FORMAT_RGB8);
+			r_real_format = Image::FORMAT_RGB8;
+			r_gl_internal_format = GL_RGB;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_UNSIGNED_BYTE;
 
 		} break;
 		case Image::FORMAT_RGB8: {
@@ -155,42 +159,57 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 		} break;
 		case Image::FORMAT_RF: {
 			if (!config.float_texture_supported) {
-				ERR_EXPLAIN("R float texture not supported");
-				ERR_FAIL_V(image);
+				ERR_PRINT("R float texture not supported, converting to RGB8.");
+				if (image.is_valid())
+					image->convert(Image::FORMAT_RGB8);
+				r_real_format = Image::FORMAT_RGB8;
+				r_gl_internal_format = GL_RGB;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_ALPHA;
+				r_gl_format = GL_ALPHA;
+				r_gl_type = GL_FLOAT;
 			}
-
-			r_gl_internal_format = GL_ALPHA;
-			r_gl_format = GL_ALPHA;
-			r_gl_type = GL_FLOAT;
 		} break;
 		case Image::FORMAT_RGF: {
-			ERR_EXPLAIN("RG float texture not supported");
-			ERR_FAIL_V(image);
-
+			ERR_PRINT("RG float texture not supported, converting to RGB8.");
+			if (image.is_valid())
+				image->convert(Image::FORMAT_RGB8);
+			r_real_format = Image::FORMAT_RGB8;
+			r_gl_internal_format = GL_RGB;
+			r_gl_format = GL_RGB;
+			r_gl_type = GL_UNSIGNED_BYTE;
 		} break;
 		case Image::FORMAT_RGBF: {
 			if (!config.float_texture_supported) {
-
-				ERR_EXPLAIN("RGB float texture not supported");
-				ERR_FAIL_V(image);
+				ERR_PRINT("RGB float texture not supported, converting to RGB8.");
+				if (image.is_valid())
+					image->convert(Image::FORMAT_RGB8);
+				r_real_format = Image::FORMAT_RGB8;
+				r_gl_internal_format = GL_RGB;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_RGB;
+				r_gl_format = GL_RGB;
+				r_gl_type = GL_FLOAT;
 			}
-
-			r_gl_internal_format = GL_RGB;
-			r_gl_format = GL_RGB;
-			r_gl_type = GL_FLOAT;
-
 		} break;
 		case Image::FORMAT_RGBAF: {
 			if (!config.float_texture_supported) {
-
-				ERR_EXPLAIN("RGBA float texture not supported");
-				ERR_FAIL_V(image);
+				ERR_PRINT("RGBA float texture not supported, converting to RGBA8.");
+				if (image.is_valid())
+					image->convert(Image::FORMAT_RGBA8);
+				r_real_format = Image::FORMAT_RGBA8;
+				r_gl_internal_format = GL_RGBA;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+			} else {
+				r_gl_internal_format = GL_RGBA;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_FLOAT;
 			}
-
-			r_gl_internal_format = GL_RGBA;
-			r_gl_format = GL_RGBA;
-			r_gl_type = GL_FLOAT;
-
 		} break;
 		case Image::FORMAT_RH: {
 			need_decompress = true;
@@ -1137,7 +1156,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	glGenTextures(1, &sky->radiance);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, sky->radiance);
 
-	int size = p_radiance_size / 4; //divide by four because its a cubemap (this is an approximation because GLES3 uses a dual paraboloid)
+	int size = p_radiance_size / 2; //divide by two because its a cubemap (this is an approximation because GLES3 uses a dual paraboloid)
 
 	GLenum internal_format = GL_RGB;
 	GLenum format = GL_RGB;
@@ -1176,7 +1195,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	int mipmaps = 6;
 	int lod = 0;
 	int mm_level = mipmaps;
-	size = p_radiance_size / 4;
+	size = p_radiance_size / 2;
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_SOURCE_PANORAMA, true);
 	shaders.cubemap_filter.set_conditional(CubemapFilterShaderGLES2::USE_DIRECT_WRITE, true);
 	shaders.cubemap_filter.bind();
@@ -4733,6 +4752,7 @@ void RasterizerStorageGLES2::render_target_set_flag(RID p_render_target, RenderT
 	rt->flags[p_flag] = p_value;
 
 	switch (p_flag) {
+		case RENDER_TARGET_TRANSPARENT:
 		case RENDER_TARGET_HDR:
 		case RENDER_TARGET_NO_3D:
 		case RENDER_TARGET_NO_SAMPLING:
@@ -5468,7 +5488,9 @@ void RasterizerStorageGLES2::initialize() {
 #ifdef GLES_OVER_GL
 	//this needs to be enabled manually in OpenGL 2.1
 
-	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+	if (config.extensions.has("GL_ARB_seamless_cube_map")) {
+		glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
 	glEnable(GL_POINT_SPRITE);
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 #endif

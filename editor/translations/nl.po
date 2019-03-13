@@ -29,12 +29,13 @@
 # Peter Goelst <muis24@gmail.com>, 2019.
 # Wouter Buckens <wou.buc@gmail.com>, 2019.
 # Stijn Hinlopen <f.a.hinlopen@gmail.com>, 2019.
+# jef dered <themen098s@vivaldi.net>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-26 21:22+0000\n"
-"Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
+"PO-Revision-Date: 2019-03-08 15:03+0000\n"
+"Last-Translator: jef dered <themen098s@vivaldi.net>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -42,11 +43,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.5.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr "Ongeldig argumenttype aan convert(), gebruik TYPE_* constanten."
 
@@ -111,14 +111,12 @@ msgid "Delete Selected Key(s)"
 msgstr "Geselecteerde Key(s) Verwijderen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Punt toevoegen"
+msgstr "Bézierpunt toevoegen"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Beweeg Punt"
+msgstr "Beweeg Bézierpunten"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -149,9 +147,8 @@ msgid "Anim Change Call"
 msgstr "Anim Wijzig Aanroep"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Verander Animatie Lus"
+msgstr "Verander Animatielengte"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -240,7 +237,7 @@ msgstr "Tijd (s): "
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Inschakelen Doppler"
+msgstr "Verander de ingeschakelde track"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -293,19 +290,16 @@ msgid "Delete Key(s)"
 msgstr "Verwijder Key(s)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Verander Animatie Naam:"
+msgstr "Verander animatie update modus"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "Interpolatiemodus"
+msgstr "Verander Animatie Interpolatiemodus"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Verander Animatie Lus"
+msgstr "Verander Animatie lus Modus"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -349,14 +343,13 @@ msgid "Anim Insert Key"
 msgstr "Anim Key Invoegen"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "Verander Animatie FPS"
+msgstr "Verander Animatiestappen"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Herschik Autoloads"
+msgstr "Herschik Tracks"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -389,9 +382,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Niet mogelijk om een nieuwe track toe te voegen zonder een root"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Track Toevoegen"
+msgstr "Voeg Bézierbaan Toe"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -1414,8 +1406,22 @@ msgstr "Inpakken"
 
 #: editor/editor_export.cpp
 msgid ""
-"Target platform requires 'ETC' texture compression for GLES2. Enable support "
-"in Project Settings."
+"Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
+"Etc' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC2' texture compression for GLES3. Enable "
+"'Import Etc 2' in Project Settings."
+msgstr ""
+
+#: editor/editor_export.cpp
+msgid ""
+"Target platform requires 'ETC' texture compression for the driver fallback "
+"to GLES2.\n"
+"Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
+"Enabled'."
 msgstr ""
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
@@ -1466,7 +1472,7 @@ msgstr "Weergeven in Bestandsbeheer"
 msgid "New Folder..."
 msgstr "Nieuwe Map..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh"
 msgstr "Verversen"
 
@@ -1541,9 +1547,33 @@ msgstr "Verplaats Favoriet Naar Boven"
 msgid "Move Favorite Down"
 msgstr "Verplaats Favoriet Naar Beneden"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Previous Folder"
+msgstr "Vorig tabblad"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "Next Folder"
+msgstr "Map Maken"
+
+#: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Ga naar bovenliggende folder"
+
+#: editor/editor_file_dialog.cpp
+#, fuzzy
+msgid "(Un)favorite current folder."
+msgstr "Map kon niet gemaakt worden."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+msgid "View items as a grid of thumbnails."
+msgstr "Toon items in een miniatuurraster."
+
+#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
+#, fuzzy
+msgid "View items as a list."
+msgstr "Bekijk objecten als een lijst"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1773,14 +1803,24 @@ msgstr "Maak Uitvoer Leeg"
 msgid "Project export failed with error code %d."
 msgstr "Project exporteren faalt door foutcode %d."
 
-#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
-msgid "Error saving resource!"
-msgstr "Error bij het opslaan van resource!"
+#: editor/editor_node.cpp
+msgid "Imported resources can't be saved."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
 msgstr "Oké"
+
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
+msgid "Error saving resource!"
+msgstr "Error bij het opslaan van resource!"
+
+#: editor/editor_node.cpp
+msgid ""
+"This resource can't be saved because it does not belong to the edited scene. "
+"Make it unique first."
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -3105,15 +3145,6 @@ msgstr ""
 "is!"
 
 #: editor/filesystem_dock.cpp
-msgid "View items as a grid of thumbnails."
-msgstr "Toon items in een miniatuurraster."
-
-#: editor/filesystem_dock.cpp
-#, fuzzy
-msgid "View items as a list."
-msgstr "Bekijk objecten als een lijst"
-
-#: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
 "Status: Importeren van bestand mislukt. Repareer het bestand en importeer "
@@ -3249,12 +3280,6 @@ msgstr "Gesplitste modus omschakelen"
 #: editor/filesystem_dock.cpp
 msgid "Search files"
 msgstr "Zoek bestanden"
-
-#: editor/filesystem_dock.cpp
-msgid "Instance the selected scene(s) as child of the selected node."
-msgstr ""
-"Maak een nieuwe kopie van de geselecteerde scene(s) als kind van de "
-"geselecteerde knoop."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -5277,6 +5302,10 @@ msgid "Generating Visibility Rect"
 msgstr "Genereer Zichtbaarheid Rechthoek"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generate Visibility Rect"
+msgstr "Genereer Zichtbaarheid Rechthoek"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Kan punt alleen plaatsen in een PartikelsMateriaal proces materiaal"
 
@@ -5287,10 +5316,6 @@ msgstr "Error bij het laden van afbeelding:"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "No pixels with transparency > 128 in image..."
 msgstr "Geen pixels met transparantie > 128 in afbeelding..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generate Visibility Rect"
-msgstr "Genereer Zichtbaarheid Rechthoek"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
@@ -5381,12 +5406,12 @@ msgid "Generating AABB"
 msgstr "AABB Genereren"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Generate AABB"
-msgstr "Genereer AABB"
-
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generate Visibility AABB"
 msgstr "Genereer Zichtbaarheid AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate AABB"
+msgstr "Genereer AABB"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -7104,6 +7129,24 @@ msgid "Merge from Scene"
 msgstr "Vervoeg vanuit Scene"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Next Coordinate"
+msgstr "Volgend script"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the next shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Previous Coordinate"
+msgstr "Vorig tabblad"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Select the previous shape, subtile, or Tile."
+msgstr ""
+
+#: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
 msgstr "Bitmasker kopiëren."
 
@@ -7263,6 +7306,16 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
+msgid "Make Polygon Concave"
+msgstr "Beweeg Polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
+msgid "Make Polygon Convex"
+msgstr "Beweeg Polygon"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+#, fuzzy
 msgid "Remove Tile"
 msgstr "Verwijder Sjabloon"
 
@@ -7397,6 +7450,11 @@ msgstr "reeds losgelaten"
 #, fuzzy
 msgid "Exporting All"
 msgstr "Aan het exporteren voor %s"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "The given export path doesn't exist:"
+msgstr "Dit pad bestaat niet."
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10123,6 +10181,12 @@ msgstr ""
 "Een vorm moet gegeven worden om CollisionShape te laten werken. Maak "
 "alsjeblieft een vorm resource voor deze!"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"Plane shapes don't work well and will be removed in future versions. Please "
+"don't use them."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -10135,6 +10199,12 @@ msgstr ""
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
+msgstr ""
+
+#: scene/3d/gi_probe.cpp
+msgid ""
+"GIProbes are not supported by the GLES2 video driver.\n"
+"Use a BakedLightmap instead."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -10297,6 +10367,14 @@ msgstr ""
 msgid "Add current color as a preset."
 msgstr "Huidige kleur als een preset toevoegen"
 
+#: scene/gui/container.cpp
+msgid ""
+"Container by itself serves no purpose unless a script configures it's "
+"children placement behavior.\n"
+"If you dont't intend to add a script, then please use a plain 'Control' node "
+"instead."
+msgstr ""
+
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
 msgstr "Alarm!"
@@ -10304,6 +10382,11 @@ msgstr "Alarm!"
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
 msgstr "Bevestig Alsjeblieft..."
+
+#: scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Go to parent folder."
+msgstr "Ga naar bovenliggende folder"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -10386,6 +10469,11 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Instance the selected scene(s) as child of the selected node."
+#~ msgstr ""
+#~ "Maak een nieuwe kopie van de geselecteerde scene(s) als kind van de "
+#~ "geselecteerde knoop."
 
 #~ msgid "FPS"
 #~ msgstr "FPS"

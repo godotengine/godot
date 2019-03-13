@@ -88,6 +88,8 @@ class AudioDriverOpenSL : public AudioDriver {
 			SLAndroidSimpleBufferQueueItf queueItf,
 			void *pContext);
 
+	virtual Error capture_init_device();
+
 public:
 	void set_singleton();
 
