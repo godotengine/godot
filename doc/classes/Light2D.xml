@@ -7,6 +7,7 @@
 		Casts light in a 2D environment. Light is defined by a (usually grayscale) texture, a color, an energy value, a mode (see constants), and various other parameters (range and shadows-related). Note that Light2D can be used as a mask.
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/2d/2d_lights_and_shadows.html</link>
 	</tutorials>
 	<demos>
 	</demos>
