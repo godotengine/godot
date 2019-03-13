@@ -8,6 +8,7 @@
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
 	</tutorials>
 	<demos>
 	</demos>
