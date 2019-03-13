@@ -33,7 +33,7 @@
 
 #include "servers/audio_server.h"
 
-#include "java_glue.h"
+#include "java_godot_lib_jni.h"
 
 class AudioDriverAndroid : public AudioDriver {
 

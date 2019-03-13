@@ -46,6 +46,7 @@ public class GodotLib {
      */
 
 	public static native void initialize(Godot p_instance, Object p_asset_manager, boolean use_apk_expansion);
+	public static native void ondestroy(Godot p_instance);
 	public static native void setup(String[] p_cmdline);
 	public static native void resize(int width, int height);
 	public static native void newcontext(boolean p_32_bits);
