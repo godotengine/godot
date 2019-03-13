@@ -63,6 +63,7 @@ typedef struct {
 	void (*process)(void *);
 	// only in 1.1 onwards
 	godot_int (*get_external_texture_for_eye)(void *, godot_int);
+	void (*notification)(godot_int);
 } godot_arvr_interface_gdnative;
 
 void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface);
