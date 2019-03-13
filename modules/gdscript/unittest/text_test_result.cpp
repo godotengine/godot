@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_error.h                                                         */
+/*  text_test_result.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_ERROR_H
-#define TEST_ERROR_H
+#include "text_test_result.h"
 
-#include "core/object.h"
+void TextTestResult::start_test(const TestState *test_state) {
+    TestResult::start_test(test_state);
+}
 
-class TestError : public Object {
+void TextTestResult::add_error(const TestState *test_state, TestError *error) {
+	TestResult::add_error(test_state, error);
+}
 
-	GDCLASS(TestError, Object);
+void TextTestResult::add_failure(const TestState *test_state, TestError *error) {
+	TestResult::add_failure(test_state, error);
+}
 
-protected:
-	static void _bind_methods();
-};
+void TextTestResult::add_success(const TestState *test_state) {
+	TestResult::add_success(test_state);
+}
 
-#endif // TEST_ERROR_H
+void TextTestResult::_bind_methods() {
+}

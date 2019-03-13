@@ -71,35 +71,11 @@ void assert(const Variant &a, const Variant &b, const String &custom_msg, const 
 	assert(input, custom_msg, default_msg);
 }
 
-bool TestCase::State::next_test() {
-	while (m_method_info) {
-		if (m_method_info->get().name.begins_with("test_")) {
-			return true;
-		}
-		m_method_info = m_method_info->next();
-	}
-	return false;
-}
-
-bool TestCase::State::init(Object *object) {
-	object->get_method_list(&m_methods);
-	m_method_info = m_methods.front();
-	return next_test();
-}
-
-const String &TestCase::State::get() {
-	return m_method_info->get().name;
-}
-
-bool TestCase::State::next() {
-	m_method_info = m_method_info->next();
-	return next_test();
-}
-
 void TestCase::init() {
 }
 
 bool TestCase::iteration(float p_time) {
+    run();
 	return true;
 }
 
@@ -118,27 +94,33 @@ void TestCase::teardown() {
 	}
 }
 
-void TestCase::run(Ref<TestResult> test_result) {
+void make_result(Ref<TestResult> &test_result) {
 	if (test_result.is_null()) {
-		test_result.instance();
+		test_result = Ref<TestResult>(memnew(TestResult));
 	}
-	test_result->start_test(this);
-	Ref<State> state = memnew(State);
-	bool has_next = state->init(this);
+}
+
+void TestCase::run(Ref<TestResult> test_result) {
+    make_result(test_result);
+    m_state = memnew(TestState);
+	test_result->start_test(m_state);
+	bool has_next = m_state->init(this);
 	while (has_next) {
 		setup();
 		try {
 			AssertGuard guard(&m_can_assert);
-			get_script_instance()->call(state->get());
+			get_script_instance()->call(m_state->get());
 		} catch (const Failure &failure) {
 			TestError *error = memnew(TestError);
-			test_result->add_failure(this, error);
+			test_result->add_failure(m_state, error);
 		}
 		teardown();
-		test_result->add_success(this);
-		has_next = state->next();
+		test_result->add_success(m_state);
+		has_next = m_state->next();
 	}
-	test_result->stop_test(this);
+	test_result->stop_test(m_state);
+    memfree(m_state);
+    m_state = NULL;
 }
 
 void TestCase::assert_equal(const Variant &a, const Variant &b, const String &msg) {

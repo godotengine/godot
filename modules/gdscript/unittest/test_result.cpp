@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "test_result.h"
-#include "test_case.h"
 
 #include "core/script_language.h"
 
@@ -47,36 +46,36 @@ TestResult::~TestResult() {
 	}
 }
 
-void TestResult::start_test(const TestCase *test_case) {
+void TestResult::start_test(const TestState *test_state) {
 	m_tests_run++;
 	if (get_script_instance() && get_script_instance()->has_method("start_test")) {
-		get_script_instance()->call("start_test", test_case);
+		get_script_instance()->call("start_test", test_state);
 	}
 }
 
-void TestResult::stop_test(const TestCase *test_case) {
+void TestResult::stop_test(const TestState *test_state) {
 	if (get_script_instance() && get_script_instance()->has_method("stop_test")) {
-		get_script_instance()->call("stop_test", test_case);
+		get_script_instance()->call("stop_test", test_state);
 	}
 }
 
-void TestResult::add_error(const TestCase *test_case, TestError *error) {
+void TestResult::add_error(const TestState *test_state, TestError *error) {
 	m_errors.push_back(error);
 	if (get_script_instance() && get_script_instance()->has_method("add_error")) {
-		get_script_instance()->call("add_error", test_case, error);
+		get_script_instance()->call("add_error", test_state, error);
 	}
 }
 
-void TestResult::add_failure(const TestCase *test_case, TestError *error) {
+void TestResult::add_failure(const TestState *test_state, TestError *error) {
 	m_failures.push_back(error);
 	if (get_script_instance() && get_script_instance()->has_method("add_failure")) {
-		get_script_instance()->call("add_failure", test_case, error);
+		get_script_instance()->call("add_failure", test_state, error);
 	}
 }
 
-void TestResult::add_success(const TestCase *test_case) {
+void TestResult::add_success(const TestState *test_state) {
 	if (get_script_instance() && get_script_instance()->has_method("add_success")) {
-		get_script_instance()->call("add_success", test_case);
+		get_script_instance()->call("add_success", test_state);
 	}
 }
 
@@ -93,12 +92,12 @@ bool TestResult::should_stop() const {
 }
 
 void TestResult::_bind_methods() {
-	//ClassDB::bind_method(D_METHOD("start_test", "test_case"), &TestResult::start_test);
-	//ClassDB::bind_method(D_METHOD("stop_test", "test_case"), &TestResult::stop_test);
-	//ClassDB::bind_method(D_METHOD("add_error", "test_case", "error"), &TestResult::add_error);
-	//ClassDB::bind_method(D_METHOD("add_failure", "test_case", "error"), &TestResult::add_failure);
-	//ClassDB::bind_method(D_METHOD("add_success", "test_case"), &TestResult::add_success);
-	//ClassDB::bind_method(D_METHOD("was_successful"), &TestResult::add_success);
-	//ClassDB::bind_method(D_METHOD("stop"), &TestResult::add_success);
-	//ClassDB::bind_method(D_METHOD("should_stop"), &TestResult::add_success);
+	//ClassDB::bind_method(D_METHOD("start_test", "test_state"), &TestResult::start_test);
+	//ClassDB::bind_method(D_METHOD("stop_test", "test_state"), &TestResult::stop_test);
+	//ClassDB::bind_method(D_METHOD("add_error", "test_state", "error"), &TestResult::add_error);
+	//ClassDB::bind_method(D_METHOD("add_failure", "test_state", "error"), &TestResult::add_failure);
+	//ClassDB::bind_method(D_METHOD("add_success", "test_state"), &TestResult::add_success);
+	ClassDB::bind_method(D_METHOD("was_successful"), &TestResult::was_successful);
+	ClassDB::bind_method(D_METHOD("stop"), &TestResult::stop);
+	ClassDB::bind_method(D_METHOD("should_stop"), &TestResult::should_stop);
 }

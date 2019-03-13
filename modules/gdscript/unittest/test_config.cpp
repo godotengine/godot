@@ -1,0 +1,92 @@
+/*************************************************************************/
+/*  test_config.cpp                                                      */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
+#include "test_config.h"
+
+#include "editor/editor_node.h"
+
+TestConfig *TestConfig::singleton = NULL;
+
+TestConfig::TestConfig() {
+    singleton = this;
+
+	GLOBAL_DEF("debug/testing/test/directory", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/directory", PropertyInfo(Variant::STRING, "debug/testing/test/directory", PROPERTY_HINT_DIR));
+	GLOBAL_DEF("debug/testing/test/file_match", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/file_match", PropertyInfo(Variant::STRING, "debug/testing/test/file_match", PROPERTY_HINT_PLACEHOLDER_TEXT, "*_test.gd"));
+	GLOBAL_DEF("debug/testing/test/func_match", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/func_match", PropertyInfo(Variant::STRING, "debug/testing/test/func_match", PROPERTY_HINT_PLACEHOLDER_TEXT, "test_*"));
+	GLOBAL_DEF("debug/testing/test/default_test_result", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/default_test_result", PropertyInfo(Variant::STRING, "debug/testing/test/default_test_result", PROPERTY_HINT_PLACEHOLDER_TEXT, "TextTestResult"));
+
+	GLOBAL_DEF("debug/testing/documentation/should_test", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/documentation/should_test", PropertyInfo(Variant::BOOL, "debug/testing/documentation/should_test", PROPERTY_HINT_NONE));
+	GLOBAL_DEF("debug/testing/documentation/directory", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/documentation/directory", PropertyInfo(Variant::STRING, "debug/testing/documentation/directory", PROPERTY_HINT_DIR));
+
+	GLOBAL_DEF("debug/testing/coverage/should_compute", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/should_compute", PropertyInfo(Variant::BOOL, "debug/testing/coverage/should_compute", PROPERTY_HINT_NONE));
+	GLOBAL_DEF("debug/testing/coverage/directory", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/directory", PropertyInfo(Variant::STRING, "debug/testing/coverage/directory", PROPERTY_HINT_DIR));
+	GLOBAL_DEF("debug/testing/coverage/minimum_percent", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/minimum_percent", PropertyInfo(Variant::INT, "debug/testing/coverage/minimum_percent", PROPERTY_HINT_RANGE, "0,100,1"));
+
+	GLOBAL_DEF("debug/testing/log/on_success", false);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/on_success", PropertyInfo(Variant::BOOL, "debug/testing/log/on_success", PROPERTY_HINT_NONE));
+	GLOBAL_DEF("debug/testing/log/fail_greater_equal", 3);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/fail_greater_equal", PropertyInfo(Variant::INT, "debug/testing/log/fail_greater_equal", PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal"));
+	GLOBAL_DEF("debug/testing/log/filter_below", 3);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/filter_below", PropertyInfo(Variant::INT, "debug/testing/log/filter_below", PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal"));
+}
+
+TestConfig *TestConfig::get_singleton() {
+
+	return singleton;
+}
+
+Ref<TestResult> TestConfig::make_result() const {
+    String script = String(GLOBAL_DEF("debug/testing/test/default_test_result", "TextTestResult"));
+    Ref<Script> script_res = ResourceLoader::load(script);
+    ERR_EXPLAIN("Can't load script: " + script);
+    ERR_FAIL_COND_V(script_res.is_null(), NULL);
+    ERR_FAIL_COND_V(script_res->can_instance(), NULL);
+
+    StringName instance_type = script_res->get_instance_base_type();
+    Object *obj = ClassDB::instance(instance_type);
+    Ref<TestResult> test_result = Object::cast_to<TestResult>(obj);
+    if (test_result.is_null()) {
+        ERR_EXPLAIN("Can't load script '" + script + "', it does not inherit from a TestResult type");
+        ERR_FAIL_COND_V(test_result.is_null(), NULL);
+    }
+    return test_result;
+}
+
+void TestConfig::_bind_methods() {
+}

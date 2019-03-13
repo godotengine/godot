@@ -58,31 +58,31 @@ private:
 	Status m_status;
 };
 
-class TestToolbar : public HBoxContainer {
-	GDCLASS(TestToolbar, HBoxContainer);
+class TestPanel : public HBoxContainer {
+	GDCLASS(TestPanel, HBoxContainer);
 
 public:
-	TestToolbar();
+	TestPanel();
 
 protected:
 	static void _bind_methods();
 };
 
-class CoverageToolbar : public HBoxContainer {
-	GDCLASS(CoverageToolbar, HBoxContainer);
+class CoveragePanel : public HBoxContainer {
+	GDCLASS(CoveragePanel, HBoxContainer);
 
 public:
-	CoverageToolbar();
+	CoveragePanel();
 
 protected:
 	static void _bind_methods();
 };
 
-class DocumentationToolbar : public HBoxContainer {
-	GDCLASS(DocumentationToolbar, HBoxContainer);
+class DocumentationPanel : public HBoxContainer {
+	GDCLASS(DocumentationPanel, HBoxContainer);
 
 public:
-	DocumentationToolbar();
+	DocumentationPanel();
 
 protected:
 	static void _bind_methods();
@@ -100,9 +100,9 @@ protected:
 
 private:
 	DebugButton *m_debug_button;
-	ToolButton *m_test_toolbar;
-	ToolButton *m_coverage_toolbar;
-	ToolButton *m_documentation_toolbar;
+	ToolButton *m_test_panel;
+	ToolButton *m_coverage_panel;
+	ToolButton *m_documentation_panel;
 };
 
 #endif // TEST_PLUGIN_H

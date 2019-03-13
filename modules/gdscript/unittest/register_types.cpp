@@ -31,6 +31,7 @@
 #include "register_types.h"
 #include "mock.h"
 #include "test_case.h"
+#include "test_config.h"
 #include "test_coverage.h"
 #include "test_documentation.h"
 #include "test_error.h"
@@ -39,7 +40,9 @@
 #include "test_plugin.h"
 #include "test_result.h"
 #include "test_runner.h"
+#include "test_state.h"
 #include "test_suite.h"
+#include "text_test_result.h"
 
 #include "core/class_db.h"
 #include "editor/editor_node.h"
@@ -52,6 +55,7 @@ static void _editor_init() {
 void register_unittest_types() {
     ClassDB::register_class<Mock>();
     ClassDB::register_class<TestCase>();
+    ClassDB::register_class<TestConfig>();
     ClassDB::register_class<TestCoverage>();
     ClassDB::register_class<TestDocumentation>();
     ClassDB::register_class<TestError>();
@@ -59,7 +63,11 @@ void register_unittest_types() {
     ClassDB::register_class<TestLog>();
     ClassDB::register_class<TestResult>();
     ClassDB::register_class<TestRunner>();
+    ClassDB::register_class<TestState>();
 	ClassDB::register_class<TestSuite>();
+    ClassDB::register_class<TextTestResult>();
+
+    Engine::get_singleton()->add_singleton(Engine::Singleton("TestConfig", TestConfig::get_singleton()));
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(_editor_init);

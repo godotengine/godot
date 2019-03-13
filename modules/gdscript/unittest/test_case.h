@@ -32,6 +32,7 @@
 #define TEST_CASE_H
 
 #include "test_result.h"
+#include "test_state.h"
 
 #include "core/os/main_loop.h"
 #include "gdscript.h"
@@ -41,23 +42,10 @@ struct Failure {
 };
 
 class TestCase : public MainLoop {
+
 	GDCLASS(TestCase, MainLoop);
 
 public:
-	class State : public Reference {
-		GDCLASS(State, Reference);
-
-	public:
-		bool init(Object *object);
-		const String &get();
-		bool next();
-
-	private:
-		bool next_test();
-
-		List<MethodInfo> m_methods;
-		List<MethodInfo>::Element *m_method_info;
-	};
 
 	virtual void init();
 	virtual bool iteration(float p_time);
@@ -108,7 +96,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	Ref<State> m_state;
+	TestState *m_state;
 	bool m_can_assert;
 };
 

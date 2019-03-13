@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_error.h                                                         */
+/*  test_state.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_ERROR_H
-#define TEST_ERROR_H
+#ifndef TEST_STATE_H
+#define TEST_STATE_H
 
 #include "core/object.h"
 
-class TestError : public Object {
+class TestState : public Object {
 
-	GDCLASS(TestError, Object);
+    GDCLASS(TestState, Object);
+
+public:
+    bool init(const Object *object);
+    const String &get();
+    bool next();
 
 protected:
 	static void _bind_methods();
+
+private:
+    bool next_test();
+
+    List<MethodInfo> m_methods;
+    List<MethodInfo>::Element *m_method_info;
 };
 
-#endif // TEST_ERROR_H
+#endif // TEST_STATE_H

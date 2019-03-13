@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_error.h                                                         */
+/*  test_config.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_ERROR_H
-#define TEST_ERROR_H
+#ifndef TEST_CONFIG_H
+#define TEST_CONFIG_H
+
+#include "test_result.h"
 
 #include "core/object.h"
 
-class TestError : public Object {
+class TestConfig : public Object {
 
-	GDCLASS(TestError, Object);
+	GDCLASS(TestConfig, Object);
+
+public:
+    TestConfig();
+    static TestConfig *get_singleton();
+    Ref<TestResult> make_result() const;
 
 protected:
 	static void _bind_methods();
+
+private:
+    static TestConfig *singleton;
 };
 
-#endif // TEST_ERROR_H
+#endif // TEST_CONFIG_H

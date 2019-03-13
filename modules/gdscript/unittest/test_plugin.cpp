@@ -73,6 +73,13 @@ Error DebugButton::_run() {
 
 	String exec = OS::get_singleton()->get_executable_path();
 
+	printf("Running: %ls", exec.c_str());
+	for (List<String>::Element *E = args.front(); E; E = E->next()) {
+
+		printf(" %ls", E->get().c_str());
+	};
+	printf("\n");
+
 	pid = 0;
 	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
 	ERR_FAIL_COND_V(err, err);
@@ -86,52 +93,30 @@ void DebugButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_run"), &DebugButton::_run);
 }
 
-TestToolbar::TestToolbar() {
+TestPanel::TestPanel() {
 }
 
-void TestToolbar::_bind_methods() {
+void TestPanel::_bind_methods() {
 }
 
-CoverageToolbar::CoverageToolbar() {
+CoveragePanel::CoveragePanel() {
 }
 
-void CoverageToolbar::_bind_methods() {
+void CoveragePanel::_bind_methods() {
 }
 
-DocumentationToolbar::DocumentationToolbar() {
+DocumentationPanel::DocumentationPanel() {
 }
 
-void DocumentationToolbar::_bind_methods() {
+void DocumentationPanel::_bind_methods() {
 }
 
 TestPlugin::TestPlugin() {
 	m_debug_button = memnew(DebugButton);
 	add_control_to_container(CONTAINER_TOOLBAR, m_debug_button);
-	m_test_toolbar = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Test"), memnew(TestToolbar));
-	m_coverage_toolbar = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Coverage"), memnew(CoverageToolbar));
-	m_documentation_toolbar = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Documentation"), memnew(DocumentationToolbar));
-
-	GLOBAL_DEF("debug/test/test/directory", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/test/directory", PropertyInfo(Variant::STRING, "debug/test/test/directory", PROPERTY_HINT_DIR));
-	GLOBAL_DEF("debug/test/test/default_test_result", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/test/default_test_result", PropertyInfo(Variant::STRING, "debug/test/test/default_test_result", PROPERTY_HINT_PLACEHOLDER_TEXT, "TextTestResult"));
-
-	GLOBAL_DEF("debug/test/documentation/should_test", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/documentation/should_test", PropertyInfo(Variant::BOOL, "debug/test/documentation/should_test", PROPERTY_HINT_NONE));
-
-	GLOBAL_DEF("debug/test/coverage/should_compute", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/coverage/should_compute", PropertyInfo(Variant::BOOL, "debug/test/coverage/should_compute", PROPERTY_HINT_NONE));
-	GLOBAL_DEF("debug/test/coverage/directory", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/coverage/directory", PropertyInfo(Variant::STRING, "debug/test/coverage/directory", PROPERTY_HINT_DIR));
-	GLOBAL_DEF("debug/test/coverage/minimum_percent", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/coverage/minimum_percent", PropertyInfo(Variant::INT, "debug/test/coverage/minimum_percent", PROPERTY_HINT_RANGE, "0,100,1"));
-
-	GLOBAL_DEF("debug/test/log/on_success", false);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/log/on_success", PropertyInfo(Variant::BOOL, "debug/test/log/on_success", PROPERTY_HINT_NONE));
-	GLOBAL_DEF("debug/test/log/fail_greater_equal", 3);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/log/fail_greater_equal", PropertyInfo(Variant::INT, "debug/test/log/fail_greater_equal", PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal"));
-	GLOBAL_DEF("debug/test/log/filter_below", 3);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/test/log/filter_below", PropertyInfo(Variant::INT, "debug/test/log/filter_below", PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal"));
+	m_test_panel = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Test"), memnew(TestPanel));
+	m_coverage_panel = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Coverage"), memnew(CoveragePanel));
+	m_documentation_panel = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Documentation"), memnew(DocumentationPanel));
 }
 
 TestPlugin::~TestPlugin() {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_error.h                                                         */
+/*  test_state.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_ERROR_H
-#define TEST_ERROR_H
+#include "test_state.h"
 
-#include "core/object.h"
+bool TestState::next_test() {
+	while (m_method_info) {
+		if (m_method_info->get().name.begins_with("test_")) {
+			return true;
+		}
+		m_method_info = m_method_info->next();
+	}
+	return false;
+}
 
-class TestError : public Object {
+bool TestState::init(const Object *object) {
+	object->get_method_list(&m_methods);
+	m_method_info = m_methods.front();
+	return next_test();
+}
 
-	GDCLASS(TestError, Object);
+const String &TestState::get() {
+	return m_method_info->get().name;
+}
 
-protected:
-	static void _bind_methods();
-};
+bool TestState::next() {
+	m_method_info = m_method_info->next();
+	return next_test();
+}
 
-#endif // TEST_ERROR_H
+void TestState::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("init", "object"), &TestState::init);
+    ClassDB::bind_method(D_METHOD("get"), &TestState::get);
+    ClassDB::bind_method(D_METHOD("next"), &TestState::next);
+}

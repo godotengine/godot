@@ -32,24 +32,24 @@
 #define TEST_RESULT_H
 
 #include "test_error.h"
+#include "test_state.h"
 
 #include "core/reference.h"
 #include "core/vector.h"
 
-class TestCase;
-
 class TestResult : public Reference {
+
     GDCLASS(TestResult, Reference);
 
 public:
 	TestResult();
 	virtual ~TestResult(); 
-	virtual void start_test(const TestCase *test_case);
-	virtual void stop_test(const TestCase *test_case);
-	virtual void add_error(const TestCase *test_case, TestError *error);
-	virtual void add_failure(const TestCase *test_case, TestError *error);
-	virtual void add_success(const TestCase *test_case);
-	virtual bool was_successful() const;
+	virtual void start_test(const TestState *test_state);
+	virtual void stop_test(const TestState *test_state);
+	virtual void add_error(const TestState *test_state, TestError *error);
+	virtual void add_failure(const TestState *test_state, TestError *error);
+	virtual void add_success(const TestState *test_state);
+	bool was_successful() const;
 	void stop();
 	bool should_stop() const;
 
