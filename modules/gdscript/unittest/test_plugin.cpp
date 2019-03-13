@@ -32,11 +32,57 @@
 
 #include "editor/editor_node.h"
 
-DebugButton::DebugButton() {
+DebugButton::DebugButton() : m_status(STATUS_STOP) {
 	set_text(TTR("Test"));
 }
 
+ void DebugButton::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			connect("pressed", this, "_run");
+			break;
+		}
+	}
+}
+
+Error DebugButton::_run() {
+	List<String> args;
+
+	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
+	String remote_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
+	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
+
+	if (resource_path != "") {
+		args.push_back("--path");
+		args.push_back(resource_path.replace(" ", "%20"));
+	}
+
+	args.push_back("--remote-debug");
+	args.push_back(remote_host + ":" + String::num(remote_port));
+
+	args.push_back("--allow_focus_steal_pid");
+	args.push_back(itos(OS::get_singleton()->get_process_id()));
+
+	if (OS::get_singleton()->is_disable_crash_handler()) {
+		args.push_back("--disable-crash-handler");
+	}
+
+	args.push_back("--main-loop-type");
+	args.push_back("TestRunner");
+
+	String exec = OS::get_singleton()->get_executable_path();
+
+	pid = 0;
+	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+	ERR_FAIL_COND_V(err, err);
+
+	m_status = STATUS_PLAY;
+
+	return OK;
+}
+
 void DebugButton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_run"), &DebugButton::_run);
 }
 
 TestToolbar::TestToolbar() {

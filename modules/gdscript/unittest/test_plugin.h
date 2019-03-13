@@ -39,13 +39,23 @@ class DebugButton : public Button {
 	GDCLASS(DebugButton, Button);
 
 public:
+	enum Status {
+		STATUS_PLAY,
+		STATUS_PAUSED,
+		STATUS_STOP
+	};
+
+	OS::ProcessID pid;
+
 	DebugButton();
 
 protected:
 	static void _bind_methods();
+	virtual void _notification(int p_what);
 
 private:
-	EditorRun editor_run;
+	Error _run();
+	Status m_status;
 };
 
 class TestToolbar : public HBoxContainer {

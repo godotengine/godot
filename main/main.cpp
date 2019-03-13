@@ -222,6 +222,7 @@ void Main::print_help(const char *p_binary) {
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                     Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager            Start the project manager, even if a project is auto-detected.\n");
+	OS::get_singleton()->print("  --main-loop-type                 Override the main type loop type.\n");
 #endif
 	OS::get_singleton()->print("  -q, --quit                       Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>          Use a specific locale (<locale> being a two-letter code).\n");
@@ -573,8 +574,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			init_fullscreen = true;
 #ifdef TOOLS_ENABLED
 		} else if (I->get() == "-e" || I->get() == "--editor") { // starts editor
-
 			editor = true;
+
+		} else if (I->get() == "--main-loop-type") {
+			if (I->next()) {
+				const String & mlt = I->next()->get();
+				GLOBAL_DEF("application/run/main_loop_type", mlt);
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing main loop type argument, aborting.\n");
+				goto error;
+			}
+
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
@@ -844,7 +855,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
-	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
+	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "" && String(GLOBAL_DEF("application/run/main_loop_type", "")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif

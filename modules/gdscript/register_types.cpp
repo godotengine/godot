@@ -131,7 +131,6 @@ static void _editor_init() {
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
-    register_unittest_types();
 }
 
 #endif
@@ -153,6 +152,7 @@ void register_gdscript_types() {
 #ifdef TOOLS_ENABLED
 	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
+	register_unittest_types();
 #endif
 }
 

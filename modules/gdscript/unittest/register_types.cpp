@@ -44,6 +44,11 @@
 #include "core/class_db.h"
 #include "editor/editor_node.h"
 
+static void _editor_init() {
+	TestPlugin *test_plugin = memnew(TestPlugin);
+	EditorNode::get_singleton()->add_editor_plugin(test_plugin);
+}
+
 void register_unittest_types() {
     ClassDB::register_class<Mock>();
     ClassDB::register_class<TestCase>();
@@ -54,10 +59,11 @@ void register_unittest_types() {
     ClassDB::register_class<TestLog>();
     ClassDB::register_class<TestResult>();
     ClassDB::register_class<TestRunner>();
-    ClassDB::register_class<TestSuite>();
+	ClassDB::register_class<TestSuite>();
 
-    TestPlugin* test_plugin = memnew(TestPlugin);
-    EditorNode::get_singleton()->add_editor_plugin(test_plugin);
+#ifdef TOOLS_ENABLED
+	EditorNode::add_init_callback(_editor_init);
+#endif
 }
 
 void unregister_unittest_types() {
