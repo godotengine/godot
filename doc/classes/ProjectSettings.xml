@@ -323,6 +323,9 @@
 		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="">
 			Hotspot for the custom mouse cursor image.
 		</member>
+		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="">
+			Position offset for tooltips, relative to the hotspot of the mouse cursor.
+		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="">
 			Allow HiDPI display on Windows and OSX. On Desktop Linux, this can't be enabled or disabled.
 		</member>
