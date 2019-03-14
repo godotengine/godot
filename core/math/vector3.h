@@ -355,14 +355,7 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
 
-	if (x == p_v.x) {
-		if (y == p_v.y)
-			return z <= p_v.z;
-		else
-			return y < p_v.y;
-	} else {
-		return x < p_v.x;
-	}
+	return this < p_v || this == p_v;
 }
 
 _FORCE_INLINE_ Vector3 vec3_cross(const Vector3 &p_a, const Vector3 &p_b) {
