@@ -33,23 +33,47 @@
 
 #include "core/object.h"
 
-class TestState : public Object {
-
-    GDCLASS(TestState, Object);
-
+class MethodIter {
 public:
-    bool init(const Object *object);
-    const String &get();
-    bool next();
-
-protected:
-	static void _bind_methods();
+	bool init(const Object* obj);
+	bool next();
+	const String &get() const;
 
 private:
-    bool next_test();
+	bool next_test();
 
-    List<MethodInfo> m_methods;
-    List<MethodInfo>::Element *m_method_info;
+	List<MethodInfo> m_methods;
+	List<MethodInfo>::Element *m_method_info;
+};
+
+class StageIter {
+public:
+	enum Stage {
+		SETUP,
+		TEST,
+		TEARDOWN,
+		DONE
+	};
+
+	bool init();
+	bool next();
+	Stage get() const;
+
+private:
+	Stage m_stage;
+
+};
+
+class TestState {
+public:
+    bool init(const Object *object);
+    const String &method_name() const;
+	StageIter::Stage stage() const;
+    bool next();
+
+private:
+	MethodIter m_method_iter;
+	StageIter m_stage_iter;
 };
 
 #endif // TEST_STATE_H

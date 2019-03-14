@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "test_loader.h"
+#include "test_config.h"
 
 #include "core/script_language.h"
 #include "core/io/resource_loader.h"
@@ -36,6 +37,7 @@
 bool TestLoader::from_path(Ref<TestSuite> test_suite, const String &path) {
 	Error error;
 	DirAccessRef directory = DirAccess::open(path, &error);
+	ERR_EXPLAIN("Can't find path: " + path);
 	ERR_FAIL_COND_V(Error::OK != error, false);
 	return from_directory(test_suite, directory);
 }
@@ -48,7 +50,7 @@ bool TestLoader::from_directory(Ref<TestSuite> test_suite, DirAccessRef &directo
 		} else if (directory->current_is_dir()) {
 			from_path(test_suite, directory->get_current_dir() + "/" + filename);
 		} else {
-			if (filename.ends_with("_test.gd")) {
+			if (filename.match(TestConfig::get_singleton()->test_file_match())) {
 				Ref<Script> script = ResourceLoader::load(directory->get_current_dir() + "/" + filename);
 				if (!script.is_null()) {
 					if (script->can_instance()) {

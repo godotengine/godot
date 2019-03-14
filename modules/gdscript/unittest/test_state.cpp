@@ -29,10 +29,39 @@
 /*************************************************************************/
 
 #include "test_state.h"
+#include "test_config.h"
 
-bool TestState::next_test() {
+bool StageIter::init() {
+	m_stage = SETUP;
+	return true;
+}
+
+bool StageIter::next() {
+	switch (m_stage) {
+		case SETUP: {
+			m_stage = TEST;
+			break;
+		}
+		case TEST: {
+			m_stage = TEARDOWN;
+			break;
+		}
+		case TEARDOWN: {
+			m_stage = DONE;
+			break;
+		}
+	}
+	return DONE != m_stage;
+}
+
+StageIter::Stage StageIter::get() const {
+	return m_stage;
+}
+
+bool MethodIter::next_test() {
 	while (m_method_info) {
-		if (m_method_info->get().name.begins_with("test_")) {
+		const String &name = m_method_info->get().name;
+		if (name.match(TestConfig::get_singleton()->test_func_match())) {
 			return true;
 		}
 		m_method_info = m_method_info->next();
@@ -40,23 +69,43 @@ bool TestState::next_test() {
 	return false;
 }
 
-bool TestState::init(const Object *object) {
+bool MethodIter::init(const Object *object) {
 	object->get_method_list(&m_methods);
 	m_method_info = m_methods.front();
 	return next_test();
 }
 
-const String &TestState::get() {
+const String &MethodIter::get() const {
 	return m_method_info->get().name;
 }
 
-bool TestState::next() {
+bool MethodIter::next() {
 	m_method_info = m_method_info->next();
 	return next_test();
 }
 
-void TestState::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("init", "object"), &TestState::init);
-    ClassDB::bind_method(D_METHOD("get"), &TestState::get);
-    ClassDB::bind_method(D_METHOD("next"), &TestState::next);
+bool TestState::init(const Object *object) {
+	if (m_method_iter.init(object)) {
+		return m_stage_iter.init();
+	}
+	return false;
+}
+
+const String &TestState::method_name() const {
+	return m_method_iter.get();
+}
+
+StageIter::Stage TestState::stage() const {
+	return m_stage_iter.get();
+}
+
+bool TestState::next() {
+	if (!m_stage_iter.next()) {
+		if (m_method_iter.next()) {
+			m_stage_iter.init();
+			return true;
+		}
+		return false;
+	}
+	return true;
 }

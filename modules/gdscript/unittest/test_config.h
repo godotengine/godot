@@ -36,12 +36,15 @@
 #include "core/object.h"
 
 class TestConfig : public Object {
-
 	GDCLASS(TestConfig, Object);
 
 public:
     TestConfig();
     static TestConfig *get_singleton();
+
+	String test_directory() const;
+	String test_file_match() const;
+	String test_func_match() const;
     Ref<TestResult> make_result() const;
 
 protected:

@@ -96,7 +96,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	TestState *m_state;
+	TestState m_state;
 	bool m_can_assert;
 };
 

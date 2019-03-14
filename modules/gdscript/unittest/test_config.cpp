@@ -35,7 +35,7 @@
 TestConfig *TestConfig::singleton = NULL;
 
 TestConfig::TestConfig() {
-    singleton = this;
+	singleton = this;
 
 	GLOBAL_DEF("debug/testing/test/directory", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/directory", PropertyInfo(Variant::STRING, "debug/testing/test/directory", PROPERTY_HINT_DIR));
@@ -67,25 +67,34 @@ TestConfig::TestConfig() {
 }
 
 TestConfig *TestConfig::get_singleton() {
-
 	return singleton;
 }
 
-Ref<TestResult> TestConfig::make_result() const {
-    String script = String(GLOBAL_DEF("debug/testing/test/default_test_result", "TextTestResult"));
-    Ref<Script> script_res = ResourceLoader::load(script);
-    ERR_EXPLAIN("Can't load script: " + script);
-    ERR_FAIL_COND_V(script_res.is_null(), NULL);
-    ERR_FAIL_COND_V(script_res->can_instance(), NULL);
+String TestConfig::test_directory() const {
+	return GLOBAL_DEF("debug/testing/test/directory", "res://");
+}
 
-    StringName instance_type = script_res->get_instance_base_type();
-    Object *obj = ClassDB::instance(instance_type);
-    Ref<TestResult> test_result = Object::cast_to<TestResult>(obj);
-    if (test_result.is_null()) {
-        ERR_EXPLAIN("Can't load script '" + script + "', it does not inherit from a TestResult type");
-        ERR_FAIL_COND_V(test_result.is_null(), NULL);
-    }
-    return test_result;
+String TestConfig::test_file_match() const {
+	return GLOBAL_DEF("debug/testing/test/file_match", "*_test.gd");
+}
+
+String TestConfig::test_func_match() const {
+	return GLOBAL_DEF("debug/testing/test/func_match", "test_*");
+}
+
+Ref<TestResult> TestConfig::make_result() const {
+	const String& script = GLOBAL_DEF("debug/testing/test/default_test_result", "TextTestResult");
+	Ref<Script> script_res = ResourceLoader::load(script);
+	ERR_EXPLAIN("Can't load script: " + script);
+	ERR_FAIL_COND_V(script_res.is_null(), NULL);
+	ERR_FAIL_COND_V(script_res->can_instance(), NULL);
+
+	StringName instance_type = script_res->get_instance_base_type();
+	Object *obj = ClassDB::instance(instance_type);
+	Ref<TestResult> test_result = Object::cast_to<TestResult>(obj);
+	ERR_EXPLAIN("Can't load script '" + script + "', it does not inherit from a TestResult type");
+	ERR_FAIL_COND_V(test_result.is_null(), NULL);
+	return test_result;
 }
 
 void TestConfig::_bind_methods() {

@@ -40,7 +40,6 @@
 #include "test_plugin.h"
 #include "test_result.h"
 #include "test_runner.h"
-#include "test_state.h"
 #include "test_suite.h"
 #include "text_test_result.h"
 
@@ -63,7 +62,6 @@ void register_unittest_types() {
     ClassDB::register_class<TestLog>();
     ClassDB::register_class<TestResult>();
     ClassDB::register_class<TestRunner>();
-    ClassDB::register_class<TestState>();
 	ClassDB::register_class<TestSuite>();
     ClassDB::register_class<TextTestResult>();
 

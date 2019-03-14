@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 #include "test_case.h"
+#include "test_config.h"
+
+#include "gdscript.h"
 
 #include "core/math/math_funcs.h"
 #include "core/script_language.h"
@@ -75,7 +78,7 @@ void TestCase::init() {
 }
 
 bool TestCase::iteration(float p_time) {
-    run();
+	run();
 	return true;
 }
 
@@ -96,31 +99,42 @@ void TestCase::teardown() {
 
 void make_result(Ref<TestResult> &test_result) {
 	if (test_result.is_null()) {
-		test_result = Ref<TestResult>(memnew(TestResult));
+		test_result = Ref<TestResult>(TestConfig::get_singleton()->make_result());
 	}
 }
 
 void TestCase::run(Ref<TestResult> test_result) {
-    make_result(test_result);
-    m_state = memnew(TestState);
-	test_result->start_test(m_state);
-	bool has_next = m_state->init(this);
+	make_result(test_result);
+	test_result->start_test(&m_state);
+	bool has_next = m_state.init(this);
 	while (has_next) {
-		setup();
-		try {
-			AssertGuard guard(&m_can_assert);
-			get_script_instance()->call(m_state->get());
-		} catch (const Failure &failure) {
-			TestError *error = memnew(TestError);
-			test_result->add_failure(m_state, error);
+		switch (m_state.stage()) {
+			case StageIter::SETUP: {
+				setup();
+				break;
+			}
+			case StageIter::TEST: {
+				try {
+					AssertGuard guard(&m_can_assert);
+					Ref<GDScriptFunctionState> state = get_script_instance()->call(m_state.method_name());
+					if (state.is_valid()) {
+						state->resume();
+					}
+				} catch (const Failure &failure) {
+					TestError *error = memnew(TestError);
+					test_result->add_failure(&m_state, error);
+				}
+				break;
+			}
+			case StageIter::TEARDOWN: {
+				teardown();
+				test_result->add_success(&m_state);
+				break;
+			}
 		}
-		teardown();
-		test_result->add_success(m_state);
-		has_next = m_state->next();
+		has_next = m_state.next();
 	}
-	test_result->stop_test(m_state);
-    memfree(m_state);
-    m_state = NULL;
+	test_result->stop_test(&m_state);
 }
 
 void TestCase::assert_equal(const Variant &a, const Variant &b, const String &msg) {

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "test_runner.h"
+#include "test_config.h"
 #include "test_loader.h"
 #include "test_result.h"
 
@@ -38,7 +39,7 @@ void TestRunner::init() {
 bool TestRunner::iteration(float p_time) {
 	Ref<TestLoader> loader(memnew(TestLoader));
 	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, "res://")) {
+	if (loader->from_path(test_suite, TestConfig::get_singleton()->test_directory())) {
 		Ref<TestResult> test_result(memnew(TestResult));
 		test_suite->run(*test_result);
 	}
