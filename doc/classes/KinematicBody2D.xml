@@ -27,6 +27,12 @@
 			</argument>
 			<description>
 				Returns a [KinematicCollision2D], which contains information about a collision that occurred during the last [method move_and_slide] call. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
+				Example usage:
+				[codeblock]
+				for i in get_slide_count():
+				    var collision = get_slide_collision(i)
+				    print("Collided with: ", collision.collider.name)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_slide_count" qualifiers="const">
@@ -94,7 +100,7 @@
 				If the body is standing on a slope and the horizontal speed (relative to the floor's speed) goes below [code]slope_stop_min_velocity[/code], the body will stop completely. This prevents the body from sliding down slopes when you include gravity in [code]linear_velocity[/code]. When set to lower values, the body will not be able to stand still on steep slopes.
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
-				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get more detailed information about collisions that occurred, use [method get_slide_collision].
+				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
 			</description>
 		</method>
 		<method name="move_and_slide_with_snap">
