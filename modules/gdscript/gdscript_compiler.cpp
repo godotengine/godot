@@ -1396,11 +1396,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 					case GDScriptParser::ControlFlowNode::CF_IF: {
 
-#ifdef DEBUG_ENABLED
-						codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
-						codegen.opcodes.push_back(cf->line);
-						codegen.current_line = cf->line;
-#endif
 						int ret2 = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
 						if (ret2 < 0)
 							return ERR_PARSE_ERROR;

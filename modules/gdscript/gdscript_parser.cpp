@@ -2741,6 +2741,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 			} break;
 			case GDScriptTokenizer::TK_NEWLINE: {
 
+				int line = tokenizer->get_token_line();
+
 				if (!_parse_newline()) {
 					if (!error_set) {
 						p_block->end_line = tokenizer->get_token_line();
@@ -2750,7 +2752,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 
 				NewLineNode *nl2 = alloc_node<NewLineNode>();
-				nl2->line = tokenizer->get_token_line();
+				nl2->line = line;
 				p_block->statements.push_back(nl2);
 
 			} break;
