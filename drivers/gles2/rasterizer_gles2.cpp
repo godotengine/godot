@@ -32,7 +32,6 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
-#include "drivers/gl_context/context_gl.h"
 
 #define _EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB 0x8242
 #define _EXT_DEBUG_NEXT_LOGGED_MESSAGE_LENGTH_ARB 0x8243
