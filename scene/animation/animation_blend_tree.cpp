@@ -87,14 +87,16 @@ float AnimationNodeAnimation::process(float p_time, bool p_seek) {
 
 	Ref<Animation> anim = ap->get_animation(animation);
 
+	float speed_scale = ap->get_speed_scale();
+
 	float step;
 
 	if (p_seek) {
 		time = p_time;
 		step = 0;
 	} else {
-		time = MAX(0, time + p_time);
-		step = p_time;
+		time = MAX(0, time + (p_time * speed_scale));
+		step = p_time * speed_scale;
 	}
 
 	float anim_size = anim->get_length();
