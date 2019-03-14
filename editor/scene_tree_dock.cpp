@@ -268,7 +268,7 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
 	int childCount = p_desired_node->get_child_count();
 
-	if (p_desired_node->get_filename() == p_target_scene_path) {
+	if (_track_inherit(p_target_scene_path, p_desired_node)) {
 		return true;
 	}
 
@@ -281,6 +281,33 @@ bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_pat
 	}
 
 	return false;
+}
+
+bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_desired_node) {
+	Node *p = p_desired_node;
+	bool result = false;
+	Vector<Node *> instances;
+	while (true) {
+		if (p->get_filename() == p_target_scene_path) {
+			result = true;
+			break;
+		}
+		Ref<SceneState> ss = p->get_scene_inherited_state();
+		if (ss.is_valid()) {
+			String path = ss->get_path();
+			Ref<PackedScene> data = ResourceLoader::load(path);
+			if (data.is_valid()) {
+				p = data->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
+				instances.push_back(p);
+			} else
+				break;
+		} else
+			break;
+	}
+	for (int i = 0; i < instances.size(); i++) {
+		memdelete(instances[i]);
+	}
+	return result;
 }
 
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
