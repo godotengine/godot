@@ -615,18 +615,6 @@ static int frame_count = 0;
 
 	// Create a full-screen window
 	window = [[UIWindow alloc] initWithFrame:rect];
-	// window.autoresizesSubviews = YES;
-	//[window setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-	// UIViewAutoresizingFlexibleWidth];
-
-	// Create the OpenGL ES view and add it to the window
-	GLView *glView = [[GLView alloc] initWithFrame:rect];
-	printf("glview is %p\n", glView);
-	//[window addSubview:glView];
-	glView.delegate = self;
-	// glView.autoresizesSubviews = YES;
-	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-	// UIViewAutoresizingFlexibleWidth];
 
 	OS::VideoMode vm = _get_video_mode();
 
@@ -640,6 +628,12 @@ static int frame_count = 0;
 		exit(0);
 		return FALSE;
 	};
+
+	// WARNING: We must *always* create the GLView after we have constructed the
+	// OS with iphone_main. This allows the GLView to access project settings so
+	// it can properly initialize the OpenGL context
+	GLView *glView = [[GLView alloc] initWithFrame:rect];
+	glView.delegate = self;
 
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
