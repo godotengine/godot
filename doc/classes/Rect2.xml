@@ -145,7 +145,7 @@
 			<argument index="0" name="b" type="Rect2">
 			</argument>
 			<description>
-				Returns a larger Rect2 that contains this Rect2 and [code]with[/code].
+				Returns a larger Rect2 that contains this Rect2 and [code]b[/code].
 			</description>
 		</method>
 	</methods>
