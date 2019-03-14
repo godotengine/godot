@@ -35,6 +35,7 @@
 
 class TestLog : public Reference {
     GDCLASS(TestLog, Reference);
+
 public:
     enum LogLevel {
         TRACE,

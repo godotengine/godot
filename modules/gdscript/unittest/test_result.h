@@ -38,7 +38,6 @@
 #include "core/vector.h"
 
 class TestResult : public Reference {
-
     GDCLASS(TestResult, Reference);
 
 public:

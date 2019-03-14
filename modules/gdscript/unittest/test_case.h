@@ -41,8 +41,14 @@ struct Failure {
 	String msg;
 };
 
-class TestCase : public MainLoop {
+class TestYield : public Object {
+	GDCLASS(TestYield, Object);
 
+protected:
+	static void _bind_methods();
+};
+
+class TestCase : public MainLoop {
 	GDCLASS(TestCase, MainLoop);
 
 public:
@@ -71,9 +77,10 @@ public:
 	void assert_almost_equal(const Variant &a, const Variant &b, const String &msg = "");
 	void assert_not_almost_equal(const Variant &a, const Variant &b, const String &msg = "");
 
+	void yield_on(const Object *object, const String &signal_name, real_t max_time=-1);
+	void yield_for(real_t time_in_seconds);
+
 	/*
-    assertAlmostEqual(a, b)	round(a-b, 7) == 0	 
-    assertNotAlmostEqual(a, b)	round(a-b, 7) != 0	 
     assertGreater(a, b)	a > b	2.7
     assertGreaterEqual(a, b)	a >= b	2.7
     assertLess(a, b)	a < b	2.7

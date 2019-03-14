@@ -74,6 +74,10 @@ void assert(const Variant &a, const Variant &b, const String &custom_msg, const 
 	assert(input, custom_msg, default_msg);
 }
 
+void TestYield::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("timeout"));
+}
+
 void TestCase::init() {
 }
 
@@ -120,6 +124,7 @@ void TestCase::run(Ref<TestResult> test_result) {
 					if (state.is_valid()) {
 						state->resume();
 					}
+					test_result->add_success(&m_state);
 				} catch (const Failure &failure) {
 					TestError *error = memnew(TestError);
 					test_result->add_failure(&m_state, error);
@@ -128,7 +133,6 @@ void TestCase::run(Ref<TestResult> test_result) {
 			}
 			case StageIter::TEARDOWN: {
 				teardown();
-				test_result->add_success(&m_state);
 				break;
 			}
 		}
@@ -227,6 +231,12 @@ void TestCase::assert_not_almost_equal(const Variant &a, const Variant &b, const
 	}
 }
 
+void TestCase::yield_on(const Object *object, const String &signal_name, real_t max_time) {
+}
+
+void TestCase::yield_for(real_t time_in_seconds) {
+}
+
 void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("assert_equal", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_not_equal", "a", "b", "msg"), &TestCase::assert_not_equal, DEFVAL(""));
@@ -242,4 +252,7 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("assert_is_not_type", "a", "b", "msg"), &TestCase::assert_is_not_type, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_almost_equal", "a", "b", "msg"), &TestCase::assert_almost_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_not_almost_equal", "a", "b", "msg"), &TestCase::assert_not_almost_equal, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("yield_on", "object", "signal_name", "max_time"), &TestCase::assert_not_almost_equal, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("yield_for", "time_in_seconds"), &TestCase::yield_for);
 }

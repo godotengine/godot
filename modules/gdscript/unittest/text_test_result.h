@@ -34,7 +34,6 @@
 #include "test_result.h"
 
 class TextTestResult : public TestResult {
-
     GDCLASS(TextTestResult, TestResult);
 
 public:

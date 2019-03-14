@@ -34,14 +34,17 @@
 #include "test_result.h"
 
 void TestRunner::init() {
-}
-
-bool TestRunner::iteration(float p_time) {
+	m_test_result = Ref<TestResult>(TestConfig::get_singleton()->make_result());
 	Ref<TestLoader> loader(memnew(TestLoader));
 	Ref<TestSuite> test_suite(memnew(TestSuite));
 	if (loader->from_path(test_suite, TestConfig::get_singleton()->test_directory())) {
-		Ref<TestResult> test_result(memnew(TestResult));
-		test_suite->run(*test_result);
+		m_test_suite = test_suite;
+	}
+}
+
+bool TestRunner::iteration(float p_time) {
+	if (m_test_suite.is_valid()) {
+		m_test_suite->run(*m_test_result);
 	}
 	return true;
 }

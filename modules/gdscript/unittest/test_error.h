@@ -34,7 +34,6 @@
 #include "core/object.h"
 
 class TestError : public Object {
-
 	GDCLASS(TestError, Object);
 
 protected:
