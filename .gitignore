@@ -316,3 +316,10 @@ platform/windows/godot_res.res
 
 # Scons progress indicator
 .scons_node_count
+
+# ccls cache (https://github.com/MaskRay/ccls)
+.ccls-cache/
+
+# compile commands (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+compile_commands.json
+
