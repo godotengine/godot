@@ -37,11 +37,10 @@
 
 #include "core/error_list.h"
 #include "core/os/os.h"
-#include "drivers/gl_context/context_gl.h"
 
 using namespace Windows::UI::Core;
 
-class ContextEGL_UWP : public ContextGL {
+class ContextEGL_UWP {
 
 public:
 	enum Driver {
@@ -64,24 +63,24 @@ private:
 	Driver driver;
 
 public:
-	virtual void release_current();
+	void release_current();
 
-	virtual void make_current();
+	void make_current();
 
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
+	int get_window_width();
+	int get_window_height();
+	void swap_buffers();
 
-	virtual void set_use_vsync(bool use) { vsync = use; }
-	virtual bool is_using_vsync() const { return vsync; }
+	void set_use_vsync(bool use) { vsync = use; }
+	bool is_using_vsync() const { return vsync; }
 
-	virtual Error initialize();
+	Error initialize();
 	void reset();
 
 	void cleanup();
 
 	ContextEGL_UWP(CoreWindow ^ p_window, Driver p_driver);
-	virtual ~ContextEGL_UWP();
+	~ContextEGL_UWP();
 };
 
 #endif // CONTEXT_EGL_UWP_H

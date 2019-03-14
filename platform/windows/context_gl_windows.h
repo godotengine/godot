@@ -37,13 +37,12 @@
 
 #include "core/error_list.h"
 #include "core/os/os.h"
-#include "drivers/gl_context/context_gl.h"
 
 #include <windows.h>
 
 typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 
-class ContextGL_Windows : public ContextGL {
+class ContextGL_Windows {
 
 	HDC hDC;
 	HGLRC hRC;
@@ -55,21 +54,21 @@ class ContextGL_Windows : public ContextGL {
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 
 public:
-	virtual void release_current();
+	void release_current();
 
-	virtual void make_current();
+	void make_current();
 
-	virtual int get_window_width();
-	virtual int get_window_height();
-	virtual void swap_buffers();
+	int get_window_width();
+	int get_window_height();
+	void swap_buffers();
 
-	virtual Error initialize();
+	Error initialize();
 
-	virtual void set_use_vsync(bool p_use);
-	virtual bool is_using_vsync() const;
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
 
 	ContextGL_Windows(HWND hwnd, bool p_opengl_3_context);
-	virtual ~ContextGL_Windows();
+	~ContextGL_Windows();
 };
 
 #endif
