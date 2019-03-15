@@ -284,20 +284,28 @@ static void clear_touches() {
 			kEAGLColorFormatRGBA8,
 			kEAGLDrawablePropertyColorFormat,
 			nil];
-
-	// Create a context based on the gl driver from project settings
+	bool fallback_gl2 = false;
+	// Create a GL ES 3 context based on the gl driver from project settings
 	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3") {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
-		NSLog(@"Setting up an OpenGL ES 3 context. Based on Project Settings \"rendering/quality/driver/driver_name\"");
-	} else if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2") {
+		NSLog(@"Setting up an OpenGL ES 3.0 context. Based on Project Settings \"rendering/quality/driver/driver_name\"");
+		if (!context && GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
+			gles3_available = false;
+			fallback_gl2 = true;
+			NSLog(@"Failed to create OpenGL ES 3.0 context. Falling back to OpenGL ES 2.0");
+		}
+	}
+
+	// Create GL ES 2 context
+	if (GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES2" || fallback_gl2) {
 		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-		gles3_available = false;
-		NSLog(@"Setting up an OpenGL ES 2 context. Based on Project Settings \"rendering/quality/driver/driver_name\"");
+		NSLog(@"Setting up an OpenGL ES 2.0 context.");
+		if (!context) {
+			NSLog(@"Failed to create OpenGL ES 2.0 context!");
+			return nil;
+		}
 	}
-	if (!context) {
-		NSLog(@"Failed to create OpenGL ES context!");
-		return nil;
-	}
+
 	if (![EAGLContext setCurrentContext:context]) {
 		NSLog(@"Failed to set EAGLContext!");
 		return nil;
