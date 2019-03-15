@@ -86,3 +86,5 @@ android {
 }
 
 $$GRADLE_PLUGINS$$
+
+$$GRADLE_CONTENT$$

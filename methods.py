@@ -257,6 +257,10 @@ def android_add_gradle_classpath(self, classpath):
     if (classpath not in self.android_gradle_classpath):
         self.android_gradle_classpath.append(classpath)
 
+def android_add_gradle_content(self, config):
+    if (config not in self.android_gradle_content):
+        self.android_gradle_content.append(config)
+
 def android_add_default_config(self, config):
     if (config not in self.android_default_config):
         self.android_default_config.append(config)

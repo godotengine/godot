@@ -72,6 +72,7 @@ env_base.android_flat_dirs = []
 env_base.android_dependencies = []
 env_base.android_gradle_plugins = []
 env_base.android_gradle_classpath = []
+env_base.android_gradle_content = []
 env_base.android_java_dirs = []
 env_base.android_res_dirs = []
 env_base.android_asset_dirs = []
@@ -102,6 +103,7 @@ env_base.__class__.android_add_to_permissions = methods.android_add_to_permissio
 env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
 env_base.__class__.android_add_gradle_plugin = methods.android_add_gradle_plugin
 env_base.__class__.android_add_gradle_classpath = methods.android_add_gradle_classpath
+env_base.__class__.android_add_gradle_content = methods.android_add_gradle_content
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_module_version_string = methods.add_module_version_string

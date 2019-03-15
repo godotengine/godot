@@ -76,6 +76,10 @@ gradle_classpath = ""
 for x in env.android_gradle_classpath:
 	gradle_classpath += "\t\tclasspath \"" + x + "\"\n"
 
+gradle_content = ""
+for x in env.android_gradle_content:
+    gradle_content += x + "\n"
+
 gradle_res_dirs_text = ""
 
 for x in env.android_res_dirs:
@@ -125,6 +129,7 @@ gradle_text = gradle_text.replace("$$GRADLE_JNI_DIRS$$", gradle_jni_dirs_text)
 gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$", gradle_default_config_text)
 gradle_text = gradle_text.replace("$$GRADLE_PLUGINS$$", gradle_plugins)
 gradle_text = gradle_text.replace("$$GRADLE_CLASSPATH$$", gradle_classpath)
+gradle_text = gradle_text.replace("$$GRADLE_CONTENT$$", gradle_content)
 
 with open_utf8(abspath + "/java/build.gradle", "w") as gradle_baseout:
 	gradle_baseout.write(gradle_text)
