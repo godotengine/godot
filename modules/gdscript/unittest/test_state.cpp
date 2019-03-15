@@ -84,7 +84,12 @@ bool MethodIter::next() {
 	return next_test();
 }
 
+TestState::TestState() {
+	m_log.instance();
+}
+
 bool TestState::init(const Object *object) {
+	m_log->clear();
 	if (m_method_iter.init(object)) {
 		return m_stage_iter.init();
 	}
@@ -99,8 +104,13 @@ StageIter::Stage TestState::stage() const {
 	return m_stage_iter.get();
 }
 
+TestLog *TestState::log() {
+	return *m_log;
+}
+
 bool TestState::next() {
 	if (!m_stage_iter.next()) {
+		m_log->clear();
 		if (m_method_iter.next()) {
 			m_stage_iter.init();
 			return true;
@@ -108,4 +118,7 @@ bool TestState::next() {
 		return false;
 	}
 	return true;
+}
+
+void TestState::_bind_methods() {
 }

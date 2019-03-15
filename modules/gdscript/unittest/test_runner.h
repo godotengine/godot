@@ -2,11 +2,12 @@
 #define TEST_RUNNER_H
 
 #include "test_result.h"
+#include "test_suite.h"
 
-#include "core/os/main_loop.h"
+#include "scene/main/scene_tree.h"
 
-class TestRunner : public MainLoop {
-	GDCLASS(TestRunner, MainLoop);
+class TestRunner : public SceneTree {
+	GDCLASS(TestRunner, SceneTree);
 
 public:
 	virtual void init();

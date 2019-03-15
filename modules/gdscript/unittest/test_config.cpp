@@ -84,16 +84,20 @@ String TestConfig::test_func_match() const {
 
 Ref<TestResult> TestConfig::make_result() const {
 	const String& script = GLOBAL_DEF("debug/testing/test/default_test_result", "TextTestResult");
-	Ref<Script> script_res = ResourceLoader::load(script);
-	ERR_EXPLAIN("Can't load script: " + script);
-	ERR_FAIL_COND_V(script_res.is_null(), NULL);
-	ERR_FAIL_COND_V(script_res->can_instance(), NULL);
-
-	StringName instance_type = script_res->get_instance_base_type();
-	Object *obj = ClassDB::instance(instance_type);
+	Object *obj;
+	if (ClassDB::class_exists(script)) {
+		obj = ClassDB::instance(script);
+	} else {
+		Ref<Script> script_res = ResourceLoader::load(script);
+		if(script_res.is_valid() && script_res->can_instance()) {
+			StringName instance_type = script_res->get_instance_base_type();
+			obj = ClassDB::instance(instance_type);
+		}
+	}
 	Ref<TestResult> test_result = Object::cast_to<TestResult>(obj);
 	ERR_EXPLAIN("Can't load script '" + script + "', it does not inherit from a TestResult type");
 	ERR_FAIL_COND_V(test_result.is_null(), NULL);
+
 	return test_result;
 }
 

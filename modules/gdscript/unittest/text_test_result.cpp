@@ -30,19 +30,21 @@
 
 #include "text_test_result.h"
 
-void TextTestResult::start_test(const TestState *test_state) {
+void TextTestResult::start_test(TestState *test_state) {
     TestResult::start_test(test_state);
+	print_line(test_state->method_name());
+	test_state->log()->debug("");
 }
 
-void TextTestResult::add_error(const TestState *test_state, TestError *error) {
+void TextTestResult::add_error(TestState *test_state, TestError *error) {
 	TestResult::add_error(test_state, error);
 }
 
-void TextTestResult::add_failure(const TestState *test_state, TestError *error) {
+void TextTestResult::add_failure(TestState *test_state, TestError *error) {
 	TestResult::add_failure(test_state, error);
 }
 
-void TextTestResult::add_success(const TestState *test_state) {
+void TextTestResult::add_success(TestState *test_state) {
 	TestResult::add_success(test_state);
 }
 

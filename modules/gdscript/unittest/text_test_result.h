@@ -37,10 +37,10 @@ class TextTestResult : public TestResult {
     GDCLASS(TextTestResult, TestResult);
 
 public:
-	virtual void start_test(const TestState *test_state);
-	virtual void add_error(const TestState *test_state, TestError *error);
-	virtual void add_failure(const TestState *test_state, TestError *error);
-	virtual void add_success(const TestState *test_state);
+	virtual void start_test(TestState *test_state);
+	virtual void add_error(TestState *test_state, TestError *error);
+	virtual void add_failure(TestState *test_state, TestError *error);
+	virtual void add_success(TestState *test_state);
 
 protected:
     static void _bind_methods();

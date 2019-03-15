@@ -34,32 +34,26 @@
 #include "test_result.h"
 #include "test_state.h"
 
-#include "core/os/main_loop.h"
 #include "gdscript.h"
+
+#include "scene/main/node.h"
 
 struct Failure {
 	String msg;
 };
 
-class TestYield : public Object {
-	GDCLASS(TestYield, Object);
-
-protected:
-	static void _bind_methods();
-};
-
-class TestCase : public MainLoop {
-	GDCLASS(TestCase, MainLoop);
+class TestCase : public Node {
+	GDCLASS(TestCase, Node);
 
 public:
+	TestCase();
+	virtual ~TestCase();
 
-	virtual void init();
-	virtual bool iteration(float p_time);
-	virtual void finish();
-
-	virtual void setup();
-	virtual void teardown();
-	void run(Ref<TestResult> test_result = NULL);
+	void setup();
+	void teardown();
+	void init(Ref<TestResult> test_result);
+	bool iteration(Ref<TestResult> test_result = NULL);
+	bool is_done() const;
 
 	void assert_equal(const Variant &a, const Variant &b, const String &msg = "");
 	void assert_not_equal(const Variant &a, const Variant &b, const String &msg = "");
@@ -77,8 +71,15 @@ public:
 	void assert_almost_equal(const Variant &a, const Variant &b, const String &msg = "");
 	void assert_not_almost_equal(const Variant &a, const Variant &b, const String &msg = "");
 
-	void yield_on(const Object *object, const String &signal_name, real_t max_time=-1);
-	void yield_for(real_t time_in_seconds);
+	TestCase* yield_on(Object *object, const String &signal_name, real_t max_time=-1);
+	TestCase* yield_for(real_t time_in_seconds);
+
+	void trace(const String &msg);
+	void debug(const String &msg);
+	void info(const String &msg);
+	void warn(const String &msg);
+	void error(const String &msg);
+	void fatal(const String &msg);
 
 	/*
     assertGreater(a, b)	a > b	2.7
@@ -103,8 +104,16 @@ protected:
 	static void _bind_methods();
 
 private:
-	TestState m_state;
+	TestState* m_state;
 	bool m_can_assert;
+	bool m_has_next;
+
+	Ref<GDScriptFunctionState> m_yield; 
+	bool m_yield_handled;
+
+	void _clear_connections();
+	void _handle_yield();
+	void _yield_timer(real_t timeout);
 };
 
 #endif // TEST_CASE_H

@@ -34,32 +34,44 @@
 #include "core/reference.h"
 
 class TestLog : public Reference {
-    GDCLASS(TestLog, Reference);
+	GDCLASS(TestLog, Reference);
 
 public:
-    enum LogLevel {
-        TRACE,
-        DEBUG,
-        INFO,
-        WARN,
-        ERROR,
-        FATAL
-    };
+	enum LogLevel {
+		TRACE,
+		DEBUG,
+		INFO,
+		WARN,
+		ERROR,
+		FATAL
+	};
 
-    class LogMessage : public Reference {
-        GDCLASS(LogMessage, Reference);
-    };
+	class LogMessage : public Reference {
+		GDCLASS(LogMessage, Reference);
 
-    void log(LogLevel lvl, const String &msg);
-    void trace(const String &msg);
-    void debug(const String &msg);
-    void info(const String &msg);
-    void warn(const String &msg);
-    void error(const String &msg);
-    void fatal(const String &msg);
+	protected:
+		static void _bind_methods();
+
+	private:
+		LogLevel m_level;
+		String m_message;
+		uint64_t m_time;
+	};
+
+	void log(LogLevel lvl, const String &msg);
+	void trace(const String &msg);
+	void debug(const String &msg);
+	void info(const String &msg);
+	void warn(const String &msg);
+	void error(const String &msg);
+	void fatal(const String &msg);
+	void clear();
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
+
+private:
+	Vector<Ref<LogMessage> > m_messages;
 };
 
 VARIANT_ENUM_CAST(TestLog::LogLevel);

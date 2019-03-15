@@ -37,21 +37,27 @@
 #include "core/reference.h"
 #include "core/vector.h"
 
+#include "scene/main/viewport.h"
+
 class TestSuite : public Reference {
 	GDCLASS(TestSuite, Reference);
 
 public:
+	TestSuite();
 	virtual ~TestSuite();
 	int count_test_cases() const;
 	void add_test(TestCase* test_case);
 	void add_tests(Array test_cases);
-	void run(Ref<TestResult> test_result);
+	void init(Viewport *root, Ref<TestResult> test_result);
+	bool iteration(Ref<TestResult> test_result);
 
 protected:
 	static void _bind_methods();
 
 private:
+	Viewport *m_root;
 	Vector<TestCase*> m_test_cases;
+	int m_case_index;
 };
 
 #endif // TEST_SUITE_H

@@ -31,8 +31,6 @@
 #include "test_case.h"
 #include "test_config.h"
 
-#include "gdscript.h"
-
 #include "core/math/math_funcs.h"
 #include "core/script_language.h"
 
@@ -74,30 +72,23 @@ void assert(const Variant &a, const Variant &b, const String &custom_msg, const 
 	assert(input, custom_msg, default_msg);
 }
 
-void TestYield::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("timeout"));
+TestCase::TestCase() {
+	m_state = memnew(TestState);
 }
 
-void TestCase::init() {
-}
-
-bool TestCase::iteration(float p_time) {
-	run();
-	return true;
-}
-
-void TestCase::finish() {
+TestCase::~TestCase() {
+	memfree(m_state);
 }
 
 void TestCase::setup() {
 	if (get_script_instance() && get_script_instance()->has_method("setup")) {
-		get_script_instance()->call("setup");
+		m_yield = get_script_instance()->call("setup");
 	}
 }
 
 void TestCase::teardown() {
 	if (get_script_instance() && get_script_instance()->has_method("teardown")) {
-		get_script_instance()->call("teardown");
+		m_yield = get_script_instance()->call("teardown");
 	}
 }
 
@@ -107,27 +98,34 @@ void make_result(Ref<TestResult> &test_result) {
 	}
 }
 
-void TestCase::run(Ref<TestResult> test_result) {
+void TestCase::init(Ref<TestResult> test_result) {
 	make_result(test_result);
-	test_result->start_test(&m_state);
-	bool has_next = m_state.init(this);
-	while (has_next) {
-		switch (m_state.stage()) {
+	m_has_next = m_state->init(this);
+}
+
+bool TestCase::iteration(Ref<TestResult> test_result) {
+	make_result(test_result);
+	if (m_yield.is_valid()) {
+		if (m_yield_handled) {
+			m_yield = m_yield->resume();
+		}
+		return false;
+	}
+	if (m_has_next) {
+		switch (m_state->stage()) {
 			case StageIter::SETUP: {
+				test_result->start_test(m_state);
 				setup();
 				break;
 			}
 			case StageIter::TEST: {
 				try {
 					AssertGuard guard(&m_can_assert);
-					Ref<GDScriptFunctionState> state = get_script_instance()->call(m_state.method_name());
-					if (state.is_valid()) {
-						state->resume();
-					}
-					test_result->add_success(&m_state);
+					m_yield = get_script_instance()->call(m_state->method_name());
+					test_result->add_success(m_state);
 				} catch (const Failure &failure) {
 					TestError *error = memnew(TestError);
-					test_result->add_failure(&m_state, error);
+					test_result->add_failure(m_state, error);
 				}
 				break;
 			}
@@ -136,9 +134,16 @@ void TestCase::run(Ref<TestResult> test_result) {
 				break;
 			}
 		}
-		has_next = m_state.next();
+		m_has_next = m_state->next();
 	}
-	test_result->stop_test(&m_state);
+	if (!m_has_next) {
+		test_result->stop_test(m_state);
+	}
+	return !m_has_next;
+}
+
+bool TestCase::is_done() const {
+	return StageIter::DONE == m_state->stage();
 }
 
 void TestCase::assert_equal(const Variant &a, const Variant &b, const String &msg) {
@@ -231,10 +236,66 @@ void TestCase::assert_not_almost_equal(const Variant &a, const Variant &b, const
 	}
 }
 
-void TestCase::yield_on(const Object *object, const String &signal_name, real_t max_time) {
+void TestCase::_clear_connections() {
+	List<Connection> connections;
+	this->get_signals_connected_to_this(&connections);
+	int size = connections.size();
+	for (int i = 0; i < size; i++) {
+		const Connection &connection = connections[i];
+		connection.source->disconnect(connection.signal, connection.target, connection.method);
+	}
 }
 
-void TestCase::yield_for(real_t time_in_seconds) {
+void TestCase::_handle_yield() {
+	_clear_connections();
+	m_yield_handled = true;
+}
+
+void TestCase::_yield_timer(float delay_sec) {
+	Vector<Variant> binds;
+	SceneTree::get_singleton()->create_timer(delay_sec)->connect("timeout", this, "_handle_yield", binds, CONNECT_ONESHOT);
+}
+
+TestCase *TestCase::yield_on(Object *object, const String &signal_name, real_t max_time) {
+	_clear_connections();
+	m_yield_handled = false;
+	Vector<Variant> binds;
+	object->connect(signal_name, this, "_handle_yield", binds, CONNECT_ONESHOT);
+	if (0 < max_time) {
+		_yield_timer(max_time);
+	}
+	return this;
+}
+
+TestCase *TestCase::yield_for(real_t time_in_seconds) {
+	_clear_connections();
+	m_yield_handled = false;
+	_yield_timer(time_in_seconds);
+	return this;
+}
+
+void TestCase::trace(const String &msg) {
+	m_state->log()->trace(msg);
+}
+
+void TestCase::debug(const String &msg) {
+	m_state->log()->debug(msg);
+}
+
+void TestCase::info(const String &msg) {
+	m_state->log()->info(msg);
+}
+
+void TestCase::warn(const String &msg) {
+	m_state->log()->warn(msg);
+}
+
+void TestCase::error(const String &msg) {
+	m_state->log()->error(msg);
+}
+
+void TestCase::fatal(const String &msg) {
+	m_state->log()->fatal(msg);
 }
 
 void TestCase::_bind_methods() {
@@ -253,6 +314,15 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("assert_almost_equal", "a", "b", "msg"), &TestCase::assert_almost_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_not_almost_equal", "a", "b", "msg"), &TestCase::assert_not_almost_equal, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("yield_on", "object", "signal_name", "max_time"), &TestCase::assert_not_almost_equal, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("yield_on", "object", "signal_name", "max_time"), &TestCase::yield_on, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("yield_for", "time_in_seconds"), &TestCase::yield_for);
+
+	ClassDB::bind_method(D_METHOD("trace", "msg"), &TestCase::trace);
+	ClassDB::bind_method(D_METHOD("debug", "msg"), &TestCase::debug);
+	ClassDB::bind_method(D_METHOD("info", "msg"), &TestCase::info);
+	ClassDB::bind_method(D_METHOD("warn", "msg"), &TestCase::warn);
+	ClassDB::bind_method(D_METHOD("error", "msg"), &TestCase::error);
+	ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestCase::fatal);
+
+	ClassDB::bind_method(D_METHOD("_handle_yield"), &TestCase::_handle_yield);
 }

@@ -31,6 +31,8 @@
 #ifndef TEST_STATE_H
 #define TEST_STATE_H
 
+#include "test_log.h"
+
 #include "core/object.h"
 
 class MethodIter {
@@ -64,16 +66,22 @@ private:
 
 };
 
-class TestState {
+class TestState : public Object {
 public:
+	TestState();
     bool init(const Object *object);
     const String &method_name() const;
 	StageIter::Stage stage() const;
-    bool next();
+	TestLog* log();
+	bool next();
+
+protected:
+	static void _bind_methods();
 
 private:
 	MethodIter m_method_iter;
 	StageIter m_stage_iter;
+	Ref<TestLog> m_log;
 };
 
 #endif // TEST_STATE_H

@@ -30,47 +30,56 @@
 
 #include "test_log.h"
 
+#include "core/os/os.h"
+
+void TestLog::LogMessage::_bind_methods() {
+}
+
 void TestLog::log(LogLevel lvl, const String &msg) {
+	OS::get_singleton()->get_unix_time();
 }
 
 void TestLog::trace(const String &msg) {
-    log(TRACE, msg);
+	log(TRACE, msg);
 }
 
 void TestLog::debug(const String &msg) {
-    log(DEBUG, msg);
+	log(DEBUG, msg);
 }
 
 void TestLog::info(const String &msg) {
-    log(INFO, msg);
+	log(INFO, msg);
 }
 
 void TestLog::warn(const String &msg) {
-    log(WARN, msg);
+	log(WARN, msg);
 }
 
 void TestLog::error(const String &msg) {
-    log(ERROR, msg);
+	log(ERROR, msg);
 }
 
 void TestLog::fatal(const String &msg) {
-    log(FATAL, msg);
+	log(FATAL, msg);
 }
 
+void TestLog::clear() {
+}
 
 void TestLog::_bind_methods() {
-    BIND_ENUM_CONSTANT(TRACE);
-    BIND_ENUM_CONSTANT(DEBUG);
-    BIND_ENUM_CONSTANT(INFO);
-    BIND_ENUM_CONSTANT(WARN);
-    BIND_ENUM_CONSTANT(ERROR);
-    BIND_ENUM_CONSTANT(FATAL);
+	BIND_ENUM_CONSTANT(TRACE);
+	BIND_ENUM_CONSTANT(DEBUG);
+	BIND_ENUM_CONSTANT(INFO);
+	BIND_ENUM_CONSTANT(WARN);
+	BIND_ENUM_CONSTANT(ERROR);
+	BIND_ENUM_CONSTANT(FATAL);
 
 	ClassDB::bind_method(D_METHOD("log", "level", "msg"), &TestLog::log);
-    ClassDB::bind_method(D_METHOD("trace", "msg"), &TestLog::trace);
-    ClassDB::bind_method(D_METHOD("debug", "msg"), &TestLog::debug);
-    ClassDB::bind_method(D_METHOD("info", "msg"), &TestLog::info);
-    ClassDB::bind_method(D_METHOD("warn", "msg"), &TestLog::warn);
-    ClassDB::bind_method(D_METHOD("error", "msg"), &TestLog::error);
-    ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestLog::fatal);
+	ClassDB::bind_method(D_METHOD("trace", "msg"), &TestLog::trace);
+	ClassDB::bind_method(D_METHOD("debug", "msg"), &TestLog::debug);
+	ClassDB::bind_method(D_METHOD("info", "msg"), &TestLog::info);
+	ClassDB::bind_method(D_METHOD("warn", "msg"), &TestLog::warn);
+	ClassDB::bind_method(D_METHOD("error", "msg"), &TestLog::error);
+	ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestLog::fatal);
+	ClassDB::bind_method(D_METHOD("clear"), &TestLog::clear);
 }

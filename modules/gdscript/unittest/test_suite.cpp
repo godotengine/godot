@@ -30,6 +30,10 @@
 
 #include "test_suite.h"
 
+TestSuite::TestSuite() {
+	m_case_index = 0;
+}
+
 TestSuite::~TestSuite() {
 	int count = count_test_cases();
 	for (int i = 0; i < count; i++) {
@@ -53,12 +57,33 @@ void TestSuite::add_tests(Array test_cases) {
 	}
 }
 
-void TestSuite::run(Ref<TestResult> test_result) {
-	int count = count_test_cases();
-	for (int i = 0; i < count; i++) {
-		m_test_cases[i]->run(test_result);
+void TestSuite::init(Viewport* root, Ref<TestResult> test_result) {
+	m_root = root;
+	m_case_index = 0;
+	if (m_case_index < count_test_cases()) {
+		m_root->add_child(m_test_cases[m_case_index]);
+		m_test_cases[m_case_index]->init(test_result);
 	}
 }
 
+bool TestSuite::iteration(Ref<TestResult> test_result) {
+	if (m_case_index < count_test_cases()) {
+		TestCase *test_case = m_test_cases[m_case_index];
+		bool finished = test_case->iteration(test_result);
+		if (test_case->is_done()) {
+			m_root->remove_child(m_test_cases[m_case_index]);
+			m_case_index++;
+			if (m_case_index < count_test_cases()) {
+				m_root->add_child(m_test_cases[m_case_index]);
+				m_test_cases[m_case_index]->init(test_result);
+			}
+		}
+		return false;
+	}
+	return true;
+}
+
 void TestSuite::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("timeout"));
+	//, PropertyInfo(Variant::INT, "id")
 }

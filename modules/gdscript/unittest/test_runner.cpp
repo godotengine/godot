@@ -31,25 +31,28 @@
 #include "test_runner.h"
 #include "test_config.h"
 #include "test_loader.h"
-#include "test_result.h"
 
 void TestRunner::init() {
+    SceneTree::init();
 	m_test_result = Ref<TestResult>(TestConfig::get_singleton()->make_result());
 	Ref<TestLoader> loader(memnew(TestLoader));
 	Ref<TestSuite> test_suite(memnew(TestSuite));
 	if (loader->from_path(test_suite, TestConfig::get_singleton()->test_directory())) {
 		m_test_suite = test_suite;
+		m_test_suite->init(get_root(), m_test_result);
 	}
 }
 
 bool TestRunner::iteration(float p_time) {
+    bool finished = SceneTree::iteration(p_time);
 	if (m_test_suite.is_valid()) {
-		m_test_suite->run(*m_test_result);
+		return m_test_suite->iteration(*m_test_result);
 	}
 	return true;
 }
 
 void TestRunner::finish() {
+    SceneTree::finish();
 }
 
 void TestRunner::_bind_methods() {

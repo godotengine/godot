@@ -67,7 +67,6 @@ Error DebugButton::_run() {
 		args.push_back("--disable-crash-handler");
 	}
 
-	args.push_back("--no-window");
 	args.push_back("--main-loop-type");
 	args.push_back("TestRunner");
 
