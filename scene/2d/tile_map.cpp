@@ -773,6 +773,7 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 		else
 			_make_quadrant_dirty(Q);
 
+		used_size_cache_dirty = true;
 		return;
 	}
 
