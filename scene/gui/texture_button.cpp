@@ -184,7 +184,7 @@ void TextureButton::_notification(int p_what) {
 							ofs = (get_size() - texdraw->get_size()) / 2;
 							size = texdraw->get_size();
 							break;
-						case STRETCH_KEEP_ASPECT_CENTERED:
+						case STRETCH_KEEP_ASPECT_CENTERED:				
 						case STRETCH_KEEP_ASPECT: {
 							Size2 _size = get_size();
 							float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
@@ -223,8 +223,7 @@ void TextureButton::_notification(int p_what) {
 			}
 			if (has_focus() && focused.is_valid()) {
 
-				Rect2 drect(Point2(), get_size());
-				draw_texture_rect(focused, drect, false);
+				draw_texture_rect(focused, _position_rect, false);
 			};
 		} break;
 	}
