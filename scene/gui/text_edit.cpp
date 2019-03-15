@@ -2560,7 +2560,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						}
 						cursor_set_column(cc);
 					}
-
+				} else if (cursor.line == 0 && cursor.column == 0) {
+					scancode_handled = false;
 				} else if (cursor.column == 0) {
 
 					if (cursor.line > 0) {
@@ -2621,7 +2622,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						}
 						cursor_set_column(cc);
 					}
-
+				} else if (cursor.line == get_last_unhidden_line() && cursor.column == text[cursor.line].length()) {
+					scancode_handled = false;
 				} else if (cursor.column == text[cursor.line].length()) {
 
 					if (cursor.line < text.size() - 1) {
@@ -2672,6 +2674,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					int cur_wrap_index = get_cursor_wrap_index();
 					if (cur_wrap_index > 0) {
 						cursor_set_line(cursor.line, true, false, cur_wrap_index - 1);
+					} else if (cursor.line == 0 && cursor.column == 0) {
+						scancode_handled = false;
 					} else if (cursor.line == 0) {
 						cursor_set_column(0);
 					} else {
@@ -2724,6 +2728,8 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					int cur_wrap_index = get_cursor_wrap_index();
 					if (cur_wrap_index < times_line_wraps(cursor.line)) {
 						cursor_set_line(cursor.line, true, false, cur_wrap_index + 1);
+					} else if (cursor.line == get_last_unhidden_line() && cursor.column == text[cursor.line].length()) {
+						scancode_handled = false;
 					} else if (cursor.line == get_last_unhidden_line()) {
 						cursor_set_column(text[cursor.line].length());
 					} else {

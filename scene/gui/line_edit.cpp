@@ -356,6 +356,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						set_cursor_position(cc);
 
 					} else {
+						if (get_cursor_position() == 0) handled = false;
 						set_cursor_position(get_cursor_position() - 1);
 					}
 
@@ -399,6 +400,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						set_cursor_position(cc);
 
 					} else {
+						if (get_cursor_position() == (int)text.length()) handled = false;
 						set_cursor_position(get_cursor_position() + 1);
 					}
 
