@@ -561,7 +561,7 @@ bool Basis::is_equal_approx(const Basis &a, const Basis &b) const {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx_ratio(a.elements[i][j], b.elements[i][j], UNIT_EPSILON))
+			if (!Math::is_equal_approx(a.elements[i][j], b.elements[i][j], UNIT_EPSILON))
 				return false;
 		}
 	}
