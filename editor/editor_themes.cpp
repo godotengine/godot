@@ -1121,7 +1121,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color executing_line_color = Color(0.2, 0.8, 0.2, 0.4);
 	const Color code_folding_color = alpha3;
 	const Color search_result_color = alpha1;
-	const Color search_result_border_color = alpha3;
+	const Color search_result_border_color = Color(0.41, 0.61, 0.91, 0.38);
 
 	EditorSettings *setting = EditorSettings::get_singleton();
 	String text_editor_color_theme = setting->get("text_editor/theme/color_theme");
