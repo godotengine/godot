@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_documentation.h                                                 */
+/*  signal_watcher.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef TEST_DOCUMENTATION_H
-#define TEST_DOCUMENTATION_H
+#include "signal_watcher.h"
 
-#include "core/reference.h"
+void SignalWatcher::watch(const Object *object, const String &signal) {
+}
 
-class TestDocumentation : public Reference {
-	GDCLASS(TestDocumentation, Reference);
+bool SignalWatcher::called(const Object *object, const String &signal) const {
+	return false;
+}
 
-protected:
-	static void _bind_methods();
-};
+bool SignalWatcher::called_once(const Object *object, const String &signal) const {
+	return false;
+}
 
-#endif // TEST_DOCUMENTATION_H
+Variant SignalWatcher::_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	return false;
+}
+
+Variant SignalWatcher::_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	return false;
+}
+
+Variant SignalWatcher::_any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	return false;
+}
+
+bool SignalWatcher::has_calls(const Object *object, const String &signal, const Array &calls, bool any_order) const {
+	return false;
+}
+
+bool SignalWatcher::not_called(const Object *object, const String &signal) const {
+	return false;
+}
+
+void SignalWatcher::reset() {
+}
+
+int SignalWatcher::call_count(const Object *object, const String &signal) const {
+	return 0;
+}
+
+Array SignalWatcher::calls(const Object *object, const String &signal) const {
+	Array calls;
+	return calls;
+}
+
+Variant SignalWatcher::_handler(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	return NULL;
+}
+
+void SignalWatcher::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("watch", "object", "signal"), &SignalWatcher::watch);
+
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "called_with", &SignalWatcher::_called_with, MethodInfo("called_with"));
+
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handler", &SignalWatcher::_handler, MethodInfo("_handler"));
+}

@@ -33,6 +33,7 @@
 
 #include "test_result.h"
 #include "test_state.h"
+#include "signal_watcher.h"
 
 #include "gdscript.h"
 
@@ -96,8 +97,10 @@ private:
 	Ref<GDScriptFunctionState> m_yield; 
 	bool m_yield_handled;
 
+	Ref<SignalWatcher> signal_watcher;
+
 	void _clear_connections();
-	void _handle_yield();
+	Variant _handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	void _yield_timer(real_t timeout);
 };
 

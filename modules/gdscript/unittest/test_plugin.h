@@ -40,21 +40,10 @@ class DebugButton : public Button {
 	GDCLASS(DebugButton, Button);
 
 public:
-
 	DebugButton();
-	virtual ~DebugButton();
-	EditorRun::Status get_status() const;
-	Error run();
-	void run_native_notify() { m_editor_run.run_native_notify(); }
-	void stop();
-
-	OS::ProcessID get_pid() const { return m_editor_run.get_pid(); }
-
-	void set_debug_collisions(bool p_debug);
-	bool get_debug_collisions() const;
-
-	void set_debug_navigation(bool p_debug);
-	bool get_debug_navigation() const;
+	void run();
+	void enable();
+	void disable();
 
 protected:
 	static void _bind_methods();
@@ -62,7 +51,6 @@ protected:
 
 private:
 	EditorRun m_editor_run;
-	ScriptEditorDebugger *m_debugger;
 };
 
 class TestPanel : public HBoxContainer {
@@ -70,26 +58,6 @@ class TestPanel : public HBoxContainer {
 
 public:
 	TestPanel();
-
-protected:
-	static void _bind_methods();
-};
-
-class CoveragePanel : public HBoxContainer {
-	GDCLASS(CoveragePanel, HBoxContainer);
-
-public:
-	CoveragePanel();
-
-protected:
-	static void _bind_methods();
-};
-
-class DocumentationPanel : public HBoxContainer {
-	GDCLASS(DocumentationPanel, HBoxContainer);
-
-public:
-	DocumentationPanel();
 
 protected:
 	static void _bind_methods();
@@ -108,8 +76,6 @@ protected:
 private:
 	DebugButton *m_debug_button;
 	ToolButton *m_test_panel;
-	ToolButton *m_coverage_panel;
-	ToolButton *m_documentation_panel;
 };
 
 #endif // TEST_PLUGIN_H

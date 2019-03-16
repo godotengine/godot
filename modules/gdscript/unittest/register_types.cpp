@@ -32,8 +32,6 @@
 #include "mock.h"
 #include "test_case.h"
 #include "test_config.h"
-#include "test_coverage.h"
-#include "test_documentation.h"
 #include "test_error.h"
 #include "test_loader.h"
 #include "test_log.h"
@@ -55,8 +53,6 @@ void register_unittest_types() {
     ClassDB::register_class<Mock>();
     ClassDB::register_class<TestCase>();
     ClassDB::register_class<TestConfig>();
-    ClassDB::register_class<TestCoverage>();
-    ClassDB::register_class<TestDocumentation>();
     ClassDB::register_class<TestError>();
     ClassDB::register_class<TestLoader>();
     ClassDB::register_class<TestLog>();

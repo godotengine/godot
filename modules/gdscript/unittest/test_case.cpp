@@ -61,6 +61,7 @@ void assert(const Variant &a, const Variant &b, const String &default_msg, const
 
 TestCase::TestCase() {
 	m_state = memnew(TestState);
+	signal_watcher.instance();
 }
 
 TestCase::~TestCase() {
@@ -236,8 +237,9 @@ void TestCase::_clear_connections() {
 	}
 }
 
-void TestCase::_handle_yield() {
+Variant TestCase::_handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	m_yield_handled = true;
+	return NULL;
 }
 
 void TestCase::_yield_timer(float delay_sec) {
@@ -327,5 +329,5 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("error", "msg"), &TestCase::error);
 	ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestCase::fatal);
 
-	ClassDB::bind_method(D_METHOD("_handle_yield"), &TestCase::_handle_yield);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handle_yield", &TestCase::_handle_yield, MethodInfo("_handle_yield"));
 }

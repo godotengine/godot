@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_documentation.cpp                                               */
+/*  signal_watcher.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_documentation.h"
+#ifndef SIGNAL_WATCHER_H
+#define SIGNAL_WATCHER_H
 
-void TestDocumentation::_bind_methods() {
-}
+#include "core/reference.h"
+
+class SignalWatcher : public Reference {
+	GDCLASS(SignalWatcher , Reference);
+
+public:
+	void watch(const Object *object, const String &signal);
+
+	/// The signal was emitted at least once.
+	bool called(const Object *object, const String &signal) const;
+	/// The signal was emitted exactly once.
+	bool called_once(const Object *object, const String &signal) const;
+	/// The most recent signal was emitted with the specified arguments.
+	Variant _called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	/// The signal was emitted exactly once and that call was with the specified arguments.
+	Variant _called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	/// The signal has been called with the specified arguments.
+	Variant _any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	/// Checks if signal was emitted with the specified arguments.
+	bool has_calls(const Object *object, const String &signal, const Array &calls, bool any_order = false) const;
+	/// Check the signal was never called.
+	bool not_called(const Object *object, const String &signal) const;
+
+	int call_count(const Object *object, const String &signal) const;
+	Array calls(const Object *object, const String &signal) const;
+
+	void reset();
+
+protected:
+	static void _bind_methods();
+
+private:
+	Variant _handler(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+};
+
+#endif // SIGNAL_WATCHER_H

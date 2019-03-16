@@ -35,49 +35,37 @@
 
 DebugButton::DebugButton() {
 	set_text(TTR("Test"));
-	m_debugger = memnew(ScriptEditorDebugger(EditorNode::get_singleton()));
 }
 
-DebugButton ::~DebugButton() {
-	stop();
+ToolButton *find_play_button(DebugButton *button) {
+	return Object::cast_to<ToolButton>(EditorNode::get_menu_hb()->get_child(4)->get_child(0));
 }
 
-EditorRun::Status DebugButton::get_status() const {
-	return m_editor_run.get_status();
+void DebugButton::run() {
+	const String customArgs = "--main-loop-type TestRunner";
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	const String args = project_settings->get("editor/main_run_args");
+	ToolButton *play_button = find_play_button(this);
+	project_settings->set("editor/main_run_args", customArgs);
+	play_button->emit_signal("pressed");
+	project_settings->set("editor/main_run_args", args);
 }
 
-Error DebugButton::run() {
-	m_debugger->start();
-	List<String> breakpoints;
-	EditorNode::get_singleton()->get_editor_data().get_editor_breakpoints(&breakpoints);
-	return m_editor_run.run("", "--main-loop-type TestRunner", breakpoints);
+void DebugButton::enable() {
+	this->set_disabled(false);
 }
 
-void DebugButton::stop() {
-	m_editor_run.stop();
-	m_debugger->stop();
-}
-
-void DebugButton::set_debug_collisions(bool p_debug) {
-	m_editor_run.set_debug_collisions(p_debug);
-}
-
-bool DebugButton::get_debug_collisions() const {
-	return m_editor_run.get_debug_collisions();
-}
-
-void DebugButton::set_debug_navigation(bool p_debug) {
-	m_editor_run.set_debug_navigation(p_debug);
-}
-
-bool DebugButton::get_debug_navigation() const {
-	return m_editor_run.get_debug_navigation();
+void DebugButton::disable() {
+	this->set_disabled(true);
 }
 
 void DebugButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			connect("pressed", this, "run");
+			EditorNode *editor_node = EditorNode::get_singleton();
+			editor_node->connect("play_pressed", this, "disable");
+			editor_node->connect("stop_pressed", this, "enable");
 			break;
 		}
 	}
@@ -85,6 +73,8 @@ void DebugButton::_notification(int p_what) {
 
 void DebugButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("run"), &DebugButton::run);
+	ClassDB::bind_method(D_METHOD("enable"), &DebugButton::enable);
+	ClassDB::bind_method(D_METHOD("disable"), &DebugButton::disable);
 }
 
 TestPanel::TestPanel() {
@@ -93,24 +83,12 @@ TestPanel::TestPanel() {
 void TestPanel::_bind_methods() {
 }
 
-CoveragePanel::CoveragePanel() {
-}
-
-void CoveragePanel::_bind_methods() {
-}
-
-DocumentationPanel::DocumentationPanel() {
-}
-
-void DocumentationPanel::_bind_methods() {
-}
-
 TestPlugin::TestPlugin() {
 	m_debug_button = memnew(DebugButton);
 	add_control_to_container(CONTAINER_TOOLBAR, m_debug_button);
-	m_test_panel = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Test"), memnew(TestPanel));
-	m_coverage_panel = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Coverage"), memnew(CoveragePanel));
-	m_documentation_panel = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Documentation"), memnew(DocumentationPanel));
+	EditorNode::get_menu_hb()->add_child(m_debug_button);
+	EditorNode *editor_node = EditorNode::get_singleton();
+	m_test_panel = editor_node->add_bottom_panel_item(TTR("Test"), memnew(TestPanel));
 }
 
 TestPlugin::~TestPlugin() {
