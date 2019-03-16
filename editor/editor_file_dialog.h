@@ -124,7 +124,6 @@ private:
 
 	ToolButton *fav_up;
 	ToolButton *fav_down;
-	ToolButton *fav_rm;
 
 	ItemList *favorites;
 	ItemList *recent;
