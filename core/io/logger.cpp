@@ -39,7 +39,7 @@
 // va_copy, otherwise you have to use the internal version (__va_copy).
 #if !defined(va_copy)
 #if defined(__GNUC__)
-#define va_copy(d, s) __va_copy(d, s)
+#define va_copy(d, s) __va_copy((d), (s))
 #else
 #define va_copy(d, s) ((d) = (s))
 #endif
