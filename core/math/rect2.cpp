@@ -103,61 +103,25 @@ bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_re
 
 	//base rect2 first (faster)
 
-	if (xf_points[0].y > position.y)
-		goto next1;
-	if (xf_points[1].y > position.y)
-		goto next1;
-	if (xf_points[2].y > position.y)
-		goto next1;
-	if (xf_points[3].y > position.y)
-		goto next1;
-
-	return false;
-
-next1:
-
-	low_limit = position.y + size.y;
-
-	if (xf_points[0].y < low_limit)
-		goto next2;
-	if (xf_points[1].y < low_limit)
-		goto next2;
-	if (xf_points[2].y < low_limit)
-		goto next2;
-	if (xf_points[3].y < low_limit)
-		goto next2;
-
-	return false;
-
-next2:
-
-	if (xf_points[0].x > position.x)
-		goto next3;
-	if (xf_points[1].x > position.x)
-		goto next3;
-	if (xf_points[2].x > position.x)
-		goto next3;
-	if (xf_points[3].x > position.x)
-		goto next3;
-
-	return false;
-
-next3:
+	if ( (xf_points[0].y <= position.y) && (xf_points[1].y <= position.y) 
+            && (xf_points[2].y <= position.y) && (xf_points[3].y <= position.y) )
+            return false;	    
+        
+        low_limit = position.y + size.y;  
+  
+	if ( (xf_points[0].y >= low_limit) && (xf_points[1].y >= low_limit)
+	    && (xf_points[2].y >= low_limit) && (xf_points[3].y >= low_limit) )
+            return false;
+	
+	if ( (xf_points[0].x <= position.x) && (xf_points[1].x <= position.x) 
+            && (xf_points[2].x <= position.x) && (xf_points[3].x <= position.x) )
+            return false;
 
 	low_limit = position.x + size.x;
-
-	if (xf_points[0].x < low_limit)
-		goto next4;
-	if (xf_points[1].x < low_limit)
-		goto next4;
-	if (xf_points[2].x < low_limit)
-		goto next4;
-	if (xf_points[3].x < low_limit)
-		goto next4;
-
-	return false;
-
-next4:
+	
+	if ( (xf_points[0].x >= low_limit) && (xf_points[1].x >= low_limit)
+            && (xf_points[2].x >= low_limit) && (xf_points[3].x >= low_limit) )
+        	return false;
 
 	Vector2 xf_points2[4] = {
 		position,
