@@ -49,29 +49,60 @@ public:
 	class LogMessage : public Reference {
 		GDCLASS(LogMessage, Reference);
 
+	public:
+		static Ref<LogMessage> log(LogLevel lvl, const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> trace(const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> debug(const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> info(const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> warn(const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> error(const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> fatal(const String &script_path, const String &test_func, const String &msg);
+
+		static Color level_to_color(LogLevel level);
+		uint64_t time() const;
+		const String &script_path() const;
+		const String &test_func() const;
+		LogLevel level() const;
+		const String &message() const;
+
+		Dictionary to_dict() const;
 	protected:
 		static void _bind_methods();
 
-	private:
-		LogLevel m_level;
-		String m_message;
 		uint64_t m_time;
+		LogLevel m_level;
+		String m_script_path;
+		String m_test_func;
+		String m_message;
 	};
 
-	void log(LogLevel lvl, const String &msg);
-	void trace(const String &msg);
-	void debug(const String &msg);
-	void info(const String &msg);
-	void warn(const String &msg);
-	void error(const String &msg);
-	void fatal(const String &msg);
+	TestLog();
+
+	void set_filter(LogLevel filter);
+	LogLevel get_filter() const;
+
+	LogLevel get_max_level() const;
+
+	void append(const Ref<TestLog> &test_log);
+	void add_message(Ref<LogMessage> message);
+	void log(LogLevel lvl, const String &script_path, const String &test_func, const String &msg);
+	void trace(const String &script_path, const String &test_func, const String &msg);
+	void debug(const String &script_path, const String &test_func, const String &msg);
+	void info(const String &script_path, const String &test_func, const String &msg);
+	void warn(const String &script_path, const String &test_func, const String &msg);
+	void error(const String &script_path, const String &test_func, const String &msg);
+	void fatal(const String &script_path, const String &test_func, const String &msg);
 	void clear();
+
+	Array to_array() const;
 
 protected:
 	static void _bind_methods();
 
 private:
 	Vector<Ref<LogMessage> > m_messages;
+	LogLevel m_filter;
+	LogLevel m_max_level;
 };
 
 VARIANT_ENUM_CAST(TestLog::LogLevel);

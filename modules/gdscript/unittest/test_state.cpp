@@ -31,6 +31,10 @@
 #include "test_state.h"
 #include "test_config.h"
 
+#include "gdscript.h"
+
+#include "core/script_language.h"
+
 bool StageIter::init() {
 	m_stage = SETUP;
 	return true;
@@ -40,18 +44,33 @@ bool StageIter::next() {
 	switch (m_stage) {
 		case SETUP: {
 			m_stage = TEST;
-			break;
+			return true;
 		}
 		case TEST: {
 			m_stage = TEARDOWN;
-			break;
+			return true;
 		}
 		case TEARDOWN: {
 			m_stage = DONE;
-			break;
+			return true;
+		}
+		case DONE: {
+			return false;
 		}
 	}
-	return DONE != m_stage;
+	return false;
+}
+
+void StageIter::skip_test() {
+	switch (m_stage) {
+		case SETUP:
+		case TEST:
+			m_stage = TEARDOWN;
+			break;
+		case TEARDOWN:
+			m_stage = DONE;
+			break;
+	}
 }
 
 StageIter::Stage StageIter::get() const {
@@ -86,11 +105,17 @@ bool MethodIter::next() {
 
 TestState::TestState() {
 	m_log.instance();
+	m_log->set_filter(TestLog::LogLevel::TRACE);
+	m_can_assert.instance();
 }
 
 bool TestState::init(const Object *object) {
+	m_test_name = object->get_script_instance()->get_script()->get_path();
+	m_assert_count = 0;
+	m_test_count = 0;
 	m_log->clear();
 	if (m_method_iter.init(object)) {
+		m_test_count++;
 		return m_stage_iter.init();
 	}
 	return false;
@@ -104,20 +129,59 @@ StageIter::Stage TestState::stage() const {
 	return m_stage_iter.get();
 }
 
-TestLog *TestState::log() {
-	return *m_log;
+Ref<TestLog> TestState::log() const {
+	return m_log;
 }
 
 bool TestState::next() {
 	if (!m_stage_iter.next()) {
+		m_assert_count = 0;
 		m_log->clear();
 		if (m_method_iter.next()) {
+			m_test_count++;
 			m_stage_iter.init();
 			return true;
 		}
 		return false;
 	}
 	return true;
+}
+
+void TestState::skip_test() {
+	m_stage_iter.skip_test();
+}
+
+const String &TestState::test_name() const {
+	return m_test_name;
+}
+
+int TestState::test_count() const {
+	return m_test_count;
+}
+
+int TestState::assert_count() const {
+	return m_assert_count;
+}
+
+bool TestState::is_valid() const {
+	return m_log->get_max_level() >= TestConfig::get_singleton()->log_fail_greater_equal();
+}
+
+bool TestState::can_assert() {
+	if (m_can_assert->get_ref()) {
+		m_assert_count++;
+		return true;
+	}
+	return false;
+}
+
+REF TestState::allow_assert() {
+	REF can_assert = m_can_assert->get_ref();
+	if (can_assert.is_null()) {
+		can_assert.instance();
+	}
+	m_can_assert->set_ref(can_assert);
+	return can_assert;
 }
 
 void TestState::_bind_methods() {

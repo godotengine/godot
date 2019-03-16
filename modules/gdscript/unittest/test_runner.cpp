@@ -52,6 +52,7 @@ bool TestRunner::iteration(float p_time) {
 }
 
 void TestRunner::finish() {
+	m_test_result->finish();
     SceneTree::finish();
 }
 

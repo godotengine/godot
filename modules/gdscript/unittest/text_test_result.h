@@ -31,19 +31,28 @@
 #ifndef TEXT_TEST_RESULT_H
 #define TEXT_TEST_RESULT_H
 
+#include "test_log.h"
 #include "test_result.h"
 
 class TextTestResult : public TestResult {
-    GDCLASS(TextTestResult, TestResult);
+	GDCLASS(TextTestResult, TestResult);
 
 public:
+	TextTestResult();
 	virtual void start_test(TestState *test_state);
 	virtual void add_error(TestState *test_state, TestError *error);
 	virtual void add_failure(TestState *test_state, TestError *error);
 	virtual void add_success(TestState *test_state);
+	virtual void stop_test(TestState *test_state);
+	virtual void finish();
+	void summary(const String &msg);
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
+
+private:
+	Ref<TestLog> m_log;
+	int m_total_assert_count;
 };
 
 #endif // TEXT_TEST_RESULT_H

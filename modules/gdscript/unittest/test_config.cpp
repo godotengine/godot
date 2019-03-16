@@ -39,6 +39,8 @@ TestConfig::TestConfig() {
 
 	GLOBAL_DEF("debug/testing/test/directory", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/directory", PropertyInfo(Variant::STRING, "debug/testing/test/directory", PROPERTY_HINT_DIR));
+	GLOBAL_DEF("debug/testing/test/stop_on_error", false);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/stop_on_error", PropertyInfo(Variant::BOOL, "debug/testing/test/stop_on_error", PROPERTY_HINT_NONE));
 	GLOBAL_DEF("debug/testing/test/file_match", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/file_match", PropertyInfo(Variant::STRING, "debug/testing/test/file_match", PROPERTY_HINT_PLACEHOLDER_TEXT, "*_test.gd"));
 	GLOBAL_DEF("debug/testing/test/func_match", "");
@@ -58,11 +60,11 @@ TestConfig::TestConfig() {
 	GLOBAL_DEF("debug/testing/coverage/minimum_percent", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/minimum_percent", PropertyInfo(Variant::INT, "debug/testing/coverage/minimum_percent", PROPERTY_HINT_RANGE, "0,100,1"));
 
-	GLOBAL_DEF("debug/testing/log/on_success", false);
+	GLOBAL_DEF("debug/testing/log/on_success", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/on_success", PropertyInfo(Variant::BOOL, "debug/testing/log/on_success", PROPERTY_HINT_NONE));
-	GLOBAL_DEF("debug/testing/log/fail_greater_equal", 3);
+	GLOBAL_DEF("debug/testing/log/fail_greater_equal", 4); // Fail on ERROR or FATAL
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/fail_greater_equal", PropertyInfo(Variant::INT, "debug/testing/log/fail_greater_equal", PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal"));
-	GLOBAL_DEF("debug/testing/log/filter_below", 3);
+	GLOBAL_DEF("debug/testing/log/filter_below", 2); // Don't show TRACE or DEBUG
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/filter_below", PropertyInfo(Variant::INT, "debug/testing/log/filter_below", PROPERTY_HINT_ENUM, "Trace,Debug,Info,Warn,Error,Fatal"));
 }
 
@@ -99,6 +101,14 @@ Ref<TestResult> TestConfig::make_result() const {
 	ERR_FAIL_COND_V(test_result.is_null(), NULL);
 
 	return test_result;
+}
+
+bool TestConfig::log_on_success() const {
+	return GLOBAL_DEF("debug/testing/log/on_success", true);
+}
+
+TestLog::LogLevel TestConfig::log_fail_greater_equal() const {
+	return (TestLog::LogLevel)(int)GLOBAL_DEF("debug/testing/log/fail_greater_equal", TestLog::ERROR);
 }
 
 void TestConfig::_bind_methods() {

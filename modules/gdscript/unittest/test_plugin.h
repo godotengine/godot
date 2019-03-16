@@ -33,29 +33,36 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_run.h"
+#include "editor/script_editor_debugger.h"
 #include "scene/gui/button.h"
 
 class DebugButton : public Button {
 	GDCLASS(DebugButton, Button);
 
 public:
-	enum Status {
-		STATUS_PLAY,
-		STATUS_PAUSED,
-		STATUS_STOP
-	};
-
-	OS::ProcessID pid;
 
 	DebugButton();
+	virtual ~DebugButton();
+	EditorRun::Status get_status() const;
+	Error run();
+	void run_native_notify() { m_editor_run.run_native_notify(); }
+	void stop();
+
+	OS::ProcessID get_pid() const { return m_editor_run.get_pid(); }
+
+	void set_debug_collisions(bool p_debug);
+	bool get_debug_collisions() const;
+
+	void set_debug_navigation(bool p_debug);
+	bool get_debug_navigation() const;
 
 protected:
 	static void _bind_methods();
 	virtual void _notification(int p_what);
 
 private:
-	Error _run();
-	Status m_status;
+	EditorRun m_editor_run;
+	ScriptEditorDebugger *m_debugger;
 };
 
 class TestPanel : public HBoxContainer {

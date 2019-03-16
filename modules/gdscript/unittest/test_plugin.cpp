@@ -30,66 +30,61 @@
 
 #include "test_plugin.h"
 
+#include "editor/editor_data.h"
 #include "editor/editor_node.h"
 
-DebugButton::DebugButton() : m_status(STATUS_STOP) {
+DebugButton::DebugButton() {
 	set_text(TTR("Test"));
+	m_debugger = memnew(ScriptEditorDebugger(EditorNode::get_singleton()));
 }
 
- void DebugButton::_notification(int p_what) {
+DebugButton ::~DebugButton() {
+	stop();
+}
+
+EditorRun::Status DebugButton::get_status() const {
+	return m_editor_run.get_status();
+}
+
+Error DebugButton::run() {
+	m_debugger->start();
+	List<String> breakpoints;
+	EditorNode::get_singleton()->get_editor_data().get_editor_breakpoints(&breakpoints);
+	return m_editor_run.run("", "--main-loop-type TestRunner", breakpoints);
+}
+
+void DebugButton::stop() {
+	m_editor_run.stop();
+	m_debugger->stop();
+}
+
+void DebugButton::set_debug_collisions(bool p_debug) {
+	m_editor_run.set_debug_collisions(p_debug);
+}
+
+bool DebugButton::get_debug_collisions() const {
+	return m_editor_run.get_debug_collisions();
+}
+
+void DebugButton::set_debug_navigation(bool p_debug) {
+	m_editor_run.set_debug_navigation(p_debug);
+}
+
+bool DebugButton::get_debug_navigation() const {
+	return m_editor_run.get_debug_navigation();
+}
+
+void DebugButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			connect("pressed", this, "_run");
+			connect("pressed", this, "run");
 			break;
 		}
 	}
 }
 
-Error DebugButton::_run() {
-	List<String> args;
-
-	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
-	String remote_host = EditorSettings::get_singleton()->get("network/debug/remote_host");
-	int remote_port = (int)EditorSettings::get_singleton()->get("network/debug/remote_port");
-
-	if (resource_path != "") {
-		args.push_back("--path");
-		args.push_back(resource_path.replace(" ", "%20"));
-	}
-
-	args.push_back("--remote-debug");
-	args.push_back(remote_host + ":" + String::num(remote_port));
-
-	args.push_back("--allow_focus_steal_pid");
-	args.push_back(itos(OS::get_singleton()->get_process_id()));
-
-	if (OS::get_singleton()->is_disable_crash_handler()) {
-		args.push_back("--disable-crash-handler");
-	}
-
-	args.push_back("--main-loop-type");
-	args.push_back("TestRunner");
-
-	String exec = OS::get_singleton()->get_executable_path();
-
-	printf("Running: %ls", exec.c_str());
-	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-
-		printf(" %ls", E->get().c_str());
-	};
-	printf("\n");
-
-	pid = 0;
-	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
-	ERR_FAIL_COND_V(err, err);
-
-	m_status = STATUS_PLAY;
-
-	return OK;
-}
-
 void DebugButton::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_run"), &DebugButton::_run);
+	ClassDB::bind_method(D_METHOD("run"), &DebugButton::run);
 }
 
 TestPanel::TestPanel() {

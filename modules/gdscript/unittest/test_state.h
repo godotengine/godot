@@ -59,6 +59,7 @@ public:
 
 	bool init();
 	bool next();
+	void skip_test();
 	Stage get() const;
 
 private:
@@ -72,8 +73,17 @@ public:
     bool init(const Object *object);
     const String &method_name() const;
 	StageIter::Stage stage() const;
-	TestLog* log();
+	Ref<TestLog> log() const;
 	bool next();
+	void skip_test();
+	const String &test_name() const;
+	int test_count() const;
+	int assert_count() const;
+
+	bool is_valid() const;
+
+	bool can_assert();
+	REF allow_assert();
 
 protected:
 	static void _bind_methods();
@@ -82,6 +92,10 @@ private:
 	MethodIter m_method_iter;
 	StageIter m_stage_iter;
 	Ref<TestLog> m_log;
+	String m_test_name;
+	int m_test_count;
+	int m_assert_count;
+	Ref<WeakRef> m_can_assert;
 };
 
 #endif // TEST_STATE_H

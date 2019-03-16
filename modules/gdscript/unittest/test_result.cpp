@@ -79,6 +79,9 @@ void TestResult::add_success(TestState *test_state) {
 	}
 }
 
+void TestResult::finish() {
+}
+
 bool TestResult::was_successful() const {
 	return m_failures.size() == 0 && m_errors.size() == 0;
 }

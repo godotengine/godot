@@ -38,10 +38,6 @@
 
 #include "scene/main/node.h"
 
-struct Failure {
-	String msg;
-};
-
 class TestCase : public Node {
 	GDCLASS(TestCase, Node);
 
@@ -53,7 +49,7 @@ public:
 	void teardown();
 	void init(Ref<TestResult> test_result);
 	bool iteration(Ref<TestResult> test_result = NULL);
-	bool is_done() const;
+	bool can_assert() const;
 
 	void assert_equal(const Variant &a, const Variant &b, const String &msg = "");
 	void assert_not_equal(const Variant &a, const Variant &b, const String &msg = "");
@@ -68,12 +64,13 @@ public:
 	void assert_is(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg = "");
 	void assert_is_not(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg = "");
 
-	void assert_almost_equal(const Variant &a, const Variant &b, const String &msg = "");
-	void assert_not_almost_equal(const Variant &a, const Variant &b, const String &msg = "");
+	void assert_aprox_equal(const Variant &a, const Variant &b, const String &msg = "");
+	void assert_aprox_not_equal(const Variant &a, const Variant &b, const String &msg = "");
 
 	TestCase* yield_on(Object *object, const String &signal_name, real_t max_time=-1);
 	TestCase* yield_for(real_t time_in_seconds);
 
+	void log(TestLog::LogLevel level, const String &msg);
 	void trace(const String &msg);
 	void debug(const String &msg);
 	void info(const String &msg);
@@ -82,30 +79,18 @@ public:
 	void fatal(const String &msg);
 
 	/*
-    assertGreater(a, b)	a > b	2.7
-    assertGreaterEqual(a, b)	a >= b	2.7
-    assertLess(a, b)	a < b	2.7
-    assertLessEqual(a, b)	a <= b	2.7
-    assertRegexpMatches(s, r)	r.search(s)	2.7
-    assertNotRegexpMatches(s, r)	not r.search(s)	2.7
-    assertItemsEqual(a, b)	sorted(a) == sorted(b) and works with unhashable objs	2.7
-    assertDictContainsSubset(a, b)	all the key/value pairs in a exist in b	2.7
-    */
-
-	/*
-    assertMultiLineEqual(a, b)	strings	2.7
-    assertSequenceEqual(a, b)	sequences	2.7
-    assertListEqual(a, b)	lists	2.7
-    assertTupleEqual(a, b)	tuples	2.7
-    assertSetEqual(a, b)	sets or frozensets	2.7
-    assertDictEqual(a, b)	dicts	2.7
+    assert_greater(a, b)	a > b	2.7
+    assert_greater_equal(a, b)	a >= b	2.7
+    assert_less(a, b)	a < b	2.7
+    assert_less_equal(a, b)	a <= b	2.7
+    assert_match(s, r)	r.search(s)	2.7
+    assert_not_match(s, r)	not r.search(s)	2.7
     */
 protected:
 	static void _bind_methods();
 
 private:
 	TestState* m_state;
-	bool m_can_assert;
 	bool m_has_next;
 
 	Ref<GDScriptFunctionState> m_yield; 

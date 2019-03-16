@@ -29,23 +29,66 @@
 /*************************************************************************/
 
 #include "text_test_result.h"
+#include "test_config.h"
+
+#include "core/io/json.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/script_language.h"
+
+TextTestResult::TextTestResult() {
+	m_log.instance();
+	m_total_assert_count = 0;
+}
 
 void TextTestResult::start_test(TestState *test_state) {
-    TestResult::start_test(test_state);
-	print_line(test_state->method_name());
-	test_state->log()->debug("");
+	TestResult::start_test(test_state);
+	test_state->log()->info(test_state->test_name(), test_state->method_name(), "setup");
 }
 
 void TextTestResult::add_error(TestState *test_state, TestError *error) {
 	TestResult::add_error(test_state, error);
+	test_state->log()->fatal(test_state->test_name(), test_state->method_name(), error->m_message);
 }
 
 void TextTestResult::add_failure(TestState *test_state, TestError *error) {
 	TestResult::add_failure(test_state, error);
+	test_state->log()->fatal(test_state->test_name(), test_state->method_name(), error->m_message);
 }
 
 void TextTestResult::add_success(TestState *test_state) {
 	TestResult::add_success(test_state);
+}
+
+void TextTestResult::stop_test(TestState *test_state) {
+	TestResult::stop_test(test_state);
+	TestConfig *singleton = TestConfig::get_singleton();
+	if (!test_state->is_valid() || singleton->log_on_success()) {
+		m_log->append(test_state->log());
+		m_log->info(test_state->test_name(), test_state->method_name(), "teardown");
+		Array args;
+		args.resize(1);
+		args[0] = test_state->assert_count();
+		m_log->info(test_state->test_name(), test_state->method_name(), String("Ran {0} asserts.").format(args));
+	}
+}
+
+void TextTestResult::finish() {
+	DirAccessRef dir = DirAccess::open("res://");
+	dir->make_dir("Testing");
+	FileAccessRef file = FileAccess::open("Testing/results.json", FileAccess::WRITE);
+	file->store_string(JSON::print(m_log->to_array(), "\t"));
+}
+
+void TextTestResult::summary(const String &msg) {
+	Ref<Script> script = get_script_instance()->get_script();
+	String name;
+	if (script.is_valid()) {
+		name = script->get_path();
+	} else {
+		name = get_class_name();
+	}
+	m_log->info(name, "summary", msg);
 }
 
 void TextTestResult::_bind_methods() {

@@ -32,38 +32,170 @@
 
 #include "core/os/os.h"
 
+Ref<TestLog::LogMessage> TestLog::LogMessage::log(LogLevel level, const String &script_path, const String &test_func, const String &msg) {
+	Ref<LogMessage> message(memnew(LogMessage));
+	message->m_time = OS::get_singleton()->get_unix_time();
+	message->m_level = level;
+	message->m_script_path = script_path;
+	message->m_test_func = test_func;
+	message->m_message = msg;
+	return message;
+}
+
+Ref<TestLog::LogMessage> TestLog::LogMessage::trace(const String &script_path, const String &test_func, const String &msg) {
+	return log(TRACE, script_path, test_func, msg);
+}
+
+Ref<TestLog::LogMessage> TestLog::LogMessage::debug(const String &script_path, const String &test_func, const String &msg) {
+	return log(DEBUG, script_path, test_func, msg);
+}
+
+Ref<TestLog::LogMessage> TestLog::LogMessage::info(const String &script_path, const String &test_func, const String &msg) {
+	return log(INFO, script_path, test_func, msg);
+}
+
+Ref<TestLog::LogMessage> TestLog::LogMessage::warn(const String &script_path, const String &test_func, const String &msg) {
+	return log(WARN, script_path, test_func, msg);
+}
+
+Ref<TestLog::LogMessage> TestLog::LogMessage::error(const String &script_path, const String &test_func, const String &msg) {
+	return log(ERROR, script_path, test_func, msg);
+}
+
+Ref<TestLog::LogMessage> TestLog::LogMessage::fatal(const String &script_path, const String &test_func, const String &msg) {
+	return log(FATAL, script_path, test_func, msg);
+}
+
+Color TestLog::LogMessage::level_to_color(LogLevel level) {
+	switch (level) {
+		case TRACE:
+			return Color::named("gray");
+		case DEBUG:
+			return Color::named("lightgray");
+		case INFO:
+			return Color::named("white");
+		case WARN:
+			return Color::named("yellow");
+		case ERROR:
+			return Color::named("orange");
+		case FATAL:
+			return Color::named("red");
+	}
+	return Color();
+}
+
+uint64_t TestLog::LogMessage::time() const {
+	return m_time;
+}
+
+TestLog::LogLevel TestLog::LogMessage::level() const {
+	return m_level;
+}
+
+const String &TestLog::LogMessage::script_path() const {
+	return m_script_path;
+}
+
+const String &TestLog::LogMessage::test_func() const {
+	return m_test_func;
+}
+
+const String &TestLog::LogMessage::message() const {
+	return m_message;
+}
+
+Dictionary TestLog::LogMessage::to_dict() const {
+	Dictionary result;
+	result["time"] = m_time;
+	result["level"] = m_level;
+	result["script_path"] = m_script_path;
+	result["test_func"] = m_test_func;
+	result["message"] = m_message;
+	return result;
+}
+
 void TestLog::LogMessage::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("time"), &TestLog::LogMessage::time);
+	ClassDB::bind_method(D_METHOD("level"), &TestLog::LogMessage::level);
+	ClassDB::bind_method(D_METHOD("script_path"), &TestLog::LogMessage::script_path);
+	ClassDB::bind_method(D_METHOD("test_func"), &TestLog::LogMessage::test_func);
+	ClassDB::bind_method(D_METHOD("message"), &TestLog::LogMessage::message);
 }
 
-void TestLog::log(LogLevel lvl, const String &msg) {
-	OS::get_singleton()->get_unix_time();
+TestLog::TestLog() {
+	m_filter = LogLevel::INFO;
+	m_max_level = LogLevel::TRACE;
 }
 
-void TestLog::trace(const String &msg) {
-	log(TRACE, msg);
+void TestLog::set_filter(LogLevel filter) {
+	m_filter = filter;
 }
 
-void TestLog::debug(const String &msg) {
-	log(DEBUG, msg);
+TestLog::LogLevel TestLog::get_filter() const {
+	return m_filter;
 }
 
-void TestLog::info(const String &msg) {
-	log(INFO, msg);
+TestLog::LogLevel TestLog::get_max_level() const {
+	return m_max_level;
 }
 
-void TestLog::warn(const String &msg) {
-	log(WARN, msg);
+void TestLog::append(const Ref<TestLog> &test_log) {
+	int size = test_log->m_messages.size();
+	for (int i = 0; i < size; i++) {
+		add_message(test_log->m_messages[i]);
+	}
 }
 
-void TestLog::error(const String &msg) {
-	log(ERROR, msg);
+void TestLog::add_message(Ref<LogMessage> message) {
+	if (message->level() >= m_filter) {
+		if (m_max_level > message->level()) {
+			m_max_level = message->level();
+		}
+		m_messages.push_back(message);
+	}
 }
 
-void TestLog::fatal(const String &msg) {
-	log(FATAL, msg);
+void TestLog::log(LogLevel level, const String &script_path, const String &test_func, const String &msg) {
+	add_message(LogMessage::log(level, script_path, test_func, msg));
+}
+
+void TestLog::trace(const String &script_path, const String &test_func, const String &msg) {
+	log(TRACE, script_path, test_func, msg);
+}
+
+void TestLog::debug(const String &script_path, const String &test_func, const String &msg) {
+	log(DEBUG, script_path, test_func, msg);
+}
+
+void TestLog::info(const String &script_path, const String &test_func, const String &msg) {
+	log(INFO, script_path, test_func, msg);
+}
+
+void TestLog::warn(const String &script_path, const String &test_func, const String &msg) {
+	log(WARN, script_path, test_func, msg);
+}
+
+void TestLog::error(const String &script_path, const String &test_func, const String &msg) {
+	log(ERROR, script_path, test_func, msg);
+}
+
+void TestLog::fatal(const String &script_path, const String &test_func, const String &msg) {
+	log(FATAL, script_path, test_func, msg);
 }
 
 void TestLog::clear() {
+	m_max_level = LogLevel::TRACE;
+	m_messages.clear();
+}
+
+Array TestLog::to_array() const {
+	Array messages;
+	int size = m_messages.size();
+	messages.resize(size);
+	for (int i = 0; i < size; i++) {
+		messages[i] = m_messages[i]->to_dict();
+	}
+	return messages;
 }
 
 void TestLog::_bind_methods() {

@@ -36,6 +36,9 @@
 class TestError : public Object {
 	GDCLASS(TestError, Object);
 
+public:
+	String m_message;
+
 protected:
 	static void _bind_methods();
 };
