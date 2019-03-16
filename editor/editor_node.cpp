@@ -136,10 +136,10 @@ void EditorNode::_update_scene_tabs() {
 	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 
-		String type = editor_data.get_scene_type(i);
+		Node *type_node = editor_data.get_edited_scene_root(i);
 		Ref<Texture> icon;
-		if (type != String()) {
-			icon = get_class_icon(type, "Node");
+		if (type_node) {
+			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
 		}
 
 		int current = editor_data.get_edited_scene();
