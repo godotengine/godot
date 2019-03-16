@@ -818,7 +818,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		// WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
+		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
