@@ -878,6 +878,27 @@ void ConnectionsDock::update_tree() {
 					path += " )";
 				}
 
+				// Find the connected method in the target Object to check that the arities match
+				int total_expected_args = signal_mi.arguments.size() + c.binds.size();
+				List<MethodInfo> target_methods;
+				target->get_method_list(&target_methods);
+				for (List<MethodInfo>::Element *M = target_methods.front(); M; M = M->next()) {
+					MethodInfo &target_mi = M->get();
+
+					// Found the right method
+					if ( c.method == target_mi.name) {
+						int method_args = target_mi.arguments.size();
+						int def_args = target_mi.default_arguments.size();
+
+						// Mark connection if the number of arguments do not match
+						if (total_expected_args > method_args || total_expected_args < method_args - def_args) {
+							path += " [Invalid arity!]";
+						}
+
+						break;
+					}
+				 }
+
 				// Create UI item for the Connection
 				TreeItem *item2 = tree->create_item(item);
 				item2->set_text(0, path);
