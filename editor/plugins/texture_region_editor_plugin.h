@@ -110,6 +110,7 @@ class TextureRegionEditor : public VBoxContainer {
 	void _set_snap_step_y(float p_val);
 	void _set_snap_sep_x(float p_val);
 	void _set_snap_sep_y(float p_val);
+	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _zoom_in();
 	void _zoom_reset();
 	void _zoom_out();
