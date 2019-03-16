@@ -703,7 +703,7 @@ void ProjectSettingsEditor::_update_actions() {
 		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
 			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
-			item->set_editable(2, true);
+			item->set_editable(0, true);
 		}
 
 		for (int i = 0; i < events.size(); i++) {
