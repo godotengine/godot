@@ -776,7 +776,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						continue; //break;
 					ERR_FAIL_INDEX_V(idx, total_bones, ERR_INVALID_DATA);
 
-					if (bptr->size.x < 0) {
+					if (bptr[idx].size.x < 0) {
 						//first
 						bptr[idx] = AABB(v, SMALL_VEC3);
 						any_valid = true;
