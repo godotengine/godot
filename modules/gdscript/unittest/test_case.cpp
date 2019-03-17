@@ -451,7 +451,6 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("assert_aprox_equals", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_equal", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_eq", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("assert_aprox_eq", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("assert_aprox_not_equals", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_not_equal", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
