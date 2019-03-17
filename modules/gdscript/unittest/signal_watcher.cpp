@@ -159,13 +159,24 @@ Variant SignalWatcher::_any_call(const Variant **p_args, int p_argcount, Variant
 	return Variant();
 }
 
+const Array to_array(const Variant &variant) {
+	if (variant.is_array()) {
+		return variant;
+	} else {
+		Array arguments;
+		arguments.resize(1);
+		arguments[0] = variant;
+		return arguments;
+	}
+}
+
 int SignalWatcher::has_calls(const Object *object, const String &signal, const Array &calls, bool any_order) const {
 	const Args *args = read(object, signal);
 	if (args) {
 		if (any_order) {
 			int call_count = calls.size();
 			for (int i = 0; i < call_count; i++) {
-				if (args->find(calls[i]) == -1) {
+				if (args->find(to_array(calls[i])) == -1) {
 					return i;
 				}
 			}
@@ -175,7 +186,7 @@ int SignalWatcher::has_calls(const Object *object, const String &signal, const A
 			int call_count = calls.size();
 			int call_index = 0;
 			for (int arg_index = 0; call_index < call_count && arg_index < arg_count; arg_index++) {
-				if (args->get(arg_index) == calls[call_index]) {
+				if (args->get(arg_index) == to_array(calls[call_index])) {
 					call_index++;
 				}
 			}

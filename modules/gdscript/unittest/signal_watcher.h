@@ -72,10 +72,10 @@ protected:
 	static void _bind_methods();
 
 private:
-	typedef Vector<Variant> Args;
+	typedef Vector<Array> Args;
 	typedef Map<String, Args> SignalArgs;
 	typedef Map<const Object *, SignalArgs> ObjectSignalArgs;
-	Map<const Object *, Map<String, Vector<Variant> > > m_signals;
+	ObjectSignalArgs m_signals;
 
 	Args* write(const Object *object, const String &signal);
 	const Args *read(const Object *object, const String &signal) const;

@@ -90,6 +90,8 @@ public:
 	void assert_called_once(const Object *object, const String &signal, const String &msg = "") const;
 	Variant _assert_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Variant _assert_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _assert_any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void assert_has_calls(const Object *object, const String &signal, const Array &arguments, bool any_order = false, const String &msg = "") const;
 	void assert_not_called(const Object *object, const String &signal, const String &msg = "") const;
 	int get_signal_call_count(const Object *object, const String &signal) const;
 	Array get_signal_calls(const Object *object, const String &signal) const;

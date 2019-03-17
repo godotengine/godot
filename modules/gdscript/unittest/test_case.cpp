@@ -400,10 +400,30 @@ Variant TestCase::_assert_called_once_with(const Variant **p_args, int p_argcoun
 	SignalWatcher::Params params;
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->called_once_with(params.object, params.signal, params.arguments)) {
-			assert("invalid", "error", "{msg}{a}.{b} was not called exactly once");
+			assert(params.object, params.signal, "{msg}{a}.{b} was not called exactly once", "");
 		}
 	}
 	return Variant();
+}
+
+Variant TestCase::_assert_any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	ERR_FAIL_COND_V(!can_assert(), Variant());
+	SignalWatcher::Params params;
+	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
+		if (!m_signal_watcher->any_call(params.object, params.signal, params.arguments)) {
+			assert("invalid", "error", "{msg}{a}.{b} was not called ");
+		}
+	}
+	return Variant();
+}
+
+void TestCase::assert_has_calls(const Object *object, const String &signal, const Array &arguments, bool any_order, const String &msg) const {
+	int error = m_signal_watcher->has_calls(object, signal, arguments, any_order);
+	if (error < arguments.size()) {
+		if (error == -1) {
+		} else {
+		}
+	}
 }
 
 void TestCase::assert_not_called(const Object *object, const String &signal, const String &msg) const {
@@ -489,11 +509,13 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestCase::fatal);
 
 	ClassDB::bind_method(D_METHOD("watch_signals", "object", "signal"), &TestCase::watch_signals);
-	ClassDB::bind_method(D_METHOD("assert_called", "object", "signal"), &TestCase::assert_called, DEFVAL(""));
-	ClassDB::bind_method(D_METHOD("assert_called_once", "object", "signal"), &TestCase::assert_called_once, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_called", "object", "signal", "msg"), &TestCase::assert_called, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_called_once", "object", "signal", "msg"), &TestCase::assert_called_once, DEFVAL(""));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_called_with", &TestCase::_assert_called_with);
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_called_once_with", &TestCase::_assert_called_once_with);
-	ClassDB::bind_method(D_METHOD("assert_not_called", "object", "signal"), &TestCase::assert_not_called, DEFVAL(""));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_any_call", &TestCase::_assert_any_call);
+	ClassDB::bind_method(D_METHOD("assert_has_calls", "object", "signal", "arguments", "any_order", "msg"), &TestCase::assert_has_calls, DEFVAL(false), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_not_called", "object", "signal", "msg"), &TestCase::assert_not_called, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_signal_call_count", "object", "signal"), &TestCase::get_signal_call_count);
 	ClassDB::bind_method(D_METHOD("get_signal_calls", "object", "signal"), &TestCase::get_signal_calls);
 
