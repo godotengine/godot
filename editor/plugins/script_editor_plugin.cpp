@@ -1951,8 +1951,9 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 				if (is_visible_in_tree())
 					se->ensure_focus();
 
-				if (p_line >= 0)
+				if (p_line > 0) {
 					se->goto_line(p_line - 1);
+				}
 			}
 			return true;
 		}
@@ -2012,8 +2013,9 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	_test_script_times_on_disk(p_resource);
 	_update_modified_scripts_for_external_editor(p_resource);
 
-	if (p_line >= 0)
+	if (p_line > 0) {
 		se->goto_line(p_line - 1);
+	}
 
 	notify_script_changed(p_resource);
 	_add_recent_script(p_resource->get_path());
