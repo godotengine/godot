@@ -31,37 +31,25 @@
 #include "signal_watcher.h"
 
 SignalWatcher::Args *SignalWatcher::write(const Object *object, const String &signal) {
-	ObjectSignalArgs::Element *object_signal_args = m_signals.find(object);
+	ObjectSignalArgs::Element *object_signal_args = m_signals.find(ObjectSignal(object, signal));
 	if (object_signal_args) {
-		SignalArgs::Element *signal_args = object_signal_args->value().find(signal);
-		if (signal_args) {
-			return &signal_args->value();
-		}
+		return &object_signal_args->value();
 	}
 	return NULL;
 }
 
 const SignalWatcher::Args *SignalWatcher::read(const Object *object, const String &signal) const {
-	const ObjectSignalArgs::Element *object_signal_args = m_signals.find(object);
+	const ObjectSignalArgs::Element *object_signal_args = m_signals.find(ObjectSignal(object, signal));
 	if (object_signal_args) {
-		const SignalArgs::Element *signal_args = object_signal_args->value().find(signal);
-		if (signal_args) {
-			return &signal_args->value();
-		}
+		return &object_signal_args->value();
 	}
 	return NULL;
 }
 
 void SignalWatcher::touch(const Object *object, const String &signal) {
-	ObjectSignalArgs::Element *object_signal_args = m_signals.find(object);
-	if (object_signal_args) {
-		SignalArgs &signal_args = object_signal_args->value();
-		SignalArgs::Element *signal_args_element = signal_args.find(signal);
-		if (!signal_args_element) {
-			signal_args.insert(signal, Args());
-		}
-	} else {
-		m_signals.insert(object, SignalArgs())->value().insert(signal, Args());
+	ObjectSignalArgs::Element *object_signal_args = m_signals.find(ObjectSignal(object, signal));
+	if (!object_signal_args) {
+		m_signals.insert(ObjectSignal(object, signal), Args());
 	}
 }
 

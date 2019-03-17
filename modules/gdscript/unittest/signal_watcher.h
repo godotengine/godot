@@ -32,6 +32,7 @@
 #define SIGNAL_WATCHER_H
 
 #include "core/map.h"
+#include "core/pair.h"
 #include "core/reference.h"
 #include "core/vector.h"
 
@@ -73,8 +74,9 @@ protected:
 
 private:
 	typedef Vector<Array> Args;
-	typedef Map<String, Args> SignalArgs;
-	typedef Map<const Object *, SignalArgs> ObjectSignalArgs;
+	typedef Pair<const Object *, String> ObjectSignal;
+	typedef PairSort<const Object *, String> ObjectSignalSort;
+	typedef Map<ObjectSignal, Args, ObjectSignalSort> ObjectSignalArgs;
 	ObjectSignalArgs m_signals;
 
 	Args* write(const Object *object, const String &signal);
