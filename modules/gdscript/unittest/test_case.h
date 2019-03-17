@@ -87,6 +87,12 @@ public:
     assert_match(s, r)	r.search(s)	2.7
     assert_not_match(s, r)	not r.search(s)	2.7
     */
+
+	void watch_signals(Object *object, const String &signal);
+	void assert_called(const Object *object, const String &signal, const String &msg = "");
+	void assert_called_once(const Object *object, const String &signal, const String &msg = "");
+	Variant assert_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
 protected:
 	static void _bind_methods();
 
@@ -97,7 +103,7 @@ private:
 	Ref<GDScriptFunctionState> m_yield; 
 	bool m_yield_handled;
 
-	Ref<SignalWatcher> signal_watcher;
+	Ref<SignalWatcher> m_signal_watcher;
 
 	void _clear_connections();
 	Variant _handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error);

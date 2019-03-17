@@ -61,7 +61,7 @@ void assert(const Variant &a, const Variant &b, const String &default_msg, const
 
 TestCase::TestCase() {
 	m_state = memnew(TestState);
-	signal_watcher.instance();
+	m_signal_watcher.instance();
 }
 
 TestCase::~TestCase() {
@@ -120,6 +120,7 @@ bool TestCase::iteration(Ref<TestResult> test_result) {
 				}
 				case StageIter::DONE: {
 					test_result->stop_test(m_state);
+					m_signal_watcher->reset();
 					break;
 				}
 			}
@@ -233,11 +234,14 @@ void TestCase::_clear_connections() {
 	int size = connections.size();
 	for (int i = 0; i < size; i++) {
 		const Connection &connection = connections[i];
-		connection.source->disconnect(connection.signal, connection.target, connection.method);
+		if (connection.method == "_handle_yield") {
+			connection.source->disconnect(connection.signal, connection.target, connection.method);
+		}
 	}
 }
 
 Variant TestCase::_handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	r_error.error = Variant::CallError::CALL_OK;
 	m_yield_handled = true;
 	return NULL;
 }
@@ -250,7 +254,7 @@ void TestCase::_yield_timer(float delay_sec) {
 TestCase *TestCase::yield_on(Object *object, const String &signal_name, real_t max_time) {
 	m_yield_handled = false;
 	Vector<Variant> binds;
-	object->connect(signal_name, this, "_handle_yield", binds, CONNECT_ONESHOT);
+	ERR_FAIL_COND_V(object->connect(signal_name, this, "_handle_yield", binds, CONNECT_ONESHOT), NULL);
 	if (0 < max_time) {
 		_yield_timer(max_time);
 	}
@@ -291,6 +295,32 @@ void TestCase::fatal(const String &msg) {
 	log(TestLog::FATAL, msg);
 }
 
+void TestCase::watch_signals(Object *object, const String &signal) {
+	m_signal_watcher->watch(object, signal);
+}
+
+void TestCase::assert_called(const Object *object, const String &signal, const String &msg) {
+	ERR_FAIL_COND(!can_assert());
+	if (!m_signal_watcher->called(object, signal)) {
+		assert(object, signal, msg, "{a}.{b} was not called");
+	}
+}
+
+void TestCase::assert_called_once(const Object *object, const String &signal, const String &msg) {
+	ERR_FAIL_COND(!can_assert());
+	if (!m_signal_watcher->called_once(object, signal)) {
+		assert(object, signal, msg, "{a}.{b} was not called exactly once");
+	}
+}
+
+Variant TestCase::assert_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	ERR_FAIL_COND_V(!can_assert(), Variant());
+	if (!m_signal_watcher->_called_once_with(p_args, p_argcount, r_error)) {
+		assert("invalid", "error", "{a}.{b} was not called exactly once");
+	}
+	return Variant();
+}
+
 void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("assert_equal", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_equals", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
@@ -328,6 +358,11 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("warn", "msg"), &TestCase::warn);
 	ClassDB::bind_method(D_METHOD("error", "msg"), &TestCase::error);
 	ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestCase::fatal);
+
+	ClassDB::bind_method(D_METHOD("watch_signals", "object", "signal"), &TestCase::watch_signals);
+	ClassDB::bind_method(D_METHOD("assert_called", "object", "signal"), &TestCase::assert_called, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_called_once", "object", "signal"), &TestCase::assert_called_once, DEFVAL(""));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_called_once_with", &TestCase::assert_called_once_with);
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handle_yield", &TestCase::_handle_yield, MethodInfo("_handle_yield"));
 }
