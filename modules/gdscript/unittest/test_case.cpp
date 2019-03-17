@@ -138,93 +138,164 @@ bool TestCase::can_assert() const {
 	return m_state->can_assert();
 }
 
-void TestCase::assert_equal(const Variant &a, const Variant &b, const String &msg) {
+void TestCase::assert_equal(const Variant &a, const Variant &b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (a != b) {
-		assert(a, b, "{msg}: {a} != {b}", msg);
+		assert(a, b, "{msg}{a} != {b}", msg);
 	}
 }
 
-void TestCase::assert_not_equal(const Variant &a, const Variant &b, const String &msg) {
+void TestCase::assert_not_equal(const Variant &a, const Variant &b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (a != b) {
-		assert(a, b, "{msg}: {a} == {b}", msg);
+		assert(a, b, "{msg}{a} == {b}", msg);
 	}
 }
 
-void TestCase::assert_true(const Variant &x, const String &msg) {
+void TestCase::assert_true(const Variant &x, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!x) {
+		assert(x, "{msg}{x} is false", msg);
 	}
 }
 
-void TestCase::assert_false(const Variant &x, const String &msg) {
+void TestCase::assert_false(const Variant &x, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (x) {
+		assert(x, "{msg}{x} is true", msg);
 	}
 }
 
-void TestCase::assert_is(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg) {
+void TestCase::assert_is(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	Object *obj = cast_to<Object>(a);
 	const String &klass = obj->get_class();
 	const String &inherits = obj->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
-		assert(klass, inherits, msg, "{a} is not {b}");
+		assert(klass, inherits, msg, "{msg}{a} is not {b}");
 	}
 }
 
-void TestCase::assert_is_not(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg) {
+void TestCase::assert_is_not(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	Object *obj = cast_to<Object>(a);
 	const String &klass = obj->get_class();
 	const String &inherits = obj->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
-		assert(klass, inherits, msg, "{a} is {b}");
+		assert(klass, inherits, msg, "{msg}{a} is {b}");
 	}
 }
 
-void TestCase::assert_is_nil(const Variant &x, const String &msg) {
+void TestCase::assert_is_nil(const Variant &x, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (Variant::NIL != x.get_type()) {
+		assert(x, "{msg}{x} is not null", msg);
 	}
 }
 
-void TestCase::assert_is_not_nil(const Variant &x, const String &msg) {
+void TestCase::assert_is_not_nil(const Variant &x, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (Variant::NIL == x.get_type()) {
+		assert(x, "{msg}{x} is null", msg);
 	}
 }
 
-void TestCase::assert_in(const Variant &a, const Variant &b, const String &msg) {
+void TestCase::assert_in(const Variant &a, const Variant &b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
+	bool is_in = false;
+	if (b.is_array()) {
+		const Array &collection = b;
+		is_in = collection.has(a);
+	} else if (b.get_type() == Variant::DICTIONARY) {
+		const Dictionary &collection = b;
+		is_in = collection.has(a);
+	}
+	if (!is_in) {
+		assert(a, b, "{msg}{a} is not in {b}", msg);
+	}
 }
 
-void TestCase::assert_not_in(const Variant &a, const Variant &b, const String &msg) {
+void TestCase::assert_not_in(const Variant &a, const Variant &b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
+	bool is_in = false;
+	if (b.is_array()) {
+		const Array &collection = b;
+		is_in = collection.has(a);
+	} else if (b.get_type() == Variant::DICTIONARY) {
+		const Dictionary &collection = b;
+		is_in = collection.has(a);
+	}
+	if (is_in) {
+		assert(a, b, "{msg}{a} is in {b}", msg);
+	}
 }
 
-void TestCase::assert_is_type(const Variant &a, const Variant::Type type, const String &msg) {
+void TestCase::assert_is_type(const Variant &a, const Variant::Type type, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (a.get_type() != type) {
+		assert(a, Variant::get_type_name(type), "{msg}{a} is not {b}", msg);
 	}
 }
 
-void TestCase::assert_is_not_type(const Variant &a, const Variant::Type type, const String &msg) {
+void TestCase::assert_is_not_type(const Variant &a, const Variant::Type type, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (a.get_type() == type) {
+		assert(a, Variant::get_type_name(type), "{msg}{a} is {b}", msg);
 	}
 }
 
-void TestCase::assert_aprox_equal(const Variant &a, const Variant &b, const String &msg) {
+void TestCase::assert_aprox_equal(const Variant &a, const Variant &b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!Math::is_equal_approx(a, b)) {
+		assert(a, b, "{msg}{a} is not close to {b}", msg);
 	}
 }
 
-void TestCase::assert_aprox_not_equal(const Variant &a, const Variant &b, const String &msg) {
+void TestCase::assert_aprox_not_equal(const Variant &a, const Variant &b, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (Math::is_equal_approx(a, b)) {
+		assert(a, b, "{msg}{a} is close to {b}", msg);
+	}
+}
+void TestCase::assert_greater(const Variant &a, const Variant &b, const String &msg) const {
+	ERR_FAIL_COND(!can_assert());
+	if (a == b || a < b) {
+		assert(a, b, "{msg}{a} <= {b}", msg);
+	}
+}
+
+void TestCase::assert_greater_equal(const Variant &a, const Variant &b, const String &msg) const {
+	ERR_FAIL_COND(!can_assert());
+	if (a < b) {
+		assert(a, b, "{msg}{a} < {b}", msg);
+	}
+}
+
+void TestCase::assert_less(const Variant &a, const Variant &b, const String &msg) const {
+	ERR_FAIL_COND(!can_assert());
+	if (a == b || b < a) {
+		assert(a, b, "{msg}{a} >= {b}", msg);
+	}
+}
+
+void TestCase::assert_less_equal(const Variant &a, const Variant &b, const String &msg) const {
+	ERR_FAIL_COND(!can_assert());
+	if (b < a) {
+		assert(a, b, "{msg}{a} > {b}", msg);
+	}
+}
+
+void TestCase::assert_match(const String &a, const String &b, const String &msg) const {
+	ERR_FAIL_COND(!can_assert());
+	if (!a.match(b)) {
+		assert(a, b, "{msg}{a} does not match {b}", msg);
+	}
+}
+
+void TestCase::assert_not_match(const String &a, const String &b, const String &msg) const {
+	ERR_FAIL_COND(!can_assert());
+	if (a.match(b)) {
+		assert(a, b, "{msg}{a} matches {b}", msg);
 	}
 }
 
@@ -299,55 +370,114 @@ void TestCase::watch_signals(Object *object, const String &signal) {
 	m_signal_watcher->watch(object, signal);
 }
 
-void TestCase::assert_called(const Object *object, const String &signal, const String &msg) {
+void TestCase::assert_called(const Object *object, const String &signal, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->called(object, signal)) {
-		assert(object, signal, msg, "{a}.{b} was not called");
+		assert(object, signal, msg, "{msg}{a}.{b} was not called");
 	}
 }
 
-void TestCase::assert_called_once(const Object *object, const String &signal, const String &msg) {
+void TestCase::assert_called_once(const Object *object, const String &signal, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->called_once(object, signal)) {
-		assert(object, signal, msg, "{a}.{b} was not called exactly once");
+		assert(object, signal, msg, "{msg}{a}.{b} was not called exactly once");
 	}
 }
 
-Variant TestCase::assert_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant TestCase::_assert_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	ERR_FAIL_COND_V(!can_assert(), Variant());
-	if (!m_signal_watcher->_called_once_with(p_args, p_argcount, r_error)) {
-		assert("invalid", "error", "{a}.{b} was not called exactly once");
+	SignalWatcher::Params params;
+	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
+		if (!m_signal_watcher->called_with(params.object, params.signal, params.arguments)) {
+			assert("invalid", "error", "{msg}{a}.{b} was not called with");
+		}
 	}
 	return Variant();
 }
 
+Variant TestCase::_assert_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	ERR_FAIL_COND_V(!can_assert(), Variant());
+	SignalWatcher::Params params;
+	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
+		if (!m_signal_watcher->called_once_with(params.object, params.signal, params.arguments)) {
+			assert("invalid", "error", "{msg}{a}.{b} was not called exactly once");
+		}
+	}
+	return Variant();
+}
+
+void TestCase::assert_called_once(const Object *object, const String &signal, const String &msg = "") const {
+	ERR_FAIL_COND(!can_assert());
+	if (!m_signal_watcher->not_called(object, signal)) {
+		assert(object, signal, msg, "{msg}{a}.{b} was not called");
+	}
+}
+
+int TestCase::get_signal_call_count(const Object *object, const String &signal) const {
+	return m_signal_watcher->call_count(object, signal);
+}
+
+Array TestCase::get_signal_calls(const Object *object, const String &signal) const {
+	return m_signal_watcher->calls(object, signal);
+}
+
 void TestCase::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("assert_equal", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_equals", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_equal", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_eq", "a", "b", "msg"), &TestCase::assert_equal, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("assert_not_equal", "a", "b", "msg"), &TestCase::assert_not_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_not_equals", "a", "b", "msg"), &TestCase::assert_not_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_not_equal", "a", "b", "msg"), &TestCase::assert_not_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_ne", "a", "b", "msg"), &TestCase::assert_not_equal, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("assert_true", "a", "msg"), &TestCase::assert_true, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_t", "a", "msg"), &TestCase::assert_true, DEFVAL(""));
+
 	ClassDB::bind_method(D_METHOD("assert_false", "a", "msg"), &TestCase::assert_false, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_f", "a", "msg"), &TestCase::assert_false, DEFVAL(""));
+
 	ClassDB::bind_method(D_METHOD("assert_is", "a", "b", "msg"), &TestCase::assert_is, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_is_not", "a", "b", "msg"), &TestCase::assert_is_not, DEFVAL(""));
+
 	ClassDB::bind_method(D_METHOD("assert_is_null", "a", "msg"), &TestCase::assert_is_nil, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_is_not_null", "a", "msg"), &TestCase::assert_is_not_nil, DEFVAL(""));
+
 	ClassDB::bind_method(D_METHOD("assert_in", "a", "b", "msg"), &TestCase::assert_in, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_not_in", "a", "b", "msg"), &TestCase::assert_not_in, DEFVAL(""));
+
 	ClassDB::bind_method(D_METHOD("assert_is_type", "a", "b", "msg"), &TestCase::assert_is_type, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_is_not_type", "a", "b", "msg"), &TestCase::assert_is_not_type, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("assert_aprox_equal", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_equals", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_aprox_equal", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_aprox_eq", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_eq", "a", "b", "msg"), &TestCase::assert_aprox_equal, DEFVAL(""));
 
-	ClassDB::bind_method(D_METHOD("assert_aprox_not_equal", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_not_equals", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_aprox_not_equal", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_aprox_not_eq", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_aprox_ne", "a", "b", "msg"), &TestCase::assert_aprox_not_equal, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("assert_greater_than", "a", "b", "msg"), &TestCase::assert_greater, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_greater", "a", "b", "msg"), &TestCase::assert_greater, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_gt", "a", "b", "msg"), &TestCase::assert_greater, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("assert_greater_equals", "a", "b", "msg"), &TestCase::assert_greater_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_greater_equal", "a", "b", "msg"), &TestCase::assert_greater_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_greater_eq", "a", "b", "msg"), &TestCase::assert_greater_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_ge", "a", "b", "msg"), &TestCase::assert_greater_equal, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("assert_less_than", "a", "b", "msg"), &TestCase::assert_less, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_less", "a", "b", "msg"), &TestCase::assert_less, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_lt", "a", "b", "msg"), &TestCase::assert_less, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("assert_less_equals", "a", "b", "msg"), &TestCase::assert_less_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_less_equal", "a", "b", "msg"), &TestCase::assert_less_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_less_eq", "a", "b", "msg"), &TestCase::assert_less_equal, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_le", "a", "b", "msg"), &TestCase::assert_less_equal, DEFVAL(""));
+
+	ClassDB::bind_method(D_METHOD("assert_match", "a", "b", "msg"), &TestCase::assert_match, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("assert_not_match", "a", "b", "msg"), &TestCase::assert_not_match, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("yield_on", "object", "signal_name", "max_time"), &TestCase::yield_on, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("yield_for", "time_in_seconds"), &TestCase::yield_for);
@@ -362,7 +492,11 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("watch_signals", "object", "signal"), &TestCase::watch_signals);
 	ClassDB::bind_method(D_METHOD("assert_called", "object", "signal"), &TestCase::assert_called, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_called_once", "object", "signal"), &TestCase::assert_called_once, DEFVAL(""));
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_called_once_with", &TestCase::assert_called_once_with);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_called_with", &TestCase::_assert_called_with);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_called_once_with", &TestCase::_assert_called_once_with);
+	ClassDB::bind_method(D_METHOD("assert_not_called", "object", "signal"), &TestCase::assert_not_called, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_signal_call_count", "object", "signal"), &TestCase::get_signal_call_count);
+	ClassDB::bind_method(D_METHOD("get_signal_calls", "object", "signal"), &TestCase::get_signal_calls);
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handle_yield", &TestCase::_handle_yield, MethodInfo("_handle_yield"));
 }
