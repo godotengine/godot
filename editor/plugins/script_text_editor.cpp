@@ -286,7 +286,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 		code_editor->get_text_edit()->cursor_set_line(p_line.operator int64_t());
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
-		code_editor->get_text_edit()->insert_at("#warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
+		code_editor->get_text_edit()->insert_at("# warning-ignore:" + meta["code"].operator String(), meta["line"].operator int64_t() - 1);
 		_validate_script();
 	}
 }
