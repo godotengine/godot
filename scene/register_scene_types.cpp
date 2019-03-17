@@ -139,6 +139,7 @@
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/dynamic_font_stb.h"
 #include "scene/resources/gradient.h"
+#include "scene/resources/height_map_shape.h"
 #include "scene/resources/line_shape_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -591,6 +592,7 @@ void register_scene_types() {
 	ClassDB::register_class<BoxShape>();
 	ClassDB::register_class<CapsuleShape>();
 	ClassDB::register_class<CylinderShape>();
+	ClassDB::register_class<HeightMapShape>();
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();
