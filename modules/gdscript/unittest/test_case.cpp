@@ -406,7 +406,7 @@ Variant TestCase::_assert_called_once_with(const Variant **p_args, int p_argcoun
 	return Variant();
 }
 
-void TestCase::assert_called_once(const Object *object, const String &signal, const String &msg = "") const {
+void TestCase::assert_not_called(const Object *object, const String &signal, const String &msg) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->not_called(object, signal)) {
 		assert(object, signal, msg, "{msg}{a}.{b} was not called");
