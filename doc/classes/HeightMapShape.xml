@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HeightMapShape" inherits="Shape" category="Core" version="3.2">
+	<brief_description>
+		Height map shape for 3D physics (bullet only)
+	</brief_description>
+	<description>
+		Height map shape resource, which can be added to a [PhysicsBody] or [Area].
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="map_data" type="PoolRealArray" setter="set_map_data" getter="get_map_data">
+			Height map data, pool array must be of [member map_width] * [member map_depth] size.
+		</member>
+		<member name="map_depth" type="int" setter="set_map_depth" getter="get_map_depth">
+			Depth of the height map data. Changing this will resize the [member map_data].
+		</member>
+		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width">
+			Width of the height map data. Changing this will resize the [member map_data].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
