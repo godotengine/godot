@@ -255,14 +255,19 @@ void EditorQuickOpen::_confirmed() {
 
 void EditorQuickOpen::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
 
-		connect("confirmed", this, "_confirmed");
+		case NOTIFICATION_ENTER_TREE: {
 
-		search_box->set_right_icon(get_icon("Search", "EditorIcons"));
-		search_box->set_clear_button_enabled(true);
-	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", this, "_confirmed");
+			connect("confirmed", this, "_confirmed");
+
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+			search_box->set_clear_button_enabled(true);
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+
+			disconnect("confirmed", this, "_confirmed");
+		} break;
 	}
 }
 
@@ -297,6 +302,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", this, "_confirmed");
 	search_options->set_hide_root(true);
+	search_options->add_constant_override("draw_guides", 1);
 	ei = "EditorIcons";
 	ot = "Object";
 	add_directories = false;
