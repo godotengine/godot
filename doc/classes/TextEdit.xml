@@ -404,6 +404,7 @@
 			Adjust [code]Vertical[/code] Scroll Sensitivity of Text Editor.
 		</member>
 		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled">
+            If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
 		</member>
 	</members>
 	<signals>
