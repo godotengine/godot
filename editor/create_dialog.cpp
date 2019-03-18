@@ -38,7 +38,7 @@
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, StringName *original_node_class) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, StringName &class_to_replace) {
 
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
@@ -109,7 +109,6 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, StringNa
 		
 		replace_parents.clear();
 
-		StringName class_to_replace = *original_node_class;
 		while (ClassDB::get_parent_class(class_to_replace) != base_type) {
 
 			class_to_replace = ClassDB::get_parent_class(class_to_replace);
