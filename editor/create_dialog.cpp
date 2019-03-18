@@ -109,7 +109,6 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, Node *or
 		node_to_replace = original_node;
 		replace_parents.clear();
 		
-		// Initialize set containing all the parents of the node to be replaced.
 		StringName node_class = node_to_replace->get_class_name();
 		while(ClassDB::get_parent_class(node_class) != base_type) {
 			node_class = ClassDB::get_parent_class(node_class);
@@ -208,8 +207,6 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_selectable(0, false);
 	} else if (!(*to_select && (*to_select)->get_text(0) == search_box->get_text())) {
 		bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
-		
-		
 		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
 		to_select_type = to_select_type.split(" ")[0];
 		bool current_item_is_preferred;

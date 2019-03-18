@@ -307,7 +307,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			String preferred = "";
 			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
 
-			if (current_edited_scene_root) {	
+			if (current_edited_scene_root) {
 				if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Node2D"))
 					preferred = "Node2D";
 				else if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Spatial"))
@@ -331,7 +331,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_REPLACE: {
 			Node *selected = scene_tree->get_selected();
-			
 			create_dialog->popup_create(false, true, selected);
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
