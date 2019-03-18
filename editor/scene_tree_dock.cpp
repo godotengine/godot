@@ -333,7 +333,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_REPLACE: {
 
 			StringName selected = scene_tree->get_selected()->get_class_name();
-			create_dialog->popup_create(false, true, &selected);
+			create_dialog->popup_create(false, true, selected);
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
 
