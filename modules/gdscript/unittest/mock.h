@@ -36,8 +36,18 @@
 class Mock : public Reference {
 	GDCLASS(Mock, Reference);
 
+public:
+	Mock();
+	void bind_method(const String &name);
+
 protected:
+	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
+	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
 	static void _bind_methods();
+
+private:
 };
 
 #endif // MOCK_H
