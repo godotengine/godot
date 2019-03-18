@@ -38,6 +38,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "core/string_builder.h"
 #include "core/ucaps.h"
 
 #include "../glue/cs_compressed.gen.h"
@@ -105,6 +106,16 @@ bool BindingsGenerator::verbose_output = false;
 
 BindingsGenerator *BindingsGenerator::singleton = NULL;
 
+static String fix_doc_description(const String &p_bbcode) {
+
+	// This seems to be the correct way to do this. It's the same EditorHelp does.
+
+	return p_bbcode.dedent()
+			.replace("\t", "")
+			.replace("\r", "")
+			.strip_edges();
+}
+
 static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
 
 	String ret;
@@ -171,6 +182,366 @@ static String snake_to_camel_case(const String &p_identifier, bool p_input_is_up
 	}
 
 	return ret;
+}
+
+String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
+
+	// Based on the version in EditorHelp
+
+	if (p_bbcode.empty())
+		return String();
+
+	DocData *doc = EditorHelp::get_doc_data();
+
+	String bbcode = p_bbcode;
+
+	StringBuilder xml_output;
+
+	xml_output.append("<para>");
+
+	List<String> tag_stack;
+	bool code_tag = false;
+
+	int pos = 0;
+	while (pos < bbcode.length()) {
+		int brk_pos = bbcode.find("[", pos);
+
+		if (brk_pos < 0)
+			brk_pos = bbcode.length();
+
+		if (brk_pos > pos) {
+			String text = bbcode.substr(pos, brk_pos - pos);
+			if (code_tag || tag_stack.size() > 0) {
+				xml_output.append(text.xml_escape());
+			} else {
+				Vector<String> lines = text.split("\n");
+				for (int i = 0; i < lines.size(); i++) {
+					if (i != 0)
+						xml_output.append("<para>");
+
+					xml_output.append(lines[i].xml_escape());
+
+					if (i != lines.size() - 1)
+						xml_output.append("</para>\n");
+				}
+			}
+		}
+
+		if (brk_pos == bbcode.length())
+			break; // nothing else to add
+
+		int brk_end = bbcode.find("]", brk_pos + 1);
+
+		if (brk_end == -1) {
+			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+			if (code_tag || tag_stack.size() > 0) {
+				xml_output.append(text.xml_escape());
+			} else {
+				Vector<String> lines = text.split("\n");
+				for (int i = 0; i < lines.size(); i++) {
+					if (i != 0)
+						xml_output.append("<para>");
+
+					xml_output.append(lines[i].xml_escape());
+
+					if (i != lines.size() - 1)
+						xml_output.append("</para>\n");
+				}
+			}
+
+			break;
+		}
+
+		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
+
+		if (tag.begins_with("/")) {
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
+
+			if (!tag_ok) {
+				xml_output.append("[");
+				pos = brk_pos + 1;
+				continue;
+			}
+
+			tag_stack.pop_front();
+			pos = brk_end + 1;
+			code_tag = false;
+
+			if (tag == "/url") {
+				xml_output.append("</a>");
+			} else if (tag == "/code") {
+				xml_output.append("</c>");
+			} else if (tag == "/codeblock") {
+				xml_output.append("</code>");
+			}
+		} else if (code_tag) {
+			xml_output.append("[");
+			pos = brk_pos + 1;
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ")) {
+			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
+			String link_tag = tag.substr(0, tag.find(" "));
+
+			Vector<String> link_target_parts = link_target.split(".");
+
+			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+				ERR_PRINTS("Invalid reference format: " + tag);
+
+				xml_output.append("<c>");
+				xml_output.append(tag);
+				xml_output.append("</c>");
+
+				pos = brk_end + 1;
+				continue;
+			}
+
+			const TypeInterface *target_itype;
+			StringName target_cname;
+
+			if (link_target_parts.size() == 2) {
+				target_itype = _get_type_or_null(TypeReference(link_target_parts[0]));
+				if (!target_itype) {
+					target_itype = _get_type_or_null(TypeReference("_" + link_target_parts[0]));
+				}
+				target_cname = link_target_parts[1];
+			} else {
+				target_itype = p_itype;
+				target_cname = link_target_parts[0];
+			}
+
+			if (link_tag == "method") {
+				if (!target_itype || !target_itype->is_object_type) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (target_itype) {
+							OS::get_singleton()->print("Cannot resolve method reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+						} else {
+							OS::get_singleton()->print("Cannot resolve type from method reference in documentation: %s\n", link_target.utf8().get_data());
+						}
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else {
+					const MethodInterface *target_imethod = target_itype->find_method_by_name(target_cname);
+
+					if (target_imethod) {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append(".");
+						xml_output.append(target_imethod->proxy_name);
+						xml_output.append("\"/>");
+					}
+				}
+			} else if (link_tag == "member") {
+				if (!target_itype || !target_itype->is_object_type) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (target_itype) {
+							OS::get_singleton()->print("Cannot resolve member reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+						} else {
+							OS::get_singleton()->print("Cannot resolve type from member reference in documentation: %s\n", link_target.utf8().get_data());
+						}
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else {
+					const PropertyInterface *target_iprop = target_itype->find_property_by_name(target_cname);
+
+					if (target_iprop) {
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append(".");
+						xml_output.append(target_iprop->proxy_name);
+						xml_output.append("\"/>");
+					}
+				}
+			} else if (link_tag == "signal") {
+				// We do not declare signals in any way in C#, so there is nothing to reference
+				xml_output.append("<c>");
+				xml_output.append(link_target);
+				xml_output.append("</c>");
+			} else if (link_tag == "enum") {
+				StringName search_cname = !target_itype ? target_cname :
+														  StringName(target_itype->name + "." + (String)target_cname);
+
+				const Map<StringName, TypeInterface>::Element *enum_match = enum_types.find(search_cname);
+
+				if (!enum_match && search_cname != target_cname) {
+					enum_match = enum_types.find(target_cname);
+				}
+
+				if (enum_match) {
+					const TypeInterface &target_enum_itype = enum_match->value();
+
+					xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+					xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
+					xml_output.append("\"/>");
+				} else {
+					ERR_PRINTS("Cannot resolve enum reference in documentation: " + link_target);
+
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				}
+			}
+
+			pos = brk_end + 1;
+		} else if (doc->class_list.has(tag)) {
+			if (tag == "Array" || tag == "Dictionary") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE_COLLECTIONS ".");
+				xml_output.append(tag);
+				xml_output.append("\"/>");
+			} else if (tag == "bool" || tag == "int") {
+				xml_output.append("<see cref=\"");
+				xml_output.append(tag);
+				xml_output.append("\"/>");
+			} else if (tag == "float") {
+				xml_output.append("<see cref=\""
+#ifdef REAL_T_IS_DOUBLE
+								  "double"
+#else
+								  "float"
+#endif
+								  "\"/>");
+			} else if (tag == "Variant") {
+				// We use System.Object for Variant, so there is no Variant type in C#
+				xml_output.append("<c>Variant</c>");
+			} else if (tag == "String") {
+				xml_output.append("<see cref=\"string\"/>");
+			} else if (tag == "Nil") {
+				xml_output.append("<see langword=\"null\"/>");
+			} else if (tag.begins_with("@")) {
+				// @Global Scope, @GDScript, etc
+				xml_output.append("<c>");
+				xml_output.append(tag);
+				xml_output.append("</c>");
+			} else if (tag == "PoolByteArray") {
+				xml_output.append("<see cref=\"byte\"/>");
+			} else if (tag == "PoolIntArray") {
+				xml_output.append("<see cref=\"int\"/>");
+			} else if (tag == "PoolRealArray") {
+#ifdef REAL_T_IS_DOUBLE
+				xml_output.append("<see cref=\"double\"/>");
+#else
+				xml_output.append("<see cref=\"float\"/>");
+#endif
+			} else if (tag == "PoolStringArray") {
+				xml_output.append("<see cref=\"string\"/>");
+			} else if (tag == "PoolVector2Array") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector2\"/>");
+			} else if (tag == "PoolVector3Array") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Vector3\"/>");
+			} else if (tag == "PoolColorArray") {
+				xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".Color\"/>");
+			} else {
+				const TypeInterface *target_itype = _get_type_or_null(TypeReference(tag));
+
+				if (!target_itype) {
+					target_itype = _get_type_or_null(TypeReference("_" + tag));
+				}
+
+				if (target_itype) {
+					xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+					xml_output.append(target_itype->proxy_name);
+					xml_output.append("\"/>");
+				} else {
+					ERR_PRINTS("Cannot resolve type reference in documentation: " + tag);
+
+					xml_output.append("<c>");
+					xml_output.append(tag);
+					xml_output.append("</c>");
+				}
+			}
+
+			pos = brk_end + 1;
+		} else if (tag == "b") {
+			// bold is not supported in xml comments
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "i") {
+			// italics is not supported in xml comments
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "code") {
+			xml_output.append("<c>");
+
+			code_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "codeblock") {
+			xml_output.append("<code>");
+
+			code_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "center") {
+			// center is alignment not supported in xml comments
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "br") {
+			xml_output.append("\n"); // FIXME: Should use <para> instead. Luckily this tag isn't used for now.
+			pos = brk_end + 1;
+		} else if (tag == "u") {
+			// underline is not supported in xml comments
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "s") {
+			// strikethrough is not supported in xml comments
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "url") {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1)
+				end = bbcode.length();
+			String url = bbcode.substr(brk_end + 1, end - brk_end - 1);
+			xml_output.append("<a href=\"");
+			xml_output.append(url);
+			xml_output.append("\">");
+			xml_output.append(url);
+
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("url=")) {
+			String url = tag.substr(4, tag.length());
+			xml_output.append("<a href=\"");
+			xml_output.append(url);
+			xml_output.append("\">");
+
+			pos = brk_end + 1;
+			tag_stack.push_front("url");
+		} else if (tag == "img") {
+			int end = bbcode.find("[", brk_end);
+			if (end == -1)
+				end = bbcode.length();
+			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
+
+			// Not supported. Just append the bbcode.
+			xml_output.append("[img]");
+			xml_output.append(image);
+			xml_output.append("[/img]");
+
+			pos = end;
+			tag_stack.push_front(tag);
+		} else if (tag.begins_with("color=")) {
+			// Not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front("color");
+		} else if (tag.begins_with("font=")) {
+			// Not supported.
+			pos = brk_end + 1;
+			tag_stack.push_front("font");
+		} else {
+			xml_output.append("["); // ignore
+			pos = brk_pos + 1;
+		}
+	}
+
+	xml_output.append("</para>");
+
+	return xml_output.as_string();
 }
 
 int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
@@ -299,6 +670,9 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 
 	// Constants (in partial GD class)
 
+	p_output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
+					   "'Missing XML comment for publicly visible type or member'\n");
+
 	p_output.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 	p_output.push_back(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
 
@@ -306,20 +680,20 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 		const ConstantInterface &iconstant = E->get();
 
 		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
-			p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+			String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), NULL);
+			Vector<String> summary_lines = xml_summary.split("\n");
 
-			Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+			if (summary_lines.size()) {
+				p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
 
-			for (int i = 0; i < description_lines.size(); i++) {
-				String description_line = description_lines[i].strip_edges();
-				if (description_line.size()) {
+				for (int i = 0; i < summary_lines.size(); i++) {
 					p_output.push_back(INDENT2 "/// ");
-					p_output.push_back(description_line.xml_escape());
+					p_output.push_back(summary_lines[i]);
 					p_output.push_back("\n");
 				}
-			}
 
-			p_output.push_back(INDENT2 "/// </summary>");
+				p_output.push_back(INDENT2 "/// </summary>");
+			}
 		}
 
 		p_output.push_back(MEMBER_BEGIN "public const int ");
@@ -369,20 +743,20 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 			const ConstantInterface &iconstant = F->get();
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
-				p_output.push_back(INDENT2 "/// <summary>\n");
+				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), NULL);
+				Vector<String> summary_lines = xml_summary.split("\n");
 
-				Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+				if (summary_lines.size()) {
+					p_output.push_back(INDENT2 "/// <summary>\n");
 
-				for (int i = 0; i < description_lines.size(); i++) {
-					String description_line = description_lines[i].strip_edges();
-					if (description_line.size()) {
+					for (int i = 0; i < summary_lines.size(); i++) {
 						p_output.push_back(INDENT2 "/// ");
-						p_output.push_back(description_line.xml_escape());
+						p_output.push_back(summary_lines[i]);
 						p_output.push_back("\n");
 					}
-				}
 
-				p_output.push_back(INDENT2 "/// </summary>\n");
+					p_output.push_back(INDENT2 "/// </summary>\n");
+				}
 			}
 
 			p_output.push_back(INDENT2);
@@ -399,6 +773,8 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 	}
 
 	p_output.push_back(CLOSE_BLOCK); // end of namespace
+
+	p_output.push_back("\n#pragma warning restore CS1591\n");
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output) {
@@ -712,28 +1088,31 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.push_back("using System;\n"); // IntPtr
 	output.push_back("using System.Diagnostics;\n"); // DebuggerBrowsable
 
-	output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
-					 "'Missing XML comment for publicly visible type or member'\n");
+	output.push_back("\n"
+					 "#pragma warning disable CS1591 // Disable warning: "
+					 "'Missing XML comment for publicly visible type or member'\n"
+					 "#pragma warning disable CS1573 // Disable warning: "
+					 "'Parameter has no matching param tag in the XML comment'\n");
 
 	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
 
 	if (class_doc && class_doc->description.size()) {
-		output.push_back(INDENT1 "/// <summary>\n");
+		String xml_summary = bbcode_to_xml(fix_doc_description(class_doc->description), &itype);
+		Vector<String> summary_lines = xml_summary.split("\n");
 
-		Vector<String> description_lines = class_doc->description.split("\n");
+		if (summary_lines.size()) {
+			output.push_back(INDENT1 "/// <summary>\n");
 
-		for (int i = 0; i < description_lines.size(); i++) {
-			String description_line = description_lines[i].strip_edges();
-			if (description_line.size()) {
+			for (int i = 0; i < summary_lines.size(); i++) {
 				output.push_back(INDENT1 "/// ");
-				output.push_back(description_line.xml_escape());
+				output.push_back(summary_lines[i]);
 				output.push_back("\n");
 			}
-		}
 
-		output.push_back(INDENT1 "/// </summary>\n");
+			output.push_back(INDENT1 "/// </summary>\n");
+		}
 	}
 
 	output.push_back(INDENT1 "public ");
@@ -767,20 +1146,20 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			const ConstantInterface &iconstant = E->get();
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
-				output.push_back(MEMBER_BEGIN "/// <summary>\n");
+				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), &itype);
+				Vector<String> summary_lines = xml_summary.split("\n");
 
-				Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+				if (summary_lines.size()) {
+					output.push_back(MEMBER_BEGIN "/// <summary>\n");
 
-				for (int i = 0; i < description_lines.size(); i++) {
-					String description_line = description_lines[i].strip_edges();
-					if (description_line.size()) {
+					for (int i = 0; i < summary_lines.size(); i++) {
 						output.push_back(INDENT2 "/// ");
-						output.push_back(description_line.xml_escape());
+						output.push_back(summary_lines[i]);
 						output.push_back("\n");
 					}
-				}
 
-				output.push_back(INDENT2 "/// </summary>");
+					output.push_back(INDENT2 "/// </summary>");
+				}
 			}
 
 			output.push_back(MEMBER_BEGIN "public const int ");
@@ -808,20 +1187,20 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				const ConstantInterface &iconstant = F->get();
 
 				if (iconstant.const_doc && iconstant.const_doc->description.size()) {
-					output.push_back(INDENT3 "/// <summary>\n");
+					String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), &itype);
+					Vector<String> summary_lines = xml_summary.split("\n");
 
-					Vector<String> description_lines = iconstant.const_doc->description.split("\n");
+					if (summary_lines.size()) {
+						output.push_back(INDENT3 "/// <summary>\n");
 
-					for (int i = 0; i < description_lines.size(); i++) {
-						String description_line = description_lines[i].strip_edges();
-						if (description_line.size()) {
+						for (int i = 0; i < summary_lines.size(); i++) {
 							output.push_back(INDENT3 "/// ");
-							output.push_back(description_line.xml_escape());
+							output.push_back(summary_lines[i]);
 							output.push_back("\n");
 						}
-					}
 
-					output.push_back(INDENT3 "/// </summary>\n");
+						output.push_back(INDENT3 "/// </summary>\n");
+					}
 				}
 
 				output.push_back(INDENT3);
@@ -928,7 +1307,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.push_back(INDENT1 CLOSE_BLOCK /* class */
 					CLOSE_BLOCK /* namespace */);
 
-	output.push_back("\n#pragma warning restore CS1591\n");
+	output.push_back("\n"
+					 "#pragma warning restore CS1591\n"
+					 "#pragma warning restore CS1573\n");
 
 	return _save_file(p_output_file, output);
 }
@@ -978,33 +1359,21 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	const TypeInterface *prop_itype = _get_type_or_null(proptype_name);
 	ERR_FAIL_NULL_V(prop_itype, ERR_BUG); // Property type not found
 
-	String prop_proxy_name = escape_csharp_keyword(snake_to_pascal_case(p_iprop.cname));
-
-	// Prevent property and enclosing type from sharing the same name
-	if (prop_proxy_name == p_itype.proxy_name) {
-		if (verbose_output) {
-			WARN_PRINTS("Name of property `" + prop_proxy_name + "` is ambiguous with the name of its class `" +
-						p_itype.proxy_name + "`. Renaming property to `" + prop_proxy_name + "_`");
-		}
-
-		prop_proxy_name += "_";
-	}
-
 	if (p_iprop.prop_doc && p_iprop.prop_doc->description.size()) {
-		p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+		String xml_summary = bbcode_to_xml(fix_doc_description(p_iprop.prop_doc->description), &p_itype);
+		Vector<String> summary_lines = xml_summary.split("\n");
 
-		Vector<String> description_lines = p_iprop.prop_doc->description.split("\n");
+		if (summary_lines.size()) {
+			p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
 
-		for (int i = 0; i < description_lines.size(); i++) {
-			String description_line = description_lines[i].strip_edges();
-			if (description_line.size()) {
+			for (int i = 0; i < summary_lines.size(); i++) {
 				p_output.push_back(INDENT2 "/// ");
-				p_output.push_back(description_line.xml_escape());
+				p_output.push_back(summary_lines[i]);
 				p_output.push_back("\n");
 			}
-		}
 
-		p_output.push_back(INDENT2 "/// </summary>");
+			p_output.push_back(INDENT2 "/// </summary>");
+		}
 	}
 
 	p_output.push_back(MEMBER_BEGIN "public ");
@@ -1014,7 +1383,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	p_output.push_back(prop_itype->cs_type);
 	p_output.push_back(" ");
-	p_output.push_back(prop_proxy_name.replace("/", "__"));
+	p_output.push_back(p_iprop.proxy_name);
 	p_output.push_back("\n" INDENT2 OPEN_BLOCK);
 
 	if (getter) {
@@ -1135,7 +1504,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 			icall_params += arg_type->cs_in.empty() ? arg_in : sformat(arg_type->cs_in, arg_in);
 
-			default_args_doc.push_back(INDENT2 "/// <param name=\"" + iarg.name + "\">If the param is null, then the default value is " + def_arg + "</param>\n");
+			// Apparently the name attribute must not include the @
+			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
+
+			default_args_doc.push_back(INDENT2 "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>\n");
 		} else {
 			icall_params += arg_type->cs_in.empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -1151,24 +1523,24 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_imethod.method_doc && p_imethod.method_doc->description.size()) {
-			p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+			String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
+			Vector<String> summary_lines = xml_summary.split("\n");
 
-			Vector<String> description_lines = p_imethod.method_doc->description.split("\n");
+			if (summary_lines.size() || default_args_doc.size()) {
+				p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
 
-			for (int i = 0; i < description_lines.size(); i++) {
-				String description_line = description_lines[i].strip_edges();
-				if (description_line.size()) {
+				for (int i = 0; i < summary_lines.size(); i++) {
 					p_output.push_back(INDENT2 "/// ");
-					p_output.push_back(description_line.xml_escape());
+					p_output.push_back(summary_lines[i]);
 					p_output.push_back("\n");
 				}
-			}
 
-			for (List<String>::Element *E = default_args_doc.front(); E; E = E->next()) {
-				p_output.push_back(E->get().xml_escape());
-			}
+				for (List<String>::Element *E = default_args_doc.front(); E; E = E->next()) {
+					p_output.push_back(E->get());
+				}
 
-			p_output.push_back(INDENT2 "/// </summary>");
+				p_output.push_back(INDENT2 "/// </summary>");
+			}
 		}
 
 		if (!p_imethod.is_internal) {
@@ -1728,13 +2100,14 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInterface iprop;
 			iprop.cname = property.name;
-			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
 			bool valid = false;
 			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
 			ERR_FAIL_COND(!valid);
+
+			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
 
 			// Prevent property and enclosing type from sharing the same name
 			if (iprop.proxy_name == itype.proxy_name) {
@@ -1745,6 +2118,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 				iprop.proxy_name += "_";
 			}
+
+			iprop.proxy_name = iprop.proxy_name.replace("/", "__"); // Some members have a slash...
 
 			iprop.prop_doc = NULL;
 
