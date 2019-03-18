@@ -1573,7 +1573,6 @@ unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_button, int p_x11
 }
 
 void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
-
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
 
@@ -1662,6 +1661,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 				input->accumulate_input_event(k);
 			}
+			memfree(utf8string);
 			return;
 		}
 		memfree(utf8string);
@@ -1720,49 +1720,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	get_key_modifier_state(xkeyevent->state, k);
 
-	/* Phase 6, determine echo character */
-
-	// Echo characters in X11 are a keyrelease and a keypress
-	// one after the other with the (almot) same timestamp.
-	// To detect them, i use XPeekEvent and check that their
-	// difference in time is below a threshold.
-
-	if (xkeyevent->type != KeyPress) {
-
-		p_echo = false;
-
-		// make sure there are events pending,
-		// so this call won't block.
-		if (XPending(x11_display) > 0) {
-			XEvent peek_event;
-			XPeekEvent(x11_display, &peek_event);
-
-			// I'm using a threshold of 5 msecs,
-			// since sometimes there seems to be a little
-			// jitter. I'm still not convinced that all this approach
-			// is correct, but the xorg developers are
-			// not very helpful today.
-
-			::Time tresh = ABSDIFF(peek_event.xkey.time, xkeyevent->time);
-			if (peek_event.type == KeyPress && tresh < 5) {
-				KeySym rk;
-				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, NULL);
-				if (rk == keysym_keycode) {
-					XEvent event;
-					XNextEvent(x11_display, &event); //erase next event
-					handle_key_event((XKeyEvent *)&event, true);
-					return; //ignore current, echo next
-				}
-			}
-
-			// use the time from peek_event so it always works
-		}
-
-		// save the time to check for echo when keypress happens
-	}
-
-	/* Phase 7, send event to Window */
-
 	k->set_pressed(keypress);
 
 	if (keycode >= 'a' && keycode <= 'z')
@@ -1770,7 +1727,6 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	k->set_scancode(keycode);
 	k->set_unicode(unicode);
-	k->set_echo(p_echo);
 
 	if (k->get_scancode() == KEY_BACKTAB) {
 		//make it consistent across platforms.
@@ -1791,19 +1747,44 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 			k->set_metakey(false);
 	}
 
-	bool last_is_pressed = Input::get_singleton()->is_key_pressed(k->get_scancode());
-	if (k->is_pressed()) {
-		if (last_is_pressed) {
-			k->set_echo(true);
+	/* Phase 6, determine if key is echo */
+
+	// The window manager will keep sending us KeyPress events if we press a key and don't release it.
+	// We have to find if an event is because of that and flag it as echo.
+
+	// When we poll events from the window manager we first put them all inside the accumulated_events list,
+	// and when polling is finished we process them and send them away.
+	// If the game lags, the list may contain many key presses and key releases of the same key.
+
+	// First we will check if our KeyPress event is echo by reverse iterating the acccumulated_events list.
+	bool found_same_key = false;
+
+	List<Ref<InputEvent> >::Element *ev = input->accumulated_events.back();
+	while (ev) {
+		Ref<InputEventKey> old_key = ev->get();
+		if (old_key.is_valid()) {
+			if (old_key->get_scancode() == k->get_scancode()) {
+				if (k->is_pressed() && old_key->is_pressed()) {
+					k->set_echo(true);
+				} else {
+					/* We found that we released the key */
+					k->set_echo(false);
+				}
+				found_same_key = true;
+				break;
+			}
 		}
-	} else {
-		//ignore
-		if (!last_is_pressed) {
-			return;
+		ev = ev->prev();
+	}
+
+	/* If we didn't find any same key in the accumulated event list, we will search if the key was already processed */
+	if (!found_same_key) {
+		if (Input::get_singleton()->is_key_pressed(k->get_scancode()) && k->is_pressed()) {
+			k->set_echo(true);
 		}
 	}
 
-	//printf("key: %x\n",k->get_scancode());
+	/* Phase 7, add it to the accumulated_events list */
 	input->accumulate_input_event(k);
 }
 

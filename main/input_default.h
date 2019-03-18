@@ -183,7 +183,6 @@ private:
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
-	List<Ref<InputEvent> > accumulated_events;
 	bool use_accumulated_input;
 
 public:
@@ -271,6 +270,8 @@ public:
 	virtual void accumulate_input_event(const Ref<InputEvent> &p_event);
 	virtual void flush_accumulated_events();
 	virtual void set_use_accumulated_input(bool p_enable);
+
+	List<Ref<InputEvent> > accumulated_events;
 
 	InputDefault();
 };
