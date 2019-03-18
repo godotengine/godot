@@ -38,7 +38,7 @@
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, Node *original_node) {
 
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
@@ -103,6 +103,26 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 		popup_centered(popup_size);
 	}
 
+	is_replace_mode = p_replace_mode;
+
+	if (p_replace_mode) {
+		node_to_replace = original_node;
+		replace_parents.clear();
+		
+		// Initialize set containing all the parents of the node to be replaced.
+		StringName node_class = node_to_replace->get_class_name();
+		while(ClassDB::get_parent_class(node_class) != base_type) {
+			node_class = ClassDB::get_parent_class(node_class);
+			replace_parents.insert((String) node_class);
+		}
+
+		set_title(vformat(TTR("Change %s Type"), base_type));
+		get_ok()->set_text(TTR("Change"));
+	} else {
+		set_title(vformat(TTR("Create New %s"), base_type));
+		get_ok()->set_text(TTR("Create"));
+	}
+
 	if (p_dont_clear) {
 		search_box->select_all();
 	} else {
@@ -112,16 +132,6 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode) {
 	search_box->grab_focus();
 
 	_update_search();
-
-	is_replace_mode = p_replace_mode;
-
-	if (p_replace_mode) {
-		set_title(vformat(TTR("Change %s Type"), base_type));
-		get_ok()->set_text(TTR("Change"));
-	} else {
-		set_title(vformat(TTR("Create New %s"), base_type));
-		get_ok()->set_text(TTR("Create"));
-	}
 }
 
 void CreateDialog::_text_changed(const String &p_newtext) {
@@ -198,6 +208,8 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_selectable(0, false);
 	} else if (!(*to_select && (*to_select)->get_text(0) == search_box->get_text())) {
 		bool is_search_subsequence = search_box->get_text().is_subsequence_ofi(p_type);
+		
+		
 		String to_select_type = *to_select ? (*to_select)->get_text(0) : "";
 		to_select_type = to_select_type.split(" ")[0];
 		bool current_item_is_preferred;
@@ -227,6 +239,9 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		collapse &= (item != p_root);
 		// don't collapse abstract nodes on the first tree level
 		collapse &= ((parent != p_root) || (can_instance));
+
+		collapse &= !replace_parents.find(p_type);
+
 		item->set_collapsed(collapse);
 	}
 
@@ -244,10 +259,6 @@ void CreateDialog::_update_search() {
 	favorite->set_disabled(true);
 
 	help_bit->set_text("");
-	/*
-	TreeItem *root = search_options->create_item();
-	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
-*/
 
 	HashMap<String, TreeItem *> types;
 
@@ -289,17 +300,18 @@ void CreateDialog::_update_search() {
 			bool found = false;
 			String type2 = I->get();
 			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
-				if (search_box->get_text().is_subsequence_ofi(type2)) {
+				if (search_box->get_text() != "" and search_box->get_text().is_subsequence_ofi(type2)) {
 
 					found = true;
 					break;
-				}
+				}	
 
 				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
 			}
 
 			if (found)
 				add_type(I->get(), types, root, &to_select);
+			
 		}
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
@@ -433,6 +445,7 @@ String CreateDialog::get_preferred_search_result_type() {
 
 	return preferred_search_result_type;
 }
+
 String CreateDialog::get_selected_type() {
 
 	TreeItem *selected = search_options->get_selected();
@@ -676,6 +689,7 @@ void CreateDialog::_bind_methods() {
 CreateDialog::CreateDialog() {
 
 	is_replace_mode = false;
+	node_to_replace = nullptr;
 
 	set_resizable(true);
 

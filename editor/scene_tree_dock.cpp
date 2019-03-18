@@ -307,8 +307,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			String preferred = "";
 			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
 
-			if (current_edited_scene_root) {
-
+			if (current_edited_scene_root) {	
 				if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Node2D"))
 					preferred = "Node2D";
 				else if (ClassDB::is_parent_class(current_edited_scene_root->get_class_name(), "Spatial"))
@@ -331,8 +330,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		} break;
 		case TOOL_REPLACE: {
-
-			create_dialog->popup_create(false, true);
+			Node *selected = scene_tree->get_selected();
+			
+			create_dialog->popup_create(false, true, selected);
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
 
@@ -377,7 +377,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
 
-			Array selection = editor_selection->get_selected_nodes();
+ 			Array selection = editor_selection->get_selected_nodes();
 
 			if (selection.empty())
 				return;
@@ -385,8 +385,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			editor_data->get_undo_redo().create_action(TTR("Clear Script"));
 			editor_data->get_undo_redo().add_do_method(editor, "push_item", (Script *)NULL);
 
-			for (int i = 0; i < selection.size(); i++) {
-
+ 			for (int i = 0; i < selection.size(); i++) {
+				 
 				Node *n = Object::cast_to<Node>(selection[i]);
 				Ref<Script> existing = n->get_script();
 				if (existing.is_valid()) {
