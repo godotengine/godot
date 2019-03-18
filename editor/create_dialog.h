@@ -54,13 +54,12 @@ class CreateDialog : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 	bool is_replace_mode;
-	Node *node_to_replace;
 	String base_type;
 	String preferred_search_result_type;
 	EditorHelpBit *help_bit;
 	List<StringName> type_list;
 	Set<StringName> type_blacklist;
-	Set<String> replace_parents;
+	Set<StringName> replace_parents;
 
 	void _item_selected();
 
@@ -104,7 +103,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type);
 	String get_preferred_search_result_type();
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, Node *original_node = nullptr);
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, StringName *original_node_class = NULL);
 
 	CreateDialog();
 };

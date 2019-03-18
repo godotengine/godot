@@ -38,7 +38,7 @@
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, Node *original_node) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, StringName *original_node_class) {
 
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
@@ -106,13 +106,14 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, Node *or
 	is_replace_mode = p_replace_mode;
 
 	if (p_replace_mode) {
-		node_to_replace = original_node;
-		replace_parents.clear();
 		
-		StringName node_class = node_to_replace->get_class_name();
-		while(ClassDB::get_parent_class(node_class) != base_type) {
-			node_class = ClassDB::get_parent_class(node_class);
-			replace_parents.insert((String) node_class);
+		replace_parents.clear();
+
+		StringName class_to_replace = *original_node_class;
+		while (ClassDB::get_parent_class(class_to_replace) != base_type) {
+
+			class_to_replace = ClassDB::get_parent_class(class_to_replace);
+			replace_parents.insert(class_to_replace);
 		}
 
 		set_title(vformat(TTR("Change %s Type"), base_type));
@@ -237,7 +238,8 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		// don't collapse abstract nodes on the first tree level
 		collapse &= ((parent != p_root) || (can_instance));
 
-		collapse &= !replace_parents.find(p_type);
+		if (is_replace_mode)
+			collapse &= !replace_parents.find(p_type);
 
 		item->set_collapsed(collapse);
 	}
@@ -297,18 +299,17 @@ void CreateDialog::_update_search() {
 			bool found = false;
 			String type2 = I->get();
 			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
-				if (search_box->get_text() != "" and search_box->get_text().is_subsequence_ofi(type2)) {
+				if (search_box->get_text().is_subsequence_ofi(type2)) {
 
 					found = true;
 					break;
-				}	
+				}
 
 				type2 = cpp_type ? ClassDB::get_parent_class(type2) : ed.script_class_get_base(type2);
 			}
 
 			if (found)
 				add_type(I->get(), types, root, &to_select);
-			
 		}
 
 		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
@@ -684,9 +685,7 @@ void CreateDialog::_bind_methods() {
 }
 
 CreateDialog::CreateDialog() {
-
 	is_replace_mode = false;
-	node_to_replace = nullptr;
 
 	set_resizable(true);
 
