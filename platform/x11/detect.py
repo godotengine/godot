@@ -58,11 +58,12 @@ def get_opts():
 
     return [
         BoolVariable('use_llvm', 'Use the LLVM compiler', False),
+        BoolVariable('use_lld', 'Use the LLD linker', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
-        BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
+        BoolVariable('pulseaudio', 'Detect and use PulseAudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
@@ -130,6 +131,12 @@ def configure(env):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
+    if env['use_lld']:
+        if env['use_llvm']:
+            env.Append(LINKFLAGS=['-fuse-ld=lld'])
+        else:
+            print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
+            sys.exit(255)
 
     if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
         env.extra_suffix += "s"
@@ -148,6 +155,7 @@ def configure(env):
 
     if env['use_lto']:
         env.Append(CCFLAGS=['-flto'])
+
         if not env['use_llvm'] and env.GetOption("num_jobs") > 1:
             env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
         else:
