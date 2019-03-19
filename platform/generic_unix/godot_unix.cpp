@@ -34,7 +34,7 @@
 #include <unistd.h>
 
 #include "main/main.h"
-#include "os_x11.h"
+#include "x11/os_x11.h"
 
 int main(int argc, char *argv[]) {
 

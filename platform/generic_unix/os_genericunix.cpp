@@ -33,7 +33,6 @@
 
 #include "core/print_string.h"
 #include "errno.h"
-#include "key_mapping_x11.h"
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>

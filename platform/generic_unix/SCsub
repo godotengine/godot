@@ -7,14 +7,14 @@ from platform_methods import run_in_subprocess
 import platform_x11_builders
 
 common_unix = [
-    "context_gl_x11.cpp",
     "crash_handler_unix.cpp",
     "detect_prime.cpp",
     "joypad_linux.cpp",
-    "key_mapping_x11.cpp",
     "os_genericunix.cpp",
-    "os_x11.cpp",
     "power_unix.cpp",
+    "x11/context_gl_x11.cpp",
+    "x11/key_mapping_x11.cpp",
+    "x11/os_x11.cpp",
 ]
 
 prog = env.add_program('#bin/godot', ['godot_unix.cpp'] + common_unix)
