@@ -240,7 +240,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 
 		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
 			Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
-			Color c = sb->get_border_color(MARGIN_TOP);
+			Color c = sb->get_border_color();
 			Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
 			mono_color.a = 0.85;
 			c = mono_color;
