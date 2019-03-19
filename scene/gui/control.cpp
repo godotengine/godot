@@ -1388,7 +1388,10 @@ void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bo
 	}
 
 	update();
-	_change_notify("anchor");
+	_change_notify("anchor_left");
+	_change_notify("anchor_right");
+	_change_notify("anchor_top");
+	_change_notify("anchor_bottom");
 }
 
 void Control::_set_anchor(Margin p_margin, float p_anchor) {
