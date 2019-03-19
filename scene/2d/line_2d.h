@@ -70,6 +70,8 @@ public:
 
 	int get_point_count() const;
 
+	void clear_points();
+
 	void add_point(Vector2 pos);
 	void remove_point(int i);
 
