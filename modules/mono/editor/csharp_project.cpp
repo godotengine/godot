@@ -132,14 +132,6 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 
 	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
 
-	if (FileAccess::exists(p_output_path)) {
-		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		Error rm_err = da->remove(p_output_path);
-
-		ERR_EXPLAIN("Failed to remove old scripts metadata file");
-		ERR_FAIL_COND_V(rm_err != OK, rm_err);
-	}
-
 	GDMonoClass *project_utils = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
 
 	void *args[2] = {
@@ -158,11 +150,22 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 	PoolStringArray project_files = GDMonoMarshal::mono_array_to_PoolStringArray(ret);
 	PoolStringArray::Read r = project_files.read();
 
-	Dictionary old_dict = CSharpLanguage::get_singleton()->get_scripts_metadata();
+	// Load existing metadata if it exists and then remove it
+	Dictionary old_dict;
+	if (FileAccess::exists(p_output_path)) {
+		CSharpLanguage::load_scripts_metadata(p_output_path, old_dict);
+
+		DirAccessRef da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		Error rm_err = da->remove(p_output_path);
+
+		ERR_EXPLAIN("Failed to remove old scripts metadata file");
+		ERR_FAIL_COND_V(rm_err != OK, rm_err);
+	}
+
 	Dictionary new_dict;
 
 	for (int i = 0; i < project_files.size(); i++) {
-		const String &project_file = ("res://" + r[i]).simplify_path();
+		String project_file = ("res://" + r[i]).simplify_path();
 
 		uint64_t modified_time = FileAccess::get_modified_time(project_file);
 

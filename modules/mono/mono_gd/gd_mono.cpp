@@ -427,11 +427,13 @@ void GDMono::_initialize_and_check_api_hashes() {
 #ifdef MONO_GLUE_ENABLED
 	if (get_api_core_hash() != GodotSharpBindings::get_core_api_hash()) {
 		ERR_PRINT("Mono: Core API hash mismatch!");
+		ERR_PRINT("You need to regenerate the Mono glue and rebuild Godot!");
 	}
 
 #ifdef TOOLS_ENABLED
 	if (get_api_editor_hash() != GodotSharpBindings::get_editor_api_hash()) {
 		ERR_PRINT("Mono: Editor API hash mismatch!");
+		ERR_PRINT("You need to regenerate the Mono glue and rebuild Godot!");
 	}
 #endif // TOOLS_ENABLED
 #endif // MONO_GLUE_ENABLED

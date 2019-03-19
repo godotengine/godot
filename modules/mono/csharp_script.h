@@ -307,7 +307,10 @@ class CSharpLanguage : public ScriptLanguage {
 
 	int lang_idx;
 
-	Dictionary scripts_metadata;
+	// Bidirectional mapping loaded from the script metadata
+	// The String is the res://<script> path
+	Map<String, GDMonoClass *> script_to_class_map;
+	Map<GDMonoClass *, String> class_to_script_map;
 
 	// For debug_break and debug_break_parse
 	int _debug_parse_err_line;
@@ -342,7 +345,24 @@ public:
 
 	void project_assembly_loaded();
 
-	_FORCE_INLINE_ const Dictionary &get_scripts_metadata() { return scripts_metadata; }
+	/**
+	 * Find the resource path of the script for a given Mono class, which corresponds
+	 * to the path of the source file (i.e. res://MyScript.cs).
+	 * May be an empty string in case the Mono class is not usable as a script,
+	 * or the script metadata JSON file was not correctly loaded.
+	 */
+	String get_script_for_class(GDMonoClass *mono_class) const;
+	/**
+	 * Given the resource path of a C# script, this method resolves the 
+	 * corresponding Mono class from the project assembly, using the
+	 * script metadata JSON file.
+	 */
+	GDMonoClass *get_class_for_script(const String &p_script) const;
+
+	/**
+	 * Loads a script metadata JSON file into the given dictionary.
+	 */
+	static Error load_scripts_metadata(const String &p_path, Dictionary &scripts_metadata);
 
 	virtual String get_name() const;
 

@@ -341,6 +341,31 @@ Ref<Script> CSharpLanguage::get_template(const String &p_class_name, const Strin
 	return script;
 }
 
+Error CSharpLanguage::load_scripts_metadata(const String &p_path, Dictionary &scripts_metadata) {
+
+	if (FileAccess::exists(p_path)) {
+		String json_content;
+
+		Error ferr = read_all_file_utf8(p_path, json_content);
+		ERR_FAIL_COND_V(ferr != OK, ERR_FILE_CANT_READ);
+
+		Variant old_dict_var;
+		String err_str;
+		int err_line;
+		Error json_err = JSON::parse(json_content, old_dict_var, err_str, err_line);
+		if (json_err != OK) {
+			ERR_PRINTS("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ")");
+			return ERR_PARSE_ERROR;
+		}
+
+		scripts_metadata = old_dict_var.operator Dictionary();
+		return OK;
+	} else {
+		scripts_metadata.clear();
+		return ERR_FILE_NOT_FOUND;
+	}
+}
+
 bool CSharpLanguage::is_using_templates() {
 
 	return true;
@@ -921,8 +946,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 void CSharpLanguage::project_assembly_loaded() {
 
-	scripts_metadata.clear();
-
 	String scripts_metadata_filename = "scripts_metadata.";
 
 #ifdef TOOLS_ENABLED
@@ -937,28 +960,66 @@ void CSharpLanguage::project_assembly_loaded() {
 
 	String scripts_metadata_path = GodotSharpDirs::get_res_metadata_dir().plus_file(scripts_metadata_filename);
 
-	if (FileAccess::exists(scripts_metadata_path)) {
-		String old_json;
-
-		Error ferr = read_all_file_utf8(scripts_metadata_path, old_json);
-		ERR_FAIL_COND(ferr != OK);
-
-		Variant old_dict_var;
-		String err_str;
-		int err_line;
-		Error json_err = JSON::parse(old_json, old_dict_var, err_str, err_line);
-		if (json_err != OK) {
-			ERR_PRINTS("Failed to parse metadata file: '" + err_str + "' (" + String::num_int64(err_line) + ")");
-			return;
-		}
-
-		scripts_metadata = old_dict_var.operator Dictionary();
-
-		print_verbose("Successfully loaded scripts metadata");
-	} else {
+	if (!FileAccess::exists(scripts_metadata_path)) {
 		if (!Engine::get_singleton()->is_editor_hint()) {
-			ERR_PRINT("Missing scripts metadata file");
+			ERR_PRINT("Missing Mono scripts metadata file.");
 		}
+		return;
+	}
+
+	Dictionary scripts_metadata;
+	if (load_scripts_metadata(scripts_metadata_path, scripts_metadata) != OK) {
+		ERR_PRINT("Failed to load scripts metadata.");
+		return;
+	}
+
+	script_to_class_map.clear();
+	class_to_script_map.clear();
+
+	GDMonoAssembly *project_assembly = GDMono::get_singleton()->get_project_assembly();
+
+	for (int i = 0; i < scripts_metadata.size(); i++) {
+		String path = scripts_metadata.get_key_at_index(i).operator String();
+		Dictionary script_metadata = scripts_metadata.get_value_at_index(i).operator Dictionary()["class"];
+
+		const Variant *namespace_ = script_metadata.getptr("namespace");
+		const Variant *class_name = script_metadata.getptr("class_name");
+
+		if (namespace_ == nullptr || class_name == nullptr) {
+			ERR_PRINTS(String("Script metadata incomplete for: ") + path);
+			continue;
+		}
+
+		GDMonoClass *mono_class = project_assembly->get_class(
+				namespace_->operator StringName(),
+				class_name->operator StringName());
+
+		if (!mono_class) {
+			ERR_PRINTS(String("Script class ") + namespace_->operator String() + "." + class_name->operator String() + " could not be found.");
+			continue;
+		}
+
+		script_to_class_map[path] = mono_class;
+		class_to_script_map[mono_class] = path;
+	}
+}
+
+GDMonoClass *CSharpLanguage::get_class_for_script(const String &p_script) const {
+
+	const Map<String, GDMonoClass *>::Element *e = script_to_class_map.find(p_script);
+	if (e) {
+		return e->value();
+	} else {
+		return nullptr;
+	}
+}
+
+String CSharpLanguage::get_script_for_class(GDMonoClass *mono_class) const {
+	const Map<GDMonoClass *, String>::Element *e = class_to_script_map.find(mono_class);
+	if (e) {
+		return e->value();
+	} else {
+		return String();
 	}
 }
 
@@ -1972,8 +2033,23 @@ bool CSharpScript::_update_exports() {
 			ERR_FAIL_V(NULL);
 		}
 
+		// Pre-allocate a dummy Godot node of the right type.
+		// Otherwise the CTOR would call back to native code to construct a Godot object, which would
+		// recursively call into this method. That would lead to infinite recursion.
+		Object *tmp_base_object = ClassDB::instance(native->get_name());
+		if (!tmp_base_object) {
+			ERR_PRINTS(String("Failed to construct native base object ") + native->get_name());
+		}
+		CACHED_FIELD(GodotObject, ptr)->set_value_raw(tmp_object, tmp_base_object);
+
 		MonoException *ctor_exc = NULL;
 		ctor->invoke(tmp_object, NULL, &ctor_exc);
+
+		// Clear the ptr so the finalizer/dispose of the temporary will do nothing,
+		// and we can destroy the temporary native object immediately
+		CACHED_FIELD(GodotObject, ptr)->set_value_raw(tmp_object, nullptr);
+		memdelete(tmp_base_object);
+		tmp_base_object = nullptr;
 
 		if (ctor_exc) {
 			MonoGCHandle::free_handle(tmp_pinned_gchandle);
@@ -2357,6 +2433,15 @@ Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GD
 
 	CRASH_COND(!p_class);
 
+	// Try to resolve the original script path for the class and load the CSharpScript using the normal
+	// resource loader mechanism
+	String script_path = CSharpLanguage::get_singleton()->get_script_for_class(p_class);
+	if (!script_path.empty()) {
+		return ResourceLoader::load(script_path);
+	}
+
+	WARN_PRINTS(String("Failed to find source code for ") + p_class->get_full_name());
+
 	// TODO: Cache the 'CSharpScript' associated with this 'p_class' instead of allocating a new one every time
 	Ref<CSharpScript> script = memnew(CSharpScript);
 
@@ -2687,19 +2772,11 @@ Error CSharpScript::reload(bool p_keep_state) {
 	GDMonoAssembly *project_assembly = GDMono::get_singleton()->get_project_assembly();
 
 	if (project_assembly) {
-		const Variant *script_metadata_var = CSharpLanguage::get_singleton()->get_scripts_metadata().getptr(get_path());
-		if (script_metadata_var) {
-			Dictionary script_metadata = script_metadata_var->operator Dictionary()["class"];
-			const Variant *namespace_ = script_metadata.getptr("namespace");
-			const Variant *class_name = script_metadata.getptr("class_name");
-			ERR_FAIL_NULL_V(namespace_, ERR_BUG);
-			ERR_FAIL_NULL_V(class_name, ERR_BUG);
-			GDMonoClass *klass = project_assembly->get_class(namespace_->operator String(), class_name->operator String());
-			if (klass) {
-				bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(klass);
-				ERR_FAIL_COND_V(!obj_type, ERR_BUG);
-				script_class = klass;
-			}
+		GDMonoClass *klass = CSharpLanguage::get_singleton()->get_class_for_script(get_path());
+		if (klass) {
+			bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(klass);
+			ERR_FAIL_COND_V(!obj_type, ERR_BUG);
+			script_class = klass;
 		} else {
 			// Missing script metadata. Fallback to legacy method
 			script_class = project_assembly->get_object_derived_class(name);
