@@ -64,6 +64,7 @@ Vector<Vector3> PlaneShape::_gen_debug_mesh_lines() {
 void PlaneShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), plane);
+	Shape::_update_shape();
 }
 
 void PlaneShape::set_plane(Plane p_plane) {

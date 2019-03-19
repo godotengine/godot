@@ -75,6 +75,7 @@ void CapsuleShape::_update_shape() {
 	d["radius"] = radius;
 	d["height"] = height;
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), d);
+	Shape::_update_shape();
 }
 
 void CapsuleShape::set_radius(float p_radius) {

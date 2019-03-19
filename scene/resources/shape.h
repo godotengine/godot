@@ -51,6 +51,8 @@ protected:
 	Shape(RID p_shape);
 
 	virtual Vector<Vector3> _gen_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
+	virtual void _update_shape();
+
 public:
 	virtual RID get_rid() const { return shape; }
 
