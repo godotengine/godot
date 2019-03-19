@@ -149,7 +149,7 @@ class StyleBoxFlat : public StyleBox {
 
 	Color bg_color;
 	Color shadow_color;
-	PoolVector<Color> border_color;
+	Color border_color;
 
 	int border_width[4];
 	int expand_margin[4];
@@ -174,10 +174,8 @@ public:
 	Color get_bg_color() const;
 
 	//Border Color
-	void set_border_color_all(const Color &p_color);
-	Color get_border_color_all() const;
-	void set_border_color(Margin p_border, const Color &p_color);
-	Color get_border_color(Margin p_border) const;
+	void set_border_color(const Color &p_color);
+	Color get_border_color() const;
 
 	//BORDER
 	//width

@@ -579,7 +579,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			if (gnode->is_comment())
 				sbf = EditorNode::get_singleton()->get_theme_base()->get_theme()->get_stylebox("comment", "GraphNode");
 
-			Color c = sbf->get_border_color(MARGIN_TOP);
+			Color c = sbf->get_border_color();
 			c.a = 1;
 			if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
 				Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
@@ -3054,10 +3054,10 @@ void VisualScriptEditor::_notification(int p_what) {
 			Ref<StyleBoxFlat> sb = tm->get_stylebox("frame", "GraphNode");
 			if (!sb.is_null()) {
 				Ref<StyleBoxFlat> frame_style = sb->duplicate();
-				Color c = sb->get_border_color(MARGIN_TOP);
+				Color c = sb->get_border_color();
 				Color cn = E->get().second;
 				cn.a = c.a;
-				frame_style->set_border_color_all(cn);
+				frame_style->set_border_color(cn);
 				node_styles[E->get().first] = frame_style;
 			}
 		}
