@@ -110,8 +110,9 @@ private:
 	bool m_yield_handled;
 
 	Ref<SignalWatcher> m_signal_watcher;
-	Vector<Ref<Mock> > m_mocks;
+	Vector<Mock*> m_mocks;
 
+	void _clear_mocks();
 	void _clear_connections();
 	Variant _handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	void _yield_timer(real_t timeout);

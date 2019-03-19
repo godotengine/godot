@@ -35,10 +35,10 @@
 
 #include "gdscript.h"
 
-#include "core/reference.h"
+#include "scene/main/node.h"
 
-class Mock : public Reference {
-	GDCLASS(Mock, Reference);
+class Mock : public Node {
+	GDCLASS(Mock, Node);
 
 public:
 	Mock(Ref<GDScriptNativeClass> p_base = NULL);

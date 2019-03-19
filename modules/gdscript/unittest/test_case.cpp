@@ -66,6 +66,7 @@ TestCase::TestCase() {
 
 TestCase::~TestCase() {
 	memfree(m_state);
+	_clear_mocks();
 }
 
 void TestCase::setup() {
@@ -121,7 +122,7 @@ bool TestCase::iteration(Ref<TestResult> test_result) {
 				case StageIter::DONE: {
 					test_result->stop_test(m_state);
 					m_signal_watcher->reset();
-					m_mocks.clear();
+					_clear_mocks();
 					break;
 				}
 			}
@@ -300,6 +301,13 @@ void TestCase::assert_not_match(const String &p_left, const String &p_right, con
 	}
 }
 
+void TestCase::_clear_mocks() {
+	for (int i = 0; i < m_mocks.size(); i++) {
+		memfree(m_mocks[i]);
+	}
+	m_mocks.clear();
+}
+
 void TestCase::_clear_connections() {
 	List<Connection> connections;
 	this->get_signals_connected_to_this(&connections);
@@ -318,7 +326,7 @@ Variant TestCase::_handle_yield(const Variant **p_args, int p_argcount, Variant:
 	return NULL;
 }
 
-void TestCase::_yield_timer(float delay_sec) {
+void TestCase::_yield_timer(real_t delay_sec) {
 	Vector<Variant> binds;
 	SceneTree::get_singleton()->create_timer(delay_sec)->connect("timeout", this, "_handle_yield", binds, CONNECT_ONESHOT);
 }

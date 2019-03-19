@@ -108,7 +108,7 @@ Variant Mock::call(const StringName &p_method, const Variant **p_args, int p_arg
 	if (m_instance) {
 		return m_instance->call(p_method, p_args, p_argcount, r_error);
 	}
-	return Reference::call(p_method, p_args, p_argcount, r_error);
+	return Node::call(p_method, p_args, p_argcount, r_error);
 }
 
 void Mock::_bind_methods() {
