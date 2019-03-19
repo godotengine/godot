@@ -35,7 +35,7 @@
 #include "monodevelop_instance.h"
 
 class GodotSharpEditor : public Node {
-	GDCLASS(GodotSharpEditor, Object)
+	GDCLASS(GodotSharpEditor, Object);
 
 	EditorNode *editor;
 
@@ -109,7 +109,7 @@ public:
 };
 
 class MonoReloadNode : public Node {
-	GDCLASS(MonoReloadNode, Node)
+	GDCLASS(MonoReloadNode, Node);
 
 	Timer *reload_timer;
 

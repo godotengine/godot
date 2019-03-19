@@ -322,7 +322,8 @@ public:
 };
 
 class AnimationNodeOutput : public AnimationNode {
-	GDCLASS(AnimationNodeOutput, AnimationNode)
+	GDCLASS(AnimationNodeOutput, AnimationNode);
+
 public:
 	virtual String get_caption() const;
 	virtual float process(float p_time, bool p_seek);
@@ -332,7 +333,7 @@ public:
 /////
 
 class AnimationNodeBlendTree : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendTree, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendTree, AnimationRootNode);
 
 	struct Node {
 		Ref<AnimationNode> node;

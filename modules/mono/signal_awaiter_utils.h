@@ -41,7 +41,7 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 
 class SignalAwaiterHandle : public MonoGCHandle {
 
-	GDCLASS(SignalAwaiterHandle, MonoGCHandle)
+	GDCLASS(SignalAwaiterHandle, MonoGCHandle);
 
 	bool completed;
 

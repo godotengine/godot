@@ -78,7 +78,7 @@ public:
 };
 
 class EditorPropertyArray : public EditorProperty {
-	GDCLASS(EditorPropertyArray, EditorProperty)
+	GDCLASS(EditorPropertyArray, EditorProperty);
 
 	PopupMenu *change_type;
 	bool updating;
@@ -117,7 +117,7 @@ public:
 };
 
 class EditorPropertyDictionary : public EditorProperty {
-	GDCLASS(EditorPropertyDictionary, EditorProperty)
+	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
 	PopupMenu *change_type;
 	bool updating;

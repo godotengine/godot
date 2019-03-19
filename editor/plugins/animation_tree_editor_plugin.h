@@ -41,7 +41,8 @@
 #include "scene/gui/tree.h"
 
 class AnimationTreeNodeEditorPlugin : public VBoxContainer {
-	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer)
+	GDCLASS(AnimationTreeNodeEditorPlugin, VBoxContainer);
+
 public:
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) = 0;
 	virtual void edit(const Ref<AnimationNode> &p_node) = 0;

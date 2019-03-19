@@ -156,7 +156,8 @@ public:
 VARIANT_ENUM_CAST(CSGShape::Operation)
 
 class CSGCombiner : public CSGShape {
-	GDCLASS(CSGCombiner, CSGShape)
+	GDCLASS(CSGCombiner, CSGShape);
+
 private:
 	virtual CSGBrush *_build_brush();
 
@@ -165,7 +166,7 @@ public:
 };
 
 class CSGPrimitive : public CSGShape {
-	GDCLASS(CSGPrimitive, CSGShape)
+	GDCLASS(CSGPrimitive, CSGShape);
 
 private:
 	bool invert_faces;
@@ -182,7 +183,7 @@ public:
 };
 
 class CSGMesh : public CSGPrimitive {
-	GDCLASS(CSGMesh, CSGPrimitive)
+	GDCLASS(CSGMesh, CSGPrimitive);
 
 	virtual CSGBrush *_build_brush();
 
@@ -204,7 +205,7 @@ public:
 
 class CSGSphere : public CSGPrimitive {
 
-	GDCLASS(CSGSphere, CSGPrimitive)
+	GDCLASS(CSGSphere, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -237,7 +238,7 @@ public:
 
 class CSGBox : public CSGPrimitive {
 
-	GDCLASS(CSGBox, CSGPrimitive)
+	GDCLASS(CSGBox, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -266,7 +267,7 @@ public:
 
 class CSGCylinder : public CSGPrimitive {
 
-	GDCLASS(CSGCylinder, CSGPrimitive)
+	GDCLASS(CSGCylinder, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -303,7 +304,7 @@ public:
 
 class CSGTorus : public CSGPrimitive {
 
-	GDCLASS(CSGTorus, CSGPrimitive)
+	GDCLASS(CSGTorus, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -340,7 +341,7 @@ public:
 
 class CSGPolygon : public CSGPrimitive {
 
-	GDCLASS(CSGPolygon, CSGPrimitive)
+	GDCLASS(CSGPolygon, CSGPrimitive);
 
 public:
 	enum Mode {

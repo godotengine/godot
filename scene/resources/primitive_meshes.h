@@ -269,7 +269,7 @@ public:
 
 class QuadMesh : public PrimitiveMesh {
 
-	GDCLASS(QuadMesh, PrimitiveMesh)
+	GDCLASS(QuadMesh, PrimitiveMesh);
 
 private:
 	Size2 size;

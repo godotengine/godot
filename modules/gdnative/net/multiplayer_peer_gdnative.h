@@ -36,7 +36,7 @@
 #include "modules/gdnative/include/net/godot_net.h"
 
 class MultiplayerPeerGDNative : public NetworkedMultiplayerPeer {
-	GDCLASS(MultiplayerPeerGDNative, NetworkedMultiplayerPeer)
+	GDCLASS(MultiplayerPeerGDNative, NetworkedMultiplayerPeer);
 
 protected:
 	static void _bind_methods();

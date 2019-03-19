@@ -36,7 +36,7 @@
 #include "modules/gdnative/include/net/godot_net.h"
 
 class PacketPeerGDNative : public PacketPeer {
-	GDCLASS(PacketPeerGDNative, PacketPeer)
+	GDCLASS(PacketPeerGDNative, PacketPeer);
 
 protected:
 	static void _bind_methods();

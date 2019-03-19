@@ -40,7 +40,7 @@ class MonoBuildTab;
 
 class MonoBottomPanel : public VBoxContainer {
 
-	GDCLASS(MonoBottomPanel, VBoxContainer)
+	GDCLASS(MonoBottomPanel, VBoxContainer);
 
 	EditorNode *editor;
 
@@ -87,7 +87,7 @@ public:
 
 class MonoBuildTab : public VBoxContainer {
 
-	GDCLASS(MonoBuildTab, VBoxContainer)
+	GDCLASS(MonoBuildTab, VBoxContainer);
 
 public:
 	enum BuildResult {

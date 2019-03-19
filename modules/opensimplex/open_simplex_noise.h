@@ -38,7 +38,7 @@
 #include "thirdparty/misc/open-simplex-noise.h"
 
 class OpenSimplexNoise : public Resource {
-	GDCLASS(OpenSimplexNoise, Resource)
+	GDCLASS(OpenSimplexNoise, Resource);
 	OBJ_SAVE_TYPE(OpenSimplexNoise);
 
 	osn_context contexts[6];

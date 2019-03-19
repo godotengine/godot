@@ -46,7 +46,7 @@
 #ifdef TOOLS_ENABLED
 class VisualScriptEditorSignalEdit : public Object {
 
-	GDCLASS(VisualScriptEditorSignalEdit, Object)
+	GDCLASS(VisualScriptEditorSignalEdit, Object);
 
 	StringName sig;
 
@@ -186,7 +186,7 @@ public:
 
 class VisualScriptEditorVariableEdit : public Object {
 
-	GDCLASS(VisualScriptEditorVariableEdit, Object)
+	GDCLASS(VisualScriptEditorVariableEdit, Object);
 
 	StringName var;
 

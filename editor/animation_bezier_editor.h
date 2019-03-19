@@ -35,7 +35,7 @@
 
 class AnimationBezierTrackEdit : public Control {
 
-	GDCLASS(AnimationBezierTrackEdit, Control)
+	GDCLASS(AnimationBezierTrackEdit, Control);
 
 	enum HandleMode {
 		HANDLE_MODE_FREE,

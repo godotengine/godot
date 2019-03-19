@@ -45,7 +45,7 @@ class GDNativeLibraryResourceLoader;
 class GDNative;
 
 class GDNativeLibrary : public Resource {
-	GDCLASS(GDNativeLibrary, Resource)
+	GDCLASS(GDNativeLibrary, Resource);
 
 	static Map<String, Vector<Ref<GDNative> > > *loaded_libraries;
 
@@ -137,7 +137,7 @@ struct GDNativeCallRegistry {
 };
 
 class GDNative : public Reference {
-	GDCLASS(GDNative, Reference)
+	GDCLASS(GDNative, Reference);
 
 	Ref<GDNativeLibrary> library;
 

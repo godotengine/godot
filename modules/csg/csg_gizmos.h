@@ -55,7 +55,8 @@ public:
 };
 
 class EditorPluginCSG : public EditorPlugin {
-	GDCLASS(EditorPluginCSG, EditorPlugin)
+	GDCLASS(EditorPluginCSG, EditorPlugin);
+
 public:
 	EditorPluginCSG(EditorNode *p_editor);
 };

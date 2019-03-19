@@ -90,7 +90,7 @@ public:
 };
 
 class ResourceImporterScene : public ResourceImporter {
-	GDCLASS(ResourceImporterScene, ResourceImporter)
+	GDCLASS(ResourceImporterScene, ResourceImporter);
 
 	Set<Ref<EditorSceneImporter> > importers;
 

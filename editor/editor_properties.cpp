@@ -599,7 +599,8 @@ EditorPropertyFlags::EditorPropertyFlags() {
 ///////////////////// LAYERS /////////////////////////
 
 class EditorPropertyLayersGrid : public Control {
-	GDCLASS(EditorPropertyLayersGrid, Control)
+	GDCLASS(EditorPropertyLayersGrid, Control);
+
 public:
 	uint32_t value;
 	Vector<Rect2> flag_rects;

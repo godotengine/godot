@@ -37,7 +37,7 @@
 #include "scene/animation/animation_tree.h"
 
 class EditorPropertyRootMotion : public EditorProperty {
-	GDCLASS(EditorPropertyRootMotion, EditorProperty)
+	GDCLASS(EditorPropertyRootMotion, EditorProperty);
 	Button *assign;
 	Button *clear;
 	NodePath base_hint;
@@ -60,7 +60,7 @@ public:
 };
 
 class EditorInspectorRootMotionPlugin : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorRootMotionPlugin, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorRootMotionPlugin, EditorInspectorPlugin);
 
 public:
 	virtual bool can_handle(Object *p_object);

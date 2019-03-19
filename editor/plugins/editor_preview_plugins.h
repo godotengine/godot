@@ -36,7 +36,8 @@
 void post_process_preview(Ref<Image> p_image);
 
 class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
-	GDCLASS(EditorTexturePreviewPlugin, EditorResourcePreviewGenerator)
+	GDCLASS(EditorTexturePreviewPlugin, EditorResourcePreviewGenerator);
+
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual bool generate_small_preview_automatically() const;
@@ -46,7 +47,8 @@ public:
 };
 
 class EditorImagePreviewPlugin : public EditorResourcePreviewGenerator {
-	GDCLASS(EditorImagePreviewPlugin, EditorResourcePreviewGenerator)
+	GDCLASS(EditorImagePreviewPlugin, EditorResourcePreviewGenerator);
+
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual bool generate_small_preview_automatically() const;
@@ -56,7 +58,8 @@ public:
 };
 
 class EditorBitmapPreviewPlugin : public EditorResourcePreviewGenerator {
-	GDCLASS(EditorBitmapPreviewPlugin, EditorResourcePreviewGenerator)
+	GDCLASS(EditorBitmapPreviewPlugin, EditorResourcePreviewGenerator);
+
 public:
 	virtual bool handles(const String &p_type) const;
 	virtual bool generate_small_preview_automatically() const;
@@ -77,7 +80,7 @@ public:
 
 class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 
-	GDCLASS(EditorMaterialPreviewPlugin, EditorResourcePreviewGenerator)
+	GDCLASS(EditorMaterialPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
 	RID sphere;
@@ -123,7 +126,7 @@ public:
 
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 
-	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator)
+	GDCLASS(EditorMeshPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID scenario;
 	RID mesh_instance;
@@ -151,7 +154,7 @@ public:
 
 class EditorFontPreviewPlugin : public EditorResourcePreviewGenerator {
 
-	GDCLASS(EditorFontPreviewPlugin, EditorResourcePreviewGenerator)
+	GDCLASS(EditorFontPreviewPlugin, EditorResourcePreviewGenerator);
 
 	RID viewport;
 	RID viewport_texture;

@@ -2350,7 +2350,7 @@ VisualShaderEditorPlugin::~VisualShaderEditorPlugin() {
 ////////////////
 
 class VisualShaderNodePluginInputEditor : public OptionButton {
-	GDCLASS(VisualShaderNodePluginInputEditor, OptionButton)
+	GDCLASS(VisualShaderNodePluginInputEditor, OptionButton);
 
 	Ref<VisualShaderNodeInput> input;
 
@@ -2395,7 +2395,8 @@ public:
 };
 
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
-	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer)
+	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer);
+
 public:
 	void _property_changed(const String &prop, const Variant &p_value, const String &p_field, bool p_changing = false) {
 

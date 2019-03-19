@@ -36,7 +36,7 @@
 
 class ParticlesMaterial : public Material {
 
-	GDCLASS(ParticlesMaterial, Material)
+	GDCLASS(ParticlesMaterial, Material);
 
 public:
 	enum Parameter {

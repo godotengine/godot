@@ -34,7 +34,8 @@
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode);
+
 public:
 	enum BlendMode {
 		BLEND_MODE_INTERPOLATED,

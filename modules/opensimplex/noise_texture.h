@@ -40,7 +40,7 @@
 #include "editor/property_editor.h"
 
 class NoiseTexture : public Texture {
-	GDCLASS(NoiseTexture, Texture)
+	GDCLASS(NoiseTexture, Texture);
 
 private:
 	Ref<Image> data;

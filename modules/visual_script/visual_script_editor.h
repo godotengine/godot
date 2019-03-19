@@ -44,7 +44,7 @@ class VisualScriptEditorVariableEdit;
 #ifdef TOOLS_ENABLED
 
 class VisualScriptEditor : public ScriptEditorBase {
-	GDCLASS(VisualScriptEditor, ScriptEditorBase)
+	GDCLASS(VisualScriptEditor, ScriptEditorBase);
 
 	enum {
 		TYPE_SEQUENCE = 1000,

@@ -37,7 +37,7 @@ class AudioStreamSample;
 
 class AudioStreamPlaybackSample : public AudioStreamPlayback {
 
-	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback)
+	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback);
 	enum {
 		MIX_FRAC_BITS = 13,
 		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
@@ -81,7 +81,7 @@ public:
 };
 
 class AudioStreamSample : public AudioStream {
-	GDCLASS(AudioStreamSample, AudioStream)
+	GDCLASS(AudioStreamSample, AudioStream);
 	RES_BASE_EXTENSION("sample")
 
 public:

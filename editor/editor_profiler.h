@@ -42,7 +42,7 @@
 
 class EditorProfiler : public VBoxContainer {
 
-	GDCLASS(EditorProfiler, VBoxContainer)
+	GDCLASS(EditorProfiler, VBoxContainer);
 
 public:
 	struct Metric {

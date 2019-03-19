@@ -40,7 +40,7 @@ class SyntaxHighlighter;
 
 class TextEdit : public Control {
 
-	GDCLASS(TextEdit, Control)
+	GDCLASS(TextEdit, Control);
 
 public:
 	struct HighlighterInfo {

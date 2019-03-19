@@ -35,7 +35,7 @@
 
 class VisualScriptFunction : public VisualScriptNode {
 
-	GDCLASS(VisualScriptFunction, VisualScriptNode)
+	GDCLASS(VisualScriptFunction, VisualScriptNode);
 
 	struct Argument {
 		String name;
@@ -105,7 +105,7 @@ public:
 
 class VisualScriptOperator : public VisualScriptNode {
 
-	GDCLASS(VisualScriptOperator, VisualScriptNode)
+	GDCLASS(VisualScriptOperator, VisualScriptNode);
 
 	Variant::Type typed;
 	Variant::Operator op;
@@ -141,7 +141,7 @@ public:
 
 class VisualScriptSelect : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSelect, VisualScriptNode)
+	GDCLASS(VisualScriptSelect, VisualScriptNode);
 
 	Variant::Type typed;
 
@@ -174,7 +174,7 @@ public:
 
 class VisualScriptVariableGet : public VisualScriptNode {
 
-	GDCLASS(VisualScriptVariableGet, VisualScriptNode)
+	GDCLASS(VisualScriptVariableGet, VisualScriptNode);
 
 	StringName variable;
 
@@ -207,7 +207,7 @@ public:
 
 class VisualScriptVariableSet : public VisualScriptNode {
 
-	GDCLASS(VisualScriptVariableSet, VisualScriptNode)
+	GDCLASS(VisualScriptVariableSet, VisualScriptNode);
 
 	StringName variable;
 
@@ -240,7 +240,7 @@ public:
 
 class VisualScriptConstant : public VisualScriptNode {
 
-	GDCLASS(VisualScriptConstant, VisualScriptNode)
+	GDCLASS(VisualScriptConstant, VisualScriptNode);
 
 	Variant::Type type;
 	Variant value;
@@ -277,7 +277,7 @@ public:
 
 class VisualScriptPreload : public VisualScriptNode {
 
-	GDCLASS(VisualScriptPreload, VisualScriptNode)
+	GDCLASS(VisualScriptPreload, VisualScriptNode);
 
 	Ref<Resource> preload;
 
@@ -309,7 +309,7 @@ public:
 
 class VisualScriptIndexGet : public VisualScriptNode {
 
-	GDCLASS(VisualScriptIndexGet, VisualScriptNode)
+	GDCLASS(VisualScriptIndexGet, VisualScriptNode);
 
 public:
 	virtual int get_output_sequence_port_count() const;
@@ -333,7 +333,7 @@ public:
 
 class VisualScriptIndexSet : public VisualScriptNode {
 
-	GDCLASS(VisualScriptIndexSet, VisualScriptNode)
+	GDCLASS(VisualScriptIndexSet, VisualScriptNode);
 
 public:
 	virtual int get_output_sequence_port_count() const;
@@ -357,7 +357,7 @@ public:
 
 class VisualScriptGlobalConstant : public VisualScriptNode {
 
-	GDCLASS(VisualScriptGlobalConstant, VisualScriptNode)
+	GDCLASS(VisualScriptGlobalConstant, VisualScriptNode);
 
 	int index;
 
@@ -388,7 +388,7 @@ public:
 
 class VisualScriptClassConstant : public VisualScriptNode {
 
-	GDCLASS(VisualScriptClassConstant, VisualScriptNode)
+	GDCLASS(VisualScriptClassConstant, VisualScriptNode);
 
 	StringName base_type;
 	StringName name;
@@ -425,7 +425,7 @@ public:
 
 class VisualScriptBasicTypeConstant : public VisualScriptNode {
 
-	GDCLASS(VisualScriptBasicTypeConstant, VisualScriptNode)
+	GDCLASS(VisualScriptBasicTypeConstant, VisualScriptNode);
 
 	Variant::Type type;
 	StringName name;
@@ -463,7 +463,8 @@ public:
 
 class VisualScriptMathConstant : public VisualScriptNode {
 
-	GDCLASS(VisualScriptMathConstant, VisualScriptNode)
+	GDCLASS(VisualScriptMathConstant, VisualScriptNode);
+
 public:
 	enum MathConstant {
 		MATH_CONSTANT_ONE,
@@ -512,7 +513,7 @@ VARIANT_ENUM_CAST(VisualScriptMathConstant::MathConstant)
 
 class VisualScriptEngineSingleton : public VisualScriptNode {
 
-	GDCLASS(VisualScriptEngineSingleton, VisualScriptNode)
+	GDCLASS(VisualScriptEngineSingleton, VisualScriptNode);
 
 	String singleton;
 
@@ -545,7 +546,7 @@ public:
 
 class VisualScriptSceneNode : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSceneNode, VisualScriptNode)
+	GDCLASS(VisualScriptSceneNode, VisualScriptNode);
 
 	NodePath path;
 
@@ -580,7 +581,7 @@ public:
 
 class VisualScriptSceneTree : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSceneTree, VisualScriptNode)
+	GDCLASS(VisualScriptSceneTree, VisualScriptNode);
 
 protected:
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -610,7 +611,7 @@ public:
 
 class VisualScriptResourcePath : public VisualScriptNode {
 
-	GDCLASS(VisualScriptResourcePath, VisualScriptNode)
+	GDCLASS(VisualScriptResourcePath, VisualScriptNode);
 
 	String path;
 
@@ -642,7 +643,7 @@ public:
 
 class VisualScriptSelf : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSelf, VisualScriptNode)
+	GDCLASS(VisualScriptSelf, VisualScriptNode);
 
 protected:
 	static void _bind_methods();
@@ -671,7 +672,7 @@ public:
 
 class VisualScriptCustomNode : public VisualScriptNode {
 
-	GDCLASS(VisualScriptCustomNode, VisualScriptNode)
+	GDCLASS(VisualScriptCustomNode, VisualScriptNode);
 
 protected:
 	static void _bind_methods();
@@ -719,7 +720,7 @@ VARIANT_ENUM_CAST(VisualScriptCustomNode::StartMode);
 
 class VisualScriptSubCall : public VisualScriptNode {
 
-	GDCLASS(VisualScriptSubCall, VisualScriptNode)
+	GDCLASS(VisualScriptSubCall, VisualScriptNode);
 
 protected:
 	static void _bind_methods();
@@ -747,7 +748,7 @@ public:
 
 class VisualScriptComment : public VisualScriptNode {
 
-	GDCLASS(VisualScriptComment, VisualScriptNode)
+	GDCLASS(VisualScriptComment, VisualScriptNode);
 
 	String title;
 	String description;
@@ -788,7 +789,7 @@ public:
 
 class VisualScriptConstructor : public VisualScriptNode {
 
-	GDCLASS(VisualScriptConstructor, VisualScriptNode)
+	GDCLASS(VisualScriptConstructor, VisualScriptNode);
 
 	Variant::Type type;
 	MethodInfo constructor;
@@ -824,7 +825,7 @@ public:
 
 class VisualScriptLocalVar : public VisualScriptNode {
 
-	GDCLASS(VisualScriptLocalVar, VisualScriptNode)
+	GDCLASS(VisualScriptLocalVar, VisualScriptNode);
 
 	StringName name;
 	Variant::Type type;
@@ -860,7 +861,7 @@ public:
 
 class VisualScriptLocalVarSet : public VisualScriptNode {
 
-	GDCLASS(VisualScriptLocalVarSet, VisualScriptNode)
+	GDCLASS(VisualScriptLocalVarSet, VisualScriptNode);
 
 	StringName name;
 	Variant::Type type;
@@ -897,7 +898,8 @@ public:
 
 class VisualScriptInputAction : public VisualScriptNode {
 
-	GDCLASS(VisualScriptInputAction, VisualScriptNode)
+	GDCLASS(VisualScriptInputAction, VisualScriptNode);
+
 public:
 	enum Mode {
 		MODE_PRESSED,
@@ -944,7 +946,7 @@ VARIANT_ENUM_CAST(VisualScriptInputAction::Mode)
 
 class VisualScriptDeconstruct : public VisualScriptNode {
 
-	GDCLASS(VisualScriptDeconstruct, VisualScriptNode)
+	GDCLASS(VisualScriptDeconstruct, VisualScriptNode);
 
 	struct Element {
 		StringName name;

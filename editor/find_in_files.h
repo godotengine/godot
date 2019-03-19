@@ -36,7 +36,8 @@
 
 // Performs the actual search
 class FindInFiles : public Node {
-	GDCLASS(FindInFiles, Node)
+	GDCLASS(FindInFiles, Node);
+
 public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
@@ -93,7 +94,8 @@ class HBoxContainer;
 
 // Prompts search parameters
 class FindInFilesDialog : public AcceptDialog {
-	GDCLASS(FindInFilesDialog, AcceptDialog)
+	GDCLASS(FindInFilesDialog, AcceptDialog);
+
 public:
 	static const char *SIGNAL_FIND_REQUESTED;
 	static const char *SIGNAL_REPLACE_REQUESTED;
@@ -138,7 +140,8 @@ class ProgressBar;
 
 // Display search results
 class FindInFilesPanel : public Control {
-	GDCLASS(FindInFilesPanel, Control)
+	GDCLASS(FindInFilesPanel, Control);
+
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
 	static const char *SIGNAL_FILES_MODIFIED;

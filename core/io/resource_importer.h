@@ -94,7 +94,8 @@ public:
 
 class ResourceImporter : public Reference {
 
-	GDCLASS(ResourceImporter, Reference)
+	GDCLASS(ResourceImporter, Reference);
+
 public:
 	virtual String get_importer_name() const = 0;
 	virtual String get_visible_name() const = 0;

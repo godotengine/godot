@@ -35,7 +35,7 @@
 
 class TextEditor : public ScriptEditorBase {
 
-	GDCLASS(TextEditor, ScriptEditorBase)
+	GDCLASS(TextEditor, ScriptEditorBase);
 
 private:
 	CodeTextEditor *code_editor;

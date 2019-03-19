@@ -43,7 +43,7 @@
 
 class Material : public Resource {
 
-	GDCLASS(Material, Resource)
+	GDCLASS(Material, Resource);
 	RES_BASE_EXTENSION("material")
 	OBJ_SAVE_TYPE(Material)
 
@@ -111,7 +111,7 @@ public:
 
 class SpatialMaterial : public Material {
 
-	GDCLASS(SpatialMaterial, Material)
+	GDCLASS(SpatialMaterial, Material);
 
 public:
 	enum TextureParam {
