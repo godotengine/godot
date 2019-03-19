@@ -36,45 +36,45 @@
 
 bool TestLoader::from_path(Ref<TestSuite> p_test_suite, const String &p_path) {
 	Error error;
-	DirAccessRef directory = DirAccess::open(path, &error);
-	ERR_EXPLAIN("Can't find path: " + path);
+	DirAccessRef directory = DirAccess::open(p_path, &error);
+	ERR_EXPLAIN("Can't find path: " + p_path);
 	ERR_FAIL_COND_V(Error::OK != error, false);
-	return from_directory(test_suite, directory);
+	return from_directory(p_test_suite, directory);
 }
 
 bool TestLoader::from_directory(Ref<TestSuite> p_test_suite, DirAccessRef &p_directory) {
-	ERR_FAIL_COND_V(Error::OK != directory->list_dir_begin(), false);
-	String filename = directory->get_next();
+	ERR_FAIL_COND_V(Error::OK != p_directory->list_dir_begin(), false);
+	String filename = p_directory->get_next();
 	while (filename != "") {
 		if (filename == "." || filename == "..") {
-		} else if (directory->current_is_dir()) {
-			from_path(test_suite, directory->get_current_dir() + "/" + filename);
+		} else if (p_directory->current_is_dir()) {
+			from_path(p_test_suite, p_directory->get_current_dir() + "/" + filename);
 		} else {
 			if (filename.match(TestConfig::get_singleton()->test_file_match())) {
-				Ref<Script> script = ResourceLoader::load(directory->get_current_dir() + "/" + filename);
+				Ref<Script> script = ResourceLoader::load(p_directory->get_current_dir() + "/" + filename);
 				if (!script.is_null()) {
 					if (script->can_instance()) {
 						TestCase *test_case = memnew(TestCase);
 						ScriptInstance *instance = script->instance_create(test_case);
-						test_suite->add_test(test_case);
+						p_test_suite->add_test(test_case);
 					}
 				}
 			}
 		}
-		filename = directory->get_next();
+		filename = p_directory->get_next();
 	}
-	directory->list_dir_end();
+	p_directory->list_dir_end();
 	return true;
 }
 
 Ref<TestSuite> TestLoader::_from_path(const String &p_path) {
 	Ref<TestSuite> test_suite(memnew(TestSuite));
-	ERR_FAIL_COND_V(from_path(test_suite, path), NULL);
+	ERR_FAIL_COND_V(from_path(test_suite, p_path), NULL);
 	return test_suite;
 }
 
 Ref<TestSuite> TestLoader::_from_directory(Ref<_Directory> p_directory) {
-	return _from_path(directory->get_current_dir());
+	return _from_path(p_directory->get_current_dir());
 }
 
 void TestLoader::_bind_methods() {
