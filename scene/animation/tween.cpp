@@ -223,6 +223,7 @@ void Tween::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tween_started", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
 	ADD_SIGNAL(MethodInfo("tween_step", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key"), PropertyInfo(Variant::REAL, "elapsed"), PropertyInfo(Variant::OBJECT, "value")));
 	ADD_SIGNAL(MethodInfo("tween_completed", PropertyInfo(Variant::OBJECT, "object"), PropertyInfo(Variant::NODE_PATH, "key")));
+	ADD_SIGNAL(MethodInfo("tween_all_completed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "repeat"), "set_repeat", "is_repeat");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_tween_process_mode", "get_tween_process_mode");
@@ -628,8 +629,10 @@ void Tween::_tween_process(float p_delta) {
 	}
 	pending_update--;
 
-	if (all_finished)
+	if (all_finished) {
 		set_active(false);
+		emit_signal("tween_all_completed");
+	}
 }
 
 void Tween::set_tween_process_mode(TweenProcessMode p_mode) {
