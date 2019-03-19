@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamProcedural" inherits="AudioStream" category="Core" version="3.1">
+	<brief_description>
+		AudioStream for run-time synthesis of audio
+	</brief_description>
+	<description>
+		AudioStreamProcedural enables synthesis of audio via scripting of its [method AudioStreamProcedural.generate_frames] method. Although it is possible to accomplish this using GDScript, it may be necessary for performance reasons to script it via NativeScript. This is a low level module whose purpose is to simplify creation of addons that integrate third-party audio libraries such as libpd or csound.
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+		If not overridden, [method AudioStreamProcedural.generate_frames] will generate two tones (US standard dial tone). Below is an example of generating those tones using GDScript. The frequencies used are different in order to be certain it is the script generating the audio.
+		
+		[codeblock]
+			tool
+			extends AudioStreamProcedural
+
+			func generate_frames(pcm_buf):
+				# this is called on the audio thread which forbids allocations
+
+				var mix_rate_by_tone_1 = mix_rate/1350.0
+				var mix_rate_by_tone_2 = mix_rate/1440.0
+
+				var i = 0;
+
+				pcm_buf.seek(0)
+				if stereo:
+					# generate one tone per channel
+					for i in range(buffer_frame_count):
+						var two_pi_pos = 2.0*PI*(position+i)
+						pcm_buf.put_float(sin(two_pi_pos/mix_rate_by_tone_1))
+						pcm_buf.put_float(sin(two_pi_pos/mix_rate_by_tone_2))
+				else:
+					# mix two tones into one channel
+					for i in range(buffer_frame_count):
+						var two_pi_pos = 2.0*PI*(position+i)
+						pcm_buf.put_float((
+							sin(two_pi_pos/mix_rate_by_tone_1) +
+							sin(two_pi_pos/mix_rate_by_tone_2)) *
+							0.5)
+
+				position += buffer_frame_count
+		[/codeblock]
+	</demos>
+	<methods>
+		<method name="generate_frames">
+			<return type="void">
+			</return>
+			<argument index="0" name="byte_buffer" type="StreamPeerBuffer">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_stream_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="buffer_frame_count" type="int" setter="set_buffer_frame_count" getter="get_buffer_frame_count">
+			Indicates how many audio frames will be held in the byte_buffer passed to [method AudioStreamProcedural.generate_frames]. When generating stereo, each frame will take up one float for left and one for right, for a total of eight bytes. When generating mono, only one float should be generated for each frame.
+		</member>
+		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate">
+			Indicates the rate (per second) that audio frames are generated.
+		</member>
+		<member name="position" type="int" setter="set_position" getter="get_position">
+		</member>
+		<member name="stereo" type="bool" setter="set_stereo" getter="get_stereo">
+			Indicates whether this stream generates stereo audio.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
