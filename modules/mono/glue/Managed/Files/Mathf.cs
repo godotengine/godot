@@ -261,6 +261,16 @@ namespace Godot
             return (real_t)Math.Sinh(s);
         }
 
+        public static real_t SmoothStep(real_t from, real_t to, real_t weight)
+        {
+            if (IsEqualApprox(from, to))
+            {
+                return from;
+            }
+            real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
+            return x * x * (3 - 2 * x);
+        }
+
         public static real_t Sqrt(real_t s)
         {
             return (real_t)Math.Sqrt(s);
