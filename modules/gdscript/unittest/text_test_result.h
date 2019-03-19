@@ -39,13 +39,13 @@ class TextTestResult : public TestResult {
 
 public:
 	TextTestResult();
-	virtual void start_test(TestState *test_state);
-	virtual void add_error(TestState *test_state, TestError *error);
-	virtual void add_failure(TestState *test_state, TestError *error);
-	virtual void add_success(TestState *test_state);
-	virtual void stop_test(TestState *test_state);
+	virtual void start_test(TestState *p_test_state);
+	virtual void add_error(TestState *p_test_state, TestError *p_error);
+	virtual void add_failure(TestState *p_test_state, TestError *p_error);
+	virtual void add_success(TestState *p_test_state);
+	virtual void stop_test(TestState *p_test_state);
 	virtual void finish();
-	void summary(const String &msg);
+	void summary(const String &p_message);
 
 protected:
 	static void _bind_methods();

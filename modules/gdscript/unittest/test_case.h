@@ -33,6 +33,7 @@
 
 #include "test_result.h"
 #include "test_state.h"
+#include "mock.h"
 #include "signal_watcher.h"
 
 #include "gdscript.h"
@@ -45,58 +46,60 @@ class TestCase : public Node {
 public:
 	TestCase();
 	virtual ~TestCase();
-
-	void setup();
-	void teardown();
 	void init(Ref<TestResult> test_result);
 	bool iteration(Ref<TestResult> test_result = NULL);
-	bool can_assert() const;
-
-	void assert_equal(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_not_equal(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_true(const Variant &x, const String &msg = "") const;
-	void assert_false(const Variant &x, const String &msg = "") const;
-	void assert_is_type(const Variant &a, const Variant::Type type, const String &msg = "") const;
-	void assert_is_not_type(const Variant &a, const Variant::Type type, const String &msg = "") const;
-	void assert_is_nil(const Variant &x, const String &msg = "") const;
-	void assert_is_not_nil(const Variant &x, const String &msg = "") const;
-	void assert_in(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_not_in(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_is(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg = "") const;
-	void assert_is_not(const Variant &a, const Ref<GDScriptNativeClass> b, const String &msg = "") const;
-
-	void assert_aprox_equal(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_aprox_not_equal(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_greater(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_greater_equal(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_less(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_less_equal(const Variant &a, const Variant &b, const String &msg = "") const;
-	void assert_match(const String &a, const String &b, const String &msg = "") const;
-	void assert_not_match(const String &a, const String &b, const String &msg = "") const;
-
-	TestCase* yield_on(Object *object, const String &signal_name, real_t max_time=-1);
-	TestCase* yield_for(real_t time_in_seconds);
-
-	void log(TestLog::LogLevel level, const String &msg);
-	void trace(const String &msg);
-	void debug(const String &msg);
-	void info(const String &msg);
-	void warn(const String &msg);
-	void error(const String &msg);
-	void fatal(const String &msg);
-
-	void watch_signals(Object *object, const String &signal);
-	void assert_called(const Object *object, const String &signal, const String &msg = "") const;
-	void assert_called_once(const Object *object, const String &signal, const String &msg = "") const;
-	Variant _assert_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _assert_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _assert_any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	void assert_has_calls(const Object *object, const String &signal, const Array &arguments, bool any_order = false, const String &msg = "") const;
-	void assert_not_called(const Object *object, const String &signal, const String &msg = "") const;
-	int get_signal_call_count(const Object *object, const String &signal) const;
-	Array get_signal_calls(const Object *object, const String &signal) const;
 
 protected:
+	void setup();
+	void teardown();
+	bool can_assert() const;
+
+	void assert_equal(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_true(const Variant &p_value, const String &p_message = "") const;
+	void assert_false(const Variant &p_value, const String &p_message = "") const;
+	void assert_is_type(const Variant &p_left, const Variant::Type type, const String &p_message = "") const;
+	void assert_is_not_type(const Variant &p_left, const Variant::Type type, const String &p_message = "") const;
+	void assert_is_nil(const Variant &p_value, const String &p_message = "") const;
+	void assert_is_not_nil(const Variant &p_value, const String &p_message = "") const;
+	void assert_in(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_not_in(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_is(const Variant &p_left, const Ref<GDScriptNativeClass> p_right, const String &p_message = "") const;
+	void assert_is_not(const Variant &p_left, const Ref<GDScriptNativeClass> p_right, const String &p_message = "") const;
+
+	void assert_aprox_equal(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_aprox_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_greater(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_greater_equal(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_less(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_less_equal(const Variant &p_left, const Variant &p_right, const String &p_message = "") const;
+	void assert_match(const String &p_left, const String &p_right, const String &p_message = "") const;
+	void assert_not_match(const String &p_left, const String &p_right, const String &p_message = "") const;
+
+	TestCase* yield_on(Object *p_object, const String &p_signal_name, real_t p_max_time=-1);
+	TestCase* yield_for(real_t time_in_seconds);
+
+	void log(TestLog::LogLevel p_level, const String &p_message);
+	void trace(const String &p_message);
+	void debug(const String &p_message);
+	void info(const String &p_message);
+	void warn(const String &p_message);
+	void error(const String &p_message);
+	void fatal(const String &p_message);
+
+	void watch_signals(Object *p_object, const String &signal);
+	void assert_signal_called(const Object *p_object, const String &signal, const String &p_message = "") const;
+	void assert_signal_called_once(const Object *p_object, const String &signal, const String &p_message = "") const;
+	Variant _assert_signal_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _assert_signal_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _assert_signal_any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void assert_signal_has_calls(const Object *p_object, const String &signal, const Array &arguments, bool any_order = false, const String &p_message = "") const;
+	void assert_signal_not_called(const Object *p_object, const String &signal, const String &p_message = "") const;
+	int get_signal_call_count(const Object *p_object, const String &signal) const;
+	Array get_signal_calls(const Object *p_object, const String &signal) const;
+
+	Object *mock(Ref<GDScriptNativeClass> p_base = NULL);
+
 	static void _bind_methods();
 
 private:
@@ -107,6 +110,7 @@ private:
 	bool m_yield_handled;
 
 	Ref<SignalWatcher> m_signal_watcher;
+	Vector<Ref<Mock> > m_mocks;
 
 	void _clear_connections();
 	Variant _handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error);

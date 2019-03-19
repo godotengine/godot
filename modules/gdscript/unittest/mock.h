@@ -31,16 +31,24 @@
 #ifndef MOCK_H
 #define MOCK_H
 
+#include "method_override.h"
+
+#include "gdscript.h"
+
 #include "core/reference.h"
 
 class Mock : public Reference {
 	GDCLASS(Mock, Reference);
 
 public:
-	Mock();
-	void bind_method(const String &name);
+	Mock(Ref<GDScriptNativeClass> p_base = NULL);
+	virtual ~Mock();
+	void bind_method(const String &p_name);
 
-protected:
+	//return_value
+	//side_effect
+
+public:
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
@@ -48,6 +56,8 @@ protected:
 	static void _bind_methods();
 
 private:
+	Object *m_instance;
+	Ref<MethodOverride> m_override;
 };
 
 #endif // MOCK_H

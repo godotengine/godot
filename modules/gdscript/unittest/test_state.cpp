@@ -88,8 +88,8 @@ bool MethodIter::next_test() {
 	return false;
 }
 
-bool MethodIter::init(const Object *object) {
-	object->get_method_list(&m_methods);
+bool MethodIter::init(const Object *p_object) {
+	p_object->get_method_list(&m_methods);
 	m_method_info = m_methods.front();
 	return next_test();
 }
@@ -109,12 +109,12 @@ TestState::TestState() {
 	m_can_assert.instance();
 }
 
-bool TestState::init(const Object *object) {
-	m_test_name = object->get_script_instance()->get_script()->get_path();
+bool TestState::init(const Object *p_object) {
+	m_test_name = p_object->get_script_instance()->get_script()->get_path();
 	m_assert_count = 0;
 	m_test_count = 0;
 	m_log->clear();
-	if (m_method_iter.init(object)) {
+	if (m_method_iter.init(p_object)) {
 		m_test_count++;
 		return m_stage_iter.init();
 	}

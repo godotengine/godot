@@ -41,35 +41,35 @@ TextTestResult::TextTestResult() {
 	m_total_assert_count = 0;
 }
 
-void TextTestResult::start_test(TestState *test_state) {
-	TestResult::start_test(test_state);
-	test_state->log()->info(test_state->test_name(), test_state->method_name(), "setup");
+void TextTestResult::start_test(TestState *p_test_state) {
+	TestResult::start_test(p_test_state);
+	p_test_state->log()->info(p_test_state->test_name(), p_test_state->method_name(), "setup");
 }
 
-void TextTestResult::add_error(TestState *test_state, TestError *error) {
-	TestResult::add_error(test_state, error);
-	test_state->log()->fatal(test_state->test_name(), test_state->method_name(), error->m_message);
+void TextTestResult::add_error(TestState *p_test_state, TestError *p_error) {
+	TestResult::add_error(p_test_state, p_error);
+	p_test_state->log()->fatal(p_test_state->test_name(), p_test_state->method_name(), p_error->m_message);
 }
 
-void TextTestResult::add_failure(TestState *test_state, TestError *error) {
-	TestResult::add_failure(test_state, error);
-	test_state->log()->fatal(test_state->test_name(), test_state->method_name(), error->m_message);
+void TextTestResult::add_failure(TestState *p_test_state, TestError *p_error) {
+	TestResult::add_failure(p_test_state, p_error);
+	p_test_state->log()->fatal(p_test_state->test_name(), p_test_state->method_name(), p_error->m_message);
 }
 
-void TextTestResult::add_success(TestState *test_state) {
-	TestResult::add_success(test_state);
+void TextTestResult::add_success(TestState *p_test_state) {
+	TestResult::add_success(p_test_state);
 }
 
-void TextTestResult::stop_test(TestState *test_state) {
-	TestResult::stop_test(test_state);
+void TextTestResult::stop_test(TestState *p_test_state) {
+	TestResult::stop_test(p_test_state);
 	TestConfig *singleton = TestConfig::get_singleton();
-	if (!test_state->is_valid() || singleton->log_on_success()) {
-		m_log->append(test_state->log());
-		m_log->info(test_state->test_name(), test_state->method_name(), "teardown");
+	if (!p_test_state->is_valid() || singleton->log_on_success()) {
+		m_log->append(p_test_state->log());
+		m_log->info(p_test_state->test_name(), p_test_state->method_name(), "teardown");
 		Array args;
 		args.resize(1);
-		args[0] = test_state->assert_count();
-		m_log->info(test_state->test_name(), test_state->method_name(), String("Ran {0} asserts.").format(args));
+		args[0] = p_test_state->assert_count();
+		m_log->info(p_test_state->test_name(), p_test_state->method_name(), String("Ran {0} asserts.").format(args));
 	}
 }
 
@@ -80,7 +80,7 @@ void TextTestResult::finish() {
 	file->store_string(JSON::print(m_log->to_array(), "\t"));
 }
 
-void TextTestResult::summary(const String &msg) {
+void TextTestResult::summary(const String &p_message) {
 	Ref<Script> script = get_script_instance()->get_script();
 	String name;
 	if (script.is_valid()) {
@@ -88,7 +88,7 @@ void TextTestResult::summary(const String &msg) {
 	} else {
 		name = get_class_name();
 	}
-	m_log->info(name, "summary", msg);
+	m_log->info(name, "summary", p_message);
 }
 
 void TextTestResult::_bind_methods() {

@@ -48,7 +48,7 @@ TestConfig::TestConfig() {
 	GLOBAL_DEF("debug/testing/test/default_test_result", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/test/default_test_result", PropertyInfo(Variant::STRING, "debug/testing/test/default_test_result", PROPERTY_HINT_PLACEHOLDER_TEXT, "TextTestResult"));
 
-	GLOBAL_DEF("debug/testing/documentation/should_test", true);
+	/*GLOBAL_DEF("debug/testing/documentation/should_test", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/documentation/should_test", PropertyInfo(Variant::BOOL, "debug/testing/documentation/should_test", PROPERTY_HINT_NONE));
 	GLOBAL_DEF("debug/testing/documentation/directory", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/documentation/directory", PropertyInfo(Variant::STRING, "debug/testing/documentation/directory", PROPERTY_HINT_DIR));
@@ -58,8 +58,10 @@ TestConfig::TestConfig() {
 	GLOBAL_DEF("debug/testing/coverage/directory", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/directory", PropertyInfo(Variant::STRING, "debug/testing/coverage/directory", PROPERTY_HINT_DIR));
 	GLOBAL_DEF("debug/testing/coverage/minimum_percent", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/minimum_percent", PropertyInfo(Variant::INT, "debug/testing/coverage/minimum_percent", PROPERTY_HINT_RANGE, "0,100,1"));
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/coverage/minimum_percent", PropertyInfo(Variant::INT, "debug/testing/coverage/minimum_percent", PROPERTY_HINT_RANGE, "0,100,1"));*/
 
+	GLOBAL_DEF("debug/testing/log/console", true);
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/console", PropertyInfo(Variant::BOOL, "debug/testing/log/console", PROPERTY_HINT_NONE));
 	GLOBAL_DEF("debug/testing/log/on_success", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/testing/log/on_success", PropertyInfo(Variant::BOOL, "debug/testing/log/on_success", PROPERTY_HINT_NONE));
 	GLOBAL_DEF("debug/testing/log/fail_greater_equal", 4); // Fail on ERROR or FATAL
@@ -72,20 +74,28 @@ TestConfig *TestConfig::get_singleton() {
 	return singleton;
 }
 
+String get_setting(const String &p_name, const String &p_default) {
+	String value = ProjectSettings::get_singleton()->get(p_name);
+	if (value.empty()) {
+		value = p_default;
+	}
+	return value;
+}
+
 String TestConfig::test_directory() const {
-	return GLOBAL_DEF("debug/testing/test/directory", "res://");
+	return get_setting("debug/testing/test/directory", "res://");
 }
 
 String TestConfig::test_file_match() const {
-	return GLOBAL_DEF("debug/testing/test/file_match", "*_test.gd");
+	return get_setting("debug/testing/test/file_match", "*_test.gd");
 }
 
 String TestConfig::test_func_match() const {
-	return GLOBAL_DEF("debug/testing/test/func_match", "test_*");
+	return get_setting("debug/testing/test/func_match", "test_*");
 }
 
 Ref<TestResult> TestConfig::make_result() const {
-	const String& script = GLOBAL_DEF("debug/testing/test/default_test_result", "TextTestResult");
+	const String &script = get_setting("debug/testing/test/default_test_result", "TextTestResult");
 	Object *obj;
 	if (ClassDB::class_exists(script)) {
 		obj = ClassDB::instance(script);
@@ -103,12 +113,16 @@ Ref<TestResult> TestConfig::make_result() const {
 	return test_result;
 }
 
+bool TestConfig::log_console() const {
+	return ProjectSettings::get_singleton()->get("debug/testing/log/console");
+}
+
 bool TestConfig::log_on_success() const {
-	return GLOBAL_DEF("debug/testing/log/on_success", true);
+	return ProjectSettings::get_singleton()->get("debug/testing/log/on_success");
 }
 
 TestLog::LogLevel TestConfig::log_fail_greater_equal() const {
-	return (TestLog::LogLevel)(int)GLOBAL_DEF("debug/testing/log/fail_greater_equal", TestLog::ERROR);
+	return (TestLog::LogLevel)(int)ProjectSettings::get_singleton()->get("debug/testing/log/fail_greater_equal");
 }
 
 void TestConfig::_bind_methods() {

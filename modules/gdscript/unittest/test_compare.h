@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_runner.cpp                                                      */
+/*  test_compare.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,35 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_runner.h"
-#include "test_config.h"
-#include "test_loader.h"
+#ifndef TEST_COMPARE_H
+#define TEST_COMPARE_H
 
-void TestRunner::init() {
-    SceneTree::init();
-	m_test_result = Ref<TestResult>(TestConfig::get_singleton()->make_result());
-	Ref<TestLoader> loader(memnew(TestLoader));
-	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, TestConfig::get_singleton()->test_directory())) {
-		m_test_suite = test_suite;
-		m_test_suite->init(get_root(), m_test_result);
-	}
-}
+#include "core/func_ref.h"
+#include "core/reference.h"
 
-bool TestRunner::iteration(float p_time) {
-    bool finished = SceneTree::iteration(p_time);
-	if (m_test_suite.is_valid()) {
-		return m_test_suite->iteration(*m_test_result);
-	}
-	return true;
-}
+class TestCompare : public Reference {
+    GDCLASS(TestCompare, Reference);
+public:
+    static Ref<TestCompare> equal(const Variant &p_left, const Variant &p_right, const String &p_message);
+    static Ref<TestCompare> not_equal(const Variant &p_left, const Variant &p_right, const String &p_message);
 
-void TestRunner::finish() {
-	if (m_test_result.is_valid()) {
-		m_test_result->finish();
-	}
-    SceneTree::finish();
-}
+    virtual bool compare() const { return false; };
 
-void TestRunner::_bind_methods() {
-}
+protected:
+    static void _bind_methods();
+
+private:
+    Ref<FuncRef> m_func;
+    Vector<Variant> m_params;
+};
+
+
+#endif // TEST_COMPARE_H

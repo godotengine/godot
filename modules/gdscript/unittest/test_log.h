@@ -50,13 +50,13 @@ public:
 		GDCLASS(LogMessage, Reference);
 
 	public:
-		static Ref<LogMessage> log(LogLevel lvl, const String &script_path, const String &test_func, const String &msg);
-		static Ref<LogMessage> trace(const String &script_path, const String &test_func, const String &msg);
-		static Ref<LogMessage> debug(const String &script_path, const String &test_func, const String &msg);
-		static Ref<LogMessage> info(const String &script_path, const String &test_func, const String &msg);
-		static Ref<LogMessage> warn(const String &script_path, const String &test_func, const String &msg);
-		static Ref<LogMessage> error(const String &script_path, const String &test_func, const String &msg);
-		static Ref<LogMessage> fatal(const String &script_path, const String &test_func, const String &msg);
+		static Ref<LogMessage> log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> trace(const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> debug(const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> info(const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> warn(const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> error(const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> fatal(const String &p_script_path, const String &p_test_func, const String &p_message);
 
 		static Color level_to_color(LogLevel level);
 		uint64_t time() const;
@@ -78,20 +78,20 @@ public:
 
 	TestLog();
 
-	void set_filter(LogLevel filter);
+	void set_filter(LogLevel p_filter);
 	LogLevel get_filter() const;
 
 	LogLevel get_max_level() const;
 
-	void append(const Ref<TestLog> &test_log);
-	void add_message(Ref<LogMessage> message);
-	void log(LogLevel lvl, const String &script_path, const String &test_func, const String &msg);
-	void trace(const String &script_path, const String &test_func, const String &msg);
-	void debug(const String &script_path, const String &test_func, const String &msg);
-	void info(const String &script_path, const String &test_func, const String &msg);
-	void warn(const String &script_path, const String &test_func, const String &msg);
-	void error(const String &script_path, const String &test_func, const String &msg);
-	void fatal(const String &script_path, const String &test_func, const String &msg);
+	void append(const Ref<TestLog> &p_test_log);
+	void add_message(Ref<LogMessage> p_message);
+	void log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message);
+	void trace(const String &p_script_path, const String &p_test_func, const String &p_message);
+	void debug(const String &p_script_path, const String &p_test_func, const String &p_message);
+	void info(const String &p_script_path, const String &p_test_func, const String &p_message);
+	void warn(const String &p_script_path, const String &p_test_func, const String &p_message);
+	void error(const String &p_script_path, const String &p_test_func, const String &p_message);
+	void fatal(const String &p_script_path, const String &p_test_func, const String &p_message);
 	void clear();
 
 	Array to_array() const;

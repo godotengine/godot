@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  test_runner.cpp                                                      */
+/*  method_override.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,35 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "test_runner.h"
-#include "test_config.h"
-#include "test_loader.h"
+#ifndef METHOD_OVERRIDE_H
+#define METHOD_OVERRIDE_H
 
-void TestRunner::init() {
-    SceneTree::init();
-	m_test_result = Ref<TestResult>(TestConfig::get_singleton()->make_result());
-	Ref<TestLoader> loader(memnew(TestLoader));
-	Ref<TestSuite> test_suite(memnew(TestSuite));
-	if (loader->from_path(test_suite, TestConfig::get_singleton()->test_directory())) {
-		m_test_suite = test_suite;
-		m_test_suite->init(get_root(), m_test_result);
-	}
-}
+#include "core/func_ref.h"
+#include "core/reference.h"
 
-bool TestRunner::iteration(float p_time) {
-    bool finished = SceneTree::iteration(p_time);
-	if (m_test_suite.is_valid()) {
-		return m_test_suite->iteration(*m_test_result);
-	}
-	return true;
-}
+class MethodOverride : public Reference {
+    GDCLASS(MethodOverride, Reference);
 
-void TestRunner::finish() {
-	if (m_test_result.is_valid()) {
-		m_test_result->finish();
-	}
-    SceneTree::finish();
-}
+public:
+	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
+	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
-void TestRunner::_bind_methods() {
-}
+    static void _bind_methods();
+};
+
+
+#endif // METHOD_OVERRIDE_H

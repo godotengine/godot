@@ -32,42 +32,42 @@
 
 #include "core/os/os.h"
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::log(LogLevel level, const String &script_path, const String &test_func, const String &msg) {
+Ref<TestLog::LogMessage> TestLog::LogMessage::log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message) {
 	Ref<LogMessage> message(memnew(LogMessage));
 	message->m_time = OS::get_singleton()->get_unix_time();
-	message->m_level = level;
-	message->m_script_path = script_path;
-	message->m_test_func = test_func;
-	message->m_message = msg;
+	message->m_level = p_level;
+	message->m_script_path = p_script_path;
+	message->m_test_func = p_test_func;
+	message->m_message = p_message;
 	return message;
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::trace(const String &script_path, const String &test_func, const String &msg) {
-	return log(TRACE, script_path, test_func, msg);
+Ref<TestLog::LogMessage> TestLog::LogMessage::trace(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(TRACE, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::debug(const String &script_path, const String &test_func, const String &msg) {
-	return log(DEBUG, script_path, test_func, msg);
+Ref<TestLog::LogMessage> TestLog::LogMessage::debug(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(DEBUG, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::info(const String &script_path, const String &test_func, const String &msg) {
-	return log(INFO, script_path, test_func, msg);
+Ref<TestLog::LogMessage> TestLog::LogMessage::info(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(INFO, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::warn(const String &script_path, const String &test_func, const String &msg) {
-	return log(WARN, script_path, test_func, msg);
+Ref<TestLog::LogMessage> TestLog::LogMessage::warn(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(WARN, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::error(const String &script_path, const String &test_func, const String &msg) {
-	return log(ERROR, script_path, test_func, msg);
+Ref<TestLog::LogMessage> TestLog::LogMessage::error(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(ERROR, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::fatal(const String &script_path, const String &test_func, const String &msg) {
-	return log(FATAL, script_path, test_func, msg);
+Ref<TestLog::LogMessage> TestLog::LogMessage::fatal(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(FATAL, p_script_path, p_test_func, p_message);
 }
 
-Color TestLog::LogMessage::level_to_color(LogLevel level) {
-	switch (level) {
+Color TestLog::LogMessage::level_to_color(LogLevel p_level) {
+	switch (p_level) {
 		case TRACE:
 			return Color::named("gray");
 		case DEBUG:
@@ -107,18 +107,18 @@ const String &TestLog::LogMessage::message() const {
 Dictionary TestLog::LogMessage::to_dict() const {
 	Dictionary result;
 	result["time"] = m_time;
-	result["level"] = m_level;
-	result["script_path"] = m_script_path;
-	result["test_func"] = m_test_func;
+	result["p_level"] = m_level;
+	result["p_script_path"] = m_script_path;
+	result["p_test_func"] = m_test_func;
 	result["message"] = m_message;
 	return result;
 }
 
 void TestLog::LogMessage::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("time"), &TestLog::LogMessage::time);
-	ClassDB::bind_method(D_METHOD("level"), &TestLog::LogMessage::level);
-	ClassDB::bind_method(D_METHOD("script_path"), &TestLog::LogMessage::script_path);
-	ClassDB::bind_method(D_METHOD("test_func"), &TestLog::LogMessage::test_func);
+	ClassDB::bind_method(D_METHOD("p_level"), &TestLog::LogMessage::level);
+	ClassDB::bind_method(D_METHOD("p_script_path"), &TestLog::LogMessage::script_path);
+	ClassDB::bind_method(D_METHOD("p_test_func"), &TestLog::LogMessage::test_func);
 	ClassDB::bind_method(D_METHOD("message"), &TestLog::LogMessage::message);
 }
 
@@ -127,8 +127,8 @@ TestLog::TestLog() {
 	m_max_level = LogLevel::TRACE;
 }
 
-void TestLog::set_filter(LogLevel filter) {
-	m_filter = filter;
+void TestLog::set_filter(LogLevel p_filter) {
+	m_filter = p_filter;
 }
 
 TestLog::LogLevel TestLog::get_filter() const {
@@ -139,48 +139,48 @@ TestLog::LogLevel TestLog::get_max_level() const {
 	return m_max_level;
 }
 
-void TestLog::append(const Ref<TestLog> &test_log) {
-	int size = test_log->m_messages.size();
+void TestLog::append(const Ref<TestLog> &p_test_log) {
+	int size = p_test_log->m_messages.size();
 	for (int i = 0; i < size; i++) {
-		add_message(test_log->m_messages[i]);
+		add_message(p_test_log->m_messages[i]);
 	}
 }
 
-void TestLog::add_message(Ref<LogMessage> message) {
-	if (message->level() >= m_filter) {
-		if (m_max_level > message->level()) {
-			m_max_level = message->level();
+void TestLog::add_message(Ref<LogMessage> p_message) {
+	if (p_message->level() >= m_filter) {
+		if (m_max_level > p_message->level()) {
+			m_max_level = p_message->level();
 		}
-		m_messages.push_back(message);
+		m_messages.push_back(p_message);
 	}
 }
 
-void TestLog::log(LogLevel level, const String &script_path, const String &test_func, const String &msg) {
-	add_message(LogMessage::log(level, script_path, test_func, msg));
+void TestLog::log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	add_message(LogMessage::log(p_level, p_script_path, p_test_func, p_message));
 }
 
-void TestLog::trace(const String &script_path, const String &test_func, const String &msg) {
-	log(TRACE, script_path, test_func, msg);
+void TestLog::trace(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	log(TRACE, p_script_path, p_test_func, p_message);
 }
 
-void TestLog::debug(const String &script_path, const String &test_func, const String &msg) {
-	log(DEBUG, script_path, test_func, msg);
+void TestLog::debug(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	log(DEBUG, p_script_path, p_test_func, p_message);
 }
 
-void TestLog::info(const String &script_path, const String &test_func, const String &msg) {
-	log(INFO, script_path, test_func, msg);
+void TestLog::info(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	log(INFO, p_script_path, p_test_func, p_message);
 }
 
-void TestLog::warn(const String &script_path, const String &test_func, const String &msg) {
-	log(WARN, script_path, test_func, msg);
+void TestLog::warn(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	log(WARN, p_script_path, p_test_func, p_message);
 }
 
-void TestLog::error(const String &script_path, const String &test_func, const String &msg) {
-	log(ERROR, script_path, test_func, msg);
+void TestLog::error(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	log(ERROR, p_script_path, p_test_func, p_message);
 }
 
-void TestLog::fatal(const String &script_path, const String &test_func, const String &msg) {
-	log(FATAL, script_path, test_func, msg);
+void TestLog::fatal(const String &p_script_path, const String &p_test_func, const String &p_message) {
+	log(FATAL, p_script_path, p_test_func, p_message);
 }
 
 void TestLog::clear() {
@@ -206,12 +206,12 @@ void TestLog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ERROR);
 	BIND_ENUM_CONSTANT(FATAL);
 
-	ClassDB::bind_method(D_METHOD("log", "level", "msg"), &TestLog::log);
-	ClassDB::bind_method(D_METHOD("trace", "msg"), &TestLog::trace);
-	ClassDB::bind_method(D_METHOD("debug", "msg"), &TestLog::debug);
-	ClassDB::bind_method(D_METHOD("info", "msg"), &TestLog::info);
-	ClassDB::bind_method(D_METHOD("warn", "msg"), &TestLog::warn);
-	ClassDB::bind_method(D_METHOD("error", "msg"), &TestLog::error);
-	ClassDB::bind_method(D_METHOD("fatal", "msg"), &TestLog::fatal);
+	ClassDB::bind_method(D_METHOD("log", "p_level", "p_message"), &TestLog::log);
+	ClassDB::bind_method(D_METHOD("trace", "p_message"), &TestLog::trace);
+	ClassDB::bind_method(D_METHOD("debug", "p_message"), &TestLog::debug);
+	ClassDB::bind_method(D_METHOD("info", "p_message"), &TestLog::info);
+	ClassDB::bind_method(D_METHOD("warn", "p_message"), &TestLog::warn);
+	ClassDB::bind_method(D_METHOD("error", "p_message"), &TestLog::error);
+	ClassDB::bind_method(D_METHOD("fatal", "p_message"), &TestLog::fatal);
 	ClassDB::bind_method(D_METHOD("clear"), &TestLog::clear);
 }

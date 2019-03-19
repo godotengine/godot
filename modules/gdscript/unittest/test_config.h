@@ -47,6 +47,7 @@ public:
 	String test_func_match() const;
     Ref<TestResult> make_result() const;
 
+	bool log_console() const;
 	bool log_on_success() const;
 	TestLog::LogLevel log_fail_greater_equal() const;
 
