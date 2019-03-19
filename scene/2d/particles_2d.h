@@ -37,7 +37,7 @@
 
 class Particles2D : public Node2D {
 private:
-	GDCLASS(Particles2D, Node2D)
+	GDCLASS(Particles2D, Node2D);
 
 public:
 	enum DrawOrder {

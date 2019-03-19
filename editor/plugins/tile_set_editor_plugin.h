@@ -46,7 +46,7 @@ class TileSetEditor : public HSplitContainer {
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
-	GDCLASS(TileSetEditor, HSplitContainer)
+	GDCLASS(TileSetEditor, HSplitContainer);
 
 	enum TextureToolButtons {
 		TOOL_TILESET_ADD_TEXTURE,

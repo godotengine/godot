@@ -68,7 +68,8 @@ class btGjkEpaPenetrationDepthSolver;
 extern ContactAddedCallback gContactAddedCallback;
 
 class BulletPhysicsDirectSpaceState : public PhysicsDirectSpaceState {
-	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState)
+	GDCLASS(BulletPhysicsDirectSpaceState, PhysicsDirectSpaceState);
+
 private:
 	SpaceBullet *space;
 

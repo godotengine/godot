@@ -35,7 +35,8 @@
 #include "core/io/resource_importer.h"
 
 class ResourceImporterImage : public ResourceImporter {
-	GDCLASS(ResourceImporterImage, ResourceImporter)
+	GDCLASS(ResourceImporterImage, ResourceImporter);
+
 public:
 	virtual String get_importer_name() const;
 	virtual String get_visible_name() const;

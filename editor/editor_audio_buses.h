@@ -52,7 +52,7 @@ class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
 
-	GDCLASS(EditorAudioBus, PanelContainer)
+	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture> disabled_vu;
 	LineEdit *track_name;
@@ -155,7 +155,7 @@ public:
 
 class EditorAudioBuses : public VBoxContainer {
 
-	GDCLASS(EditorAudioBuses, VBoxContainer)
+	GDCLASS(EditorAudioBuses, VBoxContainer);
 
 	HBoxContainer *top_hb;
 

@@ -41,7 +41,7 @@
 */
 
 class ARVRInterfaceGDNative : public ARVRInterface {
-	GDCLASS(ARVRInterfaceGDNative, ARVRInterface)
+	GDCLASS(ARVRInterfaceGDNative, ARVRInterface);
 
 	void cleanup();
 

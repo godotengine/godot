@@ -44,7 +44,8 @@ struct EditorProgress;
 
 class EditorExportPreset : public Reference {
 
-	GDCLASS(EditorExportPreset, Reference)
+	GDCLASS(EditorExportPreset, Reference);
+
 public:
 	enum ExportFilter {
 		EXPORT_ALL_RESOURCES,
@@ -152,7 +153,7 @@ struct SharedObject {
 
 class EditorExportPlatform : public Reference {
 
-	GDCLASS(EditorExportPlatform, Reference)
+	GDCLASS(EditorExportPlatform, Reference);
 
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
@@ -272,7 +273,7 @@ public:
 };
 
 class EditorExportPlugin : public Reference {
-	GDCLASS(EditorExportPlugin, Reference)
+	GDCLASS(EditorExportPlugin, Reference);
 
 	friend class EditorExportPlatform;
 
@@ -388,7 +389,7 @@ public:
 
 class EditorExportPlatformPC : public EditorExportPlatform {
 
-	GDCLASS(EditorExportPlatformPC, EditorExportPlatform)
+	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 	String name;
@@ -440,7 +441,7 @@ public:
 
 class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
 
-	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin)
+	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin);
 
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);

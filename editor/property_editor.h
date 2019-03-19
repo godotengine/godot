@@ -56,7 +56,7 @@ class PropertySelector;
 
 class EditorResourceConversionPlugin : public Reference {
 
-	GDCLASS(EditorResourceConversionPlugin, Reference)
+	GDCLASS(EditorResourceConversionPlugin, Reference);
 
 protected:
 	static void _bind_methods();

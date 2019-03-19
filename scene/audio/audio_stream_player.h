@@ -36,7 +36,7 @@
 
 class AudioStreamPlayer : public Node {
 
-	GDCLASS(AudioStreamPlayer, Node)
+	GDCLASS(AudioStreamPlayer, Node);
 
 public:
 	enum MixTarget {

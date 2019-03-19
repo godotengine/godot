@@ -37,7 +37,7 @@
 class StreamTexture;
 
 class ResourceImporterLayeredTexture : public ResourceImporter {
-	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter)
+	GDCLASS(ResourceImporterLayeredTexture, ResourceImporter);
 
 	bool is_3d;
 	static const char *compression_formats[];

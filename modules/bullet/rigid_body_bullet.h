@@ -54,7 +54,7 @@ class BulletPhysicsDirectBodyState;
 /// created by BulletPhysicsServer and is held by the "singleton" variable of this class
 /// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState)
+	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
 
 	static BulletPhysicsDirectBodyState *singleton;
 

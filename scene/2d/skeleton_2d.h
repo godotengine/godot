@@ -36,7 +36,7 @@
 class Skeleton2D;
 
 class Bone2D : public Node2D {
-	GDCLASS(Bone2D, Node2D)
+	GDCLASS(Bone2D, Node2D);
 
 	friend class Skeleton2D;
 #ifdef TOOLS_ENABLED

@@ -35,7 +35,8 @@
 #include "core/io/resource_importer.h"
 
 class ResourceImporterOGGVorbis : public ResourceImporter {
-	GDCLASS(ResourceImporterOGGVorbis, ResourceImporter)
+	GDCLASS(ResourceImporterOGGVorbis, ResourceImporter);
+
 public:
 	virtual String get_importer_name() const;
 	virtual String get_visible_name() const;

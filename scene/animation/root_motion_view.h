@@ -34,7 +34,8 @@
 #include "scene/3d/visual_instance.h"
 
 class RootMotionView : public VisualInstance {
-	GDCLASS(RootMotionView, VisualInstance)
+	GDCLASS(RootMotionView, VisualInstance);
+
 public:
 	RID immediate;
 	NodePath path;

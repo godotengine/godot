@@ -694,7 +694,7 @@ VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
 
-	GDCLASS(_ClassDB, Object)
+	GDCLASS(_ClassDB, Object);
 
 protected:
 	static void _bind_methods();
@@ -779,7 +779,7 @@ public:
 class _JSON;
 
 class JSONParseResult : public Reference {
-	GDCLASS(JSONParseResult, Reference)
+	GDCLASS(JSONParseResult, Reference);
 
 	friend class _JSON;
 
@@ -807,7 +807,7 @@ public:
 };
 
 class _JSON : public Object {
-	GDCLASS(_JSON, Object)
+	GDCLASS(_JSON, Object);
 
 protected:
 	static void _bind_methods();

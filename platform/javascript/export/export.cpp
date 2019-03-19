@@ -40,7 +40,7 @@
 
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
-	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform)
+	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;

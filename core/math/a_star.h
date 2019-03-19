@@ -42,7 +42,7 @@
 
 class AStar : public Reference {
 
-	GDCLASS(AStar, Reference)
+	GDCLASS(AStar, Reference);
 
 	uint64_t pass;
 

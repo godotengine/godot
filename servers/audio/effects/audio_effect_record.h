@@ -43,7 +43,7 @@
 class AudioEffectRecord;
 
 class AudioEffectRecordInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectRecordInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectRecordInstance, AudioEffectInstance);
 	friend class AudioEffectRecord;
 	Ref<AudioEffectRecord> base;
 
@@ -77,7 +77,7 @@ public:
 };
 
 class AudioEffectRecord : public AudioEffect {
-	GDCLASS(AudioEffectRecord, AudioEffect)
+	GDCLASS(AudioEffectRecord, AudioEffect);
 
 	friend class AudioEffectRecordInstance;
 

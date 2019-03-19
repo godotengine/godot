@@ -138,7 +138,7 @@ VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
 
-	GDCLASS(ButtonGroup, Resource)
+	GDCLASS(ButtonGroup, Resource);
 	friend class BaseButton;
 	Set<BaseButton *> buttons;
 

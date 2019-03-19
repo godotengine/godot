@@ -34,7 +34,8 @@
 #include "core/io/resource_importer.h"
 
 class ResourceImporterCSVTranslation : public ResourceImporter {
-	GDCLASS(ResourceImporterCSVTranslation, ResourceImporter)
+	GDCLASS(ResourceImporterCSVTranslation, ResourceImporter);
+
 public:
 	virtual String get_importer_name() const;
 	virtual String get_visible_name() const;

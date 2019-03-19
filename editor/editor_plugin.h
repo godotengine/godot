@@ -60,7 +60,8 @@ class EditorToolAddons;
 class ScriptEditor;
 
 class EditorInterface : public Node {
-	GDCLASS(EditorInterface, Node)
+	GDCLASS(EditorInterface, Node);
+
 protected:
 	static void _bind_methods();
 	static EditorInterface *singleton;

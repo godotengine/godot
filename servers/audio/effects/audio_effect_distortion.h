@@ -36,7 +36,7 @@
 class AudioEffectDistortion;
 
 class AudioEffectDistortionInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectDistortionInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectDistortionInstance, AudioEffectInstance);
 	friend class AudioEffectDistortion;
 	Ref<AudioEffectDistortion> base;
 	float h[2];
@@ -46,7 +46,8 @@ public:
 };
 
 class AudioEffectDistortion : public AudioEffect {
-	GDCLASS(AudioEffectDistortion, AudioEffect)
+	GDCLASS(AudioEffectDistortion, AudioEffect);
+
 public:
 	enum Mode {
 		MODE_CLIP,

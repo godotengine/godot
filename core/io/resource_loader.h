@@ -62,7 +62,7 @@ public:
 
 class ResourceFormatLoader : public Reference {
 
-	GDCLASS(ResourceFormatLoader, Reference)
+	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
 	static void _bind_methods();

@@ -34,7 +34,7 @@
 #include "core/image.h"
 #include "core/io/resource_importer.h"
 class ResourceImporterTextureAtlas : public ResourceImporter {
-	GDCLASS(ResourceImporterTextureAtlas, ResourceImporter)
+	GDCLASS(ResourceImporterTextureAtlas, ResourceImporter);
 
 	struct PackData {
 		Rect2 region;

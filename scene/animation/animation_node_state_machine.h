@@ -34,7 +34,8 @@
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeStateMachineTransition : public Resource {
-	GDCLASS(AnimationNodeStateMachineTransition, Resource)
+	GDCLASS(AnimationNodeStateMachineTransition, Resource);
+
 public:
 	enum SwitchMode {
 		SWITCH_MODE_IMMEDIATE,
