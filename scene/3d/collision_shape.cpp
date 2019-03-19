@@ -91,7 +91,7 @@ void CollisionShape::_notification(int p_what) {
 				_update_in_shape_owner();
 			}
 			if (get_tree()->is_debugging_collisions_hint()) {
-				_create_debug_shape();
+				_update_debug_shape();
 			}
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
@@ -142,17 +142,24 @@ void CollisionShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"), &CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape", "make_convex_from_brothers", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
+	ClassDB::bind_method(D_METHOD("_shape_changed"), &CollisionShape::_shape_changed);
+	ClassDB::bind_method(D_METHOD("_update_debug_shape"), &CollisionShape::_update_debug_shape);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 }
 
 void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 
-	if (!shape.is_null())
+	if (!shape.is_null()) {
 		shape->unregister_owner(this);
+		shape->disconnect("changed", this, "_shape_changed");
+	}
 	shape = p_shape;
-	if (!shape.is_null())
+	if (!shape.is_null()) {
 		shape->register_owner(this);
+		shape->connect("changed", this, "_shape_changed");
+	}
 	update_gizmo();
 	if (parent) {
 		parent->shape_owner_clear_shapes(owner_id);
@@ -161,6 +168,8 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 		}
 	}
 
+	if (is_inside_tree())
+		_shape_changed();
 	update_configuration_warning();
 }
 
@@ -199,7 +208,8 @@ CollisionShape::~CollisionShape() {
 	//VisualServer::get_singleton()->free(indicator);
 }
 
-void CollisionShape::_create_debug_shape() {
+void CollisionShape::_update_debug_shape() {
+	debug_shape_dirty = false;
 
 	if (debug_shape) {
 		debug_shape->queue_delete();
@@ -207,15 +217,19 @@ void CollisionShape::_create_debug_shape() {
 	}
 
 	Ref<Shape> s = get_shape();
-
 	if (s.is_null())
 		return;
 
 	Ref<Mesh> mesh = s->get_debug_mesh();
-
 	MeshInstance *mi = memnew(MeshInstance);
 	mi->set_mesh(mesh);
-
 	add_child(mi);
 	debug_shape = mi;
+}
+
+void CollisionShape::_shape_changed() {
+	if (get_tree()->is_debugging_collisions_hint() && !debug_shape_dirty) {
+		debug_shape_dirty = true;
+		call_deferred("_update_debug_shape");
+	}
 }

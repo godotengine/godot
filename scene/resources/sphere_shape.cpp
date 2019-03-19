@@ -58,6 +58,7 @@ Vector<Vector3> SphereShape::_gen_debug_mesh_lines() {
 void SphereShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), radius);
+	Shape::_update_shape();
 }
 
 void SphereShape::set_radius(float p_radius) {

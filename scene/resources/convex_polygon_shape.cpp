@@ -58,7 +58,7 @@ Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
 void ConvexPolygonShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), points);
-	emit_changed();
+	Shape::_update_shape();
 }
 
 void ConvexPolygonShape::set_points(const PoolVector<Vector3> &p_points) {

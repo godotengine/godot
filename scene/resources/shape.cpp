@@ -96,6 +96,11 @@ Ref<ArrayMesh> Shape::get_debug_mesh() {
 	return debug_mesh_cache;
 }
 
+void Shape::_update_shape() {
+	emit_changed();
+	debug_mesh_cache.unref();
+}
+
 void Shape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape::set_margin);
