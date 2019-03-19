@@ -34,7 +34,7 @@
 #include "core/script_language.h"
 #include "core/io/resource_loader.h"
 
-bool TestLoader::from_path(Ref<TestSuite> test_suite, const String &path) {
+bool TestLoader::from_path(Ref<TestSuite> p_test_suite, const String &p_path) {
 	Error error;
 	DirAccessRef directory = DirAccess::open(path, &error);
 	ERR_EXPLAIN("Can't find path: " + path);
@@ -42,7 +42,7 @@ bool TestLoader::from_path(Ref<TestSuite> test_suite, const String &path) {
 	return from_directory(test_suite, directory);
 }
 
-bool TestLoader::from_directory(Ref<TestSuite> test_suite, DirAccessRef &directory) {
+bool TestLoader::from_directory(Ref<TestSuite> p_test_suite, DirAccessRef &p_directory) {
 	ERR_FAIL_COND_V(Error::OK != directory->list_dir_begin(), false);
 	String filename = directory->get_next();
 	while (filename != "") {
@@ -67,13 +67,13 @@ bool TestLoader::from_directory(Ref<TestSuite> test_suite, DirAccessRef &directo
 	return true;
 }
 
-Ref<TestSuite> TestLoader::_from_path(const String &path) {
+Ref<TestSuite> TestLoader::_from_path(const String &p_path) {
 	Ref<TestSuite> test_suite(memnew(TestSuite));
 	ERR_FAIL_COND_V(from_path(test_suite, path), NULL);
 	return test_suite;
 }
 
-Ref<TestSuite> TestLoader::_from_directory(Ref<_Directory> directory) {
+Ref<TestSuite> TestLoader::_from_directory(Ref<_Directory> p_directory) {
 	return _from_path(directory->get_current_dir());
 }
 

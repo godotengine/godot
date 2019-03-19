@@ -37,7 +37,7 @@ DebugButton::DebugButton() {
 	set_text(TTR("Test"));
 }
 
-ToolButton *find_play_button(DebugButton *button) {
+ToolButton *find_play_button() {
 	return Object::cast_to<ToolButton>(EditorNode::get_menu_hb()->get_child(4)->get_child(0));
 }
 
@@ -45,7 +45,7 @@ void DebugButton::run() {
 	const String customArgs = "--main-loop-type TestRunner";
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
 	const String args = project_settings->get("editor/main_run_args");
-	ToolButton *play_button = find_play_button(this);
+	ToolButton *play_button = find_play_button();
 	project_settings->set("editor/main_run_args", customArgs);
 	play_button->emit_signal("pressed");
 	project_settings->set("editor/main_run_args", args);

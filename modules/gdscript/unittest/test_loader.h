@@ -40,11 +40,11 @@ class TestLoader : public Reference {
     GDCLASS(TestLoader, Reference);
 
 public:
-	bool from_path(Ref<TestSuite> test_suite, const String &path);
-	bool from_directory(Ref<TestSuite> test_suite, DirAccessRef &directory);
+	bool from_path(Ref<TestSuite> p_test_suite, const String &p_path);
+	bool from_directory(Ref<TestSuite> p_test_suite, DirAccessRef &p_directory);
 
-	Ref<TestSuite> _from_path(const String &path);
-	Ref<TestSuite> _from_directory(const Ref<_Directory> directory);
+	Ref<TestSuite> _from_path(const String &p_path);
+	Ref<TestSuite> _from_directory(const Ref<_Directory> p_directory);
 
 protected:
     static void _bind_methods();

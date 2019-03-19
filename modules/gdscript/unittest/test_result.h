@@ -43,11 +43,11 @@ class TestResult : public Reference {
 public:
 	TestResult();
 	virtual ~TestResult(); 
-	virtual void start_test(TestState *test_state);
-	virtual void stop_test(TestState *test_state);
-	virtual void add_error(TestState *test_state, TestError *error);
-	virtual void add_failure(TestState *test_state, TestError *error);
-	virtual void add_success(TestState *test_state);
+	virtual void start_test(TestState *p_test_state);
+	virtual void stop_test(TestState *p_test_state);
+	virtual void add_error(TestState *p_test_state, TestError *p_error);
+	virtual void add_failure(TestState *p_test_state, TestError *p_error);
+	virtual void add_success(TestState *p_test_state);
 	virtual void finish();
 	bool was_successful() const;
 	void stop();
@@ -57,11 +57,11 @@ protected:
     static void _bind_methods();
 
 private:
-	void _start_test(Object *test_state) { start_test(cast_to<TestState>(test_state)); }
-	void _stop_test(Object *test_state) { stop_test(cast_to<TestState>(test_state)); }
-	void _add_error(Object *test_state, Object *error) { add_error(cast_to<TestState>(test_state), cast_to<TestError>(error)); }
-	void _add_failure(Object *test_state, Object *error) { add_failure(cast_to<TestState>(test_state), cast_to<TestError>(error)); }
-	void _add_success(Object *test_state) { add_success(cast_to<TestState>(test_state)); }
+	void _start_test(Object *p_test_state) { start_test(cast_to<TestState>(p_test_state)); }
+	void _stop_test(Object *p_test_state) { stop_test(cast_to<TestState>(p_test_state)); }
+	void _add_error(Object *p_test_state, Object *p_error) { add_error(cast_to<TestState>(p_test_state), cast_to<TestError>(p_error)); }
+	void _add_failure(Object *p_test_state, Object *p_error) { add_failure(cast_to<TestState>(p_test_state), cast_to<TestError>(p_error)); }
+	void _add_success(Object *p_test_state) { add_success(cast_to<TestState>(p_test_state)); }
 
 	bool m_should_stop;
 	int m_tests_run;

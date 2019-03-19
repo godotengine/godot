@@ -46,36 +46,36 @@ TestResult::~TestResult() {
 	}
 }
 
-void TestResult::start_test(TestState *test_state) {
+void TestResult::start_test(TestState *p_test_state) {
 	m_tests_run++;
 	if (get_script_instance() && get_script_instance()->has_method("start_test")) {
-		get_script_instance()->call("start_test", test_state);
+		get_script_instance()->call("start_test", p_test_state);
 	}
 }
 
-void TestResult::stop_test(TestState *test_state) {
+void TestResult::stop_test(TestState *p_test_state) {
 	if (get_script_instance() && get_script_instance()->has_method("stop_test")) {
-		get_script_instance()->call("stop_test", test_state);
+		get_script_instance()->call("stop_test", p_test_state);
 	}
 }
 
-void TestResult::add_error(TestState *test_state, TestError *error) {
-	m_errors.push_back(error);
+void TestResult::add_error(TestState *p_test_state, TestError *p_error) {
+	m_errors.push_back(p_error);
 	if (get_script_instance() && get_script_instance()->has_method("add_error")) {
-		get_script_instance()->call("add_error", test_state, error);
+		get_script_instance()->call("add_error", p_test_state, p_error);
 	}
 }
 
-void TestResult::add_failure(TestState *test_state, TestError *error) {
-	m_failures.push_back(error);
+void TestResult::add_failure(TestState *p_test_state, TestError *p_error) {
+	m_failures.push_back(p_error);
 	if (get_script_instance() && get_script_instance()->has_method("add_failure")) {
-		get_script_instance()->call("add_failure", test_state, error);
+		get_script_instance()->call("add_failure", p_test_state, p_error);
 	}
 }
 
-void TestResult::add_success(TestState *test_state) {
+void TestResult::add_success(TestState *p_test_state) {
 	if (get_script_instance() && get_script_instance()->has_method("add_success")) {
-		get_script_instance()->call("add_success", test_state);
+		get_script_instance()->call("add_success", p_test_state);
 	}
 }
 

@@ -45,40 +45,40 @@ int TestSuite::count_test_cases() const {
 	return m_test_cases.size();
 }
 
-void TestSuite::add_test(TestCase *test_case) {
-	ERR_FAIL_COND(NULL == test_case);
-	m_test_cases.push_back(test_case);
+void TestSuite::add_test(TestCase *p_test_case) {
+	ERR_FAIL_COND(NULL == p_test_case);
+	m_test_cases.push_back(p_test_case);
 }
 
-void TestSuite::add_tests(Array test_cases) {
-	int count = test_cases.size();
+void TestSuite::add_tests(Array p_test_cases) {
+	int count = p_test_cases.size();
 	for (int i = 0; i < count; i++) {
-		add_test(cast_to<TestCase>(test_cases[i]));
+		add_test(cast_to<TestCase>(p_test_cases[i]));
 	}
 }
 
-void TestSuite::init(Viewport* root, Ref<TestResult> test_result) {
+void TestSuite::init(Viewport* root, Ref<TestResult> p_test_result) {
 	m_root = root;
 	m_case_index = 0;
 	if (m_case_index < count_test_cases()) {
 		m_root->add_child(m_test_cases[m_case_index]);
-		m_test_cases[m_case_index]->init(test_result);
+		m_test_cases[m_case_index]->init(p_test_result);
 	}
 }
 
-bool TestSuite::iteration(Ref<TestResult> test_result) {
-	if (m_case_index < count_test_cases() && !test_result->should_stop()) {
+bool TestSuite::iteration(Ref<TestResult> p_test_result) {
+	if (m_case_index < count_test_cases() && !p_test_result->should_stop()) {
 		TestCase *test_case = m_test_cases[m_case_index];
-		bool finished = test_case->iteration(test_result);
+		bool finished = test_case->iteration(p_test_result);
 		if (finished) {
 			m_root->remove_child(m_test_cases[m_case_index]);
 			m_case_index++;
 			if (m_case_index < count_test_cases()) {
 				m_root->add_child(m_test_cases[m_case_index]);
-				m_test_cases[m_case_index]->init(test_result);
+				m_test_cases[m_case_index]->init(p_test_result);
 			}
 		}
-		return test_result->should_stop();
+		return p_test_result->should_stop();
 	}
 	return true;
 }
