@@ -40,7 +40,6 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/semaphore_posix.h"
-#include "drivers/unix/shared_mem_access_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/visual_server.h"
 
@@ -141,7 +140,6 @@ void OS_Unix::initialize_core() {
 	MutexPosix::make_default();
 	RWLockPosix::make_default();
 #endif
-	SharedMemAccessPosix::make_default();
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);

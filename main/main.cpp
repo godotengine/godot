@@ -75,7 +75,6 @@
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
-#include "editor/live_view.h"
 #include "editor/project_manager.h"
 #endif
 
@@ -812,10 +811,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 #ifdef TOOLS_ENABLED
-	if (script_debugger) {
-		script_debugger->set_request_framebuffer_message_func(LiveViewDebugHelper::_debugger_request_framebuffer, NULL);
-	}
-
 	if (editor) {
 		packed_data->set_disabled(true);
 		globals->set_disable_feature_overrides(true);

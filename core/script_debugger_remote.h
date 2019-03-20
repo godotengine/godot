@@ -113,9 +113,6 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	RequestSceneTreeMessageFunc request_scene_tree;
 	void *request_scene_tree_ud;
 
-	RequestFramebufferMessageFunc request_framebuffer;
-	void *request_framebuffer_ud;
-
 	void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
 
 	void _send_object_id(ObjectID p_id);
@@ -167,8 +164,6 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);
-
-	virtual void set_request_framebuffer_message_func(RequestFramebufferMessageFunc p_func, void *p_udata);
 
 	virtual bool is_profiling() const;
 	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data);
