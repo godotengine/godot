@@ -32,18 +32,35 @@
 #define METHOD_OVERRIDE_H
 
 #include "core/func_ref.h"
+#include "core/map.h"
+#include "core/pair.h"
 #include "core/reference.h"
 
 class MethodOverride : public Reference {
-    GDCLASS(MethodOverride, Reference);
+	GDCLASS(MethodOverride, Reference);
 
 public:
+	void bind_method(const String &p_name, const Variant &value);
+	void add_property(const String &p_name, const StringName setter, const StringName getter);
+
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
-    static void _bind_methods();
-};
+protected:
+	static void _bind_methods();
 
+private:
+	typedef Pair<StringName, StringName> SetGetPair;
+	typedef Map<StringName, SetGetPair> PropertyMap;
+	PropertyMap m_properties;
+
+	struct MethodInfo {
+		Variant m_return;
+		Vector<Array> m_calls;
+	};
+	typedef Map<StringName, MethodInfo> MethodMap;
+	MethodMap m_methods;
+};
 
 #endif // METHOD_OVERRIDE_H

@@ -379,6 +379,10 @@ void TestCase::watch_signals(Object *p_object, const String &p_signal) {
 	m_signal_watcher->watch(p_object, p_signal);
 }
 
+void TestCase::watch_all_signals(Object *p_object) {
+	m_signal_watcher->watch_all(p_object);
+}
+
 void TestCase::assert_signal_called(const Object *p_object, const String &p_signal, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->called(p_object, p_signal)) {
@@ -524,6 +528,7 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fatal", "message"), &TestCase::fatal);
 
 	ClassDB::bind_method(D_METHOD("watch_signals", "object", "signal"), &TestCase::watch_signals);
+	ClassDB::bind_method(D_METHOD("watch_all_signals", "object"), &TestCase::watch_all_signals);
 	ClassDB::bind_method(D_METHOD("assert_signal_called", "object", "signal", "message"), &TestCase::assert_signal_called, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_signal_called_once", "object", "signal", "message"), &TestCase::assert_signal_called_once, DEFVAL(""));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_signal_called_with", &TestCase::_assert_signal_called_with);

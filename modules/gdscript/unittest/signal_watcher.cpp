@@ -62,6 +62,9 @@ void SignalWatcher::watch(Object *p_object, const String &p_signal) {
 	p_object->connect(p_signal, this, "_handler", binds);
 }
 
+void SignalWatcher::watch_all(Object *p_object) {
+}
+
 bool SignalWatcher::called(const Object *p_object, const String &p_signal) const {
 	const Args *args = read(p_object, p_signal);
 	return args != NULL && args->size() > 0;
@@ -248,6 +251,7 @@ Variant SignalWatcher::_handler(const Variant **p_args, int p_argcount, Variant:
 
 void SignalWatcher::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("watch", "object", "signal"), &SignalWatcher::watch);
+	ClassDB::bind_method(D_METHOD("watch_all", "object"), &SignalWatcher::watch_all);
 
 	ClassDB::bind_method(D_METHOD("called", "object", "signal"), &SignalWatcher::called);
 	ClassDB::bind_method(D_METHOD("called_once", "object", "signal"), &SignalWatcher::called_once);

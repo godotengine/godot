@@ -48,6 +48,7 @@ public:
 	static bool parse_params(const Variant **p_args, int p_argcount, Variant::CallError &r_error, Params &r_params);
 
 	void watch(Object *p_object, const String &p_signal);
+	void watch_all(Object *p_object);
 
 	/// The signal was emitted at least once.
 	bool called(const Object *p_object, const String &p_signal) const;

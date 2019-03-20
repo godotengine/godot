@@ -31,10 +31,10 @@
 #ifndef TEST_CASE_H
 #define TEST_CASE_H
 
-#include "test_result.h"
-#include "test_state.h"
 #include "mock.h"
 #include "signal_watcher.h"
+#include "test_result.h"
+#include "test_state.h"
 
 #include "gdscript.h"
 
@@ -76,8 +76,8 @@ protected:
 	void assert_match(const String &p_left, const String &p_right, const String &p_message = "") const;
 	void assert_not_match(const String &p_left, const String &p_right, const String &p_message = "") const;
 
-	TestCase* yield_on(Object *p_object, const String &p_signal_name, real_t p_max_time=-1);
-	TestCase* yield_for(real_t time_in_seconds);
+	TestCase *yield_on(Object *p_object, const String &p_signal_name, real_t p_max_time = -1);
+	TestCase *yield_for(real_t time_in_seconds);
 
 	void log(TestLog::LogLevel p_level, const String &p_message);
 	void trace(const String &p_message);
@@ -88,6 +88,7 @@ protected:
 	void fatal(const String &p_message);
 
 	void watch_signals(Object *p_object, const String &signal);
+	void watch_all_signals(Object *p_object);
 	void assert_signal_called(const Object *p_object, const String &signal, const String &p_message = "") const;
 	void assert_signal_called_once(const Object *p_object, const String &signal, const String &p_message = "") const;
 	Variant _assert_signal_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
@@ -103,14 +104,14 @@ protected:
 	static void _bind_methods();
 
 private:
-	TestState* m_state;
+	TestState *m_state;
 	bool m_has_next;
 
-	Ref<GDScriptFunctionState> m_yield; 
+	Ref<GDScriptFunctionState> m_yield;
 	bool m_yield_handled;
 
 	Ref<SignalWatcher> m_signal_watcher;
-	Vector<Mock*> m_mocks;
+	Vector<Mock *> m_mocks;
 
 	void _clear_mocks();
 	void _clear_connections();

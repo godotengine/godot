@@ -43,21 +43,22 @@ class Mock : public Node {
 public:
 	Mock(Ref<GDScriptNativeClass> p_base = NULL);
 	virtual ~Mock();
-	void bind_method(const String &p_name);
 
-	//return_value
-	//side_effect
+	void bind_method(const String &p_name, const Variant& value);
+	void add_property(const String &p_name, const StringName setter, const StringName getter);
 
-public:
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
+protected:
 	static void _bind_methods();
 
 private:
 	Object *m_instance;
 	Ref<MethodOverride> m_override;
+
+	Variant _handle_signal(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 };
 
 #endif // MOCK_H
