@@ -33,8 +33,7 @@
 #include "core/os/input.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
-#include "os_linux.h"
-#include "power_x11.h"
+#include "os_genericunix.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
@@ -47,7 +46,7 @@
 #include "wayland_protocol/xdg-shell.h"
 #undef CursorShape
 
-class OS_Wayland : public OS_Linux {
+class OS_Wayland : public OS_GenericUnix {
 private:
 	// Display privat members
 	Vector2 _mouse_pos;

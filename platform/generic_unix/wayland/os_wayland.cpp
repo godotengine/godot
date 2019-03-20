@@ -32,6 +32,7 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 #include <linux/input-event-codes.h>
 //
 //
@@ -194,6 +195,9 @@ void OS_Wayland::_get_server_refs() {
 
 Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 	_get_server_refs();
+
+	main_loop = NULL;
+
 	// If at this point, global_registry_handler didn't set the
 	// compositor, nor the shell, bailout !
 	if (compositor == NULL || xdgbase == NULL) {
@@ -321,10 +325,10 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 
 	input = memnew(InputDefault);
 
-	// if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	}
 
-	// 	visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	// }
 	// ESContext.window_width = width;
 	// ESContext.window_height = height;
 	// ESContext.native_window = egl_window;
@@ -333,16 +337,21 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 
 	return Error::OK;
 }
+
 void OS_Wayland::finalize_display() {
 	wl_display_disconnect(display);
 	print_line("not implemented (OS_Wayland): finalize_display");
 }
+
 void OS_Wayland::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
 }
+
 void OS_Wayland::delete_main_loop() {
-	print_line("not implemented (OS_Wayland): delete_main_loop");
+	if (main_loop)
+		memdelete(main_loop);
+	main_loop = NULL;
 }
 
 MainLoop *OS_Wayland::get_main_loop() const {
@@ -352,6 +361,7 @@ MainLoop *OS_Wayland::get_main_loop() const {
 Point2 OS_Wayland::get_mouse_position() const {
 	return _mouse_pos;
 }
+
 int OS_Wayland::get_mouse_button_state() const {
 	print_line("not implemented (OS_Wayland): get_mouse_button_state");
 	return 0;
