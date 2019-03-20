@@ -55,6 +55,12 @@ void ContextGL_EGL::swap_buffers() {
 	}
 }
 
+void ContextGL_EGL::set_window_size(int width, int height) {
+	eglSwapBuffers(egl_display, NULL);
+	this->width = (EGLint)width;
+	this->height = (EGLint)height;
+}
+
 Error ContextGL_EGL::initialize() {
 	eglBindAPI(EGL_OPENGL_API);
 	EGLint configAttribList[] = {

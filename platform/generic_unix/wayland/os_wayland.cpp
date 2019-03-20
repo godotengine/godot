@@ -61,8 +61,11 @@ void OS_Wayland::registry_global_remove(void *data,
 }
 
 void OS_Wayland::xdg_toplevel_configure_handler(void *data,
-		struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states) {
-	// TODO: Configure toplevel
+		struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height,
+		struct wl_array *states) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	d_wl->context_gl_egl->set_window_size(width, height);
+	wl_egl_window_resize(d_wl->egl_window, width, height, 0, 0);
 }
 
 void OS_Wayland::xdg_toplevel_close_handler(void *data,
@@ -232,6 +235,9 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 		exit(1);
 	}
 
+	egl_window = wl_egl_window_create(surface,
+			p_desired.width, p_desired.height);
+
 	xdgsurface = xdg_wm_base_get_xdg_surface(xdgbase, surface);
 	xdg_surface_add_listener(xdgsurface, &xdg_surface_listener, NULL);
 
@@ -242,9 +248,6 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 
 	xdg_wm_base_add_listener(xdgbase, &xdg_wm_base_listener, NULL);
 	wl_display_roundtrip(display);
-
-	struct wl_egl_window *egl_window = wl_egl_window_create(surface,
-			p_desired.width, p_desired.height);
 
 	if (egl_window == EGL_NO_SURFACE) {
 		print_verbose("Error: unable to create EGL window");

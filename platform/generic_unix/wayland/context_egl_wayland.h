@@ -72,6 +72,8 @@ public:
 	virtual int get_window_width();
 	virtual int get_window_height();
 
+	void set_window_size(int width, int height);
+
 	virtual Error initialize();
 
 	virtual void set_use_vsync(bool p_use);
