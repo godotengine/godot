@@ -266,6 +266,20 @@ Error ScriptClassParser::_skip_generic_type_params() {
 
 		if (tk == TK_IDENTIFIER) {
 			tk = get_token();
+			// Type specifications can end with "?" to denote nullable types, such as IList<int?>
+			if (tk == TK_SYMBOL) {
+				tk = get_token();
+				if (value.operator String() != "?") {
+					error_str = "Expected " + get_token_name(TK_IDENTIFIER) + ", found unexpected symbol '" + value + "'";
+					error = true;
+					return ERR_PARSE_ERROR;
+				}
+				if (tk != TK_OP_GREATER && tk != TK_COMMA) {
+					error_str = "Nullable type symbol '?' is only allowed after an identifier, but found " + get_token_name(tk) + " next.";
+					error = true;
+					return ERR_PARSE_ERROR;
+				}
+			}
 
 			if (tk == TK_PERIOD) {
 				while (true) {
