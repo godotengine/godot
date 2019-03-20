@@ -40,16 +40,16 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 		uint32_t id, const char *interface, uint32_t version) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 
-	if (strcmp(interface, "wl_compositor") == 0) {
+	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		d_wl->compositor = (wl_compositor *)wl_registry_bind(
 				registry, id, &wl_compositor_interface, 1);
 	}
-	else if (strcmp(interface, "wl_seat") == 0) {
+	else if (strcmp(interface, wl_seat_interface.name) == 0) {
 		d_wl->seat = (wl_seat *)wl_registry_bind(
 				registry, id, &wl_seat_interface, 1);
 		wl_seat_add_listener(d_wl->seat, &d_wl->seat_listener, d_wl);
 	}
-	else if (strcmp(interface, "xdg_wm_base") == 0) {
+	else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
 		d_wl->xdgbase = (xdg_wm_base *)wl_registry_bind(
 				registry, id, &xdg_wm_base_interface, 1);
 	}
@@ -76,7 +76,6 @@ void OS_Wayland::xdg_toplevel_close_handler(void *data,
 
 void OS_Wayland::xdg_surface_configure_handler(void *data,
 		struct xdg_surface *xdg_surface, uint32_t serial) {
-	// TODO: surface configure
 	xdg_surface_ack_configure(xdg_surface, serial);
 }
 
