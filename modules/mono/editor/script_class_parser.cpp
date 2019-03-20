@@ -274,11 +274,23 @@ Error ScriptClassParser::_skip_generic_type_params() {
 					error = true;
 					return ERR_PARSE_ERROR;
 				}
-				if (tk != TK_OP_GREATER && tk != TK_COMMA) {
+				if (tk != TK_OP_GREATER && tk != TK_COMMA && tk != TK_BRACKET_OPEN) {
 					error_str = "Nullable type symbol '?' is only allowed after an identifier, but found " + get_token_name(tk) + " next.";
 					error = true;
 					return ERR_PARSE_ERROR;
 				}
+			}
+
+			// Skip Array declarations (i.e. List<T[]> or List<int?[]>)
+			while (tk == TK_BRACKET_OPEN) {
+				// Next token MUST be ]
+				tk = get_token();
+				if (tk != TK_BRACKET_CLOSE) {
+					error_str = "Expected ] after [. But found " + get_token_name(tk) + " next.";
+					error = true;
+					return ERR_PARSE_ERROR;
+				}
+				tk = get_token();
 			}
 
 			if (tk == TK_PERIOD) {
