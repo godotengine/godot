@@ -28,40 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//#if defined(OPENGL_ENABLED)
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
-#include <wayland-egl.h> // Wayland EGL MUST be included before EGL headers
+#include <wayland-egl.h>
 #include <wayland-server.h>
 
-#include "context_egl_wayland.h" // includes the egl headers
+#include "context_egl_wayland.h"
 
 void ContextGL_EGL::release_current() {
-
 	eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, egl_context);
 }
 
 void ContextGL_EGL::make_current() {
-
 	eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
 }
 
 void ContextGL_EGL::swap_buffers() {
 	if (eglSwapBuffers(egl_display, egl_surface) != EGL_TRUE) {
 		cleanup();
-
 		initialize();
-
 		// tell rasterizer to reload textures and stuff?
 	}
 }
 
 Error ContextGL_EGL::initialize() {
-	print_verbose("start create egl context!");
 	eglBindAPI(EGL_OPENGL_API);
 	EGLint configAttribList[] = {
 		EGL_RED_SIZE, 8,
@@ -112,73 +106,62 @@ Error ContextGL_EGL::initialize() {
 	EGLContext context;
 
 	if (display == EGL_NO_DISPLAY) {
-		print_verbose("No EGL Display...\n");
+		print_verbose("Error: unable to get EGL display");
 		return FAILED;
 	}
 
-	// Initialize EGL
 	if (!eglInitialize(display, &majorVersion, &minorVersion)) {
-		print_verbose("No Initialisation...\n");
+		print_verbose("Error: unable to initialize EGL");
 		return FAILED;
 	}
 
-	// Choose config
 	if ((eglChooseConfig(display, configAttribList, &config, 1, &numConfigs) != EGL_TRUE) || (numConfigs != 1)) {
-		print_verbose("No configuration...\n");
+		print_verbose("Error: unable to configure EGL");
 		return FAILED;
 	}
 
-	// Create a surface
 	surface = eglCreateWindowSurface(display, config, native_window, surfaceAttribList);
 	if (surface == EGL_NO_SURFACE) {
-		print_verbose("No surface...\n");
+		print_verbose("Error: unable to create EGL window");
 		return FAILED;
 	}
-	print_verbose("egl surface created!");
-	// Create a GL context
 
 	context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
 	if (context == EGL_NO_CONTEXT) {
-		print_verbose("No context...\n");
+		print_verbose("Error: unable to create EGL context");
 		return FAILED;
 	}
-	print_verbose("egl context !!!!");
-	// Make the context current
+
 	if (!eglMakeCurrent(display, surface, surface, context)) {
-		print_verbose("Could not make the current window current !\n");
+		print_verbose("Error: unable to make EGL context current");
 		return FAILED;
 	}
-	print_verbose("current context exists !");
 	egl_display = display;
 	egl_surface = surface;
 	egl_context = context;
 
 	eglQuerySurface(display, surface, EGL_WIDTH, &width);
 	eglQuerySurface(display, surface, EGL_HEIGHT, &height);
-
 	return OK;
 }
 
 int ContextGL_EGL::get_window_width() {
-
 	return width;
 }
 
 int ContextGL_EGL::get_window_height() {
-
 	return height;
 }
 
 void ContextGL_EGL::set_use_vsync(bool p_use) {
 	use_vsync = p_use;
 }
-bool ContextGL_EGL::is_using_vsync() const {
 
+bool ContextGL_EGL::is_using_vsync() const {
 	return use_vsync;
 }
 
 void ContextGL_EGL::cleanup() {
-
 	if (egl_display != EGL_NO_DISPLAY && egl_surface != EGL_NO_SURFACE) {
 		eglDestroySurface(egl_display, egl_surface);
 		egl_surface = EGL_NO_SURFACE;
@@ -193,9 +176,12 @@ void ContextGL_EGL::cleanup() {
 		eglTerminate(egl_display);
 		egl_display = EGL_NO_DISPLAY;
 	}
-};
-ContextGL_EGL::ContextGL_EGL(EGLNativeDisplayType p_egl_display, EGLNativeWindowType &p_egl_window, const OS::VideoMode &p_default_video_mode, Driver p_context_type) {
+}
 
+ContextGL_EGL::ContextGL_EGL(EGLNativeDisplayType p_egl_display,
+		EGLNativeWindowType &p_egl_window,
+		const OS::VideoMode &p_default_video_mode,
+		Driver p_context_type) {
 	default_video_mode = p_default_video_mode;
 
 	context_type = p_context_type;

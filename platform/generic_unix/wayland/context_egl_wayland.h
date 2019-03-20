@@ -34,14 +34,8 @@
 #ifndef CONTEXT_EGL_H
 #define CONTEXT_EGL_H
 
-//#ifdef X11_ENABLED
-
-//#if defined(OPENGL_ENABLED)
-
 #include "core/os/os.h"
 #include "drivers/gl_context/context_gl.h"
-
-// #include <GLES/egl.h>
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
 
@@ -60,21 +54,15 @@ private:
 	EGLint width;
 	EGLint height;
 
-	/// Native System informations
 	EGLNativeDisplayType native_display;
 	EGLNativeWindowType native_window;
 
-	/// EGL surface
 	EGLSurface egl_surface;
-	/// EGL display
 	EGLDisplay egl_display;
-	/// EGL context
 	EGLContext egl_context;
 
-	//uint16_t window_width, window_height;
 	bool double_buffer;
 	bool direct_render;
-	// int egl_minor, egl_major;
 	bool use_vsync;
 
 public:

@@ -39,7 +39,7 @@
 
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
-#include <wayland-egl.h> // Wayland EGL MUST be included before EGL headers
+#include <wayland-egl.h>
 #include <wayland-server.h>
 
 #include "context_egl_wayland.h"
@@ -48,19 +48,16 @@
 
 class OS_Wayland : public OS_GenericUnix {
 private:
-	// Display privat members
 	Vector2 _mouse_pos;
-	// godot private members
+
 	MainLoop *main_loop;
 	InputDefault *input;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	ContextGL_EGL *context_gl_egl;
 
-	//display private functions
-	void _get_server_refs();
+	void _initialize_wl_display();
 
-	//wl private members
 	struct wl_compositor *compositor = NULL;
 
 	struct wl_display *display = NULL;
@@ -72,37 +69,52 @@ private:
 	struct xdg_toplevel *xdgtoplevel;
 	struct wl_seat *seat;
 	struct wl_pointer *mouse_pointer;
-	//wayland listeners
+
+	static void registry_global(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version);
+	static void registry_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
+
 	const struct wl_registry_listener registry_listener = {
-		&global_registry_handler,
-		&global_registry_remover
+		&registry_global,
+		&registry_global_remove,
 	};
-	static void global_registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version);
-	static void global_registry_remover(void *data, struct wl_registry *wl_registry, uint32_t name);
+
+	static void xdg_toplevel_configure_handler(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
+	static void xdg_toplevel_close_handler(void *data, struct xdg_toplevel *xdg_toplevel);
 
 	const struct xdg_toplevel_listener xdg_toplevel_listener = {
 		.configure = &xdg_toplevel_configure_handler,
 		.close = &xdg_toplevel_close_handler
 	};
-	static void xdg_toplevel_configure_handler(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
-	static void xdg_toplevel_close_handler(void *data, struct xdg_toplevel *xdg_toplevel);
+
+	static void xdg_surface_configure_handler(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 
 	const struct xdg_surface_listener xdg_surface_listener = {
 		.configure = &xdg_surface_configure_handler
 	};
-	static void xdg_surface_configure_handler(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
+
+	static void xdg_ping_handler(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 
 	const struct xdg_wm_base_listener xdg_wm_base_listener = {
 		.ping = &xdg_ping_handler
 	};
-	static void xdg_ping_handler(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
+
+	static void seat_name_handler(void *data, struct wl_seat *wl_seat, const char *name);
+	static void seat_capabilities_handler(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
 
 	const struct wl_seat_listener seat_listener = {
 		&seat_capabilities_handler,
 		&seat_name_handler
 	};
-	static void seat_name_handler(void *data, struct wl_seat *wl_seat, const char *name);
-	static void seat_capabilities_handler(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
+
+	static void pointer_enter_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
+	static void pointer_leave_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface);
+	static void pointer_motion_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
+	static void pointer_button_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
+	static void pointer_axis_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
+	static void pointer_frame_handler(void *data, struct wl_pointer *wl_pointer);
+	static void pointer_axis_source_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source);
+	static void pointer_axis_stop_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis);
+	static void pointer_axis_discrete_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
 
 	const struct wl_pointer_listener pointer_listener = {
 		&pointer_enter_handler,
@@ -115,15 +127,13 @@ private:
 		&pointer_axis_stop_handler,
 		&pointer_axis_discrete_handler
 	};
-	static void pointer_enter_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
-	static void pointer_leave_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface);
-	static void pointer_motion_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
-	static void pointer_button_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
-	static void pointer_axis_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
-	static void pointer_frame_handler(void *data, struct wl_pointer *wl_pointer);
-	static void pointer_axis_source_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source);
-	static void pointer_axis_stop_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis);
-	static void pointer_axis_discrete_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
+
+	static void keyboard_keymap_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
+	static void keyboard_enter_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
+	static void keyboard_leave_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface);
+	static void keyboard_key_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
+	static void keyboard_modifier_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
+	static void keyboard_repeat_info_handler(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
 	const struct wl_keyboard_listener keyboard_listener = {
 		&keyboard_keymap_handler,
@@ -133,15 +143,6 @@ private:
 		&keyboard_modifier_handler,
 		&keyboard_repeat_info_handler,
 	};
-	static void keyboard_keymap_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
-	static void keyboard_enter_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
-	static void keyboard_leave_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface);
-	static void keyboard_key_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
-	static void keyboard_modifier_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
-	static void keyboard_repeat_info_handler(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
-
-	// 'void (*)(void*, wl_keyboard*, int32_t, int32_t) 								 {aka void (*)(void*, wl_keyboard*, int, int)}'
-	// 'void (*)(void*, wl_keyboard*, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) {aka void (*)(void*, wl_keyboard*, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int)}' [-fpermissive]
 
 protected:
 	Error initialize_display(const VideoMode &p_desired, int p_video_driver);
