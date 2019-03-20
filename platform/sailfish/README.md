@@ -39,7 +39,8 @@ sb2 -t SailfishOS-3.0.1.11-i486 -R zypper in -y SDL2-debugsource SDL2-devel liba
 Make new empty files:
 ```sh
 sb2 -t SailfishOS-3.0.1.11-armv7hl -R touch /usr/src/debug/SDL2-2.0.3-1.3.2.jolla.arm/src/SDL_internal.h
-sb2 -t SailfishOS-3.0.1.11-i486 -R touch /usr/src/debug/SDL2-2.0.3-1.3.2.jolla.i386/src/SDL_internal.h
+# i486 target has different SDL2 build versions
+sb2 -t SailfishOS-3.0.1.11-i486 -R touch /usr/src/debug/SDL2-2.0.3-1.2.3.jolla.i386/src/SDL_internal.h
 ```
 
 ### Build Godot export template for Sailfish OS
