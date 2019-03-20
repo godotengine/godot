@@ -268,12 +268,12 @@ def configure(env):
     env.Append(CPPFLAGS=['-DSDL_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DGLES2_ENABLED', '-Wno-strict-aliasing'])
     env.Append(CPPFLAGS=['-DSAILFISH_FORCE_LANDSCAPE'])
     # include paths for different versions of SailfishSDK width different SDL2 version  
-    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.i386/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.i386/include'])
-    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.arm/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.arm/include'])
-    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.i386/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.i386/include'])
-    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.arm/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.arm/include'])
     env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.2.3.jolla.i386/src/','-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.i386/include'])
     env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.2.3.jolla.arm/src/','-I/usr/src/debug/SDL2-2.0.3-1.2.1.jolla.arm/include'])
+    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.i386/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.i386/include'])
+    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.arm/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.1.jolla.arm/include'])
+    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.i386/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.i386/include'])
+    env.Append(CPPFLAGS=['-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.arm/src/','-I/usr/src/debug/SDL2-2.0.3-1.3.2.jolla.arm/include'])
     # env.Append(LIBS=['GL', 'pthread'])
     env.Append(LIBS=['GLESv2', 'EGL', 'pthread'])
 
