@@ -24,6 +24,8 @@
 	<string>godot</string>
 	<key>CFBundleVersion</key>
 	<string>3.1</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false />
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2007-2019 Juan Linietsky, Ariel Manzur &amp; Godot Engine contributors</string>
 	<key>LSMinimumSystemVersion</key>
