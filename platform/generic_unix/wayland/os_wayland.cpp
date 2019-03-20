@@ -110,11 +110,24 @@ void OS_Wayland::pointer_enter_handler(void *data,
 		struct wl_pointer *wl_pointer, uint32_t serial,
 		struct wl_surface *surface,
 		wl_fixed_t surface_x, wl_fixed_t surface_y) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	Ref<InputEventMouseMotion> mm;
+	mm.instance();
+	float x = (float)wl_fixed_to_double(surface_x);
+	float y = (float)wl_fixed_to_double(surface_y);
+	Vector2 myVec = Vector2();
+	myVec.x = x;
+	myVec.y = y;
+	d_wl->_mouse_pos = myVec;
+	mm->set_position(d_wl->_mouse_pos);
+	mm->set_global_position(d_wl->_mouse_pos);
+	d_wl->input->parse_input_event(mm);
 }
 
 void OS_Wayland::pointer_leave_handler(void *data,
 		struct wl_pointer *wl_pointer, uint32_t serial,
 		struct wl_surface *surface) {
+	// This space intentionally left blank
 }
 
 void OS_Wayland::pointer_motion_handler(void *data,
@@ -255,7 +268,7 @@ void OS_Wayland::_initialize_wl_display() {
 	display = NULL;
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
-		print_line("Can't connect to wayland display !?\n");
+		print_line("Error: unable to connect to Wayland display");
 		exit(1);
 	}
 
