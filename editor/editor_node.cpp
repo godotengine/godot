@@ -56,7 +56,6 @@
 #include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
-#include "editor/live_view.h"
 #include "editor/import/editor_import_collada.h"
 #include "editor/import/editor_scene_importer_gltf.h"
 #include "editor/import/resource_importer_bitmask.h"
@@ -1809,8 +1808,6 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		return;
 	}
 
-	live_view_dock->start();
-
 	emit_signal("play_pressed");
 	if (p_current) {
 		play_scene_button->set_pressed(true);
@@ -2152,7 +2149,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 
 			editor_run.stop();
-			live_view_dock->stop();
 			run_custom_filename.clear();
 			play_button->set_pressed(false);
 			play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
@@ -3129,10 +3125,6 @@ InspectorDock *EditorNode::get_inspector_dock() {
 
 	return inspector_dock;
 }
-LiveViewDock *EditorNode::get_live_view_dock() {
-
-	return live_view_dock;
-}
 
 void EditorNode::_instance_request(const Vector<String> &p_files) {
 
@@ -3225,7 +3217,6 @@ void EditorNode::notify_child_process_exited() {
 	_menu_option_confirm(RUN_STOP, false);
 	stop_button->set_pressed(false);
 	editor_run.stop();
-	live_view_dock->stop();
 }
 
 void EditorNode::add_io_error(const String &p_error) {
@@ -5699,7 +5690,6 @@ EditorNode::EditorNode() {
 
 	scene_tree_dock = memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
 	inspector_dock = memnew(InspectorDock(this, editor_data));
-	live_view_dock = memnew(LiveViewDock);
 	import_dock = memnew(ImportDock);
 	node_dock = memnew(NodeDock);
 
@@ -5720,21 +5710,18 @@ EditorNode::EditorNode() {
 	dock_slot[DOCK_SLOT_LEFT_BR]->add_child(filesystem_dock);
 	dock_slot[DOCK_SLOT_LEFT_BR]->set_tab_title(filesystem_dock->get_index(), TTR("FileSystem"));
 
-	// Inspector: Right
+	// Inspector: Full height right
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(inspector_dock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(inspector_dock->get_index(), TTR("Inspector"));
 
-	// Node: Right, behind Inspector
+	// Node: Full height right, behind Inspector
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
 	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(node_dock->get_index(), TTR("Node"));
-
-	// Game preview: Bottom right
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(live_view_dock);
-	dock_slot[DOCK_SLOT_RIGHT_BL]->set_tab_title(live_view_dock->get_index(), TTR("LiveView"));
 
 	// Hide unused dock slots and vsplits
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();
 	dock_slot[DOCK_SLOT_LEFT_BL]->hide();
+	dock_slot[DOCK_SLOT_RIGHT_BL]->hide();
 	dock_slot[DOCK_SLOT_RIGHT_UR]->hide();
 	dock_slot[DOCK_SLOT_RIGHT_BR]->hide();
 	left_l_vsplit->hide();
@@ -5753,12 +5740,9 @@ EditorNode::EditorNode() {
 	default_layout->set_value(docks_section, "dock_3", "Scene,Import");
 	default_layout->set_value(docks_section, "dock_4", "FileSystem");
 	default_layout->set_value(docks_section, "dock_5", "Inspector,Node");
-	default_layout->set_value(docks_section, "dock_6", "LiveView");
 
-	default_layout->set_value(docks_section, "dock_split_1", 0);
-	default_layout->set_value(docks_section, "dock_split_2", 0);
-	default_layout->set_value(docks_section, "dock_split_3", 160 * EDSCALE);
-	default_layout->set_value(docks_section, "dock_split_4", 0);
+	for (int i = 0; i < vsplits.size(); i++)
+		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
 	default_layout->set_value(docks_section, "dock_hsplit_2", 70 * EDSCALE);
 	default_layout->set_value(docks_section, "dock_hsplit_3", -70 * EDSCALE);

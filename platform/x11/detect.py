@@ -293,7 +293,7 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/x11'])
     env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
-    env.Append(LIBS=['GL', 'pthread', 'rt'])
+    env.Append(LIBS=['GL', 'pthread'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
