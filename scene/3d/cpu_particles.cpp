@@ -47,7 +47,8 @@ PoolVector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
 void CPUParticles::set_emitting(bool p_emitting) {
 
 	emitting = p_emitting;
-	set_process_internal(true);
+	if (emitting)
+		set_process_internal(true);
 }
 
 void CPUParticles::set_amount(int p_amount) {
@@ -1002,9 +1003,11 @@ void CPUParticles::_set_redraw(bool p_redraw) {
 	if (redraw) {
 		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 	} else {
 		VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
 #ifndef NO_THREADS
 	update_mutex->unlock();
@@ -1029,7 +1032,7 @@ void CPUParticles::_update_render_thread() {
 void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_set_redraw(true);
+		set_process_internal(emitting);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -1048,8 +1051,6 @@ void CPUParticles::_notification(int p_what) {
 
 		float delta = get_process_delta_time();
 		if (emitting) {
-
-			_set_redraw(true);
 			inactive_time = 0;
 		} else {
 			inactive_time += delta;
@@ -1065,6 +1066,7 @@ void CPUParticles::_notification(int p_what) {
 				return;
 			}
 		}
+		_set_redraw(true);
 
 		bool processed = false;
 
