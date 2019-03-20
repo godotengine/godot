@@ -333,7 +333,8 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 	input = memnew(InputDefault);
 
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+		visual_server = memnew(VisualServerWrapMT(visual_server,
+					get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
 	return Error::OK;
@@ -369,7 +370,7 @@ int OS_Wayland::get_mouse_button_state() const {
 }
 
 void OS_Wayland::set_window_title(const String &p_title) {
-	xdg_toplevel_set_title(xdgtoplevel, (char *)p_title.c_str());
+	xdg_toplevel_set_title(xdgtoplevel, p_title.utf8().ptr());
 }
 
 void OS_Wayland::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
