@@ -866,7 +866,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 		objs.push_back(p);
 	}
 
-	set_drag_preview(vb);
+	//set_drag_preview(vb);
 	Dictionary drag_data;
 	drag_data["type"] = "nodes";
 	drag_data["nodes"] = objs;
