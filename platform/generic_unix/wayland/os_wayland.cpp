@@ -143,17 +143,17 @@ void OS_Wayland::pointer_button_handler(void *data,
 	mb.instance();
 	mb->set_pressed(state == WL_POINTER_BUTTON_STATE_PRESSED);
 	switch (button) {
-		case BTN_LEFT:
-			mb->set_button_index(BUTTON_LEFT);
-			break;
-		case BTN_RIGHT:
-			mb->set_button_index(BUTTON_RIGHT);
-			break;
-		case BTN_MIDDLE:
-			mb->set_button_index(BUTTON_MIDDLE);
-			break;
-		default:
-			break;
+	case BTN_LEFT:
+		mb->set_button_index(BUTTON_LEFT);
+		break;
+	case BTN_RIGHT:
+		mb->set_button_index(BUTTON_RIGHT);
+		break;
+	case BTN_MIDDLE:
+		mb->set_button_index(BUTTON_MIDDLE);
+		break;
+	default:
+		break;
 	}
 	mb->set_position(d_wl->_mouse_pos);
 	mb->set_global_position(d_wl->_mouse_pos);
@@ -161,47 +161,95 @@ void OS_Wayland::pointer_button_handler(void *data,
 }
 
 void OS_Wayland::pointer_axis_handler(void *data,
-		struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value) {
+		struct wl_pointer *wl_pointer, uint32_t time,
+		uint32_t axis, wl_fixed_t value) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	Ref<InputEventMouseButton> mb;
+	mb.instance();
+	double factor = wl_fixed_to_double(value);
+	switch (axis) {
+	case WL_POINTER_AXIS_VERTICAL_SCROLL:
+		if (factor > 0) {
+			mb->set_button_index(BUTTON_WHEEL_DOWN);
+		} else {
+			mb->set_button_index(BUTTON_WHEEL_UP);
+		}
+		break;
+	case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+		if (factor > 0) {
+			mb->set_button_index(BUTTON_WHEEL_LEFT);
+		} else {
+			mb->set_button_index(BUTTON_WHEEL_RIGHT);
+		}
+		break;
+	default:
+		return; // Unknown axis
+	}
+	mb->set_position(d_wl->_mouse_pos);
+	mb->set_global_position(d_wl->_mouse_pos);
+
+	mb->set_pressed(true);
+	d_wl->input->parse_input_event(mb);
+
+	mb->set_pressed(false);
+	d_wl->input->parse_input_event(mb);
 }
 
 void OS_Wayland::pointer_frame_handler(void *data,
 		struct wl_pointer *wl_pointer) {
+	// TODO: Build GD input events over the course of several WL events, then
+	// submit here
 }
 
 void OS_Wayland::pointer_axis_source_handler(void *data,
 		struct wl_pointer *wl_pointer, uint32_t axis_source) {
+	// This space deliberately left blank
 }
 
 void OS_Wayland::pointer_axis_stop_handler(void *data,
 		struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis) {
+	// This space deliberately left blank
 }
 
 void OS_Wayland::pointer_axis_discrete_handler(void *data,
 		struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
+	// This space deliberately left blank
 }
 
 void OS_Wayland::keyboard_keymap_handler(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
+	// TODO
 }
 
 void OS_Wayland::keyboard_enter_handler(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	if (d_wl->main_loop) {
+		d_wl->main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	}
 }
 
 void OS_Wayland::keyboard_leave_handler(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	if (d_wl->main_loop) {
+		d_wl->main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+	}
 }
 
 void OS_Wayland::keyboard_key_handler(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
+	// TODO
 }
 
 void OS_Wayland::keyboard_modifier_handler(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
+	// TODO
 }
 
 void OS_Wayland::keyboard_repeat_info_handler(void *data,
 		struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
+	// TODO
 }
 
 void OS_Wayland::_initialize_wl_display() {
