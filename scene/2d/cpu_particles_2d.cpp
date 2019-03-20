@@ -37,7 +37,8 @@
 void CPUParticles2D::set_emitting(bool p_emitting) {
 
 	emitting = p_emitting;
-	set_process_internal(true);
+	if (emitting)
+		set_process_internal(true);
 }
 
 void CPUParticles2D::set_amount(int p_amount) {
@@ -965,7 +966,7 @@ void CPUParticles2D::_update_render_thread() {
 void CPUParticles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		_set_redraw(true);
+		set_process_internal(emitting);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
@@ -1001,7 +1002,6 @@ void CPUParticles2D::_notification(int p_what) {
 
 		float delta = get_process_delta_time();
 		if (emitting) {
-			_set_redraw(true);
 			inactive_time = 0;
 		} else {
 			inactive_time += delta;
@@ -1017,6 +1017,7 @@ void CPUParticles2D::_notification(int p_what) {
 				return;
 			}
 		}
+		_set_redraw(true);
 
 		if (time == 0 && pre_process_time > 0.0) {
 
