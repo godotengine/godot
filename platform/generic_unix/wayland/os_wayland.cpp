@@ -447,7 +447,6 @@ void OS_Wayland::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen)
 }
 
 Size2 OS_Wayland::get_window_size() const {
-	//print_line("not implemented (OS_Wayland): get_mouse_position");
 	return Size2(context_gl_egl->get_window_width(), context_gl_egl->get_window_height());
 }
 
