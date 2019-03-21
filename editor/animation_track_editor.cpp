@@ -1796,7 +1796,8 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		return TTR("Toggle this track on/off.");
 	}
 
-	if (path_rect.has_point(p_pos)) {
+	// Don't overlap track keys if they start at 0.
+	if (path_rect.has_point(p_pos + Size2(type_icon->get_width(), 0))) {
 		return animation->track_get_path(track);
 	}
 
@@ -1816,16 +1817,22 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		return TTR("Remove this track.");
 	}
 
-	if (p_pos.x >= timeline->get_name_limit() && p_pos.x <= (get_size().width - timeline->get_buttons_width())) {
+	int limit = timeline->get_name_limit();
+	int limit_end = get_size().width - timeline->get_buttons_width();
+	// Left Border including space occupied by keyframes on t=0.
+	int limit_start_hitbox = limit - type_icon->get_width();
+
+	if (p_pos.x >= limit_start_hitbox && p_pos.x <= limit_end) {
 
 		int key_idx = -1;
 		float key_distance = 1e20;
 
-		for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) { //select should happen in the opposite order of drawing for more accurate overlap select
+		// Select should happen in the opposite order of drawing for more accurate overlap select.
+		for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
 
 			Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 			float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-			offset = offset * timeline->get_zoom_scale() + timeline->get_name_limit();
+			offset = offset * timeline->get_zoom_scale() + limit;
 			rect.position.x += offset;
 
 			if (rect.has_point(p_pos)) {
@@ -1932,7 +1939,6 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 }
 
 void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->is_shortcut(p_event)) {
 			emit_signal("duplicate_request");
@@ -1962,8 +1968,9 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			update();
 			accept_event();
 		}
-		if (path_rect.has_point(pos)) {
 
+		// Don't overlap track keys if they start at 0.
+		if (path_rect.has_point(pos + Size2(type_icon->get_width(), 0))) {
 			clicking_on_name = true;
 			accept_event();
 		}
@@ -2033,18 +2040,21 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		//check keyframes
+		// Check keyframes.
 
 		float scale = timeline->get_zoom_scale();
 		int limit = timeline->get_name_limit();
 		int limit_end = get_size().width - timeline->get_buttons_width();
+		// Left Border including space occupied by keyframes on t=0.
+		int limit_start_hitbox = limit - type_icon->get_width();
 
-		if (pos.x >= limit && pos.x <= limit_end) {
+		if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
 
 			int key_idx = -1;
 			float key_distance = 1e20;
 
-			for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) { //select should happen in the opposite order of drawing for more accurate overlap select
+			// Select should happen in the opposite order of drawing for more accurate overlap select.
+			for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
 
 				Rect2 rect = get_key_rect(i, scale);
 				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
@@ -2060,7 +2070,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 							key_distance = distance;
 						}
 					} else {
-						//first one does it
+						// First one does it.
 						key_idx = i;
 						break;
 					}
@@ -2071,12 +2081,11 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				if (mb->get_command() || mb->get_shift()) {
 					if (editor->is_key_selected(track, key_idx)) {
 						emit_signal("deselect_key", key_idx);
-
 					} else {
 						emit_signal("select_key", key_idx, false);
 						moving_selection_attempt = true;
 						select_single_attempt = -1;
-						moving_selection_from_ofs = (mb->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+						moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 					}
 				} else {
 					if (!editor->is_key_selected(track, key_idx)) {
@@ -2087,24 +2096,17 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					moving_selection_attempt = true;
-					moving_selection_from_ofs = (mb->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+					moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 				}
 				accept_event();
 			}
 		}
-
-		/*using focus instead
-		 * if (!selected && pos.x >= timeline->get_name_limit() && pos.x < (get_size().width - timeline->get_buttons_width())) {
-			set_selected(true);
-			emit_signal("selected");
-		}
-		*/
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 		Point2 pos = mb->get_position();
 		if (pos.x >= timeline->get_name_limit() && pos.x <= get_size().width - timeline->get_buttons_width()) {
-			//can do something with menu too! show insert key
+			// Can do something with menu too! show insert key.
 			float offset = (pos.x - timeline->get_name_limit()) / timeline->get_zoom_scale();
 			if (!menu) {
 				menu = memnew(PopupMenu);
@@ -2332,11 +2334,13 @@ void AnimationTrackEdit::set_in_group(bool p_enable) {
 }
 
 void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselection) {
-
-	Rect2 select_rect(timeline->get_name_limit(), 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
+	// Left Border including space occupied by keyframes on t=0.
+	int limit_start_hitbox = timeline->get_name_limit() - type_icon->get_width();
+	Rect2 select_rect(limit_start_hitbox, 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
 	select_rect = select_rect.clip(p_box);
 
-	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) { //select should happen in the opposite order of drawing for more accurate overlap select
+	// Select should happen in the opposite order of drawing for more accurate overlap select.
+	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
 
 		Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 		float offset = animation->track_get_key_time(track, i) - timeline->get_value();
