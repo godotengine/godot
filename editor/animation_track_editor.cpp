@@ -1722,7 +1722,11 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		return TTR("Remove this track.");
 	}
 
-	if (p_pos.x >= timeline->get_name_limit() && p_pos.x <= (get_size().width - timeline->get_buttons_width())) {
+	int limit = timeline->get_name_limit();
+	int limit_end = get_size().width - timeline->get_buttons_width();
+	int limit_start_hitbox = limit - type_icon->get_width(); // Left Border including space occupied by keyframes on t=0
+
+	if (p_pos.x >= limit_start_hitbox && p_pos.x <= limit_end) {
 
 		int key_idx = -1;
 		float key_distance = 1e20;
@@ -1731,7 +1735,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 			Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 			float offset = animation->track_get_key_time(track, i) - timeline->get_value();
-			offset = offset * timeline->get_zoom_scale() + timeline->get_name_limit();
+			offset = offset * timeline->get_zoom_scale() + limit;
 			rect.position.x += offset;
 
 			if (rect.has_point(p_pos)) {
@@ -1857,7 +1861,6 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 }
 
 void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (p_event->is_pressed()) {
 		if (ED_GET_SHORTCUT("animation_editor/duplicate_selection")->is_shortcut(p_event)) {
 			emit_signal("duplicate_request");
@@ -1963,8 +1966,9 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		float scale = timeline->get_zoom_scale();
 		int limit = timeline->get_name_limit();
 		int limit_end = get_size().width - timeline->get_buttons_width();
+		int limit_start_hitbox = limit - type_icon->get_width(); // Left Border including space occupied by keyframes on t=0
 
-		if (pos.x >= limit && pos.x <= limit_end) {
+		if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
 
 			int key_idx = -1;
 			float key_distance = 1e20;
@@ -2001,7 +2005,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 						emit_signal("select_key", key_idx, false);
 						moving_selection_attempt = true;
 						select_single_attempt = -1;
-						moving_selection_from_ofs = (mb->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+						moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 					}
 				} else {
 					if (!editor->is_key_selected(track, key_idx)) {
@@ -2012,7 +2016,7 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					moving_selection_attempt = true;
-					moving_selection_from_ofs = (mb->get_position().x - timeline->get_name_limit()) / timeline->get_zoom_scale();
+					moving_selection_from_ofs = (mb->get_position().x - limit) / timeline->get_zoom_scale();
 				}
 				accept_event();
 			} else {
@@ -2236,8 +2240,8 @@ void AnimationTrackEdit::set_in_group(bool p_enable) {
 }
 
 void AnimationTrackEdit::append_to_selection(const Rect2 &p_box) {
-
-	Rect2 select_rect(timeline->get_name_limit(), 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
+	int limit_start_hitbox = timeline->get_name_limit() - type_icon->get_width(); // Left Border including space occupied by keyframes on t=0
+	Rect2 select_rect(limit_start_hitbox, 0, get_size().width - timeline->get_name_limit() - timeline->get_buttons_width(), get_size().height);
 	select_rect = select_rect.clip(p_box);
 
 	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) { //select should happen in the opposite order of drawing for more accurate overlap select
