@@ -99,7 +99,7 @@ protected:
 	int get_signal_call_count(const Object *p_object, const String &signal) const;
 	Array get_signal_calls(const Object *p_object, const String &signal) const;
 
-	Object *mock(Ref<GDScriptNativeClass> p_base = NULL);
+	Object *mock(REF p_base = NULL);
 
 	static void _bind_methods();
 

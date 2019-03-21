@@ -38,10 +38,23 @@
 
 class MethodOverride : public Reference {
 	GDCLASS(MethodOverride, Reference);
+private:
+	typedef Pair<StringName, StringName> SetGetPair;
+	typedef Map<StringName, SetGetPair> PropertyMap;
+	PropertyMap m_properties;
+
+	typedef Vector<Variant> Args;
+	struct MethodInfo {
+		Variant m_return;
+		Vector<Args> m_calls;
+	};
+	typedef Map<StringName, MethodInfo> MethodMap;
+	mutable MethodMap m_methods;
 
 public:
-	void bind_method(const String &p_name, const Variant &value);
-	void add_property(const String &p_name, const StringName setter, const StringName getter);
+	void bind_method(const String &p_name, const Variant &p_value);
+	void add_property(const String &p_name, const StringName p_setter, const StringName p_getter);
+	const Vector<Args> get_calls(const String &p_name) const;
 
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
@@ -49,18 +62,6 @@ public:
 
 protected:
 	static void _bind_methods();
-
-private:
-	typedef Pair<StringName, StringName> SetGetPair;
-	typedef Map<StringName, SetGetPair> PropertyMap;
-	PropertyMap m_properties;
-
-	struct MethodInfo {
-		Variant m_return;
-		Vector<Array> m_calls;
-	};
-	typedef Map<StringName, MethodInfo> MethodMap;
-	MethodMap m_methods;
 };
 
 #endif // METHOD_OVERRIDE_H

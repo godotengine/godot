@@ -172,7 +172,7 @@ void TestCase::assert_is(const Variant &p_left, const Ref<GDScriptNativeClass> p
 	ERR_FAIL_COND(!can_assert());
 	Object *obj = cast_to<Object>(p_left);
 	const String &klass = obj->get_class();
-	const String &inherits = obj->get_class();
+	const String &inherits = p_right->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
 		assert(klass, inherits, p_message, "{p_message}{p_left} is not {p_right}");
 	}
@@ -182,7 +182,7 @@ void TestCase::assert_is_not(const Variant &p_left, const Ref<GDScriptNativeClas
 	ERR_FAIL_COND(!can_assert());
 	Object *obj = cast_to<Object>(p_left);
 	const String &klass = obj->get_class();
-	const String &inherits = obj->get_class();
+	const String &inherits = p_right->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
 		assert(klass, inherits, p_message, "{p_message}{p_left} is {p_right}");
 	}
@@ -454,10 +454,24 @@ Array TestCase::get_signal_calls(const Object *p_object, const String &p_signal)
 	return m_signal_watcher->calls(p_object, p_signal);
 }
 
-Object *TestCase::mock(Ref<GDScriptNativeClass> p_base) {
-	Mock *mock = memnew(Mock(p_base));
-	m_mocks.push_back(mock);
-	return mock;
+Object *TestCase::mock(REF ref) {
+	Mock *mock = NULL;
+
+	Ref<GDScriptNativeClass> native = ref;
+	if (native.is_valid()) {
+		mock = memnew(Mock(native));
+	}
+
+	Ref<GDScript> script = ref;
+	if (script.is_valid()) {
+		mock = memnew(Mock(script->get_native()));
+	}
+
+	if (mock) {
+		m_mocks.push_back(mock);
+		return mock;
+	}
+	return NULL;
 }
 
 void TestCase::_bind_methods() {

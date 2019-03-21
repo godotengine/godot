@@ -31,6 +31,7 @@
 #include "register_types.h"
 #include "test_case.h"
 #include "test_config.h"
+#include "mock.h"
 #include "test_plugin.h"
 #include "test_result.h"
 #include "test_runner.h"
@@ -47,6 +48,7 @@ static void _editor_init() {
 static TestConfig *test_config;
 
 void register_unittest_types() {
+	ClassDB::register_class<Mock>();
     ClassDB::register_class<TestCase>();
     ClassDB::register_class<TestConfig>();
     ClassDB::register_class<TestResult>();

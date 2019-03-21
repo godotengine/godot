@@ -46,24 +46,24 @@ bool has_signal(const Object *p_object, const StringName p_signal) {
 }
 
 Mock::Mock(Ref<GDScriptNativeClass> p_base) {
-	m_override.instance();
 	m_instance = p_base.is_valid() ? p_base->instance() : NULL;
+	m_override.instance();
 	if (m_instance) {
 		List<MethodInfo> signals;
 		m_instance->get_signal_list(&signals);
 		List<MethodInfo>::Element *signal = signals.front();
 		while (signal) {
-			const MethodInfo &info = signal->get();
-			if (!has_signal(this, info.name)) {
-				add_user_signal(info);
+			const MethodInfo &mi = signal->get();
+			if (!has_signal(this, mi.name)) {
+				add_user_signal(mi);
 			}
 			Vector<Variant> binds;
 			binds.resize(1);
-			if (!is_connected(info.name, this, "_handle_signal")) {
-				binds.set(0, info.name);
-				m_instance->connect(info.name, this, "_handle_signal", binds);
-				signal = signal->next();
+			if (!is_connected(mi.name, this, "_handle_signal")) {
+				binds.set(0, mi.name);
+				m_instance->connect(mi.name, this, "_handle_signal", binds);
 			}
+			signal = signal->next();
 		}
 
 		List<MethodInfo> methods;
@@ -105,10 +105,12 @@ Mock::~Mock() {
 	}
 }
 
-void Mock::bind_method(const String &p_name, const Variant &value) {
+void Mock::bind_method(const String &p_name, const Variant &p_value) {
+	m_override->bind_method(p_name, p_value);
 }
 
-void Mock::add_property(const String &p_name, const StringName setter, const StringName getter) {
+void Mock::add_property(const String &p_name, const StringName p_setter, const StringName p_getter) {
+	m_override->add_property(p_name, p_setter, p_getter);
 }
 
 Variant Mock::getvar(const Variant &p_key, bool *r_valid) const {
@@ -143,13 +145,25 @@ Variant Mock::call(const StringName &p_method, const Variant **p_args, int p_arg
 		return result;
 	}
 	if (m_instance) {
-		return m_instance->call(p_method, p_args, p_argcount, r_error);
+		result = m_instance->call(p_method, p_args, p_argcount, r_error);
+		if (r_error.error == Variant::CallError::CALL_OK) {
+			return result;
+		}
 	}
 	return Node::call(p_method, p_args, p_argcount, r_error);
 }
 
+void Mock::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
+	print_line(p_method);
+}
+
+void Mock::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
+	print_line(p_method);
+}
+
 Variant Mock::_handle_signal(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	Error error = emit_signal(*p_args[p_argcount - 1], p_args, p_argcount - 1);
+	String name(*p_args[p_argcount - 1]);
+	Error error = emit_signal(name, p_args, p_argcount - 1);
 	if (error == Error::OK) {
 		r_error.error = Variant::CallError::CALL_OK;
 	}
@@ -157,7 +171,7 @@ Variant Mock::_handle_signal(const Variant **p_args, int p_argcount, Variant::Ca
 }
 
 void Mock::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("bind_method", "name"), &Mock::bind_method);
+	ClassDB::bind_method(D_METHOD("bind_method", "name", "value"), &Mock::bind_method);
 	ClassDB::bind_method(D_METHOD("add_property", "name", "setter", "getter"), &Mock::add_property);
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handle_signal", &Mock::_handle_signal);
