@@ -66,10 +66,10 @@ There are also a number of other learning resources provided by the community,
 such as text and video tutorials, demos, etc. Consult the [community channels](https://godotengine.org/community)
 for more info.
 
-[![Travis Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/bfiihqq6byxsjxxh/branch/master?svg=true)](https://ci.appveyor.com/project/akien-mga/godot)
-[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
-
 ### Community Language Bindings
 
 [**godot-nim**](https://github.com/pragmagic/godot-nim) (Nim language) Nim bindings for Godot 3.0 based on [GDNative](https://godotengine.org/article/dlscript-here).
+
+[![Travis Build Status](https://travis-ci.org/godotengine/godot.svg?branch=master)](https://travis-ci.org/godotengine/godot)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/bfiihqq6byxsjxxh/branch/master?svg=true)](https://ci.appveyor.com/project/akien-mga/godot)
+[![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
