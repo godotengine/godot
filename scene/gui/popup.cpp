@@ -124,6 +124,7 @@ void Popup::popup_centered_minsize(const Size2 &p_minsize) {
 
 void Popup::popup_centered(const Size2 &p_size) {
 
+	show(); // Force size recalculation
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = p_size == Size2() ? get_size() : p_size;
@@ -134,6 +135,7 @@ void Popup::popup_centered(const Size2 &p_size) {
 
 void Popup::popup_centered_ratio(float p_screen_ratio) {
 
+	show(); // Force size recalculation
 	Rect2 rect;
 	Size2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
@@ -144,6 +146,7 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 
 void Popup::popup(const Rect2 &p_bounds) {
 
+	show(); // Force size recalculation
 	emit_signal("about_to_show");
 	show_modal(exclusive);
 
