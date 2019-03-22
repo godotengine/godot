@@ -162,8 +162,23 @@ void Mock::call_multilevel_reversed(const StringName &p_method, const Variant **
 }
 
 Variant Mock::_handle_signal(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	String name(*p_args[p_argcount - 1]);
-	Error error = emit_signal(name, p_args, p_argcount - 1);
+	if (p_argcount < 1) {
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument = 0;
+		return Variant();
+	}
+
+	if (p_args[p_argcount - 1]->get_type() != Variant::STRING) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = p_argcount - 1;
+		r_error.expected = Variant::STRING;
+		return Variant();
+	}
+
+
+	StringName method = *p_args[p_argcount - 1];
+
+	Error error = emit_signal(method, p_args, p_argcount - 1);
 	if (error == Error::OK) {
 		r_error.error = Variant::CallError::CALL_OK;
 	}

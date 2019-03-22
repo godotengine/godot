@@ -107,18 +107,18 @@ const String &TestLog::LogMessage::message() const {
 Dictionary TestLog::LogMessage::to_dict() const {
 	Dictionary result;
 	result["time"] = m_time;
-	result["p_level"] = m_level;
-	result["p_script_path"] = m_script_path;
-	result["p_test_func"] = m_test_func;
+	result["level"] = m_level;
+	result["script_path"] = m_script_path;
+	result["test_func"] = m_test_func;
 	result["message"] = m_message;
 	return result;
 }
 
 void TestLog::LogMessage::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("time"), &TestLog::LogMessage::time);
-	ClassDB::bind_method(D_METHOD("p_level"), &TestLog::LogMessage::level);
-	ClassDB::bind_method(D_METHOD("p_script_path"), &TestLog::LogMessage::script_path);
-	ClassDB::bind_method(D_METHOD("p_test_func"), &TestLog::LogMessage::test_func);
+	ClassDB::bind_method(D_METHOD("level"), &TestLog::LogMessage::level);
+	ClassDB::bind_method(D_METHOD("script_path"), &TestLog::LogMessage::script_path);
+	ClassDB::bind_method(D_METHOD("test_func"), &TestLog::LogMessage::test_func);
 	ClassDB::bind_method(D_METHOD("message"), &TestLog::LogMessage::message);
 }
 
@@ -206,12 +206,12 @@ void TestLog::_bind_methods() {
 	BIND_ENUM_CONSTANT(ERROR);
 	BIND_ENUM_CONSTANT(FATAL);
 
-	ClassDB::bind_method(D_METHOD("log", "p_level", "p_message"), &TestLog::log);
-	ClassDB::bind_method(D_METHOD("trace", "p_message"), &TestLog::trace);
-	ClassDB::bind_method(D_METHOD("debug", "p_message"), &TestLog::debug);
-	ClassDB::bind_method(D_METHOD("info", "p_message"), &TestLog::info);
-	ClassDB::bind_method(D_METHOD("warn", "p_message"), &TestLog::warn);
-	ClassDB::bind_method(D_METHOD("error", "p_message"), &TestLog::error);
-	ClassDB::bind_method(D_METHOD("fatal", "p_message"), &TestLog::fatal);
+	ClassDB::bind_method(D_METHOD("log", "level", "message"), &TestLog::log);
+	ClassDB::bind_method(D_METHOD("trace", "message"), &TestLog::trace);
+	ClassDB::bind_method(D_METHOD("debug", "message"), &TestLog::debug);
+	ClassDB::bind_method(D_METHOD("info", "message"), &TestLog::info);
+	ClassDB::bind_method(D_METHOD("warn", "message"), &TestLog::warn);
+	ClassDB::bind_method(D_METHOD("error", "message"), &TestLog::error);
+	ClassDB::bind_method(D_METHOD("fatal", "message"), &TestLog::fatal);
 	ClassDB::bind_method(D_METHOD("clear"), &TestLog::clear);
 }
