@@ -2212,6 +2212,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
 		} break;
+		case RUN_PROJECT_FOLDER: {
+
+			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_resource_dir());
+		} break;
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER: {
 
@@ -5456,6 +5460,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 
 	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+	p->add_item(TTR("Open Project Resource Folder"), RUN_PROJECT_FOLDER);
 	p->add_separator();
 
 #ifdef OSX_ENABLED
