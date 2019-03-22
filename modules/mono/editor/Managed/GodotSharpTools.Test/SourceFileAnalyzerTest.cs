@@ -51,6 +51,19 @@ namespace GodotSharpToolsTest
             Assert.AreEqual(e.Message, "Source file 'MyClass.cs' contains multiple top level classes: MyClass, X.MyClass");
 
         }
+        
+        [Test]
+        public void TestWithPreprocessorDefines()
+        {
+            var code = @"#if !GODOT
+class MyClass {
+#else
+class MyClass : System.Object {
+#endif
+}
+";
+            Assert.AreEqual("MyClass", SourceFileAnalyzer.FindTopLevelClass(code, "MyClass.cs"));
+        }
 
         [Test]
         public void TestSyntaxErrors()
@@ -58,6 +71,6 @@ namespace GodotSharpToolsTest
             var code = "class MyClass : System.Object { { xxx\n some junk";
             Assert.AreEqual("MyClass", SourceFileAnalyzer.FindTopLevelClass(code, "MyClass.cs"));
         }
-
+        
     }
 }

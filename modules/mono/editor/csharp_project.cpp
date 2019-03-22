@@ -186,7 +186,7 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 		const Variant *tlc_args[1] = { &project_file_v };
 		MonoException *tlc_exc = NULL;
 		MonoString *full_class_name_obj = (MonoString *)analysis_method->invoke(NULL, tlc_args, &tlc_exc);
-		
+
 		if (tlc_exc) {
 			WARN_PRINTS(String("Failed to determine top-level class for '" + project_file + "\""))
 			GDMonoUtils::debug_print_unhandled_exception(tlc_exc);
