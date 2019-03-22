@@ -33,7 +33,8 @@ matrix:
       addons:
         apt:
           sources:
-            - mono
+            - sourceline: deb https://download.mono-project.com/repo/ubuntu stable-xenial main
+              key_url: https://%{app_host}/files/gpg/mono.asc
             - ubuntu-toolchain-r-test
           packages:
             - &gcc8_deps [gcc-8, g++-8]
