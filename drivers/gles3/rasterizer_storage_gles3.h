@@ -103,7 +103,7 @@ public:
 
 		bool keep_original_textures;
 
-		bool no_depth_prepass;
+		bool use_depth_prepass;
 		bool force_vertex_shading;
 	} config;
 

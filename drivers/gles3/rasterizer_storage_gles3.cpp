@@ -8042,8 +8042,8 @@ void RasterizerStorageGLES3::initialize() {
 
 	String renderer = (const char *)glGetString(GL_RENDERER);
 
-	config.no_depth_prepass = !bool(GLOBAL_GET("rendering/quality/depth_prepass/enable"));
-	if (!config.no_depth_prepass) {
+	config.use_depth_prepass = bool(GLOBAL_GET("rendering/quality/depth_prepass/enable"));
+	if (config.use_depth_prepass) {
 
 		String vendors = GLOBAL_GET("rendering/quality/depth_prepass/disable_for_vendors");
 		Vector<String> vendor_match = vendors.split(",");
@@ -8053,7 +8053,7 @@ void RasterizerStorageGLES3::initialize() {
 				continue;
 
 			if (renderer.findn(v) != -1) {
-				config.no_depth_prepass = true;
+				config.use_depth_prepass = false;
 			}
 		}
 	}

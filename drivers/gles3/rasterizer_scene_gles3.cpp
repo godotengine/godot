@@ -2349,6 +2349,10 @@ void RasterizerSceneGLES3::_add_geometry_with_material(RasterizerStorageGLES3::G
 		state.used_screen_texture = true;
 	}
 
+	if (p_material->shader->spatial.uses_depth_texture) {
+		state.used_depth_texture = true;
+	}
+
 	if (p_depth_pass) {
 
 		if (has_blend_alpha || p_material->shader->spatial.uses_depth_texture || (has_base_alpha && p_material->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) || p_material->shader->spatial.depth_draw_mode == RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_NEVER || p_material->shader->spatial.no_depth_test)
@@ -3165,6 +3169,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 	current_material_index = 0;
 	state.used_sss = false;
 	state.used_screen_texture = false;
+	state.used_depth_texture = false;
 
 	//fill list
 
@@ -3281,14 +3286,8 @@ void RasterizerSceneGLES3::_blur_effect_buffer() {
 	}
 }
 
-void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_cam_projection) {
-
-	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-
-	if (!state.used_depth_prepass_and_resolved) {
+void RasterizerSceneGLES3::_prepare_depth_texture() {
+	if (!state.prepared_depth_texture) {
 		//resolve depth buffer
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -3296,7 +3295,28 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 		glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		state.prepared_depth_texture = true;
 	}
+}
+
+void RasterizerSceneGLES3::_bind_depth_texture() {
+	if (!state.bound_depth_texture) {
+		ERR_FAIL_COND(!state.prepared_depth_texture)
+		//bind depth for read
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
+		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
+		state.bound_depth_texture = true;
+	}
+}
+
+void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_cam_projection) {
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+
+	_prepare_depth_texture();
 
 	if (env->ssao_enabled || env->ssr_enabled) {
 
@@ -4149,7 +4169,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	glDepthFunc(GL_LEQUAL);
 
 	state.used_contact_shadows = false;
-	state.used_depth_prepass_and_resolved = false;
+	state.prepared_depth_texture = false;
+	state.bound_depth_texture = false;
 
 	for (int i = 0; i < p_light_cull_count; i++) {
 
@@ -4161,7 +4182,17 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		}
 	}
 
-	if (!storage->config.no_depth_prepass && storage->frame.current_rt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS]) { //detect with state.used_contact_shadows too
+	// Do depth prepass if it's explicitly enabled
+	bool use_depth_prepass = storage->config.use_depth_prepass;
+
+	// If contact shadows are used then we need to do depth prepass even if it's otherwise disabled
+	use_depth_prepass = use_depth_prepass || state.used_contact_shadows;
+
+	// Never do depth prepass if effects are disabled or if we render overdraws
+	use_depth_prepass = use_depth_prepass && storage->frame.current_rt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
+	use_depth_prepass = use_depth_prepass && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW;
+
+	if (use_depth_prepass) {
 		//pre z pass
 
 		glDisable(GL_BLEND);
@@ -4188,16 +4219,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		if (state.used_contact_shadows) {
 
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
-			glReadBuffer(GL_COLOR_ATTACHMENT0);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
-			glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-			//bind depth for read
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
-			glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
-			state.used_depth_prepass_and_resolved = true;
+			_prepare_depth_texture();
+			_bind_depth_texture();
 		}
 
 		fb_cleared = true;
@@ -4455,7 +4478,12 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 		_render_mrts(env, p_cam_projection);
 	} else {
-		//FIXME: check that this is possible to use
+		// Here we have to do the blits/resolves that otherwise are done in the MRT rendering, in particular
+		// - prepare screen texture for any geometry that uses a shader with screen texture
+		// - prepare depth texture for any geometry that uses a shader with depth texture
+
+		bool framebuffer_dirty = false;
+
 		if (storage->frame.current_rt && storage->frame.current_rt->buffers.active && state.used_screen_texture) {
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
 			glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -4464,10 +4492,23 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 			_blur_effect_buffer();
-			//restored framebuffer
+			framebuffer_dirty = true;
+		}
+
+		if (storage->frame.current_rt && storage->frame.current_rt->buffers.active && state.used_depth_texture) {
+			_prepare_depth_texture();
+			framebuffer_dirty = true;
+		}
+
+		if (framebuffer_dirty) {
+			// Restore framebuffer
 			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
 			glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
 		}
+	}
+
+	if (storage->frame.current_rt && state.used_depth_texture && storage->frame.current_rt->buffers.active) {
+		_bind_depth_texture();
 	}
 
 	if (storage->frame.current_rt && state.used_screen_texture && storage->frame.current_rt->buffers.active) {
