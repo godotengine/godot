@@ -1691,7 +1691,7 @@ void NativeReloadNode::_notification(int p_what) {
 
 				// since singleton libraries are not unloaded there is no point
 				// in loading them again.
-				if (!gdn->get_library()->is_singleton()) {
+				if (gdn->get_library()->is_singleton()) {
 					continue;
 				}
 
