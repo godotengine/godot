@@ -42,6 +42,8 @@
 			<return type="String">
 			</return>
 			<description>
+				The string returned from this method is displayed as a warning in the "Scene Dock" if the script that overrides it is a [code]tool[/code] script.
+				Returning an empty string produces no warning.
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
