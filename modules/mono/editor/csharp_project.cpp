@@ -40,7 +40,7 @@
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/string_utils.h"
-#include "script_class_parser.h"
+#include "modules/mono/glue/string_glue.h"
 
 namespace CSharpProject {
 
@@ -161,6 +161,11 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 	Dictionary old_dict = CSharpLanguage::get_singleton()->get_scripts_metadata();
 	Dictionary new_dict;
 
+	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Build", "SourceFileAnalyzer");
+	CRASH_COND(!klass);
+	GDMonoMethod *analysis_method = klass->get_method("FindTopLevelClassInFile", 1);
+	CRASH_COND(!analysis_method);
+
 	for (int i = 0; i < project_files.size(); i++) {
 		const String &project_file = ("res://" + r[i]).simplify_path();
 
@@ -177,52 +182,40 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 			}
 		}
 
-		ScriptClassParser scp;
-		Error err = scp.parse_file(project_file);
-		if (err != OK) {
-			ERR_PRINTS("Parse error: " + scp.get_error());
-			ERR_EXPLAIN("Failed to determine namespace and class for script: " + project_file);
-			ERR_FAIL_V(err);
+		Variant project_file_v(ProjectSettings::get_singleton()->globalize_path(project_file));
+		const Variant *tlc_args[1] = { &project_file_v };
+		MonoException *tlc_exc = NULL;
+		MonoString *full_class_name_obj = (MonoString *)analysis_method->invoke(NULL, tlc_args, &tlc_exc);
+		
+		if (tlc_exc) {
+			WARN_PRINTS(String("Failed to determine top-level class for '" + project_file + "\""))
+			GDMonoUtils::debug_print_unhandled_exception(tlc_exc);
+			continue;
 		}
 
-		Vector<ScriptClassParser::ClassDecl> classes = scp.get_classes();
+		if (!full_class_name_obj) {
+			continue;
+		}
 
-		bool found = false;
+		String full_class_name = GDMonoMarshal::mono_string_to_godot_not_null(full_class_name_obj);
+
+		int sep_idx = full_class_name.find_last(".");
+		String namespace_, class_name;
+		if (sep_idx == -1) {
+			class_name = full_class_name;
+		} else {
+			namespace_ = full_class_name.substr(0, sep_idx);
+			class_name = full_class_name.substr(sep_idx + 1, full_class_name.length() - sep_idx - 1);
+		}
+
 		Dictionary class_dict;
+		class_dict["namespace"] = namespace_;
+		class_dict["class_name"] = class_name;
 
-		String search_name = project_file.get_file().get_basename();
-
-		for (int j = 0; j < classes.size(); j++) {
-			const ScriptClassParser::ClassDecl &class_decl = classes[j];
-
-			if (class_decl.base.size() == 0)
-				continue; // Does not inherit nor implement anything, so it can't be a script class
-
-			String class_cmp;
-
-			if (class_decl.nested) {
-				class_cmp = class_decl.name.get_slice(".", class_decl.name.get_slice_count(".") - 1);
-			} else {
-				class_cmp = class_decl.name;
-			}
-
-			if (class_cmp != search_name)
-				continue;
-
-			class_dict["namespace"] = class_decl.namespace_;
-			class_dict["class_name"] = class_decl.name;
-			class_dict["nested"] = class_decl.nested;
-
-			found = true;
-			break;
-		}
-
-		if (found) {
-			Dictionary file_dict;
-			file_dict["modified_time"] = modified_time;
-			file_dict["class"] = class_dict;
-			new_dict[project_file] = file_dict;
-		}
+		Dictionary file_dict;
+		file_dict["modified_time"] = modified_time;
+		file_dict["class"] = class_dict;
+		new_dict[project_file] = file_dict;
 	}
 
 	if (new_dict.size()) {
