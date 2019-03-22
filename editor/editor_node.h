@@ -836,6 +836,8 @@ public:
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
+
+	bool ensure_main_scene(bool p_from_native);
 };
 
 struct EditorProgress {

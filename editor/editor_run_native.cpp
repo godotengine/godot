@@ -101,6 +101,12 @@ void EditorRunNative::_notification(int p_what) {
 
 void EditorRunNative::_run_native(int p_idx, int p_platform) {
 
+	if (!EditorNode::get_singleton()->ensure_main_scene(true)) {
+		resume_idx = p_idx;
+		resume_platform = p_platform;
+		return;
+	}
+
 	Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(p_platform);
 	ERR_FAIL_COND(eep.is_null());
 
@@ -142,6 +148,10 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 		flags |= EditorExportPlatform::DEBUG_FLAG_VIEW_NAVIGATION;
 
 	eep->run(preset, p_idx, flags);
+}
+
+void EditorRunNative::resume_run_native() {
+	_run_native(resume_idx, resume_platform);
 }
 
 void EditorRunNative::_bind_methods() {
@@ -198,4 +208,6 @@ EditorRunNative::EditorRunNative() {
 	deploy_debug_remote = false;
 	debug_collisions = false;
 	debug_navigation = false;
+	resume_idx = 0;
+	resume_platform = 0;
 }
