@@ -231,18 +231,16 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected), varray(options, E->get()), CONNECT_DEFERRED);
 		}
 
-		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-			Ref<StyleBoxFlat> sb = node->get_theme_stylebox("frame", "GraphNode");
-			Color c = sb->get_border_color();
-			Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
-			mono_color.a = 0.85;
-			c = mono_color;
+		Ref<StyleBoxFlat> sb = node->get_theme_stylebox("frame", "GraphNode");
+		Color c = sb->get_border_color();
+		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
+		mono_color.a = 0.85;
+		c = mono_color;
 
-			node->add_theme_color_override("title_color", c);
-			c.a = 0.7;
-			node->add_theme_color_override("close_color", c);
-			node->add_theme_color_override("resizer_color", c);
-		}
+		node->add_theme_color_override("title_color", c);
+		c.a = 0.7;
+		node->add_theme_color_override("close_color", c);
+		node->add_theme_color_override("resizer_color", c);
 	}
 
 	List<AnimationNodeBlendTree::NodeConnection> connections;

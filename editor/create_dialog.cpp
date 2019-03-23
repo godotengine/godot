@@ -708,7 +708,6 @@ CreateDialog::CreateDialog() {
 	search_hb->add_child(search_box);
 
 	favorite = memnew(Button);
-	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
 	favorite->set_tooltip(TTR("(Un)favorite selected item."));
 	favorite->connect("pressed", callable_mp(this, &CreateDialog::_favorite_toggled));

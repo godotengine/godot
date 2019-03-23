@@ -6692,6 +6692,13 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	button_binds.resize(1);
 	String sct;
 
+	// Add some margin to the left for better aesthetics.
+	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
+	// which looks ugly.
+	Control *margin_left = memnew(Control);
+	hbc_menu->add_child(margin_left);
+	margin_left->set_custom_minimum_size(Size2(2, 0) * EDSCALE);
+
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
 	hbc_menu->add_child(tool_button[TOOL_MODE_SELECT]);
 	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);

@@ -1175,26 +1175,15 @@ void VisualShaderEditor::_draw_color_over_button(Object *obj, Color p_color) {
 }
 
 void VisualShaderEditor::_update_created_node(GraphNode *node) {
-	if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox("frame", "GraphNode");
-		Color c = sb->get_border_color();
-		Color ic;
-		Color mono_color;
-		if (((c.r + c.g + c.b) / 3) < 0.7) {
-			mono_color = Color(1.0, 1.0, 1.0);
-			ic = Color(0.0, 0.0, 0.0, 0.7);
-		} else {
-			mono_color = Color(0.0, 0.0, 0.0);
-			ic = Color(1.0, 1.0, 1.0, 0.7);
-		}
-		mono_color.a = 0.85;
-		c = mono_color;
+	const Ref<StyleBoxFlat> sb = node->get_theme_stylebox("frame", "GraphNode");
+	Color c = sb->get_border_color();
+	const Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0, 0.85) : Color(0.0, 0.0, 0.0, 0.85);
+	c = mono_color;
 
-		node->add_theme_color_override("title_color", c);
-		c.a = 0.7;
-		node->add_theme_color_override("close_color", c);
-		node->add_theme_color_override("resizer_color", ic);
-	}
+	node->add_theme_color_override("title_color", c);
+	c.a = 0.7;
+	node->add_theme_color_override("close_color", c);
+	node->add_theme_color_override("resizer_color", c);
 }
 
 void VisualShaderEditor::_update_uniforms(bool p_update_refs) {

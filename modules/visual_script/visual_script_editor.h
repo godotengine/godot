@@ -135,6 +135,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		Vector<Pair<Variant::Type, String>> args;
 	};
 
+	Map<StringName, Color> node_colors;
 	HashMap<StringName, Ref<StyleBox>> node_styles;
 
 	void _update_graph_connections();

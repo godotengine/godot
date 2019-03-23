@@ -240,7 +240,6 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	preview.video_link = p_url;
 	preview.is_video = p_video;
 	preview.button = memnew(Button);
-	preview.button->set_flat(true);
 	preview.button->set_icon(previews->get_theme_icon("ThumbnailWait", "EditorIcons"));
 	preview.button->set_toggle_mode(true);
 	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click), varray(p_id));
