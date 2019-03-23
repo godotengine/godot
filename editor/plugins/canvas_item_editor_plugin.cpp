@@ -5853,6 +5853,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	updating_scroll = false;
 
+	// Add some margin to the left for better aesthetics.
+	// This prevents the first button's hover/pressed effect from "touching" the panel's border,
+	// which looks ugly.
+	Control *margin_left = memnew(Control);
+	hb->add_child(margin_left);
+	margin_left->set_custom_minimum_size(Size2(2, 0) * EDSCALE);
+
 	select_button = memnew(Button);
 	select_button->set_flat(true);
 	hb->add_child(select_button);
@@ -6089,7 +6096,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	key_loc_button = memnew(Button);
 	key_loc_button->set_toggle_mode(true);
-	key_loc_button->set_flat(true);
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
 	key_loc_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_POS));
@@ -6098,7 +6104,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	key_rot_button = memnew(Button);
 	key_rot_button->set_toggle_mode(true);
-	key_rot_button->set_flat(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
 	key_rot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_ROT));
@@ -6107,14 +6112,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	key_scale_button = memnew(Button);
 	key_scale_button->set_toggle_mode(true);
-	key_scale_button->set_flat(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_SCALE));
 	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
-	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip(TTR("Insert keys (based on mask)."));
