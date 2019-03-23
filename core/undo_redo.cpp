@@ -90,7 +90,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 			actions.write[actions.size() - 1].last_tick = ticks;
 
 			merge_mode = p_mode;
-
+			merging = true;
 		} else {
 
 			Action new_action;
@@ -250,6 +250,11 @@ void UndoRedo::commit_action() {
 	if (action_level > 0)
 		return; //still nested
 
+	if (merging) {
+		version--;
+		merging = false;
+	}
+
 	commiting++;
 	redo(); // perform action
 	commiting--;
@@ -396,6 +401,7 @@ UndoRedo::UndoRedo() {
 	action_level = 0;
 	current_action = -1;
 	merge_mode = MERGE_DISABLE;
+	merging = false;
 	callback = NULL;
 	callback_ud = NULL;
 
