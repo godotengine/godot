@@ -323,6 +323,12 @@
 		<constant name="HALF_OFFSET_DISABLED" value="2" enum="HalfOffset">
 			Half offset disabled.
 		</constant>
+		<constant name="HALF_OFFSET_NEGATIVE_X" value="3" enum="HalfOffset">
+			Half offset on the X coordinate (negative).
+		</constant>
+		<constant name="HALF_OFFSET_NEGATIVE_Y" value="4" enum="HalfOffset">
+			Half offset on the Y coordinate (negative).
+		</constant>
 		<constant name="TILE_ORIGIN_TOP_LEFT" value="0" enum="TileOrigin">
 			Tile origin at its top-left corner.
 		</constant>
