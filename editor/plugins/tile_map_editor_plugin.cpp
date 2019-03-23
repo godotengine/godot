@@ -1434,9 +1434,9 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		aabb.expand_to(node->world_to_map(xform_inv.xform(screen_size)));
 		Rect2i si = aabb.grow(1.0);
 
-		if (node->get_half_offset() != TileMap::HALF_OFFSET_X) {
+		if (node->get_half_offset() != TileMap::HALF_OFFSET_X && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_X) {
 
-			int max_lines = 2000; //avoid crash if size too smal
+			int max_lines = 2000; //avoid crash if size too small
 
 			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
 
@@ -1450,7 +1450,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			}
 		} else {
 
-			int max_lines = 10000; //avoid crash if size too smal
+			int max_lines = 10000; //avoid crash if size too small
 
 			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
 
@@ -1458,7 +1458,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					Vector2 ofs;
 					if (ABS(j) & 1) {
-						ofs = cell_xf[0] * 0.5;
+						ofs = cell_xf[0] * (node->get_half_offset() == TileMap::HALF_OFFSET_X ? 0.5 : -0.5);
 					}
 
 					Vector2 from = xform.xform(node->map_to_world(Vector2(i, j), true) + ofs);
@@ -1474,7 +1474,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 		int max_lines = 10000; //avoid crash if size too smal
 
-		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y) {
+		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_Y) {
 
 			for (int i = (si.position.y) - 1; i <= (si.position.y + si.size.y); i++) {
 
@@ -1495,7 +1495,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					Vector2 ofs;
 					if (ABS(j) & 1) {
-						ofs = cell_xf[1] * 0.5;
+						ofs = cell_xf[1] * (node->get_half_offset() == TileMap::HALF_OFFSET_Y ? 0.5 : -0.5);
 					}
 
 					Vector2 from = xform.xform(node->map_to_world(Vector2(j, i), true) + ofs);
@@ -1533,8 +1533,12 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		for (int i = 0; i < 4; i++) {
 			if (node->get_half_offset() == TileMap::HALF_OFFSET_X && ABS(over_tile.y) & 1)
 				endpoints[i] += cell_xf[0] * 0.5;
+			if (node->get_half_offset() == TileMap::HALF_OFFSET_NEGATIVE_X && ABS(over_tile.y) & 1)
+				endpoints[i] += cell_xf[0] * -0.5;
 			if (node->get_half_offset() == TileMap::HALF_OFFSET_Y && ABS(over_tile.x) & 1)
 				endpoints[i] += cell_xf[1] * 0.5;
+			if (node->get_half_offset() == TileMap::HALF_OFFSET_NEGATIVE_Y && ABS(over_tile.x) & 1)
+				endpoints[i] += cell_xf[1] * -0.5;
 			endpoints[i] = xform.xform(endpoints[i]);
 		}
 		Color col;
