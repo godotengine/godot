@@ -659,7 +659,9 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 
 	if (call_local_native) {
 		Variant::CallError ce;
+		rpc_sender_id = node_id;
 		p_node->call(p_method, p_arg, p_argcount, ce);
+		rpc_sender_id = 0;
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in local call:  - " + error;
@@ -671,7 +673,9 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	if (call_local_script) {
 		Variant::CallError ce;
 		ce.error = Variant::CallError::CALL_OK;
+		rpc_sender_id = node_id;
 		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		rpc_sender_id = 0;
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in script local call:  - " + error;
