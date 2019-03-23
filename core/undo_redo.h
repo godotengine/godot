@@ -80,6 +80,7 @@ private:
 	int current_action;
 	int action_level;
 	MergeMode merge_mode;
+	bool merging;
 	uint64_t version;
 
 	void _pop_history_tail();
