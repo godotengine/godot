@@ -3333,8 +3333,8 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		select_sb->set_texture(get_icon("EditorRect2D", "EditorIcons"));
 		for (int i = 0; i < 4; i++) {
-			select_sb->set_margin_size(Margin(i), 4);
-			select_sb->set_default_margin(Margin(i), 4);
+			select_sb->set_texture_margin(Margin(i), 4);
+			select_sb->set_texture_margin(Margin(i), 4);
 		}
 
 		AnimationPlayerEditor::singleton->get_track_editor()->connect("visibility_changed", this, "_keying_changed");

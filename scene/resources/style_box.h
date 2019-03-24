@@ -110,8 +110,8 @@ public:
 	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
-	void set_margin_size(Margin p_margin, float p_size);
-	float get_margin_size(Margin p_margin) const;
+	void set_texture_margin(Margin p_margin, float p_size);
+	float get_texture_margin(Margin p_margin, const Control *p_context = NULL) const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;

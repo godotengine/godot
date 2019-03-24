@@ -75,10 +75,10 @@ static Ref<StyleBoxTexture> make_stylebox(T p_src, float p_left, float p_top, fl
 
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(texture);
-	style->set_margin_size(MARGIN_LEFT, p_left * scale);
-	style->set_margin_size(MARGIN_RIGHT, p_right * scale);
-	style->set_margin_size(MARGIN_BOTTOM, p_botton * scale);
-	style->set_margin_size(MARGIN_TOP, p_top * scale);
+	style->set_texture_margin(MARGIN_LEFT, p_left * scale);
+	style->set_texture_margin(MARGIN_RIGHT, p_right * scale);
+	style->set_texture_margin(MARGIN_BOTTOM, p_botton * scale);
+	style->set_texture_margin(MARGIN_TOP, p_top * scale);
 	style->set_default_margin(MARGIN_LEFT, p_margin_left * scale);
 	style->set_default_margin(MARGIN_RIGHT, p_margin_right * scale);
 	style->set_default_margin(MARGIN_BOTTOM, p_margin_botton * scale);

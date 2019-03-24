@@ -199,10 +199,10 @@ void TextureRegionEditor::_region_draw() {
 			margins[2] = node_ninepatch->get_patch_margin(MARGIN_LEFT);
 			margins[3] = node_ninepatch->get_patch_margin(MARGIN_RIGHT);
 		} else if (obj_styleBox.is_valid()) {
-			margins[0] = obj_styleBox->get_margin_size(MARGIN_TOP);
-			margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
-			margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
-			margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
+			margins[0] = obj_styleBox->get_texture_margin(MARGIN_TOP);
+			margins[1] = obj_styleBox->get_texture_margin(MARGIN_BOTTOM);
+			margins[2] = obj_styleBox->get_texture_margin(MARGIN_LEFT);
+			margins[3] = obj_styleBox->get_texture_margin(MARGIN_RIGHT);
 		}
 		Vector2 pos[4] = {
 			mtx.basis_xform(Vector2(0, margins[0])) + Vector2(0, endpoints[0].y - draw_ofs.y),
@@ -249,10 +249,10 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 						margins[2] = node_ninepatch->get_patch_margin(MARGIN_LEFT);
 						margins[3] = node_ninepatch->get_patch_margin(MARGIN_RIGHT);
 					} else if (obj_styleBox.is_valid()) {
-						margins[0] = obj_styleBox->get_margin_size(MARGIN_TOP);
-						margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
-						margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
-						margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
+						margins[0] = obj_styleBox->get_texture_margin(MARGIN_TOP);
+						margins[1] = obj_styleBox->get_texture_margin(MARGIN_BOTTOM);
+						margins[2] = obj_styleBox->get_texture_margin(MARGIN_LEFT);
+						margins[3] = obj_styleBox->get_texture_margin(MARGIN_RIGHT);
 					}
 					Vector2 pos[4] = {
 						mtx.basis_xform(rect.position + Vector2(0, margins[0])) - draw_ofs,
@@ -362,8 +362,8 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 						undo_redo->add_do_method(node_ninepatch, "set_patch_margin", m[edited_margin], node_ninepatch->get_patch_margin(m[edited_margin]));
 						undo_redo->add_undo_method(node_ninepatch, "set_patch_margin", m[edited_margin], prev_margin);
 					} else if (obj_styleBox.is_valid()) {
-						undo_redo->add_do_method(obj_styleBox.ptr(), "set_margin_size", m[edited_margin], obj_styleBox->get_margin_size(m[edited_margin]));
-						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_margin_size", m[edited_margin], prev_margin);
+						undo_redo->add_do_method(obj_styleBox.ptr(), "set_texture_margin", m[edited_margin], obj_styleBox->get_texture_margin(m[edited_margin]));
+						undo_redo->add_undo_method(obj_styleBox.ptr(), "set_texture_margin", m[edited_margin], prev_margin);
 						obj_styleBox->emit_signal(CoreStringNames::get_singleton()->changed);
 					}
 					edited_margin = -1;
@@ -405,7 +405,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					if (node_ninepatch)
 						node_ninepatch->set_patch_margin(m[edited_margin], prev_margin);
 					if (obj_styleBox.is_valid())
-						obj_styleBox->set_margin_size(m[edited_margin], prev_margin);
+						obj_styleBox->set_texture_margin(m[edited_margin], prev_margin);
 					edited_margin = -1;
 				} else {
 					apply_rect(rect_prev);
@@ -452,7 +452,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 				if (node_ninepatch)
 					node_ninepatch->set_patch_margin(m[edited_margin], new_margin);
 				if (obj_styleBox.is_valid())
-					obj_styleBox->set_margin_size(m[edited_margin], new_margin);
+					obj_styleBox->set_texture_margin(m[edited_margin], new_margin);
 			} else {
 				Vector2 new_pos = mtx.affine_inverse().xform(mm->get_position());
 				if (snap_mode == SNAP_PIXEL)

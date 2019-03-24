@@ -149,7 +149,7 @@ Ref<Texture> StyleBoxTexture::get_normal_map() const {
 	return normal_map;
 }
 
-void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
+void StyleBoxTexture::set_texture_margin(Margin p_margin, float p_size) {
 
 	ERR_FAIL_INDEX((int)p_margin, 4);
 
@@ -163,14 +163,13 @@ void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 	};
 	_change_notify(margin_prop[p_margin]);
 }
-float StyleBoxTexture::get_margin_size(Margin p_margin) const {
-
-	return margin[p_margin];
+float StyleBoxTexture::get_texture_margin(Margin p_margin, const Control *p_context) const {
+	//TODO maybe get_dpi_scale can be compleatly ignored here
+	return margin[p_margin] * get_dpi_scale(p_context);
 }
 
-float StyleBoxTexture::get_style_margin(Margin p_margin) const {
-
-	return margin[p_margin];
+float StyleBoxTexture::get_style_margin(Margin p_margin, const Control *p_context) const {
+	return margin[p_margin] * get_dpi_scale(p_context);
 }
 
 void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
