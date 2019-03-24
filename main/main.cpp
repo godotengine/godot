@@ -114,6 +114,7 @@ static bool editor = false;
 static bool project_manager = false;
 static String locale;
 static bool show_help = false;
+static bool format_script = false;
 static bool auto_quit = false;
 static OS::ProcessID allow_focus_steal_pid = 0;
 #ifdef TOOLS_ENABLED
@@ -280,6 +281,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("Standalone tools:\n");
 	OS::get_singleton()->print("  -s, --script <script>            Run a script.\n");
 	OS::get_singleton()->print("  --check-only                     Only parse for errors and quit (use with --script).\n");
+	OS::get_singleton()->print("  --format                         Parse and output auto-formatted script, then quit (use with --script).\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  --export <target>                Export the project using the given export target. Export only main pack if path ends with .pck or .zip.\n");
 	OS::get_singleton()->print("  --export-debug <target>          Like --export, but use debug template.\n");
@@ -1382,6 +1384,8 @@ bool Main::start() {
 		//parameters that do not have an argument to the right
 		if (args[i] == "--check-only") {
 			check_only = true;
+		} else if (args[i] == "--format") {
+			format_script = true;
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
 			doc_base = false;
@@ -1513,10 +1517,22 @@ bool Main::start() {
 
 	} else if (script != "") {
 
+		if (format_script) {
+			// Don't print parse errors if auto-formatting
+			_print_error_enabled = false;
+		}
+
 		Ref<Script> script_res = ResourceLoader::load(script);
 		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
 		if (check_only) {
+			return false;
+		}
+
+		if (format_script) {
+			String code = script_res->get_source_code();
+			script_res->get_language()->auto_format_code(code);
+			print_line(code.utf8().get_data());
 			return false;
 		}
 

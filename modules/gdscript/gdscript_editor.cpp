@@ -38,6 +38,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
+#include "editor/gdscript_formatter.h"
 #endif
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
@@ -3064,6 +3065,16 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 			p_code += "\n";
 		p_code += lines[i];
 	}
+}
+
+void GDScriptLanguage::auto_format_code(String &p_code) const {
+    #ifdef TOOLS_ENABLED
+	GDScriptFormatter formatter(p_code);
+	bool success = formatter.format();
+	if (success) {
+		p_code = formatter.formatted();
+	}
+    #endif 
 }
 
 #ifdef TOOLS_ENABLED
