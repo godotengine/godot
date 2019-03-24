@@ -30,6 +30,7 @@
 
 #include "test_case.h"
 #include "test_config.h"
+#include "proxy_script.h"
 
 #include "core/math/math_funcs.h"
 #include "core/script_language.h"
@@ -66,7 +67,6 @@ TestCase::TestCase() {
 
 TestCase::~TestCase() {
 	memfree(m_state);
-	_clear_mocks();
 }
 
 void TestCase::setup() {
@@ -122,7 +122,6 @@ bool TestCase::iteration(Ref<TestResult> test_result) {
 				case StageIter::DONE: {
 					test_result->stop_test(m_state);
 					m_signal_watcher->reset();
-					_clear_mocks();
 					break;
 				}
 			}
@@ -301,13 +300,6 @@ void TestCase::assert_not_match(const String &p_left, const String &p_right, con
 	}
 }
 
-void TestCase::_clear_mocks() {
-	for (int i = 0; i < m_mocks.size(); i++) {
-		memfree(m_mocks[i]);
-	}
-	m_mocks.clear();
-}
-
 void TestCase::_clear_connections() {
 	List<Connection> connections;
 	this->get_signals_connected_to_this(&connections);
@@ -454,24 +446,29 @@ Array TestCase::get_signal_calls(const Object *p_object, const String &p_signal)
 	return m_signal_watcher->calls(p_object, p_signal);
 }
 
-Object *TestCase::mock(REF ref) {
-	Mock *mock = NULL;
-
-	Ref<GDScriptNativeClass> native = ref;
-	if (native.is_valid()) {
-		mock = memnew(Mock(native));
-	}
-
-	Ref<GDScript> script = ref;
+Object *TestCase::mock(Object *p_object) {
+	Ref<GDScript> script(cast_to<GDScript>(p_object));
 	if (script.is_valid()) {
-		mock = memnew(Mock(script->get_native()));
+		Variant::CallError error;
+		p_object = script->_new(NULL, 0, error);
+	}
+	Ref<GDScriptNativeClass> native(cast_to<GDScriptNativeClass>(p_object));
+	if (native.is_valid()) {
+		p_object = native->instance();
+	}
+	if (p_object) {
+		Ref<Script> proxy_script(memnew(ProxyScript(p_object->get_script())));
+		p_object->set_script(proxy_script.get_ref_ptr());
 	}
 
-	if (mock) {
-		m_mocks.push_back(mock);
-		return mock;
-	}
-	return NULL;
+	return p_object;
+}
+
+Ref<FuncRef> TestCase::fr(Object *p_object, const String &p_function) {
+	Ref<FuncRef> func(memnew(FuncRef));
+	func->set_instance(p_object);
+	func->set_function(p_function);
+	return func;
 }
 
 void TestCase::_bind_methods() {
@@ -554,6 +551,7 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_calls", "object", "signal"), &TestCase::get_signal_calls);
 
 	ClassDB::bind_method(D_METHOD("mock", "base"), &TestCase::mock, DEFVAL(NULL));
+	ClassDB::bind_method(D_METHOD("fr", "object", "function"), &TestCase::fr);
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handle_yield", &TestCase::_handle_yield, MethodInfo("_handle_yield"));
 }

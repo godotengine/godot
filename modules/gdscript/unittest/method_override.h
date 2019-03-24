@@ -36,8 +36,7 @@
 #include "core/pair.h"
 #include "core/reference.h"
 
-class MethodOverride : public Reference {
-	GDCLASS(MethodOverride, Reference);
+class MethodOverride {
 private:
 	typedef Pair<StringName, StringName> SetGetPair;
 	typedef Map<StringName, SetGetPair> PropertyMap;
@@ -52,16 +51,13 @@ private:
 	mutable MethodMap m_methods;
 
 public:
-	void bind_method(const String &p_name, const Variant &p_value);
+	void bind_method(const String &p_name, const Variant &p_return);
 	void add_property(const String &p_name, const StringName p_setter, const StringName p_getter);
 	const Vector<Args> get_calls(const String &p_name) const;
 
-	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
-	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-
-protected:
-	static void _bind_methods();
+	Variant get(const Variant &p_key, bool *r_valid = NULL);
+	void set(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
+	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 };
 
 #endif // METHOD_OVERRIDE_H

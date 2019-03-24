@@ -31,13 +31,13 @@
 #ifndef TEST_CASE_H
 #define TEST_CASE_H
 
-#include "mock.h"
 #include "signal_watcher.h"
 #include "test_result.h"
 #include "test_state.h"
 
 #include "gdscript.h"
 
+#include "core/func_ref.h"
 #include "scene/main/node.h"
 
 class TestCase : public Node {
@@ -87,19 +87,20 @@ protected:
 	void error(const String &p_message);
 	void fatal(const String &p_message);
 
-	void watch_signals(Object *p_object, const String &signal);
+	void watch_signals(Object *p_object, const String &p_signal);
 	void watch_all_signals(Object *p_object);
-	void assert_signal_called(const Object *p_object, const String &signal, const String &p_message = "") const;
-	void assert_signal_called_once(const Object *p_object, const String &signal, const String &p_message = "") const;
+	void assert_signal_called(const Object *p_object, const String &p_signal, const String &p_message = "") const;
+	void assert_signal_called_once(const Object *p_object, const String &p_signal, const String &p_message = "") const;
 	Variant _assert_signal_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Variant _assert_signal_called_once_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	Variant _assert_signal_any_call(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	void assert_signal_has_calls(const Object *p_object, const String &signal, const Array &arguments, bool any_order = false, const String &p_message = "") const;
-	void assert_signal_not_called(const Object *p_object, const String &signal, const String &p_message = "") const;
-	int get_signal_call_count(const Object *p_object, const String &signal) const;
-	Array get_signal_calls(const Object *p_object, const String &signal) const;
+	void assert_signal_has_calls(const Object *p_object, const String &p_signal, const Array &arguments, bool any_order = false, const String &p_message = "") const;
+	void assert_signal_not_called(const Object *p_object, const String &p_signal, const String &p_message = "") const;
+	int get_signal_call_count(const Object *p_object, const String &p_signal) const;
+	Array get_signal_calls(const Object *p_object, const String &p_signal) const;
 
-	Object *mock(REF p_base = NULL);
+	Object *mock(Object *p_object);
+	Ref<FuncRef> fr(Object *p_object, const String &p_function);
 
 	static void _bind_methods();
 
@@ -111,9 +112,7 @@ private:
 	bool m_yield_handled;
 
 	Ref<SignalWatcher> m_signal_watcher;
-	Vector<Mock *> m_mocks;
 
-	void _clear_mocks();
 	void _clear_connections();
 	Variant _handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	void _yield_timer(real_t timeout);

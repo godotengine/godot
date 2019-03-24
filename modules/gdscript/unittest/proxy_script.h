@@ -31,18 +31,24 @@
 #ifndef PROXY_SCRIPT_H
 #define PROXY_SCRIPT_H
 
+#include "method_override.h"
+
 #include "core/script_language.h"
 
 class ProxyScript : public Script {
 	GDCLASS(ProxyScript, Script);
+
+private:
+	RefPtr m_script;
+
 protected:
 	virtual bool editor_can_reload_from_file(); // this is handled by editor better
-	static void _bind_methods();
 
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 
 public:
+	ProxyScript(RefPtr script);
 	virtual bool can_instance() const;
 
 	virtual Ref<Script> get_base_script() const; //for script inheritance
@@ -83,7 +89,19 @@ public:
 };
 
 class ProxyScriptInstance : public ScriptInstance {
+private:
+	Ref<ProxyScript> m_script;
+	ScriptInstance *m_script_instance;
+	mutable MethodOverride m_method_override;
+
+	Variant bind_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant add_property(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
+	void bind_method(const String &p_name, const Variant &p_return);
+	void add_property(const String &p_name, const StringName p_setter, const StringName p_getter);
+
 public:
+	ProxyScriptInstance(Ref<ProxyScript> script, ScriptInstance *script_instance);
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;

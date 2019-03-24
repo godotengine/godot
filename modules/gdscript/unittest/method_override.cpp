@@ -30,9 +30,9 @@
 
 #include "method_override.h"
 
-void MethodOverride::bind_method(const String &p_name, const Variant &p_value) {
+void MethodOverride::bind_method(const String &p_name, const Variant &p_return) {
 	MethodInfo mi;
-	mi.m_return = p_value;
+	mi.m_return = p_return;
 	m_methods.insert(p_name, mi)->get();
 }
 
@@ -50,13 +50,13 @@ const Vector<MethodOverride::Args> MethodOverride::get_calls(const String &p_nam
 	}
 }
 
-Variant MethodOverride::getvar(const Variant &p_key, bool *r_valid) const {
+Variant MethodOverride::get(const Variant &p_key, bool *r_valid) {
 	const PropertyMap::Element *prop = m_properties.find(p_key);
 	if (prop) {
 		const StringName &second = prop->get().second;
 		if (second) {
 			Variant::CallError ce;
-			Variant result = const_cast<MethodOverride *>(this)->call(second, NULL, 0, ce);
+			Variant result = this->call(second, NULL, 0, ce);
 			if (ce.error == Variant::CallError::CALL_OK) {
 				if (r_valid) {
 					*r_valid = true;
@@ -68,7 +68,7 @@ Variant MethodOverride::getvar(const Variant &p_key, bool *r_valid) const {
 	return Variant();
 }
 
-void MethodOverride::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid) {
+void MethodOverride::set(const Variant &p_key, const Variant &p_value, bool *r_valid) {
 	const PropertyMap::Element *prop = m_properties.find(p_key);
 	if (prop) {
 		const StringName &first = prop->get().first;
@@ -104,9 +104,4 @@ Variant MethodOverride::call(const StringName &p_method, const Variant **p_args,
 		}
 	}
 	return Variant();
-}
-
-void MethodOverride::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("bind_method", "name"), &MethodOverride::bind_method);
-	ClassDB::bind_method(D_METHOD("add_property", "name", "setter", "getter"), &MethodOverride::add_property);
 }
