@@ -738,6 +738,7 @@ public:
 			Rect2 source;
 			RID texture;
 			RID normal_map;
+			float tex_scale;
 			float margin[4];
 			bool draw_center;
 			Color color;
