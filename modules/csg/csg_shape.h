@@ -187,6 +187,7 @@ class CSGMesh : public CSGPrimitive {
 	virtual CSGBrush *_build_brush();
 
 	Ref<Mesh> mesh;
+	Ref<Material> material_override;
 
 	void _mesh_changed();
 
@@ -196,6 +197,9 @@ protected:
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh();
+
+	void set_material_override(const Ref<Material> &p_material);
+	Ref<Material> get_material_override() const;
 };
 
 class CSGSphere : public CSGPrimitive {

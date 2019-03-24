@@ -760,7 +760,10 @@ CSGBrush *CSGMesh::_build_brush() {
 			uvr_used = true;
 		}
 
-		Ref<Material> mat = mesh->surface_get_material(i);
+		Ref<Material> mat = material_override;
+		if (mat.is_valid() == false) {
+			mat = mesh->surface_get_material(i);
+		}
 
 		PoolVector<int> aindices = arrays[Mesh::ARRAY_INDEX];
 		if (aindices.size()) {
@@ -871,9 +874,13 @@ void CSGMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &CSGMesh::get_mesh);
 
+	ClassDB::bind_method(D_METHOD("set_material_override", "material_override"), &CSGMesh::set_material_override);
+	ClassDB::bind_method(D_METHOD("get_material_override"), &CSGMesh::get_material_override);
+
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &CSGMesh::_mesh_changed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"), "set_material_override", "get_material_override");
 }
 
 void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -894,6 +901,17 @@ void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 
 Ref<Mesh> CSGMesh::get_mesh() {
 	return mesh;
+}
+
+void CSGMesh::set_material_override(const Ref<Material> &p_material) {
+	if (material_override == p_material)
+		return;
+	material_override = p_material;
+	_make_dirty();
+}
+
+Ref<Material> CSGMesh::get_material_override() const {
+	return material_override;
 }
 
 ////////////////////////////////
