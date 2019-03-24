@@ -907,7 +907,7 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 			ERR_FAIL_COND(!mb_set);
 		} else {
 			int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-			if (mb_set->get_argument_count() != exp_args) {
+			if (mb_set->get_argument_count() - mb_set->get_default_argument_count() != exp_args) {
 				ERR_EXPLAIN("Invalid Function for Setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name);
 				ERR_FAIL();
 			}
@@ -927,7 +927,7 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		} else {
 
 			int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-			if (mb_get->get_argument_count() != exp_args) {
+			if (mb_get->get_argument_count() - mb_get->get_default_argument_count() != exp_args) {
 				ERR_EXPLAIN("Invalid Function for Getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name);
 				ERR_FAIL();
 			}
