@@ -31,6 +31,7 @@
 			<return type="CanvasItem">
 			</return>
 			<description>
+			The item that is drawn. It is only available in the _draw callback.
 			</description>
 		</method>
 		<method name="get_margin" qualifiers="const">
