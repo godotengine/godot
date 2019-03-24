@@ -1982,6 +1982,8 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 
 	RES res = ResourceLoader::load(p_path);
 
+	ERR_FAIL_COND(res.is_null());
+
 	List<PropertyInfo> prop_list;
 	get_edited_object()->get_property_list(&prop_list);
 	String property_types;
