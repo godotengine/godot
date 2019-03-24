@@ -63,8 +63,10 @@ ScriptInstance *ProxyScript::instance_create(Object *p_this) {
 	Ref<Script> script = m_script;
 	if (script.is_valid()) {
 		return memnew(ProxyScriptInstance(this, script->instance_create(p_this)));
+	} else {
+		return memnew(ProxyScriptInstance(this, NULL));
 	}
-	return false;
+	return NULL;
 }
 PlaceHolderScriptInstance *ProxyScript::placeholder_instance_create(Object *p_this) {
 	Ref<Script> script = m_script;
@@ -235,7 +237,7 @@ Variant ProxyScriptInstance::bind_method(const Variant **p_args, int p_argcount,
 		r_error.CALL_ERROR_INVALID_ARGUMENT;
 		return Variant();
 	}
-	const String& name = *p_args[0];
+	const String &name = *p_args[0];
 	bind_method(name, *p_args[1]);
 	return Variant();
 }
@@ -339,6 +341,9 @@ void ProxyScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 bool ProxyScriptInstance::has_method(const StringName &p_method) const {
+	if (m_method_override.has_method(p_method)) {
+		return true;
+	}
 	if (m_script_instance != NULL) {
 		return m_script_instance->has_method(p_method);
 	}
@@ -446,6 +451,8 @@ ScriptLanguage *ProxyScriptInstance::get_language() {
 	return NULL;
 }
 ProxyScriptInstance::~ProxyScriptInstance() {
-	memfree(m_script_instance);
-	m_script_instance = NULL;
+	if (m_script_instance) {
+		memfree(m_script_instance);
+		m_script_instance = NULL;
+	}
 }

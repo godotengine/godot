@@ -105,3 +105,7 @@ Variant MethodOverride::call(const StringName &p_method, const Variant **p_args,
 	}
 	return Variant();
 }
+
+bool MethodOverride::has_method(const StringName &p_method) const {
+	return m_methods.find(p_method) != NULL;
+}

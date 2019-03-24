@@ -58,6 +58,8 @@ public:
 	Variant get(const Variant &p_key, bool *r_valid = NULL);
 	void set(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
 	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
+	bool has_method(const StringName &p_method) const;
 };
 
 #endif // METHOD_OVERRIDE_H
