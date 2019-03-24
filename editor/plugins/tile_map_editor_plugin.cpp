@@ -1463,12 +1463,15 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					Vector2 from = xform.xform(node->map_to_world(Vector2(i, j), true) + ofs);
 					Vector2 to = xform.xform(node->map_to_world(Vector2(i, j + 1), true) + ofs);
+
 					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
 					p_overlay->draw_line(from, to, col, 1);
 
-					if (max_lines-- == 0)
+					if (--max_lines == 0)
 						break;
 				}
+				if (max_lines == 0)
+					break;
 			}
 		}
 
@@ -1500,12 +1503,15 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 					Vector2 from = xform.xform(node->map_to_world(Vector2(j, i), true) + ofs);
 					Vector2 to = xform.xform(node->map_to_world(Vector2(j + 1, i), true) + ofs);
+
 					Color col = i == 0 ? Color(1, 0.8, 0.2, 0.5) : Color(1, 0.3, 0.1, 0.2);
 					p_overlay->draw_line(from, to, col, 1);
 
-					if (max_lines-- == 0)
+					if (--max_lines == 0)
 						break;
 				}
+				if (max_lines == 0)
+					break;
 			}
 		}
 	}
