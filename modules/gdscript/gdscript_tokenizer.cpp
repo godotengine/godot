@@ -380,17 +380,19 @@ static bool _is_bin(CharType c) {
 	return (c == '0' || c == '1');
 }
 
-void GDScriptTokenizerText::_make_token(Token p_type) {
+void GDScriptTokenizerText::_make_token(Token p_type, int p_code_len) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 
 	tk.type = p_type;
 	tk.line = line;
 	tk.col = column;
+	tk.code_pos = code_pos;
+	tk.code_len = p_code_len;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
-void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier) {
+void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier, int p_code_len) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 
@@ -398,11 +400,13 @@ void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier) {
 	tk.identifier = p_identifier;
 	tk.line = line;
 	tk.col = column;
+	tk.code_pos = code_pos;
+	tk.code_len = p_code_len;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
-void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_func) {
+void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_func, int p_code_len) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 
@@ -410,10 +414,12 @@ void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_fu
 	tk.func = p_func;
 	tk.line = line;
 	tk.col = column;
+	tk.code_pos = code_pos;
+	tk.code_len = p_code_len;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
-void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
+void GDScriptTokenizerText::_make_constant(const Variant &p_constant, int p_code_len) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 
@@ -421,11 +427,13 @@ void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
 	tk.constant = p_constant;
 	tk.line = line;
 	tk.col = column;
+	tk.code_pos = code_pos;
+	tk.code_len = p_code_len;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
-void GDScriptTokenizerText::_make_type(const Variant::Type &p_type) {
+void GDScriptTokenizerText::_make_type(const Variant::Type &p_type, int p_code_len) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 
@@ -433,6 +441,8 @@ void GDScriptTokenizerText::_make_type(const Variant::Type &p_type) {
 	tk.vtype = p_type;
 	tk.line = line;
 	tk.col = column;
+	tk.code_pos = code_pos;
+	tk.code_len = p_code_len;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
@@ -457,6 +467,8 @@ void GDScriptTokenizerText::_make_newline(int p_indentation, int p_tabs) {
 	tk.constant = Vector2(p_indentation, p_tabs);
 	tk.line = line;
 	tk.col = column;
+	tk.code_pos = code_pos;
+	tk.code_len = p_indentation + 1;
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
@@ -469,7 +481,7 @@ void GDScriptTokenizerText::_advance() {
 	}
 
 	if (code_pos >= len) {
-		_make_token(TK_EOF);
+		_make_token(TK_EOF, 1);
 		return;
 	}
 #define GETCHAR(m_ofs) ((m_ofs + code_pos) >= len ? 0 : _code[m_ofs + code_pos])
@@ -485,7 +497,7 @@ void GDScriptTokenizerText::_advance() {
 
 		switch (GETCHAR(0)) {
 			case 0:
-				_make_token(TK_EOF);
+				_make_token(TK_EOF, 1);
 				break;
 			case '\\':
 				INCPOS(1);
@@ -522,7 +534,7 @@ void GDScriptTokenizerText::_advance() {
 					code_pos++;
 					if (GETCHAR(0) == 0) { //end of file
 						//_make_error("Unterminated Comment");
-						_make_token(TK_EOF);
+						_make_token(TK_EOF, 1);
 						return;
 					}
 				}
@@ -542,16 +554,15 @@ void GDScriptTokenizerText::_advance() {
 			}
 			case '\n': {
 				line++;
-				INCPOS(1);
 				bool used_spaces = false;
 				int tabs = 0;
 				column = 1;
 				int i = 0;
 				while (true) {
-					if (GETCHAR(i) == ' ') {
+					if (GETCHAR(i + 1) == ' ') {
 						i++;
 						used_spaces = true;
-					} else if (GETCHAR(i) == '\t') {
+					} else if (GETCHAR(i + 1) == '\t') {
 						if (used_spaces) {
 							_make_error("Spaces used before tabs on a line");
 							return;
@@ -564,158 +575,157 @@ void GDScriptTokenizerText::_advance() {
 				}
 
 				_make_newline(i, tabs);
+				INCPOS(i + 1)
 				return;
 			}
 			case '/': {
 
 				switch (GETCHAR(1)) {
 					case '=': { // diveq
-
-						_make_token(TK_OP_ASSIGN_DIV);
+						_make_token(TK_OP_ASSIGN_DIV, 2);
 						INCPOS(1);
 
 					} break;
 					default:
-						_make_token(TK_OP_DIV);
+						_make_token(TK_OP_DIV, 1);
 				}
 			} break;
 			case '=': {
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_EQUAL);
+					_make_token(TK_OP_EQUAL, 2);
 					INCPOS(1);
 
 				} else
-					_make_token(TK_OP_ASSIGN);
+					_make_token(TK_OP_ASSIGN, 1);
 
 			} break;
 			case '<': {
 				if (GETCHAR(1) == '=') {
-
-					_make_token(TK_OP_LESS_EQUAL);
+					_make_token(TK_OP_LESS_EQUAL, 2);
 					INCPOS(1);
 				} else if (GETCHAR(1) == '<') {
 					if (GETCHAR(2) == '=') {
-						_make_token(TK_OP_ASSIGN_SHIFT_LEFT);
+						_make_token(TK_OP_ASSIGN_SHIFT_LEFT, 3);
 						INCPOS(1);
 					} else {
-						_make_token(TK_OP_SHIFT_LEFT);
+						_make_token(TK_OP_SHIFT_LEFT, 2);
 					}
 					INCPOS(1);
 				} else
-					_make_token(TK_OP_LESS);
+					_make_token(TK_OP_LESS, 1);
 
 			} break;
 			case '>': {
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_GREATER_EQUAL);
+					_make_token(TK_OP_GREATER_EQUAL, 2);
 					INCPOS(1);
 				} else if (GETCHAR(1) == '>') {
 					if (GETCHAR(2) == '=') {
-						_make_token(TK_OP_ASSIGN_SHIFT_RIGHT);
+						_make_token(TK_OP_ASSIGN_SHIFT_RIGHT, 3);
 						INCPOS(1);
 
 					} else {
-						_make_token(TK_OP_SHIFT_RIGHT);
+						_make_token(TK_OP_SHIFT_RIGHT, 2);
 					}
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_GREATER);
+					_make_token(TK_OP_GREATER, 1);
 				}
 
 			} break;
 			case '!': {
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_NOT_EQUAL);
+					_make_token(TK_OP_NOT_EQUAL, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_NOT);
+					_make_token(TK_OP_NOT, 1);
 				}
 
 			} break;
 			//case '"' //string - no strings in shader
 			//case '\'' //string - no strings in shader
 			case '{':
-				_make_token(TK_CURLY_BRACKET_OPEN);
+				_make_token(TK_CURLY_BRACKET_OPEN, 1);
 				break;
 			case '}':
-				_make_token(TK_CURLY_BRACKET_CLOSE);
+				_make_token(TK_CURLY_BRACKET_CLOSE, 1);
 				break;
 			case '[':
-				_make_token(TK_BRACKET_OPEN);
+				_make_token(TK_BRACKET_OPEN, 1);
 				break;
 			case ']':
-				_make_token(TK_BRACKET_CLOSE);
+				_make_token(TK_BRACKET_CLOSE, 1);
 				break;
 			case '(':
-				_make_token(TK_PARENTHESIS_OPEN);
+				_make_token(TK_PARENTHESIS_OPEN, 1);
 				break;
 			case ')':
-				_make_token(TK_PARENTHESIS_CLOSE);
+				_make_token(TK_PARENTHESIS_CLOSE, 1);
 				break;
 			case ',':
-				_make_token(TK_COMMA);
+				_make_token(TK_COMMA, 1);
 				break;
 			case ';':
-				_make_token(TK_SEMICOLON);
+				_make_token(TK_SEMICOLON, 1);
 				break;
 			case '?':
-				_make_token(TK_QUESTION_MARK);
+				_make_token(TK_QUESTION_MARK, 1);
 				break;
 			case ':':
-				_make_token(TK_COLON); //for methods maybe but now useless.
+				_make_token(TK_COLON, 1); //for methods maybe but now useless.
 				break;
 			case '$':
-				_make_token(TK_DOLLAR); //for the get_node() shortener
+				_make_token(TK_DOLLAR, 1); //for the get_node() shortener
 				break;
 			case '^': {
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_BIT_XOR);
+					_make_token(TK_OP_ASSIGN_BIT_XOR, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_BIT_XOR);
+					_make_token(TK_OP_BIT_XOR, 1);
 				}
 
 			} break;
 			case '~':
-				_make_token(TK_OP_BIT_INVERT);
+				_make_token(TK_OP_BIT_INVERT, 1);
 				break;
 			case '&': {
 				if (GETCHAR(1) == '&') {
 
-					_make_token(TK_OP_AND);
+					_make_token(TK_OP_AND, 2);
 					INCPOS(1);
 				} else if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_BIT_AND);
+					_make_token(TK_OP_ASSIGN_BIT_AND, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_BIT_AND);
+					_make_token(TK_OP_BIT_AND, 1);
 				}
 			} break;
 			case '|': {
 				if (GETCHAR(1) == '|') {
 
-					_make_token(TK_OP_OR);
+					_make_token(TK_OP_OR, 2);
 					INCPOS(1);
 				} else if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_BIT_OR);
+					_make_token(TK_OP_ASSIGN_BIT_OR, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_BIT_OR);
+					_make_token(TK_OP_BIT_OR, 1);
 				}
 			} break;
 			case '*': {
 
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_MUL);
+					_make_token(TK_OP_ASSIGN_MUL, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_MUL);
+					_make_token(TK_OP_MUL, 1);
 				}
 			} break;
 			case '+': {
 
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_ADD);
+					_make_token(TK_OP_ASSIGN_ADD, 2);
 					INCPOS(1);
 					/*
 				}  else if (GETCHAR(1)=='+') {
@@ -723,29 +733,29 @@ void GDScriptTokenizerText::_advance() {
 					INCPOS(1);
 				*/
 				} else {
-					_make_token(TK_OP_ADD);
+					_make_token(TK_OP_ADD, 1);
 				}
 
 			} break;
 			case '-': {
 
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_SUB);
+					_make_token(TK_OP_ASSIGN_SUB, 2);
 					INCPOS(1);
 				} else if (GETCHAR(1) == '>') {
-					_make_token(TK_FORWARD_ARROW);
+					_make_token(TK_FORWARD_ARROW, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_SUB);
+					_make_token(TK_OP_SUB, 1);
 				}
 			} break;
 			case '%': {
 
 				if (GETCHAR(1) == '=') {
-					_make_token(TK_OP_ASSIGN_MOD);
+					_make_token(TK_OP_ASSIGN_MOD, 2);
 					INCPOS(1);
 				} else {
-					_make_token(TK_OP_MOD);
+					_make_token(TK_OP_MOD, 1);
 				}
 			} break;
 			case '@':
@@ -775,8 +785,10 @@ void GDScriptTokenizerText::_advance() {
 						_make_error("Unterminated String");
 						return;
 					} else if (string_mode == STRING_DOUBLE_QUOTE && CharType(GETCHAR(i)) == '"') {
+						i++;
 						break;
 					} else if (string_mode == STRING_SINGLE_QUOTE && CharType(GETCHAR(i)) == '\'') {
+						i++;
 						break;
 					} else if (string_mode == STRING_MULTILINE && CharType(GETCHAR(i)) == '\"' && CharType(GETCHAR(i + 1)) == '\"' && CharType(GETCHAR(i + 2)) == '\"') {
 						i += 2;
@@ -863,17 +875,18 @@ void GDScriptTokenizerText::_advance() {
 					}
 					i++;
 				}
-				INCPOS(i);
 
 				if (is_node_path) {
-					_make_constant(NodePath(str));
+					_make_constant(NodePath(str), i);
 				} else {
-					_make_constant(str);
+					_make_constant(str, i);
 				}
 
+				INCPOS(i);
+				return;
 			} break;
 			case 0xFFFF: {
-				_make_token(TK_CURSOR);
+				_make_token(TK_CURSOR, 1);
 			} break;
 			default: {
 
@@ -946,27 +959,27 @@ void GDScriptTokenizerText::_advance() {
 						return;
 					}
 
-					INCPOS(i);
 					if (hexa_found) {
 						int64_t val = str.hex_to_int64();
-						_make_constant(val);
+						_make_constant(val, i);
 					} else if (bin_found) {
 						int64_t val = str.bin_to_int64();
-						_make_constant(val);
+						_make_constant(val, i);
 					} else if (period_found || exponent_found) {
 						double val = str.to_double();
-						_make_constant(val);
+						_make_constant(val, i);
 					} else {
 						int64_t val = str.to_int64();
-						_make_constant(val);
+						_make_constant(val, i);
 					}
+					INCPOS(i);
 
 					return;
 				}
 
 				if (GETCHAR(0) == '.') {
 					//parse period
-					_make_token(TK_PERIOD);
+					_make_token(TK_PERIOD, 1);
 					break;
 				}
 
@@ -984,13 +997,13 @@ void GDScriptTokenizerText::_advance() {
 					bool identifier = false;
 
 					if (str == "null") {
-						_make_constant(Variant());
+						_make_constant(Variant(), i);
 
 					} else if (str == "true") {
-						_make_constant(true);
+						_make_constant(true, i);
 
 					} else if (str == "false") {
-						_make_constant(false);
+						_make_constant(false, i);
 					} else {
 
 						bool found = false;
@@ -1002,7 +1015,7 @@ void GDScriptTokenizerText::_advance() {
 							while (_type_list[idx].text) {
 
 								if (str == _type_list[idx].text) {
-									_make_type(_type_list[idx].type);
+									_make_type(_type_list[idx].type, i);
 									found = true;
 									break;
 								}
@@ -1017,8 +1030,7 @@ void GDScriptTokenizerText::_advance() {
 							for (int j = 0; j < GDScriptFunctions::FUNC_MAX; j++) {
 
 								if (str == GDScriptFunctions::get_func_name(GDScriptFunctions::Function(j))) {
-
-									_make_built_in_func(GDScriptFunctions::Function(j));
+									_make_built_in_func(GDScriptFunctions::Function(j), i);
 									found = true;
 									break;
 								}
@@ -1034,7 +1046,7 @@ void GDScriptTokenizerText::_advance() {
 							while (_keyword_list[idx].text) {
 
 								if (str == _keyword_list[idx].text) {
-									_make_token(_keyword_list[idx].token);
+									_make_token(_keyword_list[idx].token, i);
 									found = true;
 									break;
 								}
@@ -1047,7 +1059,7 @@ void GDScriptTokenizerText::_advance() {
 					}
 
 					if (identifier) {
-						_make_identifier(str);
+						_make_identifier(str, i);
 					}
 					INCPOS(str.length());
 					return;
@@ -1108,6 +1120,22 @@ int GDScriptTokenizerText::get_token_column(int p_offset) const {
 
 	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
 	return tk_rb[ofs].col;
+}
+
+int GDScriptTokenizerText::get_token_code_pos(int p_offset) const {
+	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, -1);
+	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, -1);
+
+	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
+	return tk_rb[ofs].code_pos;
+}
+
+int GDScriptTokenizerText::get_token_code_len(int p_offset) const {
+	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, -1);
+	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, -1);
+
+	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
+	return tk_rb[ofs].code_len;
 }
 
 const Variant &GDScriptTokenizerText::get_token_constant(int p_offset) const {

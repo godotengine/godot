@@ -197,7 +197,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 			GDScriptFunctions::Function func; //function for built in functions
 			int warning_code; //for warning skip
 		};
-		int line, col;
+		int line, col, code_pos, code_len;
 		TokenData() {
 			type = TK_EMPTY;
 			line = col = 0;
@@ -205,12 +205,12 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 		}
 	};
 
-	void _make_token(Token p_type);
+	void _make_token(Token p_type, int p_code_len);
 	void _make_newline(int p_indentation = 0, int p_tabs = 0);
-	void _make_identifier(const StringName &p_identifier);
-	void _make_built_in_func(GDScriptFunctions::Function p_func);
-	void _make_constant(const Variant &p_constant);
-	void _make_type(const Variant::Type &p_type);
+	void _make_identifier(const StringName &p_identifier, int p_code_len);
+	void _make_built_in_func(GDScriptFunctions::Function p_func, int p_code_len);
+	void _make_constant(const Variant &p_constant, int p_code_len);
+	void _make_type(const Variant::Type &p_type, int p_code_len);
 	void _make_error(const String &p_error);
 
 	String code;
@@ -234,6 +234,8 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 
 public:
 	void set_code(const String &p_code);
+	int get_token_code_pos(int p_offset = 0) const;
+	int get_token_code_len(int p_offset = 0) const;
 	virtual Token get_token(int p_offset = 0) const;
 	virtual StringName get_token_identifier(int p_offset = 0) const;
 	virtual GDScriptFunctions::Function get_token_built_in_func(int p_offset = 0) const;
