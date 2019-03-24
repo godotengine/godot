@@ -406,10 +406,18 @@ void AcceptDialog::set_hide_on_ok(bool p_hide) {
 
 	hide_on_ok = p_hide;
 }
-
 bool AcceptDialog::get_hide_on_ok() const {
 
 	return hide_on_ok;
+}
+
+void AcceptDialog::set_autowrap(bool p_autowrap) {
+
+	label->set_autowrap(p_autowrap);
+}
+bool AcceptDialog::has_autowrap() {
+
+	return label->has_autowrap();
 }
 
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
@@ -530,6 +538,8 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_custom_action"), &AcceptDialog::_custom_action);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
+	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
+	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING, "action")));
@@ -537,6 +547,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 }
 
 bool AcceptDialog::swap_ok_cancel = false;
@@ -555,7 +566,6 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
-	//label->set_autowrap(true);
 	add_child(label);
 
 	hbc = memnew(HBoxContainer);
