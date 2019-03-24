@@ -31,14 +31,14 @@
 #include "collision_object_2d_sw.h"
 #include "space_2d_sw.h"
 
-void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_transform) {
+void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_transform, bool p_disabled) {
 
 	Shape s;
 	s.shape = p_shape;
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
 	s.bpid = 0; //needs update
-	s.disabled = false;
+	s.disabled = p_disabled;
 	s.one_way_collision = false;
 	s.one_way_collision_margin = 0;
 	shapes.push_back(s);

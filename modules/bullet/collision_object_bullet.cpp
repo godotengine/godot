@@ -216,8 +216,8 @@ RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {
 	}
 }
 
-void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform) {
-	shapes.push_back(ShapeWrapper(p_shape, p_transform, true));
+void RigidCollisionObjectBullet::add_shape(ShapeBullet *p_shape, const Transform &p_transform, bool p_disabled) {
+	shapes.push_back(ShapeWrapper(p_shape, p_transform, !p_disabled));
 	p_shape->add_owner(this);
 	reload_shapes();
 }
@@ -299,6 +299,8 @@ Transform RigidCollisionObjectBullet::get_shape_transform(int p_index) const {
 }
 
 void RigidCollisionObjectBullet::set_shape_disabled(int p_index, bool p_disabled) {
+	if (shapes[p_index].active != p_disabled)
+		return;
 	shapes.write[p_index].active = !p_disabled;
 	shape_changed(p_index);
 }

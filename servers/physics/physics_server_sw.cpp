@@ -283,7 +283,7 @@ PhysicsServer::AreaSpaceOverrideMode PhysicsServerSW::area_get_space_override_mo
 	return area->get_space_override_mode();
 }
 
-void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform) {
+void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
@@ -291,7 +291,7 @@ void PhysicsServerSW::area_add_shape(RID p_area, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform);
+	area->add_shape(shape, p_transform, p_disabled);
 }
 
 void PhysicsServerSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -540,7 +540,7 @@ PhysicsServer::BodyMode PhysicsServerSW::body_get_mode(RID p_body) const {
 	return body->get_mode();
 };
 
-void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform) {
+void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -548,7 +548,7 @@ void PhysicsServerSW::body_add_shape(RID p_body, RID p_shape, const Transform &p
 	ShapeSW *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform);
+	body->add_shape(shape, p_transform, p_disabled);
 }
 
 void PhysicsServerSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
