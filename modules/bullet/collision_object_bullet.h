@@ -224,7 +224,7 @@ public:
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
-	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform());
+	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	void set_shape(int p_index, ShapeBullet *p_shape);
 
 	int get_shape_count() const;
