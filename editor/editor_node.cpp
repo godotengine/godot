@@ -4537,19 +4537,53 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 
 	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_selected_path());
-	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
+	_add_dropped_files_recursive(p_files, to_path);
+
+	EditorFileSystem::get_singleton()->scan_changes();
+}
+
+void EditorNode::_add_dropped_files_recursive(const Vector<String> &p_files, String to_path) {
+
+	DirAccessRef dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Vector<String> just_copy = String("ttf,otf").split(",");
+
 	for (int i = 0; i < p_files.size(); i++) {
 
 		String from = p_files[i];
+		String to = to_path.plus_file(from.get_file());
+
+		if (dir->dir_exists(from)) {
+
+			Vector<String> sub_files;
+
+			DirAccessRef sub_dir = DirAccess::open(from);
+			sub_dir->list_dir_begin();
+
+			String next_file = sub_dir->get_next();
+			while (next_file != "") {
+				if (next_file == "." || next_file == "..") {
+					next_file = sub_dir->get_next();
+					continue;
+				}
+
+				sub_files.push_back(from.plus_file(next_file));
+				next_file = sub_dir->get_next();
+			}
+
+			if (!sub_files.empty()) {
+				dir->make_dir(to);
+				_add_dropped_files_recursive(sub_files, to);
+			}
+
+			continue;
+		}
+
 		if (!ResourceFormatImporter::get_singleton()->can_be_imported(from) && (just_copy.find(from.get_extension().to_lower()) == -1)) {
 			continue;
 		}
-		String to = to_path.plus_file(from.get_file());
 		dir->copy(from, to);
 	}
-	EditorFileSystem::get_singleton()->scan_changes();
 }
 
 void EditorNode::_file_access_close_error_notify(const String &p_str) {
