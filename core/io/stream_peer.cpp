@@ -32,6 +32,20 @@
 
 #include "core/io/marshalls.h"
 
+StreamPeer::StreamPeer() :
+		big_endian(false),
+		allow_object_decoding(false) {}
+
+void StreamPeer::set_allow_object_decoding(bool p_enable) {
+
+	allow_object_decoding = p_enable;
+}
+
+bool StreamPeer::is_object_decoding_allowed() const {
+
+	return allow_object_decoding;
+}
+
 Error StreamPeer::_put_data(const PoolVector<uint8_t> &p_data) {
 
 	int len = p_data.size();
@@ -225,10 +239,10 @@ void StreamPeer::put_var(const Variant &p_variant) {
 
 	int len = 0;
 	Vector<uint8_t> buf;
-	encode_variant(p_variant, NULL, len);
+	encode_variant(p_variant, NULL, len, !allow_object_decoding);
 	buf.resize(len);
 	put_32(len);
-	encode_variant(p_variant, buf.ptrw(), len);
+	encode_variant(p_variant, buf.ptrw(), len, !allow_object_decoding);
 	put_data(buf.ptr(), buf.size());
 }
 
@@ -369,7 +383,7 @@ Variant StreamPeer::get_var() {
 	ERR_FAIL_COND_V(err != OK, Variant());
 
 	Variant ret;
-	decode_variant(ret, var.ptr(), len);
+	decode_variant(ret, var.ptr(), len, NULL, allow_object_decoding);
 	return ret;
 }
 
@@ -382,6 +396,9 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_partial_data", "bytes"), &StreamPeer::_get_partial_data);
 
 	ClassDB::bind_method(D_METHOD("get_available_bytes"), &StreamPeer::get_available_bytes);
+
+	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &StreamPeer::set_allow_object_decoding);
+	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &StreamPeer::is_object_decoding_allowed);
 
 	ClassDB::bind_method(D_METHOD("set_big_endian", "enable"), &StreamPeer::set_big_endian);
 	ClassDB::bind_method(D_METHOD("is_big_endian_enabled"), &StreamPeer::is_big_endian_enabled);
@@ -414,6 +431,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_var"), &StreamPeer::get_var);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");
 }
 ////////////////////////////////

@@ -48,6 +48,7 @@ protected:
 	Array _get_partial_data(int p_bytes);
 
 	bool big_endian;
+	bool allow_object_decoding;
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
@@ -89,7 +90,10 @@ public:
 	String get_utf8_string(int p_bytes = -1);
 	Variant get_var();
 
-	StreamPeer() { big_endian = false; }
+	void set_allow_object_decoding(bool p_enable);
+	bool is_object_decoding_allowed() const;
+
+	StreamPeer();
 };
 
 class StreamPeerBuffer : public StreamPeer {
