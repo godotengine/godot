@@ -43,7 +43,9 @@
 	@author AndreaCatania
 */
 
-#define enableDynamicAabbTree false
+// We enable dynamic AABB tree so that we can actually perform a broadphase on bodies with compound collision shapes.
+// This is crucial for the performance of kinematic bodies and for bodies with transforming shapes.
+#define enableDynamicAabbTree true
 
 CollisionObjectBullet::ShapeWrapper::~ShapeWrapper() {}
 
@@ -284,7 +286,6 @@ void RigidCollisionObjectBullet::set_shape_transform(int p_index, const Transfor
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 
 	shapes.write[p_index].set_transform(p_transform);
-	// Note, enableDynamicAabbTree is false because on transform change compound is destroyed
 	reload_shapes();
 }
 

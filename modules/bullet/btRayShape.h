@@ -60,6 +60,8 @@ public:
 	void setLength(btScalar p_length);
 	btScalar getLength() const { return m_length; }
 
+	virtual void setMargin(btScalar margin);
+
 	void setSlipsOnSlope(bool p_slipOnSlope);
 	bool getSlipsOnSlope() const { return slipsOnSlope; }
 

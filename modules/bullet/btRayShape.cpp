@@ -54,6 +54,11 @@ void btRayShape::setLength(btScalar p_length) {
 	reload_cache();
 }
 
+void btRayShape::setMargin(btScalar margin) {
+	btConvexInternalShape::setMargin(margin);
+	reload_cache();
+}
+
 void btRayShape::setSlipsOnSlope(bool p_slipsOnSlope) {
 
 	slipsOnSlope = p_slipsOnSlope;
@@ -77,10 +82,9 @@ void btRayShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVecto
 }
 
 void btRayShape::getAabb(const btTransform &t, btVector3 &aabbMin, btVector3 &aabbMax) const {
-#define MARGIN_BROADPHASE 0.1
 	btVector3 localAabbMin(0, 0, 0);
-	btVector3 localAabbMax(m_shapeAxis * (m_cacheScaledLength + m_collisionMargin));
-	btTransformAabb(localAabbMin, localAabbMax, MARGIN_BROADPHASE, t, aabbMin, aabbMax);
+	btVector3 localAabbMax(m_shapeAxis * m_cacheScaledLength);
+	btTransformAabb(localAabbMin, localAabbMax, m_collisionMargin, t, aabbMin, aabbMax);
 }
 
 void btRayShape::calculateLocalInertia(btScalar mass, btVector3 &inertia) const {
@@ -100,5 +104,5 @@ void btRayShape::reload_cache() {
 	m_cacheScaledLength = m_length * m_localScaling[2];
 
 	m_cacheSupportPoint.setIdentity();
-	m_cacheSupportPoint.setOrigin(m_shapeAxis * (m_cacheScaledLength + m_collisionMargin));
+	m_cacheSupportPoint.setOrigin(m_shapeAxis * m_cacheScaledLength);
 }
