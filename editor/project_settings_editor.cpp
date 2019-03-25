@@ -111,7 +111,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			restart_close_button->set_icon(get_icon("Close", "EditorIcons"));
 			restart_container->add_style_override("panel", get_stylebox("bg", "Tree"));
 			restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
-			restart_label->add_color_override("font_color", get_color("error_color", "Editor"));
+			restart_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
