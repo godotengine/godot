@@ -34,6 +34,17 @@
 #include <locale.h>
 #include <stdio.h>
 
+// For export templates, add a section; the exporter will patch it to enclose
+// the data appended to the executable (bundled PCK)
+#ifndef TOOLS_ENABLED
+#if defined _MSC_VER
+#pragma section("pck", read)
+__declspec(allocate("pck")) static char dummy[8] = { 0 };
+#elif defined __GNUC__
+static const char dummy[8] __attribute__((section("pck"), used)) = { 0 };
+#endif
+#endif
+
 PCHAR *
 CommandLineToArgvA(
 		PCHAR CmdLine,
