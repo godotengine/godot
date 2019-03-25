@@ -405,7 +405,7 @@ String SoftBody::get_configuration_warning() const {
 		if (!warning.empty())
 			warning += "\n\n";
 
-		warning += TTR("This body will be ignored until you set a mesh");
+		warning += TTR("This body will be ignored until you set a mesh.");
 	}
 
 	Transform t = get_transform();

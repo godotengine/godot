@@ -3433,7 +3433,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		p->add_separator();
 		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_AND_MARGINS_PRESET_WIDE);
 		p->add_separator();
-		p->add_submenu_item(TTR("Anchors only"), "Anchors");
+		p->add_submenu_item(TTR("Anchors Only"), "Anchors");
 		p->set_item_icon(20, get_icon("Anchor", "EditorIcons"));
 
 		anchors_popup->clear();
@@ -4811,24 +4811,24 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	PopupMenu *p = snap_config_menu->get_popup();
 	p->connect("id_pressed", this, "_popup_callback");
 	p->set_hide_on_checkable_item_selection(false);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_grid", TTR("Snap to grid")), SNAP_USE_GRID);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_grid", TTR("Snap to Grid")), SNAP_USE_GRID);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap...")), SNAP_CONFIGURE);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_relative", TTR("Snap Relative")), SNAP_RELATIVE);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_pixel_snap", TTR("Use Pixel Snap")), SNAP_USE_PIXEL);
-	p->add_submenu_item(TTR("Smart snapping"), "SmartSnapping");
+	p->add_submenu_item(TTR("Smart Snapping"), "SmartSnapping");
 
 	smartsnap_config_popup = memnew(PopupMenu);
 	p->add_child(smartsnap_config_popup);
 	smartsnap_config_popup->set_name("SmartSnapping");
 	smartsnap_config_popup->connect("id_pressed", this, "_popup_callback");
 	smartsnap_config_popup->set_hide_on_checkable_item_selection(false);
-	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_parent", TTR("Snap to parent")), SNAP_USE_NODE_PARENT);
-	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_anchors", TTR("Snap to node anchor")), SNAP_USE_NODE_ANCHORS);
-	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_sides", TTR("Snap to node sides")), SNAP_USE_NODE_SIDES);
-	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_center", TTR("Snap to node center")), SNAP_USE_NODE_CENTER);
-	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_other_nodes", TTR("Snap to other nodes")), SNAP_USE_OTHER_NODES);
-	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_guides", TTR("Snap to guides")), SNAP_USE_GUIDES);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_parent", TTR("Snap to Parent")), SNAP_USE_NODE_PARENT);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_anchors", TTR("Snap to Node Anchor")), SNAP_USE_NODE_ANCHORS);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_sides", TTR("Snap to Node Sides")), SNAP_USE_NODE_SIDES);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_node_center", TTR("Snap to Node Center")), SNAP_USE_NODE_CENTER);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_other_nodes", TTR("Snap to Other Nodes")), SNAP_USE_OTHER_NODES);
+	smartsnap_config_popup->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_guides", TTR("Snap to Guides")), SNAP_USE_GUIDES);
 
 	hb->add_child(memnew(VSeparator));
 
@@ -5466,7 +5466,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	selector = memnew(AcceptDialog);
 	editor->get_gui_base()->add_child(selector);
-	selector->set_title(TTR("Change default type"));
+	selector->set_title(TTR("Change Default Type"));
 	selector->connect("confirmed", this, "_on_change_type_confirmed");
 	selector->connect("popup_hide", this, "_on_change_type_closed");
 

@@ -379,11 +379,11 @@ String ARVRController::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRController must have an ARVROrigin node as its parent");
+		return TTR("ARVRController must have an ARVROrigin node as its parent.");
 	};
 
 	if (controller_id == 0) {
-		return TTR("The controller id must not be 0 or this controller will not be bound to an actual controller");
+		return TTR("The controller ID must not be 0 or this controller won't be bound to an actual controller.");
 	};
 
 	return String();
@@ -506,11 +506,11 @@ String ARVRAnchor::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRAnchor must have an ARVROrigin node as its parent");
+		return TTR("ARVRAnchor must have an ARVROrigin node as its parent.");
 	};
 
 	if (anchor_id == 0) {
-		return TTR("The anchor id must not be 0 or this anchor will not be bound to an actual anchor");
+		return TTR("The anchor ID must not be 0 or this anchor won't be bound to an actual anchor.");
 	};
 
 	return String();
@@ -545,7 +545,7 @@ String ARVROrigin::get_configuration_warning() const {
 		return String();
 
 	if (tracked_camera == NULL)
-		return TTR("ARVROrigin requires an ARVRCamera child node");
+		return TTR("ARVROrigin requires an ARVRCamera child node.");
 
 	return String();
 };
