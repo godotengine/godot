@@ -456,3 +456,7 @@ ProxyScriptInstance::~ProxyScriptInstance() {
 		m_script_instance = NULL;
 	}
 }
+
+const Vector<MethodOverride::Args> ProxyScriptInstance::get_calls(const String &p_name) const {
+	return m_method_override.get_calls(p_name);
+}

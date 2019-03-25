@@ -464,6 +464,20 @@ Object *TestCase::mock(Object *p_object) {
 	return p_object;
 }
 
+Array TestCase::get_mock_calls(const Object *p_object, const String &p_method) const {
+	Array result;
+	ProxyScriptInstance *proxy_script_instance = dynamic_cast<ProxyScriptInstance*>(p_object->get_script_instance());
+	if (proxy_script_instance) {
+		const Vector<MethodOverride::Args> calls = proxy_script_instance->get_calls(p_method);
+		int size = calls.size();
+		result.resize(size);
+		for (int i = 0; i < size; i++) {
+			result[i] = calls[i];
+		}
+	}
+	return result;
+}
+
 Ref<FuncRef> TestCase::fr(Object *p_object, const String &p_function) {
 	Ref<FuncRef> func(memnew(FuncRef));
 	func->set_instance(p_object);
@@ -551,6 +565,7 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_calls", "object", "signal"), &TestCase::get_signal_calls);
 
 	ClassDB::bind_method(D_METHOD("mock", "base"), &TestCase::mock, DEFVAL(NULL));
+	ClassDB::bind_method(D_METHOD("get_mock_calls", "object", "method"), &TestCase::get_mock_calls);
 	ClassDB::bind_method(D_METHOD("fr", "object", "function"), &TestCase::fr);
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "_handle_yield", &TestCase::_handle_yield, MethodInfo("_handle_yield"));

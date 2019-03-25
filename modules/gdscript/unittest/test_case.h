@@ -101,6 +101,7 @@ protected:
 
 	Object *mock(Object *p_object);
 	Ref<FuncRef> fr(Object *p_object, const String &p_function);
+	Array get_mock_calls(const Object *p_object, const String &p_method) const;
 
 	static void _bind_methods();
 

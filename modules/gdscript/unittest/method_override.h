@@ -37,17 +37,20 @@
 #include "core/reference.h"
 
 class MethodOverride {
-private:
+public:
 	typedef Pair<StringName, StringName> SetGetPair;
 	typedef Map<StringName, SetGetPair> PropertyMap;
-	PropertyMap m_properties;
 
 	typedef Vector<Variant> Args;
+
 	struct MethodInfo {
 		Variant m_return;
 		Vector<Args> m_calls;
 	};
 	typedef Map<StringName, MethodInfo> MethodMap;
+
+private:
+	PropertyMap m_properties;
 	mutable MethodMap m_methods;
 
 public:

@@ -94,6 +94,14 @@ Variant MethodOverride::call(const StringName &p_method, const Variant **p_args,
 	} else {
 		info = &m_methods.insert(p_method, MethodInfo())->get();
 	}
+	Args args;
+	if (p_argcount > 0) {
+		args.resize(p_argcount);
+		for (int i = 0; i < p_argcount; i++) {
+			args.set(i, *p_args[i]);
+		}
+	}
+	info->m_calls.push_back(args);
 	if (info->m_return) {
 		Ref<FuncRef> func = info->m_return;
 		if (func.is_valid()) {

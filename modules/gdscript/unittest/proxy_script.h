@@ -134,6 +134,8 @@ public:
 
 	virtual ScriptLanguage *get_language();
 	virtual ~ProxyScriptInstance();
+
+	const Vector<MethodOverride::Args> get_calls(const String &p_name) const;
 };
 
 #endif // PROXY_SCRIPT_H
