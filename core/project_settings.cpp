@@ -343,17 +343,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		return err;
 	}
 
-	// Attempt with exec_name.pck
-	// (This is the usual case when distributing a Godot game.)
-
-	// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
-	// or the exec path's basename + '.pck' (Windows).
-	// We need to test both possibilities as extensions for Linux binaries are optional
-	// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
-
 	String exec_path = OS::get_singleton()->get_executable_path();
 
 	if (exec_path != "") {
+		// Attempt with exec_name.pck
+		// (This is the usual case when distributing a Godot game.)
+
+		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
+		// or the exec path's basename + '.pck' (Windows).
+		// We need to test both possibilities as extensions for Linux binaries are optional
+		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
+
 		bool found = false;
 
 		String exec_dir = exec_path.get_base_dir();
@@ -371,6 +371,14 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			// the current working directory. Same story, two tests.
 			if (_load_resource_pack(exec_basename + ".pck") ||
 					_load_resource_pack(exec_filename + ".pck")) {
+				found = true;
+			}
+		}
+
+		// Attempt with PCK bundled into executable
+
+		if (!found) {
+			if (_load_resource_pack(exec_path)) {
 				found = true;
 			}
 		}
