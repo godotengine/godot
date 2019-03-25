@@ -760,6 +760,11 @@ void RasterizerSceneGLES2::environment_set_ambient_light(RID p_env, const Color 
 	env->ambient_sky_contribution = p_sky_contribution;
 }
 
+void RasterizerSceneGLES2::environment_set_linear_canvas(RID p_env, bool p_linear_canvas) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+}
+
 void RasterizerSceneGLES2::environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);

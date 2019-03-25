@@ -110,6 +110,11 @@ void Environment::set_ambient_light_sky_contribution(float p_energy) {
 	ambient_sky_contribution = p_energy;
 	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
 }
+void Environment::set_linear_canvas(bool p_linear_canvas) {
+
+	linear_canvas = p_linear_canvas;
+	VS::get_singleton()->environment_set_linear_canvas(environment, p_linear_canvas);
+}
 
 Environment::BGMode Environment::get_background() const {
 
@@ -164,6 +169,10 @@ float Environment::get_ambient_light_energy() const {
 float Environment::get_ambient_light_sky_contribution() const {
 
 	return ambient_sky_contribution;
+}
+bool Environment::get_linear_canvas() const {
+
+	return linear_canvas;
 }
 
 void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
@@ -343,6 +352,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"dof_blur_near_",
 		"glow_",
 		"adjustment_",
+		"background_linear_canvas",
 		NULL
 
 	};
@@ -946,6 +956,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ambient_light_color", "color"), &Environment::set_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_energy", "energy"), &Environment::set_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_sky_contribution", "energy"), &Environment::set_ambient_light_sky_contribution);
+	ClassDB::bind_method(D_METHOD("set_linear_canvas", "linear_canvas"), &Environment::set_linear_canvas);
 
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
 	ClassDB::bind_method(D_METHOD("get_sky"), &Environment::get_sky);
@@ -959,6 +970,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ambient_light_color"), &Environment::get_ambient_light_color);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_energy"), &Environment::get_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
+	ClassDB::bind_method(D_METHOD("get_linear_canvas"), &Environment::get_linear_canvas);
 
 	ADD_GROUP("Background", "background_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep"), "set_background", "get_background");
@@ -970,6 +982,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "background_linear_canvas"), "set_linear_canvas", "get_linear_canvas");
 	ADD_GROUP("Ambient Light", "ambient_light_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
@@ -1310,6 +1323,7 @@ Environment::Environment() :
 	ambient_energy = 1.0;
 	//ambient_sky_contribution = 1.0;
 	set_ambient_light_sky_contribution(1.0);
+	linear_canvas = false;
 
 	tone_mapper = TONE_MAPPER_LINEAR;
 	tonemap_exposure = 1.0;

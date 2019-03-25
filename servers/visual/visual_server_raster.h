@@ -500,6 +500,7 @@ public:
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
 	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
+	BIND2(environment_set_linear_canvas, RID, bool)
 	BIND7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	BIND13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 

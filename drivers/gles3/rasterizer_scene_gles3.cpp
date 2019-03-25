@@ -830,6 +830,13 @@ void RasterizerSceneGLES3::environment_set_ambient_light(RID p_env, const Color 
 	env->ambient_energy = p_energy;
 	env->ambient_sky_contribution = p_sky_contribution;
 }
+void RasterizerSceneGLES3::environment_set_linear_canvas(RID p_env, bool p_linear_canvas) {
+
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->linear_canvas = p_linear_canvas;
+}
 
 void RasterizerSceneGLES3::environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality) {
 
@@ -4376,7 +4383,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 				storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, true);
 
-				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, true);
+				storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, !env->linear_canvas);
 
 				storage->shaders.copy.bind();
 
