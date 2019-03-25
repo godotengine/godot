@@ -579,7 +579,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	remove_confirm->connect("confirmed", this, "_uninstall_template_confirm");
 
 	template_open = memnew(FileDialog);
-	template_open->set_title(TTR("Select template file"));
+	template_open->set_title(TTR("Select Template File"));
 	template_open->add_filter("*.tpz ; Godot Export Templates");
 	template_open->set_access(FileDialog::ACCESS_FILESYSTEM);
 	template_open->set_mode(FileDialog::MODE_OPEN_FILE);

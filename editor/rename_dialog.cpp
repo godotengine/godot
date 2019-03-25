@@ -113,7 +113,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	collapse_theme->set_icon("unchecked", "CheckBox", collapse_theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 
 	CheckBox *chk_collapse_features = memnew(CheckBox);
-	chk_collapse_features->set_text(TTR("Advanced options"));
+	chk_collapse_features->set_text(TTR("Advanced Options"));
 	chk_collapse_features->set_theme(collapse_theme);
 	chk_collapse_features->set_focus_mode(FOCUS_NONE);
 	vbc->add_child(chk_collapse_features);

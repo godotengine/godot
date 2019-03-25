@@ -133,7 +133,7 @@ void EditorDirDialog::_make_dir() {
 
 	TreeItem *ti = tree->get_selected();
 	if (!ti) {
-		mkdirerr->set_text(TTR("Please select a base directory first"));
+		mkdirerr->set_text(TTR("Please select a base directory first."));
 		mkdirerr->popup_centered_minsize();
 		return;
 	}

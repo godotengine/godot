@@ -1174,7 +1174,7 @@ void FileSystemDock::_make_dir_confirm() {
 		return;
 	} else if (dir_name.find("/") != -1 || dir_name.find("\\") != -1 || dir_name.find(":") != -1 || dir_name.find("*") != -1 ||
 			   dir_name.find("|") != -1 || dir_name.find(">") != -1 || dir_name.ends_with(".") || dir_name.ends_with(" ")) {
-		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters"));
+		EditorNode::get_singleton()->show_warning(TTR("Provided name contains invalid characters."));
 		return;
 	}
 
@@ -2023,10 +2023,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() >= 1) {
 		if (!all_favorites) {
-			p_popup->add_item(TTR("Add to favorites"), FILE_ADD_FAVORITE);
+			p_popup->add_item(TTR("Add to Favorites"), FILE_ADD_FAVORITE);
 		}
 		if (!all_not_favorites) {
-			p_popup->add_item(TTR("Remove from favorites"), FILE_REMOVE_FAVORITE);
+			p_popup->add_item(TTR("Remove from Favorites"), FILE_REMOVE_FAVORITE);
 		}
 		p_popup->add_separator();
 	}
