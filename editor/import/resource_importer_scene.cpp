@@ -942,6 +942,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 									old_anim->copy_track(i, anim);
 								}
 							}
+							anim->set_loop(old_anim->has_loop());
 						}
 					}
 
