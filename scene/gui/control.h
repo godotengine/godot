@@ -376,6 +376,7 @@ public:
 	void show_modal(bool p_exclusive = false);
 
 	void set_theme(const Ref<Theme> &p_theme);
+	Ref<Theme> get_theme_in_use() const;
 	Ref<Theme> get_theme() const;
 
 	void set_h_size_flags(int p_flags);

@@ -2200,6 +2200,12 @@ Ref<Theme> Control::get_theme() const {
 
 	return data.theme;
 }
+Ref<Theme> Control::get_theme_in_use() const {
+	if (data.theme_owner)
+		return data.theme_owner->get_theme();
+	else
+		return Theme::get_default();
+}
 
 void Control::set_tooltip(const String &p_tooltip) {
 
