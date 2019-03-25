@@ -1820,10 +1820,10 @@ void SceneTree::_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, cons
 
 	if (p_set) {
 		//set argument
-		Error err = encode_variant(*p_arg[0], NULL, len);
+		Error err = encode_variant(*p_arg[0], NULL, len, !network_peer->is_object_decoding_allowed());
 		ERR_FAIL_COND(err != OK);
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &packet_cache[ofs], len);
+		encode_variant(*p_arg[0], &packet_cache[ofs], len, !network_peer->is_object_decoding_allowed());
 		ofs += len;
 
 	} else {
@@ -1832,10 +1832,10 @@ void SceneTree::_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, cons
 		packet_cache[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
-			Error err = encode_variant(*p_arg[i], NULL, len);
+			Error err = encode_variant(*p_arg[i], NULL, len, !network_peer->is_object_decoding_allowed());
 			ERR_FAIL_COND(err != OK);
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &packet_cache[ofs], len);
+			encode_variant(*p_arg[i], &packet_cache[ofs], len, !network_peer->is_object_decoding_allowed());
 			ofs += len;
 		}
 	}
@@ -2018,7 +2018,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 
 					ERR_FAIL_COND(ofs >= p_packet_len);
 					int vlen;
-					Error err = decode_variant(args[i], &p_packet[ofs], p_packet_len - ofs, &vlen);
+					Error err = decode_variant(args[i], &p_packet[ofs], p_packet_len - ofs, &vlen, network_peer->is_object_decoding_allowed());
 					ERR_FAIL_COND(err != OK);
 					//args[i]=p_packet[3+i];
 					argp[i] = &args[i];
@@ -2044,7 +2044,7 @@ void SceneTree::_network_process_packet(int p_from, const uint8_t *p_packet, int
 				ERR_FAIL_COND(ofs >= p_packet_len);
 
 				Variant value;
-				decode_variant(value, &p_packet[ofs], p_packet_len - ofs);
+				decode_variant(value, &p_packet[ofs], p_packet_len - ofs, NULL, network_peer->is_object_decoding_allowed());
 
 				bool valid;
 
