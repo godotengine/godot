@@ -31,6 +31,8 @@
 #ifndef TEST_PLUGIN_H
 #define TEST_PLUGIN_H
 
+#include "test_log.h"
+
 #include "editor/editor_plugin.h"
 #include "editor/editor_run.h"
 #include "editor/script_editor_debugger.h"
@@ -51,6 +53,9 @@ protected:
 
 private:
 	EditorRun m_editor_run;
+	bool m_is_testing;
+
+	void _display_results();
 };
 
 class TestPanel : public HBoxContainer {
@@ -61,6 +66,19 @@ public:
 
 protected:
 	static void _bind_methods();
+
+private:
+	VBoxContainer *m_files;
+	VBoxContainer *m_tests;
+	VBoxContainer *m_logs;
+
+	typedef Ref<TestLog> RefTestLog;
+	typedef HashMap<String, RefTestLog> TestFuncLogMap;
+	HashMap<String, TestFuncLogMap> m_results;
+	void _display_tests(String p_filename);
+	void _display_logs(String p_filename, String p_method);
+
+	void _display_results();
 };
 
 class TestPlugin : public EditorPlugin {

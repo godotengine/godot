@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  method_override.cpp                                                  */
+/*  method_watcher.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,29 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "method_override.h"
+#include "method_watcher.h"
 
-void MethodOverride::bind_method(const String &p_name, const Variant &p_return) {
+void MethodWatcher::bind_method(const String &p_name, const Variant &p_return) {
 	MethodInfo mi;
 	mi.m_return = p_return;
 	m_methods.insert(p_name, mi)->get();
 }
 
-void MethodOverride::add_property(const String &p_name, const StringName p_setter, const StringName p_getter) {
+void MethodWatcher::add_property(const String &p_name, const StringName p_setter, const StringName p_getter) {
 	SetGetPair setget;
 	setget.first = p_setter;
 	setget.second = p_getter;
 	m_properties.insert(p_name, setget);
 }
 
-const Vector<MethodOverride::Args> MethodOverride::get_calls(const String &p_name) const {
+const Vector<MethodWatcher::Args> MethodWatcher::get_calls(const String &p_name) const {
 	MethodMap::Element *method = m_methods.find(p_name);
 	if (method) {
 		return method->get().m_calls;
 	}
+	return Vector<MethodWatcher::Args>();
 }
 
-Variant MethodOverride::get(const Variant &p_key, bool *r_valid) {
+Variant MethodWatcher::get(const Variant &p_key, bool *r_valid) {
 	const PropertyMap::Element *prop = m_properties.find(p_key);
 	if (prop) {
 		const StringName &second = prop->get().second;
@@ -68,7 +69,7 @@ Variant MethodOverride::get(const Variant &p_key, bool *r_valid) {
 	return Variant();
 }
 
-void MethodOverride::set(const Variant &p_key, const Variant &p_value, bool *r_valid) {
+void MethodWatcher::set(const Variant &p_key, const Variant &p_value, bool *r_valid) {
 	const PropertyMap::Element *prop = m_properties.find(p_key);
 	if (prop) {
 		const StringName &first = prop->get().first;
@@ -85,7 +86,7 @@ void MethodOverride::set(const Variant &p_key, const Variant &p_value, bool *r_v
 	}
 }
 
-Variant MethodOverride::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant MethodWatcher::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	MethodMap::Element *method = m_methods.find(p_method);
 	r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 	MethodInfo *info = NULL;
@@ -114,6 +115,6 @@ Variant MethodOverride::call(const StringName &p_method, const Variant **p_args,
 	return Variant();
 }
 
-bool MethodOverride::has_method(const StringName &p_method) const {
+bool MethodWatcher::has_method(const StringName &p_method) const {
 	return m_methods.find(p_method) != NULL;
 }

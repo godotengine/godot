@@ -220,7 +220,7 @@ bool ProxyScript::is_placeholder_fallback_enabled() const {
 	return false;
 }
 
-Variant ProxyScriptInstance::bind_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant ProxyScriptInstance::_bind_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.argument = p_argcount;
 		r_error.CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -241,7 +241,7 @@ Variant ProxyScriptInstance::bind_method(const Variant **p_args, int p_argcount,
 	bind_method(name, *p_args[1]);
 	return Variant();
 }
-Variant ProxyScriptInstance::add_property(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant ProxyScriptInstance::_add_property(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	if (p_argcount < 3) {
 		r_error.argument = p_argcount;
 		r_error.CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -278,10 +278,10 @@ Variant ProxyScriptInstance::add_property(const Variant **p_args, int p_argcount
 }
 
 void ProxyScriptInstance::bind_method(const String &p_name, const Variant &p_return) {
-	m_method_override.bind_method(p_name, p_return);
+	m_method_watcher.bind_method(p_name, p_return);
 }
 void ProxyScriptInstance::add_property(const String &p_name, const StringName p_setter, const StringName p_getter) {
-	m_method_override.add_property(p_name, p_setter, p_getter);
+	m_method_watcher.add_property(p_name, p_setter, p_getter);
 }
 
 ProxyScriptInstance::ProxyScriptInstance(Ref<ProxyScript> script, ScriptInstance *script_instance) {
@@ -291,7 +291,7 @@ ProxyScriptInstance::ProxyScriptInstance(Ref<ProxyScript> script, ScriptInstance
 
 bool ProxyScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	bool valid = false;
-	m_method_override.set(p_name, p_value, &valid);
+	m_method_watcher.set(p_name, p_value, &valid);
 	if (valid) {
 		return true;
 	}
@@ -302,7 +302,7 @@ bool ProxyScriptInstance::set(const StringName &p_name, const Variant &p_value) 
 }
 bool ProxyScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	bool valid = false;
-	r_ret = m_method_override.get(p_name, &valid);
+	r_ret = m_method_watcher.get(p_name, &valid);
 	if (valid) {
 		return true;
 	}
@@ -341,7 +341,7 @@ void ProxyScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	}
 }
 bool ProxyScriptInstance::has_method(const StringName &p_method) const {
-	if (m_method_override.has_method(p_method)) {
+	if (m_method_watcher.has_method(p_method)) {
 		return true;
 	}
 	if (m_script_instance != NULL) {
@@ -357,12 +357,12 @@ Variant ProxyScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLAR
 }
 Variant ProxyScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	if (p_method == "bind_method") {
-		return bind_method(p_args, p_argcount, r_error);
+		return _bind_method(p_args, p_argcount, r_error);
 	}
 	if (p_method == "add_property") {
-		return add_property(p_args, p_argcount, r_error);
+		return _add_property(p_args, p_argcount, r_error);
 	}
-	Variant result = m_method_override.call(p_method, p_args, p_argcount, r_error);
+	Variant result = m_method_watcher.call(p_method, p_args, p_argcount, r_error);
 	if (r_error.error == Variant::CallError::CALL_OK) {
 		return result;
 	}
@@ -378,14 +378,14 @@ void ProxyScriptInstance::call_multilevel(const StringName &p_method, VARIANT_AR
 }
 void ProxyScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
 	Variant::CallError ce;
-	m_method_override.call(p_method, p_args, p_argcount, ce);
+	m_method_watcher.call(p_method, p_args, p_argcount, ce);
 	if (ce.error != Variant::CallError::CALL_OK && m_script_instance != NULL) {
 		m_script_instance->call_multilevel(p_method, p_args, p_argcount);
 	}
 }
 void ProxyScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
 	Variant::CallError ce;
-	m_method_override.call(p_method, p_args, p_argcount, ce);
+	m_method_watcher.call(p_method, p_args, p_argcount, ce);
 	if (ce.error != Variant::CallError::CALL_OK && m_script_instance != NULL) {
 		return m_script_instance->call_multilevel_reversed(p_method, p_args, p_argcount);
 	}
@@ -457,6 +457,6 @@ ProxyScriptInstance::~ProxyScriptInstance() {
 	}
 }
 
-const Vector<MethodOverride::Args> ProxyScriptInstance::get_calls(const String &p_name) const {
-	return m_method_override.get_calls(p_name);
+const Vector<MethodWatcher::Args> ProxyScriptInstance::get_calls(const String &p_name) const {
+	return m_method_watcher.get_calls(p_name);
 }

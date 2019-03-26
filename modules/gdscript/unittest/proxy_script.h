@@ -31,7 +31,7 @@
 #ifndef PROXY_SCRIPT_H
 #define PROXY_SCRIPT_H
 
-#include "method_override.h"
+#include "method_watcher.h"
 
 #include "core/script_language.h"
 
@@ -92,10 +92,10 @@ class ProxyScriptInstance : public ScriptInstance {
 private:
 	Ref<ProxyScript> m_script;
 	ScriptInstance *m_script_instance;
-	mutable MethodOverride m_method_override;
+	mutable MethodWatcher m_method_watcher;
 
-	Variant bind_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant add_property(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _bind_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _add_property(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 	void bind_method(const String &p_name, const Variant &p_return);
 	void add_property(const String &p_name, const StringName p_setter, const StringName p_getter);
@@ -135,7 +135,7 @@ public:
 	virtual ScriptLanguage *get_language();
 	virtual ~ProxyScriptInstance();
 
-	const Vector<MethodOverride::Args> get_calls(const String &p_name) const;
+	const Vector<MethodWatcher::Args> get_calls(const String &p_name) const;
 };
 
 #endif // PROXY_SCRIPT_H

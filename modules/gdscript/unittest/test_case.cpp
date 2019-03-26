@@ -142,28 +142,28 @@ bool TestCase::can_assert() const {
 void TestCase::assert_equal(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left != p_right) {
-		assert(p_left, p_right, "{p_message}{p_left} != {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} != {right}", p_message);
 	}
 }
 
 void TestCase::assert_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left != p_right) {
-		assert(p_left, p_right, "{p_message}{p_left} == {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} == {right}", p_message);
 	}
 }
 
 void TestCase::assert_true(const Variant &p_value, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!p_value) {
-		assert(p_value, "{p_message}{p_value} is false", p_message);
+		assert(p_value, "{message}{p_value} is false", p_message);
 	}
 }
 
 void TestCase::assert_false(const Variant &p_value, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_value) {
-		assert(p_value, "{p_message}{p_value} is true", p_message);
+		assert(p_value, "{message}{p_value} is true", p_message);
 	}
 }
 
@@ -173,7 +173,7 @@ void TestCase::assert_is(const Variant &p_left, const Ref<GDScriptNativeClass> p
 	const String &klass = obj->get_class();
 	const String &inherits = p_right->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
-		assert(klass, inherits, p_message, "{p_message}{p_left} is not {p_right}");
+		assert(klass, inherits, p_message, "{message}{left} is not {right}");
 	}
 }
 
@@ -183,21 +183,21 @@ void TestCase::assert_is_not(const Variant &p_left, const Ref<GDScriptNativeClas
 	const String &klass = obj->get_class();
 	const String &inherits = p_right->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
-		assert(klass, inherits, p_message, "{p_message}{p_left} is {p_right}");
+		assert(klass, inherits, p_message, "{message}{left} is {right}");
 	}
 }
 
 void TestCase::assert_is_nil(const Variant &p_value, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (Variant::NIL != p_value.get_type()) {
-		assert(p_value, "{p_message}{p_value} is not null", p_message);
+		assert(p_value, "{message}{p_value} is not null", p_message);
 	}
 }
 
 void TestCase::assert_is_not_nil(const Variant &p_value, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (Variant::NIL == p_value.get_type()) {
-		assert(p_value, "{p_message}{p_value} is null", p_message);
+		assert(p_value, "{message}{p_value} is null", p_message);
 	}
 }
 
@@ -212,7 +212,7 @@ void TestCase::assert_in(const Variant &p_left, const Variant &p_right, const St
 		is_in = collection.has(p_left);
 	}
 	if (!is_in) {
-		assert(p_left, p_right, "{p_message}{p_left} is not in {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} is not in {right}", p_message);
 	}
 }
 
@@ -227,76 +227,76 @@ void TestCase::assert_not_in(const Variant &p_left, const Variant &p_right, cons
 		is_in = collection.has(p_left);
 	}
 	if (is_in) {
-		assert(p_left, p_right, "{p_message}{p_left} is in {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} is in {right}", p_message);
 	}
 }
 
 void TestCase::assert_is_type(const Variant &p_left, const Variant::Type type, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left.get_type() != type) {
-		assert(p_left, Variant::get_type_name(type), "{p_message}{p_left} is not {p_right}", p_message);
+		assert(p_left, Variant::get_type_name(type), "{message}{left} is not {right}", p_message);
 	}
 }
 
 void TestCase::assert_is_not_type(const Variant &p_left, const Variant::Type type, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left.get_type() == type) {
-		assert(p_left, Variant::get_type_name(type), "{p_message}{p_left} is {p_right}", p_message);
+		assert(p_left, Variant::get_type_name(type), "{message}{left} is {right}", p_message);
 	}
 }
 
 void TestCase::assert_aprox_equal(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!Math::is_equal_approx(p_left, p_right)) {
-		assert(p_left, p_right, "{p_message}{p_left} is not close to {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} is not close to {right}", p_message);
 	}
 }
 
 void TestCase::assert_aprox_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (Math::is_equal_approx(p_left, p_right)) {
-		assert(p_left, p_right, "{p_message}{p_left} is close to {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} is close to {right}", p_message);
 	}
 }
 void TestCase::assert_greater(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left == p_right || p_left < p_right) {
-		assert(p_left, p_right, "{p_message}{p_left} <= {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} <= {right}", p_message);
 	}
 }
 
 void TestCase::assert_greater_equal(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left < p_right) {
-		assert(p_left, p_right, "{p_message}{p_left} < {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} < {right}", p_message);
 	}
 }
 
 void TestCase::assert_less(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left == p_right || p_right < p_left) {
-		assert(p_left, p_right, "{p_message}{p_left} >= {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} >= {right}", p_message);
 	}
 }
 
 void TestCase::assert_less_equal(const Variant &p_left, const Variant &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_right < p_left) {
-		assert(p_left, p_right, "{p_message}{p_left} > {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} > {right}", p_message);
 	}
 }
 
 void TestCase::assert_match(const String &p_left, const String &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!p_left.match(p_right)) {
-		assert(p_left, p_right, "{p_message}{p_left} does not match {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} does not match {right}", p_message);
 	}
 }
 
 void TestCase::assert_not_match(const String &p_left, const String &p_right, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (p_left.match(p_right)) {
-		assert(p_left, p_right, "{p_message}{p_left} matches {p_right}", p_message);
+		assert(p_left, p_right, "{message}{left} matches {right}", p_message);
 	}
 }
 
@@ -378,14 +378,14 @@ void TestCase::watch_all_signals(Object *p_object) {
 void TestCase::assert_signal_called(const Object *p_object, const String &p_signal, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->called(p_object, p_signal)) {
-		assert(p_object, p_signal, p_message, "{p_message}{p_left}.{p_right} was not called");
+		assert(p_object, p_signal, p_message, "{message}{left}.{right} was not called");
 	}
 }
 
 void TestCase::assert_signal_called_once(const Object *p_object, const String &p_signal, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->called_once(p_object, p_signal)) {
-		assert(p_object, p_signal, p_message, "{p_message}{p_left}.{p_right} was not called exactly once");
+		assert(p_object, p_signal, p_message, "{message}{left}.{right} was not called exactly once");
 	}
 }
 
@@ -394,7 +394,7 @@ Variant TestCase::_assert_signal_called_with(const Variant **p_args, int p_argco
 	SignalWatcher::Params params;
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->called_with(params.m_object, params.m_signal, params.m_arguments)) {
-			assert("invalid", "error", "{p_message}{p_left}.{p_right} was not called with");
+			assert("invalid", "error", "{message}{left}.{right} was not called with");
 		}
 	}
 	return Variant();
@@ -405,7 +405,7 @@ Variant TestCase::_assert_signal_called_once_with(const Variant **p_args, int p_
 	SignalWatcher::Params params;
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->called_once_with(params.m_object, params.m_signal, params.m_arguments)) {
-			assert(params.m_object, params.m_signal, "{p_message}{p_left}.{p_right} was not called exactly once", "");
+			assert(params.m_object, params.m_signal, "{message}{left}.{right} was not called exactly once", "");
 		}
 	}
 	return Variant();
@@ -416,7 +416,7 @@ Variant TestCase::_assert_signal_any_call(const Variant **p_args, int p_argcount
 	SignalWatcher::Params params;
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->any_call(params.m_object, params.m_signal, params.m_arguments)) {
-			assert("invalid", "error", "{p_message}{p_left}.{p_right} was not called ");
+			assert("invalid", "error", "{message}{left}.{right} was not called ");
 		}
 	}
 	return Variant();
@@ -434,7 +434,7 @@ void TestCase::assert_signal_has_calls(const Object *p_object, const String &p_s
 void TestCase::assert_signal_not_called(const Object *p_object, const String &p_signal, const String &p_message) const {
 	ERR_FAIL_COND(!can_assert());
 	if (!m_signal_watcher->not_called(p_object, p_signal)) {
-		assert(p_object, p_signal, p_message, "{p_message}{p_left}.{p_right} was not called");
+		assert(p_object, p_signal, p_message, "{message}{left}.{right} was not called");
 	}
 }
 
@@ -464,16 +464,21 @@ Object *TestCase::mock(Object *p_object) {
 	return p_object;
 }
 
+int TestCase::get_mock_call_count(const Object *p_object, const String &p_method) const {
+	ProxyScriptInstance *proxy_script_instance = dynamic_cast<ProxyScriptInstance *>(p_object->get_script_instance());
+	ERR_FAIL_COND_V(!proxy_script_instance, -1);
+	return proxy_script_instance->get_calls(p_method).size();
+}
+
 Array TestCase::get_mock_calls(const Object *p_object, const String &p_method) const {
 	Array result;
 	ProxyScriptInstance *proxy_script_instance = dynamic_cast<ProxyScriptInstance*>(p_object->get_script_instance());
-	if (proxy_script_instance) {
-		const Vector<MethodOverride::Args> calls = proxy_script_instance->get_calls(p_method);
-		int size = calls.size();
-		result.resize(size);
-		for (int i = 0; i < size; i++) {
-			result[i] = calls[i];
-		}
+	ERR_FAIL_COND_V(!proxy_script_instance, result);
+	const Vector<MethodWatcher::Args>& calls = proxy_script_instance->get_calls(p_method);
+	int size = calls.size();
+	result.resize(size);
+	for (int i = 0; i < size; i++) {
+		result[i] = calls[i];
 	}
 	return result;
 }

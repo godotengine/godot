@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  method_override.h                                                    */
+/*  method_watcher.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -36,13 +36,12 @@
 #include "core/pair.h"
 #include "core/reference.h"
 
-class MethodOverride {
+class MethodWatcher {
 public:
 	typedef Pair<StringName, StringName> SetGetPair;
 	typedef Map<StringName, SetGetPair> PropertyMap;
 
 	typedef Vector<Variant> Args;
-
 	struct MethodInfo {
 		Variant m_return;
 		Vector<Args> m_calls;

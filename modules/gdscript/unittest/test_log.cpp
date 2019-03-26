@@ -32,9 +32,9 @@
 
 #include "core/os/os.h"
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message) {
+Ref<TestLog::LogMessage> TestLog::LogMessage::log(LogLevel p_level, uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
 	Ref<LogMessage> message(memnew(LogMessage));
-	message->m_time = OS::get_singleton()->get_unix_time();
+	message->m_time = time;
 	message->m_level = p_level;
 	message->m_script_path = p_script_path;
 	message->m_test_func = p_test_func;
@@ -42,28 +42,28 @@ Ref<TestLog::LogMessage> TestLog::LogMessage::log(LogLevel p_level, const String
 	return message;
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::trace(const String &p_script_path, const String &p_test_func, const String &p_message) {
-	return log(TRACE, p_script_path, p_test_func, p_message);
+Ref<TestLog::LogMessage> TestLog::LogMessage::trace(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(TRACE, time, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::debug(const String &p_script_path, const String &p_test_func, const String &p_message) {
-	return log(DEBUG, p_script_path, p_test_func, p_message);
+Ref<TestLog::LogMessage> TestLog::LogMessage::debug(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(DEBUG, time, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::info(const String &p_script_path, const String &p_test_func, const String &p_message) {
-	return log(INFO, p_script_path, p_test_func, p_message);
+Ref<TestLog::LogMessage> TestLog::LogMessage::info(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(INFO, time, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::warn(const String &p_script_path, const String &p_test_func, const String &p_message) {
-	return log(WARN, p_script_path, p_test_func, p_message);
+Ref<TestLog::LogMessage> TestLog::LogMessage::warn(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(WARN, time, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::error(const String &p_script_path, const String &p_test_func, const String &p_message) {
-	return log(ERROR, p_script_path, p_test_func, p_message);
+Ref<TestLog::LogMessage> TestLog::LogMessage::error(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(ERROR, time, p_script_path, p_test_func, p_message);
 }
 
-Ref<TestLog::LogMessage> TestLog::LogMessage::fatal(const String &p_script_path, const String &p_test_func, const String &p_message) {
-	return log(FATAL, p_script_path, p_test_func, p_message);
+Ref<TestLog::LogMessage> TestLog::LogMessage::fatal(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message) {
+	return log(FATAL, time, p_script_path, p_test_func, p_message);
 }
 
 Color TestLog::LogMessage::level_to_color(LogLevel p_level) {
@@ -156,7 +156,7 @@ void TestLog::add_message(Ref<LogMessage> p_message) {
 }
 
 void TestLog::log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message) {
-	add_message(LogMessage::log(p_level, p_script_path, p_test_func, p_message));
+	add_message(LogMessage::log(p_level, OS::get_singleton()->get_unix_time(), p_script_path, p_test_func, p_message));
 }
 
 void TestLog::trace(const String &p_script_path, const String &p_test_func, const String &p_message) {

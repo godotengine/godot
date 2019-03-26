@@ -50,13 +50,13 @@ public:
 		GDCLASS(LogMessage, Reference);
 
 	public:
-		static Ref<LogMessage> log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message);
-		static Ref<LogMessage> trace(const String &p_script_path, const String &p_test_func, const String &p_message);
-		static Ref<LogMessage> debug(const String &p_script_path, const String &p_test_func, const String &p_message);
-		static Ref<LogMessage> info(const String &p_script_path, const String &p_test_func, const String &p_message);
-		static Ref<LogMessage> warn(const String &p_script_path, const String &p_test_func, const String &p_message);
-		static Ref<LogMessage> error(const String &p_script_path, const String &p_test_func, const String &p_message);
-		static Ref<LogMessage> fatal(const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> log(LogLevel p_level, uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> trace(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> debug(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> info(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> warn(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> error(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
+		static Ref<LogMessage> fatal(uint64_t time, const String &p_script_path, const String &p_test_func, const String &p_message);
 
 		static Color level_to_color(LogLevel level);
 		uint64_t time() const;
