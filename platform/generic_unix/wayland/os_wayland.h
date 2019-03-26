@@ -49,6 +49,19 @@
 
 class OS_Wayland : public OS_GenericUnix {
 private:
+	class WaylandOutput {
+	public:
+		WaylandOutput();
+		WaylandOutput(OS_Wayland *d_wl, struct wl_output *output);
+
+		OS_Wayland *d_wl;
+		struct wl_output *output;
+		int scale;
+		bool entered;
+	};
+
+	Vector<WaylandOutput *> outputs = {};
+
 	Vector2 _mouse_pos;
 
 	MainLoop *main_loop;
@@ -56,6 +69,7 @@ private:
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	ContextGL_EGL *context_gl_egl = NULL;
+	int scale_factor = 1;
 
 	void _initialize_wl_display();
 
@@ -83,6 +97,18 @@ private:
 	const struct wl_registry_listener registry_listener = {
 		&registry_global,
 		&registry_global_remove,
+	};
+
+	void update_scale_factor();
+
+	static void surface_enter(void *data, struct wl_surface *wl_surface,
+			struct wl_output *output);
+	static void surface_leave(void *data, struct wl_surface *wl_surface,
+			struct wl_output *output);
+
+	const struct wl_surface_listener surface_listener = {
+		.enter = surface_enter,
+		.leave = surface_leave,
 	};
 
 	static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
@@ -149,6 +175,24 @@ private:
 		&keyboard_key,
 		&keyboard_modifier,
 		&keyboard_repeat_info,
+	};
+
+	static void output_geometry(void *data, struct wl_output *output,
+			int32_t x, int32_t y,
+			int32_t physical_width, int32_t physical_height,
+			int32_t subpixel, const char *make, const char *model,
+			int32_t transform);
+	static void output_mode(void *data, struct wl_output *output,
+			uint32_t flags, int32_t width, int32_t height, int32_t refresh);
+	static void output_done(void *data, struct wl_output *output);
+	static void output_scale(void *data,
+			struct wl_output *output, int32_t factor);
+
+	const struct wl_output_listener output_listener = {
+		&output_geometry,
+		&output_mode,
+		&output_done,
+		&output_scale,
 	};
 
 protected:

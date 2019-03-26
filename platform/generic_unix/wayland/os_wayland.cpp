@@ -43,23 +43,59 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
-		d_wl->compositor = (wl_compositor *)wl_registry_bind(
-				registry, id, &wl_compositor_interface, 1);
+		d_wl->compositor = (struct wl_compositor *)wl_registry_bind(
+				registry, id, &wl_compositor_interface, 3);
 	}
 	else if (strcmp(interface, wl_seat_interface.name) == 0) {
-		d_wl->seat = (wl_seat *)wl_registry_bind(
+		d_wl->seat = (struct wl_seat *)wl_registry_bind(
 				registry, id, &wl_seat_interface, 1);
 		wl_seat_add_listener(d_wl->seat, &d_wl->seat_listener, d_wl);
 	}
 	else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		d_wl->xdgbase = (xdg_wm_base *)wl_registry_bind(
+		d_wl->xdgbase = (struct xdg_wm_base *)wl_registry_bind(
 				registry, id, &xdg_wm_base_interface, 1);
+	}
+	else if (strcmp(interface, wl_output_interface.name) == 0) {
+		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(
+				registry, id, &wl_output_interface, 3);
+		WaylandOutput *output = new WaylandOutput(d_wl, wl_output);
+		d_wl->outputs.push_back(output);
+		wl_output_add_listener(wl_output, &d_wl->output_listener, output);
 	}
 }
 
 void OS_Wayland::registry_global_remove(void *data,
 		struct wl_registry *wl_registry, uint32_t name) {
 	// This space deliberately left blank
+}
+
+void OS_Wayland::update_scale_factor() {
+	int max = 1;
+	for (int i = 0; i < outputs.size(); ++i) {
+		WaylandOutput *output = outputs[i];
+		if (output->entered && output->scale > max) {
+			max = output->scale;
+		}
+	}
+	scale_factor = max;
+	wl_surface_set_buffer_scale(surface, max);
+	Size2 size = get_window_size();
+	context_gl_egl->set_window_size(size.width * max, size.height * max);
+	wl_egl_window_resize(egl_window, size.width * max, size.height * max, 0, 0);
+}
+
+void OS_Wayland::surface_enter(void *data, struct wl_surface *wl_surface,
+			struct wl_output *wl_output) {
+	WaylandOutput *output = (WaylandOutput *)wl_output_get_user_data(wl_output);
+	output->entered = true;
+	output->d_wl->update_scale_factor();
+}
+
+void OS_Wayland::surface_leave(void *data, struct wl_surface *wl_surface,
+			struct wl_output *wl_output) {
+	WaylandOutput *output = (WaylandOutput *)wl_output_get_user_data(wl_output);
+	output->entered = false;
+	output->d_wl->update_scale_factor();
 }
 
 void OS_Wayland::xdg_toplevel_configure(void *data,
@@ -69,8 +105,10 @@ void OS_Wayland::xdg_toplevel_configure(void *data,
 	if (!d_wl->context_gl_egl) {
 		return;
 	}
-	d_wl->context_gl_egl->set_window_size(width, height);
-	wl_egl_window_resize(d_wl->egl_window, width, height, 0, 0);
+	d_wl->context_gl_egl->set_window_size(
+			width * d_wl->scale_factor, height * d_wl->scale_factor);
+	wl_egl_window_resize(d_wl->egl_window,
+			width * d_wl->scale_factor, height * d_wl->scale_factor, 0, 0);
 }
 
 void OS_Wayland::xdg_toplevel_close(void *data,
@@ -122,8 +160,8 @@ void OS_Wayland::pointer_enter(void *data,
 	float x = (float)wl_fixed_to_double(surface_x);
 	float y = (float)wl_fixed_to_double(surface_y);
 	Vector2 myVec = Vector2();
-	myVec.x = x;
-	myVec.y = y;
+	myVec.x = x * d_wl->scale_factor;
+	myVec.y = y * d_wl->scale_factor;
 	d_wl->_mouse_pos = myVec;
 	mm->set_position(d_wl->_mouse_pos);
 	mm->set_global_position(d_wl->_mouse_pos);
@@ -145,8 +183,8 @@ void OS_Wayland::pointer_motion(void *data,
 	float x = (float)wl_fixed_to_double(surface_x);
 	float y = (float)wl_fixed_to_double(surface_y);
 	Vector2 myVec = Vector2();
-	myVec.x = x;
-	myVec.y = y;
+	myVec.x = x * d_wl->scale_factor;
+	myVec.y = y * d_wl->scale_factor;
 	d_wl->_mouse_pos = myVec;
 	mm->set_position(d_wl->_mouse_pos);
 	mm->set_global_position(d_wl->_mouse_pos);
@@ -301,6 +339,29 @@ void OS_Wayland::keyboard_repeat_info(void *data,
 	// TODO
 }
 
+void OS_Wayland::output_geometry(void *data, struct wl_output *output,
+		int32_t x, int32_t y,
+		int32_t physical_width, int32_t physical_height,
+		int32_t subpixel, const char *make, const char *model,
+		int32_t transform) {
+	// This space deliberately left blank
+}
+
+void OS_Wayland::output_mode(void *data, struct wl_output *output,
+		uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
+	// TODO
+}
+
+void OS_Wayland::output_done(void *data, struct wl_output *output) {
+	// This space deliberately left blank
+}
+
+void OS_Wayland::output_scale(void *data,
+		struct wl_output *wl_output, int32_t factor) {
+	WaylandOutput *output = (WaylandOutput *)data;
+	output->scale = factor;
+}
+
 void OS_Wayland::_initialize_wl_display() {
 	display = NULL;
 	display = wl_display_connect(NULL);
@@ -334,6 +395,7 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired,
 		print_verbose("Error creating Wayland surface");
 		exit(1);
 	}
+	wl_surface_add_listener(surface, &surface_listener, this);
 
 	egl_window = wl_egl_window_create(surface,
 			p_desired.width, p_desired.height);
@@ -487,7 +549,8 @@ void OS_Wayland::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen)
 }
 
 Size2 OS_Wayland::get_window_size() const {
-	return Size2(context_gl_egl->get_window_width(), context_gl_egl->get_window_height());
+	return Size2(context_gl_egl->get_window_width(),
+			context_gl_egl->get_window_height());
 }
 
 bool OS_Wayland::get_window_per_pixel_transparency_enabled() const {
@@ -543,4 +606,12 @@ void OS_Wayland::set_icon(const Ref<Image> &p_icon) {
 
 void OS_Wayland::process_events() {
 	wl_display_dispatch(display);
+}
+
+OS_Wayland::WaylandOutput::WaylandOutput(
+		OS_Wayland *d_wl, struct wl_output *output) {
+	this->d_wl = d_wl;
+	this->output = output;
+	this->scale = 1;
+	this->entered = false;
 }
