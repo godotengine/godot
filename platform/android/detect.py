@@ -285,6 +285,9 @@ def configure(env):
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
 
+    if get_platform(env["ndk_platform"]) >= 24:
+        env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
+
     env["neon_enabled"] = False
     if env["android_arch"] == "x86":
         target_opts = ["-target", "i686-none-linux-android"]

@@ -79,7 +79,7 @@ void JavaScriptToolsEditorPlugin::_zip_file(String p_path, String p_base_path, z
 		return;
 	}
 	Vector<uint8_t> data;
-	int len = f->get_len();
+	uint64_t len = f->get_len();
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
 	f->close();

@@ -230,8 +230,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				cd->files[id]->seek(offset);
 				Vector<uint8_t> buf;
 				buf.resize(blocklen);
-				int read = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
-				ERR_CONTINUE(read < 0);
+				uint32_t read = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
 
 				print_verbose("GET BLOCK - offset: " + itos(offset) + ", blocklen: " + itos(blocklen));
 

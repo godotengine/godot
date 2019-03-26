@@ -363,6 +363,7 @@ def configure(env):
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
     env.Append(CPPDEFINES=["X11_ENABLED", "UNIX_ENABLED"])
+    env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
     env.Append(CPPDEFINES=["VULKAN_ENABLED"])
     if not env["builtin_vulkan"]:
