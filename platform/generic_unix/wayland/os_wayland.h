@@ -75,6 +75,8 @@ private:
 	struct xkb_keymap *xkb_keymap = NULL;
 	struct xkb_state *xkb_state = NULL;
 
+	void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
+
 	static void registry_global(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version);
 	static void registry_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
 

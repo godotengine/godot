@@ -234,6 +234,17 @@ void OS_Wayland::pointer_axis_discrete(void *data,
 	// This space deliberately left blank
 }
 
+void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
+	ev->set_control(xkb_state_mod_name_is_active(xkb_state,
+				XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0);
+	ev->set_alt(xkb_state_mod_name_is_active(xkb_state,
+				XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE) > 0);
+	ev->set_metakey(xkb_state_mod_name_is_active(xkb_state,
+				XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0);
+	ev->set_shift(xkb_state_mod_name_is_active(xkb_state,
+				XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0);
+}
+
 void OS_Wayland::keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
 		uint32_t format, int32_t fd, uint32_t size) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
@@ -273,6 +284,7 @@ void OS_Wayland::keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 	ev->set_pressed(state == WL_KEYBOARD_KEY_STATE_PRESSED);
 	ev->set_unicode(utf32);
 	ev->set_scancode(KeyMappingXKB::get_keycode(keysym));
+	d_wl->_set_modifier_for_event(ev);
 	d_wl->input->parse_input_event(ev);
 }
 
