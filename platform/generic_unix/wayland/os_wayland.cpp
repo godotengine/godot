@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "key_mapping_xkb.h"
 #include "os_wayland.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -35,6 +36,7 @@
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include <linux/input-event-codes.h>
+#include <sys/mman.h>
 
 void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 		uint32_t id, const char *interface, uint32_t version) {
@@ -232,35 +234,54 @@ void OS_Wayland::pointer_axis_discrete(void *data,
 	// This space deliberately left blank
 }
 
-void OS_Wayland::keyboard_keymap(void *data,
-		struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
-	// TODO
+void OS_Wayland::keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
+		uint32_t format, int32_t fd, uint32_t size) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	char *keymap_str = (char *)mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+	xkb_keymap_unref(d_wl->xkb_keymap);
+	d_wl->xkb_keymap = xkb_keymap_new_from_string(d_wl->xkb_context, keymap_str,
+			XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+	munmap(keymap_str, size);
+	close(fd);
+	xkb_state_unref(d_wl->xkb_state);
+	d_wl->xkb_state = xkb_state_new(d_wl->xkb_keymap);
 }
 
-void OS_Wayland::keyboard_enter(void *data,
-		struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
+void OS_Wayland::keyboard_enter(void *data, struct wl_keyboard *wl_keyboard,
+		uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 	if (d_wl->main_loop) {
 		d_wl->main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	}
 }
 
-void OS_Wayland::keyboard_leave(void *data,
-		struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
+void OS_Wayland::keyboard_leave(void *data, struct wl_keyboard *wl_keyboard,
+		uint32_t serial, struct wl_surface *surface) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 	if (d_wl->main_loop) {
 		d_wl->main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	}
 }
 
-void OS_Wayland::keyboard_key(void *data,
-		struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
-	// TODO
+void OS_Wayland::keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
+		uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	xkb_keysym_t keysym = xkb_state_key_get_one_sym(d_wl->xkb_state, key + 8);
+	uint32_t utf32 = xkb_keysym_to_utf32(keysym);
+	Ref<InputEventKey> ev;
+	ev.instance();
+	ev->set_pressed(state == WL_KEYBOARD_KEY_STATE_PRESSED);
+	ev->set_unicode(utf32);
+	ev->set_scancode(KeyMappingXKB::get_keycode(keysym));
+	d_wl->input->parse_input_event(ev);
 }
 
-void OS_Wayland::keyboard_modifier(void *data,
-		struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
-	// TODO
+void OS_Wayland::keyboard_modifier(void *data, struct wl_keyboard *wl_keyboard,
+		uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
+		uint32_t mods_locked, uint32_t group) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	xkb_state_update_mask(d_wl->xkb_state, mods_depressed, mods_latched,
+			mods_locked, 0, 0, group);
 }
 
 void OS_Wayland::keyboard_repeat_info(void *data,
@@ -283,7 +304,8 @@ void OS_Wayland::_initialize_wl_display() {
 	wl_display_roundtrip(display);
 }
 
-Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_driver) {
+Error OS_Wayland::initialize_display(const VideoMode &p_desired,
+		int p_video_driver) {
 	_initialize_wl_display();
 
 	main_loop = NULL;

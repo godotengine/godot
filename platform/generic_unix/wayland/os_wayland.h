@@ -41,6 +41,7 @@
 #include <wayland-client.h>
 #include <wayland-egl.h>
 #include <wayland-server.h>
+#include <xkbcommon/xkbcommon.h>
 
 #include "context_egl_wayland.h"
 #include "wayland_protocol/xdg-shell.h"
@@ -69,6 +70,10 @@ private:
 	struct xdg_toplevel *xdgtoplevel;
 	struct wl_seat *seat;
 	struct wl_pointer *mouse_pointer;
+
+	struct xkb_context *xkb_context = NULL;
+	struct xkb_keymap *xkb_keymap = NULL;
+	struct xkb_state *xkb_state = NULL;
 
 	static void registry_global(void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version);
 	static void registry_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name);
