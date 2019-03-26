@@ -170,8 +170,8 @@ public:
 
 		while (true) {
 			uint8_t bytes[4096];
-			int read = f->get_buffer(bytes, 4096);
-			if (read < 1) {
+			uint64_t read = f->get_buffer(bytes, 4096);
+			if (read == 0) {
 				break;
 			}
 			err = peer->put_data(bytes, read);

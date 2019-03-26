@@ -1157,8 +1157,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	save_ustring(fw, get_ustring(f)); //type
 
-	size_t md_ofs = f->get_position();
-	size_t importmd_ofs = f->get_64();
+	uint64_t md_ofs = f->get_position();
+	uint64_t importmd_ofs = f->get_64();
 	fw->store_64(0); //metadata offset
 
 	for (int i = 0; i < 14; i++) {

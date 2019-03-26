@@ -441,10 +441,10 @@ Error PluginScript::load_source_code(const String &p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err, err, "Cannot open file '" + p_path + "'.");
 
-	int len = f->get_len();
+	uint64_t len = f->get_len();
 	sourcef.resize(len + 1);
 	uint8_t *w = sourcef.ptrw();
-	int r = f->get_buffer(w, len);
+	uint64_t r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);

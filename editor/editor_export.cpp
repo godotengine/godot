@@ -1222,12 +1222,12 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	}
 
 	for (int i = 0; i < pd.file_ofs.size(); i++) {
-		int string_len = pd.file_ofs[i].path_utf8.length();
-		int pad = _get_pad(4, string_len);
+		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
+		uint32_t pad = _get_pad(4, string_len);
 
 		fhead->store_32(string_len + pad);
 		fhead->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
-		for (int j = 0; j < pad; j++) {
+		for (uint32_t j = 0; j < pad; j++) {
 			fhead->store_8(0);
 		}
 
@@ -1269,8 +1269,8 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	uint8_t buf[bufsize];
 
 	while (true) {
-		int got = ftmp->get_buffer(buf, bufsize);
-		if (got <= 0) {
+		uint64_t got = ftmp->get_buffer(buf, bufsize);
+		if (got == 0) {
 			break;
 		}
 		f->store_buffer(buf, got);
@@ -1280,13 +1280,13 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	if (p_embed) {
 		// Ensure embedded data ends at a 64-bit multiple
-		int64_t embed_end = f->get_position() - embed_pos + 12;
-		int pad = embed_end % 8;
-		for (int i = 0; i < pad; i++) {
+		uint64_t embed_end = f->get_position() - embed_pos + 12;
+		uint64_t pad = embed_end % 8;
+		for (uint64_t i = 0; i < pad; i++) {
 			f->store_8(0);
 		}
 
-		int64_t pck_size = f->get_position() - pck_start_pos;
+		uint64_t pck_size = f->get_position() - pck_start_pos;
 		f->store_64(pck_size);
 		f->store_32(PACK_HEADER_MAGIC);
 

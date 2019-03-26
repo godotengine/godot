@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 
-Error PackedData::add_pack(const String &p_path, bool p_replace_files, size_t p_offset) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
 			return OK;
@@ -46,17 +46,16 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, size_t p_
 	return ERR_FILE_UNRECOGNIZED;
 }
 
-void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
-	PathMD5 pmd5(path.md5_buffer());
-	//printf("adding path %s, %lli, %lli\n", path.utf8().get_data(), pmd5.a, pmd5.b);
+void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
+	PathMD5 pmd5(p_path.md5_buffer());
 
 	bool exists = files.has(pmd5);
 
 	PackedFile pf;
 	pf.encrypted = p_encrypted;
-	pf.pack = pkg_path;
-	pf.offset = ofs;
-	pf.size = size;
+	pf.pack = p_pkg_path;
+	pf.offset = p_ofs;
+	pf.size = p_size;
 	for (int i = 0; i < 16; i++) {
 		pf.md5[i] = p_md5[i];
 	}
@@ -68,7 +67,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 
 	if (!exists) {
 		//search for dir
-		String p = path.replace_first("res://", "");
+		String p = p_path.replace_first("res://", "");
 		PackedDir *cd = root;
 
 		if (p.find("/") != -1) { //in a subdir
@@ -87,7 +86,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 				}
 			}
 		}
-		String filename = path.get_file();
+		String filename = p_path.get_file();
 		// Don't add as a file if the path points to a directory
 		if (!filename.is_empty()) {
 			cd->files.insert(filename);
@@ -126,7 +125,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, size_t p_offset) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
 		return false;
@@ -261,7 +260,7 @@ bool FileAccessPack::is_open() const {
 	return f->is_open();
 }
 
-void FileAccessPack::seek(size_t p_position) {
+void FileAccessPack::seek(uint64_t p_position) {
 	if (p_position > pf.size) {
 		eof = true;
 	} else {
@@ -276,11 +275,11 @@ void FileAccessPack::seek_end(int64_t p_position) {
 	seek(pf.size + p_position);
 }
 
-size_t FileAccessPack::get_position() const {
+uint64_t FileAccessPack::get_position() const {
 	return pos;
 }
 
-size_t FileAccessPack::get_len() const {
+uint64_t FileAccessPack::get_len() const {
 	return pf.size;
 }
 
@@ -298,18 +297,17 @@ uint8_t FileAccessPack::get_8() const {
 	return f->get_8();
 }
 
-int FileAccessPack::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(p_length < 0, -1);
 
 	if (eof) {
 		return 0;
 	}
 
-	uint64_t to_read = p_length;
+	int64_t to_read = p_length;
 	if (to_read + pos > pf.size) {
 		eof = true;
-		to_read = int64_t(pf.size) - int64_t(pos);
+		to_read = (int64_t)pf.size - (int64_t)pos;
 	}
 
 	pos += p_length;
@@ -342,7 +340,7 @@ void FileAccessPack::store_8(uint8_t p_dest) {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_buffer(const uint8_t *p_src, int p_length) {
+void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL();
 }
 
@@ -549,7 +547,7 @@ Error DirAccessPack::remove(String p_name) {
 	return ERR_UNAVAILABLE;
 }
 
-size_t DirAccessPack::get_space_left() {
+uint64_t DirAccessPack::get_space_left() {
 	return 0;
 }
 

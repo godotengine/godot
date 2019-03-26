@@ -312,7 +312,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			}
 
 			int ofs = data.size();
-			uint32_t len = f->get_len();
+			uint64_t len = f->get_len();
 			data.resize(data.size() + len + 8);
 			f->get_buffer(&data.write[ofs + 8], len);
 			memdelete(f);

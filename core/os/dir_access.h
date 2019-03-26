@@ -87,7 +87,7 @@ public:
 	virtual bool is_readable(String p_dir) { return true; };
 	virtual bool is_writable(String p_dir) { return true; };
 	static bool exists(String p_dir);
-	virtual size_t get_space_left() = 0;
+	virtual uint64_t get_space_left() = 0;
 
 	Error copy_dir(String p_from, String p_to, int p_chmod_flags = -1);
 	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);

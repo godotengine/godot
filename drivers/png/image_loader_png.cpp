@@ -37,7 +37,7 @@
 #include <string.h>
 
 Error ImageLoaderPNG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-	const size_t buffer_size = f->get_len();
+	const uint64_t buffer_size = f->get_len();
 	Vector<uint8_t> file_buffer;
 	Error err = file_buffer.resize(buffer_size);
 	if (err) {

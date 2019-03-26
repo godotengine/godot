@@ -126,7 +126,7 @@ void FileAccessNetworkClient::_thread_func() {
 				if (status != OK) {
 					fa->_respond(0, Error(status));
 				} else {
-					uint64_t len = get_64();
+					int64_t len = get_64();
 					fa->_respond(len, Error(status));
 				}
 
@@ -135,7 +135,7 @@ void FileAccessNetworkClient::_thread_func() {
 			} break;
 			case FileAccessNetwork::RESPONSE_DATA: {
 				int64_t offset = get_64();
-				uint32_t len = get_32();
+				int32_t len = get_32();
 
 				Vector<uint8_t> block;
 				block.resize(len);
@@ -219,13 +219,13 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 	thread.wait_to_finish();
 }
 
-void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
-	int page = p_offset / page_size;
+void FileAccessNetwork::_set_block(uint64_t p_offset, const Vector<uint8_t> &p_block) {
+	int32_t page = p_offset / page_size;
 	ERR_FAIL_INDEX(page, pages.size());
 	if (page < pages.size() - 1) {
 		ERR_FAIL_COND(p_block.size() != page_size);
 	} else {
-		ERR_FAIL_COND((p_block.size() != (int)(total_size % page_size)));
+		ERR_FAIL_COND((uint64_t)p_block.size() != total_size % page_size);
 	}
 
 	{
@@ -240,7 +240,7 @@ void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block)
 	}
 }
 
-void FileAccessNetwork::_respond(size_t p_len, Error p_status) {
+void FileAccessNetwork::_respond(uint64_t p_len, Error p_status) {
 	DEBUG_PRINT("GOT RESPONSE - len: " + itos(p_len) + " status: " + itos(p_status));
 	response = p_status;
 	if (response != OK) {
@@ -248,7 +248,7 @@ void FileAccessNetwork::_respond(size_t p_len, Error p_status) {
 	}
 	opened = true;
 	total_size = p_len;
-	int pc = ((total_size - 1) / page_size) + 1;
+	int32_t pc = ((total_size - 1) / page_size) + 1;
 	pages.resize(pc);
 }
 
@@ -307,8 +307,9 @@ bool FileAccessNetwork::is_open() const {
 	return opened;
 }
 
-void FileAccessNetwork::seek(size_t p_position) {
+void FileAccessNetwork::seek(uint64_t p_position) {
 	ERR_FAIL_COND_MSG(!opened, "File must be opened before use.");
+
 	eof_flag = p_position > total_size;
 
 	if (p_position >= total_size) {
@@ -322,12 +323,12 @@ void FileAccessNetwork::seek_end(int64_t p_position) {
 	seek(total_size + p_position);
 }
 
-size_t FileAccessNetwork::get_position() const {
+uint64_t FileAccessNetwork::get_position() const {
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return pos;
 }
 
-size_t FileAccessNetwork::get_len() const {
+uint64_t FileAccessNetwork::get_len() const {
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return total_size;
 }
@@ -343,7 +344,7 @@ uint8_t FileAccessNetwork::get_8() const {
 	return v;
 }
 
-void FileAccessNetwork::_queue_page(int p_page) const {
+void FileAccessNetwork::_queue_page(int32_t p_page) const {
 	if (p_page >= pages.size()) {
 		return;
 	}
@@ -354,7 +355,7 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 
 			FileAccessNetworkClient::BlockRequest br;
 			br.id = id;
-			br.offset = size_t(p_page) * page_size;
+			br.offset = (uint64_t)p_page * page_size;
 			br.size = page_size;
 			nc->block_requests.push_back(br);
 			pages.write[p_page].queued = true;
@@ -365,11 +366,9 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 	}
 }
 
-int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
+uint64_t FileAccessNetwork::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
-	ERR_FAIL_COND_V(p_length < 0, -1);
 
-	//bool eof=false;
 	if (pos + p_length > total_size) {
 		eof_flag = true;
 	}
@@ -377,18 +376,16 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 		p_length = total_size - pos;
 	}
 
-	//FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
-
 	uint8_t *buff = last_page_buff;
 
-	for (int i = 0; i < p_length; i++) {
-		int page = pos / page_size;
+	for (uint64_t i = 0; i < p_length; i++) {
+		int32_t page = pos / page_size;
 
 		if (page != last_page) {
 			buffer_mutex.lock();
 			if (pages[page].buffer.is_empty()) {
 				waiting_on_page = page;
-				for (int j = 0; j < read_ahead; j++) {
+				for (int32_t j = 0; j < read_ahead; j++) {
 					_queue_page(page + j);
 				}
 				buffer_mutex.unlock();
@@ -396,10 +393,9 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 				page_sem.wait();
 				DEBUG_PRINT("done");
 			} else {
-				for (int j = 0; j < read_ahead; j++) {
+				for (int32_t j = 0; j < read_ahead; j++) {
 					_queue_page(page + j);
 				}
-				//queue pages
 				buffer_mutex.unlock();
 			}
 

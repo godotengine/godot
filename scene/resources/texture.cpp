@@ -335,7 +335,7 @@ Ref<Image> StreamTexture2D::load_image_from_file(FileAccess *f, int p_size_limit
 
 		//mipmaps need to be read independently, they will be later combined
 		Vector<Ref<Image>> mipmap_images;
-		int total_size = 0;
+		uint64_t total_size = 0;
 
 		bool first = true;
 

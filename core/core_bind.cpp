@@ -1259,6 +1259,7 @@ String _File::get_path_absolute() const {
 
 void _File::seek(int64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND_MSG(p_position < 0, "Seek position must be a positive integer.");
 	f->seek(p_position);
 }
 
@@ -1267,12 +1268,12 @@ void _File::seek_end(int64_t p_position) {
 	f->seek_end(p_position);
 }
 
-int64_t _File::get_position() const {
+uint64_t _File::get_position() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_position();
 }
 
-int64_t _File::get_len() const {
+uint64_t _File::get_len() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_len();
 }
@@ -1317,7 +1318,7 @@ real_t _File::get_real() const {
 	return f->get_real();
 }
 
-Vector<uint8_t> _File::get_buffer(int p_length) const {
+Vector<uint8_t> _File::get_buffer(int64_t p_length) const {
 	Vector<uint8_t> data;
 	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
 
@@ -1330,8 +1331,7 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
 
 	uint8_t *w = data.ptrw();
-	int len = f->get_buffer(&w[0], p_length);
-	ERR_FAIL_COND_V(len < 0, Vector<uint8_t>());
+	int64_t len = f->get_buffer(&w[0], p_length);
 
 	if (len < p_length) {
 		data.resize(len);
@@ -1344,7 +1344,7 @@ String _File::get_as_text() const {
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
 
 	String text;
-	size_t original_pos = f->get_position();
+	uint64_t original_pos = f->get_position();
 	f->seek(0);
 
 	String l = get_line();
@@ -1473,7 +1473,7 @@ void _File::store_csv_line(const Vector<String> &p_values, const String &p_delim
 void _File::store_buffer(const Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
-	int len = p_buffer.size();
+	uint64_t len = p_buffer.size();
 	if (len == 0) {
 		return;
 	}
@@ -1721,9 +1721,9 @@ bool _Directory::dir_exists(String p_dir) {
 	return d->dir_exists(p_dir);
 }
 
-int _Directory::get_space_left() {
-	ERR_FAIL_COND_V_MSG(!is_open(), 0, "Directory must be opened before use.");
-	return d->get_space_left() / 1024 * 1024; //return value in megabytes, given binding is int
+uint64_t _Directory::get_space_left() {
+	ERR_FAIL_COND_V_MSG(!d, 0, "Directory must be opened before use.");
+	return d->get_space_left() / 1024 * 1024; // Truncate to closest MiB.
 }
 
 Error _Directory::copy(String p_from, String p_to) {

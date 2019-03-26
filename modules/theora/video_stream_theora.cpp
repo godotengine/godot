@@ -58,7 +58,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 
 #else
 
-	int bytes = file->get_buffer((uint8_t *)buffer, 4096);
+	uint64_t bytes = file->get_buffer((uint8_t *)buffer, 4096);
 	ogg_sync_wrote(&oy, bytes);
 	return (bytes);
 
@@ -176,7 +176,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	thread_eof = false;
 	//pre-fill buffer
 	int to_read = ring_buffer.space_left();
-	int read = file->get_buffer(read_buffer.ptr(), to_read);
+	uint64_t read = file->get_buffer(read_buffer.ptr(), to_read);
 	ring_buffer.write(read_buffer.ptr(), read);
 
 	thread.start(_streaming_thread, this);
@@ -632,8 +632,8 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 		//just fill back the buffer
 		if (!vs->thread_eof) {
 			int to_read = vs->ring_buffer.space_left();
-			if (to_read) {
-				int read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
+			if (to_read > 0) {
+				uint64_t read = vs->file->get_buffer(vs->read_buffer.ptr(), to_read);
 				vs->ring_buffer.write(vs->read_buffer.ptr(), read);
 				vs->thread_eof = vs->file->eof_reached();
 			}
