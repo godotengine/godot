@@ -33,7 +33,7 @@
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 
-_FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {
+_FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc, int p_self_id, int p_peer_id) {
 
 	switch (mode) {
 
@@ -49,6 +49,9 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 		} // Do not break, fall over to other sync.
 		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
 		case MultiplayerAPI::RPC_MODE_PUPPETSYNC: {
+			// Skip the rpc call if the target is ourselves
+			if (p_peer_id == p_self_id)
+				r_skip_rpc = true;
 			// Call it, sync always results in a local call.
 			return true;
 		} break;
@@ -641,7 +644,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 
 		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rpc_mode(p_method);
 		if (E) {
-			call_local_native = _should_call_local(E->get(), is_master, skip_rpc);
+			call_local_native = _should_call_local(E->get(), is_master, skip_rpc, node_id, p_peer_id);
 		}
 
 		if (call_local_native) {
@@ -649,7 +652,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		} else if (p_node->get_script_instance()) {
 			// Attempt with script.
 			RPCMode rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_method);
-			call_local_script = _should_call_local(rpc_mode, is_master, skip_rpc);
+			call_local_script = _should_call_local(rpc_mode, is_master, skip_rpc, node_id, p_peer_id);
 		}
 	}
 
@@ -702,7 +705,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rset_mode(p_property);
 		if (E) {
 
-			set_local = _should_call_local(E->get(), is_master, skip_rset);
+			set_local = _should_call_local(E->get(), is_master, skip_rset, node_id, p_peer_id);
 		}
 
 		if (set_local) {
@@ -718,7 +721,7 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 			// Attempt with script.
 			RPCMode rpc_mode = p_node->get_script_instance()->get_rset_mode(p_property);
 
-			set_local = _should_call_local(rpc_mode, is_master, skip_rset);
+			set_local = _should_call_local(rpc_mode, is_master, skip_rset, node_id, p_peer_id);
 
 			if (set_local) {
 
