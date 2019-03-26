@@ -64,6 +64,9 @@ void OS_Wayland::xdg_toplevel_configure(void *data,
 		struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height,
 		struct wl_array *states) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
+	if (!d_wl->context_gl_egl) {
+		return;
+	}
 	d_wl->context_gl_egl->set_window_size(width, height);
 	wl_egl_window_resize(d_wl->egl_window, width, height, 0, 0);
 }
@@ -285,6 +288,8 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 
 	main_loop = NULL;
 
+	xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+
 	if (compositor == NULL || xdgbase == NULL) {
 		print_verbose("Error: Wayland compositor is missing required globals");
 		exit(1);
@@ -315,7 +320,6 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 		exit(1);
 	}
 
-	context_gl_egl = NULL;
 	//TODO: check for possible context types
 	ContextGL_EGL::Driver context_type = ContextGL_EGL::Driver::GLES_3_0;
 

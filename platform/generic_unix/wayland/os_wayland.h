@@ -54,7 +54,7 @@ private:
 	InputDefault *input;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
-	ContextGL_EGL *context_gl_egl;
+	ContextGL_EGL *context_gl_egl = NULL;
 
 	void _initialize_wl_display();
 
