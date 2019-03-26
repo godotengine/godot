@@ -501,7 +501,7 @@ MainLoop *test() {
 	}
 
 	Vector<uint8_t> buf;
-	int flen = fa->get_len();
+	int64_t flen = fa->get_len();
 	buf.resize(fa->get_len() + 1);
 	fa->get_buffer(buf.ptrw(), flen);
 	buf.write[flen] = 0;

@@ -37,17 +37,17 @@ Error FileAccessBuffered::set_error(Error p_error) const {
 	return (last_error = p_error);
 };
 
-void FileAccessBuffered::set_cache_size(int p_size) {
+void FileAccessBuffered::set_cache_size(int32_t p_size) {
 
 	cache_size = p_size;
 };
 
-int FileAccessBuffered::get_cache_size() {
+int32_t FileAccessBuffered::get_cache_size() {
 
 	return cache_size;
 };
 
-int FileAccessBuffered::cache_data_left() const {
+int32_t FileAccessBuffered::cache_data_left() const {
 
 	if (file.offset >= file.size) {
 		return 0;
@@ -65,8 +65,9 @@ int FileAccessBuffered::cache_data_left() const {
 	return 0;
 };
 
-void FileAccessBuffered::seek(size_t p_position) {
+void FileAccessBuffered::seek(int64_t p_position) {
 
+	ERR_FAIL_COND(p_position < 0);
 	file.offset = p_position;
 };
 
@@ -75,12 +76,12 @@ void FileAccessBuffered::seek_end(int64_t p_position) {
 	file.offset = file.size + p_position;
 };
 
-size_t FileAccessBuffered::get_position() const {
+int64_t FileAccessBuffered::get_position() const {
 
 	return file.offset;
 };
 
-size_t FileAccessBuffered::get_len() const {
+int64_t FileAccessBuffered::get_len() const {
 
 	return file.size;
 };
@@ -105,17 +106,18 @@ uint8_t FileAccessBuffered::get_8() const {
 	return byte;
 };
 
-int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
+int64_t FileAccessBuffered::get_buffer(uint8_t *p_dest, int64_t p_length) const {
 
 	ERR_FAIL_COND_V(!file.open, -1);
+	ERR_FAIL_COND_V(p_length < 0, 0);
 
 	if (p_length > cache_size) {
 
-		int total_read = 0;
+		int64_t total_read = 0;
 
 		if (!(cache.offset == -1 || file.offset < cache.offset || file.offset >= cache.offset + cache.buffer.size())) {
 
-			int size = (cache.buffer.size() - (file.offset - cache.offset));
+			int64_t size = (cache.buffer.size() - (file.offset - cache.offset));
 			size = size - (size % 4);
 			//PoolVector<uint8_t>::Read read = cache.buffer.read();
 			//memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
@@ -126,7 +128,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 			total_read += size;
 		};
 
-		int err = read_data_block(file.offset, p_length, p_dest);
+		int64_t err = read_data_block(file.offset, p_length, p_dest);
 		if (err >= 0) {
 			total_read += err;
 			file.offset += err;
@@ -135,11 +137,11 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 		return total_read;
 	};
 
-	int to_read = p_length;
-	int total_read = 0;
+	int64_t to_read = p_length;
+	int64_t total_read = 0;
 	while (to_read > 0) {
 
-		int left = cache_data_left();
+		int32_t left = cache_data_left();
 		if (left == 0) {
 			if (to_read > 0) {
 				file.offset += to_read;
@@ -150,7 +152,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 			return left;
 		};
 
-		int r = MIN(left, to_read);
+		int64_t r = MIN(left, to_read);
 		//PoolVector<uint8_t>::Read read = cache.buffer.read();
 		//memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
 		memcpy(p_dest + total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);

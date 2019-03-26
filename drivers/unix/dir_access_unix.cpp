@@ -391,7 +391,7 @@ Error DirAccessUnix::remove(String p_path) {
 		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
 }
 
-size_t DirAccessUnix::get_space_left() {
+int64_t DirAccessUnix::get_space_left() {
 
 #ifndef NO_STATVFS
 	struct statvfs vfs;

@@ -75,7 +75,7 @@ long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 
 	FileAccess *f = *(FileAccess **)opaque;
 
-	int pos = offset;
+	int64_t pos = offset;
 	switch (origin) {
 
 		case ZLIB_FILEFUNC_SEEK_CUR:

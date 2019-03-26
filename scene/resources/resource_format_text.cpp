@@ -447,9 +447,8 @@ Error ResourceInteractiveLoaderText::poll() {
 			resource_cache.push_back(res);
 #ifdef TOOLS_ENABLED
 			//remember ID for saving
-			res->set_id_for_path(local_path,index);
+			res->set_id_for_path(local_path, index);
 #endif
-
 		}
 
 		ExtResource er;
@@ -732,7 +731,7 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 
 	String base_path = local_path.get_base_dir();
 
-	uint64_t tag_end = f->get_position();
+	int64_t tag_end = f->get_position();
 
 	while (true) {
 
@@ -936,7 +935,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 		wf->store_32(0); // reserved
 
 	wf->store_32(0); //string table size, will not be in use
-	size_t ext_res_count_pos = wf->get_position();
+	int64_t ext_res_count_pos = wf->get_position();
 
 	wf->store_32(0); //zero ext resources, still parsing them
 
@@ -1000,7 +999,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 
 	//now, save resources to a separate file, for now
 
-	size_t sub_res_count_pos = wf->get_position();
+	int64_t sub_res_count_pos = wf->get_position();
 	wf->store_32(0); //zero sub resources, still parsing them
 
 	String temp_file = p_path + ".temp";
@@ -1009,8 +1008,8 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 		return ERR_CANT_OPEN;
 	}
 
-	Vector<size_t> local_offsets;
-	Vector<size_t> local_pointers_pos;
+	Vector<int64_t> local_offsets;
+	Vector<int64_t> local_pointers_pos;
 
 	while (next_tag.name == "sub_resource" || next_tag.name == "resource") {
 
@@ -1049,7 +1048,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 		wf->store_64(0); //temp local offset
 
 		bs_save_unicode_string(wf2, type);
-		size_t propcount_ofs = wf2->get_position();
+		int64_t propcount_ofs = wf2->get_position();
 		wf2->store_32(0);
 
 		int prop_count = 0;
@@ -1122,7 +1121,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 
 		local_offsets.push_back(wf2->get_position());
 		bs_save_unicode_string(wf2, "PackedScene");
-		size_t propcount_ofs = wf2->get_position();
+		int64_t propcount_ofs = wf2->get_position();
 		wf2->store_32(0);
 
 		int prop_count = 0;
@@ -1148,7 +1147,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 
 	wf2->close();
 
-	size_t offset_from = wf->get_position();
+	int64_t offset_from = wf->get_position();
 	wf->seek(sub_res_count_pos); //plus one because the saved one
 	wf->store_32(local_offsets.size());
 
@@ -1545,9 +1544,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	{
-
-
-
 	}
 
 #ifdef TOOLS_ENABLED
@@ -1569,7 +1565,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 
 		int attempt = 1; //start from one, more readable format
-		while(cached_ids_found.has(attempt)) {
+		while (cached_ids_found.has(attempt)) {
 			attempt++;
 		}
 
@@ -1577,7 +1573,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		E->get() = attempt;
 		//update also in resource
 		Ref<Resource> res = E->key();
-		res->set_id_for_path(local_path,attempt);
+		res->set_id_for_path(local_path, attempt);
 	}
 #else
 	//make sure to start from one, as it makes format more readable
@@ -1597,7 +1593,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 	}
 
 	sorted_er.sort();
-
 
 	for (int i = 0; i < sorted_er.size(); i++) {
 		String p = sorted_er[i].resource->get_path();

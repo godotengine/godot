@@ -46,7 +46,7 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	FileAccess *f;
 
-	uint64_t importmd_ofs;
+	int64_t importmd_ofs;
 
 	Vector<char> str_buf;
 	List<RES> resource_cache;
@@ -65,7 +65,7 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	struct IntResource {
 		String path;
-		uint64_t offset;
+		int64_t offset;
 	};
 
 	Vector<IntResource> internal_resources;

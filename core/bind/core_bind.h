@@ -465,7 +465,7 @@ public:
 
 	Variant get_var(bool p_allow_objects = false) const;
 
-	PoolVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
+	PoolVector<uint8_t> get_buffer(int64_t p_length) const; ///< get an array of bytes
 	String get_line() const;
 	Vector<String> get_csv_line(const String &p_delim = ",") const;
 	String get_as_text() const;
@@ -543,7 +543,7 @@ public:
 	bool file_exists(String p_file);
 	bool dir_exists(String p_dir);
 
-	int get_space_left();
+	int64_t get_space_left();
 
 	Error copy(String p_from, String p_to);
 	Error rename(String p_from, String p_to);

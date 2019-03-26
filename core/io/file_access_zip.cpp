@@ -73,7 +73,7 @@ static long godot_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 
 	FileAccess *f = (FileAccess *)opaque;
 
-	int pos = offset;
+	int64_t pos = offset;
 	switch (origin) {
 
 		case ZLIB_FILEFUNC_SEEK_CUR:
@@ -290,9 +290,11 @@ bool FileAccessZip::is_open() const {
 	return zfile != NULL;
 }
 
-void FileAccessZip::seek(size_t p_position) {
+void FileAccessZip::seek(int64_t p_position) {
 
+	ERR_FAIL_COND(p_position < 0);
 	ERR_FAIL_COND(!zfile);
+
 	unzSeekCurrentFile(zfile, p_position);
 }
 
@@ -302,13 +304,13 @@ void FileAccessZip::seek_end(int64_t p_position) {
 	unzSeekCurrentFile(zfile, get_len() + p_position);
 }
 
-size_t FileAccessZip::get_position() const {
+int64_t FileAccessZip::get_position() const {
 
 	ERR_FAIL_COND_V(!zfile, 0);
 	return unztell(zfile);
 }
 
-size_t FileAccessZip::get_len() const {
+int64_t FileAccessZip::get_len() const {
 
 	ERR_FAIL_COND_V(!zfile, 0);
 	return file_info.uncompressed_size;
@@ -328,13 +330,15 @@ uint8_t FileAccessZip::get_8() const {
 	return ret;
 }
 
-int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
+int64_t FileAccessZip::get_buffer(uint8_t *p_dst, int64_t p_length) const {
 
 	ERR_FAIL_COND_V(!zfile, -1);
+	ERR_FAIL_COND_V(p_length < 0, 0);
+
 	at_eof = unzeof(zfile);
 	if (at_eof)
 		return 0;
-	int read = unzReadCurrentFile(zfile, p_dst, p_length);
+	int64_t read = unzReadCurrentFile(zfile, p_dst, p_length);
 	ERR_FAIL_COND_V(read < 0, read);
 	if (read < p_length)
 		at_eof = true;

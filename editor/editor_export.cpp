@@ -918,7 +918,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	f->store_32(pd.file_ofs.size()); //amount of files
 
-	size_t header_size = f->get_position();
+	int64_t header_size = f->get_position();
 
 	//precalculate header size
 
@@ -937,7 +937,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
 		uint32_t pad = _get_pad(4, string_len);
-		;
+
 		f->store_32(string_len + pad);
 		f->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
 		for (uint32_t j = 0; j < pad; j++) {
@@ -966,7 +966,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	while (true) {
 
-		int got = ftmp->get_buffer(buf, bufsize);
+		int64_t got = ftmp->get_buffer(buf, bufsize);
 		if (got <= 0)
 			break;
 		f->store_buffer(buf, got);

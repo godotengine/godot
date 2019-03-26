@@ -36,8 +36,8 @@
 class FileAccessMemory : public FileAccess {
 
 	uint8_t *data;
-	int length;
-	mutable int pos;
+	int64_t length;
+	mutable int64_t pos;
 
 	static FileAccess *create();
 
@@ -50,22 +50,22 @@ public:
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
-	virtual void seek(size_t p_position); ///< seek to a given position
+	virtual void seek(int64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	virtual int64_t get_position() const; ///< get position in the file
+	virtual int64_t get_len() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 
 	virtual uint8_t get_8() const; ///< get a byte
 
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const; ///< get an array of bytes
+	virtual int64_t get_buffer(uint8_t *p_dst, int64_t p_length) const; ///< get an array of bytes
 
 	virtual Error get_error() const; ///< get last error
 
 	virtual void flush();
 	virtual void store_8(uint8_t p_byte); ///< store a byte
-	virtual void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, int64_t p_length); ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name); ///< return true if a file exists
 

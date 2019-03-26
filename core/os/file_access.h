@@ -96,10 +96,10 @@ public:
 	virtual String get_path() const { return ""; } /// returns the path for the current open file
 	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
 
-	virtual void seek(size_t p_position) = 0; ///< seek to a given position
+	virtual void seek(int64_t p_position) = 0; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file
-	virtual size_t get_position() const = 0; ///< get position in the file
-	virtual size_t get_len() const = 0; ///< get size of the file
+	virtual int64_t get_position() const = 0; ///< get position in the file
+	virtual int64_t get_len() const = 0; ///< get size of the file
 
 	virtual bool eof_reached() const = 0; ///< reading passed EOF
 
@@ -112,7 +112,7 @@ public:
 	virtual double get_double() const;
 	virtual real_t get_real() const;
 
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const; ///< get an array of bytes
+	virtual int64_t get_buffer(uint8_t *p_dst, int64_t p_length) const; ///< get an array of bytes
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
@@ -145,7 +145,7 @@ public:
 	virtual void store_pascal_string(const String &p_string);
 	virtual String get_pascal_string();
 
-	virtual void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, int64_t p_length); ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
 

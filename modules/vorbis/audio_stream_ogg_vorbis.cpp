@@ -41,7 +41,7 @@ size_t AudioStreamPlaybackOGGVorbis::_ov_read_func(void *p_dst, size_t p_data, s
 
 	uint8_t *dst = (uint8_t *)p_dst;
 
-	int read = fa->get_buffer(dst, read_total);
+	int64_t read = fa->get_buffer(dst, read_total);
 
 	return read;
 }

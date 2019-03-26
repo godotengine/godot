@@ -80,7 +80,7 @@ public:
 	virtual Error remove(String p_path);
 
 	//virtual FileType get_file_type() const;
-	size_t get_space_left();
+	int64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

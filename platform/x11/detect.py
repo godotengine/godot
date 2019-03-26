@@ -170,7 +170,7 @@ def configure(env):
             else:
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
-        
+
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -317,7 +317,7 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Prepend(CPPPATH=['#platform/x11'])
-    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
+    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED', '-D_FILE_OFFSET_BITS=64'])
     env.Append(LIBS=['GL', 'pthread'])
 
     if (platform.system() == "Linux"):

@@ -133,7 +133,7 @@ Error DynamicFontAtSize::_load() {
 			FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
 			ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
-			size_t len = f->get_len();
+			int64_t len = f->get_len();
 			_fontdata[font->font_path] = Vector<uint8_t>();
 			Vector<uint8_t> &fontdata = _fontdata[font->font_path];
 			fontdata.resize(len);
@@ -351,7 +351,7 @@ unsigned long DynamicFontAtSize::_ft_stream_io(FT_Stream stream, unsigned long o
 
 	FileAccess *f = (FileAccess *)stream->descriptor.pointer;
 
-	if (f->get_position() != offset) {
+	if (f->get_position() != (int64_t)offset) {
 		f->seek(offset);
 	}
 

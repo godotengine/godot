@@ -695,7 +695,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 					while (true) {
 
-						int r = pf->get_buffer(buf, BSIZE);
+						int64_t r = pf->get_buffer(buf, BSIZE);
 						if (r <= 0)
 							break;
 						zipWriteInFileInZip(dst_pkg_zip, buf, r);

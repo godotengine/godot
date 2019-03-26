@@ -38,7 +38,7 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 
 	T f;
 
-	int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const {
+	int64_t read_data_block(int64_t p_offset, int64_t p_size, uint8_t *p_dest = 0) const {
 
 		ERR_FAIL_COND_V(!f.is_open(), -1);
 
@@ -87,7 +87,7 @@ public:
 		f.store_8(p_dest);
 	};
 
-	void store_buffer(const uint8_t *p_src, int p_length) {
+	void store_buffer(const uint8_t *p_src, int64_t p_length) {
 
 		f.store_buffer(p_src, p_length);
 	};

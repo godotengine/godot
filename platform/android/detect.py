@@ -236,6 +236,9 @@ def configure(env):
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
 
+    if get_platform(env["ndk_platform"]) >= 24:
+        env.Append(CPPFLAGS=['-D_FILE_OFFSET_BITS=64'])
+
     env.Append(CCFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
     env.Append(CPPFLAGS='-DNO_STATVFS -DGLES_ENABLED'.split())
 

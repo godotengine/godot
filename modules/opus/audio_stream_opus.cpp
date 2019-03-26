@@ -44,7 +44,7 @@ int AudioStreamPlaybackOpus::_op_read_func(void *_stream, unsigned char *_ptr, i
 
 	uint8_t *dst = (uint8_t *)_ptr;
 
-	int read = fa->get_buffer(dst, _nbytes);
+	int64_t read = fa->get_buffer(dst, _nbytes);
 
 	return read;
 }

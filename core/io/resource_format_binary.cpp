@@ -1169,8 +1169,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	save_ustring(fw, get_ustring(f)); //type
 
-	size_t md_ofs = f->get_position();
-	size_t importmd_ofs = f->get_64();
+	int64_t md_ofs = f->get_position();
+	int64_t importmd_ofs = f->get_64();
 	fw->store_64(0); //metadata offset
 
 	for (int i = 0; i < 14; i++) {
@@ -1217,7 +1217,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		save_ustring(fw, path);
 	}
 
-	int64_t size_diff = (int64_t)fw->get_position() - (int64_t)f->get_position();
+	int64_t size_diff = fw->get_position() - f->get_position();
 
 	//internal resources
 	uint32_t int_resources_size = f->get_32();

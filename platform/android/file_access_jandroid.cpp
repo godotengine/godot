@@ -90,11 +90,12 @@ bool FileAccessJAndroid::is_open() const {
 	return id != 0;
 }
 
-void FileAccessJAndroid::seek(size_t p_position) {
+void FileAccessJAndroid::seek(int64_t p_position) {
+
+	ERR_FAIL_COND(p_position < 0);
+	ERR_FAIL_COND(!is_open());
 
 	JNIEnv *env = ThreadAndroid::get_env();
-
-	ERR_FAIL_COND(!is_open());
 	env->CallVoidMethod(io, _file_seek, id, p_position);
 }
 
@@ -105,14 +106,14 @@ void FileAccessJAndroid::seek_end(int64_t p_position) {
 	seek(get_len());
 }
 
-size_t FileAccessJAndroid::get_position() const {
+int64_t FileAccessJAndroid::get_position() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V(!is_open(), 0);
 	return env->CallIntMethod(io, _file_tell, id);
 }
 
-size_t FileAccessJAndroid::get_len() const {
+int64_t FileAccessJAndroid::get_len() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	ERR_FAIL_COND_V(!is_open(), 0);
@@ -133,11 +134,11 @@ uint8_t FileAccessJAndroid::get_8() const {
 	get_buffer(&byte, 1);
 	return byte;
 }
-int FileAccessJAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
+int64_t FileAccessJAndroid::get_buffer(uint8_t *p_dst, int64_t p_length) const {
 
 	ERR_FAIL_COND_V(!is_open(), 0);
-	if (p_length == 0)
-		return 0;
+	ERR_FAIL_COND_V(p_length < 0, 0);
+
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	jbyteArray jca = (jbyteArray)env->CallObjectMethod(io, _file_read, id, p_length);

@@ -48,8 +48,8 @@ public:
 	struct PackedFile {
 
 		String pack;
-		uint64_t offset; //if offset is ZERO, the file was ERASED
-		uint64_t size;
+		int64_t offset; //if offset is ZERO, the file was ERASED
+		int64_t size;
 		uint8_t md5[16];
 		PackSource *src;
 	};
@@ -102,7 +102,7 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src); // for PackSource
+	void add_path(const String &pkg_path, const String &path, int64_t ofs, int64_t size, const uint8_t *p_md5, PackSource *p_src); // for PackSource
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
@@ -136,7 +136,7 @@ class FileAccessPack : public FileAccess {
 
 	PackedData::PackedFile pf;
 
-	mutable size_t pos;
+	mutable int64_t pos;
 	mutable bool eof;
 
 	FileAccess *f;
@@ -149,16 +149,16 @@ public:
 	virtual void close();
 	virtual bool is_open() const;
 
-	virtual void seek(size_t p_position);
+	virtual void seek(int64_t p_position);
 	virtual void seek_end(int64_t p_position = 0);
-	virtual size_t get_position() const;
-	virtual size_t get_len() const;
+	virtual int64_t get_position() const;
+	virtual int64_t get_len() const;
 
 	virtual bool eof_reached() const;
 
 	virtual uint8_t get_8() const;
 
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
+	virtual int64_t get_buffer(uint8_t *p_dst, int64_t p_length) const;
 
 	virtual void set_endian_swap(bool p_swap);
 
@@ -167,7 +167,7 @@ public:
 	virtual void flush();
 	virtual void store_8(uint8_t p_dest);
 
-	virtual void store_buffer(const uint8_t *p_src, int p_length);
+	virtual void store_buffer(const uint8_t *p_src, int64_t p_length);
 
 	virtual bool file_exists(const String &p_name);
 
@@ -221,7 +221,7 @@ public:
 	virtual Error rename(String p_from, String p_to);
 	virtual Error remove(String p_name);
 
-	size_t get_space_left();
+	int64_t get_space_left();
 
 	virtual String get_filesystem_type() const;
 

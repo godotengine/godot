@@ -89,18 +89,17 @@ class FileAccessNetwork : public FileAccess {
 	Semaphore *page_sem;
 	Mutex *buffer_mutex;
 	bool opened;
-	size_t total_size;
-	mutable size_t pos;
+	int64_t total_size;
+	mutable int64_t pos;
 	int id;
 	mutable bool eof_flag;
-	mutable int last_page;
+	mutable int32_t last_page;
 	mutable uint8_t *last_page_buff;
 
-	int page_size;
-	int read_ahead;
+	int32_t page_size;
+	int32_t read_ahead;
 
 	mutable int waiting_on_page;
-	mutable int last_activity_val;
 	struct Page {
 		int activity;
 		bool queued;
@@ -117,9 +116,9 @@ class FileAccessNetwork : public FileAccess {
 
 	uint64_t exists_modtime;
 	friend class FileAccessNetworkClient;
-	void _queue_page(int p_page) const;
-	void _respond(size_t p_len, Error p_status);
-	void _set_block(int p_offset, const Vector<uint8_t> &p_block);
+	void _queue_page(int32_t p_page) const;
+	void _respond(int64_t p_len, Error p_status);
+	void _set_block(int64_t p_offset, const Vector<uint8_t> &p_block);
 
 public:
 	enum Command {
@@ -141,15 +140,15 @@ public:
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
-	virtual void seek(size_t p_position); ///< seek to a given position
+	virtual void seek(int64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	virtual int64_t get_position() const; ///< get position in the file
+	virtual int64_t get_len() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 
 	virtual uint8_t get_8() const; ///< get a byte
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
+	virtual int64_t get_buffer(uint8_t *p_dst, int64_t p_length) const;
 
 	virtual Error get_error() const; ///< get last error
 

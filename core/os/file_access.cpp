@@ -400,9 +400,11 @@ Vector<String> FileAccess::get_csv_line(const String &p_delim) const {
 	return strings;
 }
 
-int FileAccess::get_buffer(uint8_t *p_dst, int p_length) const {
+int64_t FileAccess::get_buffer(uint8_t *p_dst, int64_t p_length) const {
 
-	int i = 0;
+	ERR_FAIL_COND_V(p_length < 0, 0);
+
+	int64_t i = 0;
 	for (i = 0; i < p_length && !eof_reached(); i++)
 		p_dst[i] = get_8();
 
@@ -411,11 +413,11 @@ int FileAccess::get_buffer(uint8_t *p_dst, int p_length) const {
 
 String FileAccess::get_as_utf8_string() const {
 	PoolVector<uint8_t> sourcef;
-	int len = get_len();
+	int64_t len = get_len();
 	sourcef.resize(len + 1);
 
 	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = get_buffer(w.ptr(), len);
+	int64_t r = get_buffer(w.ptr(), len);
 	ERR_FAIL_COND_V(r != len, String());
 	w[len] = 0;
 
@@ -588,9 +590,11 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 	store_line(line);
 }
 
-void FileAccess::store_buffer(const uint8_t *p_src, int p_length) {
+void FileAccess::store_buffer(const uint8_t *p_src, int64_t p_length) {
 
-	for (int i = 0; i < p_length; i++)
+	ERR_FAIL_COND(p_length < 0);
+
+	for (int64_t i = 0; i < p_length; i++)
 		store_8(p_src[i]);
 }
 
@@ -644,7 +648,7 @@ String FileAccess::get_md5(const String &p_file) {
 
 	while (true) {
 
-		int br = f->get_buffer(step, 32768);
+		int64_t br = f->get_buffer(step, 32768);
 		if (br > 0) {
 
 			MD5Update(&md5, step, br);
@@ -674,7 +678,7 @@ String FileAccess::get_multiple_md5(const Vector<String> &p_file) {
 
 		while (true) {
 
-			int br = f->get_buffer(step, 32768);
+			int64_t br = f->get_buffer(step, 32768);
 			if (br > 0) {
 
 				MD5Update(&md5, step, br);
@@ -705,7 +709,7 @@ String FileAccess::get_sha256(const String &p_file) {
 
 	while (true) {
 
-		int br = f->get_buffer(step, 32768);
+		int64_t br = f->get_buffer(step, 32768);
 		if (br > 0) {
 
 			sha256_hash(&sha256, step, br);

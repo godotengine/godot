@@ -66,7 +66,7 @@ public:
 
 		if (file) {
 
-			if (file->get_position() != (size_t)pos)
+			if (file->get_position() != pos)
 				file->seek(pos);
 			if (file->get_buffer(buf, len) == len)
 				return 0;
@@ -78,7 +78,7 @@ public:
 
 		if (file) {
 
-			const size_t len = file->get_len();
+			const int64_t len = file->get_len();
 			if (total)
 				*total = len;
 			if (available)

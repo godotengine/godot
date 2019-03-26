@@ -86,7 +86,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 	}
 
-	size_t len = f->get_len();
+	int64_t len = f->get_len();
 
 	PoolVector<uint8_t> data;
 	data.resize(len);

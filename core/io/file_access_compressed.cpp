@@ -32,7 +32,7 @@
 
 #include "core/print_string.h"
 
-void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int p_block_size) {
+void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, int32_t p_block_size) {
 
 	magic = p_magic.ascii().get_data();
 	if (magic.length() > 4)
@@ -64,10 +64,10 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 	cmode = (Compression::Mode)f->get_32();
 	block_size = f->get_32();
 	read_total = f->get_32();
-	int bc = (read_total / block_size) + 1;
-	int acc_ofs = f->get_position() + bc * 4;
-	int max_bs = 0;
-	for (int i = 0; i < bc; i++) {
+	int32_t bc = (read_total / block_size) + 1;
+	int64_t acc_ofs = f->get_position() + bc * 4;
+	int32_t max_bs = 0;
+	for (int32_t i = 0; i < bc; i++) {
 
 		ReadBlock rb;
 		rb.offset = acc_ofs;
@@ -149,16 +149,16 @@ void FileAccessCompressed::close() {
 		f->store_32(cmode); //write compression mode 4
 		f->store_32(block_size); //write block size 4
 		f->store_32(write_max); //max amount of data written 4
-		int bc = (write_max / block_size) + 1;
+		int32_t bc = (write_max / block_size) + 1;
 
-		for (int i = 0; i < bc; i++) {
+		for (int32_t i = 0; i < bc; i++) {
 			f->store_32(0); //compressed sizes, will update later
 		}
 
 		Vector<int> block_sizes;
-		for (int i = 0; i < bc; i++) {
+		for (int32_t i = 0; i < bc; i++) {
 
-			int bl = i == (bc - 1) ? write_max % block_size : block_size;
+			int32_t bl = i == (bc - 1) ? write_max % block_size : block_size;
 			uint8_t *bp = &write_ptr[i * block_size];
 
 			Vector<uint8_t> cblock;
@@ -170,7 +170,7 @@ void FileAccessCompressed::close() {
 		}
 
 		f->seek(16); //ok write block sizes
-		for (int i = 0; i < bc; i++)
+		for (int32_t i = 0; i < bc; i++)
 			f->store_32(block_sizes[i]);
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
@@ -193,9 +193,11 @@ bool FileAccessCompressed::is_open() const {
 	return f != NULL;
 }
 
-void FileAccessCompressed::seek(size_t p_position) {
+void FileAccessCompressed::seek(int64_t p_position) {
 
+	ERR_FAIL_COND(p_position < 0);
 	ERR_FAIL_COND(!f);
+
 	if (writing) {
 
 		ERR_FAIL_COND(p_position > write_max);
@@ -209,7 +211,7 @@ void FileAccessCompressed::seek(size_t p_position) {
 			at_end = true;
 		} else {
 
-			int block_idx = p_position / block_size;
+			int32_t block_idx = p_position / block_size;
 			if (block_idx != read_block) {
 
 				read_block = block_idx;
@@ -235,7 +237,7 @@ void FileAccessCompressed::seek_end(int64_t p_position) {
 		seek(read_total + p_position);
 	}
 }
-size_t FileAccessCompressed::get_position() const {
+int64_t FileAccessCompressed::get_position() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 	if (writing) {
@@ -246,7 +248,7 @@ size_t FileAccessCompressed::get_position() const {
 		return read_block * block_size + read_pos;
 	}
 }
-size_t FileAccessCompressed::get_len() const {
+int64_t FileAccessCompressed::get_len() const {
 
 	ERR_FAIL_COND_V(!f, 0);
 	if (writing) {
@@ -298,17 +300,18 @@ uint8_t FileAccessCompressed::get_8() const {
 
 	return ret;
 }
-int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
+int64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, int64_t p_length) const {
 
 	ERR_FAIL_COND_V(writing, 0);
 	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V(p_length < 0, 0);
 
 	if (at_end) {
 		read_eof = true;
 		return 0;
 	}
 
-	for (int i = 0; i < p_length; i++) {
+	for (int64_t i = 0; i < p_length; i++) {
 
 		p_dst[i] = read_ptr[read_pos];
 		read_pos++;

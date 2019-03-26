@@ -341,14 +341,15 @@ void XMLParser::_parse_current_node() {
 	}
 }
 
-uint64_t XMLParser::get_node_offset() const {
+int64_t XMLParser::get_node_offset() const {
 
 	return node_offset;
 };
 
-Error XMLParser::seek(uint64_t p_pos) {
+Error XMLParser::seek(int64_t p_pos) {
 
 	ERR_FAIL_COND_V(!data, ERR_FILE_EOF)
+	ERR_FAIL_COND_V(p_pos < 0, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_pos >= length, ERR_FILE_EOF);
 
 	P = data + p_pos;

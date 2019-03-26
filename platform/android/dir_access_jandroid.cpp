@@ -219,7 +219,7 @@ String DirAccessJAndroid::get_filesystem_type() const {
 }
 
 //FileType get_file_type() const;
-size_t DirAccessJAndroid::get_space_left() {
+int64_t DirAccessJAndroid::get_space_left() {
 
 	return 0;
 }

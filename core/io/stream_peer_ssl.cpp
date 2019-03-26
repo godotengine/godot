@@ -75,7 +75,7 @@ PoolByteArray StreamPeerSSL::get_cert_file_as_array(String p_path) {
 	PoolByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (f) {
-		int flen = f->get_len();
+		int64_t flen = f->get_len();
 		out.resize(flen + 1);
 		PoolByteArray::Write w = out.write();
 		f->get_buffer(w.ptr(), flen);

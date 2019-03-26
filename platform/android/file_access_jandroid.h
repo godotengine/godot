@@ -54,15 +54,15 @@ public:
 	virtual void close(); ///< close a file
 	virtual bool is_open() const; ///< true when file is open
 
-	virtual void seek(size_t p_position); ///< seek to a given position
+	virtual void seek(int64_t p_position); ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	virtual int64_t get_position() const; ///< get position in the file
+	virtual int64_t get_len() const; ///< get size of the file
 
 	virtual bool eof_reached() const; ///< reading passed EOF
 
 	virtual uint8_t get_8() const; ///< get a byte
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
+	virtual int64_t get_buffer(uint8_t *p_dst, int64_t p_length) const;
 
 	virtual Error get_error() const; ///< get last error
 

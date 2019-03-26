@@ -132,7 +132,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		file->store_32(0);
 	};
 
-	uint64_t ofs = file->get_position();
+	int64_t ofs = file->get_position();
 	ofs = _align(ofs, alignment);
 
 	_pad(file, ofs - file->get_position());
@@ -144,15 +144,15 @@ Error PCKPacker::flush(bool p_verbose) {
 	for (int i = 0; i < files.size(); i++) {
 
 		FileAccess *src = FileAccess::open(files[i].src_path, FileAccess::READ);
-		uint64_t to_write = files[i].size;
+		int64_t to_write = files[i].size;
 		while (to_write > 0) {
 
-			int read = src->get_buffer(buf, MIN(to_write, buf_max));
+			int64_t read = src->get_buffer(buf, MIN(to_write, buf_max));
 			file->store_buffer(buf, read);
 			to_write -= read;
 		};
 
-		uint64_t pos = file->get_position();
+		int64_t pos = file->get_position();
 		file->seek(files[i].offset_offset); // go back to store the file's offset
 		file->store_64(ofs);
 		file->seek(pos);

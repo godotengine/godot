@@ -95,7 +95,7 @@ Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state
 	ERR_FAIL_COND_V(chunk_type != 0x4E4F534A, ERR_PARSE_ERROR); //JSON
 	Vector<uint8_t> json_data;
 	json_data.resize(chunk_length);
-	uint32_t len = f->get_buffer(json_data.ptrw(), chunk_length);
+	int64_t len = f->get_buffer(json_data.ptrw(), chunk_length);
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
 	String text;

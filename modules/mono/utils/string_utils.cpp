@@ -170,10 +170,10 @@ Error read_all_file_utf8(const String &p_path, String &r_content) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	int len = f->get_len();
+	int64_t len = f->get_len();
 	sourcef.resize(len + 1);
 	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	int64_t r = f->get_buffer(w.ptr(), len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
