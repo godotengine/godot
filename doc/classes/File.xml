@@ -204,8 +204,11 @@
 		<method name="get_var" qualifiers="const">
 			<return type="Variant">
 			</return>
+			<argument index="0" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Returns the next [Variant] value from the file.
+				Returns the next [Variant] value from the file. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="is_open" qualifiers="const">
@@ -398,8 +401,10 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Stores any Variant value in the file.
+				Stores any Variant value in the file. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

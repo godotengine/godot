@@ -164,10 +164,10 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case TEXT_PRINTRAW:
 		case VAR_TO_STR:
 		case STR_TO_VAR:
-		case VAR_TO_BYTES:
-		case BYTES_TO_VAR:
 		case TYPE_EXISTS:
 			return 1;
+		case VAR_TO_BYTES:
+		case BYTES_TO_VAR:
 		case MATH_ATAN2:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
@@ -696,8 +696,9 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 		case VAR_TO_BYTES: {
 
 			PoolByteArray barr;
+			bool full_objects = *p_inputs[1];
 			int len;
-			Error err = encode_variant(*p_inputs[0], NULL, len);
+			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
 			if (err) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -709,7 +710,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			barr.resize(len);
 			{
 				PoolByteArray::Write w = barr.write();
-				encode_variant(*p_inputs[0], w.ptr(), len);
+				encode_variant(*p_inputs[0], w.ptr(), len, full_objects);
 			}
 			*r_return = barr;
 		} break;
@@ -724,10 +725,11 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			}
 
 			PoolByteArray varr = *p_inputs[0];
+			bool allow_objects = *p_inputs[1];
 			Variant ret;
 			{
 				PoolByteArray::Read r = varr.read();
-				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL);
+				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;

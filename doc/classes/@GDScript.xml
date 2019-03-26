@@ -136,8 +136,11 @@
 			</return>
 			<argument index="0" name="bytes" type="PoolByteArray">
 			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Decodes a byte array back to a value.
+				Decodes a byte array back to a value. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="cartesian2polar">
@@ -1112,8 +1115,10 @@
 			</return>
 			<argument index="0" name="var" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Encodes a variable value to a byte array.
+				Encodes a variable value to a byte array. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 		<method name="var2str">

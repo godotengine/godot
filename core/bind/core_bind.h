@@ -463,7 +463,7 @@ public:
 	double get_double() const;
 	real_t get_real() const;
 
-	Variant get_var() const;
+	Variant get_var(bool p_allow_objects = false) const;
 
 	PoolVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
@@ -500,7 +500,7 @@ public:
 
 	void store_buffer(const PoolVector<uint8_t> &p_buffer); ///< store an array of bytes
 
-	void store_var(const Variant &p_var);
+	void store_var(const Variant &p_var, bool p_full_objects = false);
 
 	bool file_exists(const String &p_name) const; ///< return true if a file exists
 
@@ -569,8 +569,8 @@ protected:
 public:
 	static _Marshalls *get_singleton();
 
-	String variant_to_base64(const Variant &p_var);
-	Variant base64_to_variant(const String &p_str);
+	String variant_to_base64(const Variant &p_var, bool p_full_objects = false);
+	Variant base64_to_variant(const String &p_str, bool p_allow_objects = false);
 
 	String raw_to_base64(const PoolVector<uint8_t> &p_arr);
 	PoolVector<uint8_t> base64_to_raw(const String &p_str);

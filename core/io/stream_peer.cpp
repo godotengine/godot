@@ -221,14 +221,14 @@ void StreamPeer::put_utf8_string(const String &p_string) {
 	put_u32(cs.length());
 	put_data((const uint8_t *)cs.get_data(), cs.length());
 }
-void StreamPeer::put_var(const Variant &p_variant) {
+void StreamPeer::put_var(const Variant &p_variant, bool p_full_objects) {
 
 	int len = 0;
 	Vector<uint8_t> buf;
-	encode_variant(p_variant, NULL, len);
+	encode_variant(p_variant, NULL, len, p_full_objects);
 	buf.resize(len);
 	put_32(len);
-	encode_variant(p_variant, buf.ptrw(), len);
+	encode_variant(p_variant, buf.ptrw(), len, p_full_objects);
 	put_data(buf.ptr(), buf.size());
 }
 
@@ -359,7 +359,7 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 	ret.parse_utf8((const char *)buf.ptr(), buf.size());
 	return ret;
 }
-Variant StreamPeer::get_var() {
+Variant StreamPeer::get_var(bool p_allow_objects) {
 
 	int len = get_32();
 	Vector<uint8_t> var;
@@ -369,7 +369,7 @@ Variant StreamPeer::get_var() {
 	ERR_FAIL_COND_V(err != OK, Variant());
 
 	Variant ret;
-	decode_variant(ret, var.ptr(), len);
+	decode_variant(ret, var.ptr(), len, NULL, p_allow_objects);
 	return ret;
 }
 
@@ -398,7 +398,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("put_double", "value"), &StreamPeer::put_double);
 	ClassDB::bind_method(D_METHOD("put_string", "value"), &StreamPeer::put_string);
 	ClassDB::bind_method(D_METHOD("put_utf8_string", "value"), &StreamPeer::put_utf8_string);
-	ClassDB::bind_method(D_METHOD("put_var", "value"), &StreamPeer::put_var);
+	ClassDB::bind_method(D_METHOD("put_var", "value", "full_objects"), &StreamPeer::put_var, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_8"), &StreamPeer::get_8);
 	ClassDB::bind_method(D_METHOD("get_u8"), &StreamPeer::get_u8);
@@ -412,7 +412,7 @@ void StreamPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_double"), &StreamPeer::get_double);
 	ClassDB::bind_method(D_METHOD("get_string", "bytes"), &StreamPeer::get_string, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_utf8_string", "bytes"), &StreamPeer::get_utf8_string, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("get_var"), &StreamPeer::get_var);
+	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &StreamPeer::get_var, DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "big_endian"), "set_big_endian", "is_big_endian_enabled");
 }

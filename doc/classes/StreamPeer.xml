@@ -127,8 +127,11 @@
 		<method name="get_var">
 			<return type="Variant">
 			</return>
+			<argument index="0" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Get a Variant from the stream.
+				Get a Variant from the stream. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="put_16">
@@ -262,8 +265,10 @@
 			</return>
 			<argument index="0" name="value" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Put a Variant into the stream.
+				Put a Variant into the stream. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

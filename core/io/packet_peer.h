@@ -39,8 +39,7 @@ class PacketPeer : public Reference {
 
 	GDCLASS(PacketPeer, Reference);
 
-	Variant _bnd_get_var();
-	void _bnd_put_var(const Variant &p_var);
+	Variant _bnd_get_var(bool p_allow_objects = false);
 
 	static void _bind_methods();
 
@@ -64,8 +63,8 @@ public:
 	virtual Error get_packet_buffer(PoolVector<uint8_t> &r_buffer);
 	virtual Error put_packet_buffer(const PoolVector<uint8_t> &p_buffer);
 
-	virtual Error get_var(Variant &r_variant);
-	virtual Error put_var(const Variant &p_packet);
+	virtual Error get_var(Variant &r_variant, bool p_allow_objects = false);
+	virtual Error put_var(const Variant &p_packet, bool p_full_objects = false);
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;

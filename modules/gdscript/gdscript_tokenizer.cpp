@@ -1199,7 +1199,8 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 
 		Variant v;
 		int len;
-		Error err = decode_variant(v, b, total_len, &len);
+		// An object cannot be constant, never decode objects
+		Error err = decode_variant(v, b, total_len, &len, false);
 		if (err)
 			return err;
 		b += len;
@@ -1367,11 +1368,12 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 	for (Map<int, Variant>::Element *E = rev_constant_map.front(); E; E = E->next()) {
 
 		int len;
-		Error err = encode_variant(E->get(), NULL, len);
+		// Objects cannot be constant, never encode objects
+		Error err = encode_variant(E->get(), NULL, len, false);
 		ERR_FAIL_COND_V(err != OK, Vector<uint8_t>());
 		int pos = buf.size();
 		buf.resize(pos + len);
-		encode_variant(E->get(), &buf.write[pos], len);
+		encode_variant(E->get(), &buf.write[pos], len, false);
 	}
 
 	for (Map<int, uint32_t>::Element *E = rev_line_map.front(); E; E = E->next()) {

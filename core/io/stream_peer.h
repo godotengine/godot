@@ -73,7 +73,7 @@ public:
 	void put_double(double p_val);
 	void put_string(const String &p_string);
 	void put_utf8_string(const String &p_string);
-	void put_var(const Variant &p_variant);
+	void put_var(const Variant &p_variant, bool p_full_objects = false);
 
 	uint8_t get_u8();
 	int8_t get_8();
@@ -87,7 +87,7 @@ public:
 	double get_double();
 	String get_string(int p_bytes = -1);
 	String get_utf8_string(int p_bytes = -1);
-	Variant get_var();
+	Variant get_var(bool p_allow_objects = false);
 
 	StreamPeer() { big_endian = false; }
 };

@@ -114,7 +114,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 	} else {
 
 		Variant v;
-		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL);
+		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL, false);
 
 		if (rerr != OK) {
 
@@ -249,9 +249,9 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			uint32_t pos = tmpdata.size();
 			int len;
-			encode_variant(p_data, NULL, len);
+			encode_variant(p_data, NULL, len, false);
 			tmpdata.resize(tmpdata.size() + len);
-			encode_variant(p_data, &tmpdata.write[pos], len);
+			encode_variant(p_data, &tmpdata.write[pos], len, false);
 			return pos;
 
 		} break;
