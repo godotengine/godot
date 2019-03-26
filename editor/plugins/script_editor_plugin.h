@@ -157,6 +157,7 @@ class ScriptEditor : public PanelContainer {
 		DEBUG_WITH_EXTERNAL_EDITOR,
 		SEARCH_HELP,
 		SEARCH_WEBSITE,
+		REQUEST_DOCS,
 		HELP_SEARCH_FIND,
 		HELP_SEARCH_FIND_NEXT,
 		WINDOW_MOVE_UP,
@@ -200,6 +201,7 @@ class ScriptEditor : public PanelContainer {
 
 	Button *help_search;
 	Button *site_search;
+	Button *request_docs;
 	EditorHelpSearch *help_search_dialog;
 
 	ItemList *script_list;
