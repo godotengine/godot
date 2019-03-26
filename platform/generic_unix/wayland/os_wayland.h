@@ -78,70 +78,70 @@ private:
 		&registry_global_remove,
 	};
 
-	static void xdg_toplevel_configure_handler(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
-	static void xdg_toplevel_close_handler(void *data, struct xdg_toplevel *xdg_toplevel);
+	static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states);
+	static void xdg_toplevel_close(void *data, struct xdg_toplevel *xdg_toplevel);
 
 	const struct xdg_toplevel_listener xdg_toplevel_listener = {
-		.configure = &xdg_toplevel_configure_handler,
-		.close = &xdg_toplevel_close_handler
+		.configure = &xdg_toplevel_configure,
+		.close = &xdg_toplevel_close,
 	};
 
-	static void xdg_surface_configure_handler(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
+	static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial);
 
 	const struct xdg_surface_listener xdg_surface_listener = {
-		.configure = &xdg_surface_configure_handler
+		.configure = &xdg_surface_configure,
 	};
 
-	static void xdg_ping_handler(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
+	static void xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
 
 	const struct xdg_wm_base_listener xdg_wm_base_listener = {
-		.ping = &xdg_ping_handler
+		.ping = &xdg_wm_base_ping,
 	};
 
-	static void seat_name_handler(void *data, struct wl_seat *wl_seat, const char *name);
-	static void seat_capabilities_handler(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
+	static void seat_name(void *data, struct wl_seat *wl_seat, const char *name);
+	static void seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
 
 	const struct wl_seat_listener seat_listener = {
-		&seat_capabilities_handler,
-		&seat_name_handler
+		&seat_capabilities,
+		&seat_name,
 	};
 
-	static void pointer_enter_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
-	static void pointer_leave_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface);
-	static void pointer_motion_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
-	static void pointer_button_handler(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
-	static void pointer_axis_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
-	static void pointer_frame_handler(void *data, struct wl_pointer *wl_pointer);
-	static void pointer_axis_source_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source);
-	static void pointer_axis_stop_handler(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis);
-	static void pointer_axis_discrete_handler(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
+	static void pointer_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);
+	static void pointer_leave(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface);
+	static void pointer_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y);
+	static void pointer_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time, uint32_t button, uint32_t state);
+	static void pointer_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis, wl_fixed_t value);
+	static void pointer_frame(void *data, struct wl_pointer *wl_pointer);
+	static void pointer_axis_source(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source);
+	static void pointer_axis_stop(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis);
+	static void pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
 
 	const struct wl_pointer_listener pointer_listener = {
-		&pointer_enter_handler,
-		&pointer_leave_handler,
-		&pointer_motion_handler,
-		&pointer_button_handler,
-		&pointer_axis_handler,
-		&pointer_frame_handler,
-		&pointer_axis_source_handler,
-		&pointer_axis_stop_handler,
-		&pointer_axis_discrete_handler
+		&pointer_enter,
+		&pointer_leave,
+		&pointer_motion,
+		&pointer_button,
+		&pointer_axis,
+		&pointer_frame,
+		&pointer_axis_source,
+		&pointer_axis_stop,
+		&pointer_axis_discrete,
 	};
 
-	static void keyboard_keymap_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
-	static void keyboard_enter_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
-	static void keyboard_leave_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface);
-	static void keyboard_key_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
-	static void keyboard_modifier_handler(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
-	static void keyboard_repeat_info_handler(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
+	static void keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
+	static void keyboard_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
+	static void keyboard_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface);
+	static void keyboard_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state);
+	static void keyboard_modifier(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
+	static void keyboard_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
 	const struct wl_keyboard_listener keyboard_listener = {
-		&keyboard_keymap_handler,
-		&keyboard_enter_handler,
-		&keyboard_leave_handler,
-		&keyboard_key_handler,
-		&keyboard_modifier_handler,
-		&keyboard_repeat_info_handler,
+		&keyboard_keymap,
+		&keyboard_enter,
+		&keyboard_leave,
+		&keyboard_key,
+		&keyboard_modifier,
+		&keyboard_repeat_info,
 	};
 
 protected:

@@ -60,7 +60,7 @@ void OS_Wayland::registry_global_remove(void *data,
 	// This space deliberately left blank
 }
 
-void OS_Wayland::xdg_toplevel_configure_handler(void *data,
+void OS_Wayland::xdg_toplevel_configure(void *data,
 		struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height,
 		struct wl_array *states) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
@@ -68,33 +68,34 @@ void OS_Wayland::xdg_toplevel_configure_handler(void *data,
 	wl_egl_window_resize(d_wl->egl_window, width, height, 0, 0);
 }
 
-void OS_Wayland::xdg_toplevel_close_handler(void *data,
+void OS_Wayland::xdg_toplevel_close(void *data,
 		struct xdg_toplevel *xdg_toplevel) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 	d_wl->main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 }
 
-void OS_Wayland::xdg_surface_configure_handler(void *data,
+void OS_Wayland::xdg_surface_configure(void *data,
 		struct xdg_surface *xdg_surface, uint32_t serial) {
 	xdg_surface_ack_configure(xdg_surface, serial);
 }
 
-void OS_Wayland::xdg_ping_handler(void *data,
+void OS_Wayland::xdg_wm_base_ping(void *data,
 		struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
 	xdg_wm_base_pong(xdg_wm_base, serial);
 }
 
-void OS_Wayland::seat_name_handler(void *data,
+void OS_Wayland::seat_name(void *data,
 		struct wl_seat *wl_seat, const char *name) {
 	// This space deliberately left blank
 }
 
-void OS_Wayland::seat_capabilities_handler(void *data, struct wl_seat *wl_seat,
+void OS_Wayland::seat_capabilities(void *data, struct wl_seat *wl_seat,
 		uint32_t capabilities) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 	if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
 		d_wl->mouse_pointer = wl_seat_get_pointer(wl_seat);
-		wl_pointer_add_listener(d_wl->mouse_pointer, &d_wl->pointer_listener, d_wl);
+		wl_pointer_add_listener(d_wl->mouse_pointer,
+				&d_wl->pointer_listener, d_wl);
 	}
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
 		struct wl_keyboard *keyboard;
@@ -106,7 +107,7 @@ void OS_Wayland::seat_capabilities_handler(void *data, struct wl_seat *wl_seat,
 	}
 }
 
-void OS_Wayland::pointer_enter_handler(void *data,
+void OS_Wayland::pointer_enter(void *data,
 		struct wl_pointer *wl_pointer, uint32_t serial,
 		struct wl_surface *surface,
 		wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -124,13 +125,13 @@ void OS_Wayland::pointer_enter_handler(void *data,
 	d_wl->input->parse_input_event(mm);
 }
 
-void OS_Wayland::pointer_leave_handler(void *data,
+void OS_Wayland::pointer_leave(void *data,
 		struct wl_pointer *wl_pointer, uint32_t serial,
 		struct wl_surface *surface) {
 	// This space intentionally left blank
 }
 
-void OS_Wayland::pointer_motion_handler(void *data,
+void OS_Wayland::pointer_motion(void *data,
 		struct wl_pointer *wl_pointer, uint32_t time,
 		wl_fixed_t surface_x, wl_fixed_t surface_y) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
@@ -147,7 +148,7 @@ void OS_Wayland::pointer_motion_handler(void *data,
 	d_wl->input->parse_input_event(mm);
 }
 
-void OS_Wayland::pointer_button_handler(void *data,
+void OS_Wayland::pointer_button(void *data,
 		struct wl_pointer *wl_pointer, uint32_t serial, uint32_t time,
 		uint32_t button, uint32_t state) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
@@ -172,7 +173,7 @@ void OS_Wayland::pointer_button_handler(void *data,
 	d_wl->input->parse_input_event(mb);
 }
 
-void OS_Wayland::pointer_axis_handler(void *data,
+void OS_Wayland::pointer_axis(void *data,
 		struct wl_pointer *wl_pointer, uint32_t time,
 		uint32_t axis, wl_fixed_t value) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
@@ -207,33 +208,33 @@ void OS_Wayland::pointer_axis_handler(void *data,
 	d_wl->input->parse_input_event(mb);
 }
 
-void OS_Wayland::pointer_frame_handler(void *data,
+void OS_Wayland::pointer_frame(void *data,
 		struct wl_pointer *wl_pointer) {
 	// TODO: Build GD input events over the course of several WL events, then
 	// submit here
 }
 
-void OS_Wayland::pointer_axis_source_handler(void *data,
+void OS_Wayland::pointer_axis_source(void *data,
 		struct wl_pointer *wl_pointer, uint32_t axis_source) {
 	// This space deliberately left blank
 }
 
-void OS_Wayland::pointer_axis_stop_handler(void *data,
+void OS_Wayland::pointer_axis_stop(void *data,
 		struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis) {
 	// This space deliberately left blank
 }
 
-void OS_Wayland::pointer_axis_discrete_handler(void *data,
+void OS_Wayland::pointer_axis_discrete(void *data,
 		struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
 	// This space deliberately left blank
 }
 
-void OS_Wayland::keyboard_keymap_handler(void *data,
+void OS_Wayland::keyboard_keymap(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
 	// TODO
 }
 
-void OS_Wayland::keyboard_enter_handler(void *data,
+void OS_Wayland::keyboard_enter(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 	if (d_wl->main_loop) {
@@ -241,7 +242,7 @@ void OS_Wayland::keyboard_enter_handler(void *data,
 	}
 }
 
-void OS_Wayland::keyboard_leave_handler(void *data,
+void OS_Wayland::keyboard_leave(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 	if (d_wl->main_loop) {
@@ -249,17 +250,17 @@ void OS_Wayland::keyboard_leave_handler(void *data,
 	}
 }
 
-void OS_Wayland::keyboard_key_handler(void *data,
+void OS_Wayland::keyboard_key(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
 	// TODO
 }
 
-void OS_Wayland::keyboard_modifier_handler(void *data,
+void OS_Wayland::keyboard_modifier(void *data,
 		struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group) {
 	// TODO
 }
 
-void OS_Wayland::keyboard_repeat_info_handler(void *data,
+void OS_Wayland::keyboard_repeat_info(void *data,
 		struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay) {
 	// TODO
 }
@@ -299,14 +300,14 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 			p_desired.width, p_desired.height);
 
 	xdgsurface = xdg_wm_base_get_xdg_surface(xdgbase, surface);
-	xdg_surface_add_listener(xdgsurface, &xdg_surface_listener, NULL);
+	xdg_surface_add_listener(xdgsurface, &xdg_surface_listener, this);
 
 	xdgtoplevel = xdg_surface_get_toplevel(xdgsurface);
 	xdg_toplevel_add_listener(xdgtoplevel, &xdg_toplevel_listener, this);
 	xdg_toplevel_set_title(xdgtoplevel, "Godot");
 	wl_surface_commit(surface);
 
-	xdg_wm_base_add_listener(xdgbase, &xdg_wm_base_listener, NULL);
+	xdg_wm_base_add_listener(xdgbase, &xdg_wm_base_listener, this);
 	wl_display_roundtrip(display);
 
 	if (egl_window == EGL_NO_SURFACE) {
