@@ -896,7 +896,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 	}
 
 	wf->store_32(0); //string table size, will not be in use
-	size_t ext_res_count_pos = wf->get_position();
+	uint64_t ext_res_count_pos = wf->get_position();
 
 	wf->store_32(0); //zero ext resources, still parsing them
 
@@ -959,7 +959,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 
 	//now, save resources to a separate file, for now
 
-	size_t sub_res_count_pos = wf->get_position();
+	uint64_t sub_res_count_pos = wf->get_position();
 	wf->store_32(0); //zero sub resources, still parsing them
 
 	String temp_file = p_path + ".temp";
@@ -968,8 +968,8 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 		return ERR_CANT_OPEN;
 	}
 
-	Vector<size_t> local_offsets;
-	Vector<size_t> local_pointers_pos;
+	Vector<uint64_t> local_offsets;
+	Vector<uint64_t> local_pointers_pos;
 
 	while (next_tag.name == "sub_resource" || next_tag.name == "resource") {
 		String type;
@@ -1007,7 +1007,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 		wf->store_64(0); //temp local offset
 
 		bs_save_unicode_string(wf2, type);
-		size_t propcount_ofs = wf2->get_position();
+		uint64_t propcount_ofs = wf2->get_position();
 		wf2->store_32(0);
 
 		int prop_count = 0;
@@ -1077,7 +1077,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 
 		local_offsets.push_back(wf2->get_position());
 		bs_save_unicode_string(wf2, "PackedScene");
-		size_t propcount_ofs = wf2->get_position();
+		uint64_t propcount_ofs = wf2->get_position();
 		wf2->store_32(0);
 
 		int prop_count = 0;
@@ -1103,7 +1103,7 @@ Error ResourceInteractiveLoaderText::save_as_binary(FileAccess *p_f, const Strin
 
 	wf2->close();
 
-	size_t offset_from = wf->get_position();
+	uint64_t offset_from = wf->get_position();
 	wf->seek(sub_res_count_pos); //plus one because the saved one
 	wf->store_32(local_offsets.size());
 

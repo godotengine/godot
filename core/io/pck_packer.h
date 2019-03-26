@@ -46,7 +46,7 @@ class PCKPacker : public Reference {
 	struct File {
 		String path;
 		String src_path;
-		int size;
+		uint64_t size;
 		uint64_t offset_offset;
 	};
 	Vector<File> files;

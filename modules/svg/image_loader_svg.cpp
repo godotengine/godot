@@ -141,7 +141,7 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, const char *p
 }
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
-	uint32_t size = f->get_len();
+	uint64_t size = f->get_len();
 	PoolVector<uint8_t> src_image;
 	src_image.resize(size + 1);
 	PoolVector<uint8_t>::Write src_w = src_image.write();

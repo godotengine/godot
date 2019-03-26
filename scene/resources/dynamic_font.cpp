@@ -120,7 +120,7 @@ Error DynamicFontAtSize::_load() {
 			ERR_FAIL_V_MSG(ERR_CANT_OPEN, "Cannot open font file '" + font->font_path + "'.");
 		}
 
-		size_t len = f->get_len();
+		uint64_t len = f->get_len();
 		font->_fontdata = Vector<uint8_t>();
 		font->_fontdata.resize(len);
 		f->get_buffer(font->_fontdata.ptrw(), len);

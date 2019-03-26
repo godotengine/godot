@@ -76,8 +76,7 @@ public:
 
 	virtual String get_filesystem_type() const;
 
-	//virtual FileType get_file_type() const;
-	size_t get_space_left();
+	uint64_t get_space_left();
 
 	static void setup(jobject p_io);
 

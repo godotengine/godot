@@ -1357,7 +1357,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		String cache_file_path = base_path.plus_file(file_id + ".unwrap_cache");
 
 		int *cache_data = nullptr;
-		unsigned int cache_size = 0;
+		uint64_t cache_size = 0;
 
 		if (FileAccess::exists(cache_file_path)) {
 			Error err2;
@@ -1366,7 +1366,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			if (!err2) {
 				cache_size = file->get_len();
 				cache_data = (int *)memalloc(cache_size);
-				file->get_buffer((unsigned char *)cache_data, cache_size);
+				file->get_buffer((uint8_t *)cache_data, cache_size);
 			}
 
 			if (file) {
