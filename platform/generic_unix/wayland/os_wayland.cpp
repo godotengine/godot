@@ -401,8 +401,9 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired, int p_video_dri
 }
 
 void OS_Wayland::finalize_display() {
+	// TODO: Free more resources
+	delete_main_loop();
 	wl_display_disconnect(display);
-	print_line("not implemented (OS_Wayland): finalize_display");
 }
 
 void OS_Wayland::set_main_loop(MainLoop *p_main_loop) {
