@@ -756,6 +756,7 @@ Area::Area() :
 	monitorable = false;
 	collision_mask = 1;
 	collision_layer = 1;
+	set_ray_pickable(false);
 	set_monitoring(true);
 	set_monitorable(true);
 
