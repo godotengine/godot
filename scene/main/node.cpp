@@ -409,9 +409,7 @@ void Node::set_physics_process_internal(bool p_process_internal) {
 	if (data.physics_process_internal == p_process_internal)
 		return;
 
-	data.physics_process_internal = p_process_internal;
-
-	if (data.physics_process_internal)
+	if (p_process_internal)
 		add_to_group("physics_process_internal", false);
 	else
 		remove_from_group("physics_process_internal");
@@ -812,9 +810,7 @@ void Node::set_process_internal(bool p_idle_process_internal) {
 	if (data.idle_process_internal == p_idle_process_internal)
 		return;
 
-	data.idle_process_internal = p_idle_process_internal;
-
-	if (data.idle_process_internal)
+	if (p_idle_process_internal)
 		add_to_group("idle_process_internal", false);
 	else
 		remove_from_group("idle_process_internal");

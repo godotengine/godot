@@ -103,7 +103,7 @@ void AudioStreamPlayer::_mix_audio() {
 		if (stream_stop) {
 			stream_playback->stop();
 			active = false;
-			set_process_internal(false);
+			set_physics_process_internal(false);
 		}
 		return;
 	}
@@ -136,7 +136,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 
 		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
 			active = false;
-			set_process_internal(false);
+			set_physics_process_internal(false);
 			emit_signal("finished");
 		}
 	}
@@ -212,7 +212,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 		stream_stop = false;
 		setseek = p_from_pos;
 		active = true;
-		set_process_internal(true);
+		set_physics_process_internal(true);
 	}
 }
 
