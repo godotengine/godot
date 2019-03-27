@@ -77,6 +77,9 @@ void OS_Wayland::update_scale_factor() {
 			max = output->scale;
 		}
 	}
+	if (!is_hidpi_allowed()) {
+		max = 1;
+	}
 	scale_factor = max;
 	wl_surface_set_buffer_scale(surface, max);
 	Size2 size = get_window_size();
@@ -347,9 +350,30 @@ void OS_Wayland::output_geometry(void *data, struct wl_output *output,
 	// This space deliberately left blank
 }
 
-void OS_Wayland::output_mode(void *data, struct wl_output *output,
+void OS_Wayland::output_mode(void *data, struct wl_output *wl_output,
 		uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
-	// TODO
+	WaylandOutput *output = (WaylandOutput *)data;
+	VideoMode mode = VideoMode(width, height);
+	output->modes.push_back(mode);
+	if (flags & WL_OUTPUT_MODE_CURRENT) {
+		output->current_video_mode = mode;
+	}
+}
+
+OS::VideoMode OS_Wayland::get_video_mode(int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+	return outputs[p_screen]->current_video_mode;
+}
+
+void OS_Wayland::get_fullscreen_mode_list(
+		List<VideoMode> *p_list, int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+	// Modesetting is not allowed on Wayland, so we only show the current mode
+	p_list->push_back(outputs[p_screen]->current_video_mode);
 }
 
 void OS_Wayland::output_done(void *data, struct wl_output *output) {
@@ -360,6 +384,51 @@ void OS_Wayland::output_scale(void *data,
 		struct wl_output *wl_output, int32_t factor) {
 	WaylandOutput *output = (WaylandOutput *)data;
 	output->scale = factor;
+}
+
+int OS_Wayland::get_current_screen() const {
+	// Note: technically we can be on several screens at once.
+	for (int i = 0; i < outputs.size(); ++i) {
+		if (outputs[i]->entered) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void OS_Wayland::set_current_screen(int p_screen) {
+	if (p_screen < 0 || p_screen >= outputs.size()) {
+		return;
+	}
+	// Note, we can only choose an output if the window is full screen on
+	// Wayland. We stash the output the user wants to use in case they
+	// enter fullscreen later.
+	if (!is_window_fullscreen()) {
+		desired_output = outputs[p_screen];
+		return;
+	}
+	// TODO
+}
+
+Size2 OS_Wayland::get_screen_size(int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+	if (p_screen < 0 || p_screen >= outputs.size()) {
+		return Size2(0, 0);
+	}
+	VideoMode current = outputs[p_screen]->current_video_mode;
+	return Size2(current.width, current.height);
+}
+
+int OS_Wayland::get_screen_dpi(int p_screen) const {
+	if (p_screen == -1) {
+		p_screen = get_current_screen();
+	}
+	if (p_screen < 0 || p_screen >= outputs.size()) {
+		return 72;
+	}
+	return outputs[p_screen]->scale * 72;
 }
 
 void OS_Wayland::_initialize_wl_display() {
@@ -533,19 +602,6 @@ int OS_Wayland::get_mouse_button_state() const {
 
 void OS_Wayland::set_window_title(const String &p_title) {
 	xdg_toplevel_set_title(xdgtoplevel, p_title.utf8().ptr());
-}
-
-void OS_Wayland::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
-	print_line("not implemented (OS_Wayland): set_video_mode");
-}
-
-OS::VideoMode OS_Wayland::get_video_mode(int p_screen) const {
-	print_line("not implemented (OS_Wayland): get_video_mode");
-	return VideoMode();
-}
-
-void OS_Wayland::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-	print_line("not implemented (OS_Wayland): get_fullscreen_mode_list");
 }
 
 Size2 OS_Wayland::get_window_size() const {

@@ -58,6 +58,8 @@ private:
 		struct wl_output *output;
 		int scale;
 		bool entered;
+		Vector<VideoMode> modes = {};
+		VideoMode current_video_mode;
 	};
 
 	Vector<WaylandOutput *> outputs = {};
@@ -67,9 +69,10 @@ private:
 	MainLoop *main_loop;
 	InputDefault *input;
 	VisualServer *visual_server;
-	VideoMode current_videomode;
 	ContextGL_EGL *context_gl_egl = NULL;
 	int scale_factor = 1;
+	bool is_fullscreen = false;
+	WaylandOutput *desired_output;
 
 	void _initialize_wl_display();
 
@@ -216,21 +219,22 @@ public:
 	// virtual void set_clipboard(const String &p_text);
 	// virtual String get_clipboard() const;
 
-	void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	VideoMode get_video_mode(int p_screen = 0) const;
 	void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual int get_screen_count() const { return outputs.size(); }
-	// virtual int get_current_screen() const { return 0; }
-	// virtual void set_current_screen(int p_screen) {}
-	// virtual Point2 get_screen_position(int p_screen = -1) const { return Point2(); }
-	virtual Size2 get_screen_size(int p_screen = -1) const { return get_window_size(); }
-	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
+	virtual int get_current_screen() const;
+	virtual void set_video_mode(const VideoMode &p_video_mode,
+			int p_screen = 0) { /* Not supported on Wayland */ }
+	virtual void set_current_screen(int p_screen);
+
+	virtual Size2 get_screen_size(int p_screen = -1) const;
+	virtual int get_screen_dpi(int p_screen = -1) const;
 
 	Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
 	virtual void set_window_size(const Size2 p_size) {}
-	// virtual void set_window_fullscreen(bool p_enabled) {}
+	virtual void set_window_fullscreen(bool p_enabled) {}
 	// virtual bool is_window_fullscreen() const { return true; }
 
 	// virtual void set_window_resizable(bool p_enabled) {}
