@@ -79,15 +79,15 @@ public:
 
 	static Input *get_singleton();
 
-	virtual bool is_key_pressed(int p_scancode) const = 0;
-	virtual bool is_mouse_button_pressed(int p_button) const = 0;
-	virtual bool is_joy_button_pressed(int p_device, int p_button) const = 0;
+	virtual bool is_key_pressed(KeyList p_scancode) const = 0;
+	virtual bool is_mouse_button_pressed(ButtonList p_button) const = 0;
+	virtual bool is_joy_button_pressed(int p_device, JoystickList p_button) const = 0;
 	virtual bool is_action_pressed(const StringName &p_action) const = 0;
 	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
 	virtual bool is_action_just_released(const StringName &p_action) const = 0;
 	virtual float get_action_strength(const StringName &p_action) const = 0;
 
-	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
+	virtual float get_joy_axis(int p_device, JoystickList p_axis) const = 0;
 	virtual String get_joy_name(int p_idx) = 0;
 	virtual Array get_connected_joypads() = 0;
 	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) = 0;
@@ -103,7 +103,7 @@ public:
 
 	virtual Point2 get_mouse_position() const = 0;
 	virtual Point2 get_last_mouse_speed() const = 0;
-	virtual int get_mouse_button_mask() const = 0;
+	virtual ButtonList get_mouse_button_mask() const = 0;
 
 	virtual void warp_mouse_position(const Vector2 &p_to) = 0;
 	virtual Point2i warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect) = 0;
@@ -126,10 +126,10 @@ public:
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape = CURSOR_ARROW, const Vector2 &p_hotspot = Vector2()) = 0;
 	virtual void set_mouse_in_window(bool p_in_window) = 0;
 
-	virtual String get_joy_button_string(int p_button) = 0;
-	virtual String get_joy_axis_string(int p_axis) = 0;
-	virtual int get_joy_button_index_from_string(String p_button) = 0;
-	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
+	virtual String get_joy_button_string(JoystickList p_button) = 0;
+	virtual String get_joy_axis_string(JoystickList p_axis) = 0;
+	virtual JoystickList get_joy_button_index_from_string(String p_button) = 0;
+	virtual JoystickList get_joy_axis_index_from_string(String p_axis) = 0;
 
 	virtual void parse_input_event(const Ref<InputEvent> &p_event) = 0;
 	virtual void accumulate_input_event(const Ref<InputEvent> &p_event) = 0;

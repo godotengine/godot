@@ -913,7 +913,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					key->set_scancode(find_keycode(name));
 				} else if (token.type == TK_NUMBER) {
 
-					key->set_scancode(token.value);
+					key->set_scancode((KeyList)(int)token.value);
 				} else {
 
 					r_err_str = "Expected string or integer for keycode";
@@ -972,7 +972,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				mb->set_button_index(token.value);
+				mb->set_button_index((ButtonList)(int)token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -998,7 +998,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				jb->set_button_index(token.value);
+				jb->set_button_index((JoystickList)(int)token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 				if (token.type != TK_PARENTHESIS_CLOSE) {
@@ -1024,7 +1024,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-				jm->set_axis(token.value);
+				jm->set_axis((JoystickList)(int)token.value);
 
 				get_token(p_stream, token, line, r_err_str);
 

@@ -33,6 +33,7 @@
 
 #include "core/math/transform_2d.h"
 #include "core/os/copymem.h"
+#include "core/os/keyboard.h"
 #include "core/resource.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -151,6 +152,12 @@ enum MidiMessageList {
 	MIDI_MESSAGE_PITCH_BEND = 0xE,
 };
 
+VARIANT_ENUM_CAST(KeyList);
+VARIANT_ENUM_CAST(KeyModifierMask);
+VARIANT_ENUM_CAST(ButtonList);
+VARIANT_ENUM_CAST(JoystickList);
+VARIANT_ENUM_CAST(MidiMessageList);
+
 /**
  * Input Modifier Status
  * for keyboard/mouse events.
@@ -244,7 +251,7 @@ class InputEventKey : public InputEventWithModifiers {
 
 	bool pressed; /// otherwise release
 
-	uint32_t scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
+	KeyList scancode; ///< check keyboard.h , KeyCode enum, without modifier masks
 	uint32_t unicode; ///unicode
 
 	bool echo; /// true if this is an echo key
@@ -256,8 +263,8 @@ public:
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
 
-	void set_scancode(uint32_t p_scancode);
-	uint32_t get_scancode() const;
+	void set_scancode(KeyList p_scancode);
+	KeyList get_scancode() const;
 
 	void set_unicode(uint32_t p_unicode);
 	uint32_t get_unicode() const;
@@ -281,7 +288,7 @@ class InputEventMouse : public InputEventWithModifiers {
 
 	GDCLASS(InputEventMouse, InputEventWithModifiers)
 
-	int button_mask;
+	ButtonList button_mask;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -290,8 +297,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_button_mask(int p_mask);
-	int get_button_mask() const;
+	void set_button_mask(ButtonList p_mask);
+	ButtonList get_button_mask() const;
 
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;
@@ -307,7 +314,7 @@ class InputEventMouseButton : public InputEventMouse {
 	GDCLASS(InputEventMouseButton, InputEventMouse)
 
 	float factor;
-	int button_index;
+	ButtonList button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
 
@@ -318,8 +325,8 @@ public:
 	void set_factor(float p_factor);
 	float get_factor();
 
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(ButtonList p_index);
+	ButtonList get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
@@ -363,15 +370,15 @@ public:
 class InputEventJoypadMotion : public InputEvent {
 
 	GDCLASS(InputEventJoypadMotion, InputEvent)
-	int axis; ///< Joypad axis
+	JoystickList axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_axis(int p_axis);
-	int get_axis() const;
+	void set_axis(JoystickList p_axis);
+	JoystickList get_axis() const;
 
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
@@ -389,15 +396,15 @@ public:
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent)
 
-	int button_index;
+	JoystickList button_index;
 	bool pressed;
 	float pressure; //0 to 1
 protected:
 	static void _bind_methods();
 
 public:
-	void set_button_index(int p_index);
-	int get_button_index() const;
+	void set_button_index(JoystickList p_index);
+	JoystickList get_button_index() const;
 
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;

@@ -87,14 +87,14 @@
 			</return>
 			<argument index="0" name="device" type="int">
 			</argument>
-			<argument index="1" name="axis" type="int">
+			<argument index="1" name="axis" type="int" enum="JoystickList">
 			</argument>
 			<description>
 				Returns the current value of the joypad axis at given index (see [enum JoystickList]).
 			</description>
 		</method>
 		<method name="get_joy_axis_index_from_string">
-			<return type="int">
+			<return type="int" enum="JoystickList">
 			</return>
 			<argument index="0" name="axis" type="String">
 			</argument>
@@ -105,14 +105,14 @@
 		<method name="get_joy_axis_string">
 			<return type="String">
 			</return>
-			<argument index="0" name="axis_index" type="int">
+			<argument index="0" name="axis_index" type="int" enum="JoystickList">
 			</argument>
 			<description>
 				Receives a [enum JoystickList] axis and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_button_index_from_string">
-			<return type="int">
+			<return type="int" enum="JoystickList">
 			</return>
 			<argument index="0" name="button" type="String">
 			</argument>
@@ -123,7 +123,7 @@
 		<method name="get_joy_button_string">
 			<return type="String">
 			</return>
-			<argument index="0" name="button_index" type="int">
+			<argument index="0" name="button_index" type="int" enum="JoystickList">
 			</argument>
 			<description>
 				Receives a joy button from [enum JoystickList] and returns its equivalent name as a string.
@@ -180,7 +180,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
-			<return type="int">
+			<return type="int" enum="ButtonList">
 			</return>
 			<description>
 				Returns mouse buttons as a bitmask. If multiple mouse buttons are pressed at the same time the bits are added together.
@@ -226,7 +226,7 @@
 			</return>
 			<argument index="0" name="device" type="int">
 			</argument>
-			<argument index="1" name="button" type="int">
+			<argument index="1" name="button" type="int" enum="JoystickList">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoystickList]).
@@ -244,7 +244,7 @@
 		<method name="is_key_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="scancode" type="int">
+			<argument index="0" name="scancode" type="int" enum="KeyList">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the key. You can pass a [enum KeyList] constant.
@@ -253,7 +253,7 @@
 		<method name="is_mouse_button_pressed" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="button" type="int">
+			<argument index="0" name="button" type="int" enum="ButtonList">
 			</argument>
 			<description>
 				Returns [code]true[/code] if you are pressing the mouse button specified with [enum ButtonList].

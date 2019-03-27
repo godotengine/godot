@@ -237,11 +237,11 @@ bool InputEventKey::is_pressed() const {
 	return pressed;
 }
 
-void InputEventKey::set_scancode(uint32_t p_scancode) {
+void InputEventKey::set_scancode(KeyList p_scancode) {
 
 	scancode = p_scancode;
 }
-uint32_t InputEventKey::get_scancode() const {
+KeyList InputEventKey::get_scancode() const {
 
 	return scancode;
 }
@@ -354,18 +354,18 @@ void InputEventKey::_bind_methods() {
 InputEventKey::InputEventKey() {
 
 	pressed = false;
-	scancode = 0;
+	scancode = (KeyList)0;
 	unicode = 0; ///unicode
 	echo = false;
 }
 
 ////////////////////////////////////////
 
-void InputEventMouse::set_button_mask(int p_mask) {
+void InputEventMouse::set_button_mask(ButtonList p_mask) {
 
 	button_mask = p_mask;
 }
-int InputEventMouse::get_button_mask() const {
+ButtonList InputEventMouse::get_button_mask() const {
 
 	return button_mask;
 }
@@ -406,7 +406,7 @@ void InputEventMouse::_bind_methods() {
 
 InputEventMouse::InputEventMouse() {
 
-	button_mask = 0;
+	button_mask = (ButtonList)0;
 }
 
 ///////////////////////////////////////
@@ -421,11 +421,11 @@ float InputEventMouseButton::get_factor() {
 	return factor;
 }
 
-void InputEventMouseButton::set_button_index(int p_index) {
+void InputEventMouseButton::set_button_index(ButtonList p_index) {
 
 	button_index = p_index;
 }
-int InputEventMouseButton::get_button_index() const {
+ButtonList InputEventMouseButton::get_button_index() const {
 
 	return button_index;
 }
@@ -550,7 +550,7 @@ void InputEventMouseButton::_bind_methods() {
 InputEventMouseButton::InputEventMouseButton() {
 
 	factor = 1;
-	button_index = 0;
+	button_index = (ButtonList)0;
 	pressed = false;
 	doubleclick = false;
 }
@@ -680,12 +680,12 @@ InputEventMouseMotion::InputEventMouseMotion() {
 
 ////////////////////////////////////////
 
-void InputEventJoypadMotion::set_axis(int p_axis) {
+void InputEventJoypadMotion::set_axis(JoystickList p_axis) {
 
 	axis = p_axis;
 }
 
-int InputEventJoypadMotion::get_axis() const {
+JoystickList InputEventJoypadMotion::get_axis() const {
 
 	return axis;
 }
@@ -742,17 +742,17 @@ void InputEventJoypadMotion::_bind_methods() {
 
 InputEventJoypadMotion::InputEventJoypadMotion() {
 
-	axis = 0;
+	axis = (JoystickList)0;
 	axis_value = 0;
 }
 /////////////////////////////////
 
-void InputEventJoypadButton::set_button_index(int p_index) {
+void InputEventJoypadButton::set_button_index(JoystickList p_index) {
 
 	button_index = p_index;
 }
 
-int InputEventJoypadButton::get_button_index() const {
+JoystickList InputEventJoypadButton::get_button_index() const {
 
 	return button_index;
 }
@@ -824,7 +824,7 @@ void InputEventJoypadButton::_bind_methods() {
 
 InputEventJoypadButton::InputEventJoypadButton() {
 
-	button_index = 0;
+	button_index = (JoystickList)0;
 	pressure = 0;
 	pressed = false;
 }

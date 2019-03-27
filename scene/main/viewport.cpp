@@ -419,7 +419,7 @@ void Viewport::_notification(int p_what) {
 						mm->set_shift(physics_last_mouse_state.shift);
 						mm->set_control(physics_last_mouse_state.control);
 						mm->set_metakey(physics_last_mouse_state.meta);
-						mm->set_button_mask(physics_last_mouse_state.mouse_mask);
+						mm->set_button_mask((ButtonList)physics_last_mouse_state.mouse_mask);
 						physics_picking_events.push_back(mm);
 					}
 				}
@@ -2558,7 +2558,7 @@ void Viewport::_drop_mouse_focus() {
 			mb.instance();
 			mb->set_position(c->get_local_mouse_position());
 			mb->set_global_position(c->get_local_mouse_position());
-			mb->set_button_index(i + 1);
+			mb->set_button_index((ButtonList)(i + 1));
 			mb->set_pressed(false);
 			c->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
 		}
@@ -2644,7 +2644,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				//send unclic
 
 				mb->set_position(click);
-				mb->set_button_index(i + 1);
+				mb->set_button_index((ButtonList)(i + 1));
 				mb->set_pressed(false);
 				gui.mouse_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, mb);
 			}
@@ -2664,7 +2664,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				//send clic
 
 				mb->set_position(click);
-				mb->set_button_index(i + 1);
+				mb->set_button_index((ButtonList)(i + 1));
 				mb->set_pressed(true);
 				gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input, mb);
 			}

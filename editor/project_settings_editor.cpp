@@ -236,7 +236,7 @@ void ProjectSettingsEditor::_device_input_add() {
 
 			Ref<InputEventMouseButton> mb;
 			mb.instance();
-			mb->set_button_index(device_index->get_selected() + 1);
+			mb->set_button_index((ButtonList)(device_index->get_selected() + 1));
 			mb->set_device(_get_current_device());
 
 			for (int i = 0; i < events.size(); i++) {
@@ -256,7 +256,7 @@ void ProjectSettingsEditor::_device_input_add() {
 
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
-			jm->set_axis(device_index->get_selected() >> 1);
+			jm->set_axis((JoystickList)(device_index->get_selected() >> 1));
 			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
 			jm->set_device(_get_current_device());
 
@@ -279,7 +279,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadButton> jb;
 			jb.instance();
 
-			jb->set_button_index(device_index->get_selected());
+			jb->set_button_index((JoystickList)device_index->get_selected());
 			jb->set_device(_get_current_device());
 
 			for (int i = 0; i < events.size(); i++) {

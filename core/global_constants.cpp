@@ -85,12 +85,6 @@ static Vector<_GlobalConstant> _global_constants;
 
 #endif
 
-VARIANT_ENUM_CAST(KeyList);
-VARIANT_ENUM_CAST(KeyModifierMask);
-VARIANT_ENUM_CAST(ButtonList);
-VARIANT_ENUM_CAST(JoystickList);
-VARIANT_ENUM_CAST(MidiMessageList);
-
 void register_global_constants() {
 
 	//{ KEY_BACKSPACE, VK_BACK },// (0x08) // backspace

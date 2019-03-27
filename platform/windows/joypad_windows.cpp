@@ -336,7 +336,7 @@ void JoypadWindows::process_joypads() {
 			int button_mask = XINPUT_GAMEPAD_DPAD_UP;
 			for (int i = 0; i <= 16; i++) {
 
-				input->joy_button(joy.id, i, joy.state.Gamepad.wButtons & button_mask);
+				input->joy_button(joy.id, (JoystickList)i, joy.state.Gamepad.wButtons & button_mask);
 				button_mask = button_mask * 2;
 			}
 
@@ -391,14 +391,14 @@ void JoypadWindows::process_joypads() {
 
 				if (!joy->last_buttons[j]) {
 
-					input->joy_button(joy->id, j, true);
+					input->joy_button(joy->id, (JoystickList)j, true);
 					joy->last_buttons[j] = true;
 				}
 			} else {
 
 				if (joy->last_buttons[j]) {
 
-					input->joy_button(joy->id, j, false);
+					input->joy_button(joy->id, (JoystickList)j, false);
 					joy->last_buttons[j] = false;
 				}
 			}
@@ -413,7 +413,7 @@ void JoypadWindows::process_joypads() {
 
 			for (int k = 0; k < count; k++) {
 				if (joy->joy_axis[j] == axes[k]) {
-					input->joy_axis(joy->id, j, axis_correct(values[k]));
+					input->joy_axis(joy->id, (JoystickList)j, axis_correct(values[k]));
 					break;
 				};
 			};

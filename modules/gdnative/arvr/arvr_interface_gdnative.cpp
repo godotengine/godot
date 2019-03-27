@@ -364,7 +364,7 @@ void GDAPI godot_arvr_set_controller_button(godot_int p_controller_id, godot_int
 	if (tracker != NULL) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
-			input->joy_button(joyid, p_button, p_is_pressed);
+			input->joy_button(joyid, (JoystickList)p_button, p_is_pressed);
 		}
 	}
 }
@@ -383,7 +383,7 @@ void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p
 			InputDefault::JoyAxis jx;
 			jx.min = p_can_be_negative ? -1 : 0;
 			jx.value = p_value;
-			input->joy_axis(joyid, p_axis, jx);
+			input->joy_axis(joyid, (JoystickList)p_axis, jx);
 		}
 	}
 }

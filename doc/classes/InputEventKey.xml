@@ -27,7 +27,7 @@
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			If [code]true[/code], the key's state is pressed. If [code]false[/code], the key's state is released.
 		</member>
-		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode">
+		<member name="scancode" type="int" setter="set_scancode" getter="get_scancode" enum="KeyList">
 			Key scancode, one of the [enum KeyList] constants.
 		</member>
 		<member name="unicode" type="int" setter="set_unicode" getter="get_unicode">

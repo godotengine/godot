@@ -432,19 +432,19 @@ String keycode_get_string(uint32_t p_code) {
 	return codestr;
 }
 
-int find_keycode(const String &p_code) {
+KeyList find_keycode(const String &p_code) {
 
 	const _KeyCodeText *kct = &_keycodes[0];
 
 	while (kct->text) {
 
 		if (p_code.nocasecmp_to(kct->text) == 0) {
-			return kct->code;
+			return (KeyList)kct->code;
 		}
 		kct++;
 	}
 
-	return 0;
+	return (KeyList)0;
 }
 
 const char *find_keycode_name(int p_keycode) {
@@ -475,8 +475,8 @@ int keycode_get_count() {
 	return count;
 }
 
-int keycode_get_value_by_index(int p_index) {
-	return _keycodes[p_index].code;
+KeyList keycode_get_value_by_index(int p_index) {
+	return (KeyList)_keycodes[p_index].code;
 }
 
 const char *keycode_get_name_by_index(int p_index) {

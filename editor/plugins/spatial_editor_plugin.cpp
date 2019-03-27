@@ -2035,7 +2035,7 @@ static bool is_shortcut_pressed(const String &p_path) {
 		return false;
 	}
 	const Input &input = *Input::get_singleton();
-	int scancode = k->get_scancode();
+	KeyList scancode = k->get_scancode();
 	return input.is_key_pressed(scancode);
 }
 

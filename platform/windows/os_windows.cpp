@@ -414,7 +414,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				mm->set_shift(shift_mem);
 				mm->set_alt(alt_mem);
 
-				mm->set_button_mask(last_button_state);
+				mm->set_button_mask((ButtonList)last_button_state);
 
 				Point2i c(video_mode.width / 2, video_mode.height / 2);
 
@@ -508,7 +508,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
-			mm->set_button_mask(last_button_state);
+			mm->set_button_mask((ButtonList)last_button_state);
 
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
@@ -576,45 +576,45 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			switch (uMsg) {
 				case WM_LBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(1);
+					mb->set_button_index(BUTTON_LEFT);
 				} break;
 				case WM_LBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(1);
+					mb->set_button_index(BUTTON_LEFT);
 				} break;
 				case WM_MBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(3);
+					mb->set_button_index(BUTTON_MIDDLE);
 
 				} break;
 				case WM_MBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(3);
+					mb->set_button_index(BUTTON_MIDDLE);
 				} break;
 				case WM_RBUTTONDOWN: {
 					mb->set_pressed(true);
-					mb->set_button_index(2);
+					mb->set_button_index(BUTTON_RIGHT);
 				} break;
 				case WM_RBUTTONUP: {
 					mb->set_pressed(false);
-					mb->set_button_index(2);
+					mb->set_button_index(BUTTON_RIGHT);
 				} break;
 				case WM_LBUTTONDBLCLK: {
 
 					mb->set_pressed(true);
-					mb->set_button_index(1);
+					mb->set_button_index(BUTTON_LEFT);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_RBUTTONDBLCLK: {
 
 					mb->set_pressed(true);
-					mb->set_button_index(2);
+					mb->set_button_index(BUTTON_RIGHT);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_MBUTTONDBLCLK: {
 
 					mb->set_pressed(true);
-					mb->set_button_index(3);
+					mb->set_button_index(BUTTON_MIDDLE);
 					mb->set_doubleclick(true);
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -681,7 +681,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				last_button_state |= (1 << (mb->get_button_index() - 1));
 			else
 				last_button_state &= ~(1 << (mb->get_button_index() - 1));
-			mb->set_button_mask(last_button_state);
+			mb->set_button_mask((ButtonList)last_button_state);
 
 			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
@@ -723,7 +723,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					//send release for mouse wheel
 					Ref<InputEventMouseButton> mbd = mb->duplicate();
 					last_button_state &= ~(1 << (mbd->get_button_index() - 1));
-					mbd->set_button_mask(last_button_state);
+					mbd->set_button_mask((ButtonList)last_button_state);
 					mbd->set_pressed(false);
 					input->accumulate_input_event(mbd);
 				}
@@ -978,7 +978,7 @@ void OS_Windows::process_key_events() {
 					k->set_control(ke.control);
 					k->set_metakey(ke.meta);
 					k->set_pressed(true);
-					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_scancode((KeyList)KeyMappingWindows::get_keysym(ke.wParam));
 					k->set_unicode(ke.wParam);
 					if (k->get_unicode() && gr_mem) {
 						k->set_alt(false);
@@ -1010,7 +1010,7 @@ void OS_Windows::process_key_events() {
 					// Special case for Numpad Enter key
 					k->set_scancode(KEY_KP_ENTER);
 				} else {
-					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_scancode((KeyList)KeyMappingWindows::get_keysym(ke.wParam));
 				}
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {

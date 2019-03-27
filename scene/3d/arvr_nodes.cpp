@@ -217,7 +217,7 @@ void ARVRController::_notification(int p_what) {
 					// check button states
 					for (int i = 0; i < 16; i++) {
 						bool was_pressed = (button_states & mask) == mask;
-						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, i);
+						bool is_pressed = Input::get_singleton()->is_joy_button_pressed(joy_id, (JoystickList)i);
 
 						if (!was_pressed && is_pressed) {
 							emit_signal("button_pressed", i);
@@ -299,7 +299,7 @@ int ARVRController::get_joystick_id() const {
 	return tracker->get_joy_id();
 };
 
-int ARVRController::is_button_pressed(int p_button) const {
+int ARVRController::is_button_pressed(JoystickList p_button) const {
 	int joy_id = get_joystick_id();
 	if (joy_id == -1) {
 		return false;
@@ -308,7 +308,7 @@ int ARVRController::is_button_pressed(int p_button) const {
 	return Input::get_singleton()->is_joy_button_pressed(joy_id, p_button);
 };
 
-float ARVRController::get_joystick_axis(int p_axis) const {
+float ARVRController::get_joystick_axis(JoystickList p_axis) const {
 	int joy_id = get_joystick_id();
 	if (joy_id == -1) {
 		return 0.0;
