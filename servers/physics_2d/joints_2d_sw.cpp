@@ -299,9 +299,7 @@ bool GrooveJoint2DSW::setup(real_t p_step) {
 
 	Vector2 delta = (B->get_transform().get_origin() + rB) - (A->get_transform().get_origin() + rA);
 
-	// FIXME: We used to do this assignment and then override it with 0.001 right after. Investigate why.
-	//real_t _b = get_bias();
-	real_t _b = 0.001;
+	real_t _b = get_bias();
 	gbias = (delta * -(_b == 0 ? space->get_constraint_bias() : _b) * (1.0 / p_step)).clamped(get_max_bias());
 
 	// apply accumulated impulse
