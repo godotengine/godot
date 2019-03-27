@@ -127,7 +127,7 @@
 			<description>
 				Returns the arc tangent of [code]y/x[/code] in radians. Use to get the angle of tangent [code]y/x[/code]. To compute the value, the method takes into account the sign of both arguments in order to determine the quadrant.
 				[codeblock]
-				a = atan(0, -1) # a is 3.141593
+				a = atan2(0, -1) # a is 3.141593
 				[/codeblock]
 			</description>
 		</method>
