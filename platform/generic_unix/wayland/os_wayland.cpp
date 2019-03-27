@@ -482,7 +482,9 @@ int OS_Wayland::get_screen_dpi(int p_screen) const {
 	if (p_screen < 0 || p_screen >= outputs.size()) {
 		return 72;
 	}
-	return outputs[p_screen]->scale * 72;
+	// 192 is the magic value at which the godot editor automatically scales
+	// itself up. 96 is 192/2.
+	return outputs[p_screen]->scale * 96;
 }
 
 void OS_Wayland::_initialize_wl_display() {
@@ -621,6 +623,8 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired,
 					get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
+	wl_display_dispatch(display);
+	wl_display_roundtrip(display);
 	return Error::OK;
 }
 
@@ -721,6 +725,7 @@ void OS_Wayland::process_events() {
 
 OS_Wayland::WaylandOutput::WaylandOutput(
 		OS_Wayland *d_wl, struct wl_output *output) {
+	wl_output_set_user_data(output, this);
 	this->d_wl = d_wl;
 	this->output = output;
 	this->scale = 1;
