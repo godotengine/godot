@@ -112,6 +112,29 @@ void OS_Wayland::xdg_toplevel_configure(void *data,
 			width * d_wl->scale_factor, height * d_wl->scale_factor);
 	wl_egl_window_resize(d_wl->egl_window,
 			width * d_wl->scale_factor, height * d_wl->scale_factor, 0, 0);
+	d_wl->maximized = d_wl->fullscreen = d_wl->resizing =
+		d_wl->activated = false;
+	void *p;
+	wl_array_for_each(p, states) {
+		uint32_t *state = (uint32_t *)p;
+		switch (*state) {
+		case XDG_TOPLEVEL_STATE_MAXIMIZED:
+			d_wl->maximized = true;
+			break;
+		case XDG_TOPLEVEL_STATE_FULLSCREEN:
+			d_wl->fullscreen = true;
+			break;
+		case XDG_TOPLEVEL_STATE_RESIZING:
+			d_wl->resizing = true;
+			break;
+		case XDG_TOPLEVEL_STATE_ACTIVATED:
+			d_wl->activated = true;
+			break;
+		default:
+			// This space deliberately left blank
+			break;
+		}
+	}
 }
 
 void OS_Wayland::xdg_toplevel_close(void *data,

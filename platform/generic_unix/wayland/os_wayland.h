@@ -71,8 +71,11 @@ private:
 	VisualServer *visual_server;
 	ContextGL_EGL *context_gl_egl = NULL;
 	int scale_factor = 1;
-	bool is_fullscreen = false;
 	WaylandOutput *desired_output;
+	bool maximized = false,
+		 fullscreen = false,
+		 resizing = false,
+		 activated = false;
 
 	void _initialize_wl_display();
 
@@ -235,21 +238,11 @@ public:
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
 	virtual void set_window_size(const Size2 p_size) {}
 	virtual void set_window_fullscreen(bool p_enabled) {}
-	// virtual bool is_window_fullscreen() const { return true; }
 
-	// virtual void set_window_resizable(bool p_enabled) {}
-	// virtual bool is_window_resizable() const { return false; }
-
-	// virtual void set_window_minimized(bool p_enabled) {}
-	// virtual bool is_window_minimized() const { return false; }
+	virtual bool is_window_fullscreen() const { return fullscreen; }
 
 	// virtual void set_window_maximized(bool p_enabled) {}
-	// virtual bool is_window_maximized() const { return true; }
-
-	// virtual void set_window_always_on_top(bool p_enabled) {}
-	// virtual bool is_window_always_on_top() const { return false; }
-
-	// virtual Rect2 get_window_safe_area() const;
+	virtual bool is_window_maximized() const { return maximized; }
 
 	// virtual void set_borderless_window(bool p_borderless) {}
 	// virtual bool get_borderless_window() { return 0; }
