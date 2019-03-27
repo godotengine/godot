@@ -72,6 +72,7 @@ private:
 	InputDefault *input;
 	VisualServer *visual_server;
 	ContextGL_EGL *context_gl_egl = NULL;
+	int video_driver_index;
 	int scale_factor = 1;
 	WaylandOutput *desired_output;
 	bool maximized = false,

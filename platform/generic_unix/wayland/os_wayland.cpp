@@ -502,8 +502,8 @@ void OS_Wayland::_initialize_wl_display() {
 	wl_display_roundtrip(display);
 }
 
-Error OS_Wayland::initialize_display(const VideoMode &p_desired,
-		int p_video_driver) {
+Error OS_Wayland::initialize_display(
+		const VideoMode &p_desired, int p_video_driver) {
 	_initialize_wl_display();
 
 	main_loop = NULL;
@@ -597,6 +597,8 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired,
 		}
 	}
 
+	video_driver_index = p_video_driver;
+
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
@@ -678,18 +680,22 @@ void OS_Wayland::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 }
 
 int OS_Wayland::get_video_driver_count() const {
-	print_line("not implemented (OS_Wayland): get_video_driver_count");
-	return 0;
+	return 2;
 }
 
 const char *OS_Wayland::get_video_driver_name(int p_driver) const {
-	print_line("not implemented (OS_Wayland): get_video_driver_name");
-	return "";
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		default:
+			return "INVALID VIDEO DRIVER";
+	}
 }
 
 int OS_Wayland::get_current_video_driver() const {
-	print_line("not implemented (OS_Wayland): get_current_video_driver");
-	return 0;
+	return video_driver_index;
 }
 
 String OS_Wayland::get_name() {
