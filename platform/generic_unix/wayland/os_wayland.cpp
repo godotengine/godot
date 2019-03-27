@@ -137,6 +137,18 @@ void OS_Wayland::xdg_toplevel_configure(void *data,
 	}
 }
 
+void OS_Wayland::set_window_fullscreen(bool p_enabled) {
+	if (!p_enabled) {
+		xdg_toplevel_unset_fullscreen(xdgtoplevel);
+		return;
+	}
+	if (desired_output != NULL) {
+		xdg_toplevel_set_fullscreen(xdgtoplevel, desired_output->output);
+	} else {
+		xdg_toplevel_set_fullscreen(xdgtoplevel, NULL);
+	}
+}
+
 void OS_Wayland::xdg_toplevel_close(void *data,
 		struct xdg_toplevel *xdg_toplevel) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
@@ -426,11 +438,11 @@ void OS_Wayland::set_current_screen(int p_screen) {
 	// Note, we can only choose an output if the window is full screen on
 	// Wayland. We stash the output the user wants to use in case they
 	// enter fullscreen later.
+	desired_output = outputs[p_screen];
 	if (!is_window_fullscreen()) {
-		desired_output = outputs[p_screen];
 		return;
 	}
-	// TODO
+	xdg_toplevel_set_fullscreen(xdgtoplevel, desired_output->output);
 }
 
 Size2 OS_Wayland::get_screen_size(int p_screen) const {

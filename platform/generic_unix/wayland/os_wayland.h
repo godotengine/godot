@@ -236,8 +236,7 @@ public:
 
 	Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
-	virtual void set_window_size(const Size2 p_size) {}
-	virtual void set_window_fullscreen(bool p_enabled) {}
+	virtual void set_window_fullscreen(bool p_enabled);
 
 	virtual bool is_window_fullscreen() const { return fullscreen; }
 
