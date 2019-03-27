@@ -277,7 +277,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (code_tag) {
 			xml_output.append("[");
 			pos = brk_pos + 1;
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
 			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
 			String link_tag = tag.substr(0, tag.find(" "));
 
@@ -386,6 +386,97 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(link_target);
 					xml_output.append("</c>");
 				}
+			} else if (link_tag == "const") {
+				if (!target_itype || !target_itype->is_object_type) {
+					if (OS::get_singleton()->is_stdout_verbose()) {
+						if (target_itype) {
+							OS::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", link_target.utf8().get_data());
+						} else {
+							OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", link_target.utf8().get_data());
+						}
+					}
+
+					// TODO Map what we can
+					xml_output.append("<c>");
+					xml_output.append(link_target);
+					xml_output.append("</c>");
+				} else if (!target_itype && target_cname == name_cache.type_at_GlobalScope) {
+					String target_name = (String)target_cname;
+
+					// Try to find as a global constant
+					const ConstantInterface *target_iconst = find_constant_by_name(target_name, global_constants);
+
+					if (target_iconst) {
+						// Found global constant
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE "." BINDINGS_GLOBAL_SCOPE_CLASS ".");
+						xml_output.append(target_iconst->proxy_name);
+						xml_output.append("\"/>");
+					} else {
+						// Try to find as global enum constant
+						const EnumInterface *target_ienum = NULL;
+
+						for (const List<EnumInterface>::Element *E = global_enums.front(); E; E = E->next()) {
+							target_ienum = &E->get();
+							target_iconst = find_constant_by_name(target_name, target_ienum->constants);
+							if (target_iconst)
+								break;
+						}
+
+						if (target_iconst) {
+							xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+							xml_output.append(target_ienum->cname);
+							xml_output.append(".");
+							xml_output.append(target_iconst->proxy_name);
+							xml_output.append("\"/>");
+						} else {
+							ERR_PRINTS("Cannot resolve global constant reference in documentation: " + link_target);
+
+							xml_output.append("<c>");
+							xml_output.append(link_target);
+							xml_output.append("</c>");
+						}
+					}
+				} else {
+					String target_name = (String)target_cname;
+
+					// Try to find the constant in the current class
+					const ConstantInterface *target_iconst = find_constant_by_name(target_name, target_itype->constants);
+
+					if (target_iconst) {
+						// Found constant in current class
+						xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+						xml_output.append(target_itype->proxy_name);
+						xml_output.append(".");
+						xml_output.append(target_iconst->proxy_name);
+						xml_output.append("\"/>");
+					} else {
+						// Try to find as enum constant in the current class
+						const EnumInterface *target_ienum = NULL;
+
+						for (const List<EnumInterface>::Element *E = target_itype->enums.front(); E; E = E->next()) {
+							target_ienum = &E->get();
+							target_iconst = find_constant_by_name(target_name, target_ienum->constants);
+							if (target_iconst)
+								break;
+						}
+
+						if (target_iconst) {
+							xml_output.append("<see cref=\"" BINDINGS_NAMESPACE ".");
+							xml_output.append(target_itype->proxy_name);
+							xml_output.append(".");
+							xml_output.append(target_ienum->cname);
+							xml_output.append(".");
+							xml_output.append(target_iconst->proxy_name);
+							xml_output.append("\"/>");
+						} else {
+							ERR_PRINTS("Cannot resolve constant reference in documentation: " + link_target);
+
+							xml_output.append("<c>");
+							xml_output.append(link_target);
+							xml_output.append("</c>");
+						}
+					}
+				}
 			}
 
 			pos = brk_end + 1;
@@ -414,7 +505,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			} else if (tag == "Nil") {
 				xml_output.append("<see langword=\"null\"/>");
 			} else if (tag.begins_with("@")) {
-				// @Global Scope, @GDScript, etc
+				// @GlobalScope, @GDScript, etc
 				xml_output.append("<c>");
 				xml_output.append(tag);
 				xml_output.append("</c>");

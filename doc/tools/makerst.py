@@ -757,14 +757,25 @@ def rstize_text(text, state):  # type: (str, State) -> str
 
                     elif cmd.startswith("constant"):
                         found = False
-                        if method_param in class_def.constants:
-                            found = True
 
-                        else:
-                            for enum in class_def.enums.values():
-                                if method_param in enum.values:
-                                    found = True
-                                    break
+                        # Search in the current class
+                        search_class_defs = [class_def]
+
+                        if param.find('.') == -1:
+                            # Also search in @GlobalScope as a last resort if no class was specified
+                            search_class_defs.append(state.classes["@GlobalScope"])
+
+                        for search_class_def in search_class_defs:
+                            if method_param in search_class_def.constants:
+                                class_param = search_class_def.name
+                                found = True
+
+                            else:
+                                for enum in search_class_def.enums.values():
+                                    if method_param in enum.values:
+                                        class_param = search_class_def.name
+                                        found = True
+                                        break
 
                         if not found:
                             print_error("Unresolved constant '{}', file: {}".format(param, state.current_class), state)
@@ -916,6 +927,9 @@ def make_enum(t, state):  # type: (str, State) -> str
         e = t
         if c in state.classes and e not in state.classes[c].enums:
             c = "@GlobalScope"
+
+    if not c in state.classes and c.startswith("_"):
+        c = c[1:] # Remove the underscore prefix
 
     if c in state.classes and e in state.classes[c].enums:
         return ":ref:`{0}<enum_{1}_{0}>`".format(e, c)
