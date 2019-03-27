@@ -237,8 +237,7 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 				node->scale = _arr_to_vec3(n["scale"]);
 			}
 
-			node->xform.basis = Basis(node->rotation);
-			node->xform.basis.scale(node->scale);
+			node->xform.basis.set_quat_scale(node->rotation, node->scale);
 			node->xform.origin = node->translation;
 		}
 
