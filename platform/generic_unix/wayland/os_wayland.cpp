@@ -35,6 +35,7 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
+#include <chrono>
 #include <linux/input-event-codes.h>
 #include <sys/mman.h>
 
@@ -252,6 +253,24 @@ void OS_Wayland::pointer_button(void *data,
 	mb->set_position(d_wl->_mouse_pos);
 	mb->set_global_position(d_wl->_mouse_pos);
 	d_wl->input->parse_input_event(mb);
+
+	uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000
+		- d_wl->last_click_ms;
+	if (mb->get_button_index() == d_wl->last_click_button_index) {
+		if (diff < 400 && Point2(
+					d_wl->last_click_pos).distance_to(d_wl->_mouse_pos) < 5) {
+			d_wl->last_click_ms = 0;
+			d_wl->last_click_pos = Point2(-100, -100);
+			d_wl->last_click_button_index = -1;
+			mb->set_doubleclick(true);
+		}
+	} else if (mb->get_button_index() < 4 || mb->get_button_index() > 7) {
+		d_wl->last_click_button_index = mb->get_button_index();
+	}
+	if (!mb->is_doubleclick()) {
+		d_wl->last_click_ms += diff;
+		d_wl->last_click_pos = d_wl->_mouse_pos;
+	}
 }
 
 void OS_Wayland::pointer_axis(void *data,

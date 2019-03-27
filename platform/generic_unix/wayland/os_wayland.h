@@ -37,6 +37,8 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
+#include <chrono>
+
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
 #include <wayland-egl.h>
@@ -76,6 +78,13 @@ private:
 		 fullscreen = false,
 		 resizing = false,
 		 activated = false;
+
+	Point2 last_mouse_pos;
+	bool last_mouse_pos_valid;
+	Point2i last_click_pos;
+	uint64_t last_click_ms;
+	int last_click_button_index;
+	uint32_t last_button_state;
 
 	void _initialize_wl_display();
 
