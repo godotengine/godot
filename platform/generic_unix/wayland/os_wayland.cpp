@@ -625,9 +625,11 @@ Error OS_Wayland::initialize_display(const VideoMode &p_desired,
 }
 
 void OS_Wayland::finalize_display() {
-	// TODO: Free more resources
 	delete_main_loop();
 	wl_display_disconnect(display);
+	for (int i = 0; i < outputs.size(); ++i) {
+		memdelete(outputs[i]);
+	}
 }
 
 void OS_Wayland::set_main_loop(MainLoop *p_main_loop) {
@@ -664,7 +666,6 @@ Size2 OS_Wayland::get_window_size() const {
 }
 
 bool OS_Wayland::get_window_per_pixel_transparency_enabled() const {
-	print_line("not implemented (OS_Wayland): get_window_per_pixel_transparency_enabled");
 	return false;
 }
 
