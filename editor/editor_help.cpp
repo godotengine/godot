@@ -48,11 +48,12 @@ void EditorHelp::_init_colors() {
 	text_color = get_color("default_color", "RichTextLabel");
 	headline_color = get_color("headline_color", "EditorHelp");
 	base_type_color = title_color.linear_interpolate(text_color, 0.5);
-	comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
+	comment_color = text_color * Color(1, 1, 1, 0.6);
 	symbol_color = comment_color;
-	value_color = Color(text_color.r, text_color.g, text_color.b, 0.4);
-	qualifier_color = Color(text_color.r, text_color.g, text_color.b, 0.8);
+	value_color = text_color * Color(1, 1, 1, 0.4);
+	qualifier_color = text_color * Color(1, 1, 1, 0.8);
 	type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
+	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 }
 
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
@@ -1340,19 +1341,11 @@ void EditorHelp::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_READY: {
-
-			_update_doc();
-
-		} break;
-
+		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
-			class_desc->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 			_update_doc();
 
 		} break;
-
 		default: break;
 	}
 }
@@ -1426,7 +1419,7 @@ EditorHelp::EditorHelp() {
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
-	class_desc->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
+	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
 	class_desc->connect("gui_input", this, "_class_desc_input");
 
@@ -1491,7 +1484,7 @@ void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
+			rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 		} break;
 
 		default: break;
@@ -1509,7 +1502,7 @@ EditorHelpBit::EditorHelpBit() {
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
-	rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
+	rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
