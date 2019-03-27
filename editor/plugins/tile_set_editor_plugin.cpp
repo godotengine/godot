@@ -2417,6 +2417,8 @@ void TileSetEditor::draw_polygon_shapes() {
 							colors.push_back(c_bg);
 						}
 					}
+					if (polygon.size() == 0)
+						continue;
 					if (polygon.size() > 2) {
 						workspace->draw_polygon(polygon, colors);
 					}
