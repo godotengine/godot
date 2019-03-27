@@ -91,8 +91,6 @@ def configure(env):
 
         env['SPAWN'] = mySpawn
 
-    ndk_platform = env['ndk_platform']
-
     if env['android_arch'] not in ['armv7', 'armv6', 'arm64v8', 'x86', 'x86_64']:
         env['android_arch'] = 'armv7'
 
@@ -115,9 +113,9 @@ def configure(env):
         arch_subpath = "x86"
         env["x86_libtheora_opt_gcc"] = True
     elif env['android_arch'] == 'x86_64':
-        if get_platform(env["ndk_platform"]) < 21:
+        if get_platform(env['ndk_platform']) < 21:
             print("WARNING: android_arch=x86_64 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
-            env["ndk_platform"] = "android-21"
+            env['ndk_platform'] = "android-21"
         env['ARCH'] = 'arch-x86_64'
         env.extra_suffix = ".x86_64" + env.extra_suffix
         target_subpath = "x86_64-4.9"
@@ -140,9 +138,9 @@ def configure(env):
         else:
             env.extra_suffix = ".armv7" + env.extra_suffix
     elif env["android_arch"] == "arm64v8":
-        if get_platform(ndk_platform) < 21:
+        if get_platform(env['ndk_platform']) < 21:
             print("WARNING: android_arch=arm64v8 is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21")
-            ndk_platform = "android-21"
+            env['ndk_platform'] = "android-21"
         env['ARCH'] = 'arch-arm64'
         target_subpath = "aarch64-linux-android-4.9"
         abi_subpath = "aarch64-linux-android"
@@ -203,7 +201,7 @@ def configure(env):
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/android/support/include"])
         # For unified headers this define has to be set manually
-        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(ndk_platform))])
+        env.Append(CPPFLAGS=["-D__ANDROID_API__=" + str(get_platform(env['ndk_platform']))])
     else:
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
