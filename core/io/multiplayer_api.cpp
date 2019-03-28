@@ -299,7 +299,7 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 		ERR_FAIL_COND(p_offset >= p_packet_len);
 
 		int vlen;
-		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
+		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen, network_peer->is_object_decoding_allowed());
 		ERR_EXPLAIN("Invalid packet received. Unable to decode RPC argument.");
 		ERR_FAIL_COND(err != OK);
 
@@ -335,7 +335,7 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 	ERR_FAIL_COND(!_can_call_mode(p_node, rset_mode, p_from));
 
 	Variant value;
-	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset);
+	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, network_peer->is_object_decoding_allowed());
 
 	ERR_EXPLAIN("Invalid packet received. Unable to decode RSET value.");
 	ERR_FAIL_COND(err != OK);
@@ -526,11 +526,11 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 
 	if (p_set) {
 		// Set argument.
-		Error err = encode_variant(*p_arg[0], NULL, len);
+		Error err = encode_variant(*p_arg[0], NULL, len, network_peer->is_object_decoding_allowed());
 		ERR_EXPLAIN("Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		ERR_FAIL_COND(err != OK);
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
+		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len, network_peer->is_object_decoding_allowed());
 		ofs += len;
 
 	} else {
@@ -539,11 +539,11 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
-			Error err = encode_variant(*p_arg[i], NULL, len);
+			Error err = encode_variant(*p_arg[i], NULL, len, network_peer->is_object_decoding_allowed());
 			ERR_EXPLAIN("Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			ERR_FAIL_COND(err != OK);
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
+			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len, network_peer->is_object_decoding_allowed());
 			ofs += len;
 		}
 	}
