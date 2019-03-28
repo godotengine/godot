@@ -1766,6 +1766,9 @@ void Object::_bind_methods() {
 	BIND_VMETHOD(plget);
 
 #endif
+
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_to_string"));
+
 	BIND_VMETHOD(MethodInfo("_init"));
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);

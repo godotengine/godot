@@ -1574,6 +1574,9 @@ Variant::operator String() const {
 					};
 				};
 #endif
+				if (_get_obj().obj->has_method("_to_string")) {
+					return *reinterpret_cast<const String *>(_get_obj().obj->call("_to_string")._data._mem);
+				}
 				return "[" + _get_obj().obj->get_class() + ":" + itos(_get_obj().obj->get_instance_id()) + "]";
 			} else
 				return "[Object:null]";
