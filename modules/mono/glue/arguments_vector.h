@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  glue_header.h                                                        */
+/*  arguments_vector.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,52 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef MONO_GLUE_ENABLED
+#ifndef ARGUMENTS_VECTOR_H
+#define ARGUMENTS_VECTOR_H
 
-#include "base_object_glue.h"
-#include "collections_glue.h"
-#include "gd_glue.h"
-#include "nodepath_glue.h"
-#include "rid_glue.h"
-#include "string_glue.h"
+#include "core/os/memory.h"
 
-/**
- * Registers internal calls that were not generated. This function is called
- * from the generated GodotSharpBindings::register_generated_icalls() function.
- */
-void godot_register_glue_header_icalls() {
-	godot_register_collections_icalls();
-	godot_register_gd_icalls();
-	godot_register_nodepath_icalls();
-	godot_register_object_icalls();
-	godot_register_rid_icalls();
-	godot_register_string_icalls();
-}
+template <typename T, int POOL_SIZE = 5>
+struct ArgumentsVector {
 
-// Used by the generated glue
+private:
+	T pool[POOL_SIZE];
+	T *_ptr;
 
-#include "core/array.h"
-#include "core/class_db.h"
-#include "core/dictionary.h"
-#include "core/engine.h"
-#include "core/method_bind.h"
-#include "core/node_path.h"
-#include "core/object.h"
-#include "core/reference.h"
-#include "core/typedefs.h"
-#include "core/ustring.h"
+	ArgumentsVector();
+	ArgumentsVector(const ArgumentsVector &);
 
-#include "../mono_gd/gd_mono_class.h"
-#include "../mono_gd/gd_mono_internals.h"
-#include "../mono_gd/gd_mono_utils.h"
+public:
+	T *ptr() { return _ptr; }
+	T &get(int p_idx) { return _ptr[p_idx]; }
+	void set(int p_idx, const T &p_value) { _ptr[p_idx] = p_value; }
 
-#define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = NULL;              \
-	if (!ci) {                                         \
-		ci = ClassDB::classes.getptr(m_type);          \
-	}                                                  \
-	Object *m_instance = ci->creation_func();
+	explicit ArgumentsVector(int size) {
+		if (size <= POOL_SIZE) {
+			_ptr = pool;
+		} else {
+			_ptr = memnew_arr(T, size);
+		}
+	}
+};
 
-#include "arguments_vector.h"
-
-#endif // MONO_GLUE_ENABLED
+#endif // ARGUMENTS_VECTOR_H
