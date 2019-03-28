@@ -794,7 +794,7 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 	}
 }
 
-Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_object_as_id) {
+Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bool p_full_objects) {
 
 	uint8_t *buf = r_buffer;
 
@@ -819,7 +819,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 		} break;
 		case Variant::OBJECT: {
-			if (p_object_as_id) {
+			if (!p_full_objects) {
 				flags |= ENCODE_FLAG_OBJECT_AS_ID;
 			}
 		} break;
@@ -1086,22 +1086,8 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		} break;
 		case Variant::OBJECT: {
 
-			if (p_object_as_id) {
+			if (p_full_objects) {
 
-				if (buf) {
-
-					Object *obj = p_variant;
-					ObjectID id = 0;
-					if (obj && ObjectDB::instance_validate(obj)) {
-						id = obj->get_instance_id();
-					}
-
-					encode_uint64(id, buf);
-				}
-
-				r_len += 8;
-
-			} else {
 				Object *obj = p_variant;
 				if (!obj) {
 					if (buf) {
@@ -1139,7 +1125,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 						_encode_string(E->get().name, buf, r_len);
 
 						int len;
-						Error err = encode_variant(obj->get(E->get().name), buf, len, p_object_as_id);
+						Error err = encode_variant(obj->get(E->get().name), buf, len, p_full_objects);
 						if (err)
 							return err;
 						ERR_FAIL_COND_V(len % 4, ERR_BUG);
@@ -1148,6 +1134,19 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 							buf += len;
 					}
 				}
+			} else {
+				if (buf) {
+
+					Object *obj = p_variant;
+					ObjectID id = 0;
+					if (obj && ObjectDB::instance_validate(obj)) {
+						id = obj->get_instance_id();
+					}
+
+					encode_uint64(id, buf);
+				}
+
+				r_len += 8;
 			}
 
 		} break;
@@ -1180,14 +1179,14 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 					r_len++; //pad
 				*/
 				int len;
-				encode_variant(E->get(), buf, len, p_object_as_id);
+				encode_variant(E->get(), buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf)
 					buf += len;
 				Variant *v = d.getptr(E->get());
 				ERR_FAIL_COND_V(!v, ERR_BUG);
-				encode_variant(*v, buf, len, p_object_as_id);
+				encode_variant(*v, buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf)
@@ -1209,7 +1208,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			for (int i = 0; i < v.size(); i++) {
 
 				int len;
-				encode_variant(v.get(i), buf, len, p_object_as_id);
+				encode_variant(v.get(i), buf, len, p_full_objects);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf)
