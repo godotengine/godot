@@ -175,7 +175,7 @@ MonoObject *godot_icall_GD_str2var(MonoString *p_str) {
 	return GDMonoMarshal::variant_to_mono_object(ret);
 }
 
-bool godot_icall_GD_type_exists(MonoString *p_type) {
+MonoBoolean godot_icall_GD_type_exists(MonoString *p_type) {
 	return ClassDB::class_exists(GDMonoMarshal::mono_string_to_godot(p_type));
 }
 

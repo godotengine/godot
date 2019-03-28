@@ -42,13 +42,23 @@ Object *godot_icall_Object_Ctor(MonoObject *p_obj);
 
 void godot_icall_Object_Disposed(MonoObject *p_obj, Object *p_ptr);
 
-void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, bool p_is_finalizer);
+void godot_icall_Reference_Disposed(MonoObject *p_obj, Object *p_ptr, MonoBoolean p_is_finalizer);
 
 MethodBind *godot_icall_Object_ClassDB_get_method(MonoString *p_type, MonoString *p_method);
 
 MonoObject *godot_icall_Object_weakref(Object *p_obj);
 
 Error godot_icall_SignalAwaiter_connect(Object *p_source, MonoString *p_signal, Object *p_target, MonoObject *p_awaiter);
+
+// DynamicGodotObject
+
+MonoArray *godot_icall_DynamicGodotObject_SetMemberList(Object *p_ptr);
+
+MonoBoolean godot_icall_DynamicGodotObject_InvokeMember(Object *p_ptr, MonoString *p_name, MonoArray *p_args, MonoObject **r_result);
+
+MonoBoolean godot_icall_DynamicGodotObject_GetMember(Object *p_ptr, MonoString *p_name, MonoObject **r_result);
+
+MonoBoolean godot_icall_DynamicGodotObject_SetMember(Object *p_ptr, MonoString *p_name, MonoObject *p_value);
 
 // Register internal calls
 

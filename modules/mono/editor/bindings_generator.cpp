@@ -98,7 +98,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(7)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(8)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
 
@@ -1912,20 +1912,13 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				String vararg_arg = "arg" + argc_str;
 				String real_argc_str = itos(p_imethod.arguments.size() - 1); // Arguments count without vararg
 
-				p_output.push_back("\tVector<Variant> varargs;\n"
-								   "\tint vararg_length = mono_array_length(");
+				p_output.push_back("\tint vararg_length = mono_array_length(");
 				p_output.push_back(vararg_arg);
 				p_output.push_back(");\n\tint total_length = ");
 				p_output.push_back(real_argc_str);
-				p_output.push_back(" + vararg_length;\n\t");
-				p_output.push_back(err_fail_macro);
-				p_output.push_back("(varargs.resize(vararg_length) != OK");
-				p_output.push_back(fail_ret);
-				p_output.push_back(");\n\tVector<Variant*> " C_LOCAL_PTRCALL_ARGS ";\n\t");
-				p_output.push_back(err_fail_macro);
-				p_output.push_back("(call_args.resize(total_length) != OK");
-				p_output.push_back(fail_ret);
-				p_output.push_back(");\n");
+				p_output.push_back(" + vararg_length;\n"
+								   "\tArgumentsVector<Variant> varargs(vararg_length);\n"
+								   "\tArgumentsVector<const Variant *> " C_LOCAL_PTRCALL_ARGS "(total_length);\n");
 				p_output.push_back(c_in_statements);
 				p_output.push_back("\tfor (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
 								   "\t\tMonoObject* elem = mono_array_get(");
@@ -1934,7 +1927,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 								   "\t\tvarargs.set(i, GDMonoMarshal::mono_object_to_variant(elem));\n"
 								   "\t\t" C_LOCAL_PTRCALL_ARGS ".set(");
 				p_output.push_back(real_argc_str);
-				p_output.push_back(" + i, &varargs.write[i]);\n\t" CLOSE_BLOCK);
+				p_output.push_back(" + i, &varargs.get(i));\n\t" CLOSE_BLOCK);
 			} else {
 				p_output.push_back(c_in_statements);
 				p_output.push_back("\tconst void* " C_LOCAL_PTRCALL_ARGS "[");
@@ -1956,7 +1949,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			}
 
 			p_output.push_back(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
-			p_output.push_back(p_imethod.arguments.size() ? "(const Variant**)" C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
+			p_output.push_back(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
 			p_output.push_back(", total_length, vcall_error);\n");
 
 			// See the comment on the C_LOCAL_VARARG_RET declaration
