@@ -1427,8 +1427,8 @@ msgid ""
 "Enabled'."
 msgstr ""
 "Die Zielplattform benötigt ‚ETC‘-Texturkompression für den Treiber-Fallback "
-"auf GLES2. Bitte ‚Import Etc‘ in den Projekteinstellungen aktivieren oder ‚"
-"Driver Fallback Enabled‘ ausschalten."
+"auf GLES2. Bitte ‚Import Etc‘ in den Projekteinstellungen aktivieren oder "
+"‚Driver Fallback Enabled‘ ausschalten."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -5954,6 +5954,14 @@ msgstr "Mit externem Editor debuggen"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
 msgstr "Öffne Godot-Referenzdokumentation"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."

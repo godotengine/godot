@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-12 15:26+0000\n"
+"PO-Revision-Date: 2019-03-19 15:04+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -25,7 +25,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.5.1\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1366,14 +1366,17 @@ msgstr "패킹 중"
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
-msgstr "대상 플랫폼은 GLES2를 위해 'ETC' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 'Import Etc'을 사용하세요."
+msgstr ""
+"대상 플랫폼은 GLES2를 위해 'ETC' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 "
+"'Import Etc'을 사용하세요."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"대상 플랫폼은 GLES3를 위해 'ETC2' 텍스쳐 압축이 필요합니다. 프로젝트 설정에서 'Import Etc 2'를 사용하세요."
+"대상 플랫폼은 GLES3를 위해 'ETC2' 텍스쳐 압축이 필요합니다. 프로젝트 설정에"
+"서 'Import Etc 2'를 사용하세요."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1382,8 +1385,10 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"대상 플랫폼은 드라이버가 GLES2로 폴백하기 위해 'ETC' 텍스쳐 압축이 필요합니다.\n"
-"프로젝트 설정에서 'Import Etc'을 키거나, 'Driver Fallback Enabled'를 비활성화하세요."
+"대상 플랫폼은 드라이버가 GLES2로 폴백하기 위해 'ETC' 텍스쳐 압축이 필요합니"
+"다.\n"
+"프로젝트 설정에서 'Import Etc'을 키거나, 'Driver Fallback Enabled'를 비활성화"
+"하세요."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1612,11 +1617,11 @@ msgstr "열거:"
 
 #: editor/editor_help.cpp
 msgid "enum  "
-msgstr "이넘(열거)  "
+msgstr "이넘  "
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr "상수(Constant)"
+msgstr "상수"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
@@ -1768,7 +1773,9 @@ msgstr "리소스 저장 중 오류!"
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
-msgstr "이 리소스는 편집된 씬에 속해있지 않기 때문에 저장할 수 없습니다. 먼저 리소스를 유일하게 만드세요."
+msgstr ""
+"이 리소스는 편집된 씬에 속해있지 않기 때문에 저장할 수 없습니다. 먼저 리소스"
+"를 유일하게 만드세요."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -2023,7 +2030,7 @@ msgstr "이 작업은 루트 노드가 없이는 불가능합니다."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr "타일 셋 내보내기"
+msgstr "타일셋 내보내기"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
@@ -2262,7 +2269,7 @@ msgstr "메시 라이브러리..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr "타일 셋..."
+msgstr "타일셋..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2689,7 +2696,7 @@ msgstr "포함"
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr "Self(셀프)"
+msgstr "셀프"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
@@ -5196,7 +5203,7 @@ msgstr "CPU파티클로 변환"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Particles"
-msgstr "파티클(Particles)"
+msgstr "파티클"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generated Point Count:"
@@ -5859,6 +5866,14 @@ msgid "Open Godot online documentation"
 msgstr "Godot 온라인 문서 열기"
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "레퍼런스 문서 검색."
 
@@ -6080,7 +6095,7 @@ msgstr "물리적 본 만들기"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Skeleton"
-msgstr "스켈레톤(Skeleton)"
+msgstr "스켈레톤"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical skeleton"
@@ -6696,7 +6711,7 @@ msgstr "분리.:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
-msgstr "TextureRegion"
+msgstr "텍스쳐지역"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Can't save theme to file:"
@@ -7134,7 +7149,7 @@ msgstr "이 속성을 바꿀 수 없습니다."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
-msgstr "TileSet(타일 셋)"
+msgstr "타일셋"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
@@ -7239,7 +7254,7 @@ msgstr "경로 내보내기"
 
 #: editor/project_export.cpp
 msgid "Resources"
-msgstr "리소스(Resources)"
+msgstr "리소스"
 
 #: editor/project_export.cpp
 msgid "Export all resources in the project"
@@ -7769,7 +7784,7 @@ msgstr "이벤트 추가"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "버튼(Button)"
+msgstr "버튼"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -7901,7 +7916,7 @@ msgstr "액션:"
 
 #: editor/project_settings_editor.cpp
 msgid "Action"
-msgstr "액션(Action)"
+msgstr "액션"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"
@@ -8105,7 +8120,7 @@ msgstr "각 노드에 대해 카운터가 증가하는 양"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "패딩(Padding)"
+msgstr "패딩"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -9659,10 +9674,10 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
-"이 노드는 모양을 갖는 자식 노드가 없습니다, 다른 물체와 충돌하거나 상호작용 "
+"이 노드는 Shape을 갖는 자식 노드가 없습니다, 다른 물체와 충돌하거나 상호작용 "
 "할 수 없습니다.\n"
-"CollisionShape2D 또는 CollisionPolygon2D를 자식 노드로 추가하여 모양을 정의하"
-"세요."
+"CollisionShape2D 또는 CollisionPolygon2D를 자식 노드로 추가하여 Shape을 정의"
+"하세요."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -9684,17 +9699,17 @@ msgid ""
 "CollisionObject2D derived node. Please only use it as a child of Area2D, "
 "StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D는 CollisionObject2D에 충돌 모양을 지정하기 위해서만 사용됩니"
-"다. Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등의 자식 노드로 추가"
-"하여 사용합니다."
+"CollisionShape2D는 CollisionObject2D에 충돌 Shape을 지정하기 위해서만 사용됩"
+"니다. Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등의 자식 노드로 추"
+"가하여 사용합니다."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"CollisionShape2D가 기능을 하기 위해서는 반드시 모양이 제공되어야 합니다. 모"
-"양 리소스를 만드세요!"
+"CollisionShape2D가 기능을 하기 위해서는 반드시 Shape이 제공되어야 합니다. "
+"Shape 리소스를 만드세요!"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -9867,9 +9882,9 @@ msgid ""
 "Consider adding a CollisionShape or CollisionPolygon as a child to define "
 "its shape."
 msgstr ""
-"이 노드는 모양을 갖는 자식 노드가 없습니다, 다른 물체와 충돌하거나 상호작용 "
+"이 노드는 Shape을 갖는 자식 노드가 없습니다, 다른 물체와 충돌하거나 상호작용 "
 "할 수 없습니다.\n"
-"CollisionShape 또는 CollisionPolygon를 자식 노드로 추가하여 모양을 정의하세"
+"CollisionShape 또는 CollisionPolygon를 자식 노드로 추가하여 Shape을 정의하세"
 "요."
 
 #: scene/3d/collision_polygon.cpp
@@ -9878,7 +9893,7 @@ msgid ""
 "CollisionObject derived node. Please only use it as a child of Area, "
 "StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionPolygon은 CollisionObject에 충돌 모양을 지정하기 위해서만 사용됩니"
+"CollisionPolygon은 CollisionObject에 충돌 Shape을 지정하기 위해서만 사용됩니"
 "다. Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가하여 사용"
 "합니다."
 
@@ -9892,23 +9907,25 @@ msgid ""
 "derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
 "KinematicBody, etc. to give them a shape."
 msgstr ""
-"CollisionShape은 CollisionObject에 충돌 모양을 지정하기 위해서만 사용됩니다. "
-"Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가하여 사용합니"
-"다."
+"CollisionShape은 CollisionObject에 충돌 Shape을 지정하기 위해서만 사용됩니"
+"다. Area, StaticBody, RigidBody, KinematicBody 등에 자식 노드로 추가하여 사용"
+"합니다."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it!"
 msgstr ""
-"CollisionShape가 기능을 하기 위해서는 모양이 제공되어야 합니다. 모양 리소스"
+"CollisionShape가 기능을 하기 위해서는 Shape이 제공되어야 합니다. Shape 리소스"
 "를 만드세요!"
 
 #: scene/3d/collision_shape.cpp
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
-msgstr "평면 모양은 잘 작동하지 않으며 이후 버전에서 제거될 예정입니다. 사용하지 말아주세요."
+msgstr ""
+"평면 모양은 잘 작동하지 않으며 이후 버전에서 제거될 예정입니다. 사용하지 말아"
+"주세요."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
