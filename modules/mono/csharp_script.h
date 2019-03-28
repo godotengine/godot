@@ -298,6 +298,7 @@ class CSharpLanguage : public ScriptLanguage {
 		StringName _signal_callback;
 		StringName _set;
 		StringName _get;
+		StringName _get_property_list;
 		StringName _notification;
 		StringName _script_source;
 		StringName dotctor; // .ctor
