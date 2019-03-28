@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-12 15:25+0000\n"
+"PO-Revision-Date: 2019-03-16 11:42+0000\n"
 "Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
@@ -24,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 3.5.1\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -3208,9 +3208,8 @@ msgid "Re-Scan Filesystem"
 msgstr "Znovu skenovat souborový systém"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle split mode"
-msgstr "Přepnout režim"
+msgstr "Přepnout režim rozdělení"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
@@ -5332,7 +5331,7 @@ msgstr "Klik: Přidat bod"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Left Click: Split Segment (in curve)"
-msgstr ""
+msgstr "Levý klik: Rozdělit segment (v křivce)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -5410,7 +5409,7 @@ msgstr ""
 
 #: editor/plugins/path_editor_plugin.cpp
 msgid "Split Segment (in curve)"
-msgstr ""
+msgstr "Rozdělit segment (v křivce)"
 
 #: editor/plugins/physical_bone_plugin.cpp
 #, fuzzy
@@ -5867,6 +5866,14 @@ msgstr "Debugovat v externím editoru"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
 msgstr "Otevřít Godot online dokumentaci"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -8427,7 +8434,7 @@ msgstr "Přepnout viditelnost"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr ""
+msgstr "Varování konfigurace uzlu:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -8487,7 +8494,7 @@ msgstr "Strom scény (uzly):"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node Configuration Warning!"
-msgstr ""
+msgstr "Varování konfigurace uzlu!"
 
 #: editor/scene_tree_editor.cpp
 msgid "Select a Node"

@@ -54,12 +54,13 @@
 # Raphael Nogueira Campos <raphaelncampos@gmail.com>, 2019.
 # Dimenicius <vinicius.costa.92@gmail.com>, 2019.
 # Davi <wokep.ma.wavid@gmail.com>, 2019.
+# Endrick Gustavo <endrickgb@hotmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-03-12 15:26+0000\n"
-"Last-Translator: Davi <wokep.ma.wavid@gmail.com>\n"
+"PO-Revision-Date: 2019-03-28 09:36+0000\n"
+"Last-Translator: Endrick Gustavo <endrickgb@hotmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -67,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.5.1\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -170,9 +171,8 @@ msgid "Anim Change Call"
 msgstr "Alterar Chamada da Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Alterar Repetição da Animação"
+msgstr "Alterar Duração da Animação"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -229,9 +229,8 @@ msgid "Anim Clips:"
 msgstr "Clipes de Animação:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "Alterar Valor do Vetor"
+msgstr "Alterar Valor do Trajeto"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -5975,6 +5974,14 @@ msgstr "Depurar com o Editor Externo"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
 msgstr "Abrir a documentação online da Godot"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."

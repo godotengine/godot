@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 # Ray West <the.raxar@gmail.com>, 2017.
 # Julius Stopforth <jjstopforth@gmail.com>, 2018.
+# Isa Tippens <isatippens2@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:38+0100\n"
-"Last-Translator: Julius Stopforth <jjstopforth@gmail.com>\n"
+"PO-Revision-Date: 2019-03-28 09:36+0000\n"
+"Last-Translator: Isa Tippens <isatippens2@gmail.com>\n"
 "Language-Team: Afrikaans <https://hosted.weblate.org/projects/godot-engine/"
 "godot/af/>\n"
 "Language: af\n"
@@ -17,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -62,7 +63,7 @@ msgstr ""
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Bevry"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -5912,6 +5913,14 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp

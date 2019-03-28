@@ -5993,6 +5993,14 @@ msgid "Open Godot online documentation"
 msgstr "Ouvrir la documentation Godot en ligne"
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Chercher dans la documentation de référence."
 

@@ -22,12 +22,13 @@
 # Alper Çitmen <alper.citmen@gmail.com>, 2019.
 # ege1212 <owlphp@gmail.com>, 2019.
 # Ömer YAZICIOĞLU <oyazicioglu@gmail.com>, 2019.
+# Mertcan Duman <mertcan.dmn16@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-08 15:04+0000\n"
-"Last-Translator: Ömer YAZICIOĞLU <oyazicioglu@gmail.com>\n"
+"PO-Revision-Date: 2019-03-19 15:04+0000\n"
+"Last-Translator: Mertcan Duman <mertcan.dmn16@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -35,7 +36,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -91,7 +92,7 @@ msgstr "Dengelenmiş"
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
 msgid "Mirror"
-msgstr "X'e Aynala"
+msgstr "ayna"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -345,7 +346,7 @@ msgstr "Animasyon Anahtar Gir"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Change Animation Step"
-msgstr "Animasyon FPS'sini Değiştir"
+msgstr "Animasyon Adımını Değiştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Rearrange Tracks"
@@ -6073,6 +6074,14 @@ msgstr "Harici düzenleyici ile hata ayıkla"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
 msgstr "Çevrimiçi Godot dökümanlarını aç"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
