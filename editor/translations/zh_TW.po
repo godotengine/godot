@@ -13,12 +13,13 @@
 # Sam Pan <sampan66@gmail.com>, 2016.
 # ken l <macauhome@gmail.com>, 2018.
 # Eric K <eric900601@gmail.com>, 2019.
+# cnieFIT <dtotncq@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-01 12:09+0000\n"
-"Last-Translator: Eric K <eric900601@gmail.com>\n"
+"PO-Revision-Date: 2019-03-28 09:36+0000\n"
+"Last-Translator: cnieFIT <dtotncq@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -26,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -58,28 +59,28 @@ msgstr "無效的內存地址類型 %s，基礎型式 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "基本類型 %s 的命名索引 '% s' 無效"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "無效參數類型: '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "調用“%s”時："
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "释放"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "平衡的"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "镜像"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -138,31 +139,31 @@ msgstr "變更動畫長度"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "變更動畫循環"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr ""
+msgstr "屬性軌道"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr ""
+msgstr "3D 變換軌道"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "調用方法軌道"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr ""
+msgstr "貝塞爾曲線軌跡"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "音訊回放軌道"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "動畫回放軌道"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -181,15 +182,15 @@ msgstr "動畫空間。"
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "函數："
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "音訊剪輯:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "動畫剪輯："
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -198,11 +199,11 @@ msgstr "調整陣列資料"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr ""
+msgstr "打開/關閉此軌道."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr ""
+msgstr "更新模式 (如何設置此屬性)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -254,7 +255,7 @@ msgstr "線性"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "立方體"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -267,7 +268,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "插入畫格"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -356,11 +357,11 @@ msgid ""
 "-AudioStreamPlayer\n"
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
-msgstr ""
+msgstr "音訊曲目只能指向以下類型的節點:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "動畫軌跡只能指向 AnimationPlayer 節點."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -368,7 +369,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "無法添加沒有根目錄的新曲目"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -2707,7 +2708,7 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
-msgstr ""
+msgstr "平均時間 (秒)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
@@ -2715,11 +2716,11 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr ""
+msgstr "物理幀%"
 
 #: editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "時間："
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -2727,27 +2728,27 @@ msgstr ""
 
 #: editor/editor_profiler.cpp
 msgid "Self"
-msgstr ""
+msgstr "自身"
 
 #: editor/editor_profiler.cpp
 msgid "Frame #:"
-msgstr ""
+msgstr "幀 #:"
 
 #: editor/editor_profiler.cpp
 msgid "Time"
-msgstr ""
+msgstr "時間"
 
 #: editor/editor_profiler.cpp
 msgid "Calls"
-msgstr ""
+msgstr "調用"
 
 #: editor/editor_properties.cpp
 msgid "On"
-msgstr ""
+msgstr "啟用"
 
 #: editor/editor_properties.cpp
 msgid "Layer"
-msgstr ""
+msgstr "層"
 
 #: editor/editor_properties.cpp
 msgid "Bit %d, value %d"
@@ -2755,11 +2756,11 @@ msgstr ""
 
 #: editor/editor_properties.cpp
 msgid "[Empty]"
-msgstr ""
+msgstr "[空]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr ""
+msgstr "指派..."
 
 #: editor/editor_properties.cpp
 #, fuzzy
@@ -2788,19 +2789,19 @@ msgstr ""
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Pick a Viewport"
-msgstr ""
+msgstr "選擇一個視口"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New Script"
-msgstr ""
+msgstr "新建腳本"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
-msgstr ""
+msgstr "新建 %s"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Make Unique"
-msgstr ""
+msgstr "轉換為獨立資源"
 
 #: editor/editor_properties.cpp
 #: editor/plugins/animation_blend_space_1d_editor.cpp
@@ -2814,7 +2815,7 @@ msgstr ""
 #: editor/plugins/tile_map_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Paste"
-msgstr ""
+msgstr "粘貼"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 #, fuzzy
@@ -2835,15 +2836,15 @@ msgstr ""
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
-msgstr ""
+msgstr "尺寸: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Page: "
-msgstr ""
+msgstr "页: "
 
 #: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
-msgstr ""
+msgstr "新建帧:"
 
 #: editor/editor_properties_array_dict.cpp
 #, fuzzy
@@ -2857,11 +2858,11 @@ msgstr ""
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Remove Item"
-msgstr ""
+msgstr "移除項目"
 
 #: editor/editor_run_native.cpp
 msgid "Select device from the list"
-msgstr ""
+msgstr "從清單中選擇設備"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -2875,80 +2876,80 @@ msgstr ""
 
 #: editor/editor_run_script.cpp
 msgid "There is an edited scene already."
-msgstr ""
+msgstr "已經有一個正在編輯的場景。"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't instance script:"
-msgstr ""
+msgstr "無法實例腳本:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the 'tool' keyword?"
-msgstr ""
+msgstr "您是否遺漏了 'tool' 关键字?"
 
 #: editor/editor_run_script.cpp
 msgid "Couldn't run script:"
-msgstr ""
+msgstr "無法運行腳本:"
 
 #: editor/editor_run_script.cpp
 msgid "Did you forget the '_run' method?"
-msgstr ""
+msgstr "您是否遺漏了 '_run' 方法?"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr ""
+msgstr "選擇要導入的節點"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr ""
+msgstr "場景路徑:"
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr ""
+msgstr "從節點導入:"
 
 #: editor/export_template_manager.cpp
 msgid "Re-Download"
-msgstr ""
+msgstr "重新下載"
 
 #: editor/export_template_manager.cpp
 msgid "Uninstall"
-msgstr ""
+msgstr "卸載"
 
 #: editor/export_template_manager.cpp
 msgid "(Installed)"
-msgstr ""
+msgstr "(已安裝)"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
-msgstr ""
+msgstr "下載"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
-msgstr ""
+msgstr "(缺少)"
 
 #: editor/export_template_manager.cpp
 msgid "(Current)"
-msgstr ""
+msgstr "(當前)"
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving mirrors, please wait..."
-msgstr ""
+msgstr "正在檢索鏡像，請稍候…"
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr ""
+msgstr "是否删除版本為“%s”的範本？"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
-msgstr ""
+msgstr "無法打開zip導出範本。"
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
-msgstr ""
+msgstr "範本文件: %s 中的 version.txt 無效."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
-msgstr ""
+msgstr "範本中沒有找到version.txt文件。"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -2957,22 +2958,22 @@ msgstr "載入場景時發生錯誤"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
-msgstr ""
+msgstr "正在解壓導出範本"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr ""
+msgstr "導入:"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "No download links found for this version. Direct download is only available "
 "for official releases."
-msgstr ""
+msgstr "沒有找到這個版本的下載鏈接. 直接下載適用于正式版本."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr ""
+msgstr "無法解析."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2983,32 +2984,32 @@ msgstr "連接..."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "No response."
-msgstr ""
+msgstr "沒有回應。"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request Failed."
-msgstr ""
+msgstr "請求失敗."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
-msgstr ""
+msgstr "重新定向循環."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr ""
+msgstr "失敗："
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
-msgstr ""
+msgstr "下載完成。"
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Templates installation failed. The problematic templates archives can be "
 "found at '%s'."
-msgstr ""
+msgstr "範本安裝失敗。有問題的範本存檔可以在 \"% s\" 中找到。"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3027,11 +3028,11 @@ msgstr "斷線"
 
 #: editor/export_template_manager.cpp
 msgid "Resolving"
-msgstr ""
+msgstr "解析中"
 
 #: editor/export_template_manager.cpp
 msgid "Can't Resolve"
-msgstr ""
+msgstr "無法解析"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3052,7 +3053,7 @@ msgstr "連接..."
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Requesting..."
-msgstr ""
+msgstr "正在請求…"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3066,31 +3067,31 @@ msgstr "連接..."
 
 #: editor/export_template_manager.cpp
 msgid "SSL Handshake Error"
-msgstr ""
+msgstr "SSL握手錯誤"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr ""
+msgstr "當前版本:"
 
 #: editor/export_template_manager.cpp
 msgid "Installed Versions:"
-msgstr ""
+msgstr "已安裝版本:"
 
 #: editor/export_template_manager.cpp
 msgid "Install From File"
-msgstr ""
+msgstr "從檔案中安裝"
 
 #: editor/export_template_manager.cpp
 msgid "Remove Template"
-msgstr ""
+msgstr "移除範本"
 
 #: editor/export_template_manager.cpp
 msgid "Select template file"
-msgstr ""
+msgstr "選擇範本檔案"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
-msgstr ""
+msgstr "導出範本管理器"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
@@ -3099,7 +3100,7 @@ msgstr "載入場景時發生錯誤"
 
 #: editor/export_template_manager.cpp
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
-msgstr ""
+msgstr "從清單中選擇鏡像: (Shift + 單擊: 在瀏覽器中打開)"
 
 #: editor/file_type_cache.cpp
 msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
@@ -5987,6 +5988,14 @@ msgstr "離開編輯器嗎?"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp

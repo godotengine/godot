@@ -6036,6 +6036,14 @@ msgid "Open Godot online documentation"
 msgstr "เปิดคู่มือ"
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "ค้นหาคู่มือ"
 

@@ -23,12 +23,13 @@
 # عاصم شكر - Aasem shokr <aasemshokr@gmail.com>, 2018.
 # Mohammad Fares <mhdchehade@gmail.com>, 2018.
 # NewFriskFan26 <newfriskfan26@gmail.com>, 2019.
+# spiderx0x <legendofdarks@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-02-18 08:54+0000\n"
-"Last-Translator: Rex_sa <asd1234567890m@gmail.com>\n"
+"PO-Revision-Date: 2019-03-24 17:38+0000\n"
+"Last-Translator: spiderx0x <legendofdarks@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -37,7 +38,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.5-dev\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -60,24 +61,23 @@ msgstr "لا يمكن استخدام الحالة لأن لحظة التشغيل
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "معاملات غير صالحة للتشغل s,%s% و s%."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "الرمز غير متاح للنوع %s للنوع الصل %s"
+msgstr "الرمز غير متاح للنوع %s للنوع %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "أسم غير صحيح للفهرس '%s' للنوع الأساسي %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr "نوع برهان خاطئ للتحويل()، إستخدم ثابت TYPE_*."
+msgstr "نقاش غير صالحة للبناء '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "عند نداء '%s':"
+msgstr "عند الأستدعاء إلى '%s':"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -86,15 +86,15 @@ msgstr "مجاني/فارغ"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr "معزز"
+msgstr "متوازن / متعادل"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr "عكس"
+msgstr "عكس / الإنعكاس"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "أدخل مفتاحاً هنا"
+msgstr "أدخل الرمز هنا"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
@@ -102,17 +102,15 @@ msgstr "تكرار المفاتيح المحدد(ة)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "إمسح المفاتيح المحدد(ة)"
+msgstr "إمسح الزموز المحدد(ة)"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "إضافة نقطة"
+msgstr "إضافة نقطة Bezier"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "مسح النقطة"
+msgstr "تحريك نقطة الBezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -128,7 +126,7 @@ msgstr "تغيير وقت الإطار الرئيسي للحركة"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "إنتقالية تغيير التحريك"
+msgstr "تغيير المقطع الإنتقالي"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
@@ -143,14 +141,13 @@ msgid "Anim Change Call"
 msgstr "نداء تغيير التحريك"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "تغيير إسم الحركة:"
+msgstr "تعديل طول عرض الحركة"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "تعديل رباط عرض الحركة"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -202,9 +199,8 @@ msgid "Anim Clips:"
 msgstr "مقاطع الحركة:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Track Path"
-msgstr "تغيير قيمة في المصفوفة"
+msgstr "تغيير مسار الطريق"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -215,27 +211,24 @@ msgid "Update Mode (How this property is set)"
 msgstr "وضع التحديث (كيف يتم تعيين هذه الخاصية)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "عقدة الحركة"
+msgstr "وضعية الأستيفاء"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr ""
+msgstr "وضع التفاف الحلقة (نهاية العشوائية مع بداية الحلقة)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove this track."
-msgstr "ازالة المسار المحدد."
+msgstr "إزالة هذا المسار."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "وقت التلاشي X (ثواني):"
+msgstr "الوقت(ثواني): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "ترجيح المسار المُفعل"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -250,9 +243,8 @@ msgid "Trigger"
 msgstr "مُطلق"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Capture"
-msgstr "المستقبل"
+msgstr "التقاط"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
@@ -269,11 +261,11 @@ msgstr "مكعب"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr ""
+msgstr "تفسير الحلقة المثبتة"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr ""
+msgstr "التفاف الحلقة المثبتة"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -281,29 +273,24 @@ msgid "Insert Key"
 msgstr "أدخل مفتاح"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "مفاتيح نسخ التحريك"
+msgstr "مفتاح (مفاتيح) المكررة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "مفاتيح حذف التحريك"
+msgstr "مفتاح الحذف()"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "تغيير إسم الحركة:"
+msgstr "تغيير وضع تحديث الحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Interpolation Mode"
-msgstr "عقدة الحركة"
+msgstr "تغيير وضع عقدة الحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "تغيير تكرير الحركة"
+msgstr "تغيير وضع عقدة الحركة"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -332,7 +319,7 @@ msgstr "إدخال حركة"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr ""
+msgstr "اللأعب المتحرك لا يستطيع تحريك نفسه ,فقط اللاعبين الآخرين."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -344,21 +331,19 @@ msgstr "أنشي مسار حركة و مفتاح"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr "أضف مفتاح  حركة"
+msgstr "أضف مفتاح الحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
-msgstr "تغيير إسم الحركة:"
+msgstr "تغيير خطوة الحركة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "اعادة ترتيب التحميلات التلقائية"
+msgstr "إعادة ترتيب المسارات"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
-msgstr ""
+msgstr "تنطبق مسارات التحويل فقط على الحيز المكاني."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -367,6 +352,10 @@ msgid ""
 "-AudioStreamPlayer2D\n"
 "-AudioStreamPlayer3D"
 msgstr ""
+"يمكن للمسارات الصوتية أن تشير فقط إلى حيز الكتابة:\n"
+"-الصوت الجاري للأعب\n"
+"-الصوت الجاري للأعب ثنائي الأبعاد\n"
+"-الصوت الجاري للأعب ثلاثي الأبعاد"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
@@ -2266,7 +2255,7 @@ msgstr "تمكين/إيقاف الوضع الخالي من الإلهاء."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr "إضافة مشهد جديد"
+msgstr "إضافة مشهد جديد."
 
 #: editor/editor_node.cpp
 msgid "Scene"
@@ -4546,9 +4535,8 @@ msgid "Official"
 msgstr "رسمياً"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Testing"
-msgstr "تجريب"
+msgstr "أختبار"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -4634,44 +4622,38 @@ msgid "Create new horizontal and vertical guides"
 msgstr "إنشاء موجه عمودي وأفقي جديد"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move pivot"
-msgstr "تحريك المحور"
+msgstr "نقل المحور"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate CanvasItem"
-msgstr "تعديل العنصر القماشي"
+msgstr "تدوير العنصر القماشي"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move anchor"
-msgstr "عملية التحريك"
+msgstr "نقل الإرتكاز"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Resize CanvasItem"
-msgstr "تعديل العنصر القماشي"
+msgstr "تغير حجم العنصر القماشي"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Scale CanvasItem"
-msgstr "تعديل العنصر القماشي"
+msgstr "مقياس العنصر القماشي"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move CanvasItem"
-msgstr "تعديل العنصر القماشي"
+msgstr "تحريك العنصر القماشي"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
-msgstr ""
+msgstr "إعدادات مسبقة للمخططات والتحكم بالدمج ."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
-msgstr ""
+msgstr "تجاوز الأطفال الثوابت والقيم وتجاهل الوالدين ."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4693,14 +4675,13 @@ msgstr "لصق الوضع"
 msgid ""
 "Warning: Children of a container get their position and size determined only "
 "by their parent."
-msgstr ""
+msgstr "تحذير: الأطفال يأخذون موقعهم وحجمهم من خلال الوالدين فقط."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
-#, fuzzy
 msgid "Zoom Reset"
-msgstr "إبعاد"
+msgstr "إعادة تعيين التكبير"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Select Mode"
@@ -6050,6 +6031,14 @@ msgstr "فتح في المُعدل التالي"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -10312,41 +10301,39 @@ msgstr ""
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error initializing FreeType."
-msgstr ""
+msgstr "خطأ في معرفة النوع الحر."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Unknown font format."
-msgstr ""
+msgstr "صيغة الخط غير معروفة."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Error loading font."
-msgstr ""
+msgstr "حدث خطأ أثناء تحميل الخط."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr "حجم الخط غير صالح"
+msgstr "حجم الخط غير مناسب."
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Input"
-msgstr "أضف مدخله"
+msgstr "إدخال"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for shader."
-msgstr "حجم الخط غير صالح"
+msgstr "مصدر غير صالح لتظليل."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
-msgstr ""
+msgstr "التعيين لتعمل."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to uniform."
-msgstr ""
+msgstr "التعين للإنتظام."
 
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
-msgstr ""
+msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "نمذج المشهد(المشاهد) المحددة كطفل للعقدة المحددة."
