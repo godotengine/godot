@@ -34,20 +34,9 @@
 #include "core/func_ref.h"
 #include "core/reference.h"
 
-class TestCompare : public Reference {
-    GDCLASS(TestCompare, Reference);
+class TestCompare {
 public:
-    static Ref<TestCompare> equal(const Variant &p_left, const Variant &p_right, const String &p_message);
-    static Ref<TestCompare> not_equal(const Variant &p_left, const Variant &p_right, const String &p_message);
-
-    virtual bool compare() const { return false; };
-
-protected:
-    static void _bind_methods();
-
-private:
-    Ref<FuncRef> m_func;
-    Vector<Variant> m_params;
+    static bool deep_equal(const Variant &p_left, const Variant &p_right);
 };
 
 

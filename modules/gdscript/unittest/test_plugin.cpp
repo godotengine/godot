@@ -127,7 +127,7 @@ void TestPanel::_display_results() {
 							m_results.set(message->script_path(), TestFuncLogMap());
 							Label *script_path = new Label();
 							script_path->set_text(message->script_path());
-							m_logs->add_child(script_path);
+							//m_logs->add_child(script_path);
 						}
 						TestFuncLogMap test_func_log_map = m_results.get(message->script_path());
 						if (!test_func_log_map.has(message->test_func())) {

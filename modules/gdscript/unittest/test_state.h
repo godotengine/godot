@@ -82,8 +82,7 @@ public:
 
 	bool is_valid() const;
 
-	bool can_assert();
-	REF allow_assert();
+	void assert();
 
 protected:
 	static void _bind_methods();
@@ -95,7 +94,6 @@ private:
 	String m_test_name;
 	int m_test_count;
 	int m_assert_count;
-	Ref<WeakRef> m_can_assert;
 };
 
 #endif // TEST_STATE_H

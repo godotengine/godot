@@ -30,5 +30,37 @@
 
 #include "test_compare.h"
 
-void TestCompare::_bind_methods() {
+bool TestCompare::deep_equal(const Variant &p_left, const Variant &p_right) {
+	if (p_left.get_type() == p_right.get_type()) {
+		if (p_left.get_type() == Variant::ARRAY && p_right.get_type() == Variant::ARRAY) {
+			Array left = p_left;
+			Array right = p_right;
+			if (left.size() == right.size()) {
+				for (int i = 0; i < left.size(); i++) {
+					if (!deep_equal(left[i], right[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		} else if (p_left.get_type() == Variant::DICTIONARY && p_right.get_type() == Variant::DICTIONARY) {
+			Dictionary left = p_left;
+			Dictionary right = p_right;
+			if (left.size() == right.size()) {
+				for (int i = 0; i < left.size(); i++) {
+					const Variant &key = left.get_key_at_index(i);
+					if (!right.has(key)) {
+						return false;
+					}
+					if (!deep_equal(left[key], right[key])) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+	}
+	return p_left == p_right;
 }

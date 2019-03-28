@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "signal_watcher.h"
+#include "test_compare.h"
 
 SignalWatcher::Args *SignalWatcher::write(const Object *p_object, const String &p_signal) {
 	ObjectSignalArgs::Element *object_signal_args = m_signals.find(ObjectSignal(p_object, p_signal));
@@ -109,7 +110,7 @@ bool SignalWatcher::called_with(const Object *p_object, const String &p_signal, 
 	const Args *args = read(p_object, p_signal);
 	int size = args->size();
 	if (args && size > 0) {
-		return (*args)[size - 1] == p_arguments;
+		return TestCompare::deep_equal((*args)[size - 1], p_arguments);
 	}
 	return false;
 }

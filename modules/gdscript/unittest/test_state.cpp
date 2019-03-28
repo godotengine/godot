@@ -106,7 +106,6 @@ bool MethodIter::next() {
 TestState::TestState() {
 	m_log.instance();
 	m_log->set_filter(TestLog::LogLevel::TRACE);
-	m_can_assert.instance();
 }
 
 bool TestState::init(const Object *p_object) {
@@ -167,21 +166,8 @@ bool TestState::is_valid() const {
 	return m_log->get_max_level() >= TestConfig::get_singleton()->log_fail_greater_equal();
 }
 
-bool TestState::can_assert() {
-	if (m_can_assert->get_ref()) {
-		m_assert_count++;
-		return true;
-	}
-	return false;
-}
-
-REF TestState::allow_assert() {
-	REF can_assert = m_can_assert->get_ref();
-	if (can_assert.is_null()) {
-		can_assert.instance();
-	}
-	m_can_assert->set_ref(can_assert);
-	return can_assert;
+void TestState::assert() {
+	m_assert_count++;
 }
 
 void TestState::_bind_methods() {
