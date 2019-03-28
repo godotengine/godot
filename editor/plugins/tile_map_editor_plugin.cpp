@@ -299,7 +299,11 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 		}
 	}
 
-	node->set_cell(p_pos.x, p_pos.y, p_value, p_flip_h, p_flip_v, p_transpose, p_autotile_coord);
+	Variant v_pos_x = p_pos.x, v_pos_y = p_pos.y, v_tile = p_value, v_flip_h = p_flip_h, v_flip_v = p_flip_v, v_transpose = p_transpose, v_autotile_coord = Vector2(p_autotile_coord.x, p_autotile_coord.y);
+	const Variant *args[7] = { &v_pos_x, &v_pos_y, &v_tile, &v_flip_h, &v_flip_v, &v_transpose, &v_autotile_coord };
+	Variant::CallError ce;
+	node->call("set_cell", args, 7, ce);
+
 	if (manual_autotile || (p_value != -1 && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
 		if (current != -1) {
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
