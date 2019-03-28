@@ -42,8 +42,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-06 00:10+0000\n"
-"Last-Translator: eon-s <emanuel.segretin@gmail.com>\n"
+"PO-Revision-Date: 2019-03-24 17:38+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -51,7 +51,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.5\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1403,33 +1403,32 @@ msgid "Packing"
 msgstr "Empaquetando"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
 "La plataforma de destino requiere compresión de texturas 'ETC' para GLES2. "
-"Activa el soporte en Ajustes del Proyecto."
+"Activa 'Import Etc' en Ajustes del Proyecto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"La plataforma de destino requiere compresión de texturas 'ETC' para GLES2. "
-"Activa el soporte en Ajustes del Proyecto."
+"La plataforma de destino requiere compresión de texturas 'ETC2' para GLES3. "
+"Activa 'Import Etc 2' en Ajustes del Proyecto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for the driver fallback "
 "to GLES2.\n"
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"La plataforma de destino requiere compresión de texturas 'ETC' para GLES2. "
-"Activa el soporte en Ajustes del Proyecto."
+"La plataforma de destino requiere compresión de texturas 'ETC' para usar "
+"GLES2 como controlador de respaldo.\n"
+"Activa 'Import Etc' en Ajustes del Proyecto, o desactiva 'Driver Fallback "
+"Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1552,23 +1551,20 @@ msgid "Move Favorite Down"
 msgstr "Bajar Favorito"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "Suelo anterior"
+msgstr "Carpeta Anterior"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "Siguiente suelo"
+msgstr "Carpeta Siguiente"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Ir a la carpeta principal"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "No se pudo crear la carpeta."
+msgstr "Quitar carpeta actual de favoritos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1801,9 +1797,8 @@ msgid "Project export failed with error code %d."
 msgstr "La exportación del proyecto falló con el código de error %d."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Imported resources can't be saved."
-msgstr "Importar Recursos"
+msgstr "Los recursos importados no se pueden guardar."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -1819,6 +1814,8 @@ msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
+"Este recurso no se puede guardar porque no pertenece a la escena editada. "
+"Hazlo único primero."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -4066,7 +4063,7 @@ msgstr "Posterior"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr "Depth"
+msgstr "Profundidad"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
@@ -4122,7 +4119,7 @@ msgstr "Siguiente (cola automática):"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Cross-Animation Blend Times"
-msgstr "Cross-Animation Blend Times"
+msgstr "Tiempos de Blending entre Animaciones"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Move Node"
@@ -5962,6 +5959,14 @@ msgid "Open Godot online documentation"
 msgstr "Abrir documentación online de Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Buscar en la documentación de referencia."
 
@@ -6182,7 +6187,7 @@ msgstr "Crear huesos físicos"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Skeleton"
-msgstr "Skeleton"
+msgstr "Esqueleto"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 msgid "Create physical skeleton"
@@ -7021,22 +7026,20 @@ msgid "Merge from Scene"
 msgstr "Unir desde escena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Siguiente suelo"
+msgstr "Coordenada Siguiente"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr ""
+msgstr "Seleccionar la próxima forma, subtile o Tile."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Previous Coordinate"
-msgstr "Suelo anterior"
+msgstr "Coordenada Anterior"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr ""
+msgstr "Seleccionar la anterior forma, subtile, o Tile."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7193,14 +7196,12 @@ msgid "Clear Tile Bitmask"
 msgstr "Reestablecer Máscara de Bits de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Concave"
-msgstr "Mover polígono"
+msgstr "Hacer Polígono Cóncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Make Polygon Convex"
-msgstr "Mover polígono"
+msgstr "Hacer Póligono Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -7325,9 +7326,8 @@ msgid "Exporting All"
 msgstr "Exportar Todo"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist:"
-msgstr "La ruta no existe."
+msgstr "La ruta de exportación especificada no existe:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -10075,6 +10075,8 @@ msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr ""
+"Las formas tipo plano no funcionan bien y se eliminarán en futuras "
+"versiones. Por favor, no las uses."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -10097,6 +10099,8 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"Las GIProbes no están soportadas por el controlador de video GLES2.\n"
+"Usa un BakedLightmap en su lugar."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10280,6 +10284,10 @@ msgid ""
 "If you dont't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
+"El contenedor por sí mismo no sirve para nada a menos que un script "
+"configure el comportamiento de posicionamiento de sus hijos.\n"
+"Si no tienes intención de añadir un script, utiliza en su lugar un nodo "
+"'Control' sencillo."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -10290,9 +10298,8 @@ msgid "Please Confirm..."
 msgstr "Por favor, confirma..."
 
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Ir a la carpeta principal"
+msgstr "Ir a la carpeta padre."
 
 #: scene/gui/popup.cpp
 msgid ""

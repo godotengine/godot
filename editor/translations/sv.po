@@ -9,12 +9,13 @@
 # Kristoffer Grundström <kristoffer.grundstrom1983@gmail.com>, 2018.
 # Magnus Helander <helander@fastmail.net>, 2018.
 # Daniel K <danielkimblad@hotmail.com>, 2018.
+# Toiya <elviraa98@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:42+0100\n"
-"Last-Translator: Daniel K <danielkimblad@hotmail.com>\n"
+"PO-Revision-Date: 2019-03-19 15:04+0000\n"
+"Last-Translator: Toiya <elviraa98@gmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -22,12 +23,12 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Ogiltligt typargument till convert(), använd TYPE_* konstanter."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -45,11 +46,11 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Ogiltiga operander till operator %s, %s och %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Ogiltigt index av typ %s för bastyp %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
@@ -66,40 +67,35 @@ msgstr ""
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Gratis"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Balanserad"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Spegla X"
+msgstr "Spegla"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Anim Infoga Nyckel"
+msgstr "Infoga Nyckel Här"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplicera urval"
+msgstr "Duplicera valda nycklar"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Ta bort valda filer?"
+msgstr "Ta bort valda nycklar"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Lägg till Bezierpunkt"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Flytta Ner"
+msgstr "Flytta Bezierpunkt"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -111,7 +107,7 @@ msgstr "Anim Ta Bort Nycklar"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Ändra Nyckelram Tid"
+msgstr "Anim Ändra Tid för Nyckebild"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -123,21 +119,20 @@ msgstr "Anim Ändra Transformation"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Ändra Värde På Tidsnyckeln"
+msgstr "Anim Ändra Värde På Nyckelbild"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
 msgstr "Anim Ändra Anrop"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Ändra Animationsnamn:"
+msgstr "Ändra Animationslängd"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Ändra Animationsloop"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -175,9 +170,8 @@ msgid "Animation Length Time (seconds)"
 msgstr "Animation längd (i sekunder)."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Animation zoom."
+msgstr "Animationslooping"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -185,13 +179,12 @@ msgid "Functions:"
 msgstr "Funktioner:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Audio Clips:"
-msgstr "Ljud-Lyssnare"
+msgstr "Ljudklipp:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Animklipp:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -199,9 +192,8 @@ msgid "Change Track Path"
 msgstr "Ändra Arrays Värde"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle this track on/off."
-msgstr "Växla distraktionsfritt läge."
+msgstr "Ändra spårets läge till på/av."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -222,9 +214,8 @@ msgid "Remove this track."
 msgstr "Ta bort valt spår."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s): "
-msgstr "Tid:"
+msgstr "Tid (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -245,11 +236,11 @@ msgstr "Trigger"
 
 #: editor/animation_track_editor.cpp
 msgid "Capture"
-msgstr ""
+msgstr "Fånga"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr ""
+msgstr "Närmaste"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -258,7 +249,7 @@ msgstr "Linjär"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr ""
+msgstr "Kubik"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -271,22 +262,20 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr ""
+msgstr "Lägg till nyckel"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Duplicera Nod(er)"
+msgstr "Duplicera Nycklar"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Ta bort Nod(er)"
+msgstr "Ta bort Nycklar"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Change Animation Update Mode"
-msgstr "Ändra Animationsnamn:"
+msgstr "Ändra Animationens Uppdateringsläge"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -6338,6 +6327,14 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Request Docs"
+msgstr ""
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Help improve the Godot documentation by giving feedback"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
