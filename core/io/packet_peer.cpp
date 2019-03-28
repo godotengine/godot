@@ -93,7 +93,7 @@ Error PacketPeer::get_var(Variant &r_variant) {
 Error PacketPeer::put_var(const Variant &p_packet) {
 
 	int len;
-	Error err = encode_variant(p_packet, NULL, len, !allow_object_decoding); // compute len first
+	Error err = encode_variant(p_packet, NULL, len, allow_object_decoding); // compute len first
 	if (err)
 		return err;
 
@@ -102,7 +102,7 @@ Error PacketPeer::put_var(const Variant &p_packet) {
 
 	uint8_t *buf = (uint8_t *)alloca(len);
 	ERR_FAIL_COND_V(!buf, ERR_OUT_OF_MEMORY);
-	err = encode_variant(p_packet, buf, len, !allow_object_decoding);
+	err = encode_variant(p_packet, buf, len, allow_object_decoding);
 	ERR_FAIL_COND_V(err, err);
 
 	return put_packet(buf, len);
