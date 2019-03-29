@@ -152,11 +152,15 @@ bool TestCase::iteration(Ref<TestResult> test_result) {
 }
 
 Variant TestCase::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+	if (!m_pending_errors.empty()) {
+		r_error.error = (Variant::CallError::Error)10;
+		return NULL;
+	}
 	Variant result = Node::call(p_method, p_args, p_argcount, r_error);
 	if (String(p_method).begins_with("assert_")) {
 		m_state->assert();
 		if (r_error.error == Variant::CallError::CALL_OK) {
-			if (result) {
+			if (!m_pending_errors.empty()) {
 				r_error.error = (Variant::CallError::Error)10;
 			}
 		}
@@ -164,77 +168,61 @@ Variant TestCase::call(const StringName &p_method, const Variant **p_args, int p
 	return result;
 }
 
-bool TestCase::assert_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (!TestCompare::deep_equal(p_left, p_right)) {
 		assert(p_left, p_right, "{message}{left} != {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (p_left != p_right) {
 		assert(p_left, p_right, "{message}{left} == {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_true(const Variant &p_value, const String &p_message) {
+void TestCase::assert_true(const Variant &p_value, const String &p_message) {
 	if (!p_value) {
 		assert(p_value, "{message}{value} is false", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_false(const Variant &p_value, const String &p_message) {
+void TestCase::assert_false(const Variant &p_value, const String &p_message) {
 	if (p_value) {
 		assert(p_value, "{message}{value} is true", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_is(const Variant &p_left, const Ref<GDScriptNativeClass> p_right, const String &p_message) {
+void TestCase::assert_is(const Variant &p_left, const Ref<GDScriptNativeClass> p_right, const String &p_message) {
 	Object *obj = cast_to<Object>(p_left);
 	const String &klass = obj->get_class();
 	const String &inherits = p_right->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
 		assert(klass, inherits, p_message, "{message}{left} is not {right}");
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_is_not(const Variant &p_left, const Ref<GDScriptNativeClass> p_right, const String &p_message) {
+void TestCase::assert_is_not(const Variant &p_left, const Ref<GDScriptNativeClass> p_right, const String &p_message) {
 	Object *obj = cast_to<Object>(p_left);
 	const String &klass = obj->get_class();
 	const String &inherits = p_right->get_class();
 	if (!ClassDB::is_parent_class(klass, inherits)) {
 		assert(klass, inherits, p_message, "{message}{left} is {right}");
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_is_nil(const Variant &p_value, const String &p_message) {
+void TestCase::assert_is_nil(const Variant &p_value, const String &p_message) {
 	if (Variant::NIL != p_value.get_type()) {
 		assert(p_value, "{message}{value} is not null", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_is_not_nil(const Variant &p_value, const String &p_message) {
+void TestCase::assert_is_not_nil(const Variant &p_value, const String &p_message) {
 	if (Variant::NIL == p_value.get_type()) {
 		assert(p_value, "{message}{value} is null", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_in(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_in(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	bool is_in = false;
 	if (p_right.is_array()) {
 		const Array &collection = p_right;
@@ -245,12 +233,10 @@ bool TestCase::assert_in(const Variant &p_left, const Variant &p_right, const St
 	}
 	if (!is_in) {
 		assert(p_left, p_right, "{message}{left} is not in {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_not_in(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_not_in(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	bool is_in = false;
 	if (p_right.is_array()) {
 		const Array &collection = p_right;
@@ -261,88 +247,66 @@ bool TestCase::assert_not_in(const Variant &p_left, const Variant &p_right, cons
 	}
 	if (is_in) {
 		assert(p_left, p_right, "{message}{left} is in {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_is_type(const Variant &p_left, const Variant::Type type, const String &p_message) {
+void TestCase::assert_is_type(const Variant &p_left, const Variant::Type type, const String &p_message) {
 	if (p_left.get_type() != type) {
 		assert(p_left, Variant::get_type_name(type), "{message}{left} is not {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_is_not_type(const Variant &p_left, const Variant::Type type, const String &p_message) {
+void TestCase::assert_is_not_type(const Variant &p_left, const Variant::Type type, const String &p_message) {
 	if (p_left.get_type() == type) {
 		assert(p_left, Variant::get_type_name(type), "{message}{left} is {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_aprox_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_aprox_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (!Math::is_equal_approx(p_left, p_right)) {
 		assert(p_left, p_right, "{message}{left} is not close to {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_aprox_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_aprox_not_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (Math::is_equal_approx(p_left, p_right)) {
 		assert(p_left, p_right, "{message}{left} is close to {right}", p_message);
-		return true;
 	}
-	return false;
 }
-bool TestCase::assert_greater(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_greater(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (p_left == p_right || p_left < p_right) {
 		assert(p_left, p_right, "{message}{left} <= {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_greater_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_greater_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (p_left < p_right) {
 		assert(p_left, p_right, "{message}{left} < {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_less(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_less(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (p_left == p_right || p_right < p_left) {
 		assert(p_left, p_right, "{message}{left} >= {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_less_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
+void TestCase::assert_less_equal(const Variant &p_left, const Variant &p_right, const String &p_message) {
 	if (p_right < p_left) {
 		assert(p_left, p_right, "{message}{left} > {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_match(const String &p_left, const String &p_right, const String &p_message) {
+void TestCase::assert_match(const String &p_left, const String &p_right, const String &p_message) {
 	if (!p_left.match(p_right)) {
 		assert(p_left, p_right, "{message}{left} does not match {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_not_match(const String &p_left, const String &p_right, const String &p_message) {
+void TestCase::assert_not_match(const String &p_left, const String &p_right, const String &p_message) {
 	if (p_left.match(p_right)) {
 		assert(p_left, p_right, "{message}{left} matches {right}", p_message);
-		return true;
 	}
-	return false;
 }
 
 void TestCase::_clear_connections() {
@@ -420,20 +384,16 @@ void TestCase::watch_all_signals(Object *p_object) {
 	m_signal_watcher->watch_all(p_object);
 }
 
-bool TestCase::assert_signal_called(const Object *p_object, const String &p_signal, const String &p_message) {
+void TestCase::assert_signal_called(const Object *p_object, const String &p_signal, const String &p_message) {
 	if (!m_signal_watcher->called(p_object, p_signal)) {
 		assert(p_object, p_signal, p_message, "{message}{left}.{right} was not called");
-		return true;
 	}
-	return false;
 }
 
-bool TestCase::assert_signal_called_once(const Object *p_object, const String &p_signal, const String &p_message) {
+void TestCase::assert_signal_called_once(const Object *p_object, const String &p_signal, const String &p_message) {
 	if (!m_signal_watcher->called_once(p_object, p_signal)) {
 		assert(p_object, p_signal, p_message, "{message}{left}.{right} was not called exactly once");
-		return true;
 	}
-	return false;
 }
 
 Variant TestCase::_assert_signal_called_with(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
@@ -441,7 +401,6 @@ Variant TestCase::_assert_signal_called_with(const Variant **p_args, int p_argco
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->called_with(params.m_object, params.m_signal, params.m_arguments)) {
 			assert("invalid", "error", "{message}{left}.{right} was not called with");
-			return true;
 		}
 	}
 	return Variant();
@@ -452,7 +411,6 @@ Variant TestCase::_assert_signal_called_once_with(const Variant **p_args, int p_
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->called_once_with(params.m_object, params.m_signal, params.m_arguments)) {
 			assert(params.m_object, params.m_signal, "{message}{left}.{right} was not called exactly once", "");
-			return true;
 		}
 	}
 	return Variant();
@@ -463,28 +421,24 @@ Variant TestCase::_assert_signal_any_call(const Variant **p_args, int p_argcount
 	if (SignalWatcher::parse_params(p_args, p_argcount, r_error, params)) {
 		if (!m_signal_watcher->any_call(params.m_object, params.m_signal, params.m_arguments)) {
 			assert("invalid", "error", "{message}{left}.{right} was not called ");
-			return true;
 		}
 	}
 	return Variant();
 }
 
-bool TestCase::assert_signal_has_calls(const Object *p_object, const String &p_signal, const Array &p_arguments, bool p_any_order, const String &p_message) {
+void TestCase::assert_signal_has_calls(const Object *p_object, const String &p_signal, const Array &p_arguments, bool p_any_order, const String &p_message) {
 	int error = m_signal_watcher->has_calls(p_object, p_signal, p_arguments, p_any_order);
 	if (error < p_arguments.size()) {
 		if (error == -1) {
 		} else {
 		}
 	}
-	return false;
 }
 
-bool TestCase::assert_signal_not_called(const Object *p_object, const String &p_signal, const String &p_message) {
+void TestCase::assert_signal_not_called(const Object *p_object, const String &p_signal, const String &p_message) {
 	if (!m_signal_watcher->not_called(p_object, p_signal)) {
 		assert(p_object, p_signal, p_message, "{message}{left}.{right} was not called");
-		return true;
 	}
-	return false;
 }
 
 int TestCase::get_signal_call_count(const Object *p_object, const String &p_signal) const {
