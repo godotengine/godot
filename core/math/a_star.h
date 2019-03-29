@@ -54,6 +54,7 @@ class AStar : public Reference {
 		Vector3 pos;
 		real_t weight_scale;
 		uint64_t last_pass;
+		bool enabled;
 
 		Set<Point *> neighbours;
 
@@ -113,6 +114,9 @@ public:
 	bool has_point(int p_id) const;
 	PoolVector<int> get_point_connections(int p_id);
 	Array get_points();
+
+	void set_point_disabled(int p_id, bool p_disabled = true);
+	bool is_point_disabled(int p_id) const;
 
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id);
