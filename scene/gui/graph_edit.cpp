@@ -770,7 +770,9 @@ void GraphEdit::_top_layer_draw() {
 	}
 
 	if (box_selecting)
-		top_layer->draw_rect(box_selecting_rect, Color(0.7, 0.7, 1.0, 0.3));
+		top_layer->draw_rect(
+				box_selecting_rect,
+				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
 }
 
 void GraphEdit::set_selected(Node *p_child) {
