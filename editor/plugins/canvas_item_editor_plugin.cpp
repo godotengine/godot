@@ -2828,13 +2828,20 @@ void CanvasItemEditor::_draw_selection() {
 		Point2 bsfrom = transform.xform(drag_from);
 		Point2 bsto = transform.xform(box_selecting_to);
 
-		VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(bsfrom, bsto - bsfrom), Color(0.7, 0.7, 1.0, 0.3));
+		VisualServer::get_singleton()->canvas_item_add_rect(
+				ci,
+				Rect2(bsfrom, bsto - bsfrom),
+				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
 	}
 
-	Color rotate_color(0.4, 0.7, 1.0, 0.8);
 	if (drag_type == DRAG_ROTATE) {
 		// Draw the line when rotating a node
-		viewport->draw_line(transform.xform(drag_rotation_center), transform.xform(drag_to), rotate_color);
+		viewport->draw_line(
+				transform.xform(drag_rotation_center),
+				transform.xform(drag_to),
+				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.6),
+				Math::round(2 * EDSCALE),
+				true);
 	}
 }
 
