@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new [code]PoolIntArray[/code]. Optionally, you can pass in a generic [Array] that will be converted.
+				Construct a new [PoolIntArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolIntArray">
 			</argument>
 			<description>
-				Append a [code]PoolIntArray[/code] at the end of this array.
+				Append a [PoolIntArray] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">

@@ -4,7 +4,7 @@
 		Input event type for gamepad joysticks and other motions. For buttons see [code]InputEventJoypadButton[/code].
 	</brief_description>
 	<description>
-		Stores information about joystick motions. One [code]InputEventJoypadMotion[/code] represents one axis at a time.
+		Stores information about joystick motions. One [InputEventJoypadMotion] represents one axis at a time.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>

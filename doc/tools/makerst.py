@@ -702,7 +702,11 @@ def rstize_text(text, state):  # type: (str, State) -> str
         escape_post = False
 
         if tag_text in state.classes:
-            tag_text = make_type(tag_text, state)
+            if tag_text == state.current_class:
+                # We don't want references to the same class
+                tag_text = '``{}``'.format(tag_text)
+            else:
+                tag_text = make_type(tag_text, state)
             escape_post = True
         else:  # command
             cmd = tag_text

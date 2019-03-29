@@ -52,7 +52,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of surfaces that the [code]Mesh[/code] holds.
+				Return the amount of surfaces that the [Mesh] holds.
 			</description>
 		</method>
 		<method name="surface_get_arrays" qualifiers="const">

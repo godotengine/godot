@@ -37,7 +37,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of lines shown. Useful if the [code]Label[/code] 's height cannot currently display all lines.
+				Returns the number of lines shown. Useful if the [Label] 's height cannot currently display all lines.
 			</description>
 		</method>
 	</methods>

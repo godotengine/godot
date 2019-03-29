@@ -4,7 +4,7 @@
 		Flat button helper class.
 	</brief_description>
 	<description>
-		This is a helper class to generate a flat [Button] (see [member Button.flat]), creating a [code]ToolButton[/code] is equivalent to:
+		This is a helper class to generate a flat [Button] (see [member Button.flat]), creating a [ToolButton] is equivalent to:
 		[codeblock]
 		var btn = Button.new()
 		btn.flat = true

@@ -38,7 +38,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
-				Returns the [AnimationPlayer]'s [Animation] bound to the [code]AnimationTreePlayer[/code]'s animation node with name [code]id[/code].
+				Returns the [AnimationPlayer]'s [Animation] bound to the [AnimationTreePlayer]'s animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="animation_node_get_master_animation" qualifiers="const">
@@ -66,7 +66,7 @@
 			<argument index="1" name="animation" type="Animation">
 			</argument>
 			<description>
-				Binds a new [Animation] from the [member master_player] to the [code]AnimationTreePlayer[/code]'s animation node with name [code]id[/code].
+				Binds a new [Animation] from the [member master_player] to the [AnimationTreePlayer]'s animation node with name [code]id[/code].
 			</description>
 		</method>
 		<method name="animation_node_set_filter_path">
@@ -472,7 +472,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Resets this [code]AnimationTreePlayer[/code].
+				Resets this [AnimationTreePlayer].
 			</description>
 		</method>
 		<method name="timescale_node_get_scale" qualifiers="const">
@@ -607,14 +607,14 @@
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active">
-			If [code]true[/code], the [code]AnimationTreePlayer[/code] is able to play animations. Default value: [code]false[/code].
+			If [code]true[/code], the [AnimationTreePlayer] is able to play animations. Default value: [code]false[/code].
 		</member>
 		<member name="base_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 			The node from which to relatively access other nodes. Default value: [code]".."[/code].
 			It accesses the Bones, so it should point to the same Node the AnimationPlayer would point its Root Node at.
 		</member>
 		<member name="master_player" type="NodePath" setter="set_master_player" getter="get_master_player">
-			The path to the [AnimationPlayer] from which this [code]AnimationTreePlayer[/code] binds animations to animation nodes.
+			The path to the [AnimationPlayer] from which this [AnimationTreePlayer] binds animations to animation nodes.
 			Once set, Animation nodes can be added to the AnimationTreePlayer.
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_animation_process_mode" getter="get_animation_process_mode" enum="AnimationTreePlayer.AnimationProcessMode">
