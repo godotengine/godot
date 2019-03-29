@@ -1433,6 +1433,8 @@ void TextEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
+			TextSelectionManager::get_singleton()->set_selection_control(this);
+
 			OS::get_singleton()->set_ime_active(true);
 			Point2 cursor_pos = Point2(cursor_get_column(), cursor_get_line()) * get_row_height();
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
@@ -1458,6 +1460,12 @@ void TextEdit::_notification(int p_what) {
 				update();
 			}
 		} break;
+		case TextSelectionManager::NOTIFICATION_DESELECT_TEXT: {
+			if (!independent_selection) {
+				deselect();
+				update();
+			}
+		}
 	}
 }
 
@@ -4322,6 +4330,16 @@ bool TextEdit::is_wrap_enabled() const {
 	return wrap_enabled;
 }
 
+void TextEdit::set_independent_selection(bool p_independent_selection) {
+
+	independent_selection = p_independent_selection;
+}
+
+bool TextEdit::get_independent_selection() const {
+
+	return independent_selection;
+}
+
 void TextEdit::set_max_chars(int p_max_chars) {
 
 	max_chars = p_max_chars;
@@ -6148,6 +6166,8 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_wrap_enabled", "enable"), &TextEdit::set_wrap_enabled);
 	ClassDB::bind_method(D_METHOD("is_wrap_enabled"), &TextEdit::is_wrap_enabled);
+	ClassDB::bind_method(D_METHOD("set_independent_selection", "enable"), &TextEdit::set_independent_selection);
+	ClassDB::bind_method(D_METHOD("get_independent_selection"), &TextEdit::get_independent_selection);
 	// ClassDB::bind_method(D_METHOD("set_max_chars", "amount"), &TextEdit::set_max_chars);
 	// ClassDB::bind_method(D_METHOD("get_max_char"), &TextEdit::get_max_chars);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
@@ -6232,6 +6252,7 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "independent_selection"), "set_independent_selection", "get_independent_selection");
 	// ADD_PROPERTY(PropertyInfo(Variant::BOOL, "max_chars"), "set_max_chars", "get_max_chars");
 
 	ADD_GROUP("Caret", "caret_");
@@ -6268,6 +6289,7 @@ TextEdit::TextEdit() {
 	draw_caret = true;
 	max_chars = 0;
 	clear();
+	independent_selection = false;
 	wrap_enabled = false;
 	wrap_right_offset = 10;
 	set_focus_mode(FOCUS_ALL);

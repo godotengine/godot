@@ -841,6 +841,8 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
+			TextSelectionManager::get_singleton()->set_selection_control(this);
+
 			OS::get_singleton()->set_ime_active(true);
 			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
 			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
@@ -868,6 +870,10 @@ void LineEdit::_notification(int p_what) {
 				update();
 			}
 		} break;
+		case TextSelectionManager::NOTIFICATION_DESELECT_TEXT: {
+			deselect();
+			update();
+		}
 	}
 }
 

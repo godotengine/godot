@@ -197,6 +197,7 @@ Popup::Popup() {
 	exclusive = false;
 	popped_up = false;
 	hide();
+	current_selection_control = 0;
 }
 
 String Popup::get_configuration_warning() const {
@@ -268,4 +269,23 @@ void PopupPanel::_notification(int p_what) {
 }
 
 PopupPanel::PopupPanel() {
+}
+
+void TextSelectionManager::set_selection_control(Control *p_control) {
+
+	ObjectID *current_selection_control = &root_current_selection_control;
+	for (Node *node = p_control->get_parent(); node; node = node->get_parent()) {
+		Popup *popup = Object::cast_to<Popup>(node);
+		if (popup) {
+			current_selection_control = &popup->current_selection_control;
+			break;
+		}
+	}
+
+	if (p_control->get_instance_id() != *current_selection_control) {
+		Object *obj = ObjectDB::get_instance(*current_selection_control);
+		if (obj)
+			obj->notification(TextSelectionManager::NOTIFICATION_DESELECT_TEXT);
+		*current_selection_control = p_control->get_instance_id();
+	}
 }
