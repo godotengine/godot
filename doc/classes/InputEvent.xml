@@ -67,7 +67,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this input event's type is one of the [code]InputEvent[/code] constants.
+				Returns [code]true[/code] if this input event's type is one of the [InputEvent] constants.
 			</description>
 		</method>
 		<method name="is_echo" qualifiers="const">

@@ -57,7 +57,7 @@
 			<return type="void">
 			</return>
 			<description>
-				[code]AnimationPlayer[/code] caches animated nodes. It may not notice if a node disappears, so clear_caches forces it to update the cache again.
+				[AnimationPlayer] caches animated nodes. It may not notice if a node disappears, so clear_caches forces it to update the cache again.
 			</description>
 		</method>
 		<method name="clear_queue">
@@ -122,7 +122,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the [code]AnimationPlayer[/code] stores an [Animation] with key [code]name[/code].
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">

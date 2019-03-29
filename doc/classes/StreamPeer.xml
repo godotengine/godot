@@ -43,7 +43,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of bytes this [code]StreamPeer[/code] has available.
+				Return the amount of bytes this [StreamPeer] has available.
 			</description>
 		</method>
 		<method name="get_data">
@@ -269,7 +269,7 @@
 	</methods>
 	<members>
 		<member name="big_endian" type="bool" setter="set_big_endian" getter="is_big_endian_enabled">
-			If [code]true[/code], this [code]StreamPeer[/code] will using big-endian format for encoding and decoding.
+			If [code]true[/code], this [StreamPeer] will using big-endian format for encoding and decoding.
 		</member>
 	</members>
 	<constants>

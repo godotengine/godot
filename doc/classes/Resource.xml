@@ -52,7 +52,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Sets the path of the resource. Differs from [code]set_path()[/code], if another [code]Resource[/code] exists with "path" it over-takes it, instead of failing.
+				Sets the path of the resource. Differs from [code]set_path()[/code], if another [Resource] exists with "path" it over-takes it, instead of failing.
 			</description>
 		</method>
 	</methods>
