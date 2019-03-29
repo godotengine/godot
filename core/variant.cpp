@@ -1580,9 +1580,8 @@ Variant::operator String() const {
 
 					// Make sure a Variant::String was returned
 					if (ce.error == Variant::CallError::CALL_OK && ret.get_type() == Variant::STRING) {
-						return *reinterpret_cast<const String *> (ret._data._mem);
+						return *reinterpret_cast<const String *>(ret._data._mem);
 					}
-
 				}
 				return "[" + _get_obj().obj->get_class() + ":" + itos(_get_obj().obj->get_instance_id()) + "]";
 			} else
