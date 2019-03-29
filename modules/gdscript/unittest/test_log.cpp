@@ -139,6 +139,12 @@ TestLog::LogLevel TestLog::get_max_level() const {
 	return m_max_level;
 }
 
+void TestLog::get_messages(List<const LogMessage*> *messages) const {
+	for (int i = 0; i < m_messages.size(); i++) {
+		messages->push_back(*m_messages.get(i));
+	}
+}
+
 void TestLog::append(const Ref<TestLog> &p_test_log) {
 	int size = p_test_log->m_messages.size();
 	for (int i = 0; i < size; i++) {

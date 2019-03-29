@@ -83,6 +83,8 @@ public:
 
 	LogLevel get_max_level() const;
 
+	void get_messages(List<const LogMessage *> *messages) const;
+
 	void append(const Ref<TestLog> &p_test_log);
 	void add_message(Ref<LogMessage> p_message);
 	void log(LogLevel p_level, const String &p_script_path, const String &p_test_func, const String &p_message);

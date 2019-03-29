@@ -62,23 +62,29 @@ class TestPanel : public HBoxContainer {
 	GDCLASS(TestPanel, HBoxContainer);
 
 public:
+	typedef Ref<TestLog> RefTestLog;
+	typedef HashMap<String, RefTestLog> TestFuncLogMap;
+	typedef HashMap<String, TestFuncLogMap> TestFileFuncLogMap;
+
 	TestPanel();
 
 protected:
 	static void _bind_methods();
 
 private:
-	VBoxContainer *m_files;
-	VBoxContainer *m_tests;
-	VBoxContainer *m_logs;
+	LineEdit *m_file_filter;
+	ItemList *m_files;
+	LineEdit *m_tests_filter;
+	ItemList *m_tests;
+	ItemList *m_messages;
 
-	typedef Ref<TestLog> RefTestLog;
-	typedef HashMap<String, RefTestLog> TestFuncLogMap;
-	HashMap<String, TestFuncLogMap> m_results;
-	void _display_tests(String p_filename);
-	void _display_logs(String p_filename, String p_method);
+	TestFileFuncLogMap m_results;
 
 	void _display_results();
+	void _filter_results(String p_ignore);
+	void _display_tests(int p_ignore);
+	void _filter_tests(String p_ignore);
+	void _display_messages(int p_ignore);
 };
 
 class TestPlugin : public EditorPlugin {
@@ -90,10 +96,12 @@ public:
 
 protected:
 	static void _bind_methods();
+	void _display_test_panel();
 
 private:
 	DebugButton *m_debug_button;
-	ToolButton *m_test_panel;
+	TestPanel *m_test_panel;
+	ToolButton *m_test_panel_button;
 };
 
 #endif // TEST_PLUGIN_H

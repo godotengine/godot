@@ -412,7 +412,7 @@ void TestCase::fatal(const String &p_message) {
 	log(TestLog::FATAL, p_message);
 }
 
-void TestCase::watch_signals(Object *p_object, const String &p_signal) {
+void TestCase::watch_signal(Object *p_object, const String &p_signal) {
 	m_signal_watcher->watch(p_object, p_signal);
 }
 
@@ -505,10 +505,11 @@ Object *TestCase::mock(Object *p_object) {
 	if (native.is_valid()) {
 		p_object = native->instance();
 	}
-	if (p_object) {
-		Ref<Script> proxy_script(memnew(ProxyScript(p_object->get_script())));
-		p_object->set_script(proxy_script.get_ref_ptr());
+	if (!p_object) {
+		p_object = memnew(Object);
 	}
+	Ref<Script> proxy_script(memnew(ProxyScript(p_object->get_script())));
+	p_object->set_script(proxy_script.get_ref_ptr());
 
 	return p_object;
 }
@@ -606,8 +607,11 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("error", "message"), &TestCase::error);
 	ClassDB::bind_method(D_METHOD("fatal", "message"), &TestCase::fatal);
 
-	ClassDB::bind_method(D_METHOD("watch_signals", "object", "signal"), &TestCase::watch_signals);
+	ClassDB::bind_method(D_METHOD("watch_signal", "object", "signal"), &TestCase::watch_signal);
+	ClassDB::bind_method(D_METHOD("watch", "object", "signal"), &TestCase::watch_signal);
 	ClassDB::bind_method(D_METHOD("watch_all_signals", "object"), &TestCase::watch_all_signals);
+	ClassDB::bind_method(D_METHOD("watch_all", "object"), &TestCase::watch_all_signals);
+
 	ClassDB::bind_method(D_METHOD("assert_signal_called", "object", "signal", "message"), &TestCase::assert_signal_called, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("assert_signal_called_once", "object", "signal", "message"), &TestCase::assert_signal_called_once, DEFVAL(""));
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "assert_signal_called_with", &TestCase::_assert_signal_called_with);

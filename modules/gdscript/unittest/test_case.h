@@ -90,7 +90,7 @@ protected:
 	void error(const String &p_message);
 	void fatal(const String &p_message);
 
-	void watch_signals(Object *p_object, const String &p_signal);
+	void watch_signal(Object *p_object, const String &p_signal);
 	void watch_all_signals(Object *p_object);
 	bool assert_signal_called(const Object *p_object, const String &p_signal, const String &p_message = "");
 	bool assert_signal_called_once(const Object *p_object, const String &p_signal, const String &p_message = "");
@@ -102,7 +102,7 @@ protected:
 	int get_signal_call_count(const Object *p_object, const String &p_signal) const;
 	Array get_signal_calls(const Object *p_object, const String &p_signal) const;
 
-	Object *mock(Object *p_object);
+	Object *mock(Object *p_object = NULL);
 	Ref<FuncRef> fr(Object *p_object, const String &p_function);
 	int get_mock_call_count(const Object *p_object, const String &p_method) const;
 	Array get_mock_calls(const Object *p_object, const String &p_method) const;
