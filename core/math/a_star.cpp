@@ -55,6 +55,7 @@ void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 		pt->weight_scale = p_weight_scale;
 		pt->prev_point = NULL;
 		pt->last_pass = 0;
+		pt->enabled = true;
 		points[p_id] = pt;
 	} else {
 		points[p_id]->pos = p_pos;
@@ -242,6 +243,9 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 	pass++;
 
+	if (!end_point->enabled)
+		return false;
+
 	SelfList<Point>::List open_list;
 
 	bool found_route = false;
@@ -249,6 +253,10 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 	for (Set<Point *>::Element *E = begin_point->neighbours.front(); E; E = E->next()) {
 
 		Point *n = E->get();
+
+		if (!n->enabled)
+			continue;
+
 		n->prev_point = begin_point;
 		n->distance = _compute_cost(begin_point->id, n->id) * n->weight_scale;
 		n->last_pass = pass;
@@ -289,6 +297,9 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 		for (Set<Point *>::Element *E = p->neighbours.front(); E; E = E->next()) {
 
 			Point *e = E->get();
+
+			if (!e->enabled)
+				continue;
 
 			real_t distance = _compute_cost(p->id, e->id) * e->weight_scale + p->distance;
 
@@ -438,6 +449,14 @@ PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	return path;
 }
 
+void AStar::set_point_disabled(int p_id, bool p_disabled) {
+	points[p_id]->enabled = !p_disabled;
+}
+
+bool AStar::is_point_disabled(int p_id) const {
+	return !points[p_id]->enabled;
+}
+
 void AStar::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_available_point_id"), &AStar::get_available_point_id);
@@ -449,6 +468,9 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_point", "id"), &AStar::remove_point);
 	ClassDB::bind_method(D_METHOD("has_point", "id"), &AStar::has_point);
 	ClassDB::bind_method(D_METHOD("get_points"), &AStar::get_points);
+
+	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
 
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar::get_point_connections);
 
