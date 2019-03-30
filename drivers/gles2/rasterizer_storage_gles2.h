@@ -1156,6 +1156,16 @@ public:
 
 		Effect copy_screen_effect;
 
+		struct External {
+			GLuint fbo;
+			GLuint color;
+			RID texture;
+
+			External() :
+					fbo(0) {
+			}
+		} external;
+
 		int width, height;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
@@ -1176,6 +1186,7 @@ public:
 			for (int i = 0; i < RENDER_TARGET_FLAG_MAX; ++i) {
 				flags[i] = false;
 			}
+			external.fbo = 0;
 		}
 	};
 
@@ -1187,6 +1198,7 @@ public:
 	virtual RID render_target_create();
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height);
 	virtual RID render_target_get_texture(RID p_render_target) const;
+	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
