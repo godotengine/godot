@@ -169,7 +169,22 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 
 			edges.write[face.edges[j]].faces.push_back(fidx);
 			v[j]->faces.push_back(fidx);
-			v[j]->edges.push_back(face.edges[j]);
+		}
+
+		for (int j = 0; j < 3; j++) {
+			int edge1 = face.edges[j];
+			int edge2 = face.edges[(j + 2) % 3];
+			bool has_edge1 = false;
+			bool has_edge2 = false;
+			for (int k = 0; k < v[j]->edges.size(); k++) {
+				if (v[j]->edges[k] == edge1) {
+					has_edge1 = true;
+				} else if (v[j]->edges[k] == edge2) {
+					has_edge2 = true;
+				}
+			}
+			if (!has_edge1) v[j]->edges.push_back(edge1);
+			if (!has_edge2) v[j]->edges.push_back(edge2);
 		}
 
 		faces.push_back(face);
