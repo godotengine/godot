@@ -649,6 +649,7 @@ public:
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 
 	bool has_method(const StringName &p_method) const;
+	bool get_method(const StringName &p_method_name, MethodInfo &r_mi) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);

@@ -819,6 +819,27 @@ bool Object::has_method(const StringName &p_method) const {
 	return false;
 }
 
+/**
+	If this Object has a method with the given name,
+	then MethodInto is copied into *r_mi* and true is returned.
+	Otherwise just returns false (ignoring *r_mi*).
+*/
+bool Object::get_method(const StringName &p_method_name, MethodInfo &r_mi) const {
+	List<MethodInfo> methods;
+	this->get_method_list(&methods);
+	for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+		MethodInfo &mi = M->get();
+
+		// Found the method
+		if (p_method_name == mi.name) {
+			r_mi = mi;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 
 	if (r_valid)
