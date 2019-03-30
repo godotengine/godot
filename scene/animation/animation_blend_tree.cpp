@@ -496,7 +496,7 @@ float AnimationNodeBlend2::process(float p_time, bool p_seek) {
 
 	float amount = get_parameter(blend_amount);
 
-	float rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
+	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_BLEND, !sync);
 	float rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
 	return amount > 0.5 ? rem1 : rem0; //hacky but good enough
@@ -557,7 +557,7 @@ float AnimationNodeBlend3::process(float p_time, bool p_seek) {
 
 	float amount = get_parameter(blend_amount);
 	float rem0 = blend_input(0, p_time, p_seek, MAX(0, -amount), FILTER_IGNORE, !sync);
-	float rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
+	float rem1 = blend_input(1, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
 	float rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
 
 	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); //hacky but good enough
