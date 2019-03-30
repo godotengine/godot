@@ -918,6 +918,10 @@ bool Node::_validate_node_name(String &p_name) {
 		name = name.replace(chars[i], "");
 	}
 	bool is_valid = name == p_name;
+
+	if (name == "") {
+		name = "@Node";
+	}
 	p_name = name;
 	return is_valid;
 }
@@ -927,7 +931,9 @@ void Node::set_name(const String &p_name) {
 	String name = p_name;
 	_validate_node_name(name);
 
+	ERR_EXPLAIN("Node: Incorrect name!");
 	ERR_FAIL_COND(name == "");
+
 	data.name = name;
 
 	if (data.parent) {
