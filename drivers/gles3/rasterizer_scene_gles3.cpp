@@ -3660,7 +3660,11 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 
 	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) { //no post process on small render targets
 		//no environment or transparent render, simply return and convert to SRGB
-		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		if (storage->frame.current_rt->external.fbo != 0) {
+			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->external.fbo);
+		} else {
+			glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		}
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->effects.mip_maps[0].color);
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB, true);
@@ -4003,7 +4007,11 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+	if (storage->frame.current_rt->external.fbo != 0) {
+		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->external.fbo);
+	} else {
+		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, composite_from);

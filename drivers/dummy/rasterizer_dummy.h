@@ -692,6 +692,7 @@ public:
 	RID render_target_create() { return RID(); }
 	void render_target_set_size(RID p_render_target, int p_width, int p_height) {}
 	RID render_target_get_texture(RID p_render_target) const { return RID(); }
+	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {}
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {}
 	bool render_target_was_used(RID p_render_target) { return false; }
 	void render_target_clear_used(RID p_render_target) {}
@@ -781,7 +782,7 @@ public:
 	void initialize() {}
 	void begin_frame(double frame_step) {}
 	void set_current_render_target(RID p_render_target) {}
-	void restore_render_target() {}
+	void restore_render_target(bool p_3d_was_drawn) {}
 	void clear_render_target(const Color &p_color) {}
 	void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0) {}
 	void output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {}

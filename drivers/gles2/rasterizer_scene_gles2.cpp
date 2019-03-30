@@ -2681,7 +2681,11 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	} else {
 		state.render_no_shadows = false;
-		current_fb = storage->frame.current_rt->fbo;
+		if (storage->frame.current_rt->external.fbo != 0) {
+			current_fb = storage->frame.current_rt->external.fbo;
+		} else {
+			current_fb = storage->frame.current_rt->fbo;
+		}
 		env = environment_owner.getornull(p_environment);
 
 		viewport_width = storage->frame.current_rt->width;

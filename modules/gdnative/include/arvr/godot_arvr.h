@@ -42,7 +42,7 @@ extern "C" {
 
 // Use these to populate version in your plugin
 #define GODOTVR_API_MAJOR 1
-#define GODOTVR_API_MINOR 0
+#define GODOTVR_API_MINOR 1
 
 typedef struct {
 	godot_gdnative_api_version version; /* version of our API */
@@ -61,6 +61,8 @@ typedef struct {
 	void (*fill_projection_for_eye)(void *, godot_real *, godot_int, godot_real, godot_real, godot_real);
 	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);
 	void (*process)(void *);
+	// only in 1.1 onwards
+	godot_int (*get_external_texture_for_eye)(void *, godot_int);
 } godot_arvr_interface_gdnative;
 
 void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface);
