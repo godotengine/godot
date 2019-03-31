@@ -72,7 +72,17 @@ public:
 		BIND_RIGHT = 32,
 		BIND_BOTTOMLEFT = 64,
 		BIND_BOTTOM = 128,
-		BIND_BOTTOMRIGHT = 256
+		BIND_BOTTOMRIGHT = 256,
+
+		BIND_IGNORE_TOPLEFT = 1 << 16,
+		BIND_IGNORE_TOP = 1 << 17,
+		BIND_IGNORE_TOPRIGHT = 1 << 18,
+		BIND_IGNORE_LEFT = 1 << 19,
+		BIND_IGNORE_CENTER = 1 << 20,
+		BIND_IGNORE_RIGHT = 1 << 21,
+		BIND_IGNORE_BOTTOMLEFT = 1 << 22,
+		BIND_IGNORE_BOTTOM = 1 << 23,
+		BIND_IGNORE_BOTTOMRIGHT = 1 << 24
 	};
 
 	enum TileMode {
@@ -86,7 +96,7 @@ public:
 		Size2 size;
 		int spacing;
 		Vector2 icon_coord;
-		Map<Vector2, uint16_t> flags;
+		Map<Vector2, uint32_t> flags;
 		Map<Vector2, Ref<OccluderPolygon2D> > occluder_map;
 		Map<Vector2, Ref<NavigationPolygon> > navpoly_map;
 		Map<Vector2, int> priority_map;
@@ -181,9 +191,9 @@ public:
 	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
 	const Map<Vector2, int> &autotile_get_z_index_map(int p_id) const;
 
-	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag);
-	uint16_t autotile_get_bitmask(int p_id, Vector2 p_coord);
-	const Map<Vector2, uint16_t> &autotile_get_bitmask_map(int p_id);
+	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag);
+	uint32_t autotile_get_bitmask(int p_id, Vector2 p_coord);
+	const Map<Vector2, uint32_t> &autotile_get_bitmask_map(int p_id);
 	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = NULL, const Vector2 &p_tile_location = Vector2());
 
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);

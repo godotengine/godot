@@ -215,7 +215,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = autotile_get_spacing(id);
 		else if (what == "bitmask_flags") {
 			Array p;
-			for (Map<Vector2, uint16_t>::Element *E = tile_map[id].autotile_data.flags.front(); E; E = E->next()) {
+			for (Map<Vector2, uint32_t>::Element *E = tile_map[id].autotile_data.flags.front(); E; E = E->next()) {
 				p.push_back(E->key());
 				p.push_back(E->value());
 			}
@@ -544,7 +544,7 @@ const Map<Vector2, int> &TileSet::autotile_get_z_index_map(int p_id) const {
 	return tile_map[p_id].autotile_data.z_index_map;
 }
 
-void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag) {
+void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (p_flag == 0) {
@@ -555,7 +555,7 @@ void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint16_t p_flag) {
 	}
 }
 
-uint16_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
+uint32_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
 	if (!tile_map[p_id].autotile_data.flags.has(p_coord)) {
@@ -564,13 +564,13 @@ uint16_t TileSet::autotile_get_bitmask(int p_id, Vector2 p_coord) {
 	return tile_map[p_id].autotile_data.flags[p_coord];
 }
 
-const Map<Vector2, uint16_t> &TileSet::autotile_get_bitmask_map(int p_id) {
+const Map<Vector2, uint32_t> &TileSet::autotile_get_bitmask_map(int p_id) {
 
-	static Map<Vector2, uint16_t> dummy;
-	static Map<Vector2, uint16_t> dummy_atlas;
+	static Map<Vector2, uint32_t> dummy;
+	static Map<Vector2, uint32_t> dummy_atlas;
 	ERR_FAIL_COND_V(!tile_map.has(p_id), dummy);
 	if (tile_get_tile_mode(p_id) == ATLAS_TILE) {
-		dummy_atlas = Map<Vector2, uint16_t>();
+		dummy_atlas = Map<Vector2, uint32_t>();
 		Rect2 region = tile_get_region(p_id);
 		Size2 size = autotile_get_size(p_id);
 		float spacing = autotile_get_spacing(p_id);
@@ -600,18 +600,25 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 	}
 
 	List<Vector2> coords;
-	uint16_t mask;
-	for (Map<Vector2, uint16_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
+	uint32_t mask;
+	uint16_t mask_;
+	uint16_t mask_ignore;
+	for (Map<Vector2, uint32_t>::Element *E = tile_map[p_id].autotile_data.flags.front(); E; E = E->next()) {
 		mask = E->get();
 		if (tile_map[p_id].autotile_data.bitmask_mode == BITMASK_2X2) {
-			mask &= (BIND_BOTTOMLEFT | BIND_BOTTOMRIGHT | BIND_TOPLEFT | BIND_TOPRIGHT);
+			mask |= (BIND_IGNORE_TOP | BIND_IGNORE_LEFT | BIND_IGNORE_CENTER | BIND_IGNORE_RIGHT | BIND_IGNORE_BOTTOM);
 		}
-		if (mask == p_bitmask) {
+
+		mask_ = mask & 0xFFFF;
+		mask_ignore = mask >> 16;
+
+		if (((mask_ & (~mask_ignore)) == (p_bitmask & (~mask_ignore))) && (((~mask_) | mask_ignore) == ((~p_bitmask) | mask_ignore))) {
 			for (int i = 0; i < autotile_get_subtile_priority(p_id, E->key()); i++) {
 				coords.push_back(E->key());
 			}
 		}
 	}
+
 	if (coords.size() == 0) {
 		return autotile_get_icon_coordinate(p_id);
 	} else {
