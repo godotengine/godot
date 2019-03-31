@@ -222,7 +222,6 @@ void Main::print_help(const char *p_binary) {
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("  -e, --editor                     Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager            Start the project manager, even if a project is auto-detected.\n");
-	OS::get_singleton()->print("  --main-loop-type                 Override the main type loop type.\n");
 #endif
 	OS::get_singleton()->print("  -q, --quit                       Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>          Use a specific locale (<locale> being a two-letter code).\n");
@@ -574,18 +573,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			init_fullscreen = true;
 #ifdef TOOLS_ENABLED
 		} else if (I->get() == "-e" || I->get() == "--editor") { // starts editor
+
 			editor = true;
-
-		} else if (I->get() == "--main-loop-type") {
-			if (I->next()) {
-				const String & mlt = I->next()->get();
-				GLOBAL_DEF("application/run/main_loop_type", mlt);
-				N = I->next()->next();
-			} else {
-				OS::get_singleton()->print("Missing main loop type argument, aborting.\n");
-				goto error;
-			}
-
 		} else if (I->get() == "-p" || I->get() == "--project-manager") { // starts project manager
 
 			project_manager = true;
@@ -855,7 +844,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 #endif
 
-	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "" && String(GLOBAL_DEF("application/run/main_loop_type", "")) == "") {
+	if (main_args.size() == 0 && String(GLOBAL_DEF("application/run/main_scene", "")) == "") {
 #ifdef TOOLS_ENABLED
 		if (!editor && !project_manager) {
 #endif
@@ -1440,16 +1429,29 @@ bool Main::start() {
 #endif
 
 	} else if (script != "") {
-
-		Ref<Script> script_res = ResourceLoader::load(script);
-		ERR_EXPLAIN("Can't load script: " + script);
-		ERR_FAIL_COND_V(script_res.is_null(), false);
+		Ref<Script> script_res;
+		if (!ClassDB::class_exists(script)) {
+			script_res = ResourceLoader::load(script);
+			ERR_EXPLAIN("Can't load script: " + script);
+			ERR_FAIL_COND_V(script_res.is_null(), false);
+		}
 
 		if (check_only) {
 			return false;
 		}
 
-		if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
+		if (ClassDB::can_instance(script)) {
+			Object *obj = ClassDB::instance(script);
+			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
+			if (!script_loop) {
+				if (obj)
+					memdelete(obj);
+				ERR_EXPLAIN("Can't load class '" + script + "', it does not inherit from a MainLoop type");
+				ERR_FAIL_COND_V(!script_loop, false);
+			}
+
+			main_loop = script_loop;
+		} else if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
 
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);

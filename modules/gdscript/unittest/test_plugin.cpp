@@ -46,7 +46,7 @@ ToolButton *find_play_button() {
 }
 
 void DebugButton::run() {
-	const String customArgs = "--main-loop-type TestRunner";
+	const String customArgs = "-s TestRunner";
 	ProjectSettings *project_settings = ProjectSettings::get_singleton();
 	const String args = project_settings->get("editor/main_run_args");
 	ToolButton *play_button = find_play_button();
