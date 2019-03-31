@@ -962,6 +962,9 @@ void EditorSettings::setup_network() {
 		// link-local IPv6 addresses don't work, skipping them
 		if (ip.begins_with("fe80:0:0:0:")) // fe80::/64
 			continue;
+		// Same goes for IPv4 link-local (APIPA) addresses.
+		if (ip.begins_with("169.254.")) // 169.254.0.0/16
+			continue;
 		if (ip == current)
 			lip = current; //so it saves
 		if (hint != "")
