@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftlcdfil.c                                                             */
-/*                                                                         */
-/*    FreeType API for color filtering of subpixel bitmap glyphs (body).   */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftlcdfil.c
+ *
+ *   FreeType API for color filtering of subpixel bitmap glyphs (body).
+ *
+ * Copyright (C) 2006-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -34,9 +34,9 @@
 
   /* add padding according to filter weights */
   FT_BASE_DEF (void)
-  ft_lcd_padding( FT_Pos*       Min,
-                  FT_Pos*       Max,
-                  FT_GlyphSlot  slot )
+  ft_lcd_padding( FT_BBox*        cbox,
+                  FT_GlyphSlot    slot,
+                  FT_Render_Mode  mode )
   {
     FT_Byte*                 lcd_weights;
     FT_Bitmap_LcdFilterFunc  lcd_filter_func;
@@ -56,10 +56,20 @@
 
     if ( lcd_filter_func == ft_lcd_filter_fir )
     {
-      *Min -= lcd_weights[0] ? 43 :
-              lcd_weights[1] ? 22 : 0;
-      *Max += lcd_weights[4] ? 43 :
-              lcd_weights[3] ? 22 : 0;
+      if ( mode == FT_RENDER_MODE_LCD )
+      {
+        cbox->xMin -= lcd_weights[0] ? 43 :
+                      lcd_weights[1] ? 22 : 0;
+        cbox->xMax += lcd_weights[4] ? 43 :
+                      lcd_weights[3] ? 22 : 0;
+      }
+      else if ( mode == FT_RENDER_MODE_LCD_V )
+      {
+        cbox->yMin -= lcd_weights[0] ? 43 :
+                      lcd_weights[1] ? 22 : 0;
+        cbox->yMax += lcd_weights[4] ? 43 :
+                      lcd_weights[3] ? 22 : 0;
+      }
     }
   }
 
@@ -275,6 +285,8 @@
 #endif /* USE_LEGACY */
 
 
+  /* documentation in ftlcdfil.h */
+
   FT_EXPORT_DEF( FT_Error )
   FT_Library_SetLcdFilterWeights( FT_Library      library,
                                   unsigned char  *weights )
@@ -291,6 +303,8 @@
     return FT_Err_Ok;
   }
 
+
+  /* documentation in ftlcdfil.h */
 
   FT_EXPORT_DEF( FT_Error )
   FT_Library_SetLcdFilter( FT_Library    library,
@@ -341,18 +355,41 @@
     return FT_Err_Ok;
   }
 
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Library_SetLcdGeometry( FT_Library  library,
+                             FT_Vector*  sub )
+  {
+    FT_UNUSED( library );
+    FT_UNUSED( sub );
+
+    return FT_THROW( Unimplemented_Feature );
+  }
+
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
-  /* add padding according to accommodate outline shifts */
+  /* add padding to accommodate outline shifts */
   FT_BASE_DEF (void)
-  ft_lcd_padding( FT_Pos*       Min,
-                  FT_Pos*       Max,
-                  FT_GlyphSlot  slot )
+  ft_lcd_padding( FT_BBox*        cbox,
+                  FT_GlyphSlot    slot,
+                  FT_Render_Mode  mode )
   {
-    FT_UNUSED( slot );
+    FT_Vector*  sub = slot->library->lcd_geometry;
 
-    *Min -= 21;
-    *Max += 21;
+    if ( mode == FT_RENDER_MODE_LCD )
+    {
+      cbox->xMin -= FT_MAX( FT_MAX( sub[0].x, sub[1].x ), sub[2].x );
+      cbox->xMax -= FT_MIN( FT_MIN( sub[0].x, sub[1].x ), sub[2].x );
+      cbox->yMin -= FT_MAX( FT_MAX( sub[0].y, sub[1].y ), sub[2].y );
+      cbox->yMax -= FT_MIN( FT_MIN( sub[0].y, sub[1].y ), sub[2].y );
+    }
+    else if ( mode == FT_RENDER_MODE_LCD_V )
+    {
+      cbox->xMin -= FT_MAX( FT_MAX( sub[0].y, sub[1].y ), sub[2].y );
+      cbox->xMax -= FT_MIN( FT_MIN( sub[0].y, sub[1].y ), sub[2].y );
+      cbox->yMin += FT_MIN( FT_MIN( sub[0].x, sub[1].x ), sub[2].x );
+      cbox->yMax += FT_MAX( FT_MAX( sub[0].x, sub[1].x ), sub[2].x );
+    }
   }
 
 
@@ -373,6 +410,24 @@
   {
     FT_UNUSED( library );
     FT_UNUSED( filter );
+
+    return FT_THROW( Unimplemented_Feature );
+  }
+
+
+  /* documentation in ftlcdfil.h */
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Library_SetLcdGeometry( FT_Library  library,
+                             FT_Vector   sub[3] )
+  {
+    if ( !library )
+      return FT_THROW( Invalid_Library_Handle );
+
+    if ( !sub )
+      return FT_THROW( Invalid_Argument );
+
+    ft_memcpy( library->lcd_geometry, sub, 3 * sizeof( FT_Vector ) );
 
     return FT_THROW( Unimplemented_Feature );
   }

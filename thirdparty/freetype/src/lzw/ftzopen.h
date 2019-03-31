@@ -1,23 +1,23 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftzopen.h                                                              */
-/*                                                                         */
-/*    FreeType support for .Z compressed files.                            */
-/*                                                                         */
-/*  This optional component relies on NetBSD's zopen().  It should mainly  */
-/*  be used to parse compressed PCF fonts, as found with many X11 server   */
-/*  distributions.                                                         */
-/*                                                                         */
-/*  Copyright 2005-2018 by                                                 */
-/*  David Turner.                                                          */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftzopen.h
+ *
+ *   FreeType support for .Z compressed files.
+ *
+ * This optional component relies on NetBSD's zopen().  It should mainly
+ * be used to parse compressed PCF fonts, as found with many X11 server
+ * distributions.
+ *
+ * Copyright (C) 2005-2019 by
+ * David Turner.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 #ifndef FTZOPEN_H_
 #define FTZOPEN_H_
@@ -27,9 +27,9 @@
 
 
   /*
-   *  This is a complete re-implementation of the LZW file reader,
-   *  since the old one was incredibly badly written, using
-   *  400 KByte of heap memory before decompressing anything.
+   * This is a complete re-implementation of the LZW file reader,
+   * since the old one was incredibly badly written, using
+   * 400 KByte of heap memory before decompressing anything.
    *
    */
 
@@ -58,56 +58,56 @@
 
 
   /*
-   *  state of LZW decompressor
+   * state of LZW decompressor
    *
-   *  small technical note
-   *  --------------------
+   * small technical note
+   * --------------------
    *
-   *  We use a few tricks in this implementation that are explained here to
-   *  ease debugging and maintenance.
+   * We use a few tricks in this implementation that are explained here to
+   * ease debugging and maintenance.
    *
-   *  - First of all, the `prefix' and `suffix' arrays contain the suffix
-   *    and prefix for codes over 256; this means that
+   * - First of all, the `prefix' and `suffix' arrays contain the suffix
+   *   and prefix for codes over 256; this means that
    *
-   *      prefix_of(code) == state->prefix[code-256]
-   *      suffix_of(code) == state->suffix[code-256]
+   *     prefix_of(code) == state->prefix[code-256]
+   *     suffix_of(code) == state->suffix[code-256]
    *
-   *    Each prefix is a 16-bit code, and each suffix an 8-bit byte.
+   *   Each prefix is a 16-bit code, and each suffix an 8-bit byte.
    *
-   *    Both arrays are stored in a single memory block, pointed to by
-   *    `state->prefix'.  This means that the following equality is always
-   *    true:
+   *   Both arrays are stored in a single memory block, pointed to by
+   *   `state->prefix'.  This means that the following equality is always
+   *   true:
    *
-   *      state->suffix == (FT_Byte*)(state->prefix + state->prefix_size)
+   *     state->suffix == (FT_Byte*)(state->prefix + state->prefix_size)
    *
-   *    Of course, state->prefix_size is the number of prefix/suffix slots
-   *    in the arrays, corresponding to codes 256..255+prefix_size.
+   *   Of course, state->prefix_size is the number of prefix/suffix slots
+   *   in the arrays, corresponding to codes 256..255+prefix_size.
    *
-   *  - `free_ent' is the index of the next free entry in the `prefix'
-   *    and `suffix' arrays.  This means that the corresponding `next free
-   *    code' is really `256+free_ent'.
+   * - `free_ent' is the index of the next free entry in the `prefix'
+   *   and `suffix' arrays.  This means that the corresponding `next free
+   *   code' is really `256+free_ent'.
    *
-   *    Moreover, `max_free' is the maximum value that `free_ent' can reach.
+   *   Moreover, `max_free' is the maximum value that `free_ent' can reach.
    *
-   *    `max_free' corresponds to `(1 << max_bits) - 256'.  Note that this
-   *    value is always <= 0xFF00, which means that both `free_ent' and
-   *    `max_free' can be stored in an FT_UInt variable, even on 16-bit
-   *    machines.
+   *   `max_free' corresponds to `(1 << max_bits) - 256'.  Note that this
+   *   value is always <= 0xFF00, which means that both `free_ent' and
+   *   `max_free' can be stored in an FT_UInt variable, even on 16-bit
+   *   machines.
    *
-   *    If `free_ent == max_free', you cannot add new codes to the
-   *    prefix/suffix table.
+   *   If `free_ent == max_free', you cannot add new codes to the
+   *   prefix/suffix table.
    *
-   *  - `num_bits' is the current number of code bits, starting at 9 and
-   *    growing each time `free_ent' reaches the value of `free_bits'.  The
-   *    latter is computed as follows
+   * - `num_bits' is the current number of code bits, starting at 9 and
+   *   growing each time `free_ent' reaches the value of `free_bits'.  The
+   *   latter is computed as follows
    *
-   *      if num_bits < max_bits:
-   *         free_bits = (1 << num_bits)-256
-   *      else:
-   *         free_bits = max_free + 1
+   *     if num_bits < max_bits:
+   *        free_bits = (1 << num_bits)-256
+   *     else:
+   *        free_bits = max_free + 1
    *
-   *    Since the value of `max_free + 1' can never be reached by
-   *    `free_ent', `num_bits' cannot grow larger than `max_bits'.
+   *   Since the value of `max_free + 1' can never be reached by
+   *   `free_ent', `num_bits' cannot grow larger than `max_bits'.
    */
 
   typedef struct  FT_LzwStateRec_

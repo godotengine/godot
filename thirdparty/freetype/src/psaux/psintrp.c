@@ -1,39 +1,39 @@
-/***************************************************************************/
-/*                                                                         */
-/*  psintrp.c                                                              */
-/*                                                                         */
-/*    Adobe's CFF Interpreter (body).                                      */
-/*                                                                         */
-/*  Copyright 2007-2014 Adobe Systems Incorporated.                        */
-/*                                                                         */
-/*  This software, and all works of authorship, whether in source or       */
-/*  object code form as indicated by the copyright notice(s) included      */
-/*  herein (collectively, the "Work") is made available, and may only be   */
-/*  used, modified, and distributed under the FreeType Project License,    */
-/*  LICENSE.TXT.  Additionally, subject to the terms and conditions of the */
-/*  FreeType Project License, each contributor to the Work hereby grants   */
-/*  to any individual or legal entity exercising permissions granted by    */
-/*  the FreeType Project License and this section (hereafter, "You" or     */
-/*  "Your") a perpetual, worldwide, non-exclusive, no-charge,              */
-/*  royalty-free, irrevocable (except as stated in this section) patent    */
-/*  license to make, have made, use, offer to sell, sell, import, and      */
-/*  otherwise transfer the Work, where such license applies only to those  */
-/*  patent claims licensable by such contributor that are necessarily      */
-/*  infringed by their contribution(s) alone or by combination of their    */
-/*  contribution(s) with the Work to which such contribution(s) was        */
-/*  submitted.  If You institute patent litigation against any entity      */
-/*  (including a cross-claim or counterclaim in a lawsuit) alleging that   */
-/*  the Work or a contribution incorporated within the Work constitutes    */
-/*  direct or contributory patent infringement, then any patent licenses   */
-/*  granted to You under this License for that Work shall terminate as of  */
-/*  the date such litigation is filed.                                     */
-/*                                                                         */
-/*  By using, modifying, or distributing the Work you indicate that you    */
-/*  have read and understood the terms and conditions of the               */
-/*  FreeType Project License as well as those provided in this section,    */
-/*  and you accept them fully.                                             */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * psintrp.c
+ *
+ *   Adobe's CFF Interpreter (body).
+ *
+ * Copyright 2007-2014 Adobe Systems Incorporated.
+ *
+ * This software, and all works of authorship, whether in source or
+ * object code form as indicated by the copyright notice(s) included
+ * herein (collectively, the "Work") is made available, and may only be
+ * used, modified, and distributed under the FreeType Project License,
+ * LICENSE.TXT.  Additionally, subject to the terms and conditions of the
+ * FreeType Project License, each contributor to the Work hereby grants
+ * to any individual or legal entity exercising permissions granted by
+ * the FreeType Project License and this section (hereafter, "You" or
+ * "Your") a perpetual, worldwide, non-exclusive, no-charge,
+ * royalty-free, irrevocable (except as stated in this section) patent
+ * license to make, have made, use, offer to sell, sell, import, and
+ * otherwise transfer the Work, where such license applies only to those
+ * patent claims licensable by such contributor that are necessarily
+ * infringed by their contribution(s) alone or by combination of their
+ * contribution(s) with the Work to which such contribution(s) was
+ * submitted.  If You institute patent litigation against any entity
+ * (including a cross-claim or counterclaim in a lawsuit) alleging that
+ * the Work or a contribution incorporated within the Work constitutes
+ * direct or contributory patent infringement, then any patent licenses
+ * granted to You under this License for that Work shall terminate as of
+ * the date such litigation is filed.
+ *
+ * By using, modifying, or distributing the Work you indicate that you
+ * have read and understood the terms and conditions of the
+ * FreeType Project License as well as those provided in this section,
+ * and you accept them fully.
+ *
+ */
 
 
 #include "psft.h"
@@ -52,14 +52,14 @@
 #include "t1decode.h" /* for t1 seac    */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cf2interp
+#define FT_COMPONENT  cf2interp
 
 
   FT_LOCAL_DEF( void )
@@ -287,7 +287,7 @@
   {
     CF2_UInt  i;
     CF2_UInt  count       = cf2_stack_count( opStack );
-    FT_Bool   hasWidthArg = (FT_Bool)( count & 1 );
+    FT_Bool   hasWidthArg = FT_BOOL( count & 1 );
 
     /* variable accumulates delta values from operand stack */
     CF2_Fixed  position = hintOffset;
@@ -364,7 +364,7 @@
 
     if ( doConditionalLastRead )
     {
-      FT_Bool    lastIsX = (FT_Bool)(
+      FT_Bool    lastIsX = FT_BOOL(
                              cf2_fixedAbs( SUB_INT32( vals[10], *curX ) ) >
                              cf2_fixedAbs( SUB_INT32( vals[11], *curY ) ) );
       CF2_Fixed  lastVal = cf2_stack_getReal( opStack, idx );
@@ -612,13 +612,13 @@
     cf2_arrstack_setCount( &subrStack, CF2_MAX_SUBR + 1 );
 
     charstring  = (CF2_Buffer)cf2_arrstack_getBuffer( &subrStack );
-    *charstring = *buf;    /* structure copy */
-
-    charstringIndex = 0;       /* entry is valid now */
 
     /* catch errors so far */
     if ( *error )
       goto exit;
+
+    *charstring     = *buf;    /* structure copy     */
+    charstringIndex = 0;       /* entry is valid now */
 
     /* main interpreter loop */
     while ( 1 )
@@ -663,6 +663,7 @@
           /* Skip outline commands first time round.       */
           /* `endchar' will trigger initial hintmap build  */
           /* and rewind the charstring.                    */
+          FT_TRACE4(( " <outline command skipped>\n" ));
           cf2_stack_clear( opStack );
           continue;
         }
@@ -775,7 +776,8 @@
 
       case cf2_cmdHSTEMHM:
       case cf2_cmdHSTEM:
-        FT_TRACE4(( op1 == cf2_cmdHSTEMHM ? " hstemhm\n" : " hstem\n" ));
+        FT_TRACE4(( "%s\n", op1 == cf2_cmdHSTEMHM ? " hstemhm"
+                                                  : " hstem" ));
 
         if ( !font->isT1 )
         {
@@ -805,7 +807,8 @@
 
       case cf2_cmdVSTEMHM:
       case cf2_cmdVSTEM:
-        FT_TRACE4(( op1 == cf2_cmdVSTEMHM ? " vstemhm\n" : " vstem\n" ));
+        FT_TRACE4(( "%s\n", op1 == cf2_cmdVSTEMHM ? " vstemhm"
+                                                  : " vstem" ));
 
         if ( !font->isT1 )
         {
@@ -888,7 +891,7 @@
           FT_Bool  isX = FT_BOOL( op1 == cf2_cmdHLINETO );
 
 
-          FT_TRACE4(( isX ? " hlineto\n" : " vlineto\n" ));
+          FT_TRACE4(( "%s\n", isX ? " hlineto" : " vlineto" ));
 
           for ( idx = 0; idx < count; idx++ )
           {
@@ -916,8 +919,8 @@
           CF2_UInt  idx   = 0;
 
 
-          FT_TRACE4(( op1 == cf2_cmdRCURVELINE ? " rcurveline\n"
-                                               : " rrcurveto\n" ));
+          FT_TRACE4(( "%s\n", op1 == cf2_cmdRCURVELINE ? " rcurveline"
+                                                       : " rrcurveto" ));
 
           while ( idx + 6 <= count )
           {
@@ -957,10 +960,10 @@
           FT_TRACE4(( " unknown op (%d)\n", op1 ));
         else
         {
-          FT_TRACE4(( " closepath" ));
+          FT_TRACE4(( " closepath\n" ));
 
           /* if there is no path, `closepath' is a no-op */
-          ps_builder_close_contour( &decoder->builder );
+          cf2_glyphpath_closeOpenPath( &glyphPath );
 
           haveWidth = TRUE;
         }
@@ -972,8 +975,8 @@
           CF2_Int  subrNum;
 
 
-          FT_TRACE4(( op1 == cf2_cmdCALLGSUBR ? " callgsubr"
-                                              : " callsubr" ));
+          FT_TRACE4(( "%s", op1 == cf2_cmdCALLGSUBR ? " callgsubr"
+                                                    : " callsubr" ));
 
           if ( ( !font->isT1 && charstringIndex > CF2_MAX_SUBR )       ||
                (  font->isT1 && charstringIndex > T1_MAX_SUBRS_CALLS ) )
@@ -1212,8 +1215,8 @@
                       FT_Bool  isV = FT_BOOL( op2 == cf2_escVSTEM3 );
 
 
-                      FT_TRACE4(( isV ? " vstem3\n"
-                                      : " hstem3\n" ));
+                      FT_TRACE4(( "%s\n", isV ? " vstem3"
+                                              : " hstem3" ));
 
                       FT_ASSERT( cf2_stack_count( opStack ) == 6 );
 
@@ -1644,16 +1647,17 @@
                     subr_no = cf2_stack_popInt( opStack );
                     arg_cnt = cf2_stack_popInt( opStack );
 
-                    /*******************************************************/
-                    /*                                                     */
-                    /* remove all operands to callothersubr from the stack */
-                    /*                                                     */
-                    /* for handled othersubrs, where we know the number of */
-                    /* arguments, we increase the stack by the value of    */
-                    /* known_othersubr_result_cnt                          */
-                    /*                                                     */
-                    /* for unhandled othersubrs the following pops adjust  */
-                    /* the stack pointer as necessary                      */
+                    /********************************************************
+                     *
+                     * remove all operands to callothersubr from the stack
+                     *
+                     * for handled othersubrs, where we know the number of
+                     * arguments, we increase the stack by the value of
+                     * known_othersubr_result_cnt
+                     *
+                     * for unhandled othersubrs the following pops adjust
+                     * the stack pointer as necessary
+                     */
 
                     count = cf2_stack_count( opStack );
                     FT_ASSERT( (CF2_UInt)arg_cnt <= count );
@@ -2416,7 +2420,7 @@
           PS_Builder*  builder;
 
 
-          FT_TRACE4(( " hsbw" ));
+          FT_TRACE4(( " hsbw\n" ));
 
           builder = &decoder->builder;
 
@@ -2562,7 +2566,7 @@
       case cf2_cmdHINTMASK:
         /* the final \n in the tracing message gets added in      */
         /* `cf2_hintmask_read' (which also traces the mask bytes) */
-        FT_TRACE4(( op1 == cf2_cmdCNTRMASK ? " cntrmask" : " hintmask" ));
+        FT_TRACE4(( "%s", op1 == cf2_cmdCNTRMASK ? " cntrmask" : " hintmask" ));
 
         /* never add hints after the mask is computed */
         if ( cf2_stack_count( opStack ) > 1    &&
@@ -2828,7 +2832,7 @@
           count = count1 & ~2U;
           idx  += count1 - count;
 
-          FT_TRACE4(( alternate ? " hvcurveto\n" : " vhcurveto\n" ));
+          FT_TRACE4(( "%s\n", alternate ? " hvcurveto" : " vhcurveto" ));
 
           while ( idx < count )
           {

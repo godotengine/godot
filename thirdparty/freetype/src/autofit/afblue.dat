@@ -1,15 +1,15 @@
-//  afblue.dat
+// afblue.dat
 //
-//    Auto-fitter data for blue strings.
+//   Auto-fitter data for blue strings.
 //
-//  Copyright 2013-2018 by
-//  David Turner, Robert Wilhelm, and Werner Lemberg.
+// Copyright (C) 2013-2019 by
+// David Turner, Robert Wilhelm, and Werner Lemberg.
 //
-//  This file is part of the FreeType project, and may only be used,
-//  modified, and distributed under the terms of the FreeType project
-//  license, LICENSE.TXT.  By continuing to use, modify, or distribute
-//  this file you indicate that you have read the license and
-//  understand and accept it fully.
+// This file is part of the FreeType project, and may only be used,
+// modified, and distributed under the terms of the FreeType project
+// license, LICENSE.TXT.  By continuing to use, modify, or distribute
+// this file you indicate that you have read the license and
+// understand and accept it fully.
 
 
 // This file contains data specific to blue zones.  It gets processed by

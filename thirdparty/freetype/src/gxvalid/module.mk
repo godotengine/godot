@@ -2,7 +2,7 @@
 # FreeType 2 gxvalid module definition
 #
 
-# Copyright 2004-2018 by
+# Copyright (C) 2004-2019 by
 # suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #

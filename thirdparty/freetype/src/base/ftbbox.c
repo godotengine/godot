@@ -1,27 +1,27 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftbbox.c                                                               */
-/*                                                                         */
-/*    FreeType bbox computation (body).                                    */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used        */
-/*  modified and distributed under the terms of the FreeType project       */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftbbox.c
+ *
+ *   FreeType bbox computation (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used
+ * modified and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This component has a _single_ role: to compute exact outline bounding */
-  /* boxes.                                                                */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This component has a _single_ role: to compute exact outline bounding
+   * boxes.
+   *
+   */
 
 
 #include <ft2build.h>
@@ -61,26 +61,28 @@
           ( p->y < bbox.yMin || p->y > bbox.yMax )
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    BBox_Move_To                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This function is used as a `move_to' emitter during                */
-  /*    FT_Outline_Decompose().  It simply records the destination point   */
-  /*    in `user->last'. We also update bbox in case contour starts with   */
-  /*    an implicit `on' point.                                            */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    to   :: A pointer to the destination vector.                       */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    user :: A pointer to the current walk context.                     */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    Always 0.  Needed for the interface only.                          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   BBox_Move_To
+   *
+   * @Description:
+   *   This function is used as a `move_to' emitter during
+   *   FT_Outline_Decompose().  It simply records the destination point
+   *   in `user->last'. We also update bbox in case contour starts with
+   *   an implicit `on' point.
+   *
+   * @Input:
+   *   to ::
+   *     A pointer to the destination vector.
+   *
+   * @InOut:
+   *   user ::
+   *     A pointer to the current walk context.
+   *
+   * @Return:
+   *   Always 0.  Needed for the interface only.
+   */
   static int
   BBox_Move_To( FT_Vector*  to,
                 TBBox_Rec*  user )
@@ -93,26 +95,28 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    BBox_Line_To                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This function is used as a `line_to' emitter during                */
-  /*    FT_Outline_Decompose().  It simply records the destination point   */
-  /*    in `user->last'; no further computations are necessary because     */
-  /*    bbox already contains both explicit ends of the line segment.      */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    to   :: A pointer to the destination vector.                       */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    user :: A pointer to the current walk context.                     */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    Always 0.  Needed for the interface only.                          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   BBox_Line_To
+   *
+   * @Description:
+   *   This function is used as a `line_to' emitter during
+   *   FT_Outline_Decompose().  It simply records the destination point
+   *   in `user->last'; no further computations are necessary because
+   *   bbox already contains both explicit ends of the line segment.
+   *
+   * @Input:
+   *   to ::
+   *     A pointer to the destination vector.
+   *
+   * @InOut:
+   *   user ::
+   *     A pointer to the current walk context.
+   *
+   * @Return:
+   *   Always 0.  Needed for the interface only.
+   */
   static int
   BBox_Line_To( FT_Vector*  to,
                 TBBox_Rec*  user )
@@ -123,28 +127,33 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    BBox_Conic_Check                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Find the extrema of a 1-dimensional conic Bezier curve and update  */
-  /*    a bounding range.  This version uses direct computation, as it     */
-  /*    doesn't need square roots.                                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    y1  :: The start coordinate.                                       */
-  /*                                                                       */
-  /*    y2  :: The coordinate of the control point.                        */
-  /*                                                                       */
-  /*    y3  :: The end coordinate.                                         */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    min :: The address of the current minimum.                         */
-  /*                                                                       */
-  /*    max :: The address of the current maximum.                         */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   BBox_Conic_Check
+   *
+   * @Description:
+   *   Find the extrema of a 1-dimensional conic Bezier curve and update
+   *   a bounding range.  This version uses direct computation, as it
+   *   doesn't need square roots.
+   *
+   * @Input:
+   *   y1 ::
+   *     The start coordinate.
+   *
+   *   y2 ::
+   *     The coordinate of the control point.
+   *
+   *   y3 ::
+   *     The end coordinate.
+   *
+   * @InOut:
+   *   min ::
+   *     The address of the current minimum.
+   *
+   *   max ::
+   *     The address of the current maximum.
+   */
   static void
   BBox_Conic_Check( FT_Pos   y1,
                     FT_Pos   y2,
@@ -168,32 +177,35 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    BBox_Conic_To                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This function is used as a `conic_to' emitter during               */
-  /*    FT_Outline_Decompose().  It checks a conic Bezier curve with the   */
-  /*    current bounding box, and computes its extrema if necessary to     */
-  /*    update it.                                                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    control :: A pointer to a control point.                           */
-  /*                                                                       */
-  /*    to      :: A pointer to the destination vector.                    */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    user    :: The address of the current walk context.                */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    Always 0.  Needed for the interface only.                          */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    In the case of a non-monotonous arc, we compute directly the       */
-  /*    extremum coordinates, as it is sufficiently fast.                  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   BBox_Conic_To
+   *
+   * @Description:
+   *   This function is used as a `conic_to' emitter during
+   *   FT_Outline_Decompose().  It checks a conic Bezier curve with the
+   *   current bounding box, and computes its extrema if necessary to
+   *   update it.
+   *
+   * @Input:
+   *   control ::
+   *     A pointer to a control point.
+   *
+   *   to ::
+   *     A pointer to the destination vector.
+   *
+   * @InOut:
+   *   user ::
+   *     The address of the current walk context.
+   *
+   * @Return:
+   *   Always 0.  Needed for the interface only.
+   *
+   * @Note:
+   *   In the case of a non-monotonous arc, we compute directly the
+   *   extremum coordinates, as it is sufficiently fast.
+   */
   static int
   BBox_Conic_To( FT_Vector*  control,
                  FT_Vector*  to,
@@ -222,30 +234,36 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    BBox_Cubic_Check                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Find the extrema of a 1-dimensional cubic Bezier curve and         */
-  /*    update a bounding range.  This version uses iterative splitting    */
-  /*    because it is faster than the exact solution with square roots.    */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    p1  :: The start coordinate.                                       */
-  /*                                                                       */
-  /*    p2  :: The coordinate of the first control point.                  */
-  /*                                                                       */
-  /*    p3  :: The coordinate of the second control point.                 */
-  /*                                                                       */
-  /*    p4  :: The end coordinate.                                         */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    min :: The address of the current minimum.                         */
-  /*                                                                       */
-  /*    max :: The address of the current maximum.                         */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   BBox_Cubic_Check
+   *
+   * @Description:
+   *   Find the extrema of a 1-dimensional cubic Bezier curve and
+   *   update a bounding range.  This version uses iterative splitting
+   *   because it is faster than the exact solution with square roots.
+   *
+   * @Input:
+   *   p1 ::
+   *     The start coordinate.
+   *
+   *   p2 ::
+   *     The coordinate of the first control point.
+   *
+   *   p3 ::
+   *     The coordinate of the second control point.
+   *
+   *   p4 ::
+   *     The end coordinate.
+   *
+   * @InOut:
+   *   min ::
+   *     The address of the current minimum.
+   *
+   *   max ::
+   *     The address of the current maximum.
+   */
   static FT_Pos
   cubic_peak( FT_Pos  q1,
               FT_Pos  q2,
@@ -361,34 +379,38 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    BBox_Cubic_To                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This function is used as a `cubic_to' emitter during               */
-  /*    FT_Outline_Decompose().  It checks a cubic Bezier curve with the   */
-  /*    current bounding box, and computes its extrema if necessary to     */
-  /*    update it.                                                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    control1 :: A pointer to the first control point.                  */
-  /*                                                                       */
-  /*    control2 :: A pointer to the second control point.                 */
-  /*                                                                       */
-  /*    to       :: A pointer to the destination vector.                   */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    user     :: The address of the current walk context.               */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    Always 0.  Needed for the interface only.                          */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    In the case of a non-monotonous arc, we don't compute directly     */
-  /*    extremum coordinates, we subdivide instead.                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   BBox_Cubic_To
+   *
+   * @Description:
+   *   This function is used as a `cubic_to' emitter during
+   *   FT_Outline_Decompose().  It checks a cubic Bezier curve with the
+   *   current bounding box, and computes its extrema if necessary to
+   *   update it.
+   *
+   * @Input:
+   *   control1 ::
+   *     A pointer to the first control point.
+   *
+   *   control2 ::
+   *     A pointer to the second control point.
+   *
+   *   to ::
+   *     A pointer to the destination vector.
+   *
+   * @InOut:
+   *   user ::
+   *     The address of the current walk context.
+   *
+   * @Return:
+   *   Always 0.  Needed for the interface only.
+   *
+   * @Note:
+   *   In the case of a non-monotonous arc, we don't compute directly
+   *   extremum coordinates, we subdivide instead.
+   */
   static int
   BBox_Cubic_To( FT_Vector*  control1,
                  FT_Vector*  control2,
@@ -490,12 +512,6 @@
       FT_Error   error;
       TBBox_Rec  user;
 
-#ifdef FT_CONFIG_OPTION_PIC
-      FT_Outline_Funcs  bbox_interface;
-
-
-      Init_Class_bbox_interface( &bbox_interface );
-#endif
 
       user.bbox = bbox;
 

@@ -1,27 +1,27 @@
-/***************************************************************************/
-/*                                                                         */
-/*  otverror.h                                                             */
-/*                                                                         */
-/*    OpenType validation module error codes (specification only).         */
-/*                                                                         */
-/*  Copyright 2004-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * otverror.h
+ *
+ *   OpenType validation module error codes (specification only).
+ *
+ * Copyright (C) 2004-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This file is used to define the OpenType validation module error      */
-  /* enumeration constants.                                                */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This file is used to define the OpenType validation module error
+   * enumeration constants.
+   *
+   */
 
 #ifndef OTVERROR_H_
 #define OTVERROR_H_
