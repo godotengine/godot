@@ -553,6 +553,11 @@ bool AnimationNodeBlend3::is_using_sync() const {
 	return sync;
 }
 
+bool AnimationNodeBlend3::has_filter() const {
+
+	return true;
+}
+
 float AnimationNodeBlend3::process(float p_time, bool p_seek) {
 
 	float amount = get_parameter(blend_amount);

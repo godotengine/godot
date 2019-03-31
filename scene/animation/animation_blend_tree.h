@@ -219,6 +219,7 @@ public:
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
+	virtual bool has_filter() const;
 	float process(float p_time, bool p_seek);
 	AnimationNodeBlend3();
 };
