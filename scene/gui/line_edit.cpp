@@ -1223,6 +1223,7 @@ void LineEdit::append_at_cursor(String p_text) {
 
 void LineEdit::clear_internal() {
 
+	deselect();
 	_clear_undo_stack();
 	cached_width = 0;
 	cursor_pos = 0;
