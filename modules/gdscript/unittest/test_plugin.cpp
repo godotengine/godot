@@ -199,9 +199,7 @@ void TestPanel::_item_selected() {
 				{
 					filename = grandparent->get_text(0);
 					testname = parent->get_text(0);
-				}
-				else
-				{
+				} else {
 					filename = parent->get_text(0);
 					testname = selected->get_text(0);
 				}
