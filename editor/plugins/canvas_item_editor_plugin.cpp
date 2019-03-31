@@ -1387,7 +1387,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 
 	// Starts anchor dragging if needed
 	if (drag_type == DRAG_NONE) {
-		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && tool == TOOL_SELECT && show_helpers) {
+		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && b->is_pressed() && tool == TOOL_SELECT) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 			if (selection.size() == 1) {
 				Control *control = Object::cast_to<Control>(selection[0]);
@@ -2213,6 +2213,7 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	bool accepted = false;
+
 	if (EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning") || !Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 		if ((accepted = _gui_input_rulers_and_guides(p_event))) {
 			//printf("Rulers and guides\n");
@@ -2512,20 +2513,50 @@ void CanvasItemEditor::_draw_grid() {
 	}
 }
 
-void CanvasItemEditor::_draw_control_helpers(Control *control) {
+void CanvasItemEditor::_draw_control_anchors(Control *control) {
 	Transform2D xform = transform * control->get_global_transform_with_canvas();
 	RID ci = viewport->get_canvas_item();
-	if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
-		// Draw the helpers
-		Color color_base = Color(0.8, 0.8, 0.8, 0.5);
+	if (tool == TOOL_SELECT && !Object::cast_to<Container>(control->get_parent())) {
 
+		// Compute the anchors
 		float anchors_values[4];
 		anchors_values[0] = control->get_anchor(MARGIN_LEFT);
 		anchors_values[1] = control->get_anchor(MARGIN_TOP);
 		anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
 		anchors_values[3] = control->get_anchor(MARGIN_BOTTOM);
 
-		// Draw the anchors
+		Vector2 anchors_pos[4];
+		for (int i = 0; i < 4; i++) {
+			Vector2 value = Vector2((i % 2 == 0) ? anchors_values[i] : anchors_values[(i + 1) % 4], (i % 2 == 1) ? anchors_values[i] : anchors_values[(i + 1) % 4]);
+			anchors_pos[i] = xform.xform(_anchor_to_position(control, value));
+		}
+
+		// Draw the anchors handles
+		Rect2 anchor_rects[4];
+		anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
+		anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
+		anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
+		anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
+
+		for (int i = 0; i < 4; i++) {
+			anchor_handle->draw_rect(ci, anchor_rects[i]);
+		}
+	}
+}
+
+void CanvasItemEditor::_draw_control_helpers(Control *control) {
+	Transform2D xform = transform * control->get_global_transform_with_canvas();
+	if (tool == TOOL_SELECT && show_helpers && !Object::cast_to<Container>(control->get_parent())) {
+		// Draw the helpers
+		Color color_base = Color(0.8, 0.8, 0.8, 0.5);
+
+		// Compute the anchors
+		float anchors_values[4];
+		anchors_values[0] = control->get_anchor(MARGIN_LEFT);
+		anchors_values[1] = control->get_anchor(MARGIN_TOP);
+		anchors_values[2] = control->get_anchor(MARGIN_RIGHT);
+		anchors_values[3] = control->get_anchor(MARGIN_BOTTOM);
+
 		Vector2 anchors[4];
 		Vector2 anchors_pos[4];
 		for (int i = 0; i < 4; i++) {
@@ -2590,16 +2621,6 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			percent_val = anchors_values[dragged_anchor];
 			percent_val = (dragged_anchor >= 2) ? ANCHOR_END - percent_val : percent_val;
 			_draw_percentage_at_position(percent_val, (line_ends[(dragged_anchor + 1) % 4] + anchors_pos[dragged_anchor]) / 2, (Margin)((dragged_anchor + 1) % 4));
-		}
-
-		Rect2 anchor_rects[4];
-		anchor_rects[0] = Rect2(anchors_pos[0] - anchor_handle->get_size(), anchor_handle->get_size());
-		anchor_rects[1] = Rect2(anchors_pos[1] - Vector2(0.0, anchor_handle->get_size().y), Point2(-anchor_handle->get_size().x, anchor_handle->get_size().y));
-		anchor_rects[2] = Rect2(anchors_pos[2], -anchor_handle->get_size());
-		anchor_rects[3] = Rect2(anchors_pos[3] - Vector2(anchor_handle->get_size().x, 0.0), Point2(anchor_handle->get_size().x, -anchor_handle->get_size().y));
-
-		for (int i = 0; i < 4; i++) {
-			anchor_handle->draw_rect(ci, anchor_rects[i]);
 		}
 
 		// Draw the margin values and the node width/height when dragging control side
@@ -2779,6 +2800,7 @@ void CanvasItemEditor::_draw_selection() {
 			// Draw control-related helpers
 			Control *control = Object::cast_to<Control>(canvas_item);
 			if (control && _is_node_movable(control)) {
+				_draw_control_anchors(control);
 				_draw_control_helpers(control);
 			}
 
@@ -3311,24 +3333,32 @@ void CanvasItemEditor::_notification(int p_what) {
 		// Activate / Deactivate the pivot tool
 		pivot_button->set_disabled(nb_having_pivot == 0);
 
-		// Show / Hide the layout button
+		// Show / Hide the layout and anchors mode buttons
 		if (nb_control > 0 && nb_control == selection.size()) {
 			presets_menu->set_visible(true);
 			presets_menu->set_tooltip(TTR("Presets for the anchors and margins values of a Control node."));
+			anchor_mode_button->set_visible(true);
+			anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their margins."));
+
+			// Set the pressed state of the node
+			anchor_mode_button->set_pressed(anchors_mode);
 
 			// Disable if the selected node is child of a container
 			presets_menu->set_disabled(false);
+			anchor_mode_button->set_disabled(false);
 			for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
 				Control *control = Object::cast_to<Control>(E->get());
 				if (!control || Object::cast_to<Container>(control->get_parent())) {
 					presets_menu->set_disabled(true);
 					presets_menu->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
+					anchor_mode_button->set_disabled(true);
+					anchor_mode_button->set_tooltip(TTR("Children of containers have their anchors and margins values overridden by their parent."));
 					break;
 				}
 			}
-
 		} else {
 			presets_menu->set_visible(false);
+			anchor_mode_button->set_visible(false);
 		}
 
 		// Update the viewport if bones changes
@@ -3436,9 +3466,10 @@ void CanvasItemEditor::_notification(int p_what) {
 		p->add_icon_item(get_icon("ControlHcenterWide", "EditorIcons"), "HCenter Wide ", ANCHORS_AND_MARGINS_PRESET_HCENTER_WIDE);
 		p->add_separator();
 		p->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_AND_MARGINS_PRESET_WIDE);
+		p->add_icon_item(get_icon("Anchor", "EditorIcons"), "Keep Ratio", ANCHORS_AND_MARGINS_PRESET_KEEP_RATIO);
 		p->add_separator();
-		p->add_submenu_item(TTR("Anchors Only"), "Anchors");
-		p->set_item_icon(20, get_icon("Anchor", "EditorIcons"));
+		p->add_submenu_item(TTR("Anchors only"), "Anchors");
+		p->set_item_icon(21, get_icon("Anchor", "EditorIcons"));
 
 		anchors_popup->clear();
 		anchors_popup->add_icon_item(get_icon("ControlAlignTopLeft", "EditorIcons"), "Top Left", ANCHORS_PRESET_TOP_LEFT);
@@ -3460,7 +3491,29 @@ void CanvasItemEditor::_notification(int p_what) {
 		anchors_popup->add_icon_item(get_icon("ControlHcenterWide", "EditorIcons"), "HCenter Wide ", ANCHORS_PRESET_HCENTER_WIDE);
 		anchors_popup->add_separator();
 		anchors_popup->add_icon_item(get_icon("ControlAlignWide", "EditorIcons"), "Full Rect", ANCHORS_PRESET_WIDE);
+
+		anchor_mode_button->set_icon(get_icon("Anchor", "EditorIcons"));
 	}
+}
+
+void CanvasItemEditor::_selection_changed() {
+	// Update the anchors_mode
+	int nbValidControls = 0;
+	int nbAnchorsMode = 0;
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		Control *control = Object::cast_to<Control>(E->get());
+		if (!control)
+			continue;
+		if (Object::cast_to<Container>(control->get_parent()))
+			continue;
+
+		nbValidControls++;
+		if (control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_")) {
+			nbAnchorsMode++;
+		}
+	}
+	anchors_mode = (nbValidControls == nbAnchorsMode);
 }
 
 void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
@@ -3680,6 +3733,36 @@ void CanvasItemEditor::_set_anchors_and_margins_preset(Control::LayoutPreset p_p
 	}
 
 	undo_redo->commit_action();
+
+	anchors_mode = false;
+}
+
+void CanvasItemEditor::_set_anchors_and_margins_to_keep_ratio() {
+	List<Node *> selection = editor_selection->get_selected_node_list();
+
+	undo_redo->create_action(TTR("Change Anchors and Margins"));
+
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+
+		Control *control = Object::cast_to<Control>(E->get());
+		if (control) {
+			Point2 top_left_anchor = _position_to_anchor(control, Point2());
+			Point2 bottom_right_anchor = _position_to_anchor(control, control->get_size());
+			undo_redo->add_do_method(control, "set_anchor", MARGIN_LEFT, top_left_anchor.x, false, true);
+			undo_redo->add_do_method(control, "set_anchor", MARGIN_RIGHT, bottom_right_anchor.x, false, true);
+			undo_redo->add_do_method(control, "set_anchor", MARGIN_TOP, top_left_anchor.y, false, true);
+			undo_redo->add_do_method(control, "set_anchor", MARGIN_BOTTOM, bottom_right_anchor.y, false, true);
+			undo_redo->add_do_method(control, "set_meta", "_edit_use_anchors_", true);
+
+			bool use_anchors = control->has_meta("_edit_use_anchors_") && control->get_meta("_edit_use_anchors_");
+			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
+			undo_redo->add_undo_method(control, "set_meta", "_edit_use_anchors_", use_anchors);
+
+			anchors_mode = true;
+		}
+	}
+
+	undo_redo->commit_action();
 }
 
 void CanvasItemEditor::_set_anchors_preset(Control::LayoutPreset p_preset) {
@@ -3809,6 +3892,21 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), p_on_existing);
 		}
 	}
+}
+
+void CanvasItemEditor::_button_toggle_anchor_mode(bool p_status) {
+	List<CanvasItem *> selection = _get_edited_canvas_items(false, false);
+	for (List<CanvasItem *>::Element *E = selection.front(); E; E = E->next()) {
+		Control *control = Object::cast_to<Control>(E->get());
+		if (!control || Object::cast_to<Container>(control->get_parent()))
+			continue;
+
+		control->set_meta("_edit_use_anchors_", p_status);
+	}
+
+	anchors_mode = p_status;
+
+	viewport->update();
 }
 
 void CanvasItemEditor::_popup_callback(int p_op) {
@@ -4046,6 +4144,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case ANCHORS_AND_MARGINS_PRESET_WIDE: {
 			_set_anchors_and_margins_preset(Control::PRESET_WIDE);
+		} break;
+		case ANCHORS_AND_MARGINS_PRESET_KEEP_RATIO: {
+			_set_anchors_and_margins_to_keep_ratio();
 		} break;
 
 		case ANCHORS_PRESET_TOP_LEFT: {
@@ -4366,6 +4467,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_button_zoom_reset", &CanvasItemEditor::_button_zoom_reset);
 	ClassDB::bind_method("_button_zoom_plus", &CanvasItemEditor::_button_zoom_plus);
 	ClassDB::bind_method("_button_toggle_snap", &CanvasItemEditor::_button_toggle_snap);
+	ClassDB::bind_method("_button_toggle_anchor_mode", &CanvasItemEditor::_button_toggle_anchor_mode);
 	ClassDB::bind_method("_update_scroll", &CanvasItemEditor::_update_scroll);
 	ClassDB::bind_method("_update_scrollbars", &CanvasItemEditor::_update_scrollbars);
 	ClassDB::bind_method("_popup_callback", &CanvasItemEditor::_popup_callback);
@@ -4378,6 +4480,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_snap_changed", &CanvasItemEditor::_snap_changed);
 	ClassDB::bind_method("_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method("_tree_changed", &CanvasItemEditor::_tree_changed);
+	ClassDB::bind_method("_selection_changed", &CanvasItemEditor::_selection_changed);
 	ClassDB::bind_method("_popup_warning_depop", &CanvasItemEditor::_popup_warning_depop);
 	ClassDB::bind_method(D_METHOD("_selection_result_pressed"), &CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(D_METHOD("_selection_menu_hide"), &CanvasItemEditor::_selection_menu_hide);
@@ -4636,6 +4739,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_relative = false;
 	snap_pixel = false;
 
+	anchors_mode = false;
+
 	skeleton_show_bones = true;
 
 	drag_type = DRAG_NONE;
@@ -4654,6 +4759,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection = p_editor->get_editor_selection();
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", this, "update");
+	editor_selection->connect("selection_changed", this, "_selection_changed");
 
 	hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -4912,6 +5018,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_child(anchors_popup);
 	anchors_popup->set_name("Anchors");
 	anchors_popup->connect("id_pressed", this, "_popup_callback");
+
+	anchor_mode_button = memnew(ToolButton);
+	hb->add_child(anchor_mode_button);
+	anchor_mode_button->set_toggle_mode(true);
+	anchor_mode_button->hide();
+	anchor_mode_button->connect("toggled", this, "_button_toggle_anchor_mode");
 
 	animation_hb = memnew(HBoxContainer);
 	hb->add_child(animation_hb);
