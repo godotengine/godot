@@ -1,35 +1,35 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftcalc.c                                                               */
-/*                                                                         */
-/*    Arithmetic computations (body).                                      */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftcalc.c
+ *
+ *   Arithmetic computations (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Support for 1-complement arithmetic has been totally dropped in this  */
-  /* release.  You can still write your own code if you need it.           */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Support for 1-complement arithmetic has been totally dropped in this
+   * release.  You can still write your own code if you need it.
+   *
+   */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Implementing basic computation routines.                              */
-  /*                                                                       */
-  /* FT_MulDiv(), FT_MulFix(), FT_DivFix(), FT_RoundFix(), FT_CeilFix(),   */
-  /* and FT_FloorFix() are declared in freetype.h.                         */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Implementing basic computation routines.
+   *
+   * FT_MulDiv(), FT_MulFix(), FT_DivFix(), FT_RoundFix(), FT_CeilFix(),
+   * and FT_FloorFix() are declared in freetype.h.
+   *
+   */
 
 
 #include <ft2build.h>
@@ -58,14 +58,14 @@
 #endif /* !FT_LONG64 */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_calc
+#define FT_COMPONENT  calc
 
 
   /* transfer sign, leaving a positive number;                        */
@@ -516,10 +516,10 @@
 #elif 0
 
     /*
-     *  This code is nonportable.  See comment below.
+     * This code is nonportable.  See comment below.
      *
-     *  However, on a platform where right-shift of a signed quantity fills
-     *  the leftmost bits by copying the sign bit, it might be faster.
+     * However, on a platform where right-shift of a signed quantity fills
+     * the leftmost bits by copying the sign bit, it might be faster.
      */
 
     FT_Long    sa, sb;
@@ -527,22 +527,22 @@
 
 
     /*
-     *  This is a clever way of converting a signed number `a' into its
-     *  absolute value (stored back into `a') and its sign.  The sign is
-     *  stored in `sa'; 0 means `a' was positive or zero, and -1 means `a'
-     *  was negative.  (Similarly for `b' and `sb').
+     * This is a clever way of converting a signed number `a' into its
+     * absolute value (stored back into `a') and its sign.  The sign is
+     * stored in `sa'; 0 means `a' was positive or zero, and -1 means `a'
+     * was negative.  (Similarly for `b' and `sb').
      *
-     *  Unfortunately, it doesn't work (at least not portably).
+     * Unfortunately, it doesn't work (at least not portably).
      *
-     *  It makes the assumption that right-shift on a negative signed value
-     *  fills the leftmost bits by copying the sign bit.  This is wrong.
-     *  According to K&R 2nd ed, section `A7.8 Shift Operators' on page 206,
-     *  the result of right-shift of a negative signed value is
-     *  implementation-defined.  At least one implementation fills the
-     *  leftmost bits with 0s (i.e., it is exactly the same as an unsigned
-     *  right shift).  This means that when `a' is negative, `sa' ends up
-     *  with the value 1 rather than -1.  After that, everything else goes
-     *  wrong.
+     * It makes the assumption that right-shift on a negative signed value
+     * fills the leftmost bits by copying the sign bit.  This is wrong.
+     * According to K&R 2nd ed, section `A7.8 Shift Operators' on page 206,
+     * the result of right-shift of a negative signed value is
+     * implementation-defined.  At least one implementation fills the
+     * leftmost bits with 0s (i.e., it is exactly the same as an unsigned
+     * right shift).  This means that when `a' is negative, `sa' ends up
+     * with the value 1 rather than -1.  After that, everything else goes
+     * wrong.
      */
     sa = ( a_ >> ( sizeof ( a_ ) * 8 - 1 ) );
     a  = ( a_ ^ sa ) - sa;
@@ -701,8 +701,8 @@
     if ( !delta )
       return FT_THROW( Invalid_Argument );  /* matrix can't be inverted */
 
-    matrix->xy = - FT_DivFix( matrix->xy, delta );
-    matrix->yx = - FT_DivFix( matrix->yx, delta );
+    matrix->xy = -FT_DivFix( matrix->xy, delta );
+    matrix->yx = -FT_DivFix( matrix->yx, delta );
 
     xx = matrix->xx;
     yy = matrix->yy;
@@ -742,6 +742,76 @@
     b->xy = xy;
     b->yx = yx;
     b->yy = yy;
+  }
+
+
+  /* documentation is in ftcalc.h */
+
+  FT_BASE_DEF( FT_Bool )
+  FT_Matrix_Check( const FT_Matrix*  matrix )
+  {
+    FT_Matrix  m;
+    FT_Fixed   val[4];
+    FT_Fixed   nonzero_minval, maxval;
+    FT_Fixed   temp1, temp2;
+    FT_UInt    i;
+
+
+    if ( !matrix )
+      return 0;
+
+    val[0] = FT_ABS( matrix->xx );
+    val[1] = FT_ABS( matrix->xy );
+    val[2] = FT_ABS( matrix->yx );
+    val[3] = FT_ABS( matrix->yy );
+
+    /*
+     * To avoid overflow, we ensure that each value is not larger than
+     *
+     *   int(sqrt(2^31 / 4)) = 23170  ;
+     *
+     * we also check that no value becomes zero if we have to scale.
+     */
+
+    maxval         = 0;
+    nonzero_minval = FT_LONG_MAX;
+
+    for ( i = 0; i < 4; i++ )
+    {
+      if ( val[i] > maxval )
+        maxval = val[i];
+      if ( val[i] && val[i] < nonzero_minval )
+        nonzero_minval = val[i];
+    }
+
+    /* we only handle 32bit values */
+    if ( maxval > 0x7FFFFFFFL )
+      return 0;
+
+    if ( maxval > 23170 )
+    {
+      FT_Fixed  scale = FT_DivFix( maxval, 23170 );
+
+
+      if ( !FT_DivFix( nonzero_minval, scale ) )
+        return 0;    /* value range too large */
+
+      m.xx = FT_DivFix( matrix->xx, scale );
+      m.xy = FT_DivFix( matrix->xy, scale );
+      m.yx = FT_DivFix( matrix->yx, scale );
+      m.yy = FT_DivFix( matrix->yy, scale );
+    }
+    else
+      m = *matrix;
+
+    temp1 = FT_ABS( m.xx * m.yy - m.xy * m.yx );
+    temp2 = m.xx * m.xx + m.xy * m.xy + m.yx * m.yx + m.yy * m.yy;
+
+    if ( temp1 == 0         ||
+         temp2 / temp1 > 50 )
+      return 0;
+
+    return 1;
   }
 
 
@@ -913,9 +983,13 @@
                          FT_Pos  out_x,
                          FT_Pos  out_y )
   {
+    /* we silently ignore overflow errors since such large values */
+    /* lead to even more (harmless) rendering errors later on     */
+
 #ifdef FT_LONG64
 
-    FT_Int64  delta = (FT_Int64)in_x * out_y - (FT_Int64)in_y * out_x;
+    FT_Int64  delta = SUB_INT64( MUL_INT64( in_x, out_y ),
+                                 MUL_INT64( in_y, out_x ) );
 
 
     return ( delta > 0 ) - ( delta < 0 );
@@ -925,8 +999,6 @@
     FT_Int  result;
 
 
-    /* we silently ignore overflow errors, since such large values */
-    /* lead to even more (harmless) rendering errors later on      */
     if ( ADD_LONG( FT_ABS( in_x ), FT_ABS( out_y ) ) <= 131071L &&
          ADD_LONG( FT_ABS( in_y ), FT_ABS( out_x ) ) <= 131071L )
     {

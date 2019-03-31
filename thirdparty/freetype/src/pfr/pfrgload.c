@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  pfrgload.c                                                             */
-/*                                                                         */
-/*    FreeType PFR glyph loader (body).                                    */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * pfrgload.c
+ *
+ *   FreeType PFR glyph loader (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "pfrgload.h"
@@ -24,7 +24,7 @@
 #include "pfrerror.h"
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_pfr
+#define FT_COMPONENT  pfr
 
 
   /*************************************************************************/
@@ -359,9 +359,9 @@
         FT_UInt  format, format_low, args_format = 0, args_count, n;
 
 
-        /***************************************************************/
-        /*  read instruction                                           */
-        /*                                                             */
+        /****************************************************************
+         * read instruction
+         */
         PFR_CHECK( 1 );
         format     = PFR_NEXT_BYTE( p );
         format_low = format & 15;
@@ -426,9 +426,9 @@
           args_format = format_low;
         }
 
-        /***********************************************************/
-        /*  now read arguments                                     */
-        /*                                                         */
+        /************************************************************
+         * now read arguments
+         */
         cur = pos;
         for ( n = 0; n < args_count; n++ )
         {
@@ -513,9 +513,9 @@
 
         FT_TRACE7(( "\n" ));
 
-        /***********************************************************/
-        /*  finally, execute instruction                           */
-        /*                                                         */
+        /************************************************************
+         * finally, execute instruction
+         */
         switch ( format >> 4 )
         {
         case 0:                                       /* end glyph => EXIT */

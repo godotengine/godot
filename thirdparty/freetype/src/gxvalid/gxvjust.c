@@ -1,28 +1,28 @@
-/***************************************************************************/
-/*                                                                         */
-/*  gxvjust.c                                                              */
-/*                                                                         */
-/*    TrueTypeGX/AAT just table validation (body).                         */
-/*                                                                         */
-/*  Copyright 2005-2018 by                                                 */
-/*  suzuki toshiya, Masatake YAMATO, Red Hat K.K.,                         */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * gxvjust.c
+ *
+ *   TrueTypeGX/AAT just table validation (body).
+ *
+ * Copyright (C) 2005-2019 by
+ * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
-/***************************************************************************/
-/*                                                                         */
-/* gxvalid is derived from both gxlayout module and otvalid module.        */
-/* Development of gxlayout is supported by the Information-technology      */
-/* Promotion Agency(IPA), Japan.                                           */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * gxvalid is derived from both gxlayout module and otvalid module.
+ * Development of gxlayout is supported by the Information-technology
+ * Promotion Agency(IPA), Japan.
+ *
+ */
 
 
 #include "gxvalid.h"
@@ -31,14 +31,14 @@
 #include FT_SFNT_NAMES_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_gxvjust
+#define FT_COMPONENT  gxvjust
 
   /*
    * referred `just' table format specification:
@@ -72,6 +72,8 @@
                           const FT_String*  msg_tag,
                           GXV_Validator     gxvalid )
   {
+    FT_UNUSED( msg_tag );
+
     if ( gid < gxvalid->face->num_glyphs )
       return;
 

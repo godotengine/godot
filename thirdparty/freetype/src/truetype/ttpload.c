@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttpload.c                                                              */
-/*                                                                         */
-/*    TrueType-specific tables loader (body).                              */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttpload.c
+ *
+ *   TrueType-specific tables loader (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -31,33 +31,35 @@
 #include "tterrors.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttpload
+#define FT_COMPONENT  ttpload
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_load_loca                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Load the locations table.                                          */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    face   :: A handle to the target face object.                      */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream :: The input stream.                                        */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_load_loca
+   *
+   * @Description:
+   *   Load the locations table.
+   *
+   * @InOut:
+   *   face ::
+   *     A handle to the target face object.
+   *
+   * @Input:
+   *   stream ::
+   *     The input stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_loca( TT_Face    face,
                      FT_Stream  stream )
@@ -297,23 +299,25 @@
 
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_load_cvt                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Load the control value table into a face object.                   */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    face   :: A handle to the target face object.                      */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream :: A handle to the input stream.                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_load_cvt
+   *
+   * @Description:
+   *   Load the control value table into a face object.
+   *
+   * @InOut:
+   *   face ::
+   *     A handle to the target face object.
+   *
+   * @Input:
+   *   stream ::
+   *     A handle to the input stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_cvt( TT_Face    face,
                     FT_Stream  stream )
@@ -378,23 +382,25 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_load_fpgm                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Load the font program.                                             */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    face   :: A handle to the target face object.                      */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream :: A handle to the input stream.                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_load_fpgm
+   *
+   * @Description:
+   *   Load the font program.
+   *
+   * @InOut:
+   *   face ::
+   *     A handle to the target face object.
+   *
+   * @Input:
+   *   stream ::
+   *     A handle to the input stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_fpgm( TT_Face    face,
                      FT_Stream  stream )
@@ -440,23 +446,25 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_load_prep                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Load the cvt program.                                              */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    face   :: A handle to the target face object.                      */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream :: A handle to the input stream.                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_load_prep
+   *
+   * @Description:
+   *   Load the cvt program.
+   *
+   * @InOut:
+   *   face ::
+   *     A handle to the target face object.
+   *
+   * @Input:
+   *   stream ::
+   *     A handle to the input stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_prep( TT_Face    face,
                      FT_Stream  stream )
@@ -501,22 +509,24 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_load_hdmx                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Load the `hdmx' table into the face object.                        */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face   :: A handle to the target face object.                      */
-  /*                                                                       */
-  /*    stream :: A handle to the input stream.                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_load_hdmx
+   *
+   * @Description:
+   *   Load the `hdmx' table into the face object.
+   *
+   * @Input:
+   *   face ::
+   *     A handle to the target face object.
+   *
+   *   stream ::
+   *     A handle to the input stream.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
 
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_hdmx( TT_Face    face,
@@ -610,11 +620,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Return the advance width table for a given pixel size if it is found  */
-  /* in the font's `hdmx' table (if any).                                  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Return the advance width table for a given pixel size if it is found
+   * in the font's `hdmx' table (if any).
+   */
   FT_LOCAL_DEF( FT_Byte* )
   tt_face_get_device_metrics( TT_Face  face,
                               FT_UInt  ppem,
