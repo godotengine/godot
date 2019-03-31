@@ -883,16 +883,16 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-						if (t->process_pass != process_pass) {
-
-							t->process_pass = process_pass;
-							t->loc = Vector3();
-							t->rot = Quat();
-							t->rot_blend_accum = 0;
-							t->scale = Vector3();
-						}
-
 						if (track->root_motion) {
+
+							if (t->process_pass != process_pass) {
+
+								t->process_pass = process_pass;
+								t->loc = Vector3();
+								t->rot = Quat();
+								t->rot_blend_accum = 0;
+								t->scale = Vector3();
+							}
 
 							float prev_time = time - delta;
 							if (prev_time < 0) {
@@ -946,6 +946,15 @@ void AnimationTree::_process_graph(float p_delta) {
 							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
 							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
+							if (t->process_pass != process_pass) {
+
+								t->process_pass = process_pass;
+								t->loc = loc;
+								t->rot = rot;
+								t->rot_blend_accum = 0;
+								t->scale = Vector3();
+							}
+
 							scale -= Vector3(1.0, 1.0, 1.0); //helps make it work properly with Add nodes
 
 							if (err != OK)
@@ -978,8 +987,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								continue;
 
 							if (t->process_pass != process_pass) {
-								Variant::CallError ce;
-								t->value = Variant::construct(value.get_type(), NULL, 0, ce); //reset
+								t->value = value;
 								t->process_pass = process_pass;
 							}
 
@@ -1036,7 +1044,7 @@ void AnimationTree::_process_graph(float p_delta) {
 						float bezier = a->bezier_track_interpolate(i, time);
 
 						if (t->process_pass != process_pass) {
-							t->value = 0;
+							t->value = bezier;
 							t->process_pass = process_pass;
 						}
 
