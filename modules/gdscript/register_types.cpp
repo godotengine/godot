@@ -43,6 +43,7 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 
 #ifdef TOOLS_ENABLED
 
+#include "unittest/register_types.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -151,6 +152,7 @@ void register_gdscript_types() {
 #ifdef TOOLS_ENABLED
 	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
+	register_unittest_types();
 #endif
 }
 

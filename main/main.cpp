@@ -1429,16 +1429,29 @@ bool Main::start() {
 #endif
 
 	} else if (script != "") {
-
-		Ref<Script> script_res = ResourceLoader::load(script);
-		ERR_EXPLAIN("Can't load script: " + script);
-		ERR_FAIL_COND_V(script_res.is_null(), false);
+		Ref<Script> script_res;
+		if (!ClassDB::class_exists(script)) {
+			script_res = ResourceLoader::load(script);
+			ERR_EXPLAIN("Can't load script: " + script);
+			ERR_FAIL_COND_V(script_res.is_null(), false);
+		}
 
 		if (check_only) {
 			return false;
 		}
 
-		if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
+		if (ClassDB::can_instance(script)) {
+			Object *obj = ClassDB::instance(script);
+			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
+			if (!script_loop) {
+				if (obj)
+					memdelete(obj);
+				ERR_EXPLAIN("Can't load class '" + script + "', it does not inherit from a MainLoop type");
+				ERR_FAIL_COND_V(!script_loop, false);
+			}
+
+			main_loop = script_loop;
+		} else if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
 
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);
