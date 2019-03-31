@@ -113,9 +113,7 @@ bool TestCase::iteration(Ref<TestResult> test_result) {
 			_clear_connections();
 			m_yield = m_yield->resume();
 		}
-		return false;
-	}
-	if (m_has_next) {
+	} else if (m_has_next) {
 		switch (m_state->stage()) {
 			case StageIter::SETUP: {
 				test_result->start_test(m_state);
@@ -139,31 +137,29 @@ bool TestCase::iteration(Ref<TestResult> test_result) {
 			}
 		}
 		if (!m_pending_errors.empty()) {
-			do {
-				test_result->add_failure(m_state, m_pending_errors.front()->get());
-				m_pending_errors.pop_front();
-			} while (!m_pending_errors.empty());
 			m_state->skip_test();
 		} else {
 			m_has_next = m_state->next();
 		}
 	}
+	if (!m_pending_errors.empty()) {
+		do {
+			test_result->add_failure(m_state, m_pending_errors.front()->get());
+			m_pending_errors.pop_front();
+		} while (!m_pending_errors.empty());
+		m_state->skip_test();
+	}
 	return !m_has_next || test_result->should_stop();
 }
 
 Variant TestCase::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
-	if (!m_pending_errors.empty()) {
-		r_error.error = (Variant::CallError::Error)10;
-		return NULL;
-	}
 	Variant result = Node::call(p_method, p_args, p_argcount, r_error);
 	if (String(p_method).begins_with("assert_")) {
 		m_state->assert();
-		if (r_error.error == Variant::CallError::CALL_OK) {
-			if (!m_pending_errors.empty()) {
-				r_error.error = (Variant::CallError::Error)10;
-			}
-		}
+	}
+	// un-wind stack
+	if (!m_pending_errors.empty()) {
+		r_error.error = (Variant::CallError::Error)10;
 	}
 	return result;
 }

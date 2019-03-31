@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "test_plugin.h"
+#include "test_config.h"
 
 #include "core/io/json.h"
 #include "editor/editor_data.h"
@@ -94,54 +95,20 @@ TestPanel::TestPanel() {
 	add_user_signal(MethodInfo("display_test_panel"));
 	set_custom_minimum_size(Size2(50, 250));
 
-	VBoxContainer *files = memnew(VBoxContainer);
-	files->set_name("test_files");
-	m_file_filter = memnew(LineEdit);
-	m_file_filter->connect("text_changed", this, "_filter_results");
-	files->add_child(m_file_filter);
-	m_files = memnew(ItemList);
-	m_files->set_name("list");
-	files->add_child(m_files);
-	add_child(files);
-	files->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	m_files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	m_files->connect("item_selected", this, "_display_tests");
-
-	VBoxContainer *tests = memnew(VBoxContainer);
-	tests->set_name("test_tests");
-	m_tests_filter = memnew(LineEdit);
-	m_tests_filter->connect("text_changed", this, "_filter_tests");
-	tests->add_child(m_tests_filter);
-	m_tests = memnew(ItemList);
-	m_tests->set_name("list");
-	tests->add_child(m_tests);
-	add_child(tests);
-	tests->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	m_tests->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	m_tests->connect("item_selected", this, "_display_messages");
-
-	VBoxContainer *messages = memnew(VBoxContainer);
-	messages->set_name("test_messages");
-	m_messages = memnew(ItemList);
-	m_messages->set_name("list");
-	messages->add_child(m_messages);
-	add_child(messages);
-	messages->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	m_messages->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	m_tree = memnew(Tree);
+	m_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	m_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	m_tree->connect("item_selected", this, "_item_selected");
+	add_child(m_tree);
 }
 
 void TestPanel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_display_results"), &TestPanel::_display_results);
-	ClassDB::bind_method(D_METHOD("_filter_results"), &TestPanel::_filter_results);
-	ClassDB::bind_method(D_METHOD("_display_tests"), &TestPanel::_display_tests);
-	ClassDB::bind_method(D_METHOD("_filter_tests"), &TestPanel::_filter_tests);
-	ClassDB::bind_method(D_METHOD("_display_messages"), &TestPanel::_display_messages);
+	ClassDB::bind_method(D_METHOD("_item_selected"), &TestPanel::_item_selected);
 }
 
 void TestPanel::_display_results() {
-	m_files->clear();
-	m_tests->clear();
-	m_messages->clear();
+	m_tree->clear();
 	m_results.clear();
 	Error error;
 	FileAccessRef file = FileAccess::open("res://Testing/results.json", FileAccess::READ, &error);
@@ -162,7 +129,7 @@ void TestPanel::_display_results() {
 						if (!m_results.has(script_path)) {
 							m_results.set(script_path, TestFuncLogMap());
 						}
-						TestFuncLogMap* test_func_log_map = m_results.getptr(script_path);
+						TestFuncLogMap *test_func_log_map = m_results.getptr(script_path);
 						const String &test_func = message->test_func();
 						if (!test_func_log_map->has(test_func)) {
 							test_func_log_map->set(test_func, RefTestLog())->value().instance();
@@ -174,118 +141,78 @@ void TestPanel::_display_results() {
 		}
 	}
 	if (!m_results.empty()) {
-		_filter_results("");
+		TreeItem *root_item = m_tree->create_item();
+		root_item->set_text(0, "Results");
+		const String *filename = m_results.next(NULL);
+		while (filename != NULL) {
+			TreeItem *filename_item = m_tree->create_item(root_item);
+			filename_item->set_text(0, *filename);
+			TestLog::LogLevel filename_level = TestLog::LogLevel::TRACE;
+			const TestFuncLogMap &func_log_map = m_results.get(*filename);
+			const String *test = func_log_map.next(NULL);
+			while (test != NULL) {
+				TreeItem *test_item = m_tree->create_item(filename_item);
+				test_item->set_text(0, *test);
+				test_item->set_collapsed(true);
+				TestLog::LogLevel test_level = TestLog::LogLevel::TRACE;
+				const RefTestLog &test_log = func_log_map.get(*test);
+				List<const TestLog::LogMessage *> messages;
+				test_log->get_messages(&messages);
+				while (!messages.empty()) {
+					TreeItem *message_item = m_tree->create_item(test_item);
+					const TestLog::LogMessage *message = messages.front()->get();
+					message_item->set_text(0, message->message());
+					message_item->set_custom_color(0, TestLog::LogMessage::level_to_color(message->level()));
+					if (message->level() > test_level) {
+						if (message->level() >= TestConfig::get_singleton()->log_fail_greater_equal()) {
+							test_item->set_collapsed(false);
+						}
+						test_level = message->level();
+						if (message->level() > filename_level) {
+							filename_level = message->level();
+						}
+					}
+					messages.pop_front();
+				}
+				test_item->set_custom_color(0, TestLog::LogMessage::level_to_color(test_level));
+				test = func_log_map.next(test);
+			}
+			filename_item->set_custom_color(0, TestLog::LogMessage::level_to_color(filename_level));
+			filename = m_results.next(filename);
+		}
+
 		emit_signal("display_test_panel");
 	}
 }
 
-String _wildcard(const LineEdit *edit) {
-	return "*" + edit->get_text() + "*";
-}
-
-
-TestLog::LogLevel max_level(const TestPanel::RefTestLog &map) {
-	TestLog::LogLevel max = TestLog::LogLevel::TRACE;
-	List<const TestLog::LogMessage *> messages;
-	map->get_messages(&messages);
-	for (int i = 0; i < messages.size(); i++) {
-		if (messages[i]->level() > max) {
-			max = messages[i]->level();
-		}
-	}
-	return max;
-}
-TestLog::LogLevel max_level(const TestPanel::TestFuncLogMap &map) {
-	TestLog::LogLevel max = TestLog::LogLevel::TRACE;
-	const String *key = map.next(NULL);
-	while (key) {
-		TestLog::LogLevel level = max_level(map.get(*key));
-		if (level > max) {
-			max = level;
-		}
-		key = map.next(key);
-	}
-	return max;
-}
-
-void TestPanel::_filter_results(String p_ignore) {
-	m_files->clear();
-	List<String> keys;
-	m_results.get_key_list(&keys);
-	while (!keys.empty()) {
-		const String &text = keys.front()->get();
-		if (text.match(_wildcard(m_file_filter))) {
-			m_files->add_item(text);
-			m_files->set_item_custom_fg_color(m_files->get_item_count() - 1, TestLog::LogMessage::level_to_color(max_level(m_results.get(text))));
-		}
-		keys.pop_front();
-	}
-}
-
-void TestPanel::_filter_tests(String p_ignore) {
-	m_tests->set_block_signals(true);
-	Vector<int> selection = m_files->get_selected_items();
-	m_tests->clear();
-	if (selection.size() > 0) {
-		const String &filename = m_files->get_item_text(selection[0]);
-		const TestFuncLogMap &map = m_results.get(filename);
-		List<String> keys;
-		map.get_key_list(&keys);
-		while (!keys.empty()) {
-			const String &text = keys.front()->get();
-			if (text.match(_wildcard(m_tests_filter))) {
-				m_tests->add_item(text);
-				m_tests->set_item_custom_fg_color(m_tests->get_item_count() - 1, TestLog::LogMessage::level_to_color(max_level(map.get(text))));
+void TestPanel::_item_selected() {
+	TreeItem *selected = m_tree->get_selected();
+	if (selected != NULL) {
+		TreeItem *parent = selected->get_parent();
+		if (parent != NULL) {
+			String filename;
+			String testname;
+			TreeItem *grandparent = parent->get_parent();
+			if (grandparent != NULL) {
+				TreeItem *greatgrandparent = grandparent->get_parent();
+				if (greatgrandparent != NULL)
+				{
+					filename = grandparent->get_text(0);
+					testname = parent->get_text(0);
+				}
+				else
+				{
+					filename = parent->get_text(0);
+					testname = selected->get_text(0);
+				}
+			} else {
+				filename = selected->get_text(0);
 			}
-			keys.pop_front();
-		}
-	}
-	m_tests->set_block_signals(false);
-}
 
-void TestPanel::_display_tests(int p_ignore) {
-	m_tests->clear();
-	m_messages->clear();
-	Vector<int> selection = m_files->get_selected_items();
-	if (selection.size() > 0) {
-		const String &filename = m_files->get_item_text(selection[0]);
-		const TestFuncLogMap &map = m_results.get(filename);
-		List<String> keys;
-		map.get_key_list(&keys);
-		while (!keys.empty()) {
-			const String &text = keys.front()->get();
-			if (text.match(_wildcard(m_tests_filter))) {
-				m_tests->add_item(text);
-				m_tests->set_item_custom_fg_color(m_tests->get_item_count() - 1, TestLog::LogMessage::level_to_color(max_level(map.get(text))));
-			}
-			keys.pop_front();
+			Ref<Script> ref = ResourceLoader::load(filename);
+			int line = ref->get_member_line(testname);
+			ScriptEditor::get_singleton()->get_debugger()->emit_signal("goto_script_line", ref, line);
 		}
-
-		REF ref = ResourceLoader::load(filename);
-		ScriptEditor::get_singleton()->get_debugger()->emit_signal("goto_script_line", ref, 0);
-	}
-}
-
-void TestPanel::_display_messages(int p_ignore) {
-	m_messages->clear();
-	Vector<int> file = m_files->get_selected_items();
-	Vector<int> test = m_tests->get_selected_items();
-	if (file.size() > 0 && test.size() > 0) {
-		const String &filename = m_files->get_item_text(file[0]);
-		const String &testname = m_tests->get_item_text(test[0]);
-		const RefTestLog &log = m_results.get(filename).get(testname);
-		List<const TestLog::LogMessage *> messages;
-		log->get_messages(&messages);
-		while (!messages.empty()) {
-			const TestLog::LogMessage *message = messages.front()->get();
-			const String &text = message->message();
-			m_messages->add_item(text);
-			m_messages->set_item_custom_fg_color(m_messages->get_item_count() - 1, TestLog::LogMessage::level_to_color(message->level()));
-			messages.pop_front();
-		}
-		Ref<Script> ref = ResourceLoader::load(filename);
-		int line = ref->get_member_line(testname);
-		ScriptEditor::get_singleton()->get_debugger()->emit_signal("goto_script_line", ref, line);
 	}
 }
 

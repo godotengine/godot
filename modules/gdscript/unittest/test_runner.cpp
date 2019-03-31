@@ -33,7 +33,7 @@
 #include "test_loader.h"
 
 void TestRunner::init() {
-    SceneTree::init();
+	SceneTree::init();
 	m_test_result = Ref<TestResult>(TestConfig::get_singleton()->make_result());
 	Ref<TestLoader> loader(memnew(TestLoader));
 	Ref<TestSuite> test_suite(memnew(TestSuite));
@@ -44,7 +44,7 @@ void TestRunner::init() {
 }
 
 bool TestRunner::iteration(float p_time) {
-    bool finished = SceneTree::iteration(p_time);
+	bool finished = SceneTree::iteration(p_time);
 	if (m_test_suite.is_valid()) {
 		return m_test_suite->iteration(*m_test_result);
 	}
@@ -55,7 +55,7 @@ void TestRunner::finish() {
 	if (m_test_result.is_valid()) {
 		m_test_result->finish();
 	}
-    SceneTree::finish();
+	SceneTree::finish();
 }
 
 void TestRunner::_bind_methods() {

@@ -72,19 +72,12 @@ protected:
 	static void _bind_methods();
 
 private:
-	LineEdit *m_file_filter;
-	ItemList *m_files;
-	LineEdit *m_tests_filter;
-	ItemList *m_tests;
-	ItemList *m_messages;
+	Tree *m_tree;
 
 	TestFileFuncLogMap m_results;
+	void _item_selected();
 
 	void _display_results();
-	void _filter_results(String p_ignore);
-	void _display_tests(int p_ignore);
-	void _filter_tests(String p_ignore);
-	void _display_messages(int p_ignore);
 };
 
 class TestPlugin : public EditorPlugin {
