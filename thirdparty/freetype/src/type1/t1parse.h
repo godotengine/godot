@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1parse.h                                                              */
-/*                                                                         */
-/*    Type 1 parser (specification).                                       */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1parse.h
+ *
+ *   Type 1 parser (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef T1PARSE_H_
@@ -28,36 +28,45 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    T1_ParserRec                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A PS_ParserRec is an object used to parse a Type 1 fonts very      */
-  /*    quickly.                                                           */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    root         :: The root parser.                                   */
-  /*                                                                       */
-  /*    stream       :: The current input stream.                          */
-  /*                                                                       */
-  /*    base_dict    :: A pointer to the top-level dictionary.             */
-  /*                                                                       */
-  /*    base_len     :: The length in bytes of the top dictionary.         */
-  /*                                                                       */
-  /*    private_dict :: A pointer to the private dictionary.               */
-  /*                                                                       */
-  /*    private_len  :: The length in bytes of the private dictionary.     */
-  /*                                                                       */
-  /*    in_pfb       :: A boolean.  Indicates that we are handling a PFB   */
-  /*                    file.                                              */
-  /*                                                                       */
-  /*    in_memory    :: A boolean.  Indicates a memory-based stream.       */
-  /*                                                                       */
-  /*    single_block :: A boolean.  Indicates that the private dictionary  */
-  /*                    is stored in lieu of the base dictionary.          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Struct:
+   *   T1_ParserRec
+   *
+   * @Description:
+   *   A PS_ParserRec is an object used to parse a Type 1 fonts very
+   *   quickly.
+   *
+   * @Fields:
+   *   root ::
+   *     The root parser.
+   *
+   *   stream ::
+   *     The current input stream.
+   *
+   *   base_dict ::
+   *     A pointer to the top-level dictionary.
+   *
+   *   base_len ::
+   *     The length in bytes of the top dictionary.
+   *
+   *   private_dict ::
+   *     A pointer to the private dictionary.
+   *
+   *   private_len ::
+   *     The length in bytes of the private dictionary.
+   *
+   *   in_pfb ::
+   *     A boolean.  Indicates that we are handling a PFB
+   *     file.
+   *
+   *   in_memory ::
+   *     A boolean.  Indicates a memory-based stream.
+   *
+   *   single_block ::
+   *     A boolean.  Indicates that the private dictionary
+   *     is stored in lieu of the base dictionary.
+   */
   typedef struct  T1_ParserRec_
   {
     PS_ParserRec  root;

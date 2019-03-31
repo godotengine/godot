@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  svprop.h                                                               */
-/*                                                                         */
-/*    The FreeType property service (specification).                       */
-/*                                                                         */
-/*  Copyright 2012-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * svprop.h
+ *
+ *   The FreeType property service (specification).
+ *
+ * Copyright (C) 2012-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef SVPROP_H_
@@ -45,8 +45,6 @@ FT_BEGIN_HEADER
   };
 
 
-#ifndef FT_CONFIG_OPTION_PIC
-
 #define FT_DEFINE_SERVICE_PROPERTIESREC( class_,          \
                                          set_property_,   \
                                          get_property_ )  \
@@ -55,20 +53,6 @@ FT_BEGIN_HEADER
     set_property_,                                        \
     get_property_                                         \
   };
-
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DEFINE_SERVICE_PROPERTIESREC( class_,                \
-                                         set_property_,         \
-                                         get_property_ )        \
-  void                                                          \
-  FT_Init_Class_ ## class_( FT_Service_PropertiesRec*  clazz )  \
-  {                                                             \
-    clazz->set_property = set_property_;                        \
-    clazz->get_property = get_property_;                        \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
 
   /* */
 

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftgasp.h                                                               */
-/*                                                                         */
-/*    Access of TrueType's `gasp' table (specification).                   */
-/*                                                                         */
-/*  Copyright 2007-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftgasp.h
+ *
+ *   Access of TrueType's 'gasp' table (specification).
+ *
+ * Copyright (C) 2007-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTGASP_H_
@@ -32,7 +32,7 @@
 FT_BEGIN_HEADER
 
 
-  /***************************************************************************
+  /**************************************************************************
    *
    * @section:
    *   gasp_table
@@ -41,16 +41,16 @@ FT_BEGIN_HEADER
    *   Gasp Table
    *
    * @abstract:
-   *   Retrieving TrueType `gasp' table entries.
+   *   Retrieving TrueType 'gasp' table entries.
    *
    * @description:
    *   The function @FT_Get_Gasp can be used to query a TrueType or OpenType
-   *   font for specific entries in its `gasp' table, if any.  This is
-   *   mainly useful when implementing native TrueType hinting with the
-   *   bytecode interpreter to duplicate the Windows text rendering results.
+   *   font for specific entries in its 'gasp' table, if any.  This is mainly
+   *   useful when implementing native TrueType hinting with the bytecode
+   *   interpreter to duplicate the Windows text rendering results.
    */
 
-  /*************************************************************************
+  /**************************************************************************
    *
    * @enum:
    *   FT_GASP_XXX
@@ -66,7 +66,7 @@ FT_BEGIN_HEADER
    *
    *   FT_GASP_DO_GRIDFIT ::
    *     Grid-fitting and hinting should be performed at the specified ppem.
-   *     This *really* means TrueType bytecode interpretation.  If this bit
+   *     This **really** means TrueType bytecode interpretation.  If this bit
    *     is not set, no hinting gets applied.
    *
    *   FT_GASP_DO_GRAY ::
@@ -80,13 +80,13 @@ FT_BEGIN_HEADER
    *     Grid-fitting must be used with ClearType's symmetric smoothing.
    *
    * @note:
-   *   The bit-flags `FT_GASP_DO_GRIDFIT' and `FT_GASP_DO_GRAY' are to be
+   *   The bit-flags `FT_GASP_DO_GRIDFIT` and `FT_GASP_DO_GRAY` are to be
    *   used for standard font rasterization only.  Independently of that,
-   *   `FT_GASP_SYMMETRIC_SMOOTHING' and `FT_GASP_SYMMETRIC_GRIDFIT' are to
-   *   be used if ClearType is enabled (and `FT_GASP_DO_GRIDFIT' and
-   *   `FT_GASP_DO_GRAY' are consequently ignored).
+   *   `FT_GASP_SYMMETRIC_SMOOTHING` and `FT_GASP_SYMMETRIC_GRIDFIT` are to
+   *   be used if ClearType is enabled (and `FT_GASP_DO_GRIDFIT` and
+   *   `FT_GASP_DO_GRAY` are consequently ignored).
    *
-   *   `ClearType' is Microsoft's implementation of LCD rendering, partly
+   *   'ClearType' is Microsoft's implementation of LCD rendering, partly
    *   protected by patents.
    *
    * @since:
@@ -99,29 +99,31 @@ FT_BEGIN_HEADER
 #define FT_GASP_SYMMETRIC_SMOOTHING  0x08
 
 
-  /*************************************************************************
+  /**************************************************************************
    *
-   * @func:
+   * @function:
    *   FT_Get_Gasp
    *
    * @description:
    *   For a TrueType or OpenType font file, return the rasterizer behaviour
-   *   flags from the font's `gasp' table corresponding to a given
-   *   character pixel size.
+   *   flags from the font's 'gasp' table corresponding to a given character
+   *   pixel size.
    *
    * @input:
-   *   face :: The source face handle.
+   *   face ::
+   *     The source face handle.
    *
-   *   ppem :: The vertical character pixel size.
+   *   ppem ::
+   *     The vertical character pixel size.
    *
    * @return:
    *   Bit flags (see @FT_GASP_XXX), or @FT_GASP_NO_TABLE if there is no
-   *   `gasp' table in the face.
+   *   'gasp' table in the face.
    *
    * @note:
    *   If you want to use the MM functionality of OpenType variation fonts
    *   (i.e., using @FT_Set_Var_Design_Coordinates and friends), call this
-   *   function *after* setting an instance since the return values can
+   *   function **after** setting an instance since the return values can
    *   change.
    *
    * @since:

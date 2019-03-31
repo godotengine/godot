@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cidobjs.h                                                              */
-/*                                                                         */
-/*    CID objects manager (specification).                                 */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cidobjs.h
+ *
+ *   CID objects manager (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CIDOBJS_H_
@@ -34,60 +34,60 @@ FT_BEGIN_HEADER
   typedef struct CID_Glyph_Hints_  CID_Glyph_Hints;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CID_Driver                                                         */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to a Type 1 driver object.                                */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Type:
+   *   CID_Driver
+   *
+   * @Description:
+   *   A handle to a Type 1 driver object.
+   */
   typedef struct CID_DriverRec_*  CID_Driver;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CID_Size                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to a Type 1 size object.                                  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Type:
+   *   CID_Size
+   *
+   * @Description:
+   *   A handle to a Type 1 size object.
+   */
   typedef struct CID_SizeRec_*  CID_Size;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CID_GlyphSlot                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to a Type 1 glyph slot object.                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Type:
+   *   CID_GlyphSlot
+   *
+   * @Description:
+   *   A handle to a Type 1 glyph slot object.
+   */
   typedef struct CID_GlyphSlotRec_*  CID_GlyphSlot;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    CID_CharMap                                                        */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A handle to a Type 1 character mapping object.                     */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    The Type 1 format doesn't use a charmap but an encoding table.     */
-  /*    The driver is responsible for making up charmap objects            */
-  /*    corresponding to these tables.                                     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Type:
+   *   CID_CharMap
+   *
+   * @Description:
+   *   A handle to a Type 1 character mapping object.
+   *
+   * @Note:
+   *   The Type 1 format doesn't use a charmap but an encoding table.
+   *   The driver is responsible for making up charmap objects
+   *   corresponding to these tables.
+   */
   typedef struct CID_CharMapRec_*  CID_CharMap;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* HERE BEGINS THE TYPE 1 SPECIFIC STUFF                                 */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * HERE BEGINS THE TYPE 1 SPECIFIC STUFF
+   *
+   */
 
 
   typedef struct  CID_SizeRec_
