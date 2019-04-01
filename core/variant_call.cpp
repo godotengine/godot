@@ -773,6 +773,8 @@ struct _VariantCall {
 	VCALL_PTR0R(Basis, get_orthogonal_index);
 	VCALL_PTR0R(Basis, orthonormalized);
 	VCALL_PTR2R(Basis, slerp);
+	VCALL_PTR2R(Basis, is_equal_approx);
+	VCALL_PTR0R(Basis, get_rotation_quat);
 
 	VCALL_PTR0R(Transform, inverse);
 	VCALL_PTR0R(Transform, affine_inverse);
@@ -1842,6 +1844,8 @@ void register_variant_methods() {
 	ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
 	ADDFUNC0R(BASIS, INT, Basis, get_orthogonal_index, varray());
 	ADDFUNC2R(BASIS, BASIS, Basis, slerp, BASIS, "b", REAL, "t", varray());
+	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON));
+	ADDFUNC0R(BASIS, QUAT, Basis, get_rotation_quat, varray());
 
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, affine_inverse, varray());
