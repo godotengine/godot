@@ -10,7 +10,7 @@
 	</tutorials>
 	<demos>
 	</demos>
-	<methods>(
+	<methods>
 		<method name="add_central_force">
 			<return type="void">
 			</return>
