@@ -143,6 +143,15 @@ namespace Godot
            return (weight - from) / (to - from);
         }
 
+        public static bool IsEqualApprox(real_t a, real_t b)
+        {
+            real_t tolerance = Epsilon * Abs(a);
+            if (tolerance < Epsilon) {
+                tolerance = Epsilon;
+            }
+            return Abs(a - b) < tolerance;
+        }
+
         public static bool IsInf(real_t s)
         {
            return real_t.IsInfinity(s);
@@ -151,6 +160,11 @@ namespace Godot
         public static bool IsNaN(real_t s)
         {
            return real_t.IsNaN(s);
+        }
+
+        public static bool IsZeroApprox(real_t s)
+        {
+            return Abs(s) < Epsilon;
         }
 
         public static real_t Lerp(real_t from, real_t to, real_t weight)

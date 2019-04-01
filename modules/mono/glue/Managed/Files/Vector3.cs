@@ -65,14 +65,15 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = Length();
+            real_t lengthsq = LengthSquared();
 
-            if (length == 0f)
+            if (lengthsq == 0)
             {
                 x = y = z = 0f;
             }
             else
             {
+                real_t length = Mathf.Sqrt(lengthsq);
                 x /= length;
                 y /= length;
                 z /= length;
@@ -397,9 +398,9 @@ namespace Godot
 
         public static bool operator <(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z < right.z;
                 return left.y < right.y;
             }
@@ -409,9 +410,9 @@ namespace Godot
 
         public static bool operator >(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z > right.z;
                 return left.y > right.y;
             }
@@ -421,9 +422,9 @@ namespace Godot
 
         public static bool operator <=(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z <= right.z;
                 return left.y < right.y;
             }
@@ -433,9 +434,9 @@ namespace Godot
 
         public static bool operator >=(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z >= right.z;
                 return left.y > right.y;
             }
@@ -455,7 +456,7 @@ namespace Godot
 
         public bool Equals(Vector3 other)
         {
-            return x == other.x && y == other.y && z == other.z;
+            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
         }
 
         public override int GetHashCode()
