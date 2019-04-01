@@ -63,6 +63,7 @@ private:
 	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
 	Node *root_node;
+	bool allow_object_decoding;
 
 protected:
 	static void _bind_methods();
@@ -125,6 +126,9 @@ public:
 	bool is_network_server() const;
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
+
+	void set_allow_object_decoding(bool p_enable);
+	bool is_object_decoding_allowed() const;
 
 	MultiplayerAPI();
 	~MultiplayerAPI();
