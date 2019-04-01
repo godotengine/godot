@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Separator" inherits="Control" category="Core" version="3.1">
+<class name="Separator" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Base class for separators.
 	</brief_description>
