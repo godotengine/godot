@@ -4,7 +4,7 @@ Import('env')
 
 import os
 from platform_methods import run_in_subprocess
-import platform_x11_builders
+import platform_unix_builders
 
 common_unix = [
     "crash_handler_unix.cpp",
@@ -26,4 +26,4 @@ env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL"])
 
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(
-        platform_x11_builders.make_debug_x11))
+        platform_unix_builders.make_debug_unix))
