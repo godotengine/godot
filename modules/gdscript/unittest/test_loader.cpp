@@ -31,8 +31,8 @@
 #include "test_loader.h"
 #include "test_config.h"
 
-#include "core/script_language.h"
 #include "core/io/resource_loader.h"
+#include "core/script_language.h"
 
 bool TestLoader::from_path(Ref<TestSuite> p_test_suite, const String &p_path) {
 	Error error;

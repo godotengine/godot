@@ -37,8 +37,8 @@
 
 #include "gdscript.h"
 
-#include "core/list.h"
 #include "core/func_ref.h"
+#include "core/list.h"
 #include "scene/main/node.h"
 
 class TestCase : public Node {

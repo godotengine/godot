@@ -66,6 +66,7 @@ public:
 		const String &message() const;
 
 		Dictionary to_dict() const;
+
 	protected:
 		static void _bind_methods();
 

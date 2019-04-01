@@ -46,7 +46,7 @@ public:
 	TestSuite();
 	virtual ~TestSuite();
 	int count_test_cases() const;
-	void add_test(TestCase* p_test_case);
+	void add_test(TestCase *p_test_case);
 	void add_tests(Array p_test_cases);
 	void init(Viewport *root, Ref<TestResult> p_test_result);
 	bool iteration(Ref<TestResult> p_test_result);
@@ -56,7 +56,7 @@ protected:
 
 private:
 	Viewport *m_root;
-	Vector<TestCase*> m_test_cases;
+	Vector<TestCase *> m_test_cases;
 	int m_case_index;
 };
 

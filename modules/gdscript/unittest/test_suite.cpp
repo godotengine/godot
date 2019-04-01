@@ -57,7 +57,7 @@ void TestSuite::add_tests(Array p_test_cases) {
 	}
 }
 
-void TestSuite::init(Viewport* root, Ref<TestResult> p_test_result) {
+void TestSuite::init(Viewport *root, Ref<TestResult> p_test_result) {
 	m_root = root;
 	m_case_index = 0;
 	if (m_case_index < count_test_cases()) {

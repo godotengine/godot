@@ -101,7 +101,7 @@ Ref<TestResult> TestConfig::make_result() const {
 		obj = ClassDB::instance(script);
 	} else {
 		Ref<Script> script_res = ResourceLoader::load(script);
-		if(script_res.is_valid() && script_res->can_instance()) {
+		if (script_res.is_valid() && script_res->can_instance()) {
 			StringName instance_type = script_res->get_instance_base_type();
 			obj = ClassDB::instance(instance_type);
 		}

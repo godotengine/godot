@@ -39,13 +39,13 @@ class TestConfig : public Object {
 	GDCLASS(TestConfig, Object);
 
 public:
-    TestConfig();
-    static TestConfig *get_singleton();
+	TestConfig();
+	static TestConfig *get_singleton();
 
 	String test_directory() const;
 	String test_file_match() const;
 	String test_func_match() const;
-    Ref<TestResult> make_result() const;
+	Ref<TestResult> make_result() const;
 
 	bool log_console() const;
 	bool log_on_success() const;
@@ -55,7 +55,7 @@ protected:
 	static void _bind_methods();
 
 private:
-    static TestConfig *singleton;
+	static TestConfig *singleton;
 };
 
 #endif // TEST_CONFIG_H

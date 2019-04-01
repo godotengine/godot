@@ -37,7 +37,7 @@
 #include "core/vector.h"
 
 class SignalWatcher : public Reference {
-	GDCLASS(SignalWatcher , Reference);
+	GDCLASS(SignalWatcher, Reference);
 
 public:
 	struct Params {
@@ -80,7 +80,7 @@ private:
 	typedef Map<ObjectSignal, Args, ObjectSignalSort> ObjectSignalArgs;
 	ObjectSignalArgs m_signals;
 
-	Args* write(const Object *p_object, const String &p_signal);
+	Args *write(const Object *p_object, const String &p_signal);
 	const Args *read(const Object *p_object, const String &p_signal) const;
 	void touch(const Object *p_object, const String &p_signal);
 

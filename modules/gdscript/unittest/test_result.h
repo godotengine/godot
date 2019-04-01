@@ -38,11 +38,11 @@
 #include "core/vector.h"
 
 class TestResult : public Reference {
-    GDCLASS(TestResult, Reference);
+	GDCLASS(TestResult, Reference);
 
 public:
 	TestResult();
-	virtual ~TestResult(); 
+	virtual ~TestResult();
 	virtual void start_test(TestState *p_test_state);
 	virtual void stop_test(TestState *p_test_state);
 	virtual void add_error(TestState *p_test_state, TestError *p_error);
@@ -54,7 +54,7 @@ public:
 	bool should_stop() const;
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
 
 private:
 	void _start_test(Object *p_test_state) { start_test(cast_to<TestState>(p_test_state)); }
@@ -68,6 +68,5 @@ private:
 	Vector<TestError *> m_errors;
 	Vector<TestError *> m_failures;
 };
-
 
 #endif // TEST_RESULT_H
