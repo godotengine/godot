@@ -37,9 +37,30 @@
 #include "wayland/os_wayland.h"
 #include "x11/os_x11.h"
 
+static DisplayDetectFunc detect_fns[] = {
+#ifdef WL_ENABLED
+	OS_Wayland::detect,
+#endif
+#ifdef X11_ENABLED
+	OS_X11::detect,
+#endif
+};
+
 int main(int argc, char *argv[]) {
 
-	OS_Wayland os;
+	OS_GenericUnix *os = NULL;
+
+	for (size_t i = 0; i < sizeof(detect_fns) / sizeof(detect_fns[0]); ++i) {
+		os = detect_fns[i]();
+		if (os != NULL) {
+			break;
+		}
+	}
+
+	if (!os) {
+		fprintf(stderr, "Failed to load a suitable display backend!\n");
+		return EXIT_FAILURE;
+	}
 
 	setlocale(LC_CTYPE, "");
 
@@ -53,12 +74,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (Main::start())
-		os.run(); // it is actually the OS that decides how to run
+		os->run(); // it is actually the OS that decides how to run
 	Main::cleanup();
 
 	if (ret)
 		chdir(cwd);
 	free(cwd);
 
-	return os.get_exit_code();
+	return os->get_exit_code();
 }

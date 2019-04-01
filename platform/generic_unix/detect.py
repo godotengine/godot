@@ -4,13 +4,35 @@ import sys
 from compat import decode_utf8
 from methods import get_compiler_version, use_gcc
 
+
+x11_dependencies = ["x11", "xcursor", "xinerama", "xrandr", "xrender", "xi"]
+wl_dependencies = ["wayland-client", "wayland-egl", "egl"]
+
+
 def is_active():
     return True
 
 
 def get_name():
-    return "X11"
+    return "Generic Unix"
 
+def _get_backends():
+    x11_supported = True
+    wl_supported = True
+
+    for dep in x11_dependencies:
+        error = os.system("pkg-config %s --modversion > /dev/null" % dep)
+        if (error):
+            x11_supported = False
+            break
+
+    for dep in wl_dependencies:
+        error = os.system("pkg-config %s --modversion > /dev/null" % dep)
+        if (error):
+            wl_supported = False
+            break
+
+    return x11_supported, wl_supported
 
 def can_build():
 
@@ -18,40 +40,12 @@ def can_build():
         return False
 
     # Check the minimal dependencies
-    x11_error = os.system("pkg-config --version > /dev/null")
-    if (x11_error):
+    error = os.system("pkg-config --version > /dev/null")
+    if (error):
         return False
 
-    x11_error = os.system("pkg-config x11 --modversion > /dev/null ")
-    if (x11_error):
-        return False
-
-    x11_error = os.system("pkg-config xcursor --modversion > /dev/null ")
-    if (x11_error):
-        print("xcursor not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xinerama --modversion > /dev/null ")
-    if (x11_error):
-        print("xinerama not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xrandr --modversion > /dev/null ")
-    if (x11_error):
-        print("xrandr not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xrender --modversion > /dev/null ")
-    if (x11_error):
-        print("xrender not found.. x11 disabled.")
-        return False
-
-    x11_error = os.system("pkg-config xi --modversion > /dev/null ")
-    if (x11_error):
-        print("xi not found.. Aborting.")
-        return False
-
-    return True
+    x11, wl = _get_backends()
+    return x11 or wl
 
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
@@ -68,6 +62,8 @@ def get_opts():
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
         BoolVariable('touch', 'Enable touch events', True),
         BoolVariable('execinfo', 'Use libexecinfo on systems where glibc is not available', False),
+        BoolVariable('x11', 'Enable X11 support if available', True),
+        BoolVariable('wayland', 'Enable Wayland support if available', True),
     ]
 
 
@@ -167,13 +163,16 @@ def configure(env):
             env.Append(LINKFLAGS=['-no-pie'])
 
     ## Dependencies
+    enable_x11, enable_wl = _get_backends()
 
-    env.ParseConfig('pkg-config x11 --cflags --libs')
-    env.ParseConfig('pkg-config xcursor --cflags --libs')
-    env.ParseConfig('pkg-config xinerama --cflags --libs')
-    env.ParseConfig('pkg-config xrandr --cflags --libs')
-    env.ParseConfig('pkg-config xrender --cflags --libs')
-    env.ParseConfig('pkg-config xi --cflags --libs')
+    if (env['x11']) and enable_x11:
+        for dep in x11_dependencies:
+            env.ParseConfig('pkg-config %s --cflags --libs' % dep)
+        env.Append(CPPFLAGS=["-DX11_ENABLED"])
+    if (env['wayland']) and enable_wl:
+        for dep in wl_dependencies:
+            env.ParseConfig('pkg-config %s --cflags --libs' % dep)
+        env.Append(CPPFLAGS=["-DWL_ENABLED"])
 
     if (env['touch']):
         env.Append(CPPFLAGS=['-DTOUCH_ENABLED'])

@@ -102,4 +102,6 @@ public:
 	OS_GenericUnix();
 };
 
+typedef OS_GenericUnix *(*DisplayDetectFunc)();
+
 #endif

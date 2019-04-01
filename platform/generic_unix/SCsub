@@ -6,23 +6,29 @@ import os
 from platform_methods import run_in_subprocess
 import platform_unix_builders
 
-common_unix = [
+sources = [
     "crash_handler_unix.cpp",
     "detect_prime.cpp",
+    "godot_unix.cpp",
     "joypad_linux.cpp",
     "os_genericunix.cpp",
     "power_unix.cpp",
-    "x11/context_gl_x11.cpp",
-    "x11/key_mapping_x11.cpp",
-    "x11/os_x11.cpp",
-    "wayland/context_egl_wayland.cpp",
-    "wayland/key_mapping_xkb.cpp",
-    "wayland/os_wayland.cpp",
 ]
 
-prog = env.add_program('#bin/godot', ['godot_unix.cpp'] + common_unix)
+if env['x11']:
+    sources += [
+        "x11/context_gl_x11.cpp",
+        "x11/key_mapping_x11.cpp",
+        "x11/os_x11.cpp",
+    ]
+if env['wayland']:
+    sources += [
+        "wayland/context_egl_wayland.cpp",
+        "wayland/key_mapping_xkb.cpp",
+        "wayland/os_wayland.cpp",
+    ]
 
-env.Append(LIBS=["wayland-client", "wayland-egl", "wayland-server", "libEGL"])
+prog = env.add_program('#bin/godot', sources)
 
 if (env["debug_symbols"] == "full" or env["debug_symbols"] == "yes") and env["separate_debug_symbols"]:
     env.AddPostAction(prog, run_in_subprocess(

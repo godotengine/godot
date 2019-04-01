@@ -117,6 +117,13 @@ const char *OS_X11::get_video_driver_name(int p_driver) const {
 	}
 }
 
+OS_GenericUnix *OS_X11::detect() {
+	if (!getenv("DISPLAY")) {
+		return NULL;
+	}
+	return new OS_X11();
+}
+
 Error OS_X11::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	long im_event_mask = 0;

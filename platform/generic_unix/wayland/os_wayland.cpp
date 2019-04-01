@@ -487,8 +487,14 @@ int OS_Wayland::get_screen_dpi(int p_screen) const {
 	return outputs[p_screen]->scale * 96;
 }
 
+OS_GenericUnix *OS_Wayland::detect() {
+	if (!getenv("WAYLAND_DISPLAY") && !getenv("WAYLAND_SOCKET")) {
+		return NULL;
+	}
+	return new OS_Wayland();
+}
+
 void OS_Wayland::_initialize_wl_display() {
-	display = NULL;
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
 		print_line("Error: unable to connect to Wayland display");

@@ -193,6 +193,8 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
+	static OS_GenericUnix *detect();
+
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 	virtual String get_name();

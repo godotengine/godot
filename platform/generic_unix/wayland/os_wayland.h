@@ -219,6 +219,8 @@ protected:
 	void delete_main_loop();
 
 public:
+	static OS_GenericUnix *detect();
+
 	MainLoop *get_main_loop() const;
 
 	// virtual void set_mouse_mode(MouseMode p_mode);
