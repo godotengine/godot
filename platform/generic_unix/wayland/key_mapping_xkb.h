@@ -33,7 +33,7 @@
 
 class KeyMappingXKB {
 
-	KeyMappingXKB() {};
+	KeyMappingXKB(){};
 
 public:
 	static unsigned int get_keycode(xkb_keysym_t p_keysym);

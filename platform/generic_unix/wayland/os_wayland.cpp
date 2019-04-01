@@ -46,17 +46,14 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		d_wl->compositor = (struct wl_compositor *)wl_registry_bind(
 				registry, id, &wl_compositor_interface, 3);
-	}
-	else if (strcmp(interface, wl_seat_interface.name) == 0) {
+	} else if (strcmp(interface, wl_seat_interface.name) == 0) {
 		d_wl->seat = (struct wl_seat *)wl_registry_bind(
 				registry, id, &wl_seat_interface, 1);
 		wl_seat_add_listener(d_wl->seat, &d_wl->seat_listener, d_wl);
-	}
-	else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
+	} else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
 		d_wl->xdgbase = (struct xdg_wm_base *)wl_registry_bind(
 				registry, id, &xdg_wm_base_interface, 1);
-	}
-	else if (strcmp(interface, wl_output_interface.name) == 0) {
+	} else if (strcmp(interface, wl_output_interface.name) == 0) {
 		struct wl_output *wl_output = (struct wl_output *)wl_registry_bind(
 				registry, id, &wl_output_interface, 3);
 		WaylandOutput *output = new WaylandOutput(d_wl, wl_output);
@@ -89,14 +86,14 @@ void OS_Wayland::update_scale_factor() {
 }
 
 void OS_Wayland::surface_enter(void *data, struct wl_surface *wl_surface,
-			struct wl_output *wl_output) {
+		struct wl_output *wl_output) {
 	WaylandOutput *output = (WaylandOutput *)wl_output_get_user_data(wl_output);
 	output->entered = true;
 	output->d_wl->update_scale_factor();
 }
 
 void OS_Wayland::surface_leave(void *data, struct wl_surface *wl_surface,
-			struct wl_output *wl_output) {
+		struct wl_output *wl_output) {
 	WaylandOutput *output = (WaylandOutput *)wl_output_get_user_data(wl_output);
 	output->entered = false;
 	output->d_wl->update_scale_factor();
@@ -114,26 +111,26 @@ void OS_Wayland::xdg_toplevel_configure(void *data,
 	wl_egl_window_resize(d_wl->egl_window,
 			width * d_wl->scale_factor, height * d_wl->scale_factor, 0, 0);
 	d_wl->maximized = d_wl->fullscreen = d_wl->resizing =
-		d_wl->activated = false;
+			d_wl->activated = false;
 	void *p;
 	wl_array_for_each(p, states) {
 		uint32_t *state = (uint32_t *)p;
 		switch (*state) {
-		case XDG_TOPLEVEL_STATE_MAXIMIZED:
-			d_wl->maximized = true;
-			break;
-		case XDG_TOPLEVEL_STATE_FULLSCREEN:
-			d_wl->fullscreen = true;
-			break;
-		case XDG_TOPLEVEL_STATE_RESIZING:
-			d_wl->resizing = true;
-			break;
-		case XDG_TOPLEVEL_STATE_ACTIVATED:
-			d_wl->activated = true;
-			break;
-		default:
-			// This space deliberately left blank
-			break;
+			case XDG_TOPLEVEL_STATE_MAXIMIZED:
+				d_wl->maximized = true;
+				break;
+			case XDG_TOPLEVEL_STATE_FULLSCREEN:
+				d_wl->fullscreen = true;
+				break;
+			case XDG_TOPLEVEL_STATE_RESIZING:
+				d_wl->resizing = true;
+				break;
+			case XDG_TOPLEVEL_STATE_ACTIVATED:
+				d_wl->activated = true;
+				break;
+			default:
+				// This space deliberately left blank
+				break;
 		}
 	}
 }
@@ -238,17 +235,17 @@ void OS_Wayland::pointer_button(void *data,
 	mb.instance();
 	mb->set_pressed(state == WL_POINTER_BUTTON_STATE_PRESSED);
 	switch (button) {
-	case BTN_LEFT:
-		mb->set_button_index(BUTTON_LEFT);
-		break;
-	case BTN_RIGHT:
-		mb->set_button_index(BUTTON_RIGHT);
-		break;
-	case BTN_MIDDLE:
-		mb->set_button_index(BUTTON_MIDDLE);
-		break;
-	default:
-		break;
+		case BTN_LEFT:
+			mb->set_button_index(BUTTON_LEFT);
+			break;
+		case BTN_RIGHT:
+			mb->set_button_index(BUTTON_RIGHT);
+			break;
+		case BTN_MIDDLE:
+			mb->set_button_index(BUTTON_MIDDLE);
+			break;
+		default:
+			break;
 	}
 	mb->set_position(d_wl->_mouse_pos);
 	mb->set_global_position(d_wl->_mouse_pos);
@@ -257,8 +254,8 @@ void OS_Wayland::pointer_button(void *data,
 	uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000
 		- d_wl->last_click_ms;
 	if (mb->get_button_index() == d_wl->last_click_button_index) {
-		if (diff < 400 && Point2(
-					d_wl->last_click_pos).distance_to(d_wl->_mouse_pos) < 5) {
+		auto dist = Point2(d_wl->last_click_pos).distance_to(d_wl->_mouse_pos);
+		if (diff < 400 && dist < 5) {
 			d_wl->last_click_ms = 0;
 			d_wl->last_click_pos = Point2(-100, -100);
 			d_wl->last_click_button_index = -1;
@@ -281,22 +278,22 @@ void OS_Wayland::pointer_axis(void *data,
 	mb.instance();
 	double factor = wl_fixed_to_double(value);
 	switch (axis) {
-	case WL_POINTER_AXIS_VERTICAL_SCROLL:
-		if (factor > 0) {
-			mb->set_button_index(BUTTON_WHEEL_DOWN);
-		} else {
-			mb->set_button_index(BUTTON_WHEEL_UP);
-		}
-		break;
-	case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-		if (factor > 0) {
-			mb->set_button_index(BUTTON_WHEEL_LEFT);
-		} else {
-			mb->set_button_index(BUTTON_WHEEL_RIGHT);
-		}
-		break;
-	default:
-		return; // Unknown axis
+		case WL_POINTER_AXIS_VERTICAL_SCROLL:
+			if (factor > 0) {
+				mb->set_button_index(BUTTON_WHEEL_DOWN);
+			} else {
+				mb->set_button_index(BUTTON_WHEEL_UP);
+			}
+			break;
+		case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+			if (factor > 0) {
+				mb->set_button_index(BUTTON_WHEEL_LEFT);
+			} else {
+				mb->set_button_index(BUTTON_WHEEL_RIGHT);
+			}
+			break;
+		default:
+			return; // Unknown axis
 	}
 	mb->set_position(d_wl->_mouse_pos);
 	mb->set_global_position(d_wl->_mouse_pos);
@@ -331,13 +328,13 @@ void OS_Wayland::pointer_axis_discrete(void *data,
 
 void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
 	ev->set_control(xkb_state_mod_name_is_active(xkb_state,
-				XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0);
+							XKB_MOD_NAME_CTRL, XKB_STATE_MODS_EFFECTIVE) > 0);
 	ev->set_alt(xkb_state_mod_name_is_active(xkb_state,
-				XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE) > 0);
+						XKB_MOD_NAME_ALT, XKB_STATE_MODS_EFFECTIVE) > 0);
 	ev->set_metakey(xkb_state_mod_name_is_active(xkb_state,
-				XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0);
+							XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0);
 	ev->set_shift(xkb_state_mod_name_is_active(xkb_state,
-				XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0);
+						 XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0);
 }
 
 void OS_Wayland::keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
@@ -628,7 +625,7 @@ Error OS_Wayland::initialize_display(
 
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server,
-					get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+						get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
 	wl_display_dispatch(display);

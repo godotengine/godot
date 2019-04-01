@@ -239,9 +239,11 @@ public:
 
 	virtual int get_screen_count() const { return outputs.size(); }
 	virtual int get_current_screen() const;
-	virtual void set_video_mode(const VideoMode &p_video_mode,
-			int p_screen = 0) { /* Not supported on Wayland */ }
 	virtual void set_current_screen(int p_screen);
+	virtual void set_video_mode(const VideoMode &p_video_mode,
+			int p_screen = 0) {
+		/* Not supported on Wayland */
+	}
 
 	virtual Size2 get_screen_size(int p_screen = -1) const;
 	virtual int get_screen_dpi(int p_screen = -1) const;
