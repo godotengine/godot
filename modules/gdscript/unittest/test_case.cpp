@@ -320,7 +320,7 @@ void TestCase::_clear_connections() {
 Variant TestCase::_handle_yield(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	r_error.error = Variant::CallError::CALL_OK;
 	m_yield_handled = true;
-	return NULL;
+	return Variant();
 }
 
 void TestCase::_yield_timer(real_t delay_sec) {
@@ -572,7 +572,7 @@ void TestCase::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_signal_call_count", "object", "signal"), &TestCase::get_signal_call_count);
 	ClassDB::bind_method(D_METHOD("get_signal_calls", "object", "signal"), &TestCase::get_signal_calls);
 
-	ClassDB::bind_method(D_METHOD("mock", "base"), &TestCase::mock, DEFVAL(NULL));
+	ClassDB::bind_method(D_METHOD("mock", "base"), &TestCase::mock, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_mock_calls", "object", "method"), &TestCase::get_mock_calls);
 	ClassDB::bind_method(D_METHOD("fr", "object", "function"), &TestCase::fr);
 

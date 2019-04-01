@@ -96,7 +96,7 @@ String TestConfig::test_func_match() const {
 
 Ref<TestResult> TestConfig::make_result() const {
 	const String &script = get_setting("debug/testing/test/default_test_result", "TextTestResult");
-	Object *obj;
+	Object *obj = NULL;
 	if (ClassDB::class_exists(script)) {
 		obj = ClassDB::instance(script);
 	} else {
@@ -106,6 +106,7 @@ Ref<TestResult> TestConfig::make_result() const {
 			obj = ClassDB::instance(instance_type);
 		}
 	}
+	ERR_FAIL_COND_V(!obj, NULL);
 	Ref<TestResult> test_result = Object::cast_to<TestResult>(obj);
 	ERR_EXPLAIN("Can't load script '" + script + "', it does not inherit from a TestResult type");
 	ERR_FAIL_COND_V(test_result.is_null(), NULL);
