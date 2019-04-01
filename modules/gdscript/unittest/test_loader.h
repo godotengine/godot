@@ -37,7 +37,7 @@
 #include "core/reference.h"
 
 class TestLoader : public Reference {
-    GDCLASS(TestLoader, Reference);
+	GDCLASS(TestLoader, Reference);
 
 public:
 	bool from_path(Ref<TestSuite> p_test_suite, const String &p_path);
@@ -47,7 +47,7 @@ public:
 	Ref<TestSuite> _from_directory(const Ref<_Directory> p_directory);
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
 };
 
 #endif // TEST_LOADER_H

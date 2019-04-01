@@ -47,6 +47,7 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "unittest/register_types.h"
 
 class EditorExportGDScript : public EditorExportPlugin {
 

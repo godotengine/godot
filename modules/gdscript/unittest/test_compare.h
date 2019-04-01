@@ -36,8 +36,7 @@
 
 class TestCompare {
 public:
-    static bool deep_equal(const Variant &p_left, const Variant &p_right);
+	static bool deep_equal(const Variant &p_left, const Variant &p_right);
 };
-
 
 #endif // TEST_COMPARE_H

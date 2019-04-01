@@ -37,7 +37,7 @@
 
 class MethodIter {
 public:
-	bool init(const Object* p_object);
+	bool init(const Object *p_object);
 	bool next();
 	const String &get() const;
 
@@ -64,14 +64,13 @@ public:
 
 private:
 	Stage m_stage;
-
 };
 
 class TestState : public Object {
 public:
 	TestState();
-    bool init(const Object *p_object);
-    const String &method_name() const;
+	bool init(const Object *p_object);
+	const String &method_name() const;
 	StageIter::Stage stage() const;
 	Ref<TestLog> log() const;
 	bool next();

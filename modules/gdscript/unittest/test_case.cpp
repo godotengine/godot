@@ -30,8 +30,8 @@
 
 #include "test_case.h"
 #include "proxy_script.h"
-#include "test_config.h"
 #include "test_compare.h"
+#include "test_config.h"
 
 #include "core/math/math_funcs.h"
 #include "core/script_language.h"

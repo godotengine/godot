@@ -47,15 +47,15 @@ static void _editor_init() {
 static TestConfig *test_config;
 
 void register_unittest_types() {
-    ClassDB::register_class<TestCase>();
-    ClassDB::register_class<TestConfig>();
-    ClassDB::register_class<TestResult>();
+	ClassDB::register_class<TestCase>();
+	ClassDB::register_class<TestConfig>();
+	ClassDB::register_class<TestResult>();
 	ClassDB::register_class<TestRunner>();
-    ClassDB::register_class<TextTestResult>();
+	ClassDB::register_class<TextTestResult>();
 
 	test_config = memnew(TestConfig);
 
-    Engine::get_singleton()->add_singleton(Engine::Singleton("TestConfig", TestConfig::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("TestConfig", TestConfig::get_singleton()));
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(_editor_init);

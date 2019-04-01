@@ -195,8 +195,7 @@ void TestPanel::_item_selected() {
 			TreeItem *grandparent = parent->get_parent();
 			if (grandparent != NULL) {
 				TreeItem *greatgrandparent = grandparent->get_parent();
-				if (greatgrandparent != NULL)
-				{
+				if (greatgrandparent != NULL) {
 					filename = grandparent->get_text(0);
 					testname = parent->get_text(0);
 				} else {

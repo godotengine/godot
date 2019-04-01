@@ -108,7 +108,7 @@ Error ProxyScript::reload(bool p_keep_state) {
 	if (script.is_valid()) {
 		return script->reload(p_keep_state);
 	}
-	return Error::OK;
+	return ::Error::OK;
 }
 
 bool ProxyScript::has_method(const StringName &p_method) const {
@@ -223,18 +223,18 @@ bool ProxyScript::is_placeholder_fallback_enabled() const {
 Variant ProxyScriptInstance::_bind_method(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	if (p_argcount < 2) {
 		r_error.argument = p_argcount;
-		r_error.CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		return Variant();
 	}
 	if (p_argcount > 2) {
 		r_error.argument = p_argcount;
-		r_error.CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 		return Variant();
 	}
 	if (p_args[0]->get_type() != Variant::STRING) {
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING;
-		r_error.CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		return Variant();
 	}
 	const String &name = *p_args[0];
@@ -244,30 +244,30 @@ Variant ProxyScriptInstance::_bind_method(const Variant **p_args, int p_argcount
 Variant ProxyScriptInstance::_add_property(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	if (p_argcount < 3) {
 		r_error.argument = p_argcount;
-		r_error.CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		return Variant();
 	}
 	if (p_argcount > 3) {
 		r_error.argument = p_argcount;
-		r_error.CALL_ERROR_TOO_MANY_ARGUMENTS;
+		r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 		return Variant();
 	}
 	if (p_args[0]->get_type() != Variant::STRING) {
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING;
-		r_error.CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		return Variant();
 	}
 	if (p_args[1]->get_type() != Variant::STRING) {
 		r_error.argument = 1;
 		r_error.expected = Variant::STRING;
-		r_error.CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		return Variant();
 	}
 	if (p_args[2]->get_type() != Variant::STRING) {
 		r_error.argument = 2;
 		r_error.expected = Variant::STRING;
-		r_error.CALL_ERROR_INVALID_ARGUMENT;
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		return Variant();
 	}
 	const String &name = *p_args[0];
@@ -320,7 +320,7 @@ Variant::Type ProxyScriptInstance::get_property_type(const StringName &p_name, b
 	if (m_script_instance != NULL) {
 		return m_script_instance->get_property_type(p_name, r_is_valid);
 	}
-	return Variant::Type::NIL;
+	return ::Variant::Type::NIL;
 }
 
 Object *ProxyScriptInstance::get_owner() {
@@ -353,7 +353,7 @@ Variant ProxyScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLAR
 	if (m_script_instance != NULL) {
 		return m_script_instance->call(p_method, VARIANT_ARG_PASS);
 	}
-	return NULL;
+	return Variant();
 }
 Variant ProxyScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 	if (p_method == "bind_method") {
@@ -369,7 +369,7 @@ Variant ProxyScriptInstance::call(const StringName &p_method, const Variant **p_
 	if (m_script_instance != NULL) {
 		return m_script_instance->call(p_method, p_args, p_argcount, r_error);
 	}
-	return NULL;
+	return Variant();
 }
 void ProxyScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	if (m_script_instance != NULL) {
@@ -428,7 +428,7 @@ Variant ProxyScriptInstance::property_get_fallback(const StringName &p_name, boo
 	if (m_script_instance != NULL) {
 		return m_script_instance->property_get_fallback(p_name, r_valid);
 	}
-	return NULL;
+	return Variant();
 }
 
 MultiplayerAPI::RPCMode ProxyScriptInstance::get_rpc_mode(const StringName &p_method) const {
