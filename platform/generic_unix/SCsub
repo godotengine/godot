@@ -22,10 +22,18 @@ if env['x11']:
         "x11/os_x11.cpp",
     ]
 if env['wayland']:
+    env = env.Clone(tools=['wayland-scanner'], toolpath=['tools'])
+    env.WaylandScanner("client-header",
+        "wayland/protocol/xdg-shell.h",
+        "wayland/protocol/xdg-shell.xml")
+    env.WaylandScanner("private-code",
+            "wayland/protocol/xdg-shell.c",
+            "wayland/protocol/xdg-shell.xml")
     sources += [
         "wayland/context_egl_wayland.cpp",
         "wayland/key_mapping_xkb.cpp",
         "wayland/os_wayland.cpp",
+        "wayland/protocol/xdg-shell.c"
     ]
 
 prog = env.add_program('#bin/godot', sources)

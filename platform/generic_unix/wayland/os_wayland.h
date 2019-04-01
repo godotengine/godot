@@ -46,7 +46,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "context_egl_wayland.h"
-#include "wayland_protocol/xdg-shell.h"
+#include "protocol/xdg-shell.h"
 #undef CursorShape
 
 class OS_Wayland : public OS_GenericUnix {
