@@ -806,8 +806,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				uvw[as + j + 1] = uv[1];
 				uvw[as + j + 2] = uv[2];
 
-				sw[j / 3] = !flat;
-				mw[j / 3] = mat;
+				sw[(as + j) / 3] = !flat;
+				mw[(as + j) / 3] = mat;
 			}
 		} else {
 			int as = vertices.size();
@@ -849,8 +849,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				uvw[as + j + 1] = uv[1];
 				uvw[as + j + 2] = uv[2];
 
-				sw[j / 3] = !flat;
-				mw[j / 3] = mat;
+				sw[(as + j) / 3] = !flat;
+				mw[(as + j) / 3] = mat;
 			}
 		}
 	}
