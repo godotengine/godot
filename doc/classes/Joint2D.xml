@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Joint2D" inherits="Node2D" category="Core" version="3.1">
+<class name="Joint2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Base node for all joint constraints in 2D physics.
 	</brief_description>

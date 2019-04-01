@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" category="Built-In Types" version="3.1">
+<class name="Transform2D" category="Built-In Types" version="3.2">
 	<brief_description>
 		2D Transformation. 3x2 matrix.
 	</brief_description>
