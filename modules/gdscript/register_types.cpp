@@ -43,7 +43,6 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 
 #ifdef TOOLS_ENABLED
 
-#include "unittest/register_types.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
