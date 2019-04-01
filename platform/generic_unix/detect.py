@@ -6,7 +6,7 @@ from methods import get_compiler_version, use_gcc
 
 
 x11_dependencies = ["x11", "xcursor", "xinerama", "xrandr", "xrender", "xi"]
-wl_dependencies = ["wayland-client", "wayland-egl", "egl"]
+wl_dependencies = ["wayland-client", "wayland-cursor", "wayland-egl", "egl"]
 
 
 def is_active():

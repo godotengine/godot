@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "key_mapping_xkb.h"
 #include "os_wayland.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "key_mapping_xkb.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-#include <chrono>
 #include <linux/input-event-codes.h>
 #include <sys/mman.h>
 
@@ -43,7 +42,10 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 		uint32_t id, const char *interface, uint32_t version) {
 	OS_Wayland *d_wl = (OS_Wayland *)data;
 
-	if (strcmp(interface, wl_compositor_interface.name) == 0) {
+	if (strcmp(interface, wl_shm_interface.name) == 0) {
+		d_wl->shm = (struct wl_shm *)wl_registry_bind(
+				registry, id, &wl_shm_interface, 1);
+	} else if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		d_wl->compositor = (struct wl_compositor *)wl_registry_bind(
 				registry, id, &wl_compositor_interface, 3);
 	} else if (strcmp(interface, wl_seat_interface.name) == 0) {
@@ -202,6 +204,12 @@ void OS_Wayland::pointer_enter(void *data,
 	mm->set_position(d_wl->_mouse_pos);
 	mm->set_global_position(d_wl->_mouse_pos);
 	d_wl->input->parse_input_event(mm);
+	if (d_wl->cursor_want != d_wl->cursor_have) {
+		wl_pointer_set_cursor(d_wl->mouse_pointer, serial,
+				d_wl->cursor_surfaces[d_wl->cursor_want], 0, 0);
+		d_wl->cursor_have = d_wl->cursor_want;
+		d_wl->cursor_serial = serial;
+	}
 }
 
 void OS_Wayland::pointer_leave(void *data,
@@ -251,8 +259,7 @@ void OS_Wayland::pointer_button(void *data,
 	mb->set_global_position(d_wl->_mouse_pos);
 	d_wl->input->parse_input_event(mb);
 
-	uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000
-		- d_wl->last_click_ms;
+	uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - d_wl->last_click_ms;
 	if (mb->get_button_index() == d_wl->last_click_button_index) {
 		auto dist = Point2(d_wl->last_click_pos).distance_to(d_wl->_mouse_pos);
 		if (diff < 400 && dist < 5) {
@@ -334,7 +341,7 @@ void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
 	ev->set_metakey(xkb_state_mod_name_is_active(xkb_state,
 							XKB_MOD_NAME_LOGO, XKB_STATE_MODS_EFFECTIVE) > 0);
 	ev->set_shift(xkb_state_mod_name_is_active(xkb_state,
-						 XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0);
+						  XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_EFFECTIVE) > 0);
 }
 
 void OS_Wayland::keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
@@ -623,13 +630,63 @@ Error OS_Wayland::initialize_display(
 
 	input = memnew(InputDefault);
 
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server,
-						get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	}
-
 	wl_display_dispatch(display);
 	wl_display_roundtrip(display);
+
+	// TODO: HiDPI cursors
+	struct wl_cursor_theme *cursor_theme =
+			wl_cursor_theme_load("default", 16, shm);
+	if (cursor_theme) {
+		for (int i = 0; i < CURSOR_MAX; i++) {
+			static const char *cursor_names[] = {
+				"left_ptr",
+				"xterm",
+				"hand2",
+				"cross",
+				"watch",
+				"left_ptr_watch",
+				"fleur",
+				"hand1",
+				"X_cursor",
+				"sb_v_double_arrow",
+				"sb_h_double_arrow",
+				"size_bdiag",
+				"size_fdiag",
+				"hand1",
+				"sb_v_double_arrow",
+				"sb_h_double_arrow",
+				"question_arrow"
+			};
+
+			struct wl_cursor *cur =
+					wl_cursor_theme_get_cursor(cursor_theme, cursor_names[i]);
+			if (!cur) {
+				// left_ptr is baked into wayland-cursor and guaranteed to work
+				cur = wl_cursor_theme_get_cursor(cursor_theme, "left_ptr");
+			}
+			// TODO: Animated cursors?
+			struct wl_cursor_image *image = cur->images[0];
+			struct wl_buffer *buffer = wl_cursor_image_get_buffer(image);
+			struct wl_surface *surface =
+					wl_compositor_create_surface(compositor);
+			if (!buffer || !surface) {
+				continue;
+			}
+			wl_surface_attach(surface, buffer,
+					-image->hotspot_x, -image->hotspot_y);
+			wl_surface_commit(surface);
+			cursor_surfaces[i] = surface;
+		}
+		wl_display_dispatch(display);
+		wl_display_roundtrip(display);
+		wl_cursor_theme_destroy(cursor_theme);
+	}
+
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+		visual_server = memnew(VisualServerWrapMT(visual_server,
+				get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	}
+
 	return Error::OK;
 }
 
@@ -711,7 +768,10 @@ bool OS_Wayland::can_draw() const {
 }
 
 void OS_Wayland::set_cursor_shape(CursorShape p_shape) {
-	// TODO
+	cursor_want = p_shape;
+	// Make best-effort attempt to set it now
+	wl_pointer_set_cursor(mouse_pointer, cursor_serial,
+			cursor_surfaces[cursor_want], 0, 0);
 }
 
 void OS_Wayland::set_custom_mouse_cursor(const RES &p_cursor,

@@ -36,18 +36,15 @@
 #include "os_genericunix.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
-
-#include <chrono>
-
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
+#include <wayland-cursor.h>
 #include <wayland-egl.h>
 #include <wayland-server.h>
 #include <xkbcommon/xkbcommon.h>
 
 #include "context_egl_wayland.h"
 #include "protocol/xdg-shell.h"
-#undef CursorShape
 
 class OS_Wayland : public OS_GenericUnix {
 private:
@@ -92,6 +89,7 @@ private:
 	struct wl_compositor *compositor = NULL;
 
 	struct wl_display *display = NULL;
+	struct wl_shm *shm;
 	struct wl_surface *surface;
 	struct wl_egl_window *egl_window;
 	struct wl_region *region;
@@ -104,6 +102,10 @@ private:
 	struct xkb_context *xkb_context = NULL;
 	struct xkb_keymap *xkb_keymap = NULL;
 	struct xkb_state *xkb_state = NULL;
+
+	struct wl_surface *cursor_surfaces[CURSOR_MAX];
+	CursorShape cursor_want = CURSOR_ARROW, cursor_have = CURSOR_ARROW;
+	uint32_t cursor_serial = 0;
 
 	void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
 
@@ -226,7 +228,6 @@ public:
 	// virtual void set_mouse_mode(MouseMode p_mode);
 	// virtual MouseMode get_mouse_mode() const;
 
-	// virtual void warp_mouse_position(const Point2 &p_to) {}
 	Point2 get_mouse_position() const;
 	int get_mouse_button_state() const;
 	void set_window_title(const String &p_title);
