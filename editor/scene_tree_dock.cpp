@@ -963,7 +963,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			Button *button_custom = memnew(Button);
 			node_shortcuts->add_child(button_custom);
-			button_custom->set_text(TTR("Custom Node"));
+			button_custom->set_text(TTR("Other Node"));
 			button_custom->set_icon(get_icon("Add", "EditorIcons"));
 			button_custom->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
 
