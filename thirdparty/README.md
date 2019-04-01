@@ -255,17 +255,17 @@ changes are marked with `// -- GODOT --` comments.
 ## libwebsockets
 
 - Upstream: https://github.com/warmcat/libwebsockets
-- Version: 3.1.0
+- Version: 3.0.1
 - License: LGPLv2.1 + static linking exception
 
 File extracted from upstream source:
-- From `lib/` into `thirdparty/libwebsockets/lib`:
+- From `lib/` into `thirdparty/libwebsockets`:
   - Everything from `core`
-  - From `event-libs` only the `poll` subfolder and the `private.h` header
-  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c` (and the `private.h` header)
-  - From `plat` everything from `unix` and `windows` (and the `private.h` header)
+  - From `event-libs` only the `poll` subfolder
+  - From `misc` only `base64-decode.c`, `getifaddrs.c`, `getifaddrs.h`, `lejp.c`, and `sha-1.c`
+  - From `plat` only `lws-plat-unix.c` and `lws-plat-win.c`
   - From `roles` only `private.h`, `h1`, `http`, `listen`, `pipe`, `raw`, `ws`
-    - From `roles/http` exclude `minilex.c` and the `compression` subfolder
+    - From `roles/http` exclude `minilex.c`
     - From `roles/http/server` exclude `access-log.c`, `lws-spa.c`, `ranges.c`, and `rewrite.c`
     - From `roles/ws` exclude `ext` folder.
   - From `tls` exclude `openssl` folder.
