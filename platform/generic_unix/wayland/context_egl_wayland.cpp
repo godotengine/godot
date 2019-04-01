@@ -90,21 +90,8 @@ Error ContextGL_EGL::initialize() {
 	EGLConfig config = nullptr;
 
 	EGLint contextAttribs[3];
-	// if (context_type == GLES_2_0) {
-	// 	contextAttribs[0] = EGL_CONTEXT_MAJOR_VERSION;
-	// 	contextAttribs[1] = 3;
-	// 	contextAttribs[0] = EGL_CONTEXT_MINOR_VERSION;
-	// 	contextAttribs[1] = 3;
-	// 	contextAttribs[4] = EGL_NONE;
-	// } else {
-	// 	contextAttribs[0] = EGL_CONTEXT_MAJOR_VERSION;
-	// 	contextAttribs[1] = 3;
-	// 	contextAttribs[0] = EGL_CONTEXT_MINOR_VERSION;
-	// 	contextAttribs[1] = 3;
-	// 	contextAttribs[4] = EGL_NONE;
-	// }
 	contextAttribs[0] = EGL_CONTEXT_CLIENT_VERSION;
-	contextAttribs[1] = 4;
+	contextAttribs[1] = 2;
 	contextAttribs[2] = EGL_NONE;
 
 	EGLDisplay display = eglGetDisplay(native_display);
