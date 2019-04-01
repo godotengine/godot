@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProgressBar" inherits="Range" category="Core" version="3.1">
+<class name="ProgressBar" inherits="Range" category="Core" version="3.2">
 	<brief_description>
 		General purpose progress bar.
 	</brief_description>

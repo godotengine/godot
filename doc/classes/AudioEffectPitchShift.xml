@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectPitchShift" inherits="AudioEffect" category="Core" version="3.1">
+<class name="AudioEffectPitchShift" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
 		Adds a Pitch shift audio effect to an Audio bus.
 		Raises or lowers the pitch of original sound.

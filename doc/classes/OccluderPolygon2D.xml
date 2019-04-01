@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OccluderPolygon2D" inherits="Resource" category="Core" version="3.1">
+<class name="OccluderPolygon2D" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Defines a 2D polygon for LightOccluder2D.
 	</brief_description>

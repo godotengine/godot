@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeerStream" inherits="PacketPeer" category="Core" version="3.1">
+<class name="PacketPeerStream" inherits="PacketPeer" category="Core" version="3.2">
 	<brief_description>
 		Wrapper to use a PacketPeer over a StreamPeer.
 	</brief_description>

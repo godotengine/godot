@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Bone2D" inherits="Node2D" category="Core" version="3.1">
+<class name="Bone2D" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>

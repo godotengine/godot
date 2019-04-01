@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Generic6DOFJoint" inherits="Joint" category="Core" version="3.1">
+<class name="Generic6DOFJoint" inherits="Joint" category="Core" version="3.2">
 	<brief_description>
 		The generic 6 degrees of freedom joint can implement a variety of joint-types by locking certain axes' rotation or translation.
 	</brief_description>

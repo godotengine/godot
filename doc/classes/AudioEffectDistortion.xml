@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectDistortion" inherits="AudioEffect" category="Core" version="3.1">
+<class name="AudioEffectDistortion" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
 		Adds a Distortion audio effect to an Audio bus.
 		Modify the sound to make it dirty.
