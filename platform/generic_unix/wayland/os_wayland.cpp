@@ -640,7 +640,7 @@ void OS_Wayland::finalize_display() {
 	delete_main_loop();
 	wl_display_disconnect(display);
 	for (int i = 0; i < outputs.size(); ++i) {
-		memdelete(outputs[i]);
+		free(outputs[i]);
 	}
 }
 
