@@ -37,7 +37,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - &gcc8_deps [gcc-8, g++-8]
-            - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+            - &linux_deps [libasound2-dev, libfreetype6-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev, libwayland-dev, libxkbcommon-dev]
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
         coverity_scan:
