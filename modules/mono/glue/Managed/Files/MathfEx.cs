@@ -36,9 +36,9 @@ namespace Godot
             return (int)Math.Round(s);
         }
 
-        public static bool IsEqualApprox(real_t a, real_t b, real_t ratio = Mathf.Epsilon)
+        public static bool IsEqualApprox(real_t a, real_t b, real_t tolerance)
         {
-            return Abs(a - b) < ratio;
+            return Abs(a - b) < tolerance;
         }
     }
 }
