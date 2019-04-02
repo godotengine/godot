@@ -54,9 +54,15 @@ bool TestLoader::from_directory(Ref<TestSuite> p_test_suite, DirAccessRef &p_dir
 				Ref<Script> script = ResourceLoader::load(p_directory->get_current_dir() + "/" + filename);
 				if (!script.is_null()) {
 					if (script->can_instance()) {
-						TestCase *test_case = memnew(TestCase);
-						ScriptInstance *instance = script->instance_create(test_case);
-						p_test_suite->add_test(test_case);
+						StringName instance_type = script->get_instance_base_type();
+						Object *obj = ClassDB::instance(instance_type);
+						TestCase *script_test = Object::cast_to<TestCase>(obj);
+						if (!script_test) {
+							if (obj)
+								memdelete(obj);
+						} else {
+							p_test_suite->add_test(script_test);
+						}
 					}
 				}
 			}
