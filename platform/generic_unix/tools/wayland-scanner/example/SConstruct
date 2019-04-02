@@ -1,0 +1,15 @@
+environment = Environment(
+    tools = ['wayland-scanner' , 'cc' , 'link'],
+)
+
+environment.WaylandScanner("client-header",
+	"xdg-shell-client-protocol.h", "xdg-shell.xml")
+
+environment.WaylandScanner("server-header",
+	"xdg-shell-server-protocol.h", "xdg-shell.xml")
+
+environment.WaylandScanner("public-code",
+	"xdg-shell-public.c", "xdg-shell.xml")
+
+environment.WaylandScanner("private-code",
+	"xdg-shell-private.c", "xdg-shell.xml")
