@@ -83,6 +83,4 @@ void ConvexPolygonShape::_bind_methods() {
 
 ConvexPolygonShape::ConvexPolygonShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONVEX_POLYGON)) {
-
-	//set_points(Vector3(1,1,1));
 }
