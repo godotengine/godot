@@ -205,6 +205,8 @@ public:
 	static ScriptCodeCompletionCache *get_singleton() { return singleton; }
 
 	ScriptCodeCompletionCache();
+
+	virtual ~ScriptCodeCompletionCache() {}
 };
 
 class ScriptLanguage {

@@ -58,7 +58,7 @@ public:
 	virtual bool is_using_vsync() const = 0;
 
 	ContextGL();
-	~ContextGL();
+	virtual ~ContextGL();
 };
 
 #endif
