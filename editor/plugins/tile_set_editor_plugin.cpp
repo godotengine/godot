@@ -2417,11 +2417,11 @@ void TileSetEditor::draw_polygon_shapes() {
 							colors.push_back(c_bg);
 						}
 					}
-					if (polygon.size() == 0)
+
+					if (polygon.size() < 3)
 						continue;
-					if (polygon.size() > 2) {
-						workspace->draw_polygon(polygon, colors);
-					}
+
+					workspace->draw_polygon(polygon, colors);
 
 					if (coord == edited_shape_coord || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::SINGLE_TILE) {
 						if (!creating_shape) {
