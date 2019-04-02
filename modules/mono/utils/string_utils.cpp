@@ -66,7 +66,7 @@ int sfind(const String &p_text, int p_from) {
 					break;
 				case 1: {
 					CharType c = src[read_pos];
-					found = src[read_pos] == 's' || (c >= '0' || c <= '4');
+					found = src[read_pos] == 's' || (c >= '0' && c <= '4');
 					break;
 				}
 				default:

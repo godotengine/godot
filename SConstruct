@@ -320,7 +320,7 @@ if selected_platform in platform_list:
 
         if (env["warnings"] == 'extra'):
             # FIXME: enable -Wclobbered once #26351 is fixed
-            # FIXME: enable -Wlogical-op and -Wduplicated-branches once #27594 is merged
+            # FIXME: enable -Wduplicated-branches once #27594 is merged
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
@@ -328,7 +328,7 @@ if selected_platform in platform_list:
             env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
             if methods.using_gcc(env):
                 env.Append(CCFLAGS=['-Wno-clobbered', '-Walloc-zero',
-                    '-Wduplicated-cond', '-Wstringop-overflow=4'])
+                    '-Wduplicated-cond', '-Wstringop-overflow=4', '-Wlogical-op'])
                 env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
                 version = methods.get_compiler_version(env)
                 if version != None and version[0] >= '9':
