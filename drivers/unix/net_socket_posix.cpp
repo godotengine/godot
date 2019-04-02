@@ -177,6 +177,13 @@ NetSocketPosix::~NetSocketPosix() {
 	close();
 }
 
+// Silent a warning reported in #27594
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
+#endif
+
 NetSocketPosix::NetError NetSocketPosix::_get_socket_error() {
 #if defined(WINDOWS_ENABLED)
 	int err = WSAGetLastError();
@@ -200,6 +207,10 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() {
 	return ERR_NET_OTHER;
 #endif
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) const {
 
