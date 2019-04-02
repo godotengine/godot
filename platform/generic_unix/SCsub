@@ -25,6 +25,7 @@ if env['wayland']:
     env = env.Clone(tools=['wayland-scanner'], toolpath=['tools'])
     protos = [
         "xdg-shell",
+        "relative-pointer-unstable-v1",
         "pointer-constraints-unstable-v1",
     ]
     proto_srcs = []

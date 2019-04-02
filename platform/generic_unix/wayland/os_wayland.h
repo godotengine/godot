@@ -45,6 +45,7 @@
 
 #include "context_egl_wayland.h"
 #include "protocol/pointer-constraints-unstable-v1.h"
+#include "protocol/relative-pointer-unstable-v1.h"
 #include "protocol/xdg-shell.h"
 
 class OS_Wayland : public OS_GenericUnix {
@@ -101,6 +102,7 @@ private:
 	struct wl_pointer *mouse_pointer;
 	struct wl_region *confine_region;
 	struct zwp_pointer_constraints_v1 *pointer_constraints = NULL;
+	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager = NULL;
 
 	struct xkb_context *xkb_context = NULL;
 	struct xkb_keymap *xkb_keymap = NULL;
@@ -114,6 +116,7 @@ private:
 	uint32_t cursor_serial = 0;
 	struct zwp_locked_pointer_v1 *locked_pointer = NULL;
 	struct zwp_confined_pointer_v1 *confined_pointer = NULL;
+	struct zwp_relative_pointer_v1 *relative_pointer = NULL;
 
 	void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
 
@@ -185,6 +188,12 @@ private:
 		&pointer_axis_source,
 		&pointer_axis_stop,
 		&pointer_axis_discrete,
+	};
+
+	static void relative_pointer_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t utime_hi, uint32_t utime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
+
+	const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
+		&relative_pointer_relative_motion,
 	};
 
 	static void keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);

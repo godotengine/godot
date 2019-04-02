@@ -66,6 +66,9 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
 		d_wl->pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(
 				registry, id, &zwp_pointer_constraints_v1_interface, 1);
+	} else if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
+		d_wl->relative_pointer_manager = (struct zwp_relative_pointer_manager_v1 *)wl_registry_bind(
+				registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
 	}
 }
 
@@ -182,6 +185,13 @@ void OS_Wayland::seat_capabilities(void *data, struct wl_seat *wl_seat,
 		d_wl->mouse_pointer = wl_seat_get_pointer(wl_seat);
 		wl_pointer_add_listener(d_wl->mouse_pointer,
 				&d_wl->pointer_listener, d_wl);
+		if (d_wl->relative_pointer_manager) {
+			d_wl->relative_pointer =
+					zwp_relative_pointer_manager_v1_get_relative_pointer(
+							d_wl->relative_pointer_manager, d_wl->mouse_pointer);
+			zwp_relative_pointer_v1_add_listener(d_wl->relative_pointer,
+					&d_wl->relative_pointer_listener, d_wl);
+		}
 	}
 	if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
 		struct wl_keyboard *keyboard;
@@ -237,6 +247,7 @@ void OS_Wayland::pointer_motion(void *data,
 	Vector2 myVec = Vector2();
 	myVec.x = x * d_wl->scale_factor;
 	myVec.y = y * d_wl->scale_factor;
+	mm->set_relative(myVec - d_wl->_mouse_pos);
 	d_wl->_mouse_pos = myVec;
 	mm->set_position(d_wl->_mouse_pos);
 	mm->set_global_position(d_wl->_mouse_pos);
@@ -283,6 +294,7 @@ void OS_Wayland::pointer_button(void *data,
 		d_wl->last_click_ms += diff;
 		d_wl->last_click_pos = d_wl->_mouse_pos;
 	}
+	d_wl->cursor_serial = serial;
 }
 
 void OS_Wayland::pointer_axis(void *data,
@@ -339,6 +351,38 @@ void OS_Wayland::pointer_axis_stop(void *data,
 void OS_Wayland::pointer_axis_discrete(void *data,
 		struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
 	// This space deliberately left blank
+}
+
+void OS_Wayland::relative_pointer_relative_motion(void *data,
+		struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1,
+		uint32_t utime_hi, uint32_t utime_lo,
+		wl_fixed_t dx, wl_fixed_t dy,
+		wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
+	OS_Wayland *d_wl = (OS_Wayland *)data;
+	if (d_wl->get_mouse_mode() != MOUSE_MODE_CAPTURED) {
+		return;
+	}
+	Ref<InputEventMouseMotion> mm;
+	mm.instance();
+	float x = (float)wl_fixed_to_double(dx);
+	float y = (float)wl_fixed_to_double(dy);
+	Vector2 myVec = Vector2();
+	myVec.x = x;
+	myVec.y = y;
+	mm->set_relative(myVec);
+	d_wl->_mouse_pos += myVec;
+	mm->set_position(d_wl->_mouse_pos);
+	mm->set_global_position(d_wl->_mouse_pos);
+	d_wl->input->parse_input_event(mm);
+	if (d_wl->cursor_want != d_wl->cursor_have) {
+		struct wl_surface *cursor_surface = NULL;
+		if (d_wl->cursor_want != CURSOR_MAX) {
+			cursor_surface = d_wl->cursor_surfaces[d_wl->cursor_want];
+		}
+		wl_pointer_set_cursor(d_wl->mouse_pointer, d_wl->cursor_serial,
+				cursor_surface, 0, 0);
+		d_wl->cursor_have = d_wl->cursor_want;
+	}
 }
 
 void OS_Wayland::_set_modifier_for_event(Ref<InputEventWithModifiers> ev) {
