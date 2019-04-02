@@ -434,8 +434,29 @@ void OS_Wayland::keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 	ev.instance();
 	ev->set_pressed(state == WL_KEYBOARD_KEY_STATE_PRESSED);
 	ev->set_unicode(utf32);
-	ev->set_scancode(KeyMappingXKB::get_keycode(keysym));
 	d_wl->_set_modifier_for_event(ev);
+	uint32_t keycode = KeyMappingXKB::get_keycode(keysym);
+	if (keycode >= 'a' && keycode <= 'z')
+		keycode -= 'a' - 'A';
+	ev->set_scancode(keycode);
+	ev->set_echo(false); // TODO: key repeat
+	if (ev->get_scancode() == KEY_BACKTAB) {
+		//make it consistent across platforms.
+		ev->set_scancode(KEY_TAB);
+		ev->set_shift(true);
+	}
+	//don't set mod state if modifier keys are released by themselves
+	//else event.is_action() will not work correctly here
+	if (!ev->is_pressed()) {
+		if (ev->get_scancode() == KEY_SHIFT)
+			ev->set_shift(false);
+		else if (ev->get_scancode() == KEY_CONTROL)
+			ev->set_control(false);
+		else if (ev->get_scancode() == KEY_ALT)
+			ev->set_alt(false);
+		else if (ev->get_scancode() == KEY_META)
+			ev->set_metakey(false);
+	}
 	d_wl->input->parse_input_event(ev);
 }
 
