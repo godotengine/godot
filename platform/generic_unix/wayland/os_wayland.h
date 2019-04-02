@@ -102,6 +102,8 @@ private:
 	struct wl_seat *seat;
 	struct wl_pointer *mouse_pointer;
 	struct wl_region *confine_region;
+	struct wl_data_device_manager *data_device_manager = NULL;
+	struct wl_data_device *data_device = NULL;
 	struct zwp_pointer_constraints_v1 *pointer_constraints = NULL;
 	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager = NULL;
 	struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager = NULL;
@@ -170,6 +172,22 @@ private:
 	const struct wl_seat_listener seat_listener = {
 		&seat_capabilities,
 		&seat_name,
+	};
+
+	static void data_device_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
+	static void data_device_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
+	static void data_device_leave(void *data, struct wl_data_device *wl_data_device);
+	static void data_device_motion(void *data, struct wl_data_device *wl_data_device, uint32_t time, wl_fixed_t x, wl_fixed_t y);
+	static void data_device_drop(void *data, struct wl_data_device *wl_data_device);
+	static void data_device_selection(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
+
+	struct wl_data_device_listener data_device_listener = {
+		.data_offer = &data_device_data_offer,
+		.enter = &data_device_enter,
+		.leave = &data_device_leave,
+		.motion = &data_device_motion,
+		.drop = &data_device_drop,
+		.selection = &data_device_selection,
 	};
 
 	static void pointer_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y);

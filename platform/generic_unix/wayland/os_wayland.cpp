@@ -63,6 +63,9 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 		WaylandOutput *output = new WaylandOutput(d_wl, wl_output);
 		d_wl->outputs.push_back(output);
 		wl_output_add_listener(wl_output, &d_wl->output_listener, output);
+	} else if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
+		d_wl->data_device_manager = (struct wl_data_device_manager *)wl_registry_bind(
+				registry, id, &wl_data_device_manager_interface, 2);
 	} else if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
 		d_wl->pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(
 				registry, id, &zwp_pointer_constraints_v1_interface, 1);
@@ -204,6 +207,38 @@ void OS_Wayland::seat_capabilities(void *data, struct wl_seat *wl_seat,
 	if (capabilities & WL_SEAT_CAPABILITY_TOUCH) {
 		// TODO: touch support
 	}
+}
+
+void OS_Wayland::data_device_data_offer(void *data,
+		struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
+}
+
+void OS_Wayland::data_device_enter(void *data,
+		struct wl_data_device *wl_data_device, uint32_t serial,
+		struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y,
+		struct wl_data_offer *id) {
+	// This space deliberately left blank
+}
+
+void OS_Wayland::data_device_leave(void *data,
+		struct wl_data_device *wl_data_device) {
+	// This space deliberately left blank
+}
+
+void OS_Wayland::data_device_motion(void *data,
+		struct wl_data_device *wl_data_device, uint32_t time,
+		wl_fixed_t x, wl_fixed_t y) {
+	// This space deliberately left blank
+}
+
+void OS_Wayland::data_device_drop(void *data,
+		struct wl_data_device *wl_data_device) {
+	// This space deliberately left blank
+}
+
+void OS_Wayland::data_device_selection(void *data,
+		struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
+	// TODO: Grab contents and place in clipboard
 }
 
 void OS_Wayland::pointer_enter(void *data,
@@ -609,6 +644,12 @@ Error OS_Wayland::initialize_display(
 	wl_surface_add_listener(surface, &surface_listener, this);
 	confine_region = wl_compositor_create_region(compositor);
 	wl_region_add(confine_region, 0, 0, INT32_MAX, INT32_MAX);
+
+	if (data_device_manager != NULL) {
+		data_device = wl_data_device_manager_get_data_device(
+				data_device_manager, seat);
+		wl_data_device_add_listener(data_device, &data_device_listener, this);
+	}
 
 	egl_window = wl_egl_window_create(surface,
 			p_desired.width, p_desired.height);
