@@ -103,8 +103,11 @@ private:
 	struct xkb_keymap *xkb_keymap = NULL;
 	struct xkb_state *xkb_state = NULL;
 
+	MouseMode mouse_mode;
 	struct wl_surface *cursor_surfaces[CURSOR_MAX];
-	CursorShape cursor_want = CURSOR_ARROW, cursor_have = CURSOR_ARROW;
+	CursorShape cursor_want = CURSOR_ARROW,
+				cursor_have = CURSOR_ARROW,
+				cursor_saved = CURSOR_ARROW;
 	uint32_t cursor_serial = 0;
 
 	void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
@@ -225,8 +228,8 @@ public:
 
 	MainLoop *get_main_loop() const;
 
-	// virtual void set_mouse_mode(MouseMode p_mode);
-	// virtual MouseMode get_mouse_mode() const;
+	void set_mouse_mode(MouseMode p_mode);
+	MouseMode get_mouse_mode() const;
 
 	Point2 get_mouse_position() const;
 	int get_mouse_button_state() const;

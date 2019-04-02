@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/os/input.h"
 #include "os_wayland.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -205,8 +206,11 @@ void OS_Wayland::pointer_enter(void *data,
 	mm->set_global_position(d_wl->_mouse_pos);
 	d_wl->input->parse_input_event(mm);
 	if (d_wl->cursor_want != d_wl->cursor_have) {
-		wl_pointer_set_cursor(d_wl->mouse_pointer, serial,
-				d_wl->cursor_surfaces[d_wl->cursor_want], 0, 0);
+		struct wl_surface *cursor_surface = NULL;
+		if (d_wl->cursor_want != CURSOR_MAX) {
+			cursor_surface = d_wl->cursor_surfaces[d_wl->cursor_want];
+		}
+		wl_pointer_set_cursor(d_wl->mouse_pointer, serial, cursor_surface, 0, 0);
 		d_wl->cursor_have = d_wl->cursor_want;
 		d_wl->cursor_serial = serial;
 	}
@@ -711,6 +715,37 @@ void OS_Wayland::delete_main_loop() {
 
 MainLoop *OS_Wayland::get_main_loop() const {
 	return main_loop;
+}
+
+void OS_Wayland::set_mouse_mode(MouseMode p_mode) {
+	struct wl_surface *cursor_surface = NULL;
+	switch (p_mode) {
+		case MOUSE_MODE_CONFINED:
+			// TODO
+			/* Fallthrough */
+		case MOUSE_MODE_VISIBLE:
+			cursor_want = cursor_saved;
+			if (cursor_want != CURSOR_MAX) {
+				cursor_surface = cursor_surfaces[cursor_want];
+			}
+			// Best effort
+			wl_pointer_set_cursor(mouse_pointer, cursor_serial, cursor_surface, 0, 0);
+			break;
+		case MOUSE_MODE_CAPTURED:
+			// TODO
+			/* fallthrough */
+		case MOUSE_MODE_HIDDEN:
+			cursor_saved = cursor_want;
+			cursor_want = CURSOR_MAX;
+			// Best effort
+			wl_pointer_set_cursor(mouse_pointer, cursor_serial, NULL, 0, 0);
+			break;
+	}
+	mouse_mode = p_mode;
+}
+
+OS::MouseMode OS_Wayland::get_mouse_mode() const {
+	return mouse_mode;
 }
 
 Point2 OS_Wayland::get_mouse_position() const {
