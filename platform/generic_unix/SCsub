@@ -24,9 +24,10 @@ if env['x11']:
 if env['wayland']:
     env = env.Clone(tools=['wayland-scanner'], toolpath=['tools'])
     protos = [
-        "xdg-shell",
-        "relative-pointer-unstable-v1",
+        "idle-inhibit-unstable-v1",
         "pointer-constraints-unstable-v1",
+        "relative-pointer-unstable-v1",
+        "xdg-shell",
     ]
     proto_srcs = []
     for proto in protos:

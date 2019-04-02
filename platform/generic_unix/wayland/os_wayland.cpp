@@ -69,6 +69,9 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, zwp_relative_pointer_manager_v1_interface.name) == 0) {
 		d_wl->relative_pointer_manager = (struct zwp_relative_pointer_manager_v1 *)wl_registry_bind(
 				registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
+	} else if (strcmp(interface, zwp_idle_inhibit_manager_v1_interface.name) == 0) {
+		d_wl->idle_inhibit_manager = (struct zwp_idle_inhibit_manager_v1 *)wl_registry_bind(
+				registry, id, &zwp_idle_inhibit_manager_v1_interface, 1);
 	}
 }
 
@@ -878,6 +881,22 @@ const char *OS_Wayland::get_video_driver_name(int p_driver) const {
 
 int OS_Wayland::get_current_video_driver() const {
 	return video_driver_index;
+}
+
+void OS_Wayland::set_keep_screen_on(bool p_enabled) {
+	if (idle_inhibit_manager != NULL) {
+		if (p_enabled && idle_inhibitor == NULL) {
+			idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(
+					idle_inhibit_manager, surface);
+		} else if (!p_enabled && idle_inhibitor != NULL) {
+			zwp_idle_inhibitor_v1_destroy(idle_inhibitor);
+			idle_inhibitor = NULL;
+		}
+	}
+}
+
+bool OS_Wayland::is_keep_screen_on() const {
+	return idle_inhibitor != NULL;
 }
 
 String OS_Wayland::get_name() {

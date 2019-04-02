@@ -44,6 +44,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "context_egl_wayland.h"
+#include "protocol/idle-inhibit-unstable-v1.h"
 #include "protocol/pointer-constraints-unstable-v1.h"
 #include "protocol/relative-pointer-unstable-v1.h"
 #include "protocol/xdg-shell.h"
@@ -103,6 +104,7 @@ private:
 	struct wl_region *confine_region;
 	struct zwp_pointer_constraints_v1 *pointer_constraints = NULL;
 	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager = NULL;
+	struct zwp_idle_inhibit_manager_v1 *idle_inhibit_manager = NULL;
 
 	struct xkb_context *xkb_context = NULL;
 	struct xkb_keymap *xkb_keymap = NULL;
@@ -117,6 +119,8 @@ private:
 	struct zwp_locked_pointer_v1 *locked_pointer = NULL;
 	struct zwp_confined_pointer_v1 *confined_pointer = NULL;
 	struct zwp_relative_pointer_v1 *relative_pointer = NULL;
+
+	struct zwp_idle_inhibitor_v1 *idle_inhibitor = NULL;
 
 	void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
 
@@ -285,8 +289,8 @@ public:
 	const char *get_video_driver_name(int p_driver) const;
 	int get_current_video_driver() const;
 
-	// virtual void set_keep_screen_on(bool p_enabled);
-	// virtual bool is_keep_screen_on() const;
+	void set_keep_screen_on(bool p_enabled);
+	bool is_keep_screen_on() const;
 
 	String get_name();
 	bool can_draw() const;
