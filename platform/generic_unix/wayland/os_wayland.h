@@ -44,6 +44,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 #include "context_egl_wayland.h"
+#include "protocol/pointer-constraints-unstable-v1.h"
 #include "protocol/xdg-shell.h"
 
 class OS_Wayland : public OS_GenericUnix {
@@ -98,6 +99,8 @@ private:
 	struct xdg_toplevel *xdgtoplevel;
 	struct wl_seat *seat;
 	struct wl_pointer *mouse_pointer;
+	struct wl_region *confine_region;
+	struct zwp_pointer_constraints_v1 *pointer_constraints = NULL;
 
 	struct xkb_context *xkb_context = NULL;
 	struct xkb_keymap *xkb_keymap = NULL;
@@ -109,6 +112,8 @@ private:
 				cursor_have = CURSOR_ARROW,
 				cursor_saved = CURSOR_ARROW;
 	uint32_t cursor_serial = 0;
+	struct zwp_locked_pointer_v1 *locked_pointer = NULL;
+	struct zwp_confined_pointer_v1 *confined_pointer = NULL;
 
 	void _set_modifier_for_event(Ref<InputEventWithModifiers> ev);
 

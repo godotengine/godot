@@ -23,18 +23,23 @@ if env['x11']:
     ]
 if env['wayland']:
     env = env.Clone(tools=['wayland-scanner'], toolpath=['tools'])
-    env.WaylandScanner("client-header",
-        "wayland/protocol/xdg-shell.h",
-        "wayland/protocol/xdg-shell.xml")
-    env.WaylandScanner("private-code",
-            "wayland/protocol/xdg-shell.c",
-            "wayland/protocol/xdg-shell.xml")
+    protos = [
+        "xdg-shell",
+        "pointer-constraints-unstable-v1",
+    ]
+    proto_srcs = []
+    for proto in protos:
+        xml = "wayland/protocol/%s.xml" % proto
+        header = "wayland/protocol/%s.h" % proto
+        code = "wayland/protocol/%s.c" % proto
+        env.WaylandScanner("client-header", header, xml)
+        env.WaylandScanner("private-code", code, xml)
+        proto_srcs.append(code)
     sources += [
         "wayland/context_egl_wayland.cpp",
         "wayland/key_mapping_xkb.cpp",
         "wayland/os_wayland.cpp",
-        "wayland/protocol/xdg-shell.c"
-    ]
+    ] + proto_srcs
 
 prog = env.add_program('#bin/godot', sources)
 

@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/os/input.h"
 #include "os_wayland.h"
+#include "core/os/input.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "key_mapping_xkb.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
+#include <limits.h>
 #include <linux/input-event-codes.h>
 #include <sys/mman.h>
 
@@ -62,6 +63,9 @@ void OS_Wayland::registry_global(void *data, struct wl_registry *registry,
 		WaylandOutput *output = new WaylandOutput(d_wl, wl_output);
 		d_wl->outputs.push_back(output);
 		wl_output_add_listener(wl_output, &d_wl->output_listener, output);
+	} else if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
+		d_wl->pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(
+				registry, id, &zwp_pointer_constraints_v1_interface, 1);
 	}
 }
 
@@ -535,6 +539,8 @@ Error OS_Wayland::initialize_display(
 		exit(1);
 	}
 	wl_surface_add_listener(surface, &surface_listener, this);
+	confine_region = wl_compositor_create_region(compositor);
+	wl_region_add(confine_region, 0, 0, INT32_MAX, INT32_MAX);
 
 	egl_window = wl_egl_window_create(surface,
 			p_desired.width, p_desired.height);
@@ -721,7 +727,15 @@ void OS_Wayland::set_mouse_mode(MouseMode p_mode) {
 	struct wl_surface *cursor_surface = NULL;
 	switch (p_mode) {
 		case MOUSE_MODE_CONFINED:
-			// TODO
+			if (pointer_constraints != NULL && confined_pointer == NULL) {
+				if (locked_pointer != NULL) {
+					zwp_locked_pointer_v1_destroy(locked_pointer);
+					locked_pointer = NULL;
+				}
+				confined_pointer = zwp_pointer_constraints_v1_confine_pointer(
+						pointer_constraints, surface, mouse_pointer, confine_region,
+						ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+			}
 			/* Fallthrough */
 		case MOUSE_MODE_VISIBLE:
 			cursor_want = cursor_saved;
@@ -732,7 +746,15 @@ void OS_Wayland::set_mouse_mode(MouseMode p_mode) {
 			wl_pointer_set_cursor(mouse_pointer, cursor_serial, cursor_surface, 0, 0);
 			break;
 		case MOUSE_MODE_CAPTURED:
-			// TODO
+			if (pointer_constraints != NULL && locked_pointer == NULL) {
+				if (confined_pointer != NULL) {
+					zwp_confined_pointer_v1_destroy(confined_pointer);
+					confined_pointer = NULL;
+				}
+				locked_pointer = zwp_pointer_constraints_v1_lock_pointer(
+						pointer_constraints, surface, mouse_pointer, confine_region,
+						ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+			}
 			/* fallthrough */
 		case MOUSE_MODE_HIDDEN:
 			cursor_saved = cursor_want;
