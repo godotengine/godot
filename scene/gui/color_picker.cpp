@@ -80,7 +80,7 @@ void ColorPicker::_notification(int p_what) {
 			if (p)
 				p->set_size(Size2(get_combined_minimum_size().width + get_constant("margin") * 2, get_combined_minimum_size().height + get_constant("margin") * 2));
 		} break;
-		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+		case NOTIFICATION_WM_QUIT_REQUEST: {
 
 			if (screen != NULL && screen->is_visible())
 				screen->hide();
@@ -773,7 +773,7 @@ void ColorPickerButton::_notification(int p_what) {
 		draw_rect(r, color);
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
+	if (p_what == NOTIFICATION_WM_QUIT_REQUEST && popup) {
 		popup->hide();
 	}
 }

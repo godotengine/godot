@@ -617,12 +617,12 @@ void LineEdit::_notification(int p_what) {
 			set_cursor_position(get_cursor_position());
 
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();
@@ -860,7 +860,7 @@ void LineEdit::_notification(int p_what) {
 				OS::get_singleton()->hide_virtual_keyboard();
 
 		} break;
-		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
+		case NOTIFICATION_OS_IME_UPDATE: {
 
 			if (has_focus()) {
 				ime_text = OS::get_singleton()->get_ime_text();

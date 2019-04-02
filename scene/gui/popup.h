@@ -52,11 +52,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-		NOTIFICATION_POST_POPUP = 80,
-		NOTIFICATION_POPUP_HIDE = 81
-	};
-
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
 

@@ -311,17 +311,17 @@ void EditorNode::_notification(int p_what) {
 		/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
 
 		EditorFileSystem::get_singleton()->scan_changes();
 	}
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == NOTIFICATION_WM_QUIT_REQUEST) {
 
 		_menu_option_confirm(FILE_QUIT, false);
 	}
 
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
 		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
 
@@ -394,7 +394,7 @@ void EditorNode::_notification(int p_what) {
 		p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
 	}
 
-	if (p_what == Control::NOTIFICATION_RESIZED) {
+	if (p_what == NOTIFICATION_RESIZED) {
 		_update_scene_tabs();
 	}
 }

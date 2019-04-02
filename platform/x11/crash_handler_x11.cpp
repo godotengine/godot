@@ -59,7 +59,7 @@ static void handle_crash(int sig) {
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);
 
 	if (OS::get_singleton()->get_main_loop())
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
+		OS::get_singleton()->get_main_loop()->notification(NOTIFICATION_CRASH);
 
 	fprintf(stderr, "Dumping the backtrace. %ls\n", msg.c_str());
 	char **strings = backtrace_symbols(bt_buffer, size);

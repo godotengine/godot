@@ -1366,7 +1366,7 @@ GridMapEditor::~GridMapEditor() {
 
 void GridMapEditorPlugin::_notification(int p_what) {
 
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 			case 0: { // Left.

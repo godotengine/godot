@@ -84,7 +84,7 @@ void EditorFileDialog::_notification(int p_what) {
 
 		set_process_unhandled_input(false);
 
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	} else if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 		if (show_hidden_files != show_hidden)

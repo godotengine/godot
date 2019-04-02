@@ -262,22 +262,6 @@ protected:
 	//bind helpers
 
 public:
-	enum {
-
-		/*		NOTIFICATION_DRAW=30,
-		NOTIFICATION_VISIBILITY_CHANGED=38*/
-		NOTIFICATION_RESIZED = 40,
-		NOTIFICATION_MOUSE_ENTER = 41,
-		NOTIFICATION_MOUSE_EXIT = 42,
-		NOTIFICATION_FOCUS_ENTER = 43,
-		NOTIFICATION_FOCUS_EXIT = 44,
-		NOTIFICATION_THEME_CHANGED = 45,
-		NOTIFICATION_MODAL_CLOSE = 46,
-		NOTIFICATION_SCROLL_BEGIN = 47,
-		NOTIFICATION_SCROLL_END = 48,
-
-	};
-
 	/* EDITOR */
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);

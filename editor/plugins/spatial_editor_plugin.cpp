@@ -2095,7 +2095,7 @@ void SpatialEditorPlugin::edited_scene_changed() {
 	for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
 		SpatialEditorViewport *viewport = SpatialEditor::get_singleton()->get_editor_viewport(i);
 		if (viewport->is_visible()) {
-			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
+			viewport->notification(NOTIFICATION_VISIBILITY_CHANGED);
 		}
 	}
 }
@@ -5173,7 +5173,7 @@ void SpatialEditor::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		_finish_indicators();
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	} else if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		tool_button[SpatialEditor::TOOL_MODE_SELECT]->set_icon(get_icon("ToolSelect", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_MODE_MOVE]->set_icon(get_icon("ToolMove", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon(get_icon("ToolRotate", "EditorIcons"));

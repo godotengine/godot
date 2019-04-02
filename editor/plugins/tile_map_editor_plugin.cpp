@@ -50,7 +50,7 @@ void TileMapEditor::_notification(int p_what) {
 
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			bool new_show_tile_info = EditorSettings::get_singleton()->get("editors/tile_map/show_tile_info_on_hover");
 			if (new_show_tile_info != show_tile_info) {
@@ -1947,7 +1947,7 @@ TileMapEditor::~TileMapEditor() {
 
 void TileMapEditorPlugin::_notification(int p_what) {
 
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		switch ((int)EditorSettings::get_singleton()->get("editors/tile_map/editor_side")) {
 			case 0: { // Left.

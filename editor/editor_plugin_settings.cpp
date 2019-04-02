@@ -39,9 +39,9 @@
 
 void EditorPluginSettings::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
-	} else if (p_what == Node::NOTIFICATION_READY) {
+	} else if (p_what == NOTIFICATION_READY) {
 		plugin_config_dialog->connect("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
 		plugin_list->connect("button_pressed", this, "_cell_button_pressed");
 	}

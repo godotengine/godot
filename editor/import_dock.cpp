@@ -465,7 +465,7 @@ void ImportDock::_reimport() {
 void ImportDock::_notification(int p_what) {
 	switch (p_what) {
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			imported->add_style_override("normal", get_stylebox("normal", "LineEdit"));
 		} break;

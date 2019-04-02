@@ -106,7 +106,7 @@ void CustomPropertyEditor::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		get_stylebox("panel", "PopupMenu")->draw(ci, Rect2(Point2(), get_size()));
 	}
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
+	if (p_what == NOTIFICATION_WM_QUIT_REQUEST) {
 		hide();
 	}
 }

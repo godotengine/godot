@@ -112,7 +112,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			add_style_override("panel", editor->get_gui_base()->get_stylebox("panel", "Panel"));
 		} break;

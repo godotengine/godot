@@ -470,8 +470,8 @@ bool SceneTree::iteration(float p_time) {
 
 	emit_signal("physics_frame");
 
-	_notify_group_pause("physics_process_internal", Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
+	_notify_group_pause("physics_process_internal", NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	_notify_group_pause("physics_process", NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications();
@@ -514,8 +514,8 @@ bool SceneTree::idle(float p_time) {
 
 	flush_transform_notifications();
 
-	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
-	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
+	_notify_group_pause("idle_process_internal", NOTIFICATION_INTERNAL_PROCESS);
+	_notify_group_pause("idle_process", NOTIFICATION_PROCESS);
 
 	Size2 win_size = Size2(OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
 
@@ -658,7 +658,7 @@ void SceneTree::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
-				get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
+				get_root()->propagate_notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
@@ -883,7 +883,7 @@ void SceneTree::set_pause(bool p_enabled) {
 	PhysicsServer::get_singleton()->set_active(!p_enabled);
 	Physics2DServer::get_singleton()->set_active(!p_enabled);
 	if (get_root())
-		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
+		get_root()->propagate_notification(p_enabled ? NOTIFICATION_PAUSED : NOTIFICATION_UNPAUSED);
 }
 
 bool SceneTree::is_paused() const {
@@ -944,7 +944,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	if (g.nodes.empty())
 		return;
 
-	_update_group_order(g, p_notification == Node::NOTIFICATION_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PROCESS || p_notification == Node::NOTIFICATION_PHYSICS_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+	_update_group_order(g, p_notification == NOTIFICATION_PROCESS || p_notification == NOTIFICATION_INTERNAL_PROCESS || p_notification == NOTIFICATION_PHYSICS_PROCESS || p_notification == NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 
 	//copy, so copy on write happens in case something is removed from process while being called
 	//performance is not lost because only if something is added/removed the vector is copied.

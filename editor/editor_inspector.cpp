@@ -2195,7 +2195,7 @@ void EditorInspector::_notification(int p_what) {
 		changing--;
 	}
 
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		if (sub_inspector) {
 			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));

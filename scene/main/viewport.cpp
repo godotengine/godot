@@ -659,8 +659,8 @@ void Viewport::_notification(int p_what) {
 			}
 
 		} break;
-		case SceneTree::NOTIFICATION_WM_MOUSE_EXIT:
-		case SceneTree::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_MOUSE_EXIT:
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			_drop_physics_mouseover();
 
@@ -885,7 +885,7 @@ void Viewport::_camera_set(Camera *p_camera) {
 		return;
 
 	if (camera && find_world().is_valid()) {
-		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		camera->notification(NOTIFICATION_LOST_CURRENT);
 	}
 	camera = p_camera;
 	if (camera)
@@ -894,7 +894,7 @@ void Viewport::_camera_set(Camera *p_camera) {
 		VisualServer::get_singleton()->viewport_attach_camera(viewport, RID());
 
 	if (camera && find_world().is_valid()) {
-		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
+		camera->notification(NOTIFICATION_BECAME_CURRENT);
 	}
 
 	_update_listener();
@@ -913,7 +913,7 @@ void Viewport::_camera_remove(Camera *p_camera) {
 	cameras.erase(p_camera);
 	if (camera == p_camera) {
 		if (camera && find_world().is_valid()) {
-			camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+			camera->notification(NOTIFICATION_LOST_CURRENT);
 		}
 		camera = NULL;
 	}
@@ -1006,7 +1006,7 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 
 		if (Object::cast_to<Spatial>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
 
-			p_node->notification(Spatial::NOTIFICATION_ENTER_WORLD);
+			p_node->notification(NOTIFICATION_ENTER_WORLD);
 		} else {
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
@@ -1043,7 +1043,7 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 
 		if (Object::cast_to<Spatial>(p_node) || Object::cast_to<WorldEnvironment>(p_node)) {
 
-			p_node->notification(Spatial::NOTIFICATION_EXIT_WORLD);
+			p_node->notification(NOTIFICATION_EXIT_WORLD);
 		} else {
 			Viewport *v = Object::cast_to<Viewport>(p_node);
 			if (v) {
@@ -1070,7 +1070,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 
 #ifndef _3D_DISABLED
 	if (find_world().is_valid() && camera)
-		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		camera->notification(NOTIFICATION_LOST_CURRENT);
 #endif
 
 	world = p_world;
@@ -1080,7 +1080,7 @@ void Viewport::set_world(const Ref<World> &p_world) {
 
 #ifndef _3D_DISABLED
 	if (find_world().is_valid() && camera)
-		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
+		camera->notification(NOTIFICATION_BECAME_CURRENT);
 #endif
 
 	//propagate exit
@@ -1753,7 +1753,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							return; // no one gets the event if exclusive NO ONE
 						}
 
-						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
+						top->notification(NOTIFICATION_MODAL_CLOSE);
 						top->_modal_stack_remove();
 						top->hide();
 
@@ -2015,7 +2015,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						(popup_menu_parent->get_parent()->is_a_parent_of(menu_button) ||
 								menu_button->get_parent()->is_a_parent_of(popup_menu))) {
 
-					popup_menu->notification(Control::NOTIFICATION_MODAL_CLOSE);
+					popup_menu->notification(NOTIFICATION_MODAL_CLOSE);
 					popup_menu->_modal_stack_remove();
 					popup_menu->hide();
 
@@ -2029,13 +2029,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (over != gui.mouse_over) {
 
 			if (gui.mouse_over) {
-				_gui_call_notification(gui.mouse_over, Control::NOTIFICATION_MOUSE_EXIT);
+				_gui_call_notification(gui.mouse_over, NOTIFICATION_MOUSE_EXIT);
 			}
 
 			_gui_cancel_tooltip();
 
 			if (over) {
-				_gui_call_notification(over, Control::NOTIFICATION_MOUSE_ENTER);
+				_gui_call_notification(over, NOTIFICATION_MOUSE_ENTER);
 			}
 		}
 
@@ -2279,7 +2279,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *top = gui.modal_stack.back()->get();
 			if (!top->data.modal_exclusive) {
 
-				top->notification(Control::NOTIFICATION_MODAL_CLOSE);
+				top->notification(NOTIFICATION_MODAL_CLOSE);
 				top->_modal_stack_remove();
 				top->hide();
 				// Close modal, set input as handled
@@ -2512,7 +2512,7 @@ void Viewport::_gui_remove_focus() {
 	if (gui.key_focus) {
 		Node *f = gui.key_focus;
 		gui.key_focus = NULL;
-		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
+		f->notification(NOTIFICATION_FOCUS_EXIT, true);
 	}
 }
 
@@ -2533,7 +2533,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 		return;
 	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
 	gui.key_focus = p_control;
-	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
+	p_control->notification(NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
 }
 
@@ -2726,7 +2726,7 @@ void Viewport::set_use_own_world(bool p_world) {
 
 #ifndef _3D_DISABLED
 	if (find_world().is_valid() && camera)
-		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+		camera->notification(NOTIFICATION_LOST_CURRENT);
 #endif
 
 	if (!p_world)
@@ -2739,7 +2739,7 @@ void Viewport::set_use_own_world(bool p_world) {
 
 #ifndef _3D_DISABLED
 	if (find_world().is_valid() && camera)
-		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
+		camera->notification(NOTIFICATION_BECAME_CURRENT);
 #endif
 
 	//propagate exit

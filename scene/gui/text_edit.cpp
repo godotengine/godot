@@ -561,12 +561,12 @@ void TextEdit::_notification(int p_what) {
 			_update_caches();
 			_update_wrap_at();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();
@@ -1450,7 +1450,7 @@ void TextEdit::_notification(int p_what) {
 			if (OS::get_singleton()->has_virtual_keyboard())
 				OS::get_singleton()->hide_virtual_keyboard();
 		} break;
-		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
+		case NOTIFICATION_OS_IME_UPDATE: {
 
 			if (has_focus()) {
 				ime_text = OS::get_singleton()->get_ime_text();

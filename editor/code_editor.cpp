@@ -99,7 +99,7 @@ void FindReplaceBar::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		set_process_unhandled_input(is_visible_in_tree());
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	} else if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
 		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
@@ -1277,7 +1277,7 @@ void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 void CodeTextEditor::_notification(int p_what) {
 
 	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_load_theme_settings();
 			emit_signal("load_theme_settings");
 		} break;

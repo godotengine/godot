@@ -126,11 +126,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-
-		NOTIFICATION_UPDATE_SKELETON = 50
-	};
-
 	RID get_skeleton() const;
 
 	// skeleton creation api

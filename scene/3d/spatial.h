@@ -117,15 +117,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-
-		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
-		NOTIFICATION_ENTER_WORLD = 41,
-		NOTIFICATION_EXIT_WORLD = 42,
-		NOTIFICATION_VISIBILITY_CHANGED = 43,
-		NOTIFICATION_LOCAL_TRANSFORM_CHANGED = 44,
-	};
-
 	Spatial *get_parent_spatial() const;
 
 	Ref<World> get_world() const;

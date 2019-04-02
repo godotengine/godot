@@ -1707,7 +1707,7 @@ Node *PackedScene::instance(GenEditState p_edit_state) const {
 	if (get_path() != "" && get_path().find("::") == -1)
 		s->set_filename(get_path());
 
-	s->notification(Node::NOTIFICATION_INSTANCED);
+	s->notification(NOTIFICATION_INSTANCED);
 
 	return s;
 }

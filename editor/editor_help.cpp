@@ -1346,7 +1346,7 @@ void EditorHelp::_notification(int p_what) {
 
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			class_desc->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 			_update_doc();
@@ -1489,7 +1489,7 @@ void EditorHelpBit::_bind_methods() {
 void EditorHelpBit::_notification(int p_what) {
 
 	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 		} break;
@@ -1576,7 +1576,7 @@ void FindBar::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		set_process_unhandled_input(is_visible_in_tree());
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	} else if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
 		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
 		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));

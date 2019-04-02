@@ -286,10 +286,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 29
-	};
-
 	enum GroupCallFlags {
 		GROUP_CALL_DEFAULT = 0,
 		GROUP_CALL_REVERSE = 1,

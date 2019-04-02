@@ -722,7 +722,7 @@ void ConnectionsDock::_connect_pressed() {
 
 void ConnectionsDock::_notification(int p_what) {
 
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 		update_tree();
 	}
 }

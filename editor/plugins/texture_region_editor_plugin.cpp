@@ -710,7 +710,7 @@ void TextureRegionEditor::_notification(int p_what) {
 				_update_autoslice();
 			}
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			// This happens when the user leaves the Editor and returns,
 			// they could have changed the textures, so the cache is cleared.
 			cache_map.clear();

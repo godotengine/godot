@@ -39,7 +39,7 @@ void AnimatedValuesBackup::update_skeletons() {
 
 	for (int i = 0; i < entries.size(); i++) {
 		if (entries[i].bone_idx != -1) {
-			Object::cast_to<Skeleton>(entries[i].object)->notification(Skeleton::NOTIFICATION_UPDATE_SKELETON);
+			Object::cast_to<Skeleton>(entries[i].object)->notification(NOTIFICATION_UPDATE_SKELETON);
 		}
 	}
 }

@@ -102,12 +102,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-
-		NOTIFICATION_BECAME_CURRENT = 50,
-		NOTIFICATION_LOST_CURRENT = 51
-	};
-
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
 	void set_projection(Camera::Projection p_mode);

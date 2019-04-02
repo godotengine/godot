@@ -1333,13 +1333,13 @@ void ScriptEditor::_notification(int p_what) {
 			editor->disconnect("stop_pressed", this, "_editor_stop");
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 
 			_test_script_times_on_disk();
 			_update_modified_scripts_for_external_editor();
 		} break;
 
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
@@ -1353,7 +1353,7 @@ void ScriptEditor::_notification(int p_what) {
 			recent_scripts->set_as_minsize();
 		} break;
 
-		case CanvasItem::NOTIFICATION_VISIBILITY_CHANGED: {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (is_visible()) {
 				find_in_files_button->show();

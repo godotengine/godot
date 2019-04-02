@@ -103,7 +103,7 @@ void EditorHelpSearch::_confirmed() {
 void EditorHelpSearch::_notification(int p_what) {
 
 	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			_update_icons();
 		} break;

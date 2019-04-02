@@ -128,10 +128,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-		NOTIFICATION_EDITOR_SETTINGS_CHANGED = 10000
-	};
-
 	static EditorSettings *get_singleton();
 
 	static void create();

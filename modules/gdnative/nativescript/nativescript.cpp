@@ -758,7 +758,7 @@ Variant NativeScriptInstance::call(const StringName &p_method, const Variant **p
 
 void NativeScriptInstance::notification(int p_notification) {
 #ifdef DEBUG_ENABLED
-	if (p_notification == MainLoop::NOTIFICATION_CRASH) {
+	if (p_notification == NOTIFICATION_CRASH) {
 		if (current_method_call != StringName("")) {
 			ERR_PRINTS("NativeScriptInstance detected crash on method: " + current_method_call);
 			current_method_call = "";
@@ -1628,7 +1628,7 @@ void NativeReloadNode::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 
 	switch (p_what) {
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			if (unloaded)
 				break;
@@ -1665,7 +1665,7 @@ void NativeReloadNode::_notification(int p_what) {
 
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 
 			if (!unloaded)
 				break;

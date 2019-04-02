@@ -530,7 +530,7 @@ void PopupMenu::_notification(int p_what) {
 			}
 
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			if (hide_on_window_lose_focus)
 				hide();

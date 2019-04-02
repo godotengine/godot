@@ -136,7 +136,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "editor_settings", get_rect());
 			set_process_unhandled_input(false);
 		} break;
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			_update_icons();
 			// Update theme colors.
 			inspector->update_category_list();

@@ -51,10 +51,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	enum {
-		NOTIFICATION_SORT_CHILDREN = 50
-	};
-
 	void fit_child_in_rect(Control *p_child, const Rect2 &p_rect);
 
 	virtual String get_configuration_warning() const;

@@ -34,6 +34,7 @@
 #include "core/hash_map.h"
 #include "core/list.h"
 #include "core/map.h"
+#include "core/notifications.h"
 #include "core/os/rw_lock.h"
 #include "core/set.h"
 #include "core/variant.h"
@@ -609,12 +610,6 @@ public:
 			return NULL;
 #endif
 	}
-
-	enum {
-
-		NOTIFICATION_POSTINITIALIZE = 0,
-		NOTIFICATION_PREDELETE = 1
-	};
 
 	/* TYPE API */
 	static void get_inheritance_list_static(List<String> *p_inheritance_list) { p_inheritance_list->push_back("Object"); }

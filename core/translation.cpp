@@ -843,7 +843,7 @@ void Translation::set_locale(const String &p_locale) {
 	}
 
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+		OS::get_singleton()->get_main_loop()->notification(NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
 
@@ -951,7 +951,7 @@ void TranslationServer::set_locale(const String &p_locale) {
 	}
 
 	if (OS::get_singleton()->get_main_loop()) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+		OS::get_singleton()->get_main_loop()->notification(NOTIFICATION_TRANSLATION_CHANGED);
 	}
 
 	ResourceLoader::reload_translation_remaps();

@@ -330,7 +330,7 @@ Container *InspectorDock::get_addon_area() {
 
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		case NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			set_theme(editor->get_gui_base()->get_theme());
 			resource_new_button->set_icon(get_icon("New", "EditorIcons"));
 			resource_load_button->set_icon(get_icon("Load", "EditorIcons"));

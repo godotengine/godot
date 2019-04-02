@@ -645,7 +645,7 @@ private:
 
 	void _notification(int p_what) {
 
-		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST)
+		if (p_what == NOTIFICATION_WM_QUIT_REQUEST)
 			_remove_created_folder();
 	}
 
