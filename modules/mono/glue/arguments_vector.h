@@ -39,6 +39,7 @@ struct ArgumentsVector {
 private:
 	T pool[POOL_SIZE];
 	T *_ptr;
+	int size;
 
 	ArgumentsVector();
 	ArgumentsVector(const ArgumentsVector &);
@@ -48,11 +49,18 @@ public:
 	T &get(int p_idx) { return _ptr[p_idx]; }
 	void set(int p_idx, const T &p_value) { _ptr[p_idx] = p_value; }
 
-	explicit ArgumentsVector(int size) {
-		if (size <= POOL_SIZE) {
+	explicit ArgumentsVector(int p_size) :
+			size(p_size) {
+		if (p_size <= POOL_SIZE) {
 			_ptr = pool;
 		} else {
-			_ptr = memnew_arr(T, size);
+			_ptr = memnew_arr(T, p_size);
+		}
+	}
+
+	~ArgumentsVector() {
+		if (size > POOL_SIZE) {
+			memdelete_arr(_ptr);
 		}
 	}
 };
