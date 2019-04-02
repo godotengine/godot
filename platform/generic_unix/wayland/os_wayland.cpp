@@ -226,8 +226,8 @@ void OS_Wayland::pointer_enter(void *data,
 		}
 		wl_pointer_set_cursor(d_wl->mouse_pointer, serial, cursor_surface, 0, 0);
 		d_wl->cursor_have = d_wl->cursor_want;
-		d_wl->cursor_serial = serial;
 	}
+	d_wl->cursor_serial = serial;
 }
 
 void OS_Wayland::pointer_leave(void *data,
@@ -890,10 +890,14 @@ bool OS_Wayland::can_draw() const {
 }
 
 void OS_Wayland::set_cursor_shape(CursorShape p_shape) {
-	cursor_want = p_shape;
-	// Make best-effort attempt to set it now
-	wl_pointer_set_cursor(mouse_pointer, cursor_serial,
-			cursor_surfaces[cursor_want], 0, 0);
+	if (cursor_want == CURSOR_MAX) {
+		cursor_saved = p_shape;
+	} else {
+		cursor_want = p_shape;
+		// Make best-effort attempt to set it now
+		wl_pointer_set_cursor(mouse_pointer, cursor_serial,
+				cursor_surfaces[cursor_want], 0, 0);
+	}
 }
 
 void OS_Wayland::set_custom_mouse_cursor(const RES &p_cursor,
