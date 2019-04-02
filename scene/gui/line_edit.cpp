@@ -1180,6 +1180,8 @@ void LineEdit::set_cursor_position(int p_pos) {
 				}
 				if (accum_width > window_width)
 					break;
+				if (accum_width < window_width)
+					set_window_pos(0);
 
 				wp = i;
 			}
