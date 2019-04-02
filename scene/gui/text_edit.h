@@ -683,6 +683,7 @@ protected:
 	TextEdit *text_editor;
 
 public:
+	virtual ~SyntaxHighlighter() {}
 	virtual void _update_cache() = 0;
 	virtual Map<int, TextEdit::HighlighterInfo> _get_line_syntax_highlighting(int p_line) = 0;
 
