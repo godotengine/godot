@@ -18,7 +18,7 @@ each of them.
 Everything referred to hereafter as "bug" also applies for feature requests.
 
 If you are reporting a new issue, you will make our life much simpler (and the
-fix come much sooner) by following those guidelines:
+fix come much sooner) by following these guidelines:
 
 #### Search first in the existing database
 
