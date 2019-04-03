@@ -393,52 +393,52 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 	bool trim = p_options["edit/trim"];
 
-    if (trim && !loop && format_channels > 0) {
+	if (trim && !loop && format_channels > 0) {
 
-        int first = 0;
-        int last = (frames / format_channels) - 1;
-        bool found = false;
-        float limit = Math::db2linear(kTrimDBLimit);
+		int first = 0;
+		int last = (frames / format_channels) - 1;
+		bool found = false;
+		float limit = Math::db2linear(kTrimDBLimit);
 
-        for (int i = 0; i < data.size() / format_channels; i++) {
-            float ampChannelSum = 0;
-            for (int j = 0; j < format_channels; j++) {
-                ampChannelSum += Math::abs(data[(i*format_channels)+j]);
-            }
+		for (int i = 0; i < data.size() / format_channels; i++) {
+			float ampChannelSum = 0;
+			for (int j = 0; j < format_channels; j++) {
+				ampChannelSum += Math::abs(data[(i*format_channels)+j]);
+			}
 
-            float amp = Math::abs(ampChannelSum/(float)format_channels);
+			float amp = Math::abs(ampChannelSum/(float)format_channels);
 
-            if (!found && amp > limit) {
-                first = i/format_channels;
-                found = true;
-            }
+			if (!found && amp > limit) {
+				first = i/format_channels;
+				found = true;
+			}
 
-            if (found && amp > limit) {
-                last = i/format_channels;
-            }
-        }
+			if (found && amp > limit) {
+				last = i/format_channels;
+			}
+		}
 
-        if (first < last) {
-            Vector<float> new_data;
-            new_data.resize((last - first) * format_channels);
-            for (int i = first; i < last; i++) {
+		if (first < last) {
+			Vector<float> new_data;
+			new_data.resize((last - first) * format_channels);
+			for (int i = first; i < last; i++) {
 
-                float fadeOutMult = 1;
+				float fadeOutMult = 1;
 
-                if (last - i < kTrimFadeOutFrames) {
-                    fadeOutMult = ((float)(last - i - 1) / (float)kTrimFadeOutFrames);
-                }
+				if (last - i < kTrimFadeOutFrames) {
+					fadeOutMult = ((float)(last - i - 1) / (float)kTrimFadeOutFrames);
+				}
 
-                for (int j = 0; j < format_channels; j++) {
-                    new_data.write[((i-first)*format_channels)+j] = data[(i*format_channels)+j] * fadeOutMult;
-                }
+				for (int j = 0; j < format_channels; j++) {
+					new_data.write[((i-first)*format_channels)+j] = data[(i*format_channels)+j] * fadeOutMult;
+				}
 
-            }
+			}
 
-            data = new_data;
-            frames = data.size() / format_channels;
-        }
-    }
+			data = new_data;
+			frames = data.size() / format_channels;
+		}
+	}
 
 	bool make_loop = p_options["edit/loop"];
 
