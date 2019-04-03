@@ -584,6 +584,9 @@ TreeItem *SceneTreeEditor::_find(TreeItem *p_node, const NodePath &p_path) {
 		return NULL;
 
 	NodePath np = p_node->get_metadata(0);
+
+	editor_selection = NULL;
+
 	if (np == p_path)
 		return p_node;
 
