@@ -355,7 +355,6 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 }
 
 void EditorSettingsDialog::_tabs_tab_changed(int p_tab) {
-
 	_focus_current_search_box();
 }
 
@@ -372,6 +371,11 @@ void EditorSettingsDialog::_focus_current_search_box() {
 		current_search_box->grab_focus();
 		current_search_box->select_all();
 	}
+}
+
+void EditorSettingsDialog::custom_action(const String &p_action) {
+	// Refresh settings for 'Refresh' button.
+	_settings_save();
 }
 
 void EditorSettingsDialog::_editor_restart() {
@@ -506,12 +510,16 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	set_hide_on_ok(true);
 	//get_cancel()->set_text("Close");
 
+	//Refresh Button
+
+	add_button(TTR("Refresh"), false, "refresh");
+
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
 	timer->connect("timeout", this, "_settings_save");
 	timer->set_one_shot(true);
 	add_child(timer);
-	EditorSettings::get_singleton()->connect("settings_changed", this, "_settings_changed");
+	//EditorSettings::get_singleton()->connect("settings_changed", this, "_settings_changed");
 	get_ok()->set_text(TTR("Close"));
 
 	updating = false;

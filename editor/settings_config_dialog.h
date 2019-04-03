@@ -67,6 +67,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	virtual void cancel_pressed();
 	virtual void ok_pressed();
+	virtual void custom_action(const String &);
 
 	void _settings_changed();
 	void _settings_property_edited(const String &p_name);
