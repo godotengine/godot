@@ -1,5 +1,11 @@
 # Third party libraries
 
+## assimp
+
+- Upstream: http://github.com/assimp/assimp
+- Version: git (d2b45377e4b09a1f43be95e45553afcc06b03f4b)
+- License: BSD-3-Clause
+
 
 ## b2d_convexdecomp
 

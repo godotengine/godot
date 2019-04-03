@@ -110,6 +110,11 @@ Copyright: 2007, Starbreeze Studios
  2014-2019, Godot Engine contributors.
 License: Expat and Zlib
 
+Files: ./thirdparty/assimp/
+Comment: Open Asset Import Library (assimp)
+Copyright: 2006-2016, assimp team
+License: BSD-3-clause
+
 Files: ./thirdparty/b2d_convexdecomp/
 Comment: Box2D (ConvexDecomp)
 Copyright: 2007, Eric Jordan
