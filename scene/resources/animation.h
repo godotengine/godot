@@ -93,7 +93,6 @@ private:
 	template <class T>
 	struct TKey : public Key {
 
-		float time;
 		T value;
 	};
 

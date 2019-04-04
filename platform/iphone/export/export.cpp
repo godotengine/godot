@@ -920,7 +920,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		EditorNode::add_io_error("Could not open export template (not a zip file?):\n" + src_pkg_name);
 		return ERR_CANT_OPEN;
 	}
-	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
+
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {

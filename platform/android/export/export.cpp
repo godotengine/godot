@@ -1864,7 +1864,6 @@ public:
 			return ERR_FILE_NOT_FOUND;
 		}
 
-		ERR_FAIL_COND_V(!pkg, ERR_CANT_OPEN);
 		int ret = unzGoToFirstFile(pkg);
 
 		zlib_filefunc_def io2 = io;
@@ -2204,7 +2203,6 @@ public:
 			return ERR_FILE_NOT_FOUND;
 		}
 
-		ERR_FAIL_COND_V(!tmp_unaligned, ERR_CANT_OPEN);
 		ret = unzGoToFirstFile(tmp_unaligned);
 
 		io2 = io;

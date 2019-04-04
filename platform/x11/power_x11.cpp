@@ -115,7 +115,7 @@ bool PowerX11::make_proc_acpi_key_val(char **_ptr, char **_key, char **_val) {
 
 	*(ptr++) = '\0'; /* terminate the key. */
 
-	while ((*ptr == ' ') && (*ptr != '\0')) {
+	while (*ptr == ' ') {
 		ptr++; /* skip whitespace. */
 	}
 
