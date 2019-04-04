@@ -5,7 +5,6 @@ EnsureSConsVersion(0, 98, 1)
 # System
 import glob
 import os
-import string
 import sys
 
 # Local

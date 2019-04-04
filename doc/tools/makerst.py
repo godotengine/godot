@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 import os
 import re
 import xml.etree.ElementTree as ET
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 
 # Uncomment to do type checks. I have it commented out so it works below Python 3.5
 #from typing import List, Dict, TextIO, Tuple, Iterable, Optional, DefaultDict, Any, Union

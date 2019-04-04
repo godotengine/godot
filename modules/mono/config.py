@@ -5,7 +5,7 @@ import sys
 import subprocess
 
 from distutils.version import LooseVersion
-from SCons.Script import BoolVariable, Dir, Environment, File, SCons, Variables
+from SCons.Script import BoolVariable, Dir, Environment, Variables
 
 
 monoreg = imp.load_source('mono_reg_utils', 'modules/mono/mono_reg_utils.py')

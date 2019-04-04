@@ -1,6 +1,5 @@
 import methods
 import os
-import string
 import sys
 
 
@@ -25,8 +24,6 @@ def can_build():
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable
-
     return [
         ('msvc_version', 'MSVC version to use (ignored if the VCINSTALLDIR environment variable is set)', None),
     ]
