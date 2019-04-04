@@ -96,12 +96,10 @@ static void handle_crash(int sig) {
 			String output = "";
 
 			// Try to get the file/line number using addr2line
-			if (OS::get_singleton()) {
-				int ret;
-				Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
-				if (err == OK) {
-					output.erase(output.length() - 1, 1);
-				}
+			int ret;
+			Error err = OS::get_singleton()->execute(String("addr2line"), args, true, NULL, &output, &ret);
+			if (err == OK) {
+				output.erase(output.length() - 1, 1);
 			}
 
 			fprintf(stderr, "[%ld] %s (%ls)\n", i, fname, output.c_str());

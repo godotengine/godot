@@ -503,35 +503,33 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	current_cursor = CURSOR_ARROW;
 
-	if (cursor_theme) {
-		for (int i = 0; i < CURSOR_MAX; i++) {
+	for (int i = 0; i < CURSOR_MAX; i++) {
 
-			static const char *cursor_file[] = {
-				"left_ptr",
-				"xterm",
-				"hand2",
-				"cross",
-				"watch",
-				"left_ptr_watch",
-				"fleur",
-				"hand1",
-				"X_cursor",
-				"sb_v_double_arrow",
-				"sb_h_double_arrow",
-				"size_bdiag",
-				"size_fdiag",
-				"hand1",
-				"sb_v_double_arrow",
-				"sb_h_double_arrow",
-				"question_arrow"
-			};
+		static const char *cursor_file[] = {
+			"left_ptr",
+			"xterm",
+			"hand2",
+			"cross",
+			"watch",
+			"left_ptr_watch",
+			"fleur",
+			"hand1",
+			"X_cursor",
+			"sb_v_double_arrow",
+			"sb_h_double_arrow",
+			"size_bdiag",
+			"size_fdiag",
+			"hand1",
+			"sb_v_double_arrow",
+			"sb_h_double_arrow",
+			"question_arrow"
+		};
 
-			img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
-			if (img[i]) {
-				cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
-			} else {
-				print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
-			}
+		img[i] = XcursorLibraryLoadImage(cursor_file[i], cursor_theme, cursor_size);
+		if (img[i]) {
+			cursors[i] = XcursorImageLoadCursor(x11_display, img[i]);
+		} else {
+			print_verbose("Failed loading custom cursor: " + String(cursor_file[i]));
 		}
 	}
 

@@ -2165,7 +2165,6 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 static void _find_call_arguments(const GDScriptCompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, int p_argidx, bool p_static, Set<String> &r_result, String &r_arghint) {
 	Variant base = p_base.value;
 	GDScriptParser::DataType base_type = p_base.type;
-	bool _static = false;
 
 	while (base_type.has_type) {
 		switch (base_type.kind) {
@@ -2176,12 +2175,10 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 						return;
 					}
 				}
-				if (!_static) {
-					for (int i = 0; i < base_type.class_type->functions.size(); i++) {
-						if (base_type.class_type->functions[i]->name == p_method) {
-							r_arghint = _make_arguments_hint(base_type.class_type->functions[i], p_argidx);
-							return;
-						}
+				for (int i = 0; i < base_type.class_type->functions.size(); i++) {
+					if (base_type.class_type->functions[i]->name == p_method) {
+						r_arghint = _make_arguments_hint(base_type.class_type->functions[i], p_argidx);
+						return;
 					}
 				}
 

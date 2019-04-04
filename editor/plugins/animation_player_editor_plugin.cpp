@@ -841,6 +841,12 @@ void AnimationPlayerEditor::_update_player() {
 	onion_skinning->set_disabled(player == NULL);
 	pin->set_disabled(player == NULL);
 
+	if (!player) {
+		AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
+		EditorNode::get_singleton()->update_keying();
+		return;
+	}
+
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
 
@@ -851,12 +857,6 @@ void AnimationPlayerEditor::_update_player() {
 
 		if (player->get_assigned_animation() == E->get())
 			active_idx = animation->get_item_count() - 1;
-	}
-
-	if (!player) {
-		AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
-		EditorNode::get_singleton()->update_keying();
-		return;
 	}
 
 	updating = false;

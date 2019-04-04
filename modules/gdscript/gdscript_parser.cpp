@@ -282,7 +282,6 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				switch (tokenizer->get_token()) {
 					case GDScriptTokenizer::TK_CURSOR: {
-						completion_cursor = StringName();
 						completion_type = COMPLETION_GET_NODE;
 						completion_class = current_class;
 						completion_function = current_function;
@@ -2863,8 +2862,6 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->statements.push_back(op);
 				lv->assign_op = op;
 				lv->assign = assigned;
-
-				lv->assign_op = op;
 
 				if (!_end_statement()) {
 					_set_error("Expected end of statement (var)");
@@ -6179,8 +6176,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						return DataType();
 					}
 #ifdef DEBUG_ENABLED
-					if (var_op == Variant::OP_DIVIDE && argument_a_type.has_type && argument_a_type.kind == DataType::BUILTIN && argument_a_type.builtin_type == Variant::INT &&
-							argument_b_type.has_type && argument_b_type.kind == DataType::BUILTIN && argument_b_type.builtin_type == Variant::INT) {
+					if (var_op == Variant::OP_DIVIDE && argument_a_type.kind == DataType::BUILTIN && argument_a_type.builtin_type == Variant::INT &&
+							argument_b_type.kind == DataType::BUILTIN && argument_b_type.builtin_type == Variant::INT) {
 						_add_warning(GDScriptWarning::INTEGER_DIVISION, op->line);
 					}
 #endif // DEBUG_ENABLED
@@ -6889,10 +6886,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 
 #ifdef DEBUG_ENABLED
 			if (current_function && !for_completion && !is_static && p_call->arguments[0]->type == Node::TYPE_SELF && current_function->_static) {
-				if (current_function && current_function->_static && p_call->arguments[0]->type == Node::TYPE_SELF) {
-					_set_error("Can't call non-static function from a static function.", p_call->line);
-					return DataType();
-				}
+				_set_error("Can't call non-static function from a static function.", p_call->line);
+				return DataType();
 			}
 
 			if (check_types && !is_static && !is_initializer && base_type.is_meta_type) {
