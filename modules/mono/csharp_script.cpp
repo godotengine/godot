@@ -1577,7 +1577,7 @@ MonoObject *CSharpInstance::_internal_new_managed() {
 	// Search the constructor first, to fail with an error if it's not found before allocating anything else.
 	GDMonoMethod *ctor = script->script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
 	if (ctor == NULL) {
-		ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + script->get_path());
+		ERR_PRINTS("Cannot create script instance because the class does not define a parameterless constructor: " + script->get_path());
 
 		ERR_EXPLAIN("Constructor not found");
 		ERR_FAIL_V(NULL);
@@ -1966,7 +1966,7 @@ bool CSharpScript::_update_exports() {
 		GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), 0);
 
 		if (ctor == NULL) {
-			ERR_PRINTS("Cannot construct temporary MonoObject because the class does not define a default constructor: " + get_path());
+			ERR_PRINTS("Cannot construct temporary MonoObject because the class does not define a parameterless constructor: " + get_path());
 
 			ERR_EXPLAIN("Constructor not found");
 			ERR_FAIL_V(NULL);
@@ -2460,7 +2460,7 @@ CSharpInstance *CSharpScript::_create_instance(const Variant **p_args, int p_arg
 	GDMonoMethod *ctor = script_class->get_method(CACHED_STRING_NAME(dotctor), p_argcount);
 	if (ctor == NULL) {
 		if (p_argcount == 0) {
-			ERR_PRINTS("Cannot create script instance because the class does not define a default constructor: " + get_path());
+			ERR_PRINTS("Cannot create script instance because the class does not define a parameterless constructor: " + get_path());
 		}
 
 		ERR_EXPLAIN("Constructor not found");
