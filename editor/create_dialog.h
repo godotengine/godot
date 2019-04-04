@@ -59,7 +59,8 @@ class CreateDialog : public ConfirmationDialog {
 	String preferred_search_result_type;
 	EditorHelpBit *help_bit;
 	List<StringName> type_list;
-	Set<StringName> type_blacklist;
+	Vector<StringName> type_listv;
+	Vector<StringName> type_blacklist;
 
 	void _item_selected();
 
@@ -109,6 +110,8 @@ public:
 	String get_preferred_search_result_type();
 
 	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node");
+
+	void fs_changed();
 
 	CreateDialog();
 };

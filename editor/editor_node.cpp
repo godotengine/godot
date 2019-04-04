@@ -535,6 +535,16 @@ void EditorNode::_fs_changed() {
 
 		_exit_editor();
 	}
+
+	get_editor_data().refresh_type_db();
+
+	List<Node *> nodes;
+	get_tree()->get_nodes_in_group("create_dialogs", &nodes);
+	for (List<Node *>::Element *E = nodes.front(); E; E = E->next()) {
+		CreateDialog *c = Object::cast_to<CreateDialog>(E->get());
+		if (c)
+			c->fs_changed();
+	}
 }
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
@@ -3609,26 +3619,12 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 		script = p_object;
 	}
 
-	if (script.is_valid()) {
-		Ref<Script> base_script = script;
-		while (base_script.is_valid()) {
-			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
-			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-			if (icon_path.length())
-				return ResourceLoader::load(icon_path);
-
-			// should probably be deprecated in 4.x
-			StringName base = base_script->get_instance_base_type();
-			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
-				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
-				for (int i = 0; i < types.size(); ++i) {
-					if (types[i].script == base_script && types[i].icon.is_valid()) {
-						return types[i].icon;
-					}
-				}
-			}
-			base_script = base_script->get_base_script();
-		}
+	const TypeDB &tdb = get_editor_data().get_type_db();
+	while (script.is_valid()) {
+		const String &path = script->get_path();
+		if (tdb.path_exists(path))
+			return tdb.get_icon(tdb.get_class_by_path(path));
+		script = script->get_base_script();
 	}
 
 	// should probably be deprecated in 4.x
@@ -3651,47 +3647,20 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 		return gui_base->get_icon(p_class, "EditorIcons");
 	}
 
-	if (ScriptServer::is_global_class(p_class)) {
-		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
-		RES icon;
-
-		if (FileAccess::exists(icon_path)) {
-			icon = ResourceLoader::load(icon_path);
-			if (icon.is_valid())
-				return icon;
-		}
-
-		Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
-
-		while (script.is_valid()) {
-			String current_icon_path;
-			script->get_language()->get_global_class_name(script->get_path(), NULL, &current_icon_path);
-			if (FileAccess::exists(current_icon_path)) {
-				RES texture = ResourceLoader::load(current_icon_path);
-				if (texture.is_valid())
-					return texture;
-			}
-			script = script->get_base_script();
-		}
-
-		if (icon.is_null()) {
-			icon = gui_base->get_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
-		}
-
+	const TypeDB &tdb = get_editor_data().get_type_db();
+	StringName type = p_class;
+	RES icon;
+	while (tdb.class_exists(type) && icon.is_null()) {
+		icon = tdb.get_icon(type);
+		type = tdb.get_parent_class(type);
+	}
+	if (icon.is_null()) {
+		StringName native = tdb.get_native(p_class);
+		if (gui_base->has_icon(native))
+			icon = gui_base->get_icon(native, "EditorIcons");
+	}
+	if (icon.is_valid())
 		return icon;
-	}
-
-	const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
-	for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
-		const Vector<EditorData::CustomType> &ct = E->value();
-		for (int i = 0; i < ct.size(); ++i) {
-			if (ct[i].name == p_class) {
-				if (ct[i].icon.is_valid()) {
-					return ct[i].icon;
-				}
-			}
-		}
-	}
 
 	if (p_fallback.length() && gui_base->has_icon(p_fallback, "EditorIcons"))
 		return gui_base->get_icon(p_fallback, "EditorIcons");
@@ -5641,6 +5610,9 @@ EditorNode::EditorNode() {
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
 	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+
+	// Now that the theme exists (with class icons), initialize the type database
+	editor_data.refresh_type_db();
 
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);

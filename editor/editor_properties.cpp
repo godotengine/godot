@@ -2262,7 +2262,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			}
 
 			if (!obj) {
-				obj = EditorNode::get_editor_data().instance_custom_type(intype, "Resource");
+				obj = EditorNode::get_editor_data().instance_custom_type(intype);
 			}
 
 			ERR_BREAK(!obj);
@@ -2322,12 +2322,6 @@ void EditorPropertyResource::_update_menu_items() {
 	} else if (base_type != "") {
 		int idx = 0;
 
-		Vector<EditorData::CustomType> custom_resources;
-
-		if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-		}
-
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
 
 			String base = base_type.get_slice(",", i);
@@ -2335,57 +2329,22 @@ void EditorPropertyResource::_update_menu_items() {
 			Set<String> valid_inheritors;
 			valid_inheritors.insert(base);
 			List<StringName> inheritors;
-			ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
+			const TypeDB &tdb = EditorNode::get_editor_data().get_type_db();
+			tdb.get_inheritors_from_class(base.strip_edges(), &inheritors);
 
-			for (int j = 0; j < custom_resources.size(); j++) {
-				inheritors.push_back(custom_resources[j].name);
-			}
+			for (List<StringName>::Element *F = inheritors.front(); F; F = F->next()) {
+				String t = F->get();
 
-			List<StringName>::Element *E = inheritors.front();
-			while (E) {
-				valid_inheritors.insert(E->get());
-				E = E->next();
-			}
-
-			List<StringName> global_classes;
-			ScriptServer::get_global_class_list(&global_classes);
-			E = global_classes.front();
-			while (E) {
-				if (EditorNode::get_editor_data().script_class_is_parent(E->get(), base_type)) {
-					valid_inheritors.insert(E->get());
-				}
-				E = E->next();
-			}
-
-			for (Set<String>::Element *F = valid_inheritors.front(); F; F = F->next()) {
-				const String &t = F->get();
-
-				bool is_custom_resource = false;
-				Ref<Texture> icon;
-				if (!custom_resources.empty()) {
-					for (int j = 0; j < custom_resources.size(); j++) {
-						if (custom_resources[j].name == t) {
-							is_custom_resource = true;
-							if (custom_resources[j].icon.is_valid())
-								icon = custom_resources[j].icon;
-							break;
-						}
-					}
-				}
-
-				if (!is_custom_resource && !(ScriptServer::is_global_class(t) || ClassDB::can_instance(t)))
+				if (!tdb.can_instance(t))
 					continue;
+
+				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(t, base_type);
 
 				inheritors_array.push_back(t);
 
 				int id = TYPE_BASE_ID + idx;
 
-				if (!icon.is_valid() && has_icon(t, "EditorIcons")) {
-					icon = get_icon(t, "EditorIcons");
-				}
-
 				if (icon.is_valid()) {
-
 					menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
 				} else {
 

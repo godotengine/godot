@@ -479,56 +479,81 @@ EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 	return editor_plugins[p_idx];
 }
 
+void EditorData::get_custom_type_class_list(List<StringName> *p_classes) const {
+	ERR_FAIL_COND(!p_classes);
+	custom_types.get_key_list(p_classes);
+}
+
+StringName EditorData::get_custom_type_name(const String &p_path) const {
+	List<StringName> names;
+	get_custom_type_class_list(&names);
+	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
+		Ref<Script> script = custom_types[E->get()].script;
+		if (script.is_null())
+			continue;
+		if (script->get_path() == p_path)
+			return E->get();
+	}
+	return StringName();
+}
+
+Ref<Script> EditorData::get_custom_type_script(const StringName &p_type) const {
+	ERR_FAIL_COND_V(!custom_types.has(p_type), NULL);
+	return custom_types[p_type].script;
+}
+
+String EditorData::get_custom_type_path(const StringName &p_type) const {
+	ERR_FAIL_COND_V(!custom_types.has(p_type), String());
+	Ref<Script> script = custom_types[p_type].script;
+	ERR_FAIL_COND_V(script.is_null(), String());
+	return script->get_path();
+}
+
+StringName EditorData::get_custom_type_base(const StringName &p_type) const {
+	ERR_FAIL_COND_V(!custom_types.has(p_type), StringName());
+	return custom_types[p_type].base;
+}
+
+Ref<Texture> EditorData::get_custom_type_icon(const String &p_type) const {
+	ERR_FAIL_COND_V(!custom_types.has(p_type), NULL);
+	return custom_types[p_type].icon;
+}
+
 void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
 
+	ERR_FAIL_COND(custom_types.has(p_type));
+	ERR_FAIL_COND(ScriptServer::is_global_class(p_type));
 	ERR_FAIL_COND(p_script.is_null());
 	CustomType ct;
 	ct.name = p_type;
 	ct.icon = p_icon;
 	ct.script = p_script;
-	if (!custom_types.has(p_inherits)) {
-		custom_types[p_inherits] = Vector<CustomType>();
-	}
 
-	custom_types[p_inherits].push_back(ct);
+	custom_types[p_type] = ct;
 }
 
-Object *EditorData::instance_custom_type(const String &p_type, const String &p_inherits) {
+Object *EditorData::instance_custom_type(const String &p_type) {
 
-	if (get_custom_types().has(p_inherits)) {
+	ERR_FAIL_COND_V(!custom_types.has(p_type), NULL);
 
-		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
-			if (get_custom_types()[p_inherits][i].name == p_type) {
-				Ref<Script> script = get_custom_types()[p_inherits][i].script;
+	const CustomType &ct = custom_types[p_type];
+	Ref<Script> script = ct.script;
+	ERR_FAIL_COND_V(script.is_null(), NULL);
 
-				Object *ob = ClassDB::instance(p_inherits);
-				ERR_FAIL_COND_V(!ob, NULL);
-				if (ob->is_class("Node")) {
-					ob->call("set_name", p_type);
-				}
-				ob->set_script(script.get_ref_ptr());
-				return ob;
-			}
-		}
+	Object *ob = ClassDB::instance(script->get_instance_base_type());
+	ERR_FAIL_COND_V(!ob, NULL);
+
+	if (ob->is_class("Node")) {
+		ob->call("set_name", p_type);
 	}
+	ob->set_script(script.get_ref_ptr());
 
-	return NULL;
+	return ob;
 }
 
 void EditorData::remove_custom_type(const String &p_type) {
 
-	for (Map<String, Vector<CustomType> >::Element *E = custom_types.front(); E; E = E->next()) {
-
-		for (int i = 0; i < E->get().size(); i++) {
-			if (E->get()[i].name == p_type) {
-				E->get().remove(i);
-				if (E->get().empty()) {
-					custom_types.erase(E->key());
-				}
-				return;
-			}
-		}
-	}
+	custom_types.erase(p_type);
 }
 
 int EditorData::add_edited_scene(int p_at_pos) {

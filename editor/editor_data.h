@@ -36,6 +36,7 @@
 #include "core/undo_redo.h"
 #include "editor/editor_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "editor/type_db.h"
 #include "scene/resources/texture.h"
 
 class EditorHistory {
@@ -110,7 +111,8 @@ class EditorData {
 public:
 	struct CustomType {
 
-		String name;
+		StringName name;
+		StringName base;
 		Ref<Script> script;
 		Ref<Texture> icon;
 	};
@@ -129,12 +131,15 @@ public:
 private:
 	Vector<EditorPlugin *> editor_plugins;
 
+	TypeDB type_db;
+
 	struct PropertyData {
 
 		String name;
 		Variant value;
 	};
-	Map<String, Vector<CustomType> > custom_types;
+	//Map<String, Vector<CustomType> > custom_types;
+	HashMap<StringName, CustomType> custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
@@ -149,11 +154,16 @@ private:
 	HashMap<StringName, String> _script_class_icon_paths;
 	HashMap<String, StringName> _script_class_file_to_path;
 
+	HashMap<StringName, List<StringName> > _inheritors_cache;
+	bool _inheritors_dirty;
+
 public:
 	EditorPlugin *get_editor(Object *p_object);
 	EditorPlugin *get_subeditor(Object *p_object);
 	Vector<EditorPlugin *> get_subeditors(Object *p_object);
 	EditorPlugin *get_editor(String p_name);
+	const TypeDB &get_type_db() { return type_db; }
+	void refresh_type_db() { type_db.refresh(); }
 
 	void copy_object_params(Object *p_object);
 	void paste_object_params(Object *p_object);
@@ -178,9 +188,15 @@ public:
 	void restore_editor_global_states();
 
 	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
-	Object *instance_custom_type(const String &p_type, const String &p_inherits);
+	Object *instance_custom_type(const String &p_type);
 	void remove_custom_type(const String &p_type);
-	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
+	void get_custom_type_class_list(List<StringName> *p_classes) const;
+	StringName get_custom_type_name(const String &p_path) const;
+	Ref<Script> get_custom_type_script(const StringName &p_type) const;
+	String get_custom_type_path(const StringName &p_type) const;
+	StringName get_custom_type_base(const StringName &p_type) const;
+	Ref<Texture> get_custom_type_icon(const String &p_type) const;
+	bool is_custom_type(const StringName &p_type) const { return custom_types.has(p_type); }
 
 	int add_edited_scene(int p_at_pos);
 	void move_edited_scene_index(int p_idx, int p_to_idx);
