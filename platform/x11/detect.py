@@ -1,8 +1,8 @@
 import os
 import platform
 import sys
-from compat import decode_utf8
 from methods import get_compiler_version, using_gcc
+
 
 def is_active():
     return True

@@ -1,5 +1,4 @@
 import os
-import sys
 
 
 def is_active():

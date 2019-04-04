@@ -257,7 +257,6 @@ def find_msbuild_windows():
 
 def mono_build_solution(source, target, env):
     import subprocess
-    import mono_reg_utils as monoreg
     from shutil import copyfile
 
     sln_path = os.path.abspath(str(source[0]))
