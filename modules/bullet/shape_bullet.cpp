@@ -510,16 +510,17 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	// Compute min and max heights if not specified.
 	if (!d.has("min_height") && !d.has("max_height")) {
 
-		PoolVector<real_t>::Read r = heights.read();
-		int heights_size = heights.size();
+		PoolVector<real_t>::Read r = l_heights.read();
+		int heights_size = l_heights.size();
 
 		for (int i = 0; i < heights_size; ++i) {
 			real_t h = r[i];
 
-			if (h < l_min_height)
+			if (h < l_min_height) {
 				l_min_height = h;
-			else if (h > l_max_height)
+			} else if (h > l_max_height) {
 				l_max_height = h;
+			}
 		}
 	}
 
