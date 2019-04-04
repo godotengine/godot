@@ -658,12 +658,14 @@ void SceneTree::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (!Engine::get_singleton()->is_editor_hint()) {
-				get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
+				get_root()->propagate_notification(p_notification);
 			}
 		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
 			notify_group_flags(GROUP_CALL_REALTIME | GROUP_CALL_MULTILEVEL, "input", NOTIFICATION_WM_UNFOCUS_REQUEST);
+
+			get_root()->propagate_notification(p_notification);
 
 		} break;
 
