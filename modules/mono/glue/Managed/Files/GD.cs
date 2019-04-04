@@ -18,7 +18,7 @@ namespace Godot
             return godot_icall_GD_bytes2var(bytes);
         }
 
-        public static object Convert(object what, int type)
+        public static object Convert(object what, Variant.Type type)
         {
             return godot_icall_GD_convert(what, type);
         }
@@ -200,7 +200,7 @@ namespace Godot
         internal extern static object godot_icall_GD_bytes2var(byte[] bytes);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static object godot_icall_GD_convert(object what, int type);
+        internal extern static object godot_icall_GD_convert(object what, Variant.Type type);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static int godot_icall_GD_hash(object var);
