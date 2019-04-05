@@ -283,8 +283,9 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 		rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_name);
 	}
 
-	ERR_EXPLAIN("RPC '" + String(p_name) + "' is not allowed from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
-	ERR_FAIL_COND(!_can_call_mode(p_node, rpc_mode, p_from));
+	bool can_call = _can_call_mode(p_node, rpc_mode, p_from);
+	ERR_EXPLAIN("RPC '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND(!can_call);
 
 	int argc = p_packet[p_offset];
 	Vector<Variant> args;
@@ -332,8 +333,9 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 		rset_mode = p_node->get_script_instance()->get_rset_mode(p_name);
 	}
 
-	ERR_EXPLAIN("RSET '" + String(p_name) + "' is not allowed from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
-	ERR_FAIL_COND(!_can_call_mode(p_node, rset_mode, p_from));
+	bool can_call = _can_call_mode(p_node, rset_mode, p_from);
+	ERR_EXPLAIN("RSET '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND(!can_call);
 
 	Variant value;
 	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, allow_object_decoding || network_peer->is_object_decoding_allowed());
