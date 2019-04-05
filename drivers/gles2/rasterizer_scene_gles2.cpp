@@ -1566,8 +1566,10 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 
 			if (s->index_array_len > 0) {
 				glDrawElements(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
+				storage->info.render.vertices_count += s->index_array_len;
 			} else {
 				glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
+				storage->info.render.vertices_count += s->array_len;
 			}
 			/*
 			if (p_element->instance->skeleton.is_valid() && s->attribs[VS::ARRAY_BONES].enabled && s->attribs[VS::ARRAY_WEIGHTS].enabled) {
@@ -1637,8 +1639,10 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 
 				if (s->index_array_len > 0) {
 					glDrawElements(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0);
+					storage->info.render.vertices_count += s->index_array_len;
 				} else {
 					glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
+					storage->info.render.vertices_count += s->array_len;
 				}
 			}
 
@@ -2182,6 +2186,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	float lightmap_energy = 1.0;
 	bool prev_use_lightmap_capture = false;
 
+	storage->info.render.draw_call_count += p_element_count;
+
 	for (int i = 0; i < p_element_count; i++) {
 		RenderList::Element *e = p_elements[i];
 
@@ -2389,11 +2395,17 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 		if (e->owner != prev_owner || e->geometry != prev_geometry || skeleton != prev_skeleton) {
 			_setup_geometry(e, skeleton);
+			storage->info.render.surface_switch_count++;
 		}
 
 		bool shader_rebind = false;
 		if (rebind || material != prev_material) {
+
+			storage->info.render.material_switch_count++;
 			shader_rebind = _setup_material(material, p_reverse_cull, p_alpha_pass, Size2i(skeleton ? skeleton->size * 3 : 0, 0));
+			if (shader_rebind) {
+				storage->info.render.shader_rebind_count++;
+			}
 		}
 
 		if (i == 0 || shader_rebind) { //first time must rebind
@@ -2636,6 +2648,8 @@ void RasterizerSceneGLES2::_draw_sky(RasterizerStorageGLES2::Sky *p_sky, const C
 void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	Transform cam_transform = p_cam_transform;
+
+	storage->info.render.object_count += p_cull_count;
 
 	GLuint current_fb = 0;
 	Environment *env = NULL;
