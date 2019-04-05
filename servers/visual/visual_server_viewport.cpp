@@ -35,6 +35,33 @@
 #include "visual_server_globals.h"
 #include "visual_server_scene.h"
 
+static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewport, VisualServerCanvas::Canvas *p_canvas, VisualServerViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
+
+	Transform2D xf = p_viewport->global_transform;
+
+	float scale = 1.0;
+	if (p_viewport->canvas_map.has(p_canvas->parent)) {
+		xf = xf * p_viewport->canvas_map[p_canvas->parent].transform;
+		scale = p_canvas->parent_scale;
+	}
+
+	xf = xf * p_canvas_data->transform;
+
+	if (scale != 1.0 && !VSG::canvas->disable_scale) {
+		Vector2 pivot = p_vp_size * 0.5;
+		Transform2D xfpivot;
+		xfpivot.set_origin(pivot);
+		Transform2D xfscale;
+		xfscale.scale(Vector2(scale, scale));
+
+		xf = xfpivot.affine_inverse() * xf;
+		xf = xfscale * xf;
+		xf = xfpivot * xf;
+	}
+
+	return xf;
+}
+
 void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
 
 	/* Camera should always be BEFORE any other 3D */
@@ -86,9 +113,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 		for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
 
-			Transform2D xf = p_viewport->global_transform * E->get().transform;
-
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas *>(E->get().canvas);
+
+			Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
 
 			//find lights in canvas
 
@@ -193,7 +220,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas *>(E->get()->canvas);
 
-			Transform2D xform = p_viewport->global_transform * E->get()->transform;
+			Transform2D xform = _canvas_get_transform(p_viewport, canvas, E->get(), clip_rect.size);
 
 			RasterizerCanvas::Light *canvas_lights = NULL;
 

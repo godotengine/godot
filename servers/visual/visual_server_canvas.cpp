@@ -319,6 +319,19 @@ void VisualServerCanvas::canvas_set_modulate(RID p_canvas, const Color &p_color)
 	canvas->modulate = p_color;
 }
 
+void VisualServerCanvas::canvas_set_disable_scale(bool p_disable) {
+	disable_scale = p_disable;
+}
+
+void VisualServerCanvas::canvas_set_parent(RID p_canvas, RID p_parent, float p_scale) {
+
+	Canvas *canvas = canvas_owner.get(p_canvas);
+	ERR_FAIL_COND(!canvas);
+
+	canvas->parent = p_parent;
+	canvas->parent_scale = p_scale;
+}
+
 RID VisualServerCanvas::canvas_item_create() {
 
 	Item *canvas_item = memnew(Item);
@@ -1434,4 +1447,5 @@ bool VisualServerCanvas::free(RID p_rid) {
 }
 
 VisualServerCanvas::VisualServerCanvas() {
+	disable_scale = false;
 }

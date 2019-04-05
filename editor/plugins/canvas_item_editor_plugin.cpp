@@ -4151,6 +4151,14 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			_focus_selection(p_op);
 
 		} break;
+		case PREVIEW_CANVAS_SCALE: {
+
+			bool preview = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE));
+			preview = !preview;
+			VS::get_singleton()->canvas_set_disable_scale(!preview);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE), preview);
+
+		} break;
 		case SKELETON_MAKE_BONES: {
 
 			Map<Node *, Object *> &selection = editor_selection->get_selection();
@@ -4824,6 +4832,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/center_selection", TTR("Center Selection"), KEY_F), VIEW_CENTER_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KEY_MASK_SHIFT | KEY_F), VIEW_FRAME_TO_SELECTION);
+	p->add_separator();
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale"), KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_P), PREVIEW_CANVAS_SCALE);
 
 	presets_menu = memnew(MenuButton);
 	presets_menu->set_text(TTR("Layout"));
@@ -5421,6 +5431,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	label_desc->add_constant_override("line_spacing", 0);
 	label_desc->hide();
 	editor->get_gui_base()->add_child(label_desc);
+	VS::get_singleton()->canvas_set_disable_scale(true);
 }
 
 CanvasItemEditorViewport::~CanvasItemEditorViewport() {
