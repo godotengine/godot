@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "button.h"
+
 #include "core/translation.h"
 #include "servers/visual_server.h"
 
@@ -102,6 +103,7 @@ void Button::_notification(int p_what) {
 
 					break;
 				}
+				FALLTHROUGH;
 			}
 			case DRAW_PRESSED: {
 

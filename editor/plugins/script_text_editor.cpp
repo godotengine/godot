@@ -910,7 +910,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->set_line_as_breakpoint(line, dobreak);
 				ScriptEditor::get_singleton()->get_debugger()->set_breakpoint(script->get_path(), line + 1, dobreak);
 			}
-		}
+		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
 
 			List<int> bpoints;
