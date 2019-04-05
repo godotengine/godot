@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  file_access_jandroid.h                                               */
+/*  java_godot_wrapper.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,55 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FILE_ACCESS_JANDROID_H
-#define FILE_ACCESS_JANDROID_H
+// note, swapped java and godot around in the file name so all the java
+// wrappers are together
 
-#include "core/os/file_access.h"
-#include "java_godot_lib_jni.h"
-class FileAccessJAndroid : public FileAccess {
+#ifndef JAVA_GODOT_WRAPPER_H
+#define JAVA_GODOT_WRAPPER_H
 
-	static jobject io;
-	static jclass cls;
+#include <android/log.h>
+#include <jni.h>
 
-	static jmethodID _file_open;
-	static jmethodID _file_get_size;
-	static jmethodID _file_seek;
-	static jmethodID _file_tell;
-	static jmethodID _file_eof;
-	static jmethodID _file_read;
-	static jmethodID _file_close;
+#include "string_android.h"
 
-	int id;
-	static FileAccess *create_jandroid();
+// Class that makes functions in java/src/org/godotengine/godot/Godot.java callable from C++
+class GodotJavaWrapper {
+private:
+	jobject godot_instance;
+	jclass cls;
+
+	jmethodID _on_video_init = 0;
+	jmethodID _restart = 0;
+	jmethodID _finish = 0;
+	jmethodID _set_keep_screen_on = 0;
+	jmethodID _alert = 0;
+	jmethodID _get_GLES_version_code = 0;
+	jmethodID _get_clipboard = 0;
+	jmethodID _set_clipboard = 0;
+	jmethodID _request_permission = 0;
 
 public:
-	virtual Error _open(const String &p_path, int p_mode_flags); ///< open a file
-	virtual void close(); ///< close a file
-	virtual bool is_open() const; ///< true when file is open
+	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
+	~GodotJavaWrapper();
 
-	virtual void seek(size_t p_position); ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0); ///< seek from the end of file
-	virtual size_t get_position() const; ///< get position in the file
-	virtual size_t get_len() const; ///< get size of the file
+	jobject get_activity();
+	jobject get_member_object(const char *p_name, const char *p_class, JNIEnv *p_env = NULL);
 
-	virtual bool eof_reached() const; ///< reading passed EOF
+	jobject get_class_loader();
 
-	virtual uint8_t get_8() const; ///< get a byte
-	virtual int get_buffer(uint8_t *p_dst, int p_length) const;
-
-	virtual Error get_error() const; ///< get last error
-
-	virtual void flush();
-	virtual void store_8(uint8_t p_dest); ///< store a byte
-
-	virtual bool file_exists(const String &p_path); ///< return true if a file exists
-
-	static void setup(jobject p_io);
-
-	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
-
-	FileAccessJAndroid();
-	~FileAccessJAndroid();
+	void gfx_init(bool gl2);
+	void on_video_init(JNIEnv *p_env = NULL);
+	void restart(JNIEnv *p_env = NULL);
+	void force_quit(JNIEnv *p_env = NULL);
+	void set_keep_screen_on(bool p_enabled);
+	void alert(const String &p_message, const String &p_title);
+	int get_gles_version_code();
+	bool has_get_clipboard();
+	String get_clipboard();
+	bool has_set_clipboard();
+	void set_clipboard(const String &p_text);
+	bool request_permission(const String &p_name);
 };
 
-#endif // FILE_ACCESS_JANDROID_H
+#endif /* !JAVA_GODOT_WRAPPER_H */
