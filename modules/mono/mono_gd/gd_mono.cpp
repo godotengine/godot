@@ -212,7 +212,7 @@ void GDMono::initialize() {
 	String config_dir;
 
 #ifdef TOOLS_ENABLED
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
 	mono_reg_info = MonoRegUtils::find_mono();
 
 	if (mono_reg_info.assembly_dir.length() && DirAccess::exists(mono_reg_info.assembly_dir)) {
@@ -222,7 +222,7 @@ void GDMono::initialize() {
 	if (mono_reg_info.config_dir.length() && DirAccess::exists(mono_reg_info.config_dir)) {
 		config_dir = mono_reg_info.config_dir;
 	}
-#elif OSX_ENABLED
+#elif defined(OSX_ENABLED)
 	const char *c_assembly_rootdir = mono_assembly_getrootdir();
 	const char *c_config_dir = mono_get_config_dir();
 

@@ -65,7 +65,7 @@ private:
 		const Pair *a = _cowdata.ptr();
 		int middle = 0;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 		if (low > high)
 			ERR_PRINT("low > high, this may be a bug");
 #endif

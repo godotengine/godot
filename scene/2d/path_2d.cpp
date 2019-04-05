@@ -95,7 +95,7 @@ void Path2D::_notification(int p_what) {
 			return;
 		}
 
-#if TOOLS_ENABLED
+#ifdef TOOLS_ENABLED
 		const float line_width = 2 * EDSCALE;
 #else
 		const float line_width = 2;

@@ -502,11 +502,11 @@ GodotSharpEditor::GodotSharpEditor(EditorNode *p_editor) {
 
 	String settings_hint_str = "Disabled";
 
-#ifdef WINDOWS_ENABLED
+#if defined(WINDOWS_ENABLED)
 	settings_hint_str += ",MonoDevelop,Visual Studio Code";
-#elif OSX_ENABLED
+#elif defined(OSX_ENABLED)
 	settings_hint_str += ",Visual Studio,MonoDevelop,Visual Studio Code";
-#elif UNIX_ENABLED
+#elif defined(UNIX_ENABLED)
 	settings_hint_str += ",MonoDevelop,Visual Studio Code";
 #endif
 
