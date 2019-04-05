@@ -5662,19 +5662,29 @@ void TextEdit::_confirm_completion() {
 	cursor_set_column(cursor.column - completion_base.length(), false);
 	insert_text_at_cursor(completion_current);
 
-	// When inserted into the middle of an existing string, don't add an unnecessary quote
+	// When inserted into the middle of an existing string/method, don't add an unnecessary quote/bracket.
 	String line = text[cursor.line];
 	CharType next_char = line[cursor.column];
 	CharType last_completion_char = completion_current[completion_current.length() - 1];
 
-	if ((last_completion_char == '"' || last_completion_char == '\'') &&
-			last_completion_char == next_char) {
+	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
 		_base_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 	}
 
-	if (last_completion_char == '(' && auto_brace_completion_enabled) {
-		insert_text_at_cursor(")");
-		cursor.column--;
+	if (last_completion_char == '(') {
+
+		if (next_char == last_completion_char) {
+			_base_remove_text(cursor.line, cursor.column - 1, cursor.line, cursor.column);
+		} else if (auto_brace_completion_enabled) {
+			insert_text_at_cursor(")");
+			cursor.column--;
+		}
+	} else if (last_completion_char == ')' && next_char == '(') {
+
+		_base_remove_text(cursor.line, cursor.column - 2, cursor.line, cursor.column);
+		if (line[cursor.column + 1] != ')') {
+			cursor.column--;
+		}
 	}
 
 	end_complex_operation();
@@ -5869,7 +5879,6 @@ void TextEdit::code_complete(const Vector<String> &p_strings, bool p_forced) {
 	completion_current = "";
 	completion_index = 0;
 	_update_completion_candidates();
-	//
 }
 
 String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
