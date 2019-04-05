@@ -56,6 +56,7 @@ class ContextGL_SDL : public ContextGL {
 	bool use_vsync;
 
 	friend struct ContextGL_SDL_Private;
+	int width, height;
 public:
 	virtual void release_current();
 	virtual void make_current();

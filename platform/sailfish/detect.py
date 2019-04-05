@@ -73,7 +73,7 @@ def get_flags():
         ('builtin_libpng', False),
         ('builtin_openssl', False),
         ('builtin_zlib', False),
-        # ('builtin_libvpx', False),
+        ('builtin_libvpx', False),
         ('builtin_libwebp', False)
     ]
 

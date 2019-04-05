@@ -572,29 +572,31 @@ unsigned int OS_SDL::get_mouse_button_state(uint32_t button_mask, bool refresh) 
 	return state;
 }
 
+#ifdef SAILFISH_FORCE_LANDSCAPE	
 void OS_SDL::fix_touch_position(Vector2 &pos) {
-		if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
-				OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE) { 
-			// only for landscape mode
-			int w, h;
-			SDL_GetWindowSize(sdl_window, &w, &h);
-			float coef = ((float)w) / ((float)h);
-			/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
-			pos = Point2(pos.y, w - pos.x);
-			/// coefficient correction
-			pos.x *= coef;
-			pos.y /= coef;
-		} else if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE) {
-			int w, h;
-			SDL_GetWindowSize(sdl_window, &w, &h);
-			float coef = ((float)w) / ((float)h);
-			/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
-			pos = Point2(h - pos.y, pos.x);
-			/// coefficient correction
-			pos.x *= coef;
-			pos.y /= coef;
-		}
+	if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_LANDSCAPE ||
+			OS::get_singleton()->get_screen_orientation() == OS::SCREEN_SENSOR_LANDSCAPE) {
+		// only for landscape mode
+		int w, h;
+		SDL_GetWindowSize(sdl_window, &w, &h);
+		float coef = ((float)w) / ((float)h);
+		/// QT_EXTENDED_SURFACE_ORIENTATION_LANDSCAPEORIENTATION
+		pos = Point2(pos.y, w - pos.x);
+		/// coefficient correction
+		pos.x *= coef;
+		pos.y /= coef;
+	} else if (OS::get_singleton()->get_screen_orientation() == OS::SCREEN_REVERSE_LANDSCAPE) {
+		int w, h;
+		SDL_GetWindowSize(sdl_window, &w, &h);
+		float coef = ((float)w) / ((float)h);
+		/// QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION
+		pos = Point2(h - pos.y, pos.x);
+		/// coefficient correction
+		pos.x *= coef;
+		pos.y /= coef;
 	}
+}
+#endif 
 
 void OS_SDL::process_events() {
 	SDL_Event event;
@@ -609,12 +611,17 @@ void OS_SDL::process_events() {
 
 	//  if (!window_has_focus) {
 	// 	while (SDL_PollEvent(&event)) {
-	// 		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-	// 			if(OS::get_singleton()->is_stdout_verbose())
-	// 					OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
-	// 			minimized = false;
-	// 			window_has_focus = true;
-	// 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	// 		if (event.type == SDL_WINDOWEVENT) {
+	// 			switch(event.window.event) {
+	// 			case SDL_WINDOWEVENT_FOCUS_GAINED:
+	// 			case SDL_WINDOWEVENT_ENTER:
+	// 			case SDL_WINDOWEVENT_SHOWN:
+	// 				if(OS::get_singleton()->is_stdout_verbose())
+	// 						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_GAINED;\n");
+	// 				minimized = false;
+	// 				window_has_focus = true;
+	// 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	// 			}
 	// 		}
 	// 	}
 	// 	return;
@@ -703,7 +710,7 @@ void OS_SDL::process_events() {
 			continue; // Probably not a good pattern, but I'm not a fan of else-if in this case.
 		}
 
-		if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
+		else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
 			/* exit in case of a mouse button press */
 			last_timestamp = event.button.timestamp;
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -735,7 +742,7 @@ void OS_SDL::process_events() {
 		}
 
 		// Ahh, good ol' abstractions. :3
-		if (event.type == SDL_MOUSEMOTION) {
+		else if (event.type == SDL_MOUSEMOTION) {
 			last_timestamp = event.motion.timestamp;
 
 			// Motion is also simple.
@@ -771,7 +778,7 @@ void OS_SDL::process_events() {
 		}
 
 #if defined(TOUCH_ENABLED)
-		if( event.type ==  SDL_FINGERDOWN || event.type == SDL_FINGERUP )
+		else if( event.type ==  SDL_FINGERDOWN || event.type == SDL_FINGERUP )
 		{
 			// if(OS::get_singleton()->is_stdout_verbose())
 			// 	print_line("SDL_FINGERDOW | SDL_FINGERUP");
@@ -851,7 +858,7 @@ void OS_SDL::process_events() {
 			continue;
 		}
 
-		if( event.type ==  SDL_FINGERMOTION )
+		else if( event.type ==  SDL_FINGERMOTION )
 		{
 			Ref<InputEventScreenDrag> input_event;
 			input_event.instance();
@@ -889,47 +896,6 @@ void OS_SDL::process_events() {
 			continue;
 		}//*/
 #endif
-		/*if (event.type == SDL_MOUSEWHEEL) {
-			last_timestamp = event.wheel.timestamp;
-
-			uint32_t dir = event.wheel.direction;
-			int32_t amount_x = event.wheel.x;
-			int32_t amount_y = event.wheel.y;
-			int position_x = 0;
-			int position_y = 0;
-			ButtonList button;
-
-			if (dir == SDL_MOUSEWHEEL_FLIPPED) {
-				amount_x *= -1;
-				amount_y *= -1;
-			}
-
-			if (amount_y < 0)
-				button = BUTTON_WHEEL_DOWN;
-			else if (amount_y > 0)
-				button = BUTTON_WHEEL_UP;
-			else if (amount_x < 0)
-				button = BUTTON_WHEEL_RIGHT;
-			else if (amount_x > 0)
-				button = BUTTON_WHEEL_LEFT;
-
-			uint32_t button_state = SDL_GetMouseState(&position_x, &position_y);
-
-			Ref<InputEventMouseButton> sc;
-			sc.instance();
-
-			get_key_modifier_state(sc);
-			sc->set_button_mask(get_mouse_button_state(button_state, false));
-			sc->set_position(Vector2(position_x, position_y));
-			sc->set_global_position(sc->get_position());
-			sc->set_button_index(button);
-			sc->set_pressed(true);
-			input->parse_input_event(sc);
-			sc->set_pressed(false);
-			input->parse_input_event(sc);
-
-			continue;
-		}*/
 
 		// Outside of text input mode. Events created here won't have unicode mappings.
 		if (event.type == SDL_KEYDOWN && text_edit_mode == SDL_FALSE) {
@@ -961,7 +927,9 @@ void OS_SDL::process_events() {
 			input->parse_input_event(k);
 			continue;
 			// If we're in text input mode.
-		} else if (text_edit_mode == SDL_TRUE) {
+		} 
+		
+		else if (event.type == SDL_KEYDOWN && text_edit_mode == SDL_TRUE) {
 			SDL_Keysym keysym = event.key.keysym;
 			SDL_Keycode keycode = keysym.sym;
 
@@ -1065,9 +1033,9 @@ void OS_SDL::process_events() {
 		// }
 	}
 
-	if (do_mouse_warp) {
-		// Handle mouse warp here if needed. Not sure.
-	}
+	// if (do_mouse_warp) {
+	// 	// Handle mouse warp here if needed. Not sure.
+	// }
 
 	if (dropped_files.size() > 0) {
 		main_loop->drop_files(dropped_files);

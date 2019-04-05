@@ -217,6 +217,8 @@ Error ContextGL_SDL::initialize() {
 	SDL_GetCurrentDisplayMode(0, &dm);
 	OS::get_singleton()->print("Resolution is: %ix%i\n",dm.w,dm.h);
 	OS::get_singleton()->print("Try create SDL_Window\n");
+	width = dm.w;
+	height = dm.h;
 
 	sdl_window = SDL_CreateWindow("Godot", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w, dm.h, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN);
 	ERR_FAIL_COND_V(!sdl_window, ERR_UNCONFIGURED);
@@ -235,13 +237,20 @@ Error ContextGL_SDL::initialize() {
 	//sdl_window.
 
 	SDL_WindowData* wdata = (SDL_WindowData*)sdl_window->driverdata;
-	// SDL_VideoData* sdl_videodata = wdata->waylandData;
+
+	SDL_VideoData* sdl_videodata = wdata->waylandData;
 	// qt_extended_surface_set_content_orientation(wdata->extended_surface, QT_EXTENDED_SURFACE_ORIENTATION_INVERTEDLANDSCAPEORIENTATION );
 	p->qt_ext_surface = wdata->extended_surface;
 	p->output = (struct wl_output *)sdl_window->fullscreen_mode.driverdata;
 	p->orientation = OS::SCREEN_PORTRAIT;
-	if(OS::get_singleton()->is_stdout_verbose())
+	if(OS::get_singleton()->is_stdout_verbose()) 
+	{
+		if( sdl_videodata != NULL )
+		{
+			OS::get_singleton()->print("SDL videdata handled;\n");
+		}
 		OS::get_singleton()->print("Try handle wl_output;\n");
+	}
 	if(p->output)
 		wl_output_add_listener(p->output, &output_listener, p);
 	else if(OS::get_singleton()->is_stdout_verbose())
@@ -252,17 +261,17 @@ Error ContextGL_SDL::initialize() {
 }
 
 int ContextGL_SDL::get_window_width() {
-	int w;
-	SDL_GetWindowSize(sdl_window, &w, NULL);
+	// int w;
+	// SDL_GetWindowSize(sdl_window, &w, NULL);
 
-	return w;
+	return width;
 }
 
 int ContextGL_SDL::get_window_height() {
-	int h;
-	SDL_GetWindowSize(sdl_window, NULL, &h);
+	// int h;
+	// SDL_GetWindowSize(sdl_window, NULL, &h);
 
-	return h;
+	return height;
 }
 
 void ContextGL_SDL::set_use_vsync(bool p_use) {
@@ -284,6 +293,7 @@ SDL_Window* ContextGL_SDL::get_window_pointer() {
 }
 
 void ContextGL_SDL::set_screen_orientation(OS::ScreenOrientation p_orientation) {
+#ifdef SAILFISH_FORCE_LANDSCAPE	
 	if(p->qt_ext_surface)
 	switch(p_orientation) {
 	case OS::SCREEN_LANDSCAPE:
@@ -305,6 +315,7 @@ void ContextGL_SDL::set_screen_orientation(OS::ScreenOrientation p_orientation) 
 	case OS::SCREEN_SENSOR:
 		break;
 	}
+#endif
 	p->orientation = p_orientation;
 }
 

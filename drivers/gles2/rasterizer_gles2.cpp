@@ -396,12 +396,12 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 
 		} else {
 			//scale vertically
-			OS::get_singleton()->print("Resolution is: %ix%i\n", window_w, window_h );
+			// OS::get_singleton()->print("Resolution is: %ix%i\n", window_w, window_h );
 			screenrect.size.x = window_w;
 			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
 			screenrect.position.y = (window_h - screenrect.size.y) / 2;
-			OS::get_singleton()->print("ScreenRect pos( %4.2fx%4.2f ) and size ( %4.2fx%4.2f)\n", 
-				screenrect.position.x, screenrect.position.y, screenrect.size.x, screenrect.size.y );
+			// OS::get_singleton()->print("ScreenRect pos( %4.2fx%4.2f ) and size ( %4.2fx%4.2f)\n", 
+				// screenrect.position.x, screenrect.position.y, screenrect.size.x, screenrect.size.y );
 		}
 	} else {
 		
