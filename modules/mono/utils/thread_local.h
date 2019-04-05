@@ -39,7 +39,7 @@
 #error Platform or compiler not supported
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__)
 
 #ifdef HAVE_GCC___THREAD
 #define _THREAD_LOCAL_(m_t) __thread m_t
@@ -47,7 +47,7 @@
 #define USE_CUSTOM_THREAD_LOCAL
 #endif
 
-#elif _MSC_VER
+#elif defined(_MSC_VER)
 
 #ifdef HAVE_DECLSPEC_THREAD
 #define _THREAD_LOCAL_(m_t) __declspec(thread) m_t

@@ -597,7 +597,7 @@ Error GDScript::reload(bool p_keep_state) {
 			return err;
 		}
 	}
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	for (const List<GDScriptWarning>::Element *E = parser.get_warnings().front(); E; E = E->next()) {
 		const GDScriptWarning &warning = E->get();
 		if (ScriptDebugger::get_singleton()) {
