@@ -4182,6 +4182,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!skeleton_show_bones)
 					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
 			}
+			_queue_update_bone_list();
 			viewport->update();
 
 		} break;
@@ -4201,6 +4202,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!skeleton_show_bones)
 					skeleton_menu->get_popup()->activate_item(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES));
 			}
+			_queue_update_bone_list();
 			viewport->update();
 
 		} break;
