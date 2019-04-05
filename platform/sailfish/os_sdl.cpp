@@ -130,7 +130,7 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	// no drop event in sailfish
 	//SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	//SDL_EventState(SDL_DROPTEXT, SDL_ENABLE);
-
+	
 // maybe contextgl wants to be in charge of creating the window
 //print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 //#if defined(OPENGL_ENABLED)
@@ -607,7 +607,7 @@ void OS_SDL::process_events() {
 	SDL_bool text_edit_mode = SDL_IsTextInputActive();
 	Vector<String> dropped_files;
 
-	// if (!window_has_focus) {
+	//  if (!window_has_focus) {
 	// 	while (SDL_PollEvent(&event)) {
 	// 		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
 	// 			if(OS::get_singleton()->is_stdout_verbose())
@@ -662,7 +662,20 @@ void OS_SDL::process_events() {
 					minimized = false;
 					window_has_focus = true;
 					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-					// FIXME: Mot sure if we should handle the mouse grabbing manually or if SDL will handle it. Test.
+					break;
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_FOCUS_LOST;\n");
+					minimized = true;
+					window_has_focus = false;
+					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+					break;
+				case SDL_WINDOWEVENT_SHOWN:
+					if(OS::get_singleton()->is_stdout_verbose())
+						OS::get_singleton()->print("SDL_WINDOWEVENT_SHOWN;\n");
+					minimized = false;
+					window_has_focus = true;
+					main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 					break;
 				case SDL_WINDOWEVENT_RESIZED:
 					if(OS::get_singleton()->is_stdout_verbose())
@@ -835,6 +848,7 @@ void OS_SDL::process_events() {
 				touch.index[get_index] = -1;
 				input->parse_input_event(input_event);
 			}
+			continue;
 		}
 
 		if( event.type ==  SDL_FINGERMOTION )
@@ -872,6 +886,7 @@ void OS_SDL::process_events() {
 				input->parse_input_event(input_event);
 				curr_pos_elem->value() = pos;
 			}
+			continue;
 		}//*/
 #endif
 		/*if (event.type == SDL_MOUSEWHEEL) {
@@ -1041,6 +1056,13 @@ void OS_SDL::process_events() {
 
 		// 	continue;
 		// }
+
+		// if (event.type == SDL_SYSWMEVENT) {
+			if(OS::get_singleton()->is_stdout_verbose()) {
+				OS::get_singleton()->print("SDL_Event %d;\n",event.type);
+				continue;
+			}
+		// }
 	}
 
 	if (do_mouse_warp) {
@@ -1077,7 +1099,7 @@ void OS_SDL::set_clipboard(const String &p_text) {
 	OS::set_clipboard(p_text);
 
 	SDL_SetClipboardText((const char *)p_text.utf8().get_data());
-};
+}
 
 String OS_SDL::get_clipboard() const {
 
