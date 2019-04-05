@@ -240,6 +240,10 @@ bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
 	return EditorNode::get_singleton()->is_addon_plugin_enabled(p_plugin);
 }
 
+EditorInspector *EditorInterface::get_inspector() const {
+	return EditorNode::get_singleton()->get_inspector();
+}
+
 Error EditorInterface::save_scene() {
 	if (!get_edited_scene_root())
 		return ERR_CANT_CREATE;
@@ -278,6 +282,8 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_inspector"), &EditorInterface::get_inspector);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
