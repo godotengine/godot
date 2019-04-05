@@ -849,8 +849,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 			file->close();
 			memdelete(file);
-
-			// fallthrough to open the file.
+			FALLTHROUGH;
 		}
 		case FILE_OPEN: {
 

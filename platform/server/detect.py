@@ -1,7 +1,6 @@
 import os
 import platform
 import sys
-from methods import get_compiler_version, use_gcc
 
 # This file is mostly based on platform/x11/detect.py.
 # If editing this file, make sure to apply relevant changes here too.
