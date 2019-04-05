@@ -344,13 +344,14 @@ if selected_platform in platform_list:
             version = methods.get_compiler_version(env)
             if version != None and version[0] >= '7':
                 shadow_local_warning = ['-Wshadow-local']
+
         if (env["warnings"] == 'extra'):
-            # FIXME: enable -Wimplicit-fallthrough once #26135 is fixed
             # FIXME: enable -Wclobbered once #26351 is fixed
-            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-implicit-fallthrough', '-Wno-unused-parameter'] + all_plus_warnings + shadow_local_warning)
+            # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
+            # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter'] + all_plus_warnings + shadow_local_warning)
             if methods.using_gcc(env):
                 env['CCFLAGS'] += ['-Wno-clobbered']
-
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):
