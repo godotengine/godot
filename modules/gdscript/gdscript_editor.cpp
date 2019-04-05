@@ -44,12 +44,43 @@ void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const 
 
 	p_delimiters->push_back("#");
 }
+
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("\" \"");
 	p_delimiters->push_back("' '");
 	p_delimiters->push_back("\"\"\" \"\"\"");
 }
+
+String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name) const {
+
+	String processed_template = p_template;
+
+#ifdef TOOLS_ENABLED
+	if (EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
+		processed_template = processed_template.replace("%INT_TYPE%", ": int");
+		processed_template = processed_template.replace("%STRING_TYPE%", ": String");
+		processed_template = processed_template.replace("%FLOAT_TYPE%", ": float");
+		processed_template = processed_template.replace("%VOID_RETURN%", " -> void");
+	} else {
+		processed_template = processed_template.replace("%INT_TYPE%", "");
+		processed_template = processed_template.replace("%STRING_TYPE%", "");
+		processed_template = processed_template.replace("%FLOAT_TYPE%", "");
+		processed_template = processed_template.replace("%VOID_RETURN%", "");
+	}
+#else
+	processed_template = processed_template.replace("%INT_TYPE%", "");
+	processed_template = processed_template.replace("%STRING_TYPE%", "");
+	processed_template = processed_template.replace("%FLOAT_TYPE%", "");
+	processed_template = processed_template.replace("%VOID_RETURN%", "");
+#endif
+
+	processed_template = processed_template.replace("%BASE%", p_base_class_name);
+	processed_template = processed_template.replace("%TS%", _get_indentation());
+
+	return processed_template;
+}
+
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 	String _template = "extends %BASE%\n"
 					   "\n"
@@ -65,27 +96,7 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 					   "#func _process(delta%FLOAT_TYPE%)%VOID_RETURN%:\n"
 					   "#%TS%pass\n";
 
-#ifdef TOOLS_ENABLED
-	if (EDITOR_DEF("text_editor/completion/add_type_hints", false)) {
-		_template = _template.replace("%INT_TYPE%", ": int");
-		_template = _template.replace("%STRING_TYPE%", ": String");
-		_template = _template.replace("%FLOAT_TYPE%", ": float");
-		_template = _template.replace("%VOID_RETURN%", " -> void");
-	} else {
-		_template = _template.replace("%INT_TYPE%", "");
-		_template = _template.replace("%STRING_TYPE%", "");
-		_template = _template.replace("%FLOAT_TYPE%", "");
-		_template = _template.replace("%VOID_RETURN%", "");
-	}
-#else
-	_template = _template.replace("%INT_TYPE%", "");
-	_template = _template.replace("%STRING_TYPE%", "");
-	_template = _template.replace("%FLOAT_TYPE%", "");
-	_template = _template.replace("%VOID_RETURN%", "");
-#endif
-
-	_template = _template.replace("%BASE%", p_base_class_name);
-	_template = _template.replace("%TS%", _get_indentation());
+	_template = _get_processed_template(_template, p_base_class_name);
 
 	Ref<GDScript> script;
 	script.instance();
@@ -101,10 +112,8 @@ bool GDScriptLanguage::is_using_templates() {
 
 void GDScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
 
-	String src = p_script->get_source_code();
-	src = src.replace("%BASE%", p_base_class_name);
-	src = src.replace("%TS%", _get_indentation());
-	p_script->set_source_code(src);
+	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name);
+	p_script->set_source_code(_template);
 }
 
 bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
