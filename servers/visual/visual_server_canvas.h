@@ -126,6 +126,8 @@ public:
 		bool children_order_dirty;
 		Vector<ChildItem> child_items;
 		Color modulate;
+		RID parent;
+		float parent_scale;
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
@@ -143,12 +145,15 @@ public:
 		Canvas() {
 			modulate = Color(1, 1, 1, 1);
 			children_order_dirty = true;
+			parent_scale = 1.0;
 		}
 	};
 
-	RID_Owner<Canvas> canvas_owner;
+	mutable RID_Owner<Canvas> canvas_owner;
 	RID_Owner<Item> canvas_item_owner;
 	RID_Owner<RasterizerCanvas::Light> canvas_light_owner;
+
+	bool disable_scale;
 
 private:
 	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
@@ -161,6 +166,8 @@ public:
 	RID canvas_create();
 	void canvas_set_item_mirroring(RID p_canvas, RID p_item, const Point2 &p_mirroring);
 	void canvas_set_modulate(RID p_canvas, const Color &p_color);
+	void canvas_set_parent(RID p_canvas, RID p_parent, float p_scale);
+	void canvas_set_disable_scale(bool p_disable);
 
 	RID canvas_item_create();
 	void canvas_item_set_parent(RID p_item, RID p_parent);
