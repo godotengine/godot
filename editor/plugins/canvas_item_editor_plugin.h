@@ -86,6 +86,17 @@ public:
 private:
 	EditorNode *editor;
 
+	enum SnapTarget {
+		SNAP_TARGET_NONE = 0,
+		SNAP_TARGET_PARENT,
+		SNAP_TARGET_SELF_ANCHORS,
+		SNAP_TARGET_SELF,
+		SNAP_TARGET_OTHER_NODE,
+		SNAP_TARGET_GUIDE,
+		SNAP_TARGET_GRID,
+		SNAP_TARGET_PIXEL
+	};
+
 	enum MenuOption {
 		SNAP_USE,
 		SNAP_USE_NODE_PARENT,
@@ -440,6 +451,7 @@ private:
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
 
+	void _draw_smart_snapping();
 	void _draw_rulers();
 	void _draw_guides();
 	void _draw_focus();
@@ -475,9 +487,25 @@ private:
 
 	void _solve_IK(Node2D *leaf_node, Point2 target_position);
 
-	void _snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius = 10.0);
-	void _snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
-	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap = NULL);
+	SnapTarget snap_target[2];
+	Transform2D snap_transform;
+	void _snap_if_closer_float(
+			float p_value,
+			float &r_current_snap, SnapTarget &r_current_snap_target,
+			float p_target_value, SnapTarget p_snap_target,
+			float p_radius = 10.0);
+	void _snap_if_closer_point(
+			Point2 p_value,
+			Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
+			Point2 p_target_value, SnapTarget p_snap_target,
+			real_t rotation = 0.0,
+			float p_radius = 10.0);
+	void _snap_other_nodes(
+			const Point2 p_value,
+			const Transform2D p_transform_to_snap,
+			Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
+			const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
+			const Node *p_current);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_margins_preset(Control::LayoutPreset p_preset);
@@ -558,7 +586,7 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL, unsigned int p_forced_modes = 0);
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = NULL, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
