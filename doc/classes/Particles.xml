@@ -4,7 +4,7 @@
 		3D particle emitter.
 	</brief_description>
 	<description>
-		3D particle node used to create a variety of particle systems and effects. [code]Particles[/code] features an emitter that generates some number of particles at a given rate.
+		3D particle node used to create a variety of particle systems and effects. [Particles] features an emitter that generates some number of particles at a given rate.
 		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
