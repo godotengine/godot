@@ -64,7 +64,7 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 	return false;
 }
 
-_FORCE_INLINE_ bool _can_call_mode(MultiplayerAPI::RPCMode mode, int p_node_master, int p_remote_id) {
+_FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, int p_remote_id) {
 	switch (mode) {
 
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
@@ -76,11 +76,11 @@ _FORCE_INLINE_ bool _can_call_mode(MultiplayerAPI::RPCMode mode, int p_node_mast
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
 		case MultiplayerAPI::RPC_MODE_MASTER: {
-			return p_node_master == NetworkedMultiplayerPeer::TARGET_PEER_SERVER;
+			return p_node->is_network_master();
 		} break;
 		case MultiplayerAPI::RPC_MODE_PUPPETSYNC:
 		case MultiplayerAPI::RPC_MODE_PUPPET: {
-			return p_node_master != NetworkedMultiplayerPeer::TARGET_PEER_SERVER && p_remote_id == p_node_master;
+			return !p_node->is_network_master() && p_remote_id == p_node->get_network_master();
 		} break;
 	}
 
@@ -282,9 +282,8 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 		rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_name);
 	}
 
-	int node_master_id = p_node->get_network_master();
-	ERR_EXPLAIN("RPC '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(node_master_id) + ".");
-	ERR_FAIL_COND(!_can_call_mode(rpc_mode, p_from, node_master_id));
+	ERR_EXPLAIN("RPC '" + String(p_name) + "' is not allowed from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND(!_can_call_mode(p_node, rpc_mode, p_from));
 
 	int argc = p_packet[p_offset];
 	Vector<Variant> args;
@@ -332,9 +331,8 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 		rset_mode = p_node->get_script_instance()->get_rset_mode(p_name);
 	}
 
-	int node_master_id = p_node->get_network_master();
-	ERR_EXPLAIN("RSET '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(node_master_id) + ".");
-	ERR_FAIL_COND(!_can_call_mode(rset_mode, p_from, node_master_id));
+	ERR_EXPLAIN("RSET '" + String(p_name) + "' is not allowed from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+	ERR_FAIL_COND(!_can_call_mode(p_node, rset_mode, p_from));
 
 	Variant value;
 	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset);
