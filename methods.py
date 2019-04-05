@@ -668,5 +668,8 @@ def get_compiler_version(env):
     else:
         return None
 
-def use_gcc(env):
+def using_gcc(env):
     return 'gcc' in os.path.basename(env["CC"])
+
+def using_clang(env):
+    return 'clang' in os.path.basename(env["CC"])
