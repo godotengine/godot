@@ -744,7 +744,7 @@ void GDScriptTokenizerText::_advance() {
 				}
 				INCPOS(1);
 				is_node_path = true;
-
+				FALLTHROUGH;
 			case '\'':
 			case '"': {
 

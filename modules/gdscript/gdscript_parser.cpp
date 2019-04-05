@@ -777,7 +777,8 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 								}
 								_add_warning(GDScriptWarning::UNASSIGNED_VARIABLE_OP_ASSIGN, -1, identifier.operator String());
 							}
-						} // fallthrough
+							FALLTHROUGH;
+						}
 						case GDScriptTokenizer::TK_OP_ASSIGN: {
 							lv->assignments += 1;
 							lv->usages--; // Assignment is not really usage
@@ -3636,7 +3637,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
-			}; //fallthrough to function
+				FALLTHROUGH;
+			}
 			case GDScriptTokenizer::TK_PR_FUNCTION: {
 
 				bool _static = false;
@@ -4086,7 +4088,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 										break;
 									}
 
-								}; //fallthrough to use the same
+									FALLTHROUGH;
+								}
 								case Variant::REAL: {
 
 									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "EASE") {
@@ -4511,6 +4514,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 #ifdef DEBUG_ENABLED
 				_add_warning(GDScriptWarning::DEPRECATED_KEYWORD, tokenizer->get_token_line(), "slave", "puppet");
 #endif
+				FALLTHROUGH;
 			case GDScriptTokenizer::TK_PR_PUPPET: {
 
 				//may be fallthrough from export, ignore if so
@@ -4578,7 +4582,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				continue;
 			} break;
 			case GDScriptTokenizer::TK_PR_VAR: {
-				//variale declaration and (eventual) initialization
+				// variable declaration and (eventual) initialization
 
 				ClassNode::Member member;
 
@@ -5290,7 +5294,8 @@ String GDScriptParser::DataType::to_string() const {
 			if (!gds_class.empty()) {
 				return gds_class;
 			}
-		} // fallthrough
+			FALLTHROUGH;
+		}
 		case SCRIPT: {
 			if (is_meta_type) {
 				return script_type->get_class_name().operator String();
@@ -8046,7 +8051,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 				if (cn->value.get_type() == Variant::STRING) {
 					break;
 				}
-			} // falthrough
+				FALLTHROUGH;
+			}
 			default: {
 				_mark_line_as_safe(statement->line);
 				_reduce_node_type(statement); // Test for safety anyway

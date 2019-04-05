@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "tree.h"
-#include <limits.h>
 
 #include "core/math/math_funcs.h"
 #include "core/os/input.h"
@@ -42,6 +41,8 @@
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #endif
+
+#include <limits.h>
 
 void TreeItem::move_to_top() {
 
@@ -940,6 +941,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 				int check_icon_h = cache.checked->get_height();
 				if (height < check_icon_h)
 					height = check_icon_h;
+				FALLTHROUGH;
 			}
 			case TreeItem::CELL_MODE_STRING:
 			case TreeItem::CELL_MODE_CUSTOM:
