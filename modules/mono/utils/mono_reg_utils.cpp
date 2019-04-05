@@ -202,9 +202,9 @@ String find_msbuild_tools_path() {
 					}
 
 					// Since VS2019, the directory is simply named "Current"
-					String msBuildDirectory = val + "MSBuild\\Current\\Bin";
-					if (DirAccess::exists(msBuildDirectory)) {
-						return msBuildDirectory;
+					String msbuild_dir = val + "MSBuild\\Current\\Bin";
+					if (DirAccess::exists(msbuild_dir)) {
+						return msbuild_dir;
 					}
 
 					// Directory name "15.0" is used in VS 2017
