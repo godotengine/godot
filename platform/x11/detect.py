@@ -2,7 +2,7 @@ import os
 import platform
 import sys
 from compat import decode_utf8
-from methods import get_compiler_version, use_gcc
+from methods import get_compiler_version, using_gcc
 
 def is_active():
     return True
@@ -160,7 +160,7 @@ def configure(env):
     env.Append(LINKFLAGS=['-pipe'])
 
     # Check for gcc version >= 6 before adding -no-pie
-    if use_gcc(env):
+    if using_gcc(env):
         version = get_compiler_version(env)
         if version != None and version[0] >= '6':
             env.Append(CCFLAGS=['-fpie'])
