@@ -1045,8 +1045,10 @@ void AudioServer::update() {
 
 void AudioServer::load_default_bus_layout() {
 
-	if (ResourceLoader::exists("res://default_bus_layout.tres")) {
-		Ref<AudioBusLayout> default_layout = ResourceLoader::load("res://default_bus_layout.tres");
+	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
+
+	if (ResourceLoader::exists(layout_path)) {
+		Ref<AudioBusLayout> default_layout = ResourceLoader::load(layout_path);
 		if (default_layout.is_valid()) {
 			set_bus_layout(default_layout);
 		}

@@ -1004,6 +1004,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
+	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
+	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
