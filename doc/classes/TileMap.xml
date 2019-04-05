@@ -165,6 +165,13 @@
 				Optionally, the tile can also be flipped, transposed, or given autotile coordinates.
 				Note that data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
+				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
+				[codeblock]
+				func set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				    # Write your custom logic here.
+				    # To call the default method:
+				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				[/codeblock] 
 			</description>
 		</method>
 		<method name="set_cellv">
