@@ -675,14 +675,14 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 static Dictionary _get_builtin_script_templates() {
 	Dictionary templates;
 
-	//No Comments
+	// No Comments
 	templates["no_comments.gd"] =
 			"extends %BASE%\n"
 			"\n"
-			"func _ready():\n"
+			"func _ready()%VOID_RETURN%:\n"
 			"%TS%pass\n";
 
-	//Empty
+	// Empty
 	templates["empty.gd"] =
 			"extends %BASE%"
 			"\n"
