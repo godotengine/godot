@@ -1429,6 +1429,10 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 		case FILE_SHOW_IN_EXPLORER: {
 			// Show the file / folder in the OS explorer
 			String fpath = path;
+			if (path == "Favorites") {
+				fpath = p_selected[0];
+			}
+
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
 			}
