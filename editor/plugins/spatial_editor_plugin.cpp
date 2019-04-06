@@ -1178,6 +1178,9 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 			} break;
+
+			default:
+				break;
 		}
 	}
 

@@ -2655,6 +2655,8 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 
 				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
 			} break;
+			default:
+				break;
 		}
 	}
 

@@ -133,6 +133,8 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 				}
 			} break;
+			default:
+				break;
 		}
 	}
 

@@ -56,6 +56,8 @@ void EditorNameDialog::_line_gui_input(const Ref<InputEvent> &p_event) {
 				hide();
 				accept_event();
 			} break;
+			default:
+				break;
 		}
 	}
 }

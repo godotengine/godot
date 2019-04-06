@@ -107,6 +107,8 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				current->select(0);
 
 			} break;
+			default:
+				break;
 		}
 	}
 }
