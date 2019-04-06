@@ -44,7 +44,13 @@ static void _editor_init() {
 void register_assimp_types() {
 
 #ifdef TOOLS_ENABLED
+	ClassDB::APIType prev_api = ClassDB::get_current_api();
+	ClassDB::set_current_api(ClassDB::API_EDITOR);
+
 	ClassDB::register_class<EditorSceneImporterAssimp>();
+
+	ClassDB::set_current_api(prev_api);
+
 	EditorNode::add_init_callback(_editor_init);
 #endif
 }

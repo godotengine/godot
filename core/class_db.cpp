@@ -249,6 +249,11 @@ void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
 }
 
+ClassDB::APIType ClassDB::get_current_api() {
+
+	return current_api;
+}
+
 HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
