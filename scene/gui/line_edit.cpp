@@ -891,6 +891,7 @@ void LineEdit::paste_text() {
 	String paste_buffer = OS::get_singleton()->get_clipboard();
 
 	if (paste_buffer != "") {
+		paste_buffer = paste_buffer.replace("\n", " ").replace("\t", " ");
 
 		if (selection.enabled) selection_delete();
 		append_at_cursor(paste_buffer);
