@@ -25,6 +25,7 @@ def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
     return [
+        ('application_id', 'Android application ID', None),
         ('ANDROID_NDK_ROOT', 'Path to the Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
         ('ndk_platform', 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
         EnumVariable('android_arch', 'Target architecture', "armv7", ('armv7', 'armv6', 'arm64v8', 'x86', 'x86_64')),
