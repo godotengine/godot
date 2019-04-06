@@ -6080,7 +6080,7 @@ void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount)
 
 		for (int j = 0; j < 6; j++) {
 			glEnableVertexAttribArray(j);
-			glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, CAST_INT_TO_UCHAR_PTR((j * 16)));
+			glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, CAST_INT_TO_UCHAR_PTR(j * 16));
 		}
 	}
 
