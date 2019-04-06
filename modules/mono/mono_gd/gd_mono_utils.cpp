@@ -63,6 +63,7 @@ MonoCache mono_cache;
 #define CACHE_FIELD_AND_CHECK(m_class, m_field, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.field_##m_class##_##m_field, m_val)
 #define CACHE_METHOD_AND_CHECK(m_class, m_method, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.method_##m_class##_##m_method, m_val)
 #define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.methodthunk_##m_class##_##m_method, m_val)
+#define CACHE_PROPERTY_AND_CHECK(m_class, m_property, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.property_##m_class##_##m_property, m_val)
 
 void MonoCache::clear_members() {
 
@@ -80,6 +81,9 @@ void MonoCache::clear_members() {
 	class_double = NULL;
 	class_String = NULL;
 	class_IntPtr = NULL;
+
+	class_System_Collections_IEnumerable = NULL;
+	class_System_Collections_IDictionary = NULL;
 
 #ifdef DEBUG_ENABLED
 	class_System_Diagnostics_StackTrace = NULL;
@@ -143,11 +147,16 @@ void MonoCache::clear_members() {
 	methodthunk_GodotObject_Dispose = NULL;
 	methodthunk_Array_GetPtr = NULL;
 	methodthunk_Dictionary_GetPtr = NULL;
-	methodthunk_MarshalUtils_IsArrayGenericType = NULL;
-	methodthunk_MarshalUtils_IsDictionaryGenericType = NULL;
 	methodthunk_SignalAwaiter_SignalCallback = NULL;
 	methodthunk_SignalAwaiter_FailureCallback = NULL;
 	methodthunk_GodotTaskScheduler_Activate = NULL;
+
+	methodthunk_MarshalUtils_TypeIsGenericArray = NULL;
+	methodthunk_MarshalUtils_TypeIsGenericDictionary = NULL;
+	methodthunk_MarshalUtils_ArrayGetElementType = NULL;
+	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes = NULL;
+	methodthunk_MarshalUtils_EnumerableToArray = NULL;
+	methodthunk_MarshalUtils_IDictionaryToDictionary = NULL;
 
 	task_scheduler_handle = Ref<MonoGCHandle>();
 }
@@ -177,6 +186,9 @@ void update_corlib_cache() {
 	CACHE_CLASS_AND_CHECK(double, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_double_class()));
 	CACHE_CLASS_AND_CHECK(String, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_string_class()));
 	CACHE_CLASS_AND_CHECK(IntPtr, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_intptr_class()));
+
+	CACHE_CLASS_AND_CHECK(System_Collections_IEnumerable, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IEnumerable"));
+	CACHE_CLASS_AND_CHECK(System_Collections_IDictionary, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IDictionary"));
 
 #ifdef DEBUG_ENABLED
 	CACHE_CLASS_AND_CHECK(System_Diagnostics_StackTrace, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Diagnostics", "StackTrace"));
@@ -242,11 +254,16 @@ void update_godot_api_cache() {
 	CACHE_METHOD_THUNK_AND_CHECK(GodotObject, Dispose, (GodotObject_Dispose)CACHED_CLASS(GodotObject)->get_method_thunk("Dispose", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(Array, GetPtr, (Array_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Array)->get_method_thunk("GetPtr", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(Dictionary, GetPtr, (Dictionary_GetPtr)GODOT_API_NS_CLAS(BINDINGS_NAMESPACE_COLLECTIONS, Dictionary)->get_method_thunk("GetPtr", 0));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsArrayGenericType, (IsArrayGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsArrayGenericType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IsDictionaryGenericType, (IsDictionaryGenericType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IsDictionaryGenericType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, SignalCallback, (SignalAwaiter_SignalCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("SignalCallback", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(SignalAwaiter, FailureCallback, (SignalAwaiter_FailureCallback)GODOT_API_CLASS(SignalAwaiter)->get_method_thunk("FailureCallback", 0));
 	CACHE_METHOD_THUNK_AND_CHECK(GodotTaskScheduler, Activate, (GodotTaskScheduler_Activate)GODOT_API_CLASS(GodotTaskScheduler)->get_method_thunk("Activate", 0));
+
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericArray, (TypeIsGenericArray)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("TypeIsGenericArray", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericDictionary, (TypeIsGenericDictionary)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("TypeIsGenericDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, (ArrayGetElementType)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("ArrayGetElementType", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, (DictionaryGetKeyValueTypes)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("DictionaryGetKeyValueTypes", 3));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, EnumerableToArray, (EnumerableToArray)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("EnumerableToArray", 2));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IDictionaryToDictionary, (IDictionaryToDictionary)GODOT_API_CLASS(MarshalUtils)->get_method_thunk("IDictionaryToDictionary", 2));
 
 #ifdef DEBUG_ENABLED
 	CACHE_METHOD_THUNK_AND_CHECK(DebuggingUtils, GetStackFrameInfo, (DebugUtils_StackFrameInfo)GODOT_API_CLASS(DebuggingUtils)->get_method_thunk("GetStackFrameInfo", 4));
@@ -712,7 +729,7 @@ uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &
 }
 
 void dispose(MonoObject *p_mono_object, MonoException **r_exc) {
-	invoke_method_thunk(CACHED_METHOD_THUNK(GodotObject, Dispose), p_mono_object, (MonoObject **)r_exc);
+	invoke_method_thunk(CACHED_METHOD_THUNK(GodotObject, Dispose), p_mono_object, r_exc);
 }
 
 } // namespace GDMonoUtils

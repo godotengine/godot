@@ -73,8 +73,9 @@ int godot_icall_Array_Count(Array *ptr) {
 	return ptr->size();
 }
 
-void godot_icall_Array_Add(Array *ptr, MonoObject *item) {
+int godot_icall_Array_Add(Array *ptr, MonoObject *item) {
 	ptr->append(GDMonoMarshal::mono_object_to_variant(item));
+	return ptr->size();
 }
 
 void godot_icall_Array_Clear(Array *ptr) {

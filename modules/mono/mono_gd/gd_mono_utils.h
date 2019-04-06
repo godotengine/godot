@@ -49,18 +49,21 @@
 
 namespace GDMonoUtils {
 
-typedef void (*GodotObject_Dispose)(MonoObject *, MonoObject **);
-typedef Array *(*Array_GetPtr)(MonoObject *, MonoObject **);
-typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoObject **);
-typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoObject **);
-typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoObject **);
-typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoObject **);
-typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsArrayGenericType)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsDictionaryGenericType)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsArrayGenericType)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsDictionaryGenericType)(MonoObject *, MonoObject **);
-typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoObject **);
+typedef void (*GodotObject_Dispose)(MonoObject *, MonoException **);
+typedef Array *(*Array_GetPtr)(MonoObject *, MonoException **);
+typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoException **);
+typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoException **);
+typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoException **);
+typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoException **);
+typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoException **);
+typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoException **);
+
+typedef MonoBoolean (*TypeIsGenericArray)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*TypeIsGenericDictionary)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef MonoBoolean (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+typedef void (*EnumerableToArray)(MonoObject *, Array *, MonoException **);
+typedef void (*IDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
 
 struct MonoCache {
 
@@ -82,6 +85,9 @@ struct MonoCache {
 	GDMonoClass *class_double;
 	GDMonoClass *class_String;
 	GDMonoClass *class_IntPtr;
+
+	GDMonoClass *class_System_Collections_IEnumerable;
+	GDMonoClass *class_System_Collections_IDictionary;
 
 #ifdef DEBUG_ENABLED
 	GDMonoClass *class_System_Diagnostics_StackTrace;
@@ -146,11 +152,16 @@ struct MonoCache {
 	GodotObject_Dispose methodthunk_GodotObject_Dispose;
 	Array_GetPtr methodthunk_Array_GetPtr;
 	Dictionary_GetPtr methodthunk_Dictionary_GetPtr;
-	IsArrayGenericType methodthunk_MarshalUtils_IsArrayGenericType;
-	IsDictionaryGenericType methodthunk_MarshalUtils_IsDictionaryGenericType;
 	SignalAwaiter_SignalCallback methodthunk_SignalAwaiter_SignalCallback;
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
+
+	TypeIsGenericArray methodthunk_MarshalUtils_TypeIsGenericArray;
+	TypeIsGenericDictionary methodthunk_MarshalUtils_TypeIsGenericDictionary;
+	ArrayGetElementType methodthunk_MarshalUtils_ArrayGetElementType;
+	DictionaryGetKeyValueTypes methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
+	EnumerableToArray methodthunk_MarshalUtils_EnumerableToArray;
+	IDictionaryToDictionary methodthunk_MarshalUtils_IDictionaryToDictionary;
 
 	Ref<MonoGCHandle> task_scheduler_handle;
 
@@ -255,6 +266,7 @@ void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 #define CACHED_FIELD(m_class, m_field) (GDMonoUtils::mono_cache.field_##m_class##_##m_field)
 #define CACHED_METHOD(m_class, m_method) (GDMonoUtils::mono_cache.method_##m_class##_##m_method)
 #define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoUtils::mono_cache.methodthunk_##m_class##_##m_method)
+#define CACHED_PROPERTY(m_class, m_property) (GDMonoUtils::mono_cache.property_##m_class##_##m_property)
 
 #ifdef REAL_T_IS_DOUBLE
 #define REAL_T_MONOCLASS CACHED_CLASS_RAW(double)

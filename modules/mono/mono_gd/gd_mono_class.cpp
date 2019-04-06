@@ -55,7 +55,8 @@ String GDMonoClass::get_full_name() const {
 }
 
 MonoType *GDMonoClass::get_mono_type() {
-	// Care, you cannot compare MonoType pointers
+	// Careful, you cannot compare two MonoType*.
+	// There is mono_metadata_type_equal, how is this different from comparing two MonoClass*?
 	return get_mono_type(mono_class);
 }
 
@@ -258,6 +259,11 @@ GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p
 bool GDMonoClass::has_fetched_method_unknown_params(const StringName &p_name) {
 
 	return get_fetched_method_unknown_params(p_name) != NULL;
+}
+
+bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
+
+	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
 }
 
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
