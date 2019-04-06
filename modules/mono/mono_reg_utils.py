@@ -40,7 +40,7 @@ def _reg_open_key_bits(key, subkey, bits):
 def _find_mono_in_reg(subkey, bits):
     try:
         with _reg_open_key_bits(winreg.HKEY_LOCAL_MACHINE, subkey, bits) as hKey:
-            value, regtype = winreg.QueryValueEx(hKey, 'SdkInstallRoot')
+            value = winreg.QueryValueEx(hKey, 'SdkInstallRoot')[0]
             return value
     except (WindowsError, OSError):
         return None
@@ -49,7 +49,7 @@ def _find_mono_in_reg(subkey, bits):
 def _find_mono_in_reg_old(subkey, bits):
     try:
         with _reg_open_key_bits(winreg.HKEY_LOCAL_MACHINE, subkey, bits) as hKey:
-            default_clr, regtype = winreg.QueryValueEx(hKey, 'DefaultCLR')
+            default_clr = winreg.QueryValueEx(hKey, 'DefaultCLR')[0]
             if default_clr:
                 return _find_mono_in_reg(subkey + '\\' + default_clr, bits)
             return None
@@ -91,7 +91,13 @@ def find_msbuild_tools_path_reg():
             if not val:
                 raise ValueError('Value of `installationPath` entry is empty')
 
-            return os.path.join(val, "MSBuild\\15.0\\Bin")
+            # Since VS2019, the directory is simply named "Current"
+            msbuild_dir = os.path.join(val, 'MSBuild\\Current\\Bin')
+            if os.path.isdir(msbuild_dir):
+                return msbuild_dir
+
+            # Directory name "15.0" is used in VS 2017
+            return os.path.join(val, 'MSBuild\\15.0\\Bin')
 
         raise ValueError('Cannot find `installationPath` entry')
     except ValueError as e:
@@ -106,7 +112,7 @@ def find_msbuild_tools_path_reg():
     try:
         subkey = r'SOFTWARE\Microsoft\MSBuild\ToolsVersions\14.0'
         with _reg_open_key(winreg.HKEY_LOCAL_MACHINE, subkey) as hKey:
-            value, regtype = winreg.QueryValueEx(hKey, 'MSBuildToolsPath')
+            value = winreg.QueryValueEx(hKey, 'MSBuildToolsPath')[0]
             return value
     except (WindowsError, OSError):
         return ''
