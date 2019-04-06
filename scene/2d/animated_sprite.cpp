@@ -679,7 +679,7 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite::_set_playing);
 	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
