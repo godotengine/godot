@@ -192,7 +192,7 @@ MonoBoolean godot_icall_DynamicGodotObject_InvokeMember(Object *p_ptr, MonoStrin
 
 	*r_result = GDMonoMarshal::variant_to_mono_object(result);
 
-	return error.error == OK;
+	return error.error == Variant::CallError::CALL_OK;
 }
 
 MonoBoolean godot_icall_DynamicGodotObject_GetMember(Object *p_ptr, MonoString *p_name, MonoObject **r_result) {
