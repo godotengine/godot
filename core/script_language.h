@@ -427,31 +427,6 @@ class ScriptDebugger {
 	ScriptLanguage *break_lang;
 
 public:
-	typedef void (*RequestSceneTreeMessageFunc)(void *);
-
-	struct LiveEditFuncs {
-
-		void *udata;
-		void (*node_path_func)(void *, const NodePath &p_path, int p_id);
-		void (*res_path_func)(void *, const String &p_path, int p_id);
-
-		void (*node_set_func)(void *, int p_id, const StringName &p_prop, const Variant &p_value);
-		void (*node_set_res_func)(void *, int p_id, const StringName &p_prop, const String &p_value);
-		void (*node_call_func)(void *, int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-		void (*res_set_func)(void *, int p_id, const StringName &p_prop, const Variant &p_value);
-		void (*res_set_res_func)(void *, int p_id, const StringName &p_prop, const String &p_value);
-		void (*res_call_func)(void *, int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-		void (*root_func)(void *, const NodePath &p_scene_path, const String &p_scene_from);
-
-		void (*tree_create_node_func)(void *, const NodePath &p_parent, const String &p_type, const String &p_name);
-		void (*tree_instance_node_func)(void *, const NodePath &p_parent, const String &p_path, const String &p_name);
-		void (*tree_remove_node_func)(void *, const NodePath &p_at);
-		void (*tree_remove_and_keep_node_func)(void *, const NodePath &p_at, ObjectID p_keep_id);
-		void (*tree_restore_node_func)(void *, ObjectID p_id, const NodePath &p_at, int p_at_pos);
-		void (*tree_duplicate_node_func)(void *, const NodePath &p_at, const String &p_new_name);
-		void (*tree_reparent_node_func)(void *, const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
-	};
-
 	_FORCE_INLINE_ static ScriptDebugger *get_singleton() { return singleton; }
 	void set_lines_left(int p_left);
 	int get_lines_left() const;
@@ -480,8 +455,6 @@ public:
 	virtual bool is_remote() const { return false; }
 	virtual void request_quit() {}
 
-	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
-	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
 	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {}
 
 	virtual bool is_profiling() const = 0;

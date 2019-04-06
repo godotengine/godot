@@ -56,12 +56,12 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
-#include "core/script_debugger_remote.h"
 #include "physics/physics_server_sw.h"
 #include "physics_2d/physics_2d_server_sw.h"
 #include "physics_2d/physics_2d_server_wrap_mt.h"
 #include "physics_2d_server.h"
 #include "physics_server.h"
+#include "scene/debugger/script_debugger_remote.h"
 #include "visual/shader_types.h"
 #include "visual_server.h"
 

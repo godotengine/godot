@@ -160,6 +160,24 @@ private:
 
 	bool arvr;
 
+	struct CameraOverrideData {
+		Transform transform;
+		enum Projection {
+			PROJECTION_PERSPECTIVE,
+			PROJECTION_ORTHOGONAL
+		};
+		Projection projection;
+		float fov;
+		float size;
+		float z_near;
+		float z_far;
+		RID rid;
+
+		operator bool() const {
+			return rid != RID();
+		}
+	} camera_override;
+
 	Camera *camera;
 	Set<Camera *> cameras;
 	Set<CanvasLayer *> canvas_layers;
@@ -173,6 +191,9 @@ private:
 	bool audio_listener_2d;
 	RID internal_listener_2d;
 
+	bool override_canvas_transform;
+
+	Transform2D canvas_transform_override;
 	Transform2D canvas_transform;
 	Transform2D global_canvas_transform;
 	Transform2D stretch_transform;
@@ -394,6 +415,15 @@ public:
 	Listener *get_listener() const;
 	Camera *get_camera() const;
 
+	void enable_camera_override(bool p_enable);
+	bool is_camera_override_enabled() const;
+
+	void set_camera_override_transform(const Transform &p_transform);
+	Transform get_camera_override_transform() const;
+
+	void set_camera_override_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
+	void set_camera_override_orthogonal(float p_size, float p_z_near, float p_z_far);
+
 	void set_use_arvr(bool p_use_arvr);
 	bool use_arvr();
 
@@ -417,6 +447,12 @@ public:
 
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
+
+	void enable_canvas_transform_override(bool p_enable);
+	bool is_canvas_transform_override_enbled() const;
+
+	void set_canvas_transform_override(const Transform2D &p_transform);
+	Transform2D get_canvas_transform_override() const;
 
 	void set_canvas_transform(const Transform2D &p_transform);
 	Transform2D get_canvas_transform() const;

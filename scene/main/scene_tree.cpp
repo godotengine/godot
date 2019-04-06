@@ -40,6 +40,7 @@
 #include "core/project_settings.h"
 #include "main/input_default.h"
 #include "node.h"
+#include "scene/debugger/script_debugger_remote.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -1094,27 +1095,6 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 	}
 }
 
-static void _fill_array(Node *p_node, Array &array, int p_level) {
-
-	array.push_back(p_node->get_child_count());
-	array.push_back(p_node->get_name());
-	array.push_back(p_node->get_class());
-	array.push_back(p_node->get_instance_id());
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-
-		_fill_array(p_node->get_child(i), array, p_level + 1);
-	}
-}
-
-void SceneTree::_debugger_request_tree(void *self) {
-
-	SceneTree *sml = (SceneTree *)self;
-
-	Array arr;
-	_fill_array(sml->root, arr, 0);
-	ScriptDebugger::get_singleton()->send_message("scene_tree", arr);
-}
-
 void SceneTree::_flush_delete_queue() {
 
 	_THREAD_SAFE_METHOD_
@@ -1336,6 +1316,25 @@ void SceneTree::add_current_scene(Node *p_current) {
 	root->add_child(p_current);
 }
 #ifdef DEBUG_ENABLED
+
+static void _fill_array(Node *p_node, Array &array, int p_level) {
+
+	array.push_back(p_node->get_child_count());
+	array.push_back(p_node->get_name());
+	array.push_back(p_node->get_class());
+	array.push_back(p_node->get_instance_id());
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+
+		_fill_array(p_node->get_child(i), array, p_level + 1);
+	}
+}
+
+void SceneTree::_debugger_request_tree() {
+
+	Array arr;
+	_fill_array(root, arr, 0);
+	ScriptDebugger::get_singleton()->send_message("scene_tree", arr);
+}
 
 void SceneTree::_live_edit_node_path_func(const NodePath &p_path, int p_id) {
 
@@ -2117,7 +2116,11 @@ SceneTree::SceneTree() {
 	_update_root_rect();
 
 	if (ScriptDebugger::get_singleton()) {
-		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree, this);
+		if (ScriptDebugger::get_singleton()->is_remote()) {
+			ScriptDebuggerRemote *remote_debugger = static_cast<ScriptDebuggerRemote *>(ScriptDebugger::get_singleton());
+
+			remote_debugger->set_scene_tree(this);
+		}
 		ScriptDebugger::get_singleton()->set_multiplayer(multiplayer);
 	}
 
@@ -2128,29 +2131,6 @@ SceneTree::SceneTree() {
 #endif
 
 #ifdef DEBUG_ENABLED
-
-	live_edit_funcs.udata = this;
-	live_edit_funcs.node_path_func = _live_edit_node_path_funcs;
-	live_edit_funcs.res_path_func = _live_edit_res_path_funcs;
-	live_edit_funcs.node_set_func = _live_edit_node_set_funcs;
-	live_edit_funcs.node_set_res_func = _live_edit_node_set_res_funcs;
-	live_edit_funcs.node_call_func = _live_edit_node_call_funcs;
-	live_edit_funcs.res_set_func = _live_edit_res_set_funcs;
-	live_edit_funcs.res_set_res_func = _live_edit_res_set_res_funcs;
-	live_edit_funcs.res_call_func = _live_edit_res_call_funcs;
-	live_edit_funcs.root_func = _live_edit_root_funcs;
-
-	live_edit_funcs.tree_create_node_func = _live_edit_create_node_funcs;
-	live_edit_funcs.tree_instance_node_func = _live_edit_instance_node_funcs;
-	live_edit_funcs.tree_remove_node_func = _live_edit_remove_node_funcs;
-	live_edit_funcs.tree_remove_and_keep_node_func = _live_edit_remove_and_keep_node_funcs;
-	live_edit_funcs.tree_restore_node_func = _live_edit_restore_node_funcs;
-	live_edit_funcs.tree_duplicate_node_func = _live_edit_duplicate_node_funcs;
-	live_edit_funcs.tree_reparent_node_func = _live_edit_reparent_node_funcs;
-
-	if (ScriptDebugger::get_singleton()) {
-		ScriptDebugger::get_singleton()->set_live_edit_funcs(&live_edit_funcs);
-	}
 
 	live_edit_root = NodePath("/root");
 
