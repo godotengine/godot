@@ -44,18 +44,18 @@ class StyleBox : public Resource {
 	GDCLASS(StyleBox, Resource);
 	RES_BASE_EXTENSION("stylebox");
 	OBJ_SAVE_TYPE(StyleBox);
-	float margin[4];
+	int margin[4];
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const = 0;
+	virtual int get_style_margin(Margin p_margin) const = 0;
 	static void _bind_methods();
 
 public:
 	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
 
-	void set_default_margin(Margin p_margin, float p_value);
-	float get_default_margin(Margin p_margin) const;
-	float get_margin(Margin p_margin) const;
+	void set_default_margin(Margin p_margin, int p_value);
+	int get_default_margin(Margin p_margin) const;
+	int get_margin(Margin p_margin) const;
 	virtual Size2 get_center_size() const;
 
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const = 0;
@@ -71,7 +71,7 @@ public:
 class StyleBoxEmpty : public StyleBox {
 
 	GDCLASS(StyleBoxEmpty, StyleBox);
-	virtual float get_style_margin(Margin p_margin) const { return 0; }
+	virtual int get_style_margin(Margin p_margin) const { return 0; }
 
 public:
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const {}
@@ -90,8 +90,8 @@ public:
 	};
 
 private:
-	float expand_margin[4];
-	float margin[4];
+	int expand_margin[4];
+	int margin[4];
 	Rect2 region_rect;
 	Ref<Texture> texture;
 	Ref<Texture> normal_map;
@@ -101,17 +101,17 @@ private:
 	AxisStretchMode axis_v;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const;
+	virtual int get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
-	void set_expand_margin_size_all(float p_expand_margin_size);
-	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_expand_margin_size(Margin p_expand_margin) const;
+	void set_expand_margin_size(Margin p_expand_margin, int p_size);
+	void set_expand_margin_size_all(int p_expand_margin_size);
+	void set_expand_margin_size_individual(int p_left, int p_top, int p_right, int p_bottom);
+	int get_expand_margin_size(Margin p_expand_margin) const;
 
-	void set_margin_size(Margin p_margin, float p_size);
-	float get_margin_size(Margin p_margin) const;
+	void set_margin_size(Margin p_margin, int p_size);
+	int get_margin_size(Margin p_margin) const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -164,7 +164,7 @@ class StyleBoxFlat : public StyleBox {
 	int aa_size;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const;
+	virtual int get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
@@ -202,10 +202,10 @@ public:
 	int get_corner_detail() const;
 
 	//EXPANDS
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
-	void set_expand_margin_size_all(float p_expand_margin_size);
-	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_expand_margin_size(Margin p_expand_margin) const;
+	void set_expand_margin_size(Margin p_expand_margin, int p_size);
+	void set_expand_margin_size_all(int p_expand_margin_size);
+	void set_expand_margin_size_individual(int p_left, int p_top, int p_right, int p_bottom);
+	int get_expand_margin_size(Margin p_expand_margin) const;
 
 	//DRAW CENTER
 	void set_draw_center(bool p_enabled);
@@ -240,11 +240,11 @@ class StyleBoxLine : public StyleBox {
 	Color color;
 	int thickness;
 	bool vertical;
-	float grow_begin;
-	float grow_end;
+	int grow_begin;
+	int grow_end;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const;
+	virtual int get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
@@ -257,11 +257,11 @@ public:
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
 
-	void set_grow_begin(float p_grow);
-	float get_grow_begin() const;
+	void set_grow_begin(int p_grow);
+	int get_grow_begin() const;
 
-	void set_grow_end(float p_grow);
-	float get_grow_end() const;
+	void set_grow_end(int p_grow);
+	int get_grow_end() const;
 
 	virtual Size2 get_center_size() const;
 
