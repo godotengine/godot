@@ -245,9 +245,9 @@ Point2 OS_Android::get_mouse_position() const {
 	return Point2();
 }
 
-int OS_Android::get_mouse_button_state() const {
+ButtonList OS_Android::get_mouse_button_state() const {
 
-	return 0;
+	return (ButtonList)0;
 }
 
 void OS_Android::set_window_title(const String &p_title) {

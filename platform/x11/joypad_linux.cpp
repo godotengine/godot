@@ -481,7 +481,7 @@ void JoypadLinux::process_joypads() {
 
 				switch (ev.type) {
 					case EV_KEY:
-						input->joy_button(i, joy->key_map[ev.code], ev.value);
+						input->joy_button(i, (JoystickList)joy->key_map[ev.code], ev.value);
 						break;
 
 					case EV_ABS:
@@ -525,7 +525,7 @@ void JoypadLinux::process_joypads() {
 		for (int j = 0; j < MAX_ABS; j++) {
 			int index = joy->abs_map[j];
 			if (index != -1) {
-				input->joy_axis(i, index, joy->curr_axis[index]);
+				input->joy_axis(i, (JoystickList)index, joy->curr_axis[index]);
 			}
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {

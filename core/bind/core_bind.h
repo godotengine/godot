@@ -145,7 +145,7 @@ public:
 
 	Point2 get_mouse_position() const;
 	void set_window_title(const String &p_title);
-	int get_mouse_button_state() const;
+	ButtonList get_mouse_button_state() const;
 
 	void set_clipboard(const String &p_text);
 	String get_clipboard() const;

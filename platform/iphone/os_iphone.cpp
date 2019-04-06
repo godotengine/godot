@@ -219,13 +219,13 @@ bool OSIPhone::iterate() {
 	return Main::iteration();
 };
 
-void OSIPhone::key(uint32_t p_key, bool p_pressed) {
+void OSIPhone::key(KeyList p_key, bool p_pressed) {
 
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_scancode(p_key);
+	ev->set_scancode((KeyList)p_key);
 	ev->set_unicode(p_key);
 	queue_event(ev);
 };
@@ -338,11 +338,11 @@ void OSIPhone::joy_connection_changed(int p_idx, bool p_connected, String p_name
 	input->joy_connection_changed(p_idx, p_connected, p_name);
 };
 
-void OSIPhone::joy_button(int p_device, int p_button, bool p_pressed) {
+void OSIPhone::joy_button(int p_device, JoystickList p_button, bool p_pressed) {
 	input->joy_button(p_device, p_button, p_pressed);
 };
 
-void OSIPhone::joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value) {
+void OSIPhone::joy_axis(int p_device, JoystickList p_axis, const InputDefault::JoyAxis &p_value) {
 	input->joy_axis(p_device, p_axis, p_value);
 };
 
@@ -381,9 +381,9 @@ Point2 OSIPhone::get_mouse_position() const {
 	return Point2();
 };
 
-int OSIPhone::get_mouse_button_state() const {
+ButtonList OSIPhone::get_mouse_button_state() const {
 
-	return 0;
+	return (ButtonList)0;
 };
 
 void OSIPhone::set_window_title(const String &p_title){};

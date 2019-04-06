@@ -199,7 +199,7 @@ void _OS::set_window_title(const String &p_title) {
 	OS::get_singleton()->set_window_title(p_title);
 }
 
-int _OS::get_mouse_button_state() const {
+ButtonList _OS::get_mouse_button_state() const {
 
 	return OS::get_singleton()->get_mouse_button_state();
 }

@@ -511,9 +511,9 @@ Point2 OS_UWP::get_mouse_position() const {
 	return Point2(old_x, old_y);
 }
 
-int OS_UWP::get_mouse_button_state() const {
+ButtonList OS_UWP::get_mouse_button_state() const {
 
-	return last_button_state;
+	return (ButtonList)last_button_state;
 }
 
 void OS_UWP::set_window_title(const String &p_title) {

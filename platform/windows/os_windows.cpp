@@ -1621,9 +1621,9 @@ void OS_Windows::update_real_mouse_position() {
 	}
 }
 
-int OS_Windows::get_mouse_button_state() const {
+ButtonList OS_Windows::get_mouse_button_state() const {
 
-	return last_button_state;
+	return (ButtonList)last_button_state;
 }
 
 void OS_Windows::set_window_title(const String &p_title) {

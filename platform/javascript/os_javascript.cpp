@@ -273,7 +273,7 @@ Point2 OS_JavaScript::get_mouse_position() const {
 	return input->get_mouse_position();
 }
 
-int OS_JavaScript::get_mouse_button_state() const {
+ButtonList OS_JavaScript::get_mouse_button_state() const {
 
 	return input->get_mouse_button_mask();
 }

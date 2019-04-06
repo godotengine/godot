@@ -1096,7 +1096,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env
 	OS_Android::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_BUTTON;
-	jevent.index = p_button;
+	jevent.index = (JoystickList)p_button;
 	jevent.pressed = p_pressed;
 
 	os_android->process_joy_event(jevent);
@@ -1109,7 +1109,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, 
 	OS_Android::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_AXIS;
-	jevent.index = p_axis;
+	jevent.index = (JoystickList)p_axis;
 	jevent.value = p_value;
 
 	os_android->process_joy_event(jevent);
@@ -1155,7 +1155,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jobj
 	ievent.instance();
 	int val = p_unicode_char;
 	int scancode = android_get_keysym(p_scancode);
-	ievent->set_scancode(scancode);
+	ievent->set_scancode((KeyList)scancode);
 	ievent->set_unicode(val);
 	ievent->set_pressed(p_pressed);
 

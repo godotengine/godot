@@ -910,8 +910,8 @@ OS::MouseMode OS_X11::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-int OS_X11::get_mouse_button_state() const {
-	return last_button_state;
+ButtonList OS_X11::get_mouse_button_state() const {
+	return (ButtonList)last_button_state;
 }
 
 Point2 OS_X11::get_mouse_position() const {
@@ -1559,9 +1559,9 @@ void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWith
 	state->set_metakey((p_x11_state & Mod4Mask));
 }
 
-unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
+ButtonList OS_X11::get_mouse_button_state(ButtonList p_x11_button, int p_x11_type) {
 
-	unsigned int mask = 1 << (p_x11_button - 1);
+	unsigned int mask = 1 << ((int)p_x11_button - 1);
 
 	if (p_x11_type == ButtonPress) {
 		last_button_state |= mask;
@@ -1569,7 +1569,7 @@ unsigned int OS_X11::get_mouse_button_state(unsigned int p_x11_button, int p_x11
 		last_button_state &= ~mask;
 	}
 
-	return last_button_state;
+	return (ButtonList)last_button_state;
 }
 
 void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
@@ -1650,7 +1650,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 				k->set_pressed(keypress);
 
-				k->set_scancode(keycode);
+				k->set_scancode((KeyList)keycode);
 
 				k->set_echo(false);
 
@@ -1768,7 +1768,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	if (keycode >= 'a' && keycode <= 'z')
 		keycode -= 'a' - 'A';
 
-	k->set_scancode(keycode);
+	k->set_scancode((KeyList)keycode);
 	k->set_unicode(unicode);
 	k->set_echo(p_echo);
 
@@ -2128,11 +2128,11 @@ void OS_X11::process_xevents() {
 				mb.instance();
 
 				get_key_modifier_state(event.xbutton.state, mb);
-				mb->set_button_index(event.xbutton.button);
-				if (mb->get_button_index() == 2)
-					mb->set_button_index(3);
-				else if (mb->get_button_index() == 3)
-					mb->set_button_index(2);
+				mb->set_button_index((ButtonList)event.xbutton.button);
+				if (mb->get_button_index() == BUTTON_RIGHT)
+					mb->set_button_index(BUTTON_MIDDLE);
+				else if (mb->get_button_index() == BUTTON_MIDDLE)
+					mb->set_button_index(BUTTON_RIGHT);
 				mb->set_button_mask(get_mouse_button_state(mb->get_button_index(), event.xbutton.type));
 				mb->set_position(Vector2(event.xbutton.x, event.xbutton.y));
 				mb->set_global_position(mb->get_position());

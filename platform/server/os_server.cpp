@@ -138,9 +138,9 @@ bool OS_Server::is_mouse_grab_enabled() const {
 	return grab;
 }
 
-int OS_Server::get_mouse_button_state() const {
+ButtonList OS_Server::get_mouse_button_state() const {
 
-	return 0;
+	return (ButtonList)0;
 }
 
 Point2 OS_Server::get_mouse_position() const {

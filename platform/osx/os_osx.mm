@@ -590,7 +590,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 	OS_OSX::singleton->set_cursor_shape(p_shape);
 }
 
-static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
+static void _mouseDownEvent(NSEvent *event, ButtonList index, int mask, bool pressed) {
 	if (pressed) {
 		button_mask |= mask;
 	} else {
@@ -606,7 +606,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mb->set_pressed(pressed);
 	mb->set_position(pos);
 	mb->set_global_position(pos);
-	mb->set_button_mask(button_mask);
+	mb->set_button_mask((ButtonList)button_mask);
 	if (index == BUTTON_LEFT && pressed) {
 		mb->set_doubleclick([event clickCount] == 2);
 	}
@@ -640,7 +640,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	Ref<InputEventMouseMotion> mm;
 	mm.instance();
 
-	mm->set_button_mask(button_mask);
+	mm->set_button_mask((ButtonList)button_mask);
 	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
 	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
@@ -1125,7 +1125,7 @@ static int remapKey(unsigned int key) {
 	}
 }
 
-inline void sendScrollEvent(int button, double factor, int modifierFlags) {
+inline void sendScrollEvent(ButtonList button, double factor, int modifierFlags) {
 
 	unsigned int mask = 1 << (button - 1);
 	Vector2 mouse_pos = Vector2(mouse_x, mouse_y);
@@ -1140,7 +1140,7 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 	sc->set_position(mouse_pos);
 	sc->set_global_position(mouse_pos);
 	button_mask |= mask;
-	sc->set_button_mask(button_mask);
+	sc->set_button_mask((ButtonList)button_mask);
 	OS_OSX::singleton->push_input(sc);
 
 	sc.instance();
@@ -1150,7 +1150,7 @@ inline void sendScrollEvent(int button, double factor, int modifierFlags) {
 	sc->set_position(mouse_pos);
 	sc->set_global_position(mouse_pos);
 	button_mask &= ~mask;
-	sc->set_button_mask(button_mask);
+	sc->set_button_mask((ButtonList)button_mask);
 	OS_OSX::singleton->push_input(sc);
 }
 
@@ -1840,8 +1840,8 @@ Point2 OS_OSX::get_mouse_position() const {
 	return Vector2(mouse_x, mouse_y);
 }
 
-int OS_OSX::get_mouse_button_state() const {
-	return button_mask;
+ButtonList OS_OSX::get_mouse_button_state() const {
+	return (ButtonList)button_mask;
 }
 
 void OS_OSX::set_window_title(const String &p_title) {
@@ -2583,7 +2583,7 @@ void OS_OSX::process_key_events() {
 			get_key_modifier_state(ke.osx_state, k);
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
-			k->set_scancode(0);
+			k->set_scancode((KeyList)0);
 			k->set_unicode(ke.unicode);
 
 			push_input(k);
@@ -2594,7 +2594,7 @@ void OS_OSX::process_key_events() {
 			get_key_modifier_state(ke.osx_state, k);
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
-			k->set_scancode(ke.scancode);
+			k->set_scancode((KeyList)ke.scancode);
 
 			if (i + 1 < key_event_pos && key_event_buffer[i + 1].scancode == 0) {
 				k->set_unicode(key_event_buffer[i + 1].unicode);

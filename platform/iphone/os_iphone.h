@@ -124,7 +124,7 @@ public:
 	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick);
 	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y);
 	void touches_cancelled();
-	void key(uint32_t p_key, bool p_pressed);
+	void key(KeyList p_key, bool p_pressed);
 	void set_virtual_keyboard_height(int p_height);
 
 	int set_base_framebuffer(int p_fb);
@@ -136,8 +136,8 @@ public:
 
 	int get_unused_joy_id();
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
-	void joy_button(int p_device, int p_button, bool p_pressed);
-	void joy_axis(int p_device, int p_axis, const InputDefault::JoyAxis &p_value);
+	void joy_button(int p_device, JoystickList p_button, bool p_pressed);
+	void joy_axis(int p_device, JoystickList p_axis, const InputDefault::JoyAxis &p_value);
 
 	static OSIPhone *get_singleton();
 
@@ -145,7 +145,7 @@ public:
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
 	virtual Point2 get_mouse_position() const;
-	virtual int get_mouse_button_state() const;
+	virtual ButtonList get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");

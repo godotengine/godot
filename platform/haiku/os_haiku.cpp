@@ -195,7 +195,7 @@ Point2 OS_Haiku::get_mouse_position() const {
 	return window->GetLastMousePosition();
 }
 
-int OS_Haiku::get_mouse_button_state() const {
+ButtonList OS_Haiku::get_mouse_button_state() const {
 	return window->GetLastButtonMask();
 }
 
