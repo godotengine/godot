@@ -39,21 +39,34 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	//get data
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
+	int mix_start = 0;
+	int mix_len = buffer_size;
 
 	if (p_fadeout) {
 		// Short fadeout ramp
-		buffer_size = MIN(buffer_size, 128);
+		mix_len = MIN(mix_len, 128);
+	} else if (predelay_samples > 0) {
+
+		mix_len -= predelay_samples;
+		mix_start = MIN(predelay_samples, buffer_size);
+		predelay_samples -= buffer_size;
 	}
 
-	stream_playback->mix(buffer, pitch_scale, buffer_size);
+	if (mix_len > 0) {
+		stream_playback->mix(buffer, pitch_scale, mix_len);
+	}
 
 	//multiply volume interpolating to avoid clicks if this changes
 	float target_volume = p_fadeout ? -80.0 : volume_db;
 	float vol = Math::db2linear(mix_volume_db);
 	float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
 
-	for (int i = 0; i < buffer_size; i++) {
-		buffer[i] *= vol;
+	for (int i = 0; i < mix_start; i++) {
+		vol += vol_inc;
+	}
+
+	for (int i = mix_start; i < buffer_size; i++) {
+		buffer[i - mix_start] *= vol;
 		vol += vol_inc;
 	}
 
@@ -83,8 +96,8 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	for (int c = 0; c < 4; c++) {
 		if (!targets[c])
 			break;
-		for (int i = 0; i < buffer_size; i++) {
-			targets[c][i] += buffer[i];
+		for (int i = 0; i < mix_len; i++) {
+			targets[c][i + mix_start] += buffer[i];
 		}
 	}
 }
@@ -108,14 +121,21 @@ void AudioStreamPlayer::_mix_audio() {
 		return;
 	}
 
-	if (setseek >= 0.0) {
+	if (is_seek_set) {
 		if (stream_playback->is_playing()) {
 
 			//fade out to avoid pops
 			_mix_internal(true);
 		}
-		stream_playback->start(setseek);
+		if (setseek >= 0.0) {
+			stream_playback->start(setseek);
+			predelay_samples = 0;
+		} else {
+			stream_playback->start(0.0);
+			predelay_samples = int(-setseek * AudioServer::get_singleton()->get_mix_rate());
+		}
 		setseek = -1.0; //reset seek
+		is_seek_set = false;
 		mix_volume_db = volume_db; //reset ramp
 	}
 
@@ -134,7 +154,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 
-		if (!active || (setseek < 0 && !stream_playback->is_playing())) {
+		if (!active || (!is_seek_set && !stream_playback->is_playing())) {
 			active = false;
 			set_process_internal(false);
 			emit_signal("finished");
@@ -169,6 +189,7 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 		stream.unref();
 		active = false;
 		setseek = -1;
+		is_seek_set = false;
 	}
 
 	if (p_stream.is_valid()) {
@@ -211,6 +232,8 @@ void AudioStreamPlayer::play(float p_from_pos) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		stream_stop = false;
 		setseek = p_from_pos;
+		is_seek_set = true;
+		predelay_samples = 0;
 		active = true;
 		set_process_internal(true);
 	}
@@ -220,6 +243,8 @@ void AudioStreamPlayer::seek(float p_seconds) {
 
 	if (stream_playback.is_valid()) {
 		setseek = p_seconds;
+		is_seek_set = true;
+		predelay_samples = 0;
 	}
 }
 
@@ -389,6 +414,8 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	volume_db = 0;
 	autoplay = false;
 	setseek = -1;
+	predelay_samples = 0;
+	is_seek_set = false;
 	active = false;
 	stream_paused = false;
 	stream_fade = false;

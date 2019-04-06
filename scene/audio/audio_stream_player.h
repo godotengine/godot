@@ -51,6 +51,8 @@ private:
 	Vector<AudioFrame> mix_buffer;
 
 	volatile float setseek;
+	volatile int predelay_samples;
+	volatile bool is_seek_set;
 	volatile bool active;
 
 	float mix_volume_db;
