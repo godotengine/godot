@@ -42,6 +42,9 @@ private:
 		uint32_t field32[4];
 	};
 
+	String adapter;
+	String adapter_friendly;
+
 	bool valid;
 	bool wildcard;
 
@@ -72,11 +75,18 @@ public:
 	bool is_wildcard() const { return wildcard; }
 	bool is_valid() const { return valid; }
 	bool is_ipv4() const;
+	bool is_ipv6() const;
 	const uint8_t *get_ipv4() const;
 	void set_ipv4(const uint8_t *p_ip);
 
 	const uint8_t *get_ipv6() const;
 	void set_ipv6(const uint8_t *p_buf);
+
+	void set_adapter(const String &p_adapter);
+	String get_adapter() const;
+
+	void set_adapter_friendly(const String &p_adapter);
+	String get_adapter_friendly() const;
 
 	operator String() const;
 	IP_Address(const String &p_string);

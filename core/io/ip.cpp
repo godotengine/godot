@@ -234,6 +234,28 @@ Array IP::_get_local_addresses() const {
 	return addresses;
 }
 
+Array IP::_get_local_addresses_full() const {
+
+	Array addresses;
+	List<IP_Address> ip_addresses;
+	get_local_addresses(&ip_addresses);
+	for (List<IP_Address>::Element *E = ip_addresses.front(); E; E = E->next()) {
+		IP_Address &c = E->get();
+		Dictionary rc;
+		rc["address"] = c;
+		rc["adapter"] = c.get_adapter();
+		rc["friendly"] = c.get_adapter_friendly();
+		rc["type"] = IP::TYPE_NONE;
+		if (c.is_ipv4())
+			rc["type"] = IP::TYPE_IPV4;
+		if (c.is_ipv6())
+			rc["type"] = IP::TYPE_IPV6;
+		addresses.push_back(rc);
+	}
+
+	return addresses;
+}
+
 void IP::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("resolve_hostname", "host", "ip_type"), &IP::resolve_hostname, DEFVAL(IP::TYPE_ANY));
@@ -242,6 +264,7 @@ void IP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_resolve_item_address", "id"), &IP::get_resolve_item_address);
 	ClassDB::bind_method(D_METHOD("erase_resolve_item", "id"), &IP::erase_resolve_item);
 	ClassDB::bind_method(D_METHOD("get_local_addresses"), &IP::_get_local_addresses);
+	ClassDB::bind_method(D_METHOD("get_local_addresses_full"), &IP::_get_local_addresses_full);
 	ClassDB::bind_method(D_METHOD("clear_cache", "hostname"), &IP::clear_cache, DEFVAL(""));
 
 	BIND_ENUM_CONSTANT(RESOLVER_STATUS_NONE);
