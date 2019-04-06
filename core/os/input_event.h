@@ -64,6 +64,28 @@ enum ButtonList {
 	BUTTON_MASK_XBUTTON2 = (1 << (BUTTON_XBUTTON2 - 1))
 };
 
+inline ButtonList operator~(ButtonList a) {
+	return (ButtonList)(~(int)a);
+}
+inline ButtonList operator|(ButtonList a, ButtonList b) {
+	return (ButtonList)((int)a | (int)b);
+}
+inline ButtonList operator&(ButtonList a, ButtonList b) {
+	return (ButtonList)((int)a & (int)b);
+}
+inline ButtonList operator^(ButtonList a, ButtonList b) {
+	return (ButtonList)((int)a ^ (int)b);
+}
+inline ButtonList &operator|=(ButtonList &a, ButtonList b) {
+	return (ButtonList &)((int &)a |= (int)b);
+}
+inline ButtonList &operator&=(ButtonList &a, ButtonList b) {
+	return (ButtonList &)((int &)a |= (int)b);
+}
+inline ButtonList &operator^=(ButtonList &a, ButtonList b) {
+	return (ButtonList &)((int &)a |= (int)b);
+}
+
 enum JoystickList {
 
 	JOY_BUTTON_0 = 0,

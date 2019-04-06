@@ -38,7 +38,7 @@ class InputDefault : public Input {
 	GDCLASS(InputDefault, Input);
 	_THREAD_SAFE_CLASS_
 
-	int mouse_button_mask;
+	ButtonList mouse_button_mask;
 
 	Set<KeyList> keys_pressed;
 	Set<int> joy_buttons_pressed;

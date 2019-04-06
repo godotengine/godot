@@ -301,6 +301,28 @@ enum KeyList {
 
 };
 
+inline KeyList operator~(KeyList a) {
+	return (KeyList)(~(int)a);
+}
+inline KeyList operator|(KeyList a, KeyList b) {
+	return (KeyList)((int)a | (int)b);
+}
+inline KeyList operator&(KeyList a, KeyList b) {
+	return (KeyList)((int)a & (int)b);
+}
+inline KeyList operator^(KeyList a, KeyList b) {
+	return (KeyList)((int)a ^ (int)b);
+}
+inline KeyList &operator|=(KeyList &a, KeyList b) {
+	return (KeyList &)((int &)a |= (int)b);
+}
+inline KeyList &operator&=(KeyList &a, KeyList b) {
+	return (KeyList &)((int &)a |= (int)b);
+}
+inline KeyList &operator^=(KeyList &a, KeyList b) {
+	return (KeyList &)((int &)a |= (int)b);
+}
+
 enum KeyModifierMask {
 
 	KEY_CODE_MASK = ((1 << 25) - 1), ///< Apply this mask to any keycode to remove modifiers.

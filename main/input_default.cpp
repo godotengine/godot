@@ -283,9 +283,9 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 	if (mb.is_valid()) {
 
 		if (mb->is_pressed()) {
-			mouse_button_mask |= (1 << (mb->get_button_index() - 1));
+			mouse_button_mask |= ButtonList(1 << (mb->get_button_index() - 1));
 		} else {
-			mouse_button_mask &= ~(1 << (mb->get_button_index() - 1));
+			mouse_button_mask &= ButtonList(~(1 << (mb->get_button_index() - 1)));
 		}
 
 		Point2 pos = mb->get_global_position();
@@ -361,9 +361,9 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(BUTTON_LEFT);
 				if (st->is_pressed()) {
-					button_event->set_button_mask((ButtonList)(mouse_button_mask | BUTTON_MASK_LEFT));
+					button_event->set_button_mask(mouse_button_mask | BUTTON_MASK_LEFT);
 				} else {
-					button_event->set_button_mask((ButtonList)(mouse_button_mask & ~BUTTON_MASK_LEFT));
+					button_event->set_button_mask(mouse_button_mask & ~BUTTON_MASK_LEFT);
 				}
 
 				_parse_input_event_impl(button_event, true);
@@ -389,7 +389,7 @@ void InputDefault::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool 
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
 			motion_event->set_speed(sd->get_speed());
-			motion_event->set_button_mask((ButtonList)mouse_button_mask);
+			motion_event->set_button_mask(mouse_button_mask);
 
 			_parse_input_event_impl(motion_event, true);
 		}
@@ -521,7 +521,7 @@ Point2 InputDefault::get_last_mouse_speed() const {
 
 ButtonList InputDefault::get_mouse_button_mask() const {
 
-	return (ButtonList)mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
+	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
 void InputDefault::warp_mouse_position(const Vector2 &p_to) {
@@ -607,7 +607,7 @@ void InputDefault::ensure_touch_mouse_raised() {
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
 		button_event->set_button_index(BUTTON_LEFT);
-		button_event->set_button_mask((ButtonList)(mouse_button_mask & ~BUTTON_MASK_LEFT));
+		button_event->set_button_mask(mouse_button_mask & ~BUTTON_MASK_LEFT);
 
 		_parse_input_event_impl(button_event, true);
 	}
@@ -689,7 +689,7 @@ void InputDefault::set_use_accumulated_input(bool p_enable) {
 InputDefault::InputDefault() {
 
 	use_accumulated_input = true;
-	mouse_button_mask = 0;
+	mouse_button_mask = (ButtonList)0;
 	emulate_touch_from_mouse = false;
 	emulate_mouse_from_touch = false;
 	mouse_from_touch_index = -1;
