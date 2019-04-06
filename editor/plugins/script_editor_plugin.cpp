@@ -3083,13 +3083,13 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	site_search->set_text(TTR("Online Docs"));
 	site_search->connect("pressed", this, "_menu_option", varray(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
-	site_search->set_tooltip(TTR("Open Godot online documentation"));
+	site_search->set_tooltip(TTR("Open Godot online documentation."));
 
 	request_docs = memnew(ToolButton);
 	request_docs->set_text(TTR("Request Docs"));
 	request_docs->connect("pressed", this, "_menu_option", varray(REQUEST_DOCS));
 	menu_hb->add_child(request_docs);
-	request_docs->set_tooltip(TTR("Help improve the Godot documentation by giving feedback"));
+	request_docs->set_tooltip(TTR("Help improve the Godot documentation by giving feedback."));
 
 	help_search = memnew(ToolButton);
 	help_search->set_text(TTR("Search Help"));
