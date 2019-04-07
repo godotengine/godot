@@ -45,6 +45,7 @@ name is available.
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     bruvzg
+    Camille Mohr-Daurat (pouleyKetchoupp)
     Carl Olsson (not-surt)
     Carter Anderson (cart)
     Chris Bradfield (cbscribe)
@@ -115,6 +116,7 @@ name is available.
     Pieter-Jan Briers (PJB3005)
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
+    Rafał Mikrut (qarmin)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
     Ray Koopa (RayKoopa)
