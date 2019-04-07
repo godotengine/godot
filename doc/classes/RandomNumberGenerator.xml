@@ -28,6 +28,17 @@
 				Generates pseudo-random float between [code]from[/code] and [code]to[/code].
 			</description>
 		</method>
+		<method name="randfn">
+			<return type="float">
+			</return>
+			<argument index="0" name="mean" type="float" default="0.0">
+			</argument>
+			<argument index="1" name="deviation" type="float" default="1.0">
+			</argument>
+			<description>
+				Generates normally(gaussian) distributed pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code].
+			</description>
+		</method>
 		<method name="randi">
 			<return type="int">
 			</return>
