@@ -139,6 +139,34 @@ static String get_type_name(const PropertyInfo &info) {
 }
 
 /*
+ * Some comparison helper functions we need 
+ */
+
+struct MethodInfoComparator {
+	StringName::AlphCompare compare;
+	bool operator()(const MethodInfo &p_a, const MethodInfo &p_b) const {
+
+		return compare(p_a.name, p_b.name);
+	}
+};
+
+struct PropertyInfoComparator {
+	StringName::AlphCompare compare;
+	bool operator()(const PropertyInfo &p_a, const PropertyInfo &p_b) const {
+
+		return compare(p_a.name, p_b.name);
+	}
+};
+
+struct ConstantAPIComparator {
+	NoCaseComparator compare;
+	bool operator()(const ConstantAPI &p_a, const ConstantAPI &p_b) const {
+
+		return compare(p_a.constant_name, p_b.constant_name);
+	}
+};
+
+/*
  * Reads the entire Godot API to a list
  */
 List<ClassAPI> generate_c_api_classes() {
@@ -147,6 +175,7 @@ List<ClassAPI> generate_c_api_classes() {
 
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
+	classes.sort_custom<StringName::AlphCompare>();
 
 	// Register global constants as a fake GlobalConstants singleton class
 	{
@@ -162,6 +191,7 @@ List<ClassAPI> generate_c_api_classes() {
 			constant_api.constant_value = GlobalConstants::get_global_constant_value(i);
 			global_constants_api.constants.push_back(constant_api);
 		}
+		global_constants_api.constants.sort_custom<ConstantAPIComparator>();
 		api.push_back(global_constants_api);
 	}
 
@@ -193,6 +223,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<String> constant;
 			ClassDB::get_integer_constant_list(class_name, &constant, true);
+			constant.sort_custom<NoCaseComparator>();
 			for (List<String>::Element *c = constant.front(); c != NULL; c = c->next()) {
 				ConstantAPI constant_api;
 				constant_api.constant_name = c->get();
@@ -206,6 +237,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<MethodInfo> signals_;
 			ClassDB::get_signal_list(class_name, &signals_, true);
+			signals_.sort_custom<MethodInfoComparator>();
 
 			for (int i = 0; i < signals_.size(); i++) {
 				SignalAPI signal;
@@ -245,6 +277,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<PropertyInfo> properties;
 			ClassDB::get_property_list(class_name, &properties, true);
+			properties.sort_custom<PropertyInfoComparator>();
 
 			for (List<PropertyInfo>::Element *p = properties.front(); p != NULL; p = p->next()) {
 				PropertyAPI property_api;
@@ -272,6 +305,7 @@ List<ClassAPI> generate_c_api_classes() {
 		{
 			List<MethodInfo> methods;
 			ClassDB::get_method_list(class_name, &methods, true);
+			methods.sort_custom<MethodInfoComparator>();
 
 			for (List<MethodInfo>::Element *m = methods.front(); m != NULL; m = m->next()) {
 				MethodAPI method_api;
