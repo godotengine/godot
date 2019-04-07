@@ -33,6 +33,7 @@
 
 #include "scene/3d/camera.h"
 #include "scene/3d/spatial.h"
+#include "scene/resources/mesh.h"
 #include "servers/arvr/arvr_positional_tracker.h"
 
 /**
@@ -75,6 +76,7 @@ private:
 	int controller_id;
 	bool is_active;
 	int button_states;
+	Ref<Mesh> mesh;
 
 protected:
 	void _notification(int p_what);
@@ -95,6 +97,8 @@ public:
 	bool get_is_active() const;
 	ARVRPositionalTracker::TrackerHand get_hand() const;
 
+	Ref<Mesh> get_mesh(void) const;
+
 	String get_configuration_warning() const;
 
 	ARVRController();
@@ -113,6 +117,7 @@ private:
 	int anchor_id;
 	bool is_active;
 	Vector3 size;
+	Ref<Mesh> mesh;
 
 protected:
 	void _notification(int p_what);
@@ -127,6 +132,8 @@ public:
 	Vector3 get_size() const;
 
 	Plane get_plane() const;
+
+	Ref<Mesh> get_mesh(void) const;
 
 	String get_configuration_warning() const;
 
