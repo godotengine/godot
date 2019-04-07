@@ -85,7 +85,7 @@ public:
 
 	static _ResourceSaver *get_singleton() { return singleton; }
 
-	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
+	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
 	PoolVector<String> get_recognized_extensions(const RES &p_resource);
 
 	_ResourceSaver();
@@ -436,11 +436,11 @@ public:
 		COMPRESSION_GZIP = Compression::MODE_GZIP
 	};
 
-	Error open_encrypted(const String &p_path, int p_mode_flags, const Vector<uint8_t> &p_key);
-	Error open_encrypted_pass(const String &p_path, int p_mode_flags, const String &p_pass);
-	Error open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode = 0);
+	Error open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
+	Error open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
+	Error open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
 
-	Error open(const String &p_path, int p_mode_flags); ///< open a file
+	Error open(const String &p_path, ModeFlags p_mode_flags); ///< open a file
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open
 
@@ -632,10 +632,11 @@ public:
 
 		PRIORITY_LOW,
 		PRIORITY_NORMAL,
-		PRIORITY_HIGH
+		PRIORITY_HIGH,
+		PRIORITY_MAX
 	};
 
-	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), int p_priority = PRIORITY_NORMAL);
+	Error start(Object *p_instance, const StringName &p_method, const Variant &p_userdata = Variant(), Priority p_priority = PRIORITY_NORMAL);
 	String get_id() const;
 	bool is_active() const;
 	Variant wait_to_finish();
