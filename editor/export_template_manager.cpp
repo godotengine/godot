@@ -308,7 +308,8 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			p->step(TTR("Importing:") + " " + file, fc);
 		}
 
-		FileAccess *f = FileAccess::open(template_path.plus_file(file), FileAccess::WRITE);
+		String to_write = template_path.plus_file(file);
+		FileAccess *f = FileAccess::open(to_write, FileAccess::WRITE);
 
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
@@ -319,6 +320,10 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		f->store_buffer(data.ptr(), data.size());
 
 		memdelete(f);
+
+#ifndef WINDOWS_ENABLED
+		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+#endif
 
 		ret = unzGoToNextFile(pkg);
 		fc++;
@@ -539,6 +544,112 @@ void ExportTemplateManager::_notification(int p_what) {
 			set_process(false);
 		}
 	}
+}
+
+bool ExportTemplateManager::can_install_android_template() {
+
+	return FileAccess::exists(EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG).plus_file("android_source.zip"));
+}
+
+Error ExportTemplateManager::install_android_template() {
+
+	DirAccessRef da = DirAccess::open("res://");
+	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+	//make android dir (if it does not exist)
+
+	da->make_dir("android");
+	{
+		//add an empty .gdignore file to avoid scan
+		FileAccessRef f = FileAccess::open("res://android/.gdignore", FileAccess::WRITE);
+		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		f->store_line("");
+		f->close();
+	}
+	{
+		//add version, to ensure building wont work if template and Godot version are mismatch
+		FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::WRITE);
+		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		f->store_line(VERSION_FULL_CONFIG);
+		f->close();
+	}
+
+	Error err = da->make_dir_recursive("android/build");
+	ERR_FAIL_COND_V(err != OK, err);
+
+	String source_zip = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG).plus_file("android_source.zip");
+	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
+
+	FileAccess *src_f = NULL;
+	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
+	ERR_EXPLAIN("Android sources not in zip format");
+	ERR_FAIL_COND_V(!pkg, ERR_CANT_OPEN);
+
+	int ret = unzGoToFirstFile(pkg);
+
+	int total_files = 0;
+	//count files
+	while (ret == UNZ_OK) {
+		total_files++;
+		ret = unzGoToNextFile(pkg);
+	}
+
+	ret = unzGoToFirstFile(pkg);
+	//decompress files
+	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Android Build Sources"), total_files);
+
+	Set<String> dirs_tested;
+
+	int idx = 0;
+	while (ret == UNZ_OK) {
+
+		//get filename
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+
+		String name = fname;
+
+		String base_dir = name.get_base_dir();
+
+		if (!name.ends_with("/")) {
+			Vector<uint8_t> data;
+			data.resize(info.uncompressed_size);
+
+			//read
+			unzOpenCurrentFile(pkg);
+			unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			unzCloseCurrentFile(pkg);
+
+			if (!dirs_tested.has(base_dir)) {
+				da->make_dir_recursive(String("android/build").plus_file(base_dir));
+				dirs_tested.insert(base_dir);
+			}
+
+			String to_write = String("res://android/build").plus_file(name);
+			FileAccess *f = FileAccess::open(to_write, FileAccess::WRITE);
+			if (f) {
+				f->store_buffer(data.ptr(), data.size());
+				memdelete(f);
+#ifndef WINDOWS_ENABLED
+				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+#endif
+			} else {
+				ERR_PRINTS("Cant uncompress file: " + to_write);
+			}
+		}
+
+		ProgressDialog::get_singleton()->task_step("uncompress", name, idx);
+
+		idx++;
+		ret = unzGoToNextFile(pkg);
+	}
+
+	ProgressDialog::get_singleton()->end_task("uncompress");
+	unzClose(pkg);
+
+	return OK;
 }
 
 void ExportTemplateManager::_bind_methods() {
