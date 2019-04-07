@@ -8,7 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="DotNet.Glob" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Build" Version="15.7.179" />
+    <Reference Include="Microsoft.Build" />
+    <Reference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
   </ItemGroup>
 
