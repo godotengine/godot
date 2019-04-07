@@ -66,20 +66,6 @@ if 'TERM' in os.environ:
     env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
-env_base.android_maven_repos = []
-env_base.android_flat_dirs = []
-env_base.android_dependencies = []
-env_base.android_gradle_plugins = []
-env_base.android_gradle_classpath = []
-env_base.android_java_dirs = []
-env_base.android_res_dirs = []
-env_base.android_asset_dirs = []
-env_base.android_aidl_dirs = []
-env_base.android_jni_dirs = []
-env_base.android_default_config = []
-env_base.android_manifest_chunk = ""
-env_base.android_permission_chunk = ""
-env_base.android_appattributes_chunk = ""
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.split_drivers = False
@@ -87,20 +73,6 @@ env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
-env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
-env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
-env_base.__class__.android_add_dependency = methods.android_add_dependency
-env_base.__class__.android_add_java_dir = methods.android_add_java_dir
-env_base.__class__.android_add_res_dir = methods.android_add_res_dir
-env_base.__class__.android_add_asset_dir = methods.android_add_asset_dir
-env_base.__class__.android_add_aidl_dir = methods.android_add_aidl_dir
-env_base.__class__.android_add_jni_dir = methods.android_add_jni_dir
-env_base.__class__.android_add_default_config = methods.android_add_default_config
-env_base.__class__.android_add_to_manifest = methods.android_add_to_manifest
-env_base.__class__.android_add_to_permissions = methods.android_add_to_permissions
-env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
-env_base.__class__.android_add_gradle_plugin = methods.android_add_gradle_plugin
-env_base.__class__.android_add_gradle_classpath = methods.android_add_gradle_classpath
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_module_version_string = methods.add_module_version_string

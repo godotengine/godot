@@ -112,6 +112,16 @@ public:
 		DOCK_SLOT_MAX
 	};
 
+	struct ExecuteThreadArgs {
+		String path;
+		List<String> args;
+		String output;
+		Thread *execute_output_thread;
+		Mutex *execute_output_mutex;
+		int exitcode;
+		volatile bool done;
+	};
+
 private:
 	enum {
 		HISTORY_SIZE = 64
@@ -130,6 +140,8 @@ private:
 		FILE_IMPORT_SUBSCENE,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
+		FILE_INSTALL_ANDROID_SOURCE,
+		FILE_EXPLORE_ANDROID_BUILD_TEMPLATES,
 		FILE_EXPORT_TILESET,
 		FILE_SAVE_OPTIMIZED,
 		FILE_OPEN_RECENT,
@@ -267,6 +279,9 @@ private:
 	RichTextLabel *load_errors;
 	AcceptDialog *load_error_dialog;
 
+	RichTextLabel *execute_outputs;
+	AcceptDialog *execute_output_dialog;
+
 	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
@@ -289,6 +304,10 @@ private:
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts;
 	EditorNameDialog *layout_dialog;
+
+	ConfirmationDialog *custom_build_manage_templates;
+	ConfirmationDialog *install_android_build_template;
+	ConfirmationDialog *remove_android_build_template;
 
 	EditorSettingsDialog *settings_config_dialog;
 	RunSettingsDialog *run_settings_dialog;
@@ -799,6 +818,8 @@ public:
 
 	void update_keying() const { inspector_dock->update_keying(); };
 	bool has_scenes_in_session();
+
+	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);
 
 	EditorNode();
 	~EditorNode();
