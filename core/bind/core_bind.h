@@ -41,15 +41,19 @@
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 
-class _ResourceLoader : public Object {
-	GDCLASS(_ResourceLoader, Object);
+class MainLoop;
+
+namespace core_bind {
+
+class ResourceLoader : public Object {
+	GDCLASS(ResourceLoader, Object);
 
 protected:
 	static void _bind_methods();
-	static _ResourceLoader *singleton;
+	static ResourceLoader *singleton;
 
 public:
-	static _ResourceLoader *get_singleton() { return singleton; }
+	static ResourceLoader *get_singleton() { return singleton; }
 	Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "");
 	RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false);
 	PoolVector<String> get_recognized_extensions_for_type(const String &p_type);
@@ -61,15 +65,15 @@ public:
 	bool has_cached(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
 
-	_ResourceLoader();
+	ResourceLoader();
 };
 
-class _ResourceSaver : public Object {
-	GDCLASS(_ResourceSaver, Object);
+class ResourceSaver : public Object {
+	GDCLASS(ResourceSaver, Object);
 
 protected:
 	static void _bind_methods();
-	static _ResourceSaver *singleton;
+	static ResourceSaver *singleton;
 
 public:
 	enum SaverFlags {
@@ -83,24 +87,20 @@ public:
 		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
-	static _ResourceSaver *get_singleton() { return singleton; }
+	static ResourceSaver *get_singleton() { return singleton; }
 
 	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags);
 	PoolVector<String> get_recognized_extensions(const RES &p_resource);
 
-	_ResourceSaver();
+	ResourceSaver();
 };
 
-VARIANT_ENUM_CAST(_ResourceSaver::SaverFlags);
-
-class MainLoop;
-
-class _OS : public Object {
-	GDCLASS(_OS, Object);
+class OS : public Object {
+	GDCLASS(OS, Object);
 
 protected:
 	static void _bind_methods();
-	static _OS *singleton;
+	static OS *singleton;
 
 public:
 	enum VideoDriver {
@@ -358,29 +358,22 @@ public:
 
 	bool request_permission(const String &p_name);
 
-	static _OS *get_singleton() { return singleton; }
+	static OS *get_singleton() { return singleton; }
 
-	_OS();
+	OS();
 };
 
-VARIANT_ENUM_CAST(_OS::VideoDriver);
-VARIANT_ENUM_CAST(_OS::PowerState);
-VARIANT_ENUM_CAST(_OS::Weekday);
-VARIANT_ENUM_CAST(_OS::Month);
-VARIANT_ENUM_CAST(_OS::SystemDir);
-VARIANT_ENUM_CAST(_OS::ScreenOrientation);
+class Geometry : public Object {
 
-class _Geometry : public Object {
+	GDCLASS(Geometry, Object);
 
-	GDCLASS(_Geometry, Object);
-
-	static _Geometry *singleton;
+	static Geometry *singleton;
 
 protected:
 	static void _bind_methods();
 
 public:
-	static _Geometry *get_singleton();
+	static Geometry *get_singleton();
 	PoolVector<Plane> build_box_planes(const Vector3 &p_extents);
 	PoolVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	PoolVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
@@ -408,12 +401,12 @@ public:
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
-	_Geometry();
+	Geometry();
 };
 
-class _File : public Reference {
+class File : public Reference {
 
-	GDCLASS(_File, Reference);
+	GDCLASS(File, Reference);
 	FileAccess *f;
 	bool eswap;
 
@@ -506,16 +499,13 @@ public:
 
 	uint64_t get_modified_time(const String &p_file) const;
 
-	_File();
-	virtual ~_File();
+	File();
+	virtual ~File();
 };
 
-VARIANT_ENUM_CAST(_File::ModeFlags);
-VARIANT_ENUM_CAST(_File::CompressionMode);
+class Directory : public Reference {
 
-class _Directory : public Reference {
-
-	GDCLASS(_Directory, Reference);
+	GDCLASS(Directory, Reference);
 	DirAccess *d;
 
 protected:
@@ -549,25 +539,25 @@ public:
 	Error rename(String p_from, String p_to);
 	Error remove(String p_name);
 
-	_Directory();
-	virtual ~_Directory();
+	Directory();
+	virtual ~Directory();
 
 private:
 	bool _list_skip_navigational;
 	bool _list_skip_hidden;
 };
 
-class _Marshalls : public Reference {
+class Marshalls : public Reference {
 
-	GDCLASS(_Marshalls, Reference);
+	GDCLASS(Marshalls, Reference);
 
-	static _Marshalls *singleton;
+	static Marshalls *singleton;
 
 protected:
 	static void _bind_methods();
 
 public:
-	static _Marshalls *get_singleton();
+	static Marshalls *get_singleton();
 
 	String variant_to_base64(const Variant &p_var, bool p_full_objects = false);
 	Variant base64_to_variant(const String &p_str, bool p_allow_objects = false);
@@ -578,14 +568,14 @@ public:
 	String utf8_to_base64(const String &p_str);
 	String base64_to_utf8(const String &p_str);
 
-	_Marshalls() { singleton = this; }
-	~_Marshalls() { singleton = NULL; }
+	Marshalls() { singleton = this; }
+	~Marshalls() { singleton = NULL; }
 };
 
-class _Mutex : public Reference {
+class Mutex : public Reference {
 
-	GDCLASS(_Mutex, Reference);
-	Mutex *mutex;
+	GDCLASS(Mutex, Reference);
+	::Mutex *mutex;
 
 	static void _bind_methods();
 
@@ -594,14 +584,14 @@ public:
 	Error try_lock();
 	void unlock();
 
-	_Mutex();
-	~_Mutex();
+	Mutex();
+	~Mutex();
 };
 
-class _Semaphore : public Reference {
+class Semaphore : public Reference {
 
-	GDCLASS(_Semaphore, Reference);
-	Semaphore *semaphore;
+	GDCLASS(Semaphore, Reference);
+	::Semaphore *semaphore;
 
 	static void _bind_methods();
 
@@ -609,13 +599,13 @@ public:
 	Error wait();
 	Error post();
 
-	_Semaphore();
-	~_Semaphore();
+	Semaphore();
+	~Semaphore();
 };
 
-class _Thread : public Reference {
+class Thread : public Reference {
 
-	GDCLASS(_Thread, Reference);
+	GDCLASS(Thread, Reference);
 
 protected:
 	Variant ret;
@@ -623,7 +613,7 @@ protected:
 	volatile bool active;
 	Object *target_instance;
 	StringName target_method;
-	Thread *thread;
+	::Thread *thread;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 
@@ -640,15 +630,15 @@ public:
 	bool is_active() const;
 	Variant wait_to_finish();
 
-	_Thread();
-	~_Thread();
+	Thread();
+	~Thread();
 };
 
-VARIANT_ENUM_CAST(_Thread::Priority);
+namespace special {
 
-class _ClassDB : public Object {
+class ClassDB : public Object {
 
-	GDCLASS(_ClassDB, Object)
+	GDCLASS(ClassDB, Object)
 
 protected:
 	static void _bind_methods();
@@ -681,19 +671,21 @@ public:
 
 	bool is_class_enabled(StringName p_class) const;
 
-	_ClassDB();
-	~_ClassDB();
+	ClassDB();
+	~ClassDB();
 };
 
-class _Engine : public Object {
-	GDCLASS(_Engine, Object);
+} // namespace special
+
+class Engine : public Object {
+	GDCLASS(Engine, Object);
 
 protected:
 	static void _bind_methods();
-	static _Engine *singleton;
+	static Engine *singleton;
 
 public:
-	static _Engine *get_singleton() { return singleton; }
+	static Engine *get_singleton() { return singleton; }
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
@@ -727,15 +719,15 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
-	_Engine();
+	Engine();
 };
 
-class _JSON;
+class JSON;
 
 class JSONParseResult : public Reference {
 	GDCLASS(JSONParseResult, Reference)
 
-	friend class _JSON;
+	friend class JSON;
 
 	Error error;
 	String error_string;
@@ -760,20 +752,36 @@ public:
 	Variant get_result() const;
 };
 
-class _JSON : public Object {
-	GDCLASS(_JSON, Object)
+class JSON : public Object {
+	GDCLASS(JSON, Object)
 
 protected:
 	static void _bind_methods();
-	static _JSON *singleton;
+	static JSON *singleton;
 
 public:
-	static _JSON *get_singleton() { return singleton; }
+	static JSON *get_singleton() { return singleton; }
 
 	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
 	Ref<JSONParseResult> parse(const String &p_json);
 
-	_JSON();
+	JSON();
 };
+
+} // namespace core_bind
+
+VARIANT_ENUM_CAST(core_bind::ResourceSaver::SaverFlags);
+
+VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
+VARIANT_ENUM_CAST(core_bind::OS::PowerState);
+VARIANT_ENUM_CAST(core_bind::OS::Weekday);
+VARIANT_ENUM_CAST(core_bind::OS::Month);
+VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
+VARIANT_ENUM_CAST(core_bind::OS::ScreenOrientation);
+
+VARIANT_ENUM_CAST(core_bind::File::ModeFlags);
+VARIANT_ENUM_CAST(core_bind::File::CompressionMode);
+
+VARIANT_ENUM_CAST(core_bind::Thread::Priority);
 
 #endif // CORE_BIND_H

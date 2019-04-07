@@ -2054,7 +2054,7 @@ void EditorSceneImporterAssimp::_set_texture_mapping_mode(aiTextureMapMode *map_
 
 void EditorSceneImporterAssimp::_find_texture_path(const String &r_p_path, String &r_path, bool &r_found) {
 
-	_Directory dir;
+	core_bind::Directory dir;
 
 	List<String> exts;
 	ImageLoader::get_recognized_extensions(&exts);
@@ -2081,7 +2081,7 @@ void EditorSceneImporterAssimp::_find_texture_path(const String &r_p_path, Strin
 	}
 }
 
-void EditorSceneImporterAssimp::_find_texture_path(const String &p_path, _Directory &dir, String &path, bool &found, String extension) {
+void EditorSceneImporterAssimp::_find_texture_path(const String &p_path, core_bind::Directory &dir, String &path, bool &found, String extension) {
 	String name = path.get_basename() + extension;
 	if (dir.file_exists(name)) {
 		found = true;

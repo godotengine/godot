@@ -71,17 +71,17 @@ static Ref<ResourceFormatImporter> resource_format_importer;
 static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 
-static _ResourceLoader *_resource_loader = NULL;
-static _ResourceSaver *_resource_saver = NULL;
-static _OS *_os = NULL;
-static _Engine *_engine = NULL;
-static _ClassDB *_classdb = NULL;
-static _Marshalls *_marshalls = NULL;
-static _JSON *_json = NULL;
+static core_bind::ResourceLoader *_resource_loader = NULL;
+static core_bind::ResourceSaver *_resource_saver = NULL;
+static core_bind::OS *_os = NULL;
+static core_bind::Engine *_engine = NULL;
+static core_bind::special::ClassDB *_classdb = NULL;
+static core_bind::Marshalls *_marshalls = NULL;
+static core_bind::JSON *_json = NULL;
 
 static IP *ip = NULL;
 
-static _Geometry *_geometry = NULL;
+static core_bind::Geometry *_geometry = NULL;
 
 extern Mutex *_global_mutex;
 
@@ -169,11 +169,11 @@ void register_core_types() {
 	ClassDB::register_class<ResourceFormatLoader>();
 	ClassDB::register_class<ResourceFormatSaver>();
 
-	ClassDB::register_class<_File>();
-	ClassDB::register_class<_Directory>();
-	ClassDB::register_class<_Thread>();
-	ClassDB::register_class<_Mutex>();
-	ClassDB::register_class<_Semaphore>();
+	ClassDB::register_class<core_bind::File>();
+	ClassDB::register_class<core_bind::Directory>();
+	ClassDB::register_class<core_bind::Thread>();
+	ClassDB::register_class<core_bind::Mutex>();
+	ClassDB::register_class<core_bind::Semaphore>();
 
 	ClassDB::register_class<XMLParser>();
 
@@ -187,19 +187,19 @@ void register_core_types() {
 	ClassDB::register_class<EncodedObjectAsID>();
 	ClassDB::register_class<RandomNumberGenerator>();
 
-	ClassDB::register_class<JSONParseResult>();
+	ClassDB::register_class<core_bind::JSONParseResult>();
 
 	ip = IP::create();
 
-	_geometry = memnew(_Geometry);
+	_geometry = memnew(core_bind::Geometry);
 
-	_resource_loader = memnew(_ResourceLoader);
-	_resource_saver = memnew(_ResourceSaver);
-	_os = memnew(_OS);
-	_engine = memnew(_Engine);
-	_classdb = memnew(_ClassDB);
-	_marshalls = memnew(_Marshalls);
-	_json = memnew(_JSON);
+	_resource_loader = memnew(core_bind::ResourceLoader);
+	_resource_saver = memnew(core_bind::ResourceSaver);
+	_os = memnew(core_bind::OS);
+	_engine = memnew(core_bind::Engine);
+	_classdb = memnew(core_bind::special::ClassDB);
+	_marshalls = memnew(core_bind::Marshalls);
+	_json = memnew(core_bind::JSON);
 }
 
 void register_core_settings() {
@@ -212,32 +212,32 @@ void register_core_singletons() {
 
 	ClassDB::register_class<ProjectSettings>();
 	ClassDB::register_virtual_class<IP>();
-	ClassDB::register_class<_Geometry>();
-	ClassDB::register_class<_ResourceLoader>();
-	ClassDB::register_class<_ResourceSaver>();
-	ClassDB::register_class<_OS>();
-	ClassDB::register_class<_Engine>();
-	ClassDB::register_class<_ClassDB>();
-	ClassDB::register_class<_Marshalls>();
+	ClassDB::register_class<core_bind::Geometry>();
+	ClassDB::register_class<core_bind::ResourceLoader>();
+	ClassDB::register_class<core_bind::ResourceSaver>();
+	ClassDB::register_class<core_bind::OS>();
+	ClassDB::register_class<core_bind::Engine>();
+	ClassDB::register_class<core_bind::special::ClassDB>();
+	ClassDB::register_class<core_bind::Marshalls>();
 	ClassDB::register_class<TranslationServer>();
 	ClassDB::register_virtual_class<Input>();
 	ClassDB::register_class<InputMap>();
-	ClassDB::register_class<_JSON>();
+	ClassDB::register_class<core_bind::JSON>();
 	ClassDB::register_class<Expression>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry", _Geometry::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", _OS::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", _Engine::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Geometry", core_bind::Geometry::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceLoader", core_bind::ResourceLoader::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ResourceSaver", core_bind::ResourceSaver::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("OS", core_bind::OS::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Engine", core_bind::Engine::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", core_bind::Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", core_bind::JSON::get_singleton()));
 }
 
 void unregister_core_types() {
