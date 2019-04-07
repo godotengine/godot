@@ -148,7 +148,7 @@ _ResourceLoader::_ResourceLoader() {
 	singleton = this;
 }
 
-Error _ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
+Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
 
 	ERR_FAIL_COND_V(p_resource.is_null(), ERR_INVALID_PARAMETER);
 	return ResourceSaver::save(p_path, p_resource, p_flags);
@@ -1579,7 +1579,7 @@ _Geometry::_Geometry() {
 
 ///////////////////////// FILE
 
-Error _File::open_encrypted(const String &p_path, int p_mode_flags, const Vector<uint8_t> &p_key) {
+Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
 
 	Error err = open(p_path, p_mode_flags);
 	if (err)
@@ -1596,7 +1596,7 @@ Error _File::open_encrypted(const String &p_path, int p_mode_flags, const Vector
 	return OK;
 }
 
-Error _File::open_encrypted_pass(const String &p_path, int p_mode_flags, const String &p_pass) {
+Error _File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass) {
 
 	Error err = open(p_path, p_mode_flags);
 	if (err)
@@ -1614,7 +1614,7 @@ Error _File::open_encrypted_pass(const String &p_path, int p_mode_flags, const S
 	return OK;
 }
 
-Error _File::open_compressed(const String &p_path, int p_mode_flags, int p_compress_mode) {
+Error _File::open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode) {
 
 	FileAccessCompressed *fac = memnew(FileAccessCompressed);
 
@@ -1631,7 +1631,7 @@ Error _File::open_compressed(const String &p_path, int p_mode_flags, int p_compr
 	return OK;
 }
 
-Error _File::open(const String &p_path, int p_mode_flags) {
+Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 
 	close();
 	Error err;
@@ -2453,12 +2453,12 @@ void _Thread::_start_func(void *ud) {
 	}
 }
 
-Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, int p_priority) {
+Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
 
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_INDEX_V(p_priority, 3, ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
 
 	ret = Variant();
 	target_method = p_method;
