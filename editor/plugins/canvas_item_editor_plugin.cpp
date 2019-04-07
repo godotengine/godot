@@ -1072,36 +1072,36 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (drag_type == DRAG_NONE) {
+		if (!panning) {
 			if (b->is_pressed() &&
 					(b->get_button_index() == BUTTON_MIDDLE ||
 							(b->get_button_index() == BUTTON_LEFT && tool == TOOL_PAN) ||
 							(b->get_button_index() == BUTTON_LEFT && !EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning") && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 				// Pan the viewport
-				drag_type = DRAG_PAN;
+				panning = true;
 			}
 		}
 
-		if (drag_type == DRAG_PAN) {
+		if (panning) {
 			if (!b->is_pressed()) {
 				// Stop panning the viewport (for any mouse button press)
-				drag_type = DRAG_NONE;
+				panning = false;
 			}
 		}
 	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
-		if (k->get_scancode() == KEY_SPACE && EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning")) {
-			if (drag_type == DRAG_NONE) {
+		if (k->get_scancode() == KEY_SPACE && (EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning") || drag_type != DRAG_NONE)) {
+			if (!panning) {
 				if (k->is_pressed() && !k->is_echo()) {
 					//Pan the viewport
-					drag_type = DRAG_PAN;
+					panning = true;
 				}
-			} else if (drag_type == DRAG_PAN) {
+			} else if (panning) {
 				if (!k->is_pressed()) {
 					// Stop panning the viewport (for any mouse button press)
-					drag_type = DRAG_NONE;
+					panning = false;
 				}
 			}
 		}
@@ -1109,7 +1109,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 	if (m.is_valid()) {
-		if (drag_type == DRAG_PAN) {
+		if (panning) {
 			// Pan the viewport
 			Point2i relative;
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
@@ -2190,31 +2190,33 @@ bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 
 void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	bool accepted = false;
-	if ((accepted = _gui_input_rulers_and_guides(p_event))) {
-		//printf("Rulers and guides\n");
-	} else if ((accepted = editor->get_editor_plugins_over()->forward_gui_input(p_event))) {
-		//printf("Plugin\n");
-	} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
-		//printf("Open scene on double click\n");
-	} else if ((accepted = _gui_input_anchors(p_event))) {
-		//printf("Anchors\n");
-	} else if ((accepted = _gui_input_scale(p_event))) {
-		//printf("Set scale\n");
-	} else if ((accepted = _gui_input_pivot(p_event))) {
-		//printf("Set pivot\n");
-	} else if ((accepted = _gui_input_resize(p_event))) {
-		//printf("Resize\n");
-	} else if ((accepted = _gui_input_rotate(p_event))) {
-		//printf("Rotate\n");
-	} else if ((accepted = _gui_input_move(p_event))) {
-		//printf("Move\n");
-	} else if ((accepted = _gui_input_zoom_or_pan(p_event))) {
-		//printf("Zoom or pan\n");
-	} else if ((accepted = _gui_input_select(p_event))) {
-		//printf("Selection\n");
-	} else {
-		//printf("Not accepted\n");
+	if (EditorSettings::get_singleton()->get("editors/2d/simple_spacebar_panning") || !Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if ((accepted = _gui_input_rulers_and_guides(p_event))) {
+			//printf("Rulers and guides\n");
+		} else if ((accepted = editor->get_editor_plugins_over()->forward_gui_input(p_event))) {
+			//printf("Plugin\n");
+		} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
+			//printf("Open scene on double click\n");
+		} else if ((accepted = _gui_input_anchors(p_event))) {
+			//printf("Anchors\n");
+		} else if ((accepted = _gui_input_scale(p_event))) {
+			//printf("Set scale\n");
+		} else if ((accepted = _gui_input_pivot(p_event))) {
+			//printf("Set pivot\n");
+		} else if ((accepted = _gui_input_resize(p_event))) {
+			//printf("Resize\n");
+		} else if ((accepted = _gui_input_rotate(p_event))) {
+			//printf("Rotate\n");
+		} else if ((accepted = _gui_input_move(p_event))) {
+			//printf("Move\n");
+		} else if ((accepted = _gui_input_select(p_event))) {
+			//printf("Selection\n");
+		} else {
+			//printf("Not accepted\n");
+		}
 	}
+
+	accepted = (_gui_input_zoom_or_pan(p_event) || accepted);
 
 	if (accepted)
 		accept_event();
@@ -2258,9 +2260,6 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			break;
 		case DRAG_MOVE:
 			c = CURSOR_MOVE;
-			break;
-		case DRAG_PAN:
-			c = CURSOR_DRAG;
 			break;
 		default:
 			break;
@@ -4591,6 +4590,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	drag_to = Vector2();
 	dragged_guide_pos = Point2();
 	dragged_guide_index = -1;
+	panning = false;
 
 	bone_last_frame = 0;
 
