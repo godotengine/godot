@@ -205,8 +205,7 @@ private:
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-		DRAG_KEY_MOVE,
-		DRAG_PAN
+		DRAG_KEY_MOVE
 	};
 
 	EditorSelection *editor_selection;
@@ -262,6 +261,7 @@ private:
 	bool key_pos;
 	bool key_rot;
 	bool key_scale;
+	bool panning;
 
 	MenuOption last_option;
 
