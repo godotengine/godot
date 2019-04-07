@@ -26,6 +26,24 @@
               ["const godot_dictionary *", "p_self"],
               ["const godot_bool", "p_deep"]
             ]
+          },
+          {
+            "name": "godot_vector3_move_toward",
+            "return_type": "godot_vector3",
+            "arguments": [
+              ["const godot_vector3 *", "p_self"],
+              ["const godot_vector3 *", "p_to"],
+              ["const godot_real", "p_delta"]
+            ]
+          },
+          {
+            "name": "godot_vector2_move_toward",
+            "return_type": "godot_vector2",
+            "arguments": [
+              ["const godot_vector2 *", "p_self"],
+              ["const godot_vector2 *", "p_to"],
+              ["const godot_real", "p_delta"]
+            ]
           }
         ]
       },

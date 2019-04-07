@@ -210,6 +210,11 @@ namespace Godot
             return a < b ? a : b;
         }
 
+        public static real_t MoveToward(real_t from, real_t to, real_t delta)
+        {
+            return Abs(to - from) <= delta ? to : from + Sign(to - from) * delta;
+        }
+
         public static int NearestPo2(int value)
         {
             value--;

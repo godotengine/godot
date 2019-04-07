@@ -224,6 +224,8 @@ public:
 		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return x * x * (3.0f - 2.0f * x);
 	}
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
