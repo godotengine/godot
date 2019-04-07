@@ -39,13 +39,12 @@
 #if defined(OPENGL_ENABLED)
 
 #include "core/os/os.h"
-#include "drivers/gl_context/context_gl.h"
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrender.h>
 
 struct ContextGL_X11_Private;
 
-class ContextGL_X11 : public ContextGL {
+class ContextGL_X11 {
 
 public:
 	enum ContextType {
@@ -67,19 +66,19 @@ private:
 	ContextType context_type;
 
 public:
-	virtual void release_current();
-	virtual void make_current();
-	virtual void swap_buffers();
-	virtual int get_window_width();
-	virtual int get_window_height();
+	void release_current();
+	void make_current();
+	void swap_buffers();
+	int get_window_width();
+	int get_window_height();
 
-	virtual Error initialize();
+	Error initialize();
 
-	virtual void set_use_vsync(bool p_use);
-	virtual bool is_using_vsync() const;
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
 
 	ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, ContextType p_context_type);
-	virtual ~ContextGL_X11();
+	~ContextGL_X11();
 };
 
 #endif
