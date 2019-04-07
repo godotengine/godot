@@ -1945,7 +1945,7 @@ void EditorSceneImporterAssimp::_add_mesh_to_mesh_instance(const aiNode *p_node,
 
 			morphs[j] = array_copy;
 		}
-		r_name_morph_mesh_names.insert(_ai_raw_string_to_string(p_node->mName), morph_mesh_idx_names);
+		r_name_morph_mesh_names.insert(_ai_string_to_string(p_node->mName), morph_mesh_idx_names);
 		mesh->add_surface_from_arrays(primitive, array_mesh, morphs);
 		mesh->surface_set_material(i, mat);
 		mesh->surface_set_name(i, _ai_string_to_string(ai_mesh->mName));
