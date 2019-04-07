@@ -323,6 +323,9 @@ List<ClassAPI> generate_c_api_classes() {
 						arg_type = "Variant";
 					} else if (arg_info.type == Variant::OBJECT) {
 						arg_type = arg_info.class_name;
+						if (arg_type == "") {
+							arg_type = Variant::get_type_name(arg_info.type);
+						}
 					} else {
 						arg_type = Variant::get_type_name(arg_info.type);
 					}
