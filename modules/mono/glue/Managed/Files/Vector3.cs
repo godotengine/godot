@@ -190,6 +190,14 @@ namespace Godot
             );
         }
 
+        public Vector3 MoveToward(Vector3 to, real_t delta)
+        {
+            var v = this;
+            var vd = to - v;
+            var len = vd.Length();
+            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+        }
+
         public Axis MaxAxis()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);

@@ -186,6 +186,14 @@ namespace Godot
             return res;
         }
 
+        public Vector2 MoveToward(Vector2 to, real_t delta)
+        {
+            var v = this;
+            var vd = to - v;
+            var len = vd.Length();
+            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+        }
+
         public Vector2 Normalized()
         {
             var v = this;
