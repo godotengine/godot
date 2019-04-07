@@ -5,8 +5,10 @@
 	<description>
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<demos>
+		<link>https://github.com/godotengine/tps-demo</link>
 	</demos>
 	<methods>
 		<method name="advance">
