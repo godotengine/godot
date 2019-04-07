@@ -2460,7 +2460,7 @@ void OS_Windows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, 
 	DeleteDC(hMainDC);
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 	if (p_blocking && r_pipe) {
 
@@ -2479,7 +2479,13 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		char buf[65535];
 		while (fgets(buf, 65535, f)) {
 
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
 			(*r_pipe) += buf;
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
 		}
 
 		int rv = _pclose(f);
