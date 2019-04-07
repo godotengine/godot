@@ -4664,6 +4664,23 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 		rt->fbo = 0;
 	}
 
+	if (rt->external.fbo != 0) {
+		// free this
+		glDeleteFramebuffers(1, &rt->external.fbo);
+
+		// clean up our texture
+		Texture *t = texture_owner.get(rt->external.texture);
+		t->alloc_height = 0;
+		t->alloc_width = 0;
+		t->width = 0;
+		t->height = 0;
+		t->active = false;
+		texture_owner.free(rt->external.texture);
+		memdelete(t);
+
+		rt->external.fbo = 0;
+	}
+
 	if (rt->depth) {
 		if (config.support_depth_texture) {
 			glDeleteTextures(1, &rt->depth);
@@ -4742,7 +4759,108 @@ RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target) const
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	return rt->texture;
+	if (rt->external.fbo == 0) {
+		return rt->texture;
+	} else {
+		return rt->external.texture;
+	}
+}
+
+void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	if (p_texture_id == 0) {
+		if (rt->external.fbo != 0) {
+			// free this
+			glDeleteFramebuffers(1, &rt->external.fbo);
+
+			// clean up our texture
+			Texture *t = texture_owner.get(rt->external.texture);
+			t->alloc_height = 0;
+			t->alloc_width = 0;
+			t->width = 0;
+			t->height = 0;
+			t->active = false;
+			texture_owner.free(rt->external.texture);
+			memdelete(t);
+
+			rt->external.fbo = 0;
+			rt->external.color = 0;
+		}
+	} else {
+		Texture *t;
+
+		if (rt->external.fbo == 0) {
+			// create our fbo
+			glGenFramebuffers(1, &rt->external.fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
+
+			// allocate a texture
+			t = memnew(Texture);
+
+			t->type = VS::TEXTURE_TYPE_2D;
+			t->flags = 0;
+			t->width = 0;
+			t->height = 0;
+			t->alloc_height = 0;
+			t->alloc_width = 0;
+			t->format = Image::FORMAT_RGBA8;
+			t->target = GL_TEXTURE_2D;
+			t->gl_format_cache = 0;
+			t->gl_internal_format_cache = 0;
+			t->gl_type_cache = 0;
+			t->data_size = 0;
+			t->compressed = false;
+			t->srgb = false;
+			t->total_data_size = 0;
+			t->ignore_mipmaps = false;
+			t->mipmaps = 1;
+			t->active = true;
+			t->tex_id = 0;
+			t->render_target = rt;
+
+			rt->external.texture = texture_owner.make_rid(t);
+		} else {
+			// bind our frame buffer
+			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
+
+			// find our texture
+			t = texture_owner.get(rt->external.texture);
+		}
+
+		// set our texture
+		t->tex_id = p_texture_id;
+		rt->external.color = p_texture_id;
+
+		// size shouldn't be different
+		t->width = rt->width;
+		t->height = rt->height;
+		t->alloc_height = rt->width;
+		t->alloc_width = rt->height;
+
+		// is there a point to setting the internal formats? we don't know them..
+
+		// set our texture as the destination for our framebuffer
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
+
+		// seeing we're rendering into this directly, better also use our depth buffer, just use our existing one :)
+		if (config.support_depth_texture) {
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+		} else {
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rt->depth);
+		}
+
+		// check status and unbind
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("framebuffer fail, status: %x\n", status);
+		}
+
+		ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
+	}
 }
 
 void RasterizerStorageGLES2::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
