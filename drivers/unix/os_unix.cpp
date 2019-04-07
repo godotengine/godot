@@ -276,7 +276,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
@@ -303,11 +303,17 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 		char buf[65535];
+
 		while (fgets(buf, 65535, f)) {
 
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
 			(*r_pipe) += buf;
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
 		}
-
 		int rv = pclose(f);
 		if (r_exitcode)
 			*r_exitcode = rv;
@@ -320,6 +326,13 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 	if (pid == 0) {
 		// is child
+
+		if (!p_blocking) {
+			// For non blocking calls, create a new session-ID so parent won't wait for it.
+			// This ensures the process won't go zombie at end.
+			setsid();
+		}
+
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
 		for (int i = 0; i < p_arguments.size(); i++)
@@ -342,6 +355,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		waitpid(pid, &status, 0);
 		if (r_exitcode)
 			*r_exitcode = WEXITSTATUS(status);
+
 	} else {
 
 		if (r_child_id)

@@ -56,6 +56,9 @@ public:
 	bool endian_swap;
 	bool real_is_double;
 
+	virtual uint32_t _get_unix_permissions(const String &p_file) = 0;
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) = 0;
+
 protected:
 	String fix_path(const String &p_path) const;
 	virtual Error _open(const String &p_path, int p_mode_flags) = 0; ///< open a file
@@ -148,14 +151,14 @@ public:
 
 	virtual Error reopen(const String &p_path, int p_mode_flags); ///< does not change the AccessType
 
-	virtual Error _chmod(const String &p_path, int p_mod) { return ERR_UNAVAILABLE; }
-
 	static FileAccess *create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static FileAccess *create_for_path(const String &p_path);
 	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = NULL); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
+	static uint32_t get_unix_permissions(const String &p_file);
+	static Error set_unix_permissions(const String &p_file, uint32_t p_permissions);
 
 	static void set_backup_save(bool p_enable) { backup_save = p_enable; };
 	static bool is_backup_save_enabled() { return backup_save; };

@@ -497,6 +497,16 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	return exists_modtime;
 }
 
+uint32_t FileAccessNetwork::_get_unix_permissions(const String &p_file) {
+	//could be implemented, not sure if worth it
+	return 0;
+}
+
+Error FileAccessNetwork::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+
+	return FAILED;
+}
+
 void FileAccessNetwork::configure() {
 
 	GLOBAL_DEF("network/remote_fs/page_size", 65536);

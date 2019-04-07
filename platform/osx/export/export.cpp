@@ -568,7 +568,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					f->close();
 					if (is_execute) {
 						// Chmod with 0755 if the file is executable
-						f->_chmod(file, 0755);
+						FileAccess::set_unix_permissions(file, 0755);
 					}
 					memdelete(f);
 				} else {

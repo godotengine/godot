@@ -301,6 +301,16 @@ uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 	return 0;
 }
 
+uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+
+	return 0;
+}
+
+Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+
+	return FAILED;
+}
+
 FileAccessEncrypted::FileAccessEncrypted() {
 
 	file = NULL;
