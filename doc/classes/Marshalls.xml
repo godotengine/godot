@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Marshalls" inherits="Reference" category="Core" version="3.1">
+<class name="Marshalls" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		Data transformation (marshalling) and encoding helpers.
 	</brief_description>
@@ -34,8 +34,11 @@
 			</return>
 			<argument index="0" name="base64_str" type="String">
 			</argument>
+			<argument index="1" name="allow_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Return [Variant] of a given base64 encoded String.
+				Return [Variant] of a given base64 encoded String. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
+				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
 			</description>
 		</method>
 		<method name="raw_to_base64">
@@ -61,8 +64,10 @@
 			</return>
 			<argument index="0" name="variant" type="Variant">
 			</argument>
+			<argument index="1" name="full_objects" type="bool" default="false">
+			</argument>
 			<description>
-				Return base64 encoded String of a given [Variant].
+				Return base64 encoded String of a given [Variant]. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>

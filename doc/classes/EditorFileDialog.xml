@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core" version="3.1">
+<class name="EditorFileDialog" inherits="ConfirmationDialog" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -15,7 +15,7 @@
 			<argument index="0" name="filter" type="String">
 			</argument>
 			<description>
-				Adds a comma-delimited file extension filter option to the [code]EditorFileDialog[/code] with an optional semi-colon-delimited label.
+				Adds a comma-delimited file extension filter option to the [EditorFileDialog] with an optional semi-colon-delimited label.
 				Example: "*.tscn, *.scn; Scenes", results in filter text "Scenes (*.tscn, *.scn)".
 			</description>
 		</method>
@@ -37,7 +37,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Notify the [code]EditorFileDialog[/code] that its view of the data is no longer accurate. Updates the view contents on next view update.
+				Notify the [EditorFileDialog] that its view of the data is no longer accurate. Updates the view contents on next view update.
 			</description>
 		</method>
 	</methods>
@@ -55,16 +55,16 @@
 			The file system path in the address bar.
 		</member>
 		<member name="disable_overwrite_warning" type="bool" setter="set_disable_overwrite_warning" getter="is_overwrite_warning_disabled">
-			If [code]true[/code], the [code]EditorFileDialog[/code] will not warn the user before overwriting files.
+			If [code]true[/code], the [EditorFileDialog] will not warn the user before overwriting files.
 		</member>
 		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="EditorFileDialog.DisplayMode">
-			The view format in which the [code]EditorFileDialog[/code] displays resources to the user.
+			The view format in which the [EditorFileDialog] displays resources to the user.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="EditorFileDialog.Mode">
-			The purpose of the [code]EditorFileDialog[/code]. Changes allowed behaviors.
+			The purpose of the [EditorFileDialog]. Changes allowed behaviors.
 		</member>
 		<member name="show_hidden_files" type="bool" setter="set_show_hidden_files" getter="is_showing_hidden_files">
-			If [code]true[/code], hidden files and directories will be visible in the [code]EditorFileDialog[/code].
+			If [code]true[/code], hidden files and directories will be visible in the [EditorFileDialog].
 		</member>
 	</members>
 	<signals>
@@ -92,34 +92,34 @@
 	</signals>
 	<constants>
 		<constant name="MODE_OPEN_FILE" value="0" enum="Mode">
-			The [code]EditorFileDialog[/code] can select only one file. Accepting the window will open the file.
+			The [EditorFileDialog] can select only one file. Accepting the window will open the file.
 		</constant>
 		<constant name="MODE_OPEN_FILES" value="1" enum="Mode">
-			The [code]EditorFileDialog[/code] can select multiple files. Accepting the window will open all files.
+			The [EditorFileDialog] can select multiple files. Accepting the window will open all files.
 		</constant>
 		<constant name="MODE_OPEN_DIR" value="2" enum="Mode">
-			The [code]EditorFileDialog[/code] can select only one directory. Accepting the window will open the directory.
+			The [EditorFileDialog] can select only one directory. Accepting the window will open the directory.
 		</constant>
 		<constant name="MODE_OPEN_ANY" value="3" enum="Mode">
-			The [code]EditorFileDialog[/code] can select a file or directory. Accepting the window will open it.
+			The [EditorFileDialog] can select a file or directory. Accepting the window will open it.
 		</constant>
 		<constant name="MODE_SAVE_FILE" value="4" enum="Mode">
-			The [code]EditorFileDialog[/code] can select only one file. Accepting the window will save the file.
+			The [EditorFileDialog] can select only one file. Accepting the window will save the file.
 		</constant>
 		<constant name="ACCESS_RESOURCES" value="0" enum="Access">
-			The [code]EditorFileDialog[/code] can only view [code]res://[/code] directory contents.
+			The [EditorFileDialog] can only view [code]res://[/code] directory contents.
 		</constant>
 		<constant name="ACCESS_USERDATA" value="1" enum="Access">
-			The [code]EditorFileDialog[/code] can only view [code]user://[/code] directory contents.
+			The [EditorFileDialog] can only view [code]user://[/code] directory contents.
 		</constant>
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
-			The [code]EditorFileDialog[/code] can view the entire local file system.
+			The [EditorFileDialog] can view the entire local file system.
 		</constant>
 		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
-			The [code]EditorFileDialog[/code] displays resources as thumbnails.
+			The [EditorFileDialog] displays resources as thumbnails.
 		</constant>
 		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
-			The [code]EditorFileDialog[/code] displays resources as a list of filenames.
+			The [EditorFileDialog] displays resources as a list of filenames.
 		</constant>
 	</constants>
 </class>

@@ -1,7 +1,6 @@
 import os
 import platform
 import sys
-from methods import get_compiler_version, use_gcc
 
 # This file is mostly based on platform/x11/detect.py.
 # If editing this file, make sure to apply relevant changes here too.
@@ -147,7 +146,7 @@ def configure(env):
         # We need at least version 2.88
         import subprocess
         bullet_version = subprocess.check_output(['pkg-config', 'bullet', '--modversion']).strip()
-        if bullet_version < "2.88":
+        if str(bullet_version) < "2.88":
             # Abort as system bullet was requested but too old
             print("Bullet: System version {0} does not match minimal requirements ({1}). Aborting.".format(bullet_version, "2.88"))
             sys.exit(255)

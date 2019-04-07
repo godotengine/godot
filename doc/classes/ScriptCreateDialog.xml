@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptCreateDialog" inherits="ConfirmationDialog" category="Core" version="3.1">
+<class name="ScriptCreateDialog" inherits="ConfirmationDialog" category="Core" version="3.2">
 	<brief_description>
 		The Editor's popup dialog for creating new [Script] files.
 	</brief_description>
 	<description>
-		The [code]ScriptCreateDialog[/code] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Popup.popup] methods.
+		The [ScriptCreateDialog] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Popup.popup] methods.
 		[codeblock]
 		func _ready():
 		    dialog.config("Node", "res://new_node.gd") # for in-engine types

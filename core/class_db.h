@@ -371,6 +371,7 @@ public:
 	static void init();
 
 	static void set_current_api(APIType p_api);
+	static APIType get_current_api();
 	static void cleanup();
 };
 

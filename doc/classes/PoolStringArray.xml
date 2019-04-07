@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PoolStringArray" category="Built-In Types" version="3.1">
+<class name="PoolStringArray" category="Built-In Types" version="3.2">
 	<brief_description>
 		A pooled [Array] of [String].
 	</brief_description>
@@ -17,7 +17,7 @@
 			<argument index="0" name="from" type="Array">
 			</argument>
 			<description>
-				Construct a new [code]PoolStringArray[/code]. Optionally, you can pass in a generic [Array] that will be converted.
+				Construct a new [PoolStringArray]. Optionally, you can pass in a generic [Array] that will be converted.
 			</description>
 		</method>
 		<method name="append">
@@ -31,7 +31,7 @@
 			<argument index="0" name="array" type="PoolStringArray">
 			</argument>
 			<description>
-				Append a [code]PoolStringArray[/code] at the end of this array.
+				Append a [PoolStringArray] at the end of this array.
 			</description>
 		</method>
 		<method name="insert">

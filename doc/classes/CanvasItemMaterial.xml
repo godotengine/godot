@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItemMaterial" inherits="Material" category="Core" version="3.1">
+<class name="CanvasItemMaterial" inherits="Material" category="Core" version="3.2">
 	<brief_description>
 		A material for [CanvasItem]s.
 	</brief_description>
 	<description>
-		[code]CanvasItemMaterial[/code]s provide a means of modifying the textures associated with a CanvasItem. They specialize in describing blend and lighting behaviors for textures. Use a [ShaderMaterial] to more fully customize a material's interactions with a [CanvasItem].
+		[CanvasItemMaterial]s provide a means of modifying the textures associated with a CanvasItem. They specialize in describing blend and lighting behaviors for textures. Use a [ShaderMaterial] to more fully customize a material's interactions with a [CanvasItem].
 	</description>
 	<tutorials>
 	</tutorials>

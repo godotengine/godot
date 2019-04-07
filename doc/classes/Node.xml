@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Node" inherits="Object" category="Core" version="3.1">
+<class name="Node" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Base class for all [i]scene[/i] objects.
 	</brief_description>
@@ -275,14 +275,14 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-				Similar to [method get_node], but does not raise an error when [code]path[/code] does not point to a valid [code]Node[/code].
+				Similar to [method get_node], but does not raise an error when [code]path[/code] does not point to a valid [Node].
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const">
 			<return type="Node">
 			</return>
 			<description>
-				Returns the parent node of the current node, or an empty [code]Node[/code] if the node lacks a parent.
+				Returns the parent node of the current node, or an empty [Node] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">

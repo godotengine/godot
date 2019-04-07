@@ -1499,7 +1499,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir_next = memnew(ToolButton);
 	dir_next->set_tooltip(TTR("Next Folder"));
 	dir_up = memnew(ToolButton);
-	dir_up->set_tooltip(TTR("Go to parent folder"));
+	dir_up->set_tooltip(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
 	pathhb->add_child(dir_next);

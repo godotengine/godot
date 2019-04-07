@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventJoypadButton" inherits="InputEvent" category="Core" version="3.1">
+<class name="InputEventJoypadButton" inherits="InputEvent" category="Core" version="3.2">
 	<brief_description>
 		Input event for gamepad buttons.
 	</brief_description>
@@ -15,7 +15,7 @@
 	</methods>
 	<members>
 		<member name="button_index" type="int" setter="set_button_index" getter="get_button_index">
-			Button identifier. One of the [code]JOY_BUTTON_*[/code] constants from [@GlobalScope].
+			Button identifier. One of the [enum JoystickList] button constants.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed">
 			If [code]true[/code], the button's state is pressed. If [code]false[/code], the button's state is released.

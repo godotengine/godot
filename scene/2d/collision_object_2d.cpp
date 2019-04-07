@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "collision_object_2d.h"
+
 #include "scene/scene_string_names.h"
 #include "servers/physics_2d_server.h"
 
@@ -56,7 +57,7 @@ void CollisionObject2D::_notification(int p_what) {
 			_update_pickable();
 
 			//get space
-		}
+		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
 
@@ -64,7 +65,7 @@ void CollisionObject2D::_notification(int p_what) {
 				Physics2DServer::get_singleton()->area_attach_canvas_instance_id(rid, get_canvas_layer_instance_id());
 			else
 				Physics2DServer::get_singleton()->body_attach_canvas_instance_id(rid, get_canvas_layer_instance_id());
-		}
+		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -101,7 +102,7 @@ void CollisionObject2D::_notification(int p_what) {
 				Physics2DServer::get_singleton()->area_attach_canvas_instance_id(rid, 0);
 			else
 				Physics2DServer::get_singleton()->body_attach_canvas_instance_id(rid, 0);
-		}
+		} break;
 	}
 }
 

@@ -244,7 +244,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_tooltip(0, String(p_node->get_name()) + "\n" + TTR("Type:") + " " + p_node->get_class());
 	}
 
-	if (can_open_instance) {
+	if (can_open_instance && undo_redo) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
 
 		if (!p_node->is_connected("script_changed", this, "_node_script_changed"))
 			p_node->connect("script_changed", this, "_node_script_changed", varray(p_node));

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LineEdit" inherits="Control" category="Core" version="3.1">
+<class name="LineEdit" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Control that provides single line string editing.
 	</brief_description>
@@ -24,7 +24,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Erases the [code]LineEdit[/code] text.
+				Erases the [LineEdit] text.
 			</description>
 		</method>
 		<method name="deselect">
@@ -38,7 +38,7 @@
 			<return type="PopupMenu">
 			</return>
 			<description>
-				Returns the [PopupMenu] of this [code]LineEdit[/code]. By default, this menu is displayed when right-clicking on the [code]LineEdit[/code].
+				Returns the [PopupMenu] of this [LineEdit]. By default, this menu is displayed when right-clicking on the [LineEdit].
 			</description>
 		</method>
 		<method name="menu_option">
@@ -58,7 +58,7 @@
 			<argument index="1" name="to" type="int" default="-1">
 			</argument>
 			<description>
-				Selects characters inside [code]LineEdit[/code] between [code]from[/code] and [code]to[/code]. By default [code]from[/code] is at the beginning and [code]to[/code] at the end.
+				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default [code]from[/code] is at the beginning and [code]to[/code] at the end.
 				[codeblock]
 				text = "Welcome"
 				select()     # Welcome
@@ -86,10 +86,10 @@
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
 		<member name="caret_position" type="int" setter="set_cursor_position" getter="get_cursor_position">
-			The cursor's position inside the [code]LineEdit[/code]. When set, the text may scroll to accommodate it.
+			The cursor's position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="clear_button_enabled" type="bool" setter="set_clear_button_enabled" getter="is_clear_button_enabled">
-			If [code]true[/code], the [code]LineEdit[/code] will show a clear button if [code]text[/code] is not empty.
+			If [code]true[/code], the [LineEdit] will show a clear button if [code]text[/code] is not empty.
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code], the context menu will appear when right clicked.
@@ -98,19 +98,19 @@
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length" getter="get_expand_to_text_length">
-			If [code]true[/code], the [code]LineEdit[/code] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
+			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode">
-			Defines how the [code]LineEdit[/code] can grab focus (Keyboard and mouse, only keyboard, or none). See [code]enum FocusMode[/code] in [Control] for details.
+			Defines how the [LineEdit] can grab focus (Keyboard and mouse, only keyboard, or none). See [enum Control.FocusMode] in [Control] for details.
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length">
-			Maximum amount of characters that can be entered inside the [code]LineEdit[/code]. If [code]0[/code], there is no limit.
+			Maximum amount of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
 		</member>
 		<member name="placeholder_alpha" type="float" setter="set_placeholder_alpha" getter="get_placeholder_alpha">
 			Opacity of the [member placeholder_text]. From [code]0[/code] to [code]1[/code].
 		</member>
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder">
-			Text shown when the [code]LineEdit[/code] is empty. It is [b]not[/b] the [code]LineEdit[/code]'s default value (see [member text]).
+			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret">
 			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
@@ -119,7 +119,7 @@
 			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text">
-			String value of the [code]LineEdit[/code].
+			String value of the [LineEdit].
 		</member>
 	</members>
 	<signals>
@@ -134,22 +134,22 @@
 			<argument index="0" name="new_text" type="String">
 			</argument>
 			<description>
-				Emitted when the user presses [code]KEY_ENTER[/code] on the [code]LineEdit[/code].
+				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="ALIGN_LEFT" value="0" enum="Align">
-			Aligns the text on the left hand side of the [code]LineEdit[/code].
+			Aligns the text on the left hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_CENTER" value="1" enum="Align">
-			Centers the text in the middle of the [code]LineEdit[/code].
+			Centers the text in the middle of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Aligns the text on the right hand side of the [code]LineEdit[/code].
+			Aligns the text on the right hand side of the [LineEdit].
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
-			Stretches whitespaces to fit the [code]LineEdit[/code]'s width.
+			Stretches whitespaces to fit the [LineEdit]'s width.
 		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
 			Cuts (copies and clears) the selected text.
@@ -161,10 +161,10 @@
 			Pastes the clipboard text over the selected text (or at the cursor's position).
 		</constant>
 		<constant name="MENU_CLEAR" value="3" enum="MenuItems">
-			Erases the whole [code]LineEdit[/code] text.
+			Erases the whole [LineEdit] text.
 		</constant>
 		<constant name="MENU_SELECT_ALL" value="4" enum="MenuItems">
-			Selects the whole [code]LineEdit[/code] text.
+			Selects the whole [LineEdit] text.
 		</constant>
 		<constant name="MENU_UNDO" value="5" enum="MenuItems">
 			Undoes the previous action.

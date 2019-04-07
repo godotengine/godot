@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MainLoop" inherits="Object" category="Core" version="3.1">
+<class name="MainLoop" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Main loop is the abstract main loop base class.
 	</brief_description>
 	<description>
-		Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [code]MainLoop[/code] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [code]MainLoop[/code].
+		Main loop is the abstract main loop base class. All other main loop classes are derived from it. Upon application start, a [MainLoop] has to be provided to OS, else the application will exit. This happens automatically (and a [SceneTree] is created), unless a main [Script] is supplied, which may or not create and return a [MainLoop].
 	</description>
 	<tutorials>
 	</tutorials>

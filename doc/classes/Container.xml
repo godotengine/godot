@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Container" inherits="Control" category="Core" version="3.1">
+<class name="Container" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Base node for containers.
 	</brief_description>
 	<description>
-		Base node for containers. A [code]Container[/code] contains other controls and automatically arranges them in a certain way.
+		Base node for containers. A [Container] contains other controls and automatically arranges them in a certain way.
 		A Control can inherit this to create custom container classes.
 	</description>
 	<tutorials>

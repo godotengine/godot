@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Semaphore" inherits="Reference" category="Core" version="3.1">
+<class name="Semaphore" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		A synchronization Semaphore.
 	</brief_description>
@@ -15,14 +15,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Lowers the [code]Semaphore[/code], allowing one more thread in. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
+				Lowers the [Semaphore], allowing one more thread in. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Tries to wait for the [code]Semaphore[/code], if its value is zero, blocks until non-zero. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
+				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
 			</description>
 		</method>
 	</methods>

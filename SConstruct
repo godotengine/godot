@@ -5,7 +5,6 @@ EnsureSConsVersion(0, 98, 1)
 # System
 import glob
 import os
-import string
 import sys
 
 # Local
@@ -342,12 +341,18 @@ if selected_platform in platform_list:
         shadow_local_warning = []
         all_plus_warnings = ['-Wwrite-strings']
 
-        if methods.use_gcc(env):
+        if methods.using_gcc(env):
             version = methods.get_compiler_version(env)
             if version != None and version[0] >= '7':
                 shadow_local_warning = ['-Wshadow-local']
+
         if (env["warnings"] == 'extra'):
-            env.Append(CCFLAGS=['-Wall', '-Wextra'] + all_plus_warnings + shadow_local_warning)
+            # FIXME: enable -Wclobbered once #26351 is fixed
+            # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
+            # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter'] + all_plus_warnings + shadow_local_warning)
+            if methods.using_gcc(env):
+                env['CCFLAGS'] += ['-Wno-clobbered']
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TileMap" inherits="Node2D" category="Core" version="3.1">
+<class name="TileMap" inherits="Node2D" category="Core" version="3.2">
 	<brief_description>
 		Node for 2D tile-based maps.
 	</brief_description>
@@ -322,6 +322,12 @@
 		</constant>
 		<constant name="HALF_OFFSET_DISABLED" value="2" enum="HalfOffset">
 			Half offset disabled.
+		</constant>
+		<constant name="HALF_OFFSET_NEGATIVE_X" value="3" enum="HalfOffset">
+			Half offset on the X coordinate (negative).
+		</constant>
+		<constant name="HALF_OFFSET_NEGATIVE_Y" value="4" enum="HalfOffset">
+			Half offset on the Y coordinate (negative).
 		</constant>
 		<constant name="TILE_ORIGIN_TOP_LEFT" value="0" enum="TileOrigin">
 			Tile origin at its top-left corner.

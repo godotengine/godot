@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CenterContainer" inherits="Container" category="Core" version="3.1">
+<class name="CenterContainer" inherits="Container" category="Core" version="3.2">
 	<brief_description>
 		Keeps children controls centered.
 	</brief_description>
@@ -14,7 +14,7 @@
 	</methods>
 	<members>
 		<member name="use_top_left" type="bool" setter="set_use_top_left" getter="is_using_top_left">
-			If [code]true[/code], centers children relative to the [code]CenterContainer[/code]'s top left corner. Default value: [code]false[/code].
+			If [code]true[/code], centers children relative to the [CenterContainer]'s top left corner. Default value: [code]false[/code].
 		</member>
 	</members>
 	<constants>

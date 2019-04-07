@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RandomNumberGenerator" inherits="Reference" category="Core" version="3.1">
+<class name="RandomNumberGenerator" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		A class for generation pseudo-random numbers.
 	</brief_description>
@@ -26,6 +26,17 @@
 			</argument>
 			<description>
 				Generates pseudo-random float between [code]from[/code] and [code]to[/code].
+			</description>
+		</method>
+		<method name="randfn">
+			<return type="float">
+			</return>
+			<argument index="0" name="mean" type="float" default="0.0">
+			</argument>
+			<argument index="1" name="deviation" type="float" default="1.0">
+			</argument>
+			<description>
+				Generates normally(gaussian) distributed pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code].
 			</description>
 		</method>
 		<method name="randi">

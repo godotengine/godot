@@ -81,6 +81,7 @@
 #include "editor/plugins/collision_polygon_2d_editor_plugin.h"
 #include "editor/plugins/collision_polygon_editor_plugin.h"
 #include "editor/plugins/collision_shape_2d_editor_plugin.h"
+#include "editor/plugins/cpu_particles_2d_editor_plugin.h"
 #include "editor/plugins/cpu_particles_editor_plugin.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
@@ -1899,7 +1900,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 			}
 
-		} // fallthrough
+			FALLTHROUGH;
+		}
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE: {
 
@@ -1918,8 +1920,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				break;
 			}
-			// fallthrough to save_as
-		};
+			FALLTHROUGH;
+		}
 		case FILE_SAVE_AS_SCENE: {
 			int scene_idx = (p_option == FILE_SAVE_SCENE || p_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing;
 
@@ -3350,12 +3352,30 @@ Ref<Texture> EditorNode::get_class_icon(const String &p_class, const String &p_f
 	if (ScriptServer::is_global_class(p_class)) {
 		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(p_class);
 		RES icon;
+
 		if (FileAccess::exists(icon_path)) {
 			icon = ResourceLoader::load(icon_path);
+			if (icon.is_valid())
+				return icon;
 		}
-		if (!icon.is_valid()) {
-			icon = gui_base->get_icon(ScriptServer::get_global_class_native_base(p_class), "EditorIcons");
+
+		Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
+
+		while (script.is_valid()) {
+			String current_icon_path;
+			script->get_language()->get_global_class_name(script->get_path(), NULL, &current_icon_path);
+			if (FileAccess::exists(current_icon_path)) {
+				RES texture = ResourceLoader::load(current_icon_path);
+				if (texture.is_valid())
+					return texture;
+			}
+			script = script->get_base_script();
 		}
+
+		if (icon.is_null()) {
+			icon = gui_base->get_icon(ScriptServer::get_global_class_base(p_class), "EditorIcons");
+		}
+
 		return icon;
 	}
 
@@ -5418,7 +5438,7 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT("editor/undo", TTR("Undo"), KEY_MASK_CMD + KEY_Z), EDIT_UNDO, true);
 	p->add_shortcut(ED_SHORTCUT("editor/redo", TTR("Redo"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_Z), EDIT_REDO, true);
 	p->add_separator();
-	p->add_item(TTR("Revert Scene"), EDIT_REVERT);
+	p->add_shortcut(ED_SHORTCUT("editor/revert_scene", TTR("Revert Scene")), EDIT_REVERT);
 
 	recent_scenes = memnew(PopupMenu);
 	recent_scenes->set_name("RecentScenes");
@@ -5438,10 +5458,10 @@ EditorNode::EditorNode() {
 
 	p = project_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
-	p->add_item(TTR("Project Settings"), RUN_SETTINGS);
+	p->add_shortcut(ED_SHORTCUT("editor/project_settings", TTR("Project Settings")), RUN_SETTINGS);
 	p->add_separator();
 	p->connect("id_pressed", this, "_menu_option");
-	p->add_item(TTR("Export"), FILE_EXPORT_PROJECT);
+	p->add_shortcut(ED_SHORTCUT("editor/export", TTR("Export")), FILE_EXPORT_PROJECT);
 
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->connect("plugin_ready", this, "_on_plugin_ready");
@@ -5452,10 +5472,10 @@ EditorNode::EditorNode() {
 	tool_menu->connect("index_pressed", this, "_tool_menu_option");
 	p->add_child(tool_menu);
 	p->add_submenu_item(TTR("Tools"), "Tools");
-	tool_menu->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
+	tool_menu->add_shortcut(ED_SHORTCUT("editor/orphan_resource_explorer", TTR("Orphan Resource Explorer")), TOOLS_ORPHAN_RESOURCES);
 	p->add_separator();
 
-	p->add_item(TTR("Open Project Data Folder"), RUN_PROJECT_DATA_FOLDER);
+	p->add_shortcut(ED_SHORTCUT("editor/open_project_data_folder", TTR("Open Project Data Folder")), RUN_PROJECT_DATA_FOLDER);
 	p->add_separator();
 
 #ifdef OSX_ENABLED
@@ -5479,21 +5499,21 @@ EditorNode::EditorNode() {
 	p = debug_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
 	p->set_hide_on_item_selection(false);
-	p->add_check_item(TTR("Deploy with Remote Debug"), RUN_DEPLOY_REMOTE_DEBUG);
+	p->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTR("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
-	p->add_check_item(TTR("Small Deploy with Network FS"), RUN_FILE_SERVER);
+	p->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTR("Small Deploy with Network FS")), RUN_FILE_SERVER);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
 	p->add_separator();
-	p->add_check_item(TTR("Visible Collision Shapes"), RUN_DEBUG_COLLISONS);
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Collision shapes and raycast nodes (for 2D and 3D) will be visible on the running game if this option is turned on."));
-	p->add_check_item(TTR("Visible Navigation"), RUN_DEBUG_NAVIGATION);
+	p->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Navigation meshes and polygons will be visible on the running game if this option is turned on."));
 	p->add_separator();
 	//those are now on by default, since they are harmless
-	p->add_check_item(TTR("Sync Scene Changes"), RUN_LIVE_DEBUG);
+	p->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Sync Scene Changes")), RUN_LIVE_DEBUG);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
-	p->add_check_item(TTR("Sync Script Changes"), RUN_RELOAD_SCRIPTS);
+	p->add_check_shortcut(ED_SHORTCUT("editor/sync_script_changes", TTR("Sync Script Changes")), RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->set_item_checked(p->get_item_count() - 1, true);
 	p->connect("id_pressed", this, "_menu_option");
@@ -5509,7 +5529,7 @@ EditorNode::EditorNode() {
 
 	p = settings_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
-	p->add_item(TTR("Editor Settings"), SETTINGS_PREFERENCES);
+	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings")), SETTINGS_PREFERENCES);
 	p->add_separator();
 
 	editor_layouts = memnew(PopupMenu);
@@ -5547,14 +5567,14 @@ EditorNode::EditorNode() {
 	p = help_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
 	p->connect("id_pressed", this, "_menu_option");
-	p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_F4), HELP_SEARCH);
+	p->add_icon_shortcut(gui_base->get_icon("HelpSearch", "EditorIcons"), ED_SHORTCUT("editor/editor_help", TTR("Search"), KEY_MASK_SHIFT | KEY_F1), HELP_SEARCH);
 	p->add_separator();
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Q&A"), HELP_QA);
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Issue Tracker"), HELP_ISSUES);
-	p->add_icon_item(gui_base->get_icon("Instance", "EditorIcons"), TTR("Community"), HELP_COMMUNITY);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/online_docs", TTR("Online Docs")), HELP_DOCS);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/q&a", TTR("Q&A")), HELP_QA);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/issue_tracker", TTR("Issue Tracker")), HELP_ISSUES);
+	p->add_icon_shortcut(gui_base->get_icon("Instance", "EditorIcons"), ED_SHORTCUT("editor/community", TTR("Community")), HELP_COMMUNITY);
 	p->add_separator();
-	p->add_icon_item(gui_base->get_icon("Godot", "EditorIcons"), TTR("About"), HELP_ABOUT);
+	p->add_icon_shortcut(gui_base->get_icon("Godot", "EditorIcons"), ED_SHORTCUT("editor/about", TTR("About")), HELP_ABOUT);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
 	menu_hb->add_child(play_hb);
@@ -5895,6 +5915,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(SpriteEditorPlugin(this)));
 	add_editor_plugin(memnew(Skeleton2DEditorPlugin(this)));
 	add_editor_plugin(memnew(ParticlesEditorPlugin(this)));
+	add_editor_plugin(memnew(CPUParticles2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CPUParticlesEditorPlugin(this)));
 	add_editor_plugin(memnew(ResourcePreloaderEditorPlugin(this)));
 	add_editor_plugin(memnew(ItemListEditorPlugin(this)));

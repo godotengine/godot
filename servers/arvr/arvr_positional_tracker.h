@@ -32,6 +32,7 @@
 #define ARVR_POSITIONAL_TRACKER_H
 
 #include "core/os/thread_safe.h"
+#include "scene/resources/mesh.h"
 #include "servers/arvr_server.h"
 
 /**
@@ -40,9 +41,6 @@
 	The positional tracker object as an object that represents the position and orientation of a tracked object like a controller or headset.
 	An AR/VR Interface will registered the trackers it manages with our AR/VR server and update its position and orientation.
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
-
-	@TODO:
-	- create subclass of spatial node that uses one of our positional trackers to automatically determine its position
 */
 
 class ARVRPositionalTracker : public Object {
@@ -65,6 +63,7 @@ private:
 	Basis orientation; // our orientation
 	bool tracks_position; // do we track position?
 	Vector3 rw_position; // our position "in the real world, so without world_scale applied"
+	Ref<Mesh> mesh; // when available, a mesh that can be used to render this tracker
 	TrackerHand hand; // if known, the hand this tracker is held in
 	real_t rumble; // rumble strength, 0.0 is off, 1.0 is maximum, note that we only record here, arvr_interface is responsible for execution
 
@@ -91,6 +90,8 @@ public:
 	void set_hand(const ARVRPositionalTracker::TrackerHand p_hand);
 	real_t get_rumble() const;
 	void set_rumble(real_t p_rumble);
+	void set_mesh(const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_mesh() const;
 
 	Transform get_transform(bool p_adjust_by_reference_frame) const;
 

@@ -183,10 +183,10 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 		case TEXT_PRINTRAW:
 		case VAR_TO_STR:
 		case STR_TO_VAR:
-		case VAR_TO_BYTES:
-		case BYTES_TO_VAR:
 		case TYPE_EXISTS:
 			return 1;
+		case VAR_TO_BYTES:
+		case BYTES_TO_VAR:
 		case MATH_ATAN2:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
@@ -491,12 +491,18 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 			return PropertyInfo(Variant::STRING, "string");
 		} break;
 		case VAR_TO_BYTES: {
-			return PropertyInfo(Variant::NIL, "var");
+			if (p_idx == 0)
+				return PropertyInfo(Variant::NIL, "var");
+			else
+				return PropertyInfo(Variant::BOOL, "full_objects");
 
 		} break;
 		case BYTES_TO_VAR: {
 
-			return PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes");
+			if (p_idx == 0)
+				return PropertyInfo(Variant::POOL_BYTE_ARRAY, "bytes");
+			else
+				return PropertyInfo(Variant::BOOL, "allow_objects");
 		} break;
 		case COLORN: {
 
@@ -655,11 +661,15 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 
 		} break;
 		case VAR_TO_BYTES: {
-			t = Variant::POOL_BYTE_ARRAY;
+			if (p_idx == 0)
+				t = Variant::POOL_BYTE_ARRAY;
+			else
+				t = Variant::BOOL;
 
 		} break;
 		case BYTES_TO_VAR: {
-
+			if (p_idx == 1)
+				t = Variant::BOOL;
 		} break;
 		case COLORN: {
 			t = Variant::COLOR;
@@ -1192,9 +1202,16 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 		} break;
 		case VisualScriptBuiltinFunc::VAR_TO_BYTES: {
 
+			if (p_inputs[1]->get_type() != Variant::BOOL) {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::BOOL;
+				return;
+			}
 			PoolByteArray barr;
 			int len;
-			Error err = encode_variant(*p_inputs[0], NULL, len);
+			bool full_objects = *p_inputs[1];
+			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
 			if (err) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -1206,7 +1223,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			barr.resize(len);
 			{
 				PoolByteArray::Write w = barr.write();
-				encode_variant(*p_inputs[0], w.ptr(), len);
+				encode_variant(*p_inputs[0], w.ptr(), len, full_objects);
 			}
 			*r_return = barr;
 		} break;
@@ -1216,15 +1233,21 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
 				r_error.expected = Variant::POOL_BYTE_ARRAY;
-
+				return;
+			}
+			if (p_inputs[1]->get_type() != Variant::BOOL) {
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::BOOL;
 				return;
 			}
 
 			PoolByteArray varr = *p_inputs[0];
+			bool allow_objects = *p_inputs[1];
 			Variant ret;
 			{
 				PoolByteArray::Read r = varr.read();
-				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL);
+				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;

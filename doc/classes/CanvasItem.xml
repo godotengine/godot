@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CanvasItem" inherits="Node" category="Core" version="3.1">
+<class name="CanvasItem" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		Base class of anything 2D.
 	</brief_description>
@@ -510,16 +510,16 @@
 	</methods>
 	<members>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask">
-			The rendering layers in which this [code]CanvasItem[/code] responds to [Light2D] nodes. Default value: [code]1[/code].
+			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes. Default value: [code]1[/code].
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The material applied to textures on this [code]CanvasItem[/code]. Default value: [code]null[/code].
+			The material applied to textures on this [CanvasItem]. Default value: [code]null[/code].
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
-			The color applied to textures on this [code]CanvasItem[/code]. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white").
+			The color applied to textures on this [CanvasItem]. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white").
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate">
-			The color applied to textures on this [code]CanvasItem[/code]. This is not inherited by children [code]CanvasItem[/code]s. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white")..
+			The color applied to textures on this [CanvasItem]. This is not inherited by children [CanvasItem]s. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white")..
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled">
 			If [code]true[/code], the object draws behind its parent. Default value: [code]false[/code].
@@ -528,10 +528,10 @@
 			If [code]true[/code], the object draws on top of its parent. Default value: [code]true[/code].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material">
-			If [code]true[/code], the parent [code]CanvasItem[/code]'s [member material] property is used as this one's material. Default value: [code]false[/code].
+			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material. Default value: [code]false[/code].
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
-			If [code]true[/code], this [code]CanvasItem[/code] is drawn. Default value: [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple popup*() functions instead.
+			If [code]true[/code], this [CanvasItem] is drawn. Default value: [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple popup*() functions instead.
 		</member>
 	</members>
 	<signals>

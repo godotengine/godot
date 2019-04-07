@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorSceneImporterAssimp" inherits="EditorSceneImporter" category="Core" version="3.2">
+	<brief_description>
+		This is a multi-format 3d asset importer.
+	</brief_description>
+	<description>
+		This is a multi-format 3d asset importer.
+		Use these FBX export settings from Autodesk Maya.
+		[codeblock]
+		* Smoothing Groups
+		* Smooth Mesh
+		* Triangluate (For mesh with blendshapes)
+		* Bake Animation
+		* Resample All
+		* Deformed Models
+		* Skins
+		* Blend Shapes
+		* Curve Filters
+		* Constant Key Reducer
+		* Auto Tangents Only
+		* DO NOT CHECK Constraints (Will Break File)
+		* Can check Embed Media (Embeds textures into FBX file to import)
+		-- Note: When importing embed media, texture and mesh will be a un-alterable file.
+		--       Reimport of fbx with updated texture is need if texture is updated.
+		* Units: Centimeters
+		* Up Axis: Y
+		* Binary format in FBX 2017
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

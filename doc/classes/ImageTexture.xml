@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ImageTexture" inherits="Texture" category="Core" version="3.1">
+<class name="ImageTexture" inherits="Texture" category="Core" version="3.2">
 	<brief_description>
 		A [Texture] based on an [Image].
 	</brief_description>
@@ -23,7 +23,7 @@
 			<argument index="3" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [code]ImageTexture[/code] with [code]width[/code] and [code]height[/code].
+				Create a new [ImageTexture] with [code]width[/code] and [code]height[/code].
 				[code]format[/code] is a value from [enum Image.Format], [code]flags[/code] is any combination of [enum Texture.Flags].
 			</description>
 		</method>
@@ -35,14 +35,14 @@
 			<argument index="1" name="flags" type="int" default="7">
 			</argument>
 			<description>
-				Create a new [code]ImageTexture[/code] from an [Image] with [code]flags[/code] from [enum Texture.Flags]. An sRGB to linear color space conversion can take place, according to [enum Image.Format].
+				Create a new [ImageTexture] from an [Image] with [code]flags[/code] from [enum Texture.Flags]. An sRGB to linear color space conversion can take place, according to [enum Image.Format].
 			</description>
 		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Return the format of the [code]ImageTexture[/code], one of [enum Image.Format].
+				Return the format of the [ImageTexture], one of [enum Image.Format].
 			</description>
 		</method>
 		<method name="load">
@@ -51,7 +51,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Load an [code]ImageTexture[/code] from a file path.
+				Load an [ImageTexture] from a file path.
 			</description>
 		</method>
 		<method name="set_data">
@@ -60,7 +60,7 @@
 			<argument index="0" name="image" type="Image">
 			</argument>
 			<description>
-				Set the [Image] of this [code]ImageTexture[/code].
+				Set the [Image] of this [ImageTexture].
 			</description>
 		</method>
 		<method name="set_size_override">
@@ -69,7 +69,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
-				Resizes the [code]ImageTexture[/code] to the specified dimensions.
+				Resizes the [ImageTexture] to the specified dimensions.
 			</description>
 		</method>
 	</methods>

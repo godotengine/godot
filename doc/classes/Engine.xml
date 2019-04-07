@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Engine" inherits="Object" category="Core" version="3.1">
+<class name="Engine" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Access to basic engine properties.
 	</brief_description>
 	<description>
-		The [code]Engine[/code] class allows you to query and modify the game's run-time parameters, such as frames per second, time scale, and others.
+		The [Engine] class allows you to query and modify the game's run-time parameters, such as frames per second, time scale, and others.
 	</description>
 	<tutorials>
 	</tutorials>

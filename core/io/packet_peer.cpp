@@ -79,7 +79,7 @@ Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
 	return put_packet(&r[0], len);
 }
 
-Error PacketPeer::get_var(Variant &r_variant) {
+Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -87,13 +87,13 @@ Error PacketPeer::get_var(Variant &r_variant) {
 	if (err)
 		return err;
 
-	return decode_variant(r_variant, buffer, buffer_size, NULL, allow_object_decoding);
+	return decode_variant(r_variant, buffer, buffer_size, NULL, p_allow_objects || allow_object_decoding);
 }
 
-Error PacketPeer::put_var(const Variant &p_packet) {
+Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 	int len;
-	Error err = encode_variant(p_packet, NULL, len, !allow_object_decoding); // compute len first
+	Error err = encode_variant(p_packet, NULL, len, p_full_objects || allow_object_decoding); // compute len first
 	if (err)
 		return err;
 
@@ -102,15 +102,15 @@ Error PacketPeer::put_var(const Variant &p_packet) {
 
 	uint8_t *buf = (uint8_t *)alloca(len);
 	ERR_FAIL_COND_V(!buf, ERR_OUT_OF_MEMORY);
-	err = encode_variant(p_packet, buf, len, !allow_object_decoding);
+	err = encode_variant(p_packet, buf, len, p_full_objects || allow_object_decoding);
 	ERR_FAIL_COND_V(err, err);
 
 	return put_packet(buf, len);
 }
 
-Variant PacketPeer::_bnd_get_var() {
+Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 	Variant var;
-	get_var(var);
+	get_var(var, p_allow_objects);
 
 	return var;
 };
@@ -132,8 +132,8 @@ Error PacketPeer::_get_packet_error() const {
 
 void PacketPeer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_var"), &PacketPeer::_bnd_get_var);
-	ClassDB::bind_method(D_METHOD("put_var", "var"), &PacketPeer::put_var);
+	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &PacketPeer::_bnd_get_var, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("put_var", "var", "full_objects"), &PacketPeer::put_var, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_packet"), &PacketPeer::_get_packet);
 	ClassDB::bind_method(D_METHOD("put_packet", "buffer"), &PacketPeer::_put_packet);
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);

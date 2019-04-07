@@ -35,24 +35,12 @@
 
 class GDMonoAssembly;
 class GDMonoClass;
-class IMonoClassMember;
 class GDMonoField;
-class GDMonoProperty;
 class GDMonoMethod;
+class GDMonoProperty;
 
-struct ManagedType {
-	int type_encoding;
-	GDMonoClass *type_class;
+class IMonoClassMember;
 
-	ManagedType() :
-			type_encoding(0),
-			type_class(NULL) {
-	}
-
-	ManagedType(int p_type_encoding, GDMonoClass *p_type_class) :
-			type_encoding(p_type_encoding),
-			type_class(p_type_class) {
-	}
-};
+#include "managed_type.h"
 
 #endif // GD_MONO_HEADER_H

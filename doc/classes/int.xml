@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="int" category="Built-In Types" version="3.1">
+<class name="int" category="Built-In Types" version="3.2">
 	<brief_description>
 		Integer built-in type.
 	</brief_description>
 	<description>
 		Signed 64-bit integer type.
 		It can take values in the interval [code][-2^63, 2^63 - 1][/code], i.e. [code][-9223372036854775808, 9223372036854775807][/code]. Exceeding those bounds will wrap around.
-		[code]int[/code] is a [Variant] type, and will thus be used when assigning an integer value to a [Variant]. It can also be enforced with the [code]: int[/code] type hint.
+		[int] is a [Variant] type, and will thus be used when assigning an integer value to a [Variant]. It can also be enforced with the [code]: int[/code] type hint.
 		[codeblock]
 		var my_variant = 0    # int, value 0
 		my_variant += 4.2     # float, value 4.2

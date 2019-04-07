@@ -773,6 +773,8 @@ struct _VariantCall {
 	VCALL_PTR0R(Basis, get_orthogonal_index);
 	VCALL_PTR0R(Basis, orthonormalized);
 	VCALL_PTR2R(Basis, slerp);
+	VCALL_PTR2R(Basis, is_equal_approx);
+	VCALL_PTR0R(Basis, get_rotation_quat);
 
 	VCALL_PTR0R(Transform, inverse);
 	VCALL_PTR0R(Transform, affine_inverse);
@@ -1842,6 +1844,8 @@ void register_variant_methods() {
 	ADDFUNC1R(BASIS, VECTOR3, Basis, xform_inv, VECTOR3, "v", varray());
 	ADDFUNC0R(BASIS, INT, Basis, get_orthogonal_index, varray());
 	ADDFUNC2R(BASIS, BASIS, Basis, slerp, BASIS, "b", REAL, "t", varray());
+	ADDFUNC2R(BASIS, BOOL, Basis, is_equal_approx, BASIS, "b", REAL, "epsilon", varray(CMP_EPSILON));
+	ADDFUNC0R(BASIS, QUAT, Basis, get_rotation_quat, varray());
 
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, inverse, varray());
 	ADDFUNC0R(TRANSFORM, TRANSFORM, Transform, affine_inverse, varray());
@@ -1923,9 +1927,9 @@ void register_variant_methods() {
 	_VariantCall::add_variant_constant(Variant::TRANSFORM, "IDENTITY", identity_transform);
 	transform_x.set(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
 	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_X", transform_x);
-	transform_x.set(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
+	transform_y.set(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
 	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Y", transform_y);
-	transform_x.set(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
+	transform_z.set(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
 	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Z", transform_z);
 
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_YZ", Plane(Vector3(1, 0, 0), 0));

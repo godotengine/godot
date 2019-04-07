@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureRect" inherits="Control" category="Core" version="3.1">
+<class name="TextureRect" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Control for drawing textures.
 	</brief_description>
@@ -21,6 +21,12 @@
 		</member>
 		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The node's [Texture] resource.
+		</member>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h">
+			If [code]true[/code], texture is flipped horizontally. Default value: [code]false[/code].
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v">
+			If [code]true[/code], texture is flipped vertically. Default value: [code]false[/code].
 		</member>
 	</members>
 	<constants>

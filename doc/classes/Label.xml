@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Label" inherits="Control" category="Core" version="3.1">
+<class name="Label" inherits="Control" category="Core" version="3.2">
 	<brief_description>
 		Displays plain text in a line or wrapped inside a rectangle. For formatted text, use [RichTextLabel].
 	</brief_description>
@@ -37,7 +37,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of lines shown. Useful if the [code]Label[/code] 's height cannot currently display all lines.
+				Returns the number of lines shown. Useful if the [Label] 's height cannot currently display all lines.
 			</description>
 		</method>
 	</methods>

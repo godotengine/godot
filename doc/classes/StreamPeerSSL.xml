@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerSSL" inherits="StreamPeer" category="Core" version="3.1">
+<class name="StreamPeerSSL" inherits="StreamPeer" category="Core" version="3.2">
 	<brief_description>
 		SSL Stream peer.
 	</brief_description>
@@ -30,7 +30,7 @@
 			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [code]StreamPeerSSL[/code] will validate that the certificate presented by the peer matches the "for_hostname".
+				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
 			</description>
 		</method>
 		<method name="disconnect_from_stream">
@@ -61,12 +61,12 @@
 	</members>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
-			A status representing a [code]StreamPeerSSL[/code] that is disconnected.
+			A status representing a [StreamPeerSSL] that is disconnected.
 		</constant>
 		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2" enum="Status">
-			A status representing a [code]StreamPeerSSL[/code] that is connected to a host.
+			A status representing a [StreamPeerSSL] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3" enum="Status">
 		</constant>

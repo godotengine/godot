@@ -73,6 +73,7 @@ public:
 	Ref<Image> get_image(int p_width, int p_height);
 	Ref<Image> get_seamless_image(int p_size);
 
+	float get_noise_1d(float x);
 	float get_noise_2d(float x, float y);
 	float get_noise_3d(float x, float y, float z);
 	float get_noise_4d(float x, float y, float z, float w);

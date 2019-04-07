@@ -171,6 +171,7 @@ private:
 		ANIM_CLEAR_POSE,
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_FRAME_TO_SELECTION,
+		PREVIEW_CANVAS_SCALE,
 		SKELETON_MAKE_BONES,
 		SKELETON_CLEAR_BONES,
 		SKELETON_SHOW_BONES,
@@ -204,8 +205,7 @@ private:
 		DRAG_V_GUIDE,
 		DRAG_H_GUIDE,
 		DRAG_DOUBLE_GUIDE,
-		DRAG_KEY_MOVE,
-		DRAG_PAN
+		DRAG_KEY_MOVE
 	};
 
 	EditorSelection *editor_selection;
@@ -261,6 +261,7 @@ private:
 	bool key_pos;
 	bool key_rot;
 	bool key_scale;
+	bool panning;
 
 	MenuOption last_option;
 

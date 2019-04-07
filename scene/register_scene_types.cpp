@@ -139,6 +139,7 @@
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/dynamic_font_stb.h"
 #include "scene/resources/gradient.h"
+#include "scene/resources/height_map_shape.h"
 #include "scene/resources/line_shape_2d.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -476,6 +477,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeInput>();
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
 	ClassDB::register_class<VisualShaderNodeScalarConstant>();
+	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
 	ClassDB::register_class<VisualShaderNodeColorConstant>();
 	ClassDB::register_class<VisualShaderNodeVec3Constant>();
 	ClassDB::register_class<VisualShaderNodeTransformConstant>();
@@ -486,8 +488,23 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeTransformVecMult>();
 	ClassDB::register_class<VisualShaderNodeScalarFunc>();
 	ClassDB::register_class<VisualShaderNodeVectorFunc>();
+	ClassDB::register_class<VisualShaderNodeColorFunc>();
+	ClassDB::register_class<VisualShaderNodeTransformFunc>();
 	ClassDB::register_class<VisualShaderNodeDotProduct>();
 	ClassDB::register_class<VisualShaderNodeVectorLen>();
+	ClassDB::register_class<VisualShaderNodeDeterminant>();
+	ClassDB::register_class<VisualShaderNodeScalarDerivativeFunc>();
+	ClassDB::register_class<VisualShaderNodeVectorDerivativeFunc>();
+	ClassDB::register_class<VisualShaderNodeScalarClamp>();
+	ClassDB::register_class<VisualShaderNodeVectorClamp>();
+	ClassDB::register_class<VisualShaderNodeFaceForward>();
+	ClassDB::register_class<VisualShaderNodeOuterProduct>();
+	ClassDB::register_class<VisualShaderNodeVectorScalarStep>();
+	ClassDB::register_class<VisualShaderNodeScalarSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeVectorSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeVectorScalarSmoothStep>();
+	ClassDB::register_class<VisualShaderNodeVectorDistance>();
+	ClassDB::register_class<VisualShaderNodeVectorRefract>();
 	ClassDB::register_class<VisualShaderNodeScalarInterp>();
 	ClassDB::register_class<VisualShaderNodeVectorInterp>();
 	ClassDB::register_class<VisualShaderNodeVectorCompose>();
@@ -498,6 +515,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeCubeMap>();
 	ClassDB::register_virtual_class<VisualShaderNodeUniform>();
 	ClassDB::register_class<VisualShaderNodeScalarUniform>();
+	ClassDB::register_class<VisualShaderNodeBooleanUniform>();
 	ClassDB::register_class<VisualShaderNodeColorUniform>();
 	ClassDB::register_class<VisualShaderNodeVec3Uniform>();
 	ClassDB::register_class<VisualShaderNodeTransformUniform>();
@@ -591,6 +609,7 @@ void register_scene_types() {
 	ClassDB::register_class<BoxShape>();
 	ClassDB::register_class<CapsuleShape>();
 	ClassDB::register_class<CylinderShape>();
+	ClassDB::register_class<HeightMapShape>();
 	ClassDB::register_class<PlaneShape>();
 	ClassDB::register_class<ConvexPolygonShape>();
 	ClassDB::register_class<ConcavePolygonShape>();

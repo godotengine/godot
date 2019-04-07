@@ -4,7 +4,6 @@ import sys
 import re
 import glob
 import string
-import datetime
 import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
@@ -668,5 +667,8 @@ def get_compiler_version(env):
     else:
         return None
 
-def use_gcc(env):
+def using_gcc(env):
     return 'gcc' in os.path.basename(env["CC"])
+
+def using_clang(env):
+    return 'clang' in os.path.basename(env["CC"])

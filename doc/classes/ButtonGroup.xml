@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ButtonGroup" inherits="Resource" category="Core" version="3.1">
+<class name="ButtonGroup" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Group of Buttons.
 	</brief_description>
@@ -16,7 +16,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an [Array] of [Button]s who have this as their [code]ButtonGroup[/code] (see [member BaseButton.group]).
+				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.group]).
 			</description>
 		</method>
 		<method name="get_pressed_button">

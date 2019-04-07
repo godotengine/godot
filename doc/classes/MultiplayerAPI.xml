@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiplayerAPI" inherits="Reference" category="Core" version="3.1">
+<class name="MultiplayerAPI" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		High Level Multiplayer API.
 	</brief_description>
@@ -89,6 +89,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed">
+			If [code]true[/code] (or if the [member network_peer] [member PacketPeer.allow_object_decoding] the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
+			[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
 			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>

@@ -638,6 +638,13 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 			const Color modulate = vertex == active_point ? Color(0.5, 1, 2) : Color(1, 1, 1);
 			p_overlay->draw_texture(handle, point - handle->get_size() * 0.5, modulate);
+
+			if (vertex == hover_point) {
+				Ref<Font> font = get_font("font", "Label");
+				String num = String::num(vertex.vertex);
+				Size2 num_size = font->get_string_size(num);
+				p_overlay->draw_string(font, point - num_size * 0.5, num, Color(1.0, 1.0, 1.0, 0.5));
+			}
 		}
 	}
 

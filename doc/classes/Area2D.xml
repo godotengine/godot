@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Area2D" inherits="CollisionObject2D" category="Core" version="3.1">
+<class name="Area2D" inherits="CollisionObject2D" category="Core" version="3.2">
 	<brief_description>
 		2D area for detection and 2D physics influence.
 	</brief_description>
@@ -33,7 +33,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns a list of intersecting [code]Area2D[/code]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
+				Returns a list of intersecting [Area2D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">

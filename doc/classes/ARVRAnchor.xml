@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRAnchor" inherits="Spatial" category="Core" version="3.1">
+<class name="ARVRAnchor" inherits="Spatial" category="Core" version="3.2">
 	<brief_description>
 		Anchor point in AR Space.
 	</brief_description>
@@ -27,6 +27,13 @@
 				Returns true if the anchor is being tracked and false if no anchor with this id is currently known.
 			</description>
 		</method>
+		<method name="get_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<description>
+				If provided by the ARVR Interface this returns a mesh object for the anchor. For an anchor this can be a shape related to the object being tracked or it can be a mesh that provides topology related to the anchor and can be used to create shadows/reflections on surfaces or for generating collision shapes.
+			</description>
+		</method>
 		<method name="get_plane" qualifiers="const">
 			<return type="Plane">
 			</return>
@@ -47,6 +54,15 @@
 			The anchor's id. You can set this before the anchor itself exists. The first anchor gets an id of [code]1[/code], the second an id of [code]2[/code], etc. When anchors get removed, the engine can then assign the corresponding id to new anchors. The most common situation where anchors 'disappear' is when the AR server identifies that two anchors represent different parts of the same plane and merges them.
 		</member>
 	</members>
+	<signals>
+		<signal name="mesh_updated">
+			<argument index="0" name="mesh" type="Mesh">
+			</argument>
+			<description>
+				Emitted when the mesh associated with the anchor changes or when one becomes available. This is especially important for topology that is constantly being mesh_updated.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 	</constants>
 </class>

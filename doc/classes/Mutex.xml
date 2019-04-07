@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Mutex" inherits="Reference" category="Core" version="3.1">
+<class name="Mutex" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		A synchronization Mutex.
 	</brief_description>
@@ -15,21 +15,21 @@
 			<return type="void">
 			</return>
 			<description>
-				Lock this [code]Mutex[/code], blocks until it is unlocked by the current owner.
+				Lock this [Mutex], blocks until it is unlocked by the current owner.
 			</description>
 		</method>
 		<method name="try_lock">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Try locking this [code]Mutex[/code], does not block. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
+				Try locking this [Mutex], does not block. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
 			</description>
 		</method>
 		<method name="unlock">
 			<return type="void">
 			</return>
 			<description>
-				Unlock this [code]Mutex[/code], leaving it to other threads.
+				Unlock this [Mutex], leaving it to other threads.
 			</description>
 		</method>
 	</methods>

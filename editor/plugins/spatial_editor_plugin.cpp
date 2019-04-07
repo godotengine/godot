@@ -2382,7 +2382,10 @@ void SpatialEditorViewport::_draw() {
 
 	if (cursor.region_select) {
 
-		VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin), Color(0.7, 0.7, 1.0, 0.3));
+		VisualServer::get_singleton()->canvas_item_add_rect(
+				ci,
+				Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin),
+				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
 	}
 
 	if (message_time > 0) {
@@ -2396,7 +2399,13 @@ void SpatialEditorViewport::_draw() {
 	if (_edit.mode == TRANSFORM_ROTATE) {
 
 		Point2 center = _point_to_screen(_edit.center);
-		VisualServer::get_singleton()->canvas_item_add_line(ci, _edit.mouse_pos, center, Color(0.4, 0.7, 1.0, 0.8));
+		VisualServer::get_singleton()->canvas_item_add_line(
+				ci,
+				_edit.mouse_pos,
+				center,
+				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.6),
+				Math::round(2 * EDSCALE),
+				true);
 	}
 	if (previewing) {
 
@@ -3001,7 +3010,7 @@ void SpatialEditorViewport::set_state(const Dictionary &p_state) {
 			previewing = Object::cast_to<Camera>(pv);
 			previewing->connect("tree_exiting", this, "_preview_exited_scene");
 			VS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
-			view_menu->hide();
+			view_menu->set_disabled(true);
 			surface->update();
 			preview_camera->set_pressed(true);
 			preview_camera->show();

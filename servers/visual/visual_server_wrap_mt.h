@@ -487,6 +487,8 @@ public:
 	FUNCRID(canvas)
 	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
 	FUNC2(canvas_set_modulate, RID, const Color &)
+	FUNC3(canvas_set_parent, RID, RID, float)
+	FUNC1(canvas_set_disable_scale, bool)
 
 	FUNCRID(canvas_item)
 	FUNC2(canvas_item_set_parent, RID, RID)

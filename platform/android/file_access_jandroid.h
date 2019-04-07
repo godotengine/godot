@@ -32,7 +32,7 @@
 #define FILE_ACCESS_JANDROID_H
 
 #include "core/os/file_access.h"
-#include "java_glue.h"
+#include "java_godot_lib_jni.h"
 class FileAccessJAndroid : public FileAccess {
 
 	static jobject io;

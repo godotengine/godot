@@ -1882,7 +1882,9 @@ bool Main::iteration() {
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	OS::get_singleton()->get_main_loop()->idle(step * time_scale);
+	if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
+		exit = true;
+	}
 	message_queue->flush();
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.

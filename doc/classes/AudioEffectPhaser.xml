@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectPhaser" inherits="AudioEffect" category="Core" version="3.1">
+<class name="AudioEffectPhaser" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
 		Adds a Phaser audio effect to an Audio bus.
 		Combines the original signal with a copy that is slightly out of phase with the original.
