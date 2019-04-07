@@ -669,11 +669,15 @@ inline void adapt_values(int p_index_a, int p_index_b, int *adapted_values, cons
 void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	//PREPARATIONS
+	bool draw_border = (border_width[0] > 0) || (border_width[1] > 0) || (border_width[2] > 0) || (border_width[3] > 0);
+	bool draw_shadow = (shadow_size > 0);
+	if (!draw_border && !draw_center && !draw_shadow) {
+		return;
+	}
 
 	bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	bool aa_on = rounded_corners && anti_aliased;
 
-	bool draw_border = (border_width[0] > 0) || (border_width[1] > 0) || (border_width[2] > 0) || (border_width[3] > 0);
 	Color border_color_alpha = Color(border_color.r, border_color.g, border_color.b, 0);
 
 	bool blend_on = blend_border && draw_border;
@@ -710,11 +714,8 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Vector<int> indices;
 	Vector<Color> colors;
 
-	//DRAWING
-	VisualServer *vs = VisualServer::get_singleton();
-
 	//DRAW SHADOW
-	if (shadow_size > 0) {
+	if (draw_shadow) {
 		int shadow_width[4] = { shadow_size, shadow_size, shadow_size, shadow_size };
 
 		Rect2 shadow_inner_rect = style_rect;
@@ -798,6 +799,8 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		}
 	}
 
+	//DRAWING
+	VisualServer *vs = VisualServer::get_singleton();
 	vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors);
 }
 
