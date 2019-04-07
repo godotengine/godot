@@ -3,6 +3,11 @@
 	<brief_description>
 	</brief_description>
 	<description>
+		Contains multiple root nodes as children in a graph. Each node is used as a state, and provides multiple functions to alternate between states. Retrieve the AnimationNodeStateMachinePlayback object from the [AnimationTree] node to control it programatically.
+		[codeblock]
+		var state_machine = anim_tree["parameters/StateMachine/playback"]
+		state_machine.travel("SomeState")
+		[codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -170,7 +175,7 @@
 		<method name="set_graph_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="Vector2">
+			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
 			</description>
