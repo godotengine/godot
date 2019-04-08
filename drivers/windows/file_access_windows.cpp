@@ -197,12 +197,14 @@ void FileAccessWindows::seek(size_t p_position) {
 	last_error = OK;
 	if (fseek(f, p_position, SEEK_SET))
 		check_errors();
+	prev_op = 0;
 }
 void FileAccessWindows::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!f);
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
+	prev_op = 0;
 }
 size_t FileAccessWindows::get_position() const {
 
@@ -234,6 +236,12 @@ bool FileAccessWindows::eof_reached() const {
 uint8_t FileAccessWindows::get_8() const {
 
 	ERR_FAIL_COND_V(!f, 0);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
 		check_errors();
@@ -246,6 +254,12 @@ uint8_t FileAccessWindows::get_8() const {
 int FileAccessWindows::get_buffer(uint8_t *p_dst, int p_length) const {
 
 	ERR_FAIL_COND_V(!f, -1);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == WRITE) {
+			fflush(f);
+		}
+		prev_op = READ;
+	}
 	int read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
@@ -260,16 +274,34 @@ void FileAccessWindows::flush() {
 
 	ERR_FAIL_COND(!f);
 	fflush(f);
+	if (prev_op == WRITE)
+		prev_op = 0;
 }
 
 void FileAccessWindows::store_8(uint8_t p_dest) {
 
 	ERR_FAIL_COND(!f);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
 	fwrite(&p_dest, 1, 1, f);
 }
 
 void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 	ERR_FAIL_COND(!f);
+	if (flags == READ_WRITE || flags == WRITE_READ) {
+		if (prev_op == READ) {
+			if (last_error != ERR_FILE_EOF) {
+				fseek(f, 0, SEEK_CUR);
+			}
+		}
+		prev_op = WRITE;
+	}
 	ERR_FAIL_COND(fwrite(p_src, 1, p_length, f) != p_length);
 }
 
@@ -310,6 +342,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 FileAccessWindows::FileAccessWindows() :
 		f(NULL),
 		flags(0),
+		prev_op(0),
 		last_error(OK) {
 }
 FileAccessWindows::~FileAccessWindows() {
