@@ -1557,6 +1557,10 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 
 			case ShaderLanguage::TYPE_FLOAT: {
 				pi.type = Variant::REAL;
+				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+					pi.hint = PROPERTY_HINT_RANGE;
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
+				}
 			} break;
 
 			case ShaderLanguage::TYPE_VEC2: {
@@ -3737,7 +3741,8 @@ void RasterizerStorageGLES2::light_set_param(RID p_light, VS::LightParam p_param
 			light->version++;
 			light->instance_change_notify(true, false);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	light->param[p_param] = p_value;
@@ -4880,7 +4885,8 @@ void RasterizerStorageGLES2::render_target_set_flag(RID p_render_target, RenderT
 			_render_target_allocate(rt);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
