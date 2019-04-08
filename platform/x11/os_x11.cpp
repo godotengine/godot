@@ -3238,6 +3238,8 @@ OS_X11::OS_X11() {
 	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
+	xi.opcode = 0;
+	xi.last_relative_time = 0;
 	layered_window = false;
 	minimized = false;
 	xim_style = 0L;

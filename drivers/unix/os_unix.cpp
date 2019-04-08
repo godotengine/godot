@@ -108,6 +108,7 @@ void OS_Unix::initialize_debugging() {
 
 	if (ScriptDebugger::get_singleton() != NULL) {
 		struct sigaction action;
+		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
 		sigaction(SIGINT, &action, NULL);
 	}
