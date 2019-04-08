@@ -1161,7 +1161,7 @@ void EditorSceneImporterAssimp::_generate_node(const String &p_path, const aiSce
 			}
 			_add_mesh_to_mesh_instance(p_node, p_scene, p_skeleton, p_path, mesh_node, p_owner, r_bone_name, r_mesh_count, p_max_bone_weights, r_name_morph_mesh_names);
 		}
-		if (mesh_node != NULL && p_skeleton->get_bone_count() > 0 && p_owner->find_node(p_skeleton->get_name()) == NULL) {
+		if (p_skeleton->get_bone_count() > 0 && p_owner->find_node(p_skeleton->get_name()) == NULL) {
 			Node *node = p_owner->find_node(_ai_string_to_string(p_scene->mRootNode->mName));
 			ERR_FAIL_COND(node == NULL);
 			node->add_child(p_skeleton);
@@ -1172,6 +1172,10 @@ void EditorSceneImporterAssimp::_generate_node(const String &p_path, const aiSce
 				p_skeleton->set_transform(mesh_xform);
 			}
 			r_skeletons.insert(p_skeleton, mesh_node);
+		} else if (p_skeleton->get_bone_count() == 0) {
+			Transform xform = child_node->get_transform();
+			xform.scaled(Vector3(factor, factor, factor));
+			mesh_node->set_transform(xform);
 		}
 		for (size_t i = 0; i < p_node->mNumMeshes; i++) {
 			if (p_scene->mMeshes[p_node->mMeshes[i]]->HasBones()) {
