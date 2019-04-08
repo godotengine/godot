@@ -100,7 +100,7 @@
 
 #define BINDINGS_GENERATOR_VERSION UINT32_C(8)
 
-const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN = "\t%0 %1_in = %1;\n";
+const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
 bool BindingsGenerator::verbose_output = false;
 
