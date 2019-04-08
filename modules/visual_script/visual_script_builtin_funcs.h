@@ -101,6 +101,7 @@ public:
 		VAR_TO_BYTES,
 		BYTES_TO_VAR,
 		COLORN,
+		MATH_SMOOTHSTEP,
 		FUNC_MAX
 	};
 
