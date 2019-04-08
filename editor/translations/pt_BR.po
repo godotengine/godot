@@ -55,12 +55,13 @@
 # Dimenicius <vinicius.costa.92@gmail.com>, 2019.
 # Davi <wokep.ma.wavid@gmail.com>, 2019.
 # Endrick Gustavo <endrickgb@hotmail.com>, 2019.
+# Hans M. Boron <hansmateusboron@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
-"Last-Translator: Endrick Gustavo <endrickgb@hotmail.com>\n"
+"PO-Revision-Date: 2019-04-08 10:35+0000\n"
+"Last-Translator: Hans M. Boron <hansmateusboron@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -257,9 +258,8 @@ msgid "Time (s): "
 msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Habilitar Doppler"
+msgstr "Ligar/Desligar trilha"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -365,14 +365,13 @@ msgid "Anim Insert Key"
 msgstr "Inserir Chave na Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
 msgstr "Alterar FPS da Animação"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Reordenar Autoloads"
+msgstr "Reordenar Faixas"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -405,9 +404,8 @@ msgid "Not possible to add a new track without a root"
 msgstr "Não é possível adicionar uma nova trilha sem uma raiz"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Bezier Track"
-msgstr "Adicionar Trilha"
+msgstr "Adicionar Trilha Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -423,7 +421,6 @@ msgid "Add Transform Track Key"
 msgstr "Trilha de transformação 3D"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
 msgstr "Adicionar Trilha"
 
@@ -3924,7 +3921,7 @@ msgstr "Editar trilhas filtradas:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Enable filtering"
-msgstr "Filhos editáveis"
+msgstr "Habilitar filtragem"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"

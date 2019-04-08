@@ -5,7 +5,7 @@
 # Аркадий Авас <savvot@gmail.com>, 2018.
 # Artem Varaksa <aymfst@gmail.com>, 2018.
 # B10nicMachine <shumik1337@gmail.com>, 2017.
-# Chaosus89 <chaosus89@gmail.com>, 2018.
+# Chaosus89 <chaosus89@gmail.com>, 2018, 2019.
 # DimOkGamer <dimokgamer@gmail.com>, 2016-2017.
 # Forest Swamp <sample1989@mail.ru>, 2018.
 # Igor S <scorched@bk.ru>, 2017.
@@ -41,12 +41,13 @@
 # Nikita <iron-nikita@yandex.ru>, 2019.
 # LeLuCh B0й <alekx@alumni.nottingham.ac.uk>, 2019.
 # Арсений Солодков <arsen332211@gmail.com>, 2019.
+# Nikita <yakrobat@protonmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
-"Last-Translator: Арсений Солодков <arsen332211@gmail.com>\n"
+"PO-Revision-Date: 2019-04-07 08:04+0000\n"
+"Last-Translator: Chaosus89 <chaosus89@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -210,7 +211,7 @@ msgstr "Функции:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Аудио Дорожки:"
+msgstr "Аудиодорожки:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
@@ -246,9 +247,8 @@ msgid "Time (s): "
 msgstr "Время (сек.): "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Toggle Track Enabled"
-msgstr "Доплеровский режим"
+msgstr "Переключатель дорожки включен"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -302,11 +302,11 @@ msgstr "Удалить ключ(ключи)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Изменить Режим Обновления Анимации"
+msgstr "Изменить способ обновления анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Изменить Режим Интерполяции Анимации"
+msgstr "Изменить метод интерполяции анимации"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
@@ -414,9 +414,8 @@ msgid "Track path is invalid, so can't add a method key."
 msgstr "Путь трека некорректен, потому нельзя добавить ключ метода."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Трек Вызова Метода"
+msgstr "Добавить ключ отслеживания метода"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -579,17 +578,16 @@ msgid "Copy"
 msgstr "Копировать"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Аудио Дорожки:"
+msgstr "Добавить звуковую дорожку"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Изменить смещение начала в Audio Track клипе"
+msgstr "Изменение Начального Сдвига Аудио Дорожки"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr "Изменить смещение начала в Audio Track клипе"
+msgstr "Изменение Конечного Сдвига Аудио Дорожки"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -2038,9 +2036,8 @@ msgid "Save changes to '%s' before closing?"
 msgstr "Сохранить изменения в «%s» перед закрытием?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Saved %s modified resource(s)."
-msgstr "Не удалось загрузить ресурс."
+msgstr "%s измененных ресурсов сохранено."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
@@ -3227,7 +3224,7 @@ msgstr "Переместить в..."
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
-msgstr "Новый скрипт."
+msgstr "Новый скрипт..."
 
 #: editor/filesystem_dock.cpp
 msgid "New Resource..."
@@ -3674,14 +3671,12 @@ msgid "Move Node Point"
 msgstr "Передвинуть Точку"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Limits"
-msgstr "Изменить время \"смешивания\""
+msgstr "Изменить границы BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "Изменить время \"смешивания\""
+msgstr "Изменить метки BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3692,20 +3687,17 @@ msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Node Point"
-msgstr "Добавить узел"
+msgstr "Добавить точку узла"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Animation Point"
-msgstr "Добавить анимацию"
+msgstr "Добавить точку анимации"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace1D Point"
-msgstr "Удалить точку пути"
+msgstr "Удалить точку BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
@@ -3755,29 +3747,24 @@ msgid "Triangle already exists"
 msgstr "Треугольник уже существует"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Triangle"
-msgstr "Добавить переменную"
+msgstr "Добавить треугольник"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Limits"
-msgstr "Изменить время \"смешивания\""
+msgstr "Изменить границы BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Labels"
-msgstr "Изменить время \"смешивания\""
+msgstr "Изменить метки BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Point"
-msgstr "Удалить точку пути"
+msgstr "Удалить точку BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Triangle"
-msgstr "Удалить переменную"
+msgstr "Удалить треугольник BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
@@ -3788,9 +3775,8 @@ msgid "No triangles exist, so no blending can take place."
 msgstr "Невозможно смешивать, поскольку отсутствуют треугольники."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Toggle Auto Triangles"
-msgstr "Переключить автозагрузку глобальных скриптов"
+msgstr "Переключить автоматические треугольники"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3810,9 +3796,8 @@ msgid "Blend:"
 msgstr "Смешивание:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Parameter Changed"
-msgstr "Изменения материала"
+msgstr "Параметр изменён"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -3824,9 +3809,8 @@ msgid "Output node can't be added to the blend tree."
 msgstr "Узел вывода не может быть добавлен в дерево смешивания."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to BlendTree"
-msgstr "Добавить узел(узлы) из дерева"
+msgstr "Добавить узел к BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3842,15 +3826,13 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Connected"
-msgstr "Подключен"
+msgstr "Узлы соединены"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Disconnected"
-msgstr "Отключен"
+msgstr "Узлы разъединены"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
@@ -3859,19 +3841,16 @@ msgstr "Анимация"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Удалить узел(узлы)"
+msgstr "Удалить узел"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Filter On/Off"
-msgstr "Переключить этот трек вкл/выкл."
+msgstr "Переключить фильтр вкл/выкл"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Change Filter"
-msgstr "Изменен фильтр языков"
+msgstr "Изменить фильтр"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3892,9 +3871,8 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Renamed"
-msgstr "Имя узла"
+msgstr "Узел переименован"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4125,14 +4103,12 @@ msgid "Cross-Animation Blend Times"
 msgstr "Межанимационный инструмент смешивания"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "Режим перемещения"
+msgstr "Переместить узел"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Add Transition"
-msgstr "Добавить перевод"
+msgstr "Добавить переход"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -4168,14 +4144,12 @@ msgid "No playback resource set at path: %s."
 msgstr "В пути нет ресурсов воспроизведения: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "Удалено:"
+msgstr "Узел удалён"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Transition Removed"
-msgstr "Transition узел"
+msgstr "Переход удалён"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set Start Node (Autoplay)"
@@ -4608,13 +4582,10 @@ msgid "Presets for the anchors and margins values of a Control node."
 msgstr "Предустановки для якорей и значения отступов контрольного узла."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
-msgstr ""
-"Внимание: Положение и размер детей контейнера определяется только их "
-"родителями."
+msgstr "Якоря и отступы дочерних контейнеров переопределяются их родителями."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5958,11 +5929,11 @@ msgstr "Открыть онлайн документацию Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Запрашиваемые Документы"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Помогите улучшить документацию Godot, предоставив обратную связь"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -6726,14 +6697,12 @@ msgid "(empty)"
 msgstr "(пусто)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animations:"
-msgstr "Анимации"
+msgstr "Анимации:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "New Animation"
-msgstr "Анимация"
+msgstr "Новая анимация"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed (FPS):"
@@ -6744,9 +6713,8 @@ msgid "Loop"
 msgstr "Зациклить"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Frames:"
-msgstr "Кадры анимации"
+msgstr "Кадры анимации:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"

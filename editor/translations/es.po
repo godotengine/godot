@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-24 17:38+0000\n"
+"PO-Revision-Date: 2019-04-05 13:04+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -1434,13 +1434,13 @@ msgstr ""
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr "No se ha encontrado la plantilla de depuración personalizada."
+msgstr "Plantilla debug personalizada no encontrada."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr "No se ha encontrado ninguna plantilla de lanzamineto personalizada."
+msgstr "Plantilla release personalizada no encontrada."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
@@ -5307,7 +5307,7 @@ msgstr "Tiempo de generación (seg):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr "Máscara de emisión"
+msgstr "Máscara de Emisión"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
@@ -5315,7 +5315,7 @@ msgstr "Capturar desde píxel"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "Colores de emisión"
+msgstr "Colores de Emisión"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5960,11 +5960,11 @@ msgstr "Abrir documentación online de Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Solicitar Documentos"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Ayuda a mejorar la documentación de Godot dando feedback"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
