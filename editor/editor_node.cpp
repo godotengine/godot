@@ -306,7 +306,14 @@ void EditorNode::_notification(int p_what) {
 		VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
 		VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
 
-		_editor_select(EDITOR_3D);
+		feature_profile_manager->notify_changed();
+
+		if (!main_editor_buttons[EDITOR_3D]->is_visible()) { //may be hidden due to feature profile
+			_editor_select(EDITOR_2D);
+		} else {
+			_editor_select(EDITOR_3D);
+		}
+
 		_update_debug_options();
 
 		/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
@@ -558,11 +565,14 @@ void EditorNode::_editor_select_next() {
 
 	int editor = _get_current_main_editor();
 
-	if (editor == editor_table.size() - 1) {
-		editor = 0;
-	} else {
-		editor++;
-	}
+	do {
+		if (editor == editor_table.size() - 1) {
+			editor = 0;
+		} else {
+			editor++;
+		}
+	} while (main_editor_buttons[editor]->is_visible());
+
 	_editor_select(editor);
 }
 
@@ -570,11 +580,14 @@ void EditorNode::_editor_select_prev() {
 
 	int editor = _get_current_main_editor();
 
-	if (editor == 0) {
-		editor = editor_table.size() - 1;
-	} else {
-		editor--;
-	}
+	do {
+		if (editor == 0) {
+			editor = editor_table.size() - 1;
+		} else {
+			editor--;
+		}
+	} while (main_editor_buttons[editor]->is_visible());
+
 	_editor_select(editor);
 }
 
@@ -1440,17 +1453,45 @@ void EditorNode::_dialog_action(String p_file) {
 
 bool EditorNode::item_has_editor(Object *p_object) {
 
+	if (_is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+		return false;
+	}
+
 	return editor_data.get_subeditors(p_object).size() > 0;
 }
 
 void EditorNode::edit_item_resource(RES p_resource) {
 	edit_item(p_resource.ptr());
 }
+
+bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &p_class) {
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = p_class;
+
+	while (class_name != StringName()) {
+
+		if (profile->is_class_editor_disabled(class_name)) {
+			return true;
+		}
+		class_name = ClassDB::get_parent_class(class_name);
+	}
+
+	return false;
+}
+
 void EditorNode::edit_item(Object *p_object) {
 
 	Vector<EditorPlugin *> sub_plugins;
 
 	if (p_object) {
+		if (_is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
+			return;
+		}
 		sub_plugins = editor_data.get_subeditors(p_object);
 	}
 
@@ -1640,6 +1681,12 @@ void EditorNode::_edit_current() {
 
 		EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
 
+		for (int i = 0; i < editor_table.size(); i++) {
+			if (editor_table[i] == main_plugin && !main_editor_buttons[i]->is_visible()) {
+				main_plugin = NULL; //if button is not visible, then no plugin active
+			}
+		}
+
 		if (main_plugin) {
 
 			// special case if use of external editor is true
@@ -1677,7 +1724,11 @@ void EditorNode::_edit_current() {
 			}
 		}
 
-		Vector<EditorPlugin *> sub_plugins = editor_data.get_subeditors(current_obj);
+		Vector<EditorPlugin *> sub_plugins;
+
+		if (!_is_class_editor_disabled_by_feature_profile(current_obj->get_class())) {
+			sub_plugins = editor_data.get_subeditors(current_obj);
+		}
 
 		if (!sub_plugins.empty()) {
 			_display_top_editors(false);
@@ -1685,7 +1736,6 @@ void EditorNode::_edit_current() {
 			_set_top_editors(sub_plugins);
 			_set_editing_top_editors(current_obj);
 			_display_top_editors(true);
-
 		} else if (!editor_plugins_over->get_plugins_list().empty()) {
 
 			hide_top_editors();
@@ -2359,6 +2409,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			export_template_manager->popup_manager();
 
 		} break;
+		case SETTINGS_MANAGE_FEATURE_PROFILES: {
+
+			feature_profile_manager->popup_centered_ratio();
+
+		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 
 			OS::get_singleton()->set_window_fullscreen(!OS::get_singleton()->is_window_fullscreen());
@@ -2541,9 +2596,12 @@ void EditorNode::_editor_select(int p_which) {
 	if (selecting || changing_scene)
 		return;
 
-	selecting = true;
-
 	ERR_FAIL_INDEX(p_which, editor_table.size());
+
+	if (!main_editor_buttons[p_which]->is_visible()) //button hidden, no editor
+		return;
+
+	selecting = true;
 
 	for (int i = 0; i < main_editor_buttons.size(); i++) {
 		main_editor_buttons[i]->set_pressed(i == p_which);
@@ -3284,6 +3342,7 @@ void EditorNode::register_editor_types() {
 	ClassDB::register_class<EditorProperty>();
 	ClassDB::register_class<AnimationTrackEditPlugin>();
 	ClassDB::register_class<ScriptCreateDialog>();
+	ClassDB::register_class<EditorFeatureProfile>();
 
 	// FIXME: Is this stuff obsolete, or should it be ported to new APIs?
 	ClassDB::register_class<EditorScenePostImport>();
@@ -3821,7 +3880,13 @@ void EditorNode::_update_dock_slots_visibility() {
 	} else {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 
-			if (dock_slot[i]->get_tab_count())
+			int tabs_visible = 0;
+			for (int j = 0; j < dock_slot[i]->get_tab_count(); j++) {
+				if (!dock_slot[i]->get_tab_hidden(j)) {
+					tabs_visible++;
+				}
+			}
+			if (tabs_visible)
 				dock_slot[i]->show();
 			else
 				dock_slot[i]->hide();
@@ -4806,6 +4871,39 @@ void EditorNode::_resource_loaded(RES p_resource, const String &p_path) {
 	singleton->editor_folding.load_resource_folding(p_resource, p_path);
 }
 
+void EditorNode::_feature_profile_changed() {
+
+	Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
+	TabContainer *import_tabs = cast_to<TabContainer>(import_dock->get_parent());
+	TabContainer *node_tabs = cast_to<TabContainer>(node_dock->get_parent());
+	TabContainer *fs_tabs = cast_to<TabContainer>(filesystem_dock->get_parent());
+	if (profile.is_valid()) {
+
+		import_tabs->set_tab_hidden(import_dock->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
+		node_tabs->set_tab_hidden(node_dock->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_NODE_DOCK));
+		fs_tabs->set_tab_hidden(filesystem_dock->get_index(), profile->is_feature_disabled(EditorFeatureProfile::FEATURE_FILESYSTEM_DOCK));
+
+		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
+		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
+		main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
+		if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB)) {
+			_editor_select(EDITOR_2D);
+		}
+	} else {
+
+		import_tabs->set_tab_hidden(import_dock->get_index(), false);
+		node_tabs->set_tab_hidden(node_dock->get_index(), false);
+		fs_tabs->set_tab_hidden(filesystem_dock->get_index(), false);
+		import_dock->set_visible(true);
+		node_dock->set_visible(true);
+		filesystem_dock->set_visible(true);
+		main_editor_buttons[EDITOR_3D]->set_visible(true);
+		main_editor_buttons[EDITOR_ASSETLIB]->set_visible(true);
+	}
+
+	_update_dock_slots_visibility();
+}
+
 void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
@@ -4884,6 +4982,7 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_video_driver_selected"), &EditorNode::_video_driver_selected);
 
 	ClassDB::bind_method(D_METHOD("_resources_changed"), &EditorNode::_resources_changed);
+	ClassDB::bind_method(D_METHOD("_feature_profile_changed"), &EditorNode::_feature_profile_changed);
 
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
@@ -5397,8 +5496,11 @@ EditorNode::EditorNode() {
 	export_template_manager = memnew(ExportTemplateManager);
 	gui_base->add_child(export_template_manager);
 
+	feature_profile_manager = memnew(EditorFeatureProfileManager);
+	gui_base->add_child(feature_profile_manager);
 	about = memnew(EditorAbout);
 	gui_base->add_child(about);
+	feature_profile_manager->connect("current_feature_profile_changed", this, "_feature_profile_changed");
 
 	warning = memnew(AcceptDialog);
 	gui_base->add_child(warning);
@@ -5552,6 +5654,10 @@ EditorNode::EditorNode() {
 		p->add_item(TTR("Open Editor Data Folder"), SETTINGS_EDITOR_DATA_FOLDER);
 		p->add_item(TTR("Open Editor Settings Folder"), SETTINGS_EDITOR_CONFIG_FOLDER);
 	}
+	p->add_separator();
+
+	p->add_item(TTR("Manage Editor Features"), SETTINGS_MANAGE_FEATURE_PROFILES);
+
 	p->add_separator();
 
 	p->add_item(TTR("Manage Export Templates"), SETTINGS_MANAGE_EXPORT_TEMPLATES);

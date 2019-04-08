@@ -60,7 +60,7 @@ def process_file(f, fname):
     lc = 1
     while (l):
 
-        patterns = ['RTR(\"', 'TTR(\"']
+        patterns = ['RTR(\"', 'TTR(\"','TTRC(\"']
         idx = 0
         pos = 0
         while (pos >= 0):

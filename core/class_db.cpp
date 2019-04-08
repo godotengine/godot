@@ -312,6 +312,19 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 	}
 }
 
+void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
+
+	OBJTYPE_RLOCK;
+
+	const StringName *k = NULL;
+
+	while ((k = classes.next(k))) {
+
+		if (*k != p_class && get_parent_class(*k) == p_class)
+			p_classes->push_back(*k);
+	}
+}
+
 StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 
 	OBJTYPE_RLOCK;

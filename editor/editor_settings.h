@@ -169,6 +169,7 @@ public:
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
 	String get_cache_dir() const;
+	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;

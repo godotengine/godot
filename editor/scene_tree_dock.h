@@ -212,6 +212,11 @@ class SceneTreeDock : public VBoxContainer {
 	void _update_create_root_dialog();
 	void _favorite_root_selected(const String &p_class);
 
+	void _feature_profile_changed();
+
+	bool profile_allow_editing;
+	bool profile_allow_script_editing;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
