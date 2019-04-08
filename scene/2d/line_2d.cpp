@@ -120,8 +120,12 @@ void Line2D::clear_points() {
 	}
 }
 
-void Line2D::add_point(Vector2 pos) {
-	_points.append(pos);
+void Line2D::add_point(Vector2 pos, int atpos) {
+	if (atpos < 0 || _points.size() < atpos) {
+		_points.append(pos);
+	} else {
+		_points.insert(atpos, pos);
+	}
 	update();
 }
 
@@ -318,7 +322,7 @@ void Line2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Line2D::get_point_count);
 
-	ClassDB::bind_method(D_METHOD("add_point", "position"), &Line2D::add_point);
+	ClassDB::bind_method(D_METHOD("add_point", "position", "at_position"), &Line2D::add_point, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("remove_point", "i"), &Line2D::remove_point);
 
 	ClassDB::bind_method(D_METHOD("clear_points"), &Line2D::clear_points);
