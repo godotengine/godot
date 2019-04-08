@@ -282,10 +282,7 @@ void BaseButton::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 	}
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree()) {
+	if (p_what == NOTIFICATION_EXIT_TREE || (p_what == NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree())) {
 
 		if (!toggle_mode) {
 			status.pressed = false;
