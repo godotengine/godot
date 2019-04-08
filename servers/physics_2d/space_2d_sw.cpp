@@ -333,10 +333,8 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D &
 	CollisionSolver2DSW::CallbackResult cbkres = NULL;
 
 	Physics2DServerSW::CollCbkData *cbkptr = NULL;
-	if (p_result_max > 0) {
-		cbkptr = &cbk;
-		cbkres = Physics2DServerSW::_shape_col_cbk;
-	}
+	cbkptr = &cbk;
+	cbkres = Physics2DServerSW::_shape_col_cbk;
 
 	for (int i = 0; i < amount; i++) {
 
@@ -353,7 +351,7 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D &
 		cbk.valid_depth = 0;
 
 		if (CollisionSolver2DSW::solve(shape, p_shape_xform, p_motion, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), Vector2(), cbkres, cbkptr, NULL, p_margin)) {
-			collided = p_result_max == 0 || cbk.amount > 0;
+			collided = cbk.amount > 0;
 		}
 	}
 

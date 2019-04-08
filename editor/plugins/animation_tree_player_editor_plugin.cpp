@@ -835,7 +835,7 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 			click_motion = Point2(mm->get_position().x, mm->get_position().y);
 			update();
 		}
-		if ((mm->get_button_mask() & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+		if (mm->get_button_mask() & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
 			v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
