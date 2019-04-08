@@ -480,7 +480,6 @@ RID RasterizerSceneGLES2::reflection_probe_instance_create(RID p_probe) {
 	rpi->current_resolution = 0;
 	rpi->dirty = true;
 
-	rpi->last_pass = 0;
 	rpi->index = 0;
 
 	for (int i = 0; i < 6; i++) {

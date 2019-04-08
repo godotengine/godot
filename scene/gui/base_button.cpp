@@ -59,7 +59,7 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> b = p_event;
 
 	if (b.is_valid()) {
-		if (status.disabled || ((1 << (b->get_button_index() - 1)) & button_mask) == 0)
+		if (((1 << (b->get_button_index() - 1)) & button_mask) == 0)
 			return;
 
 		if (status.pressing_button)

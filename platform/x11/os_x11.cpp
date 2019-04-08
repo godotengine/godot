@@ -1165,7 +1165,7 @@ int OS_X11::get_screen_dpi(int p_screen) const {
 	int height_mm = DisplayHeightMM(x11_display, p_screen);
 	double xdpi = (width_mm ? sc.width / (double)width_mm * 25.4 : 0);
 	double ydpi = (height_mm ? sc.height / (double)height_mm * 25.4 : 0);
-	if (xdpi || xdpi)
+	if (xdpi || ydpi)
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 
 	//could not get dpi
