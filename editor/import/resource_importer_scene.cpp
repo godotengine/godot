@@ -960,7 +960,7 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 	}
 }
 
-void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_keep_animations, bool p_make_materials, bool p_keep_materials, bool p_make_meshes, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
+void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
 
 	List<PropertyInfo> pi;
 
@@ -982,7 +982,14 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 						anim->track_set_imported(i, true);
 					}
 
-					String ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".anim");
+					String ext_name;
+
+					if (p_animations_as_text) {
+						ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".tres");
+					} else {
+						ext_name = p_base_path.plus_file(_make_extname(E->get()) + ".anim");
+					}
+
 					if (FileAccess::exists(ext_name) && p_keep_animations) {
 						//try to keep custom animation tracks
 						Ref<Animation> old_anim = ResourceLoader::load(ext_name, "Animation", true);
@@ -1017,7 +1024,14 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 				if (!p_materials.has(mat)) {
 
-					String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+					String ext_name;
+
+					if (p_materials_as_text) {
+						ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".tres");
+					} else {
+						ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+					}
+
 					if (p_keep_materials && FileAccess::exists(ext_name)) {
 						//if exists, use it
 						p_materials[mat] = ResourceLoader::load(ext_name);
@@ -1045,7 +1059,13 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 						if (!p_meshes.has(mesh)) {
 
 							//meshes are always overwritten, keeping them is not practical
-							String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
+							String ext_name;
+
+							if (p_meshes_as_text) {
+								ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".tres");
+							} else {
+								ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
+							}
 
 							ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
 							p_meshes[mesh] = ResourceLoader::load(ext_name);
@@ -1067,9 +1087,14 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 									continue;
 
 								if (!p_materials.has(mat)) {
+									String ext_name;
 
-									String ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
-									;
+									if (p_materials_as_text) {
+										ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".tres");
+									} else {
+										ext_name = p_base_path.plus_file(_make_extname(mat->get_name()) + ".material");
+									}
+
 									if (p_keep_materials && FileAccess::exists(ext_name)) {
 										//if exists, use it
 										p_materials[mat] = ResourceLoader::load(ext_name);
@@ -1086,7 +1111,15 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 									//re-save the mesh since a material is now assigned
 									if (p_make_meshes) {
-										String ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
+
+										String ext_name;
+
+										if (p_meshes_as_text) {
+											ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".tres");
+										} else {
+											ext_name = p_base_path.plus_file(_make_extname(mesh->get_name()) + ".mesh");
+										}
+
 										ResourceSaver::save(ext_name, mesh, ResourceSaver::FLAG_CHANGE_PATH);
 										p_meshes[mesh] = ResourceLoader::load(ext_name);
 									}
@@ -1105,7 +1138,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
-		_make_external_resources(p_node->get_child(i), p_base_path, p_make_animations, p_keep_animations, p_make_materials, p_keep_materials, p_make_meshes, p_animations, p_materials, p_meshes);
+		_make_external_resources(p_node->get_child(i), p_base_path, p_make_animations, p_animations_as_text, p_keep_animations, p_make_materials, p_materials_as_text, p_keep_materials, p_make_meshes, p_meshes_as_text, p_animations, p_materials, p_meshes);
 	}
 }
 
@@ -1134,18 +1167,18 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/custom_script", PROPERTY_HINT_FILE, script_ext_hint), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.material),Files (.tres)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), materials_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "materials/keep_on_reimport"), materials_out));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/compress"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files"), meshes_out ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.mesh),Files (.tres)"), meshes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable,Gen Lightmaps", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "animation/filter_script", PROPERTY_HINT_MULTILINE_TEXT), ""));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), animations_out));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.anim),Files (.tres)"), animations_out ? true : false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/keep_custom_tracks"), animations_out));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_linear_error"), 0.05));
@@ -1367,10 +1400,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		_filter_tracks(scene, animation_filter);
 	}
 
-	bool external_animations = int(p_options["animation/storage"]) == 1;
+	bool external_animations = int(p_options["animation/storage"]) == 1 || int(p_options["animation/storage"]) == 2;
+	bool external_animations_as_text = int(p_options["animation/storage"]) == 2;
 	bool keep_custom_tracks = p_options["animation/keep_custom_tracks"];
-	bool external_materials = p_options["materials/storage"];
-	bool external_meshes = p_options["meshes/storage"];
+	bool external_materials = int(p_options["materials/storage"]) == 1 || int(p_options["materials/storage"]) == 2;
+	bool external_materials_as_text = int(p_options["materials/storage"]) == 2;
+	bool external_meshes = int(p_options["meshes/storage"]) == 1 || int(p_options["meshes/storage"]) == 2;
+	bool external_meshes_as_text = int(p_options["meshes/storage"]) == 2;
 	bool external_scenes = int(p_options["nodes/storage"]) == 1;
 
 	String base_path = p_source_file.get_base_dir();
@@ -1425,7 +1461,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 		bool keep_materials = bool(p_options["materials/keep_on_reimport"]);
 
-		_make_external_resources(scene, base_path, external_animations, keep_custom_tracks, external_materials, keep_materials, external_meshes, anim_map, mat_map, mesh_map);
+		_make_external_resources(scene, base_path, external_animations, external_animations_as_text, keep_custom_tracks, external_materials, external_materials_as_text, keep_materials, external_meshes, external_meshes_as_text, anim_map, mat_map, mesh_map);
 	}
 
 	progress.step(TTR("Running Custom Script..."), 2);
