@@ -66,7 +66,7 @@ void AudioEffectRecordInstance::_io_thread_process() {
 
 	while (is_recording) {
 		//Check: The current recording has been requested to stop
-		if (is_recording && !base->recording_active) {
+		if (!base->recording_active) {
 			is_recording = false;
 		}
 

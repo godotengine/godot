@@ -2997,8 +2997,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 							}
 						}
 					}
+					base_type = base_type.class_type->base_type;
 				}
-				base_type = base_type.class_type->base_type;
 			} break;
 			case GDScriptParser::DataType::SCRIPT:
 			case GDScriptParser::DataType::GDSCRIPT: {
