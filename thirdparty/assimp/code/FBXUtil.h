@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "FBXCompileConfig.h"
 #include "FBXTokenizer.h"
+#include <stdint.h>
 
 namespace Assimp {
 namespace FBX {
@@ -97,6 +98,20 @@ std::string AddLineAndColumn(const std::string& prefix, const std::string& text,
  *  @param tok Token where parsing/processing stopped
  *  @return A string of the following format: {prefix} ({token-type}, line {line}, col {column}) {text}*/
 std::string AddTokenText(const std::string& prefix, const std::string& text, const Token* tok);
+
+/** Decode a single Base64-encoded character.
+*
+*  @param ch Character to decode (from base64 to binary).
+*  @return decoded byte value*/
+uint8_t DecodeBase64(char ch);
+
+/** Decode a Base64-encoded string
+*
+*  @param in Characters to decode.
+*  @param inLength Number of characters to decode.
+*  @param out Reference to pointer where we will store the decoded data.
+*  @return size of the decoded data (number of bytes)*/
+size_t DecodeBase64(const char* in, size_t inLength, uint8_t*& out);
 
 }
 }
