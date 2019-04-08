@@ -512,8 +512,8 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		option->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		option->set_editable(0, true);
 		option->set_selectable(0, true);
-		option->set_checked(0, edited->is_class_editor_disabled(class_name));
-		option->set_text(0, TTR("Disable Editor"));
+		option->set_checked(0, !edited->is_class_editor_disabled(class_name));
+		option->set_text(0, TTR("Enable Contextual Editor"));
 		option->set_metadata(0, CLASS_OPTION_DISABLE_EDITOR);
 	}
 
@@ -600,7 +600,7 @@ void EditorFeatureProfileManager::_property_item_edited() {
 		int feature_selected = md;
 		switch (feature_selected) {
 			case CLASS_OPTION_DISABLE_EDITOR: {
-				edited->set_disable_class_editor(class_name, checked);
+				edited->set_disable_class_editor(class_name, !checked);
 				_save_and_update();
 				_update_selected_profile();
 			} break;

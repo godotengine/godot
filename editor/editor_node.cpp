@@ -1475,6 +1475,9 @@ bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &
 
 	while (class_name != StringName()) {
 
+		if (profile->is_class_disabled(class_name)) {
+			return true;
+		}
 		if (profile->is_class_editor_disabled(class_name)) {
 			return true;
 		}
