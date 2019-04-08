@@ -268,7 +268,7 @@ void Curve::update_auto_tangents(int i) {
 	}
 
 	if (i + 1 < _points.size()) {
-		if (p.right_mode == TANGENT_LINEAR && i + 1 < _points.size()) {
+		if (p.right_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[i + 1].pos - p.pos).normalized();
 			p.right_tangent = v.y / v.x;
 		}

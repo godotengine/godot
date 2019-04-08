@@ -1614,8 +1614,6 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 					continue;
 				}
 
-				ERR_CONTINUE(xform_idx == -1);
-
 				Vector<float> data = at.get_value_at_time(snapshots[i]);
 				ERR_CONTINUE(data.empty());
 

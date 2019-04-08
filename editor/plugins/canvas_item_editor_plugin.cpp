@@ -1863,7 +1863,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirm the move (only if it was moved)
-		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && (drag_type == DRAG_MOVE)) {
+		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT) {
 			if (transform.affine_inverse().xform(b->get_position()) != drag_from) {
 				_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
 			}
