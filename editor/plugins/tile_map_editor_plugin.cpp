@@ -481,10 +481,10 @@ void TileMapEditor::_update_palette() {
 	if (sel_tile != TileMap::INVALID_CELL) {
 		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE) {
 
-			const Map<Vector2, uint16_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
+			const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
 			Vector<Vector2> entries2;
-			for (const Map<Vector2, uint16_t>::Element *E = tiles2.front(); E; E = E->next()) {
+			for (const Map<Vector2, uint32_t>::Element *E = tiles2.front(); E; E = E->next()) {
 				entries2.push_back(E->key());
 			}
 			entries2.sort();
