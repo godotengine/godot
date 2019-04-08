@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
+"PO-Revision-Date: 2019-03-30 20:04+0000\n"
 "Last-Translator: cnieFIT <dtotncq@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
@@ -3125,7 +3125,7 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move a folder into itself."
-msgstr ""
+msgstr "無法將資料夾移動到其自身。"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3144,19 +3144,19 @@ msgstr "場景缺少了某些資源以至於無法載入"
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
 msgid "No name provided."
-msgstr ""
+msgstr "未提供名稱。"
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters"
-msgstr ""
+msgstr "提供的名稱包含無效字元"
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr ""
+msgstr "名稱包含無效字元。"
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
-msgstr ""
+msgstr "具有此名稱的檔或資料夾已存在。"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3165,7 +3165,7 @@ msgstr "載入時發生錯誤:"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr ""
+msgstr "重命名資料夾:"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3174,7 +3174,7 @@ msgstr "載入時發生錯誤:"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating folder:"
-msgstr ""
+msgstr "複製資料夾:"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3183,7 +3183,7 @@ msgstr "開啟場景"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
-msgstr ""
+msgstr "實例"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3201,11 +3201,11 @@ msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
-msgstr ""
+msgstr "查看所有者…"
 
 #: editor/filesystem_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Rename..."
-msgstr ""
+msgstr "重命名…"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3214,7 +3214,7 @@ msgstr "複製動畫關鍵畫格"
 
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
-msgstr ""
+msgstr "移動到..。"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -3228,7 +3228,7 @@ msgstr "另存資源為..."
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
 msgid "Expand All"
-msgstr ""
+msgstr "展開所有"
 
 #: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
 #, fuzzy
@@ -3240,19 +3240,19 @@ msgstr "取代全部"
 #: editor/project_manager.cpp editor/rename_dialog.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Rename"
-msgstr ""
+msgstr "重命名"
 
 #: editor/filesystem_dock.cpp
 msgid "Previous Directory"
-msgstr ""
+msgstr "上一個目錄"
 
 #: editor/filesystem_dock.cpp
 msgid "Next Directory"
-msgstr ""
+msgstr "下一個目錄"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
-msgstr ""
+msgstr "重新掃描檔案系統"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3268,23 +3268,23 @@ msgstr "搜尋 Class"
 msgid ""
 "Scanning Files,\n"
 "Please Wait..."
-msgstr ""
+msgstr "正在掃描檔, 請稍候..。"
 
 #: editor/filesystem_dock.cpp
 msgid "Move"
-msgstr ""
+msgstr "移動"
 
 #: editor/filesystem_dock.cpp
 msgid "There is already file or folder with the same name in this location."
-msgstr ""
+msgstr "此位置已存在同名的檔案或資料夾。"
 
 #: editor/filesystem_dock.cpp
 msgid "Overwrite"
-msgstr ""
+msgstr "覆蓋"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
-msgstr ""
+msgstr "創建腳本"
 
 #: editor/find_in_files.cpp
 #, fuzzy
@@ -3309,15 +3309,15 @@ msgstr "過濾器:"
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find..."
-msgstr ""
+msgstr "尋找..."
 
 #: editor/find_in_files.cpp editor/plugins/script_text_editor.cpp
 msgid "Replace..."
-msgstr ""
+msgstr "替換…"
 
 #: editor/find_in_files.cpp editor/progress_dialog.cpp scene/gui/dialogs.cpp
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: editor/find_in_files.cpp
 #, fuzzy
@@ -3356,11 +3356,11 @@ msgstr "不能使用的名稱。"
 
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
-msgstr ""
+msgstr "組"
 
 #: editor/groups_editor.cpp
 msgid "Nodes not in Group"
-msgstr ""
+msgstr "不在組中的節點"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
 #, fuzzy
@@ -3369,19 +3369,19 @@ msgstr "過濾檔案..."
 
 #: editor/groups_editor.cpp
 msgid "Nodes in Group"
-msgstr ""
+msgstr "組中的節點"
 
 #: editor/groups_editor.cpp
 msgid "Add to Group"
-msgstr ""
+msgstr "添加到組"
 
 #: editor/groups_editor.cpp
 msgid "Remove from Group"
-msgstr ""
+msgstr "從群組移除"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
-msgstr ""
+msgstr "管理組"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -3390,48 +3390,48 @@ msgstr "更新場景"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Animations"
-msgstr ""
+msgstr "使用單獨的動畫一同導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials"
-msgstr ""
+msgstr "使用單獨的材 一同導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects"
-msgstr ""
+msgstr "使用單獨的物件導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials"
-msgstr ""
+msgstr "使用單獨的對象+材質導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Animations"
-msgstr ""
+msgstr "使用單獨的對象+動畫導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Materials+Animations"
-msgstr ""
+msgstr "使用單獨的材質+動畫導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import with Separate Objects+Materials+Animations"
-msgstr ""
+msgstr "使用單獨的對象+材質+動畫導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes"
-msgstr ""
+msgstr "作為多個場景導入"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Multiple Scenes+Materials"
-msgstr ""
+msgstr "導入為多個場景+材質"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Import Scene"
-msgstr ""
+msgstr "導入場景"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Importing Scene..."
-msgstr ""
+msgstr "正在導入場景…"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Generating Lightmaps"
@@ -3443,7 +3443,7 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
-msgstr ""
+msgstr "正在運行自定義腳本…"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Couldn't load post-import script:"
@@ -3455,39 +3455,39 @@ msgstr ""
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
-msgstr ""
+msgstr "運行導入後腳本時出錯:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Saving..."
-msgstr ""
+msgstr "儲存中……"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr ""
+msgstr "設定為“%s”的預設值"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr ""
+msgstr "清除“%s”的預設值"
 
 #: editor/import_dock.cpp
 msgid " Files"
-msgstr ""
+msgstr " 資料夾"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
-msgstr ""
+msgstr "導入為:"
 
 #: editor/import_dock.cpp editor/property_editor.cpp
 msgid "Preset..."
-msgstr ""
+msgstr "預設。。。"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
-msgstr ""
+msgstr "重新導入"
 
 #: editor/import_dock.cpp
 msgid "Save scenes, re-import and restart"
-msgstr ""
+msgstr "保存場景，重新導入並重新啟動"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -3500,7 +3500,7 @@ msgstr ""
 
 #: editor/inspector_dock.cpp
 msgid "Failed to load resource."
-msgstr ""
+msgstr "載入資源失敗。"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -3515,7 +3515,7 @@ msgstr "展開所有屬性"
 #: editor/inspector_dock.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save As..."
-msgstr ""
+msgstr "另存為..。"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
@@ -3536,11 +3536,11 @@ msgstr "複製資源"
 
 #: editor/inspector_dock.cpp
 msgid "Make Built-In"
-msgstr ""
+msgstr "內置"
 
 #: editor/inspector_dock.cpp
 msgid "Make Sub-Resources Unique"
-msgstr ""
+msgstr "使子資源唯一"
 
 #: editor/inspector_dock.cpp
 msgid "Open in Help"
@@ -3548,31 +3548,31 @@ msgstr "在幫助界面中開啟"
 
 #: editor/inspector_dock.cpp
 msgid "Create a new resource in memory and edit it."
-msgstr ""
+msgstr "在記憶體中創建一個新資源並對其進行編輯。"
 
 #: editor/inspector_dock.cpp
 msgid "Load an existing resource from disk and edit it."
-msgstr ""
+msgstr "從磁片加載現有資源並對其進行編輯。"
 
 #: editor/inspector_dock.cpp
 msgid "Save the currently edited resource."
-msgstr ""
+msgstr "保存當前編輯的資源。"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the previous edited object in history."
-msgstr ""
+msgstr "轉到歷史記錄中以前編輯的對象。"
 
 #: editor/inspector_dock.cpp
 msgid "Go to the next edited object in history."
-msgstr ""
+msgstr "轉到歷史記錄中的下一個編輯對象。"
 
 #: editor/inspector_dock.cpp
 msgid "History of recently edited objects."
-msgstr ""
+msgstr "最近編輯對象的歷史記錄。"
 
 #: editor/inspector_dock.cpp
 msgid "Object properties."
-msgstr ""
+msgstr "對象内容。"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -3581,19 +3581,19 @@ msgstr "過濾檔案..."
 
 #: editor/inspector_dock.cpp
 msgid "Changes may be lost!"
-msgstr ""
+msgstr "更改可能會丟失!"
 
 #: editor/multi_node_edit.cpp
 msgid "MultiNode Set"
-msgstr ""
+msgstr "多節點集"
 
 #: editor/node_dock.cpp
 msgid "Select a Node to edit Signals and Groups."
-msgstr ""
+msgstr "選擇要編輯訊號和組的節點。"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Edit a Plugin"
-msgstr ""
+msgstr "編輯挿件"
 
 #: editor/plugin_config_dialog.cpp
 #, fuzzy
@@ -3602,23 +3602,23 @@ msgstr "新增"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Plugin Name:"
-msgstr ""
+msgstr "挿件名稱："
 
 #: editor/plugin_config_dialog.cpp
 msgid "Subfolder:"
-msgstr ""
+msgstr "子資料夾:"
 
 #: editor/plugin_config_dialog.cpp
 msgid "Language:"
-msgstr ""
+msgstr "語言："
 
 #: editor/plugin_config_dialog.cpp
 msgid "Script Name:"
-msgstr ""
+msgstr "腳本名稱："
 
 #: editor/plugin_config_dialog.cpp
 msgid "Activate now?"
-msgstr ""
+msgstr "現在啟動？"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3653,11 +3653,11 @@ msgstr "新增資料夾"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Insert Point"
-msgstr ""
+msgstr "插入點"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 msgid "Edit Polygon (Remove Point)"
-msgstr ""
+msgstr "編輯多邊形 (刪除點)"
 
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #, fuzzy
@@ -3670,7 +3670,7 @@ msgstr "移除"
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr ""
+msgstr "添加動畫"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3688,17 +3688,17 @@ msgstr "移除"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Limits"
-msgstr ""
+msgstr "更改 BlendSpace1D 限制"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Labels"
-msgstr ""
+msgstr "更改Blendspace1d標籤"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "This type of node can't be used. Only root nodes are allowed."
-msgstr ""
+msgstr "無法使用此類型的節點。只允許根節點。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3733,7 +3733,7 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Set the blending position within the space"
-msgstr ""
+msgstr "設置空間內的混合位置"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3743,12 +3743,12 @@ msgstr ""
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp scene/gui/graph_edit.cpp
 msgid "Enable snap and show grid."
-msgstr ""
+msgstr "啟用捕捉並顯示網格。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Point"
-msgstr ""
+msgstr "點"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3770,11 +3770,11 @@ msgstr "添加動畫軌"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Limits"
-msgstr ""
+msgstr "更改Blendspace2d限制"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Change BlendSpace2D Labels"
-msgstr ""
+msgstr "更改Blendspace2d標籤"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
@@ -3783,15 +3783,15 @@ msgstr "移除"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Remove BlendSpace2D Triangle"
-msgstr ""
+msgstr "删除Blendspace2d三角形"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
-msgstr ""
+msgstr "Blendspace2d不屬於AnimationTree節點。"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "No triangles exist, so no blending can take place."
-msgstr ""
+msgstr "不存在三角形, 因此不能進行混合。"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #, fuzzy
@@ -3800,20 +3800,20 @@ msgstr "切換最愛"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
-msgstr ""
+msgstr "通過連接點創建三角形。"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Erase points and triangles."
-msgstr ""
+msgstr "删除點和三角形。"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Generate blend triangles automatically (instead of manually)"
-msgstr ""
+msgstr "自動生成混合三角形 (而不是手動生成)"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Blend:"
-msgstr ""
+msgstr "混合："
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
@@ -3828,11 +3828,11 @@ msgstr "過濾檔案..."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Output node can't be added to the blend tree."
-msgstr ""
+msgstr "無法將輸出節點添加到混合樹中。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Add Node to BlendTree"
-msgstr ""
+msgstr "將節點添加到BlendTree"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3843,7 +3843,7 @@ msgstr "節點名稱:"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
-msgstr ""
+msgstr "無法連接，埠可能正在使用，或者連接可能無效。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3880,7 +3880,7 @@ msgstr "變更鏡頭尺寸"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
-msgstr ""
+msgstr "沒有設定動畫播放機，囙此無法檢索曲目名稱。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."

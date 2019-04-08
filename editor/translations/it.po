@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
-"Last-Translator: MassiminoilTrace <omino.gis@gmail.com>\n"
+"PO-Revision-Date: 2019-03-30 20:04+0000\n"
+"Last-Translator: Marco Melorio <m.melorio@icloud.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -132,7 +132,7 @@ msgstr "Elimina chiavi d'animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Cambia istante della chiave d'animazione"
+msgstr "Anim Cambia Tempo Keyframe"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -194,7 +194,7 @@ msgstr "Durata Animazione (in secondi)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Ciclicità animazione"
+msgstr "Ciclicità Animazione"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp

@@ -32,12 +32,13 @@
 # Sebastian Hojka <sibibibi1@gmail.com>, 2019.
 # Robert <vizz0@onet.pl>, 2019.
 # Michał Topa <moonchasered@gmail.com>, 2019.
+# Przemysław Pierzga <przemyslawpierzga@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2019-04-05 13:04+0000\n"
+"Last-Translator: Przemysław Pierzga <przemyslawpierzga@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -2296,7 +2297,7 @@ msgstr "Konwertuj na..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr "MeshLibrary..."
+msgstr "Biblioteka Meshów..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
@@ -5916,11 +5917,11 @@ msgstr "Otwórz dokumentację online"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Poproś o dokumentację"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Pomóż polepszyć dokumentację Godota przesyłając opinię"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."

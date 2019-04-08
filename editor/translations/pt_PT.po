@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-19 15:04+0000\n"
+"PO-Revision-Date: 2019-03-30 20:04+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -5899,11 +5899,11 @@ msgstr "Abrir documentação online do Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Requisitar Docs"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Dê a sua opinião para ajudar a melhorar a documentação Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."

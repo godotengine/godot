@@ -18,12 +18,13 @@
 # Evan Hyacinth <muhammad.ivan669@gmail.com>, 2018, 2019.
 # Guntur Sarwohadi <gsarwohadi@gmail.com>, 2019.
 # Alphin Albukhari <alphinalbukhari5@gmail.com>, 2019.
+# I Dewa Agung Adhinata <agungnata2003@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-08 15:04+0000\n"
-"Last-Translator: Evan Hyacinth <muhammad.ivan669@gmail.com>\n"
+"PO-Revision-Date: 2019-04-05 13:04+0000\n"
+"Last-Translator: I Dewa Agung Adhinata <agungnata2003@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.5.1-dev\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1388,7 +1389,7 @@ msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
-"Platform target membutuhkan kompressi tekstur 'ETC' untuk GLES2. Aktifkan "
+"Platform target membutuhkan kompressi tekstur 'ETC2' untuk GLES3. Aktifkan "
 "dukungan di Pengaturan Proyek."
 
 #: editor/editor_export.cpp
@@ -1528,9 +1529,8 @@ msgid "Previous Folder"
 msgstr "Tab sebelumnya"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "Buat Folder"
+msgstr "Folder Berikutnya"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
@@ -1542,14 +1542,12 @@ msgid "(Un)favorite current folder."
 msgstr "Tidak dapat membuat folder."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "View items as a grid of thumbnails."
 msgstr "Tampilkan item sebagai grid thumbnail"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "View items as a list."
-msgstr "Tampilkan item sebagai daftar"
+msgstr "Tampilkan item sebagai daftar."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1774,8 +1772,9 @@ msgid "Project export failed with error code %d."
 msgstr "Ekspor proyek gagal dengan kode kesalahan% d."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Imported resources can't be saved."
-msgstr ""
+msgstr "Resource yang telah diimpor tidak dapat disimpan."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -1787,10 +1786,13 @@ msgid "Error saving resource!"
 msgstr "Error menyimpan resource!"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
+"Resourse ini tidak dapat disimpan karena bukan di scene yang diedit. Buat "
+"unik dahulu."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
@@ -2330,9 +2332,8 @@ msgid "Tools"
 msgstr "Alat-alat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "Buka Project Manager?"
+msgstr "Buka Project Data Manager"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2449,7 +2450,7 @@ msgstr "Mode Layar Penuh"
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Open Editor Data/Settings Folder"
-msgstr "Pengaturan Editor"
+msgstr "Buka Editor Data/Folder Pengaturan"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
@@ -2458,7 +2459,7 @@ msgstr "Buka Folder Data Editor"
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Open Editor Settings Folder"
-msgstr "Pengaturan Editor"
+msgstr "Buka Folder Pengaturan Editor"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2542,9 +2543,8 @@ msgstr "Mengubah driver video harus memulai ulang editor."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Save & Restart"
-msgstr "Simpan & Keluar"
+msgstr "Simpan & Mulai Ulang"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2581,9 +2581,8 @@ msgid "Node"
 msgstr "Node"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Expand Bottom Panel"
-msgstr "Perluas semua"
+msgstr "Perluas Panel Bawah"
 
 #: editor/editor_node.cpp scene/resources/visual_shader.cpp
 msgid "Output"
@@ -2662,9 +2661,8 @@ msgid "Thumbnail..."
 msgstr "Gambar Kecil..."
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Edit Plugin"
-msgstr "Sunting Bidang"
+msgstr "Sunting Plug-in"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Installed Plugins:"
@@ -2688,15 +2686,13 @@ msgid "Status:"
 msgstr "Status:"
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Edit:"
-msgstr "Sunting"
+msgstr "Sunting:"
 
 #: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Start"
-msgstr "Mulai!"
+msgstr "Mulai"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -2769,13 +2765,12 @@ msgid "Invalid RID"
 msgstr "Path Tidak Sah."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
 msgstr ""
-"Resource terpilih (%s) tidak sesuai dengan tipe yang diharapkan untuk "
-"properti ini (%s)."
+"Resource yang terpilih (%s) tidak sesuai dengan tipe apapun yang diharapkan "
+"untuk properti ini (%s)."
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -2803,9 +2798,8 @@ msgid "Pick a Viewport"
 msgstr "Pilih Viewport"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
-#, fuzzy
 msgid "New Script"
-msgstr "Scene Baru"
+msgstr "Skrip Baru"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "New %s"
@@ -2841,11 +2835,11 @@ msgstr "Sambungkan Ke Node:"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Open Editor"
-msgstr "Buka dalam Penyunting"
+msgstr "Buka Editor"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
-msgstr "Node terpilih bukanlah Viewport!"
+msgstr "Node yang terpilih bukanlah Viewport!"
 
 #: editor/editor_properties_array_dict.cpp
 msgid "Size: "
