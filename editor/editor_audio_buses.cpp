@@ -1180,14 +1180,16 @@ void EditorAudioBuses::_load_layout() {
 
 void EditorAudioBuses::_load_default_layout() {
 
-	Ref<AudioBusLayout> state = ResourceLoader::load("res://default_bus_layout.tres");
+	String layout_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
+
+	Ref<AudioBusLayout> state = ResourceLoader::load(layout_path);
 	if (state.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("There is no 'res://default_bus_layout.tres' file."));
+		EditorNode::get_singleton()->show_warning(vformat(TTR("There is no '%s' file."), layout_path));
 		return;
 	}
 
-	edited_path = "res://default_bus_layout.tres";
-	file->set_text(edited_path.get_file());
+	edited_path = layout_path;
+	file->set_text(layout_path.get_file());
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_update_buses();
 	EditorNode::get_singleton()->get_undo_redo()->clear_history();
@@ -1316,7 +1318,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
-	edited_path = "res://default_bus_layout.tres";
+	edited_path = ProjectSettings::get_singleton()->get("audio/default_bus_layout");
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;

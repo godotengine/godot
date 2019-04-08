@@ -496,7 +496,8 @@ void DependencyRemoveDialog::ok_pressed() {
 			res->set_path("");
 		}
 
-		// If the file we are deleting for e.g. the main scene or default environment, we must clear its definition in Project Settings.
+		// If the file we are deleting for e.g. the main scene, default environment,
+		// or audio bus layout, we must clear its definition in Project Settings.
 		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("application/config/icon")) {
 			ProjectSettings::get_singleton()->set("application/config/icon", "");
 		}
@@ -517,6 +518,9 @@ void DependencyRemoveDialog::ok_pressed() {
 		}
 		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("gui/theme/custom_font")) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
+		}
+		if (files_to_delete[i] == ProjectSettings::get_singleton()->get("audio/default_bus_layout")) {
+			ProjectSettings::get_singleton()->set("audio/default_bus_layout", "");
 		}
 
 		String path = OS::get_singleton()->get_resource_dir() + files_to_delete[i].replace_first("res://", "/");
