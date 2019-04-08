@@ -987,9 +987,9 @@
 			<description>
 				Returns a number smoothly interpolated between the [code]from[/code] and [code]to[/code], based on the [code]weight[/code]. Similar to [method lerp], but interpolates faster at the beginning and slower at the end.
 				[codeblock]
-				smooth_step(0, 2, 0.5) # returns 0.15
-				smooth_step(0, 2, 1.0) # returns 0.5
-				smooth_step(0, 2, 2.0) # returns 1.0
+				smoothstep(0, 2, 0.5) # returns 0.15
+				smoothstep(0, 2, 1.0) # returns 0.5
+				smoothstep(0, 2, 2.0) # returns 1.0
 				[/codeblock]
 			</description>
 		</method>
