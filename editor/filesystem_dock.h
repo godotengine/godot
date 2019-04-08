@@ -268,6 +268,10 @@ private:
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true);
 
+	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
+
+	void _feature_profile_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

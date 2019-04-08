@@ -832,6 +832,13 @@ void EditorSettings::create() {
 		} else {
 			dir->change_dir("..");
 		}
+
+		if (dir->change_dir("feature_profiles") != OK) {
+			dir->make_dir("feature_profiles");
+		} else {
+			dir->change_dir("..");
+		}
+
 		_create_script_templates(dir->get_current_dir().plus_file("script_templates"));
 
 		if (dir->change_dir("projects") != OK) {
@@ -1155,6 +1162,11 @@ String EditorSettings::get_script_templates_dir() const {
 String EditorSettings::get_cache_dir() const {
 
 	return cache_dir;
+}
+
+String EditorSettings::get_feature_profiles_dir() const {
+
+	return get_settings_dir().plus_file("feature_profiles");
 }
 
 // Metadata

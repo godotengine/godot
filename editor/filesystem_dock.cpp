@@ -86,6 +86,13 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	// Create all items for the files in the subdirectory
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
+
+			String file_type = p_dir->get_file_type(i);
+
+			if (_is_file_type_disabled_by_feature_profile(file_type)) {
+				//if type is disabled, file wont be displayed.
+				continue;
+			}
 			String file_name = p_dir->get_file(i);
 
 			if (searched_string.length() > 0) {
@@ -276,6 +283,7 @@ void FileSystemDock::_notification(int p_what) {
 			if (initialized)
 				return;
 			initialized = true;
+			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", this, "_feature_profile_changed");
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_fs_changed");
 			EditorResourcePreview::get_singleton()->connect("preview_invalidated", this, "_preview_invalidated");
@@ -520,6 +528,26 @@ void FileSystemDock::_set_file_display(bool p_active) {
 	_update_file_list(true);
 }
 
+bool FileSystemDock::_is_file_type_disabled_by_feature_profile(const StringName &p_class) {
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = p_class;
+
+	while (class_name != StringName()) {
+
+		if (profile->is_class_disabled(class_name)) {
+			return true;
+		}
+		class_name = ClassDB::get_parent_class(class_name);
+	}
+
+	return false;
+}
+
 void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items) {
 
 	if (matches->size() > p_max_items)
@@ -540,6 +568,11 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 			fi.path = p_path->get_file_path(i);
 			fi.import_broken = !p_path->get_file_import_is_valid(i);
 			fi.import_status = 0;
+
+			if (_is_file_type_disabled_by_feature_profile(fi.type)) {
+				//this type is disabled, will not appear here
+				continue;
+			}
 
 			matches->push_back(fi);
 			if (matches->size() > p_max_items)
@@ -2259,6 +2292,11 @@ void FileSystemDock::_update_import_dock() {
 	import_dock_needs_update = false;
 }
 
+void FileSystemDock::_feature_profile_changed() {
+
+	_update_display_mode(true);
+}
+
 void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_file_list_gui_input"), &FileSystemDock::_file_list_gui_input);
@@ -2307,6 +2345,8 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_preview_invalidated"), &FileSystemDock::_preview_invalidated);
 	ClassDB::bind_method(D_METHOD("_file_multi_selected"), &FileSystemDock::_file_multi_selected);
 	ClassDB::bind_method(D_METHOD("_update_import_dock"), &FileSystemDock::_update_import_dock);
+
+	ClassDB::bind_method(D_METHOD("_feature_profile_changed"), &FileSystemDock::_feature_profile_changed);
 
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));

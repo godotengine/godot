@@ -294,6 +294,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(String, is_valid_hex_number);
 	VCALL_LOCALMEM0R(String, is_valid_html_color);
 	VCALL_LOCALMEM0R(String, is_valid_ip_address);
+	VCALL_LOCALMEM0R(String, is_valid_filename);
 	VCALL_LOCALMEM0R(String, to_int);
 	VCALL_LOCALMEM0R(String, to_float);
 	VCALL_LOCALMEM0R(String, hex_to_int);
@@ -1542,6 +1543,7 @@ void register_variant_methods() {
 	ADDFUNC1R(STRING, BOOL, String, is_valid_hex_number, BOOL, "with_prefix", varray(false));
 	ADDFUNC0R(STRING, BOOL, String, is_valid_html_color, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_ip_address, varray());
+	ADDFUNC0R(STRING, BOOL, String, is_valid_filename, varray());
 	ADDFUNC0R(STRING, INT, String, to_int, varray());
 	ADDFUNC0R(STRING, REAL, String, to_float, varray());
 	ADDFUNC0R(STRING, INT, String, hex_to_int, varray());
