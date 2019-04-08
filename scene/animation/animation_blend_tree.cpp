@@ -857,6 +857,7 @@ AnimationNodeTransition::AnimationNodeTransition() {
 	time = "time";
 	current = "current";
 	prev_current = "prev_current";
+	xfade = 0.0;
 
 	enabled_inputs = 0;
 	for (int i = 0; i < MAX_INPUTS; i++) {
