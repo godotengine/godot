@@ -78,6 +78,16 @@ namespace Assimp {
 
         FBXConverter::FBXConverter(aiScene* out, const Document& doc)
             : defaultMaterialIndex()
+            , lights()
+            , cameras()
+            , textures()
+            , materials_converted()
+            , textures_converted()
+            , meshes_converted()
+            , node_anim_chain_bits()
+            , mNodeNameInstances()
+            , mNodeNames()
+            , anim_fps()
             , out(out)
             , doc(doc) {
             // animations need to be converted first since this will
@@ -410,18 +420,23 @@ namespace Assimp {
 
         void FBXConverter::GetUniqueName(const std::string &name, std::string &uniqueName)
         {
-            int i = 0;
             uniqueName = name;
-            while (mNodeNames.find(uniqueName) != mNodeNames.end())
+            int i = 0;
+            auto it = mNodeNameInstances.find(name); // duplicate node name instance count
+            if (it != mNodeNameInstances.end())
             {
-                ++i;
-                std::stringstream ext;
-                ext << name << std::setfill('0') << std::setw(3) << i;
-                uniqueName = ext.str();
+                i = it->second;
+                while (mNodeNames.find(uniqueName) != mNodeNames.end())
+                {
+                    i++;
+                    std::stringstream ext;
+                    ext << name << std::setfill('0') << std::setw(3) << i;
+                    uniqueName = ext.str();
+                }
             }
+            mNodeNameInstances[name] = i;
             mNodeNames.insert(uniqueName);
         }
-
 
         const char* FBXConverter::NameTransformationComp(TransformationComp comp) {
             switch (comp) {
@@ -2039,6 +2054,12 @@ namespace Assimp {
                 out_mat->AddProperty(&Transparent, 1, AI_MATKEY_COLOR_TRANSPARENT);
                 // as calculated by FBX SDK 2017:
                 CalculatedOpacity = 1.0f - ((Transparent.r + Transparent.g + Transparent.b) / 3.0f);
+            }
+
+            // try to get the transparency factor
+            const float TransparencyFactor = PropertyGet<float>(props, "TransparencyFactor", ok);
+            if (ok) {
+                out_mat->AddProperty(&TransparencyFactor, 1, AI_MATKEY_TRANSPARENCYFACTOR);
             }
 
             // use of TransparencyFactor is inconsistent.

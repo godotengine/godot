@@ -49,6 +49,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assimp/TinyFormatter.h>
 #include <string>
+#include <cstring>
 
 #ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
 
@@ -111,6 +112,49 @@ std::string AddTokenText(const std::string& prefix, const std::string& text, con
         ", line " << tok->Line() <<
         ", col " << tok->Column() << ") " <<
         text) );
+}
+
+static const uint8_t base64DecodeTable[128] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 62,  0,  0,  0, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61,  0,  0,  0, 64,  0,  0,
+    0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,  0,  0,  0,  0,  0,
+    0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,  0,  0,  0,  0,  0
+};
+
+uint8_t DecodeBase64(char ch)
+{
+    return base64DecodeTable[size_t(ch)];
+}
+
+size_t DecodeBase64(const char* in, size_t inLength, uint8_t*& out)
+{
+    if (inLength < 4) {
+        out = 0;
+        return 0;
+    }
+
+    const size_t outLength = (inLength * 3) / 4;
+    out = new uint8_t[outLength];
+    memset(out, 0, outLength);
+
+    size_t i = 0;
+    size_t j = 0;
+    for (i = 0; i < inLength - 4; i += 4)
+    {
+        uint8_t b0 = Util::DecodeBase64(in[i]);
+        uint8_t b1 = Util::DecodeBase64(in[i + 1]);
+        uint8_t b2 = Util::DecodeBase64(in[i + 2]);
+        uint8_t b3 = Util::DecodeBase64(in[i + 3]);
+
+        out[j++] = (uint8_t)((b0 << 2) | (b1 >> 4));
+        out[j++] = (uint8_t)((b1 << 4) | (b2 >> 2));
+        out[j++] = (uint8_t)((b2 << 6) | b3);
+    }
+    return outLength;
 }
 
 } // !Util

@@ -134,7 +134,7 @@ ASSIMP_API aiScene::aiScene()
 , mCameras(nullptr)
 , mMetaData(nullptr)
 , mPrivate(new Assimp::ScenePrivateData()) {
-	// empty
+    // empty
 }
 
 // ------------------------------------------------------------------------------------------------
