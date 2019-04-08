@@ -59,7 +59,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-12 15:25+0000\n"
+"PO-Revision-Date: 2019-04-05 13:04+0000\n"
 "Last-Translator: Caye Pierre <pierrecaye@laposte.net>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -68,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.5.1\n"
+"X-Generator: Weblate 3.6-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2539,7 +2539,7 @@ msgstr "Documentation en ligne"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "Questions et Réponses"
+msgstr "Q & R"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -5349,7 +5349,7 @@ msgstr "Capturer depuis Pixel"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "Couleurs d'Émission"
+msgstr "Couleurs d'émission"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5994,11 +5994,11 @@ msgstr "Ouvrir la documentation Godot en ligne"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Demande de documentation"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Aider à améliorer la documentation de Godot en donnant vos réactions"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."

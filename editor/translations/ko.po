@@ -12,12 +12,13 @@
 # 송태섭 <xotjq237@gmail.com>, 2018, 2019.
 # JY <yimjisoo@mailfence.com>, 2018.
 # Ch. <ccwpc@hanmail.net>, 2018.
+# moolow <copyhyeon@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-19 15:04+0000\n"
-"Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
+"PO-Revision-Date: 2019-04-05 13:04+0000\n"
+"Last-Translator: moolow <copyhyeon@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -5216,7 +5217,7 @@ msgstr "생성 시간 (초):"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr "에미션 마스크"
+msgstr "에미션 마스크(Emission Mask)"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Capture from Pixel"
@@ -5867,11 +5868,11 @@ msgstr "Godot 온라인 문서 열기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "문서 요청"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "피드백으로 Godot 문서를 개선하는데 도움을 주세요"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
