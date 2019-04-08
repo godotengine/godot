@@ -65,6 +65,7 @@ struct Vector2 {
 	real_t distance_squared_to(const Vector2 &p_vector2) const;
 	real_t angle_to(const Vector2 &p_vector2) const;
 	real_t angle_to_point(const Vector2 &p_vector2) const;
+	_FORCE_INLINE_ Vector2 direction_to(const Vector2 &p_b) const;
 
 	real_t dot(const Vector2 &p_other) const;
 	real_t cross(const Vector2 &p_other) const;
@@ -234,6 +235,12 @@ Vector2 Vector2::slerp(const Vector2 &p_b, real_t p_t) const {
 #endif
 	real_t theta = angle_to(p_b);
 	return rotated(theta * p_t);
+}
+
+Vector2 Vector2::direction_to(const Vector2 &p_b) const {
+	Vector2 ret(p_b.x - x, p_b.y - y);
+	ret.normalize();
+	return ret;
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t) {
