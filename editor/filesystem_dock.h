@@ -237,6 +237,7 @@ private:
 	void _tree_rmb_select(const Vector2 &p_pos);
 	void _file_list_rmb_select(int p_item, const Vector2 &p_pos);
 	void _file_list_rmb_pressed(const Vector2 &p_pos);
+	void _tree_empty_selected();
 
 	struct FileInfo {
 		String name;
