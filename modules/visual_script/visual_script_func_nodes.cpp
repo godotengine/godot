@@ -1562,7 +1562,8 @@ public:
 				case VisualScriptPropertySet::ASSIGN_OP_BIT_XOR: {
 					value = Variant::evaluate(Variant::OP_BIT_XOR, value, p_argument);
 				} break;
-				default: {}
+				default: {
+				}
 			}
 
 			if (index != StringName()) {

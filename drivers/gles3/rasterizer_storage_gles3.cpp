@@ -642,7 +642,8 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 				p_flags &= ~VS::TEXTURE_FLAG_FILTER;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 #endif
 
@@ -2751,7 +2752,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			gui[14] = v.origin.z;
 			gui[15] = 1;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -2919,7 +2921,8 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 				gui[i] = value[i].real;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -2962,7 +2965,8 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 			zeromem(data, 64);
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -5246,7 +5250,8 @@ void RasterizerStorageGLES3::light_set_param(RID p_light, VS::LightParam p_param
 			light->version++;
 			light->instance_change_notify(true, false);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	light->param[p_param] = p_value;
@@ -5448,7 +5453,8 @@ AABB RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
 
 			return AABB();
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	ERR_FAIL_V(AABB());
@@ -7379,7 +7385,8 @@ void RasterizerStorageGLES3::render_target_set_flag(RID p_render_target, RenderT
 			_render_target_allocate(rt);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 bool RasterizerStorageGLES3::render_target_was_used(RID p_render_target) {

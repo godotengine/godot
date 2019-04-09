@@ -943,7 +943,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 										glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 
 									} break;
-									default: {}
+									default: {
+									}
 								}
 							}
 						}
@@ -1032,7 +1033,8 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 									glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
 
 								} break;
-								default: {}
+								default: {
+								}
 							}
 						}
 					}

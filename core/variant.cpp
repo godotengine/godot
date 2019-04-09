@@ -179,7 +179,8 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "PoolColorArray";
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return "";
@@ -403,7 +404,8 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 			valid_types = valid;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (valid_types) {
@@ -649,7 +651,8 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 			valid_types = valid;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (valid_types) {
@@ -841,7 +844,8 @@ bool Variant::is_zero() const {
 			return reinterpret_cast<const PoolVector<Color> *>(_data._mem)->size() == 0;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return false;
@@ -896,7 +900,9 @@ bool Variant::is_one() const {
 
 		} break;
 
-		default: { return !is_zero(); }
+		default: {
+			return !is_zero();
+		}
 	}
 
 	return false;
@@ -1039,7 +1045,8 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, PoolVector<Color>(*reinterpret_cast<const PoolVector<Color> *>(p_variant._data._mem)));
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1143,7 +1150,8 @@ void Variant::clear() {
 
 			reinterpret_cast<PoolVector<Color> *>(_data._mem)->~PoolVector<Color>();
 		} break;
-		default: {} /* not needed */
+		default: {
+		} /* not needed */
 	}
 
 	type = NIL;
@@ -1823,7 +1831,9 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 		case Variant::POOL_COLOR_ARRAY: {
 			return _convert_array<DA, PoolVector<Color> >(p_variant.operator PoolVector<Color>());
 		}
-		default: { return DA(); }
+		default: {
+			return DA();
+		}
 	}
 
 	return DA();
@@ -2642,7 +2652,8 @@ void Variant::operator=(const Variant &p_variant) {
 
 			*reinterpret_cast<PoolVector<Color> *>(_data._mem) = *reinterpret_cast<const PoolVector<Color> *>(p_variant._data._mem);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -2919,7 +2930,8 @@ uint32_t Variant::hash() const {
 
 			return hash;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;
@@ -3167,7 +3179,8 @@ bool Variant::is_shared() const {
 		case OBJECT: return true;
 		case ARRAY: return true;
 		case DICTIONARY: return true;
-		default: {}
+		default: {
+		}
 	}
 
 	return false;
@@ -3204,7 +3217,8 @@ Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 			String err = "Too many arguments for method '" + p_method + "'";
 			ERR_PRINT(err.utf8().get_data());
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return ret;

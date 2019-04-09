@@ -1032,7 +1032,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_OP_BIT_OR: op = Variant::OP_BIT_OR; break;
 			case TK_OP_BIT_XOR: op = Variant::OP_BIT_XOR; break;
 			case TK_OP_BIT_INVERT: op = Variant::OP_BIT_NEGATE; break;
-			default: {};
+			default: {
+			};
 		}
 
 		if (op == Variant::OP_MAX) { //stop appending stuff

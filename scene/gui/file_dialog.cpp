@@ -86,7 +86,9 @@ void FileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 					_dir_entered("..");
 				} break;
-				default: { handled = false; }
+				default: {
+					handled = false;
+				}
 			}
 
 			if (handled)

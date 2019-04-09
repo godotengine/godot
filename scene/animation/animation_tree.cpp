@@ -1276,7 +1276,8 @@ void AnimationTree::_process_graph(float p_delta) {
 					t->object->set_indexed(t->subpath, t->value);
 
 				} break;
-				default: {} //the rest don't matter
+				default: {
+				} //the rest don't matter
 			}
 		}
 	}

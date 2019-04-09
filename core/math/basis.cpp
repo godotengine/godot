@@ -557,7 +557,7 @@ void Basis::set_euler_yxz(const Vector3 &p_euler) {
 	*this = ymat * xmat * zmat;
 }
 
-bool Basis::is_equal_approx(const Basis &a, const Basis &b,real_t p_epsilon) const {
+bool Basis::is_equal_approx(const Basis &a, const Basis &b, real_t p_epsilon) const {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -569,7 +569,7 @@ bool Basis::is_equal_approx(const Basis &a, const Basis &b,real_t p_epsilon) con
 	return true;
 }
 
-bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b,real_t p_epsilon) const {
+bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {

@@ -34,14 +34,11 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-
 import com.android.vending.billing.IInAppBillingService;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 abstract public class ReleaseAllConsumablesTask {
 

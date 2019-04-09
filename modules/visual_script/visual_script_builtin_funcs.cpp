@@ -1287,7 +1287,8 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			*r_return = String(color);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

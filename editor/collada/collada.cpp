@@ -166,7 +166,8 @@ Transform Collada::Node::compute_transform(Collada &state) const {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		xform = xform * xform_step;

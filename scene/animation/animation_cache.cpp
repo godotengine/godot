@@ -309,7 +309,8 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 }

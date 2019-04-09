@@ -454,7 +454,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 					progress->set_max(1);
 					progress->set_value(0);
 				} break;
-				default: {}
+				default: {
+				}
 			}
 			prev_status = cstatus;
 		}
@@ -612,7 +613,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 					case HTTPClient::STATUS_BODY: {
 						load_status->set_value(0.4);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 

@@ -154,7 +154,8 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case PHYSICS_3D_ISLAND_COUNT: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ISLAND_COUNT);
 		case AUDIO_OUTPUT_LATENCY: return AudioServer::get_singleton()->get_output_latency();
 
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;

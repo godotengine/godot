@@ -61,7 +61,8 @@ void MeshLibraryEditor::_menu_confirm() {
 			_import_scene_cbk(existing);
 
 		} break;
-		default: {};
+		default: {
+		};
 	}
 }
 

@@ -1405,7 +1405,8 @@ Vector2 TileMap::_map_to_world(int p_x, int p_y, bool p_ignore_ofs) const {
 					ret += get_cell_transform()[1] * (half_offset == HALF_OFFSET_Y ? 0.5 : -0.5);
 				}
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 	return ret;
@@ -1480,7 +1481,8 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 				ret.y += 0.5;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	// Account for precision errors on the border (GH-23250).

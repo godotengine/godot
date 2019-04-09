@@ -839,7 +839,8 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 			case VisualShaderNode::PORT_TYPE_VECTOR: code += String() + "\tvec3 " + outputs[i] + ";\n"; break;
 			case VisualShaderNode::PORT_TYPE_BOOLEAN: code += String() + "\tbool " + outputs[i] + ";\n"; break;
 			case VisualShaderNode::PORT_TYPE_TRANSFORM: code += String() + "\tmat4 " + outputs[i] + ";\n"; break;
-			default: {}
+			default: {
+			}
 		}
 	}
 

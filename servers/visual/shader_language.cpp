@@ -3620,7 +3620,8 @@ ShaderLanguage::Node *ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 					case TYPE_FLOAT: {
 						nv.real = -cn->values[i].real;
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				values.push_back(nv);
@@ -4822,7 +4823,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				case TYPE_MAT2: limit = 2; break;
 				case TYPE_MAT3: limit = 3; break;
 				case TYPE_MAT4: limit = 4; break;
-				default: {}
+				default: {
+				}
 			}
 
 			for (int i = 0; i < limit; i++) {

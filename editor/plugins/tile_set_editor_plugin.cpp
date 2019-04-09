@@ -770,7 +770,8 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 				spin_z_index->show();
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 	_update_toggle_shape_button();
 	workspace->update();
@@ -940,7 +941,8 @@ void TileSetEditor::_on_workspace_draw() {
 				spin_z_index->set_value(tileset->autotile_get_z_index(get_current_tile(), edited_shape_coord));
 				draw_highlight_subtile(edited_shape_coord);
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 
@@ -1570,7 +1572,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 						}
 					}
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 	}
@@ -1724,7 +1727,8 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 						undo_redo->commit_action();
 					}
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 	} else if (p_tool == TOOL_SELECT) {
@@ -1894,7 +1898,8 @@ void TileSetEditor::_select_next_tile() {
 				edited_shape_coord = Vector2();
 				_select_edited_shape_coord();
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 }
@@ -1931,7 +1936,8 @@ void TileSetEditor::_select_previous_tile() {
 				edited_shape_coord = cell_count;
 				_select_edited_shape_coord();
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 }
@@ -2668,7 +2674,8 @@ void TileSetEditor::draw_polygon_shapes() {
 				}
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (creating_shape) {

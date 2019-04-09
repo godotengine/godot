@@ -30,6 +30,9 @@
 
 package org.godotengine.godot.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +42,6 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
@@ -63,10 +65,6 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
 
 /**
  *

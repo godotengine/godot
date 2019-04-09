@@ -888,7 +888,8 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				case GDScriptTokenizer::TK_OP_SUB: e.op = OperatorNode::OP_NEG; break;
 				case GDScriptTokenizer::TK_OP_NOT: e.op = OperatorNode::OP_NOT; break;
 				case GDScriptTokenizer::TK_OP_BIT_INVERT: e.op = OperatorNode::OP_BIT_INVERT; break;
-				default: {}
+				default: {
+				}
 			}
 
 			tokenizer->advance();
@@ -1875,7 +1876,9 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 					}
 
 				} break;
-				default: { break; }
+				default: {
+					break;
+				}
 			}
 			//now se if all are constants
 			if (!all_constants)
@@ -1988,7 +1991,9 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 						return op->arguments[2];
 					}
 				} break;
-				default: { ERR_FAIL_V(op); }
+				default: {
+					ERR_FAIL_V(op);
+				}
 			}
 
 			ERR_FAIL_V(op);
@@ -6351,7 +6356,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::COLOR: {
 										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::STRING;
 									} break;
-									default: {}
+									default: {
+									}
 								}
 							}
 							if (error) {
@@ -6469,7 +6475,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 				}
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	p_node->set_datatype(_resolve_type(node_type, p_node->line));

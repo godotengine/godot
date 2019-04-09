@@ -251,7 +251,8 @@ void EditorPropertyArray::update_property() {
 		case Variant::POOL_COLOR_ARRAY: {
 			arrtype = "PoolColorArray";
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (array.get_type() == Variant::NIL) {
@@ -862,7 +863,8 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup(Variant::POOL_COLOR_ARRAY);
 					prop = editor;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 
 			if (i == amount) {

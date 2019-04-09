@@ -31,16 +31,15 @@
 package org.godotengine.godot;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.PixelFormat;
+import android.hardware.input.InputManager;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.content.ContextWrapper;
-import android.view.InputDevice;
-import android.hardware.input.InputManager;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +50,6 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.opengles.GL10;
-
 import org.godotengine.godot.input.InputManagerCompat;
 import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 /**

@@ -193,7 +193,8 @@ bool AnimationTreePlayer::_set(const StringName &p_name, const Variant &p_value)
 				}
 
 			} break;
-			default: {};
+			default: {
+			};
 		}
 	}
 
@@ -352,7 +353,8 @@ bool AnimationTreePlayer::_get(const StringName &p_name, Variant &r_ret) const {
 				node["transitions"] = transitions;
 
 			} break;
-			default: {};
+			default: {
+			};
 		}
 
 		nodes.push_back(node);
@@ -772,7 +774,8 @@ float AnimationTreePlayer::_process_node(const StringName &p_node, AnimationNode
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;
@@ -882,7 +885,8 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 							tr.track->object->call(method, args[0], args[1], args[2], args[3], args[4]);
 						}
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 		}
@@ -969,7 +973,8 @@ void AnimationTreePlayer::add_node(NodeType p_type, const StringName &p_node) {
 			n = memnew(TransitionNode);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	//n->name+=" "+itos(p_node);

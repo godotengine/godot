@@ -133,8 +133,8 @@ public:
 		return elements[0][2] * v[0] + elements[1][2] * v[1] + elements[2][2] * v[2];
 	}
 
-	bool is_equal_approx(const Basis &a, const Basis &b, real_t p_epsilon=CMP_EPSILON) const;
-	bool is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon=UNIT_EPSILON) const;
+	bool is_equal_approx(const Basis &a, const Basis &b, real_t p_epsilon = CMP_EPSILON) const;
+	bool is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon = UNIT_EPSILON) const;
 
 	bool operator==(const Basis &p_matrix) const;
 	bool operator!=(const Basis &p_matrix) const;

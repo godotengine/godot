@@ -224,7 +224,8 @@ void Spatial::_notification(int p_what) {
 #endif
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 }
 

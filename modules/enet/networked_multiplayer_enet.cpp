@@ -690,7 +690,9 @@ size_t NetworkedMultiplayerENet::enet_compress(void *context, const ENetBuffer *
 		case COMPRESS_ZSTD: {
 			mode = Compression::MODE_ZSTD;
 		} break;
-		default: { ERR_FAIL_V(0); }
+		default: {
+			ERR_FAIL_V(0);
+		}
 	}
 
 	int req_size = Compression::get_max_compressed_buffer_size(ofs, mode);
@@ -727,7 +729,8 @@ size_t NetworkedMultiplayerENet::enet_decompress(void *context, const enet_uint8
 
 			ret = Compression::decompress(outData, outLimit, inData, inLimit, Compression::MODE_ZSTD);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 	if (ret < 0) {
 		return 0;

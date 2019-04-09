@@ -32,14 +32,12 @@ package org.godotengine.godot;
 
 import android.app.Activity;
 import android.util.Log;
-
-import org.godotengine.godot.payments.PaymentsManager;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.godotengine.godot.payments.PaymentsManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class GodotPaymentV3 extends Godot.SingletonBase {
 

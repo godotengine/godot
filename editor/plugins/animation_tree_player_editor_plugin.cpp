@@ -200,7 +200,8 @@ void AnimationTreePlayerEditor::_edit_dialog_changed() {
 			if (anim_tree->transition_node_get_current(edited_node) != edit_option->get_selected())
 				anim_tree->transition_node_set_current(edited_node, edit_option->get_selected());
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -457,7 +458,8 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 				edit_dialog->set_size(Size2(150, 100));
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 
@@ -555,7 +557,8 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 						text += "->";
 
 					break;
-				default: {}
+				default: {
+				}
 			}
 			font->draw(ci, ofs + ascofs + Point2(3, 0), text, font_color);
 
@@ -740,7 +743,8 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						//open editor
 						//_node_edit_property(click_node);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 			if (mb->get_button_index() == 2) {
@@ -817,7 +821,8 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						anim_tree->node_set_position(click_node, new_pos);
 
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				click_type = CLICK_NONE;

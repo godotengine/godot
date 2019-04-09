@@ -339,7 +339,8 @@ StringName GDScriptTokenizer::get_token_literal(int p_offset) const {
 					return "null";
 				case Variant::BOOL:
 					return value ? "true" : "false";
-				default: {}
+				default: {
+				}
 			}
 		}
 		case TK_OP_AND:
@@ -1302,7 +1303,8 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 
 				ERR_FAIL_V(Vector<uint8_t>());
 			} break;
-			default: {}
+			default: {
+			}
 		};
 
 		token_array.push_back(token);
