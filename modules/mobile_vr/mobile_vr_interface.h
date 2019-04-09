@@ -107,6 +107,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_eye_height(const real_t p_eye_height);
+	real_t get_eye_height() const;
+
 	void set_iod(const real_t p_iod);
 	real_t get_iod() const;
 
