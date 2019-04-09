@@ -20,7 +20,7 @@ The main reason to write this, is to provide a simple way in all platforms to in
 8. Run `./install-android-tools` to download and install all android development tools.
 9. Run command: `source ~/.bashrc`
 10. Run command: `cd godot`
-11. Run command: `scons p=android target=release` to test everything is ok. You can set platform to x11, windows, android, haiku and server.
+11. Run command: `scons p=android target=release` to test everything is ok. You can set platform to linuxbsd, windows, android, haiku and server.
 
 After use and exit, you can use this environment again by open terminal and type commands: `docker start godot-dev && docker attach godot-dev`.
 

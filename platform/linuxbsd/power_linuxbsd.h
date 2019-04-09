@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  power_x11.h                                                          */
+/*  power_linuxbsd.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POWER_X11_H
-#define POWER_X11_H
+#ifndef POWER_LINUXBSD_H
+#define POWER_LINUXBSD_H
 
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 
-class PowerX11 {
+class PowerLinuxBSD {
 
 private:
 	int nsecs_left;
@@ -55,12 +55,12 @@ private:
 	bool UpdatePowerInfo();
 
 public:
-	PowerX11();
-	virtual ~PowerX11();
+	PowerLinuxBSD();
+	virtual ~PowerLinuxBSD();
 
 	OS::PowerState get_power_state();
 	int get_power_seconds_left();
 	int get_power_percent_left();
 };
 
-#endif // POWER_X11_H
+#endif // POWER_UNIX_H

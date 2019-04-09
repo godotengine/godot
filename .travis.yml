@@ -27,7 +27,7 @@ matrix:
           packages:
             - clang-format-6.0
 
-    - env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
+    - env: PLATFORM=linuxbsd TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-8 MATRIX_EVAL="CC=gcc-8 && CXX=g++-8" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
       compiler: gcc-8
       addons:
@@ -46,10 +46,10 @@ matrix:
             description: "Godot Engine Coverity scans"
           notification_email: coverity@godotengine.org
           build_command_prepend: ""
-          build_command: "scons p=x11 -j2 $OPTIONS"
+          build_command: "scons p=linuxbsd -j2 $OPTIONS"
           branch_pattern: coverity_scan
 
-    - env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
+    - env: PLATFORM=linuxbsd TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
       addons:

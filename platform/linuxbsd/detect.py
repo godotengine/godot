@@ -9,7 +9,7 @@ def is_active():
 
 
 def get_name():
-    return "X11"
+    return "LinuxBSD"
 
 
 def can_build():
@@ -291,8 +291,8 @@ def configure(env):
     if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
-    env.Append(CPPPATH=['#platform/x11'])
-    env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
+    env.Append(CPPPATH=['#platform/linuxbsd'])
+    env.Append(CPPFLAGS=['-DLINUXBSD_ENABLED', '-DX11_ENABLED', '-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
     env.Append(LIBS=['GL', 'pthread'])
 
     if (platform.system() == "Linux"):

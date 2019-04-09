@@ -60,7 +60,7 @@ if env['builtin_thekla_atlas']:
     if (not env.msvc):
         env_thekla_unwrap.Append(CXXFLAGS="-std=c++11")
 
-    if env["platform"] == 'x11':
+    if env["platform"] == 'linuxbsd':
         # if not specifically one of the *BSD, then use LINUX as default
         if platform.system() == "FreeBSD":
             env_thekla_unwrap.Append(CCFLAGS=["-DNV_OS_FREEBSD", "-DPOSH_COMPILER_GCC"])

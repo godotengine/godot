@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  power_x11.cpp                                                        */
+/*  power_linuxbsd.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -53,7 +53,7 @@ Adapted from corresponding SDL 2.0 code.
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "power_x11.h"
+#include "power_linuxbsd.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -71,13 +71,13 @@ static const char *proc_acpi_battery_path = "/proc/acpi/battery";
 static const char *proc_acpi_ac_adapter_path = "/proc/acpi/ac_adapter";
 static const char *sys_class_power_supply_path = "/sys/class/power_supply";
 
-FileAccessRef PowerX11::open_power_file(const char *base, const char *node, const char *key) {
+FileAccessRef PowerLinuxBSD::open_power_file(const char *base, const char *node, const char *key) {
 	String path = String(base) + String("/") + String(node) + String("/") + String(key);
 	FileAccessRef f = FileAccess::open(path, FileAccess::READ);
 	return f;
 }
 
-bool PowerX11::read_power_file(const char *base, const char *node, const char *key, char *buf, size_t buflen) {
+bool PowerLinuxBSD::read_power_file(const char *base, const char *node, const char *key, char *buf, size_t buflen) {
 	ssize_t br = 0;
 	FileAccessRef fd = open_power_file(base, node, key);
 	if (!fd) {
@@ -92,7 +92,7 @@ bool PowerX11::read_power_file(const char *base, const char *node, const char *k
 	return true;
 }
 
-bool PowerX11::make_proc_acpi_key_val(char **_ptr, char **_key, char **_val) {
+bool PowerLinuxBSD::make_proc_acpi_key_val(char **_ptr, char **_key, char **_val) {
 	char *ptr = *_ptr;
 
 	while (*ptr == ' ') {
@@ -137,7 +137,7 @@ bool PowerX11::make_proc_acpi_key_val(char **_ptr, char **_key, char **_val) {
 	return true;
 }
 
-void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, bool *charging) {
+void PowerLinuxBSD::check_proc_acpi_battery(const char *node, bool *have_battery, bool *charging) {
 	const char *base = proc_acpi_battery_path;
 	char info[1024];
 	char state[1024];
@@ -220,7 +220,7 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 	}
 }
 
-void PowerX11::check_proc_acpi_ac_adapter(const char *node, bool *have_ac) {
+void PowerLinuxBSD::check_proc_acpi_ac_adapter(const char *node, bool *have_ac) {
 	const char *base = proc_acpi_ac_adapter_path;
 	char state[256];
 	char *ptr = NULL;
@@ -243,7 +243,7 @@ void PowerX11::check_proc_acpi_ac_adapter(const char *node, bool *have_ac) {
 	}
 }
 
-bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
+bool PowerLinuxBSD::GetPowerInfo_Linux_proc_acpi() {
 	String node;
 	DirAccess *dirp = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	bool have_battery = false;
@@ -294,7 +294,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 	return true; /* definitive answer. */
 }
 
-bool PowerX11::next_string(char **_ptr, char **_str) {
+bool PowerLinuxBSD::next_string(char **_ptr, char **_str) {
 	char *ptr = *_ptr;
 	char *str = *_str;
 
@@ -318,14 +318,14 @@ bool PowerX11::next_string(char **_ptr, char **_str) {
 	return true;
 }
 
-bool PowerX11::int_string(char *str, int *val) {
+bool PowerLinuxBSD::int_string(char *str, int *val) {
 	String sval = str;
 	*val = sval.to_int();
 	return (*str != '\0');
 }
 
 /* http://lxr.linux.no/linux+v2.6.29/drivers/char/apm-emulation.c */
-bool PowerX11::GetPowerInfo_Linux_proc_apm() {
+bool PowerLinuxBSD::GetPowerInfo_Linux_proc_apm() {
 	bool need_details = false;
 	int ac_status = 0;
 	int battery_status = 0;
@@ -433,7 +433,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_apm() {
 
 /* !!! FIXME: implement d-bus queries to org.freedesktop.UPower. */
 
-bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, int *seconds, int *percent*/) {
+bool PowerLinuxBSD::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, int *seconds, int *percent*/) {
 	const char *base = sys_class_power_supply_path;
 	String name;
 
@@ -529,7 +529,7 @@ bool PowerX11::GetPowerInfo_Linux_sys_class_power_supply(/*PowerState *state, in
 	return true; /* don't look any further*/
 }
 
-bool PowerX11::UpdatePowerInfo() {
+bool PowerLinuxBSD::UpdatePowerInfo() {
 	if (GetPowerInfo_Linux_sys_class_power_supply()) { // try method 1
 		return true;
 	}
@@ -542,16 +542,16 @@ bool PowerX11::UpdatePowerInfo() {
 	return false;
 }
 
-PowerX11::PowerX11() :
+PowerLinuxBSD::PowerLinuxBSD() :
 		nsecs_left(-1),
 		percent_left(-1),
 		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
-PowerX11::~PowerX11() {
+PowerLinuxBSD::~PowerLinuxBSD() {
 }
 
-OS::PowerState PowerX11::get_power_state() {
+OS::PowerState PowerLinuxBSD::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
 	} else {
@@ -559,7 +559,7 @@ OS::PowerState PowerX11::get_power_state() {
 	}
 }
 
-int PowerX11::get_power_seconds_left() {
+int PowerLinuxBSD::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
 	} else {
@@ -567,7 +567,7 @@ int PowerX11::get_power_seconds_left() {
 	}
 }
 
-int PowerX11::get_power_percent_left() {
+int PowerLinuxBSD::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
 	} else {

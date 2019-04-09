@@ -270,13 +270,13 @@ if env["platform"] == 'uwp':
         webm_cpu_x86 = True
 else:
     import platform
-    is_x11_or_server_arm = ((env["platform"] == 'x11' or env["platform"] == 'server') and (platform.machine().startswith('arm') or platform.machine().startswith('aarch')))
+    is_linuxbsd_or_server_arm = ((env["platform"] == 'linuxbsd' or env["platform"] == 'server') and (platform.machine().startswith('arm') or platform.machine().startswith('aarch')))
     is_ios_x86 = (env["platform"] == 'iphone' and ("arch" in env and env["arch"].startswith('x86')))
     is_android_x86 = (env["platform"] == 'android' and env["android_arch"].startswith('x86'))
     if is_android_x86:
         cpu_bits = '32' if env["android_arch"] == 'x86' else '64'
-    webm_cpu_x86 = not is_x11_or_server_arm and (cpu_bits == '32' or cpu_bits == '64') and (env["platform"] == 'windows' or env["platform"] == 'x11' or env["platform"] == 'osx' or env["platform"] == 'haiku' or is_android_x86 or is_ios_x86)
-    webm_cpu_arm = is_x11_or_server_arm or (not is_ios_x86 and env["platform"] == 'iphone') or (not is_android_x86 and env["platform"] == 'android')
+    webm_cpu_x86 = not is_linuxbsd_or_server_arm and (cpu_bits == '32' or cpu_bits == '64') and (env["platform"] == 'windows' or env["platform"] == 'linuxbsd' or env["platform"] == 'osx' or env["platform"] == 'haiku' or is_android_x86 or is_ios_x86)
+    webm_cpu_arm = is_linuxbsd_or_server_arm or (not is_ios_x86 and env["platform"] == 'iphone') or (not is_android_x86 and env["platform"] == 'android')
 
 if webm_cpu_x86:
     import subprocess
@@ -330,7 +330,7 @@ if webm_cpu_x86:
 if webm_cpu_arm:
     if env["platform"] == 'iphone':
         env_libvpx["ASFLAGS"] = '-arch armv7'
-    elif env["platform"] == 'android' and env["android_arch"] == 'armv7' or env["platform"] == 'x11' or env["platform"] == 'server':
+    elif env["platform"] == 'android' and env["android_arch"] == 'armv7' or env["platform"] == 'linuxbsd' or env["platform"] == 'server':
         env_libvpx["ASFLAGS"] = '-mfpu=neon'
     elif env["platform"] == 'uwp':
         env_libvpx["AS"] = 'armasm'
@@ -392,5 +392,5 @@ elif webm_cpu_arm:
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_armasm_ms)
     elif env["platform"] == 'iphone':
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas_apple)
-    elif (is_x11_or_server_arm and cpu_bits == '32') or (env["platform"] == 'android' and not env["android_arch"] == 'arm64v8'):
+    elif (is_linuxbsd_or_server_arm and cpu_bits == '32') or (env["platform"] == 'android' and not env["android_arch"] == 'arm64v8'):
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas)
