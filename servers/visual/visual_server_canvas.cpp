@@ -55,16 +55,18 @@ void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2
 	int child_item_count = p_canvas_item->child_items.size();
 	VisualServerCanvas::Item **child_items = p_canvas_item->child_items.ptrw();
 	for (int i = 0; i < child_item_count; i++) {
-		if (r_items) {
-			r_items[r_index] = child_items[i];
-			child_items[i]->ysort_xform = p_transform;
-			child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
+		if (child_items[i]->visible) {
+			if (r_items) {
+				r_items[r_index] = child_items[i];
+				child_items[i]->ysort_xform = p_transform;
+				child_items[i]->ysort_pos = p_transform.xform(child_items[i]->xform.elements[2]);
+			}
+
+			r_index++;
+
+			if (child_items[i]->sort_y)
+				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, r_items, r_index);
 		}
-
-		r_index++;
-
-		if (child_items[i]->sort_y)
-			_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, r_items, r_index);
 	}
 }
 
@@ -393,6 +395,10 @@ void VisualServerCanvas::canvas_item_set_visible(RID p_item, bool p_visible) {
 	ERR_FAIL_COND(!canvas_item);
 
 	canvas_item->visible = p_visible;
+
+	if (canvas_item->parent.is_valid() && canvas_item_owner.owns(canvas_item->parent)) {
+		_mark_ysort_dirty(canvas_item_owner.get(canvas_item->parent), canvas_item_owner);
+	}
 }
 void VisualServerCanvas::canvas_item_set_light_mask(RID p_item, int p_mask) {
 
