@@ -480,16 +480,16 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			switch (cast_type.kind) {
 				case GDScriptDataType::BUILTIN: {
 					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CAST_TO_BUILTIN);
-					codegen.opcodes.push_back(cn->cast_type.builtin_type);
+					codegen.opcodes.push_back(cast_type.builtin_type);
 				} break;
 				case GDScriptDataType::NATIVE: {
 					int class_idx;
-					if (GDScriptLanguage::get_singleton()->get_global_map().has(cn->cast_type.native_type)) {
+					if (GDScriptLanguage::get_singleton()->get_global_map().has(cast_type.native_type)) {
 
-						class_idx = GDScriptLanguage::get_singleton()->get_global_map()[cn->cast_type.native_type];
+						class_idx = GDScriptLanguage::get_singleton()->get_global_map()[cast_type.native_type];
 						class_idx |= (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 					} else {
-						_set_error("Invalid native class type '" + String(cn->cast_type.native_type) + "'.", cn);
+						_set_error("Invalid native class type '" + String(cast_type.native_type) + "'.", cn);
 						return -1;
 					}
 					codegen.opcodes.push_back(GDScriptFunction::OPCODE_CAST_TO_NATIVE); // perform operator
@@ -498,7 +498,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				case GDScriptDataType::SCRIPT:
 				case GDScriptDataType::GDSCRIPT: {
 
-					Variant script = cn->cast_type.script_type;
+					Variant script = cast_type.script_type;
 					int idx = codegen.get_constant_pos(script);
 					idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
 
@@ -1863,6 +1863,19 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->base = base;
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
+
+			if (p_class->base_type.kind == GDScriptParser::DataType::CLASS) {
+				if (!parsed_classes.has(p_script->_base)) {
+					if (parsing_classes.has(p_script->_base)) {
+						_set_error("Cyclic class reference for '" + String(p_class->name) + "'.", p_class);
+						return ERR_PARSE_ERROR;
+					}
+					Error err = _parse_class_level(p_script->_base, p_class->base_type.class_type, p_keep_state);
+					if (err) {
+						return err;
+					}
+				}
+			}
 		} break;
 		default: {
 			_set_error("Parser bug: invalid inheritance.", p_class);
