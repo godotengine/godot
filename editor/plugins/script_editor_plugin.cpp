@@ -1735,7 +1735,7 @@ void ScriptEditor::_update_script_names() {
 
 			String name = eh->get_class();
 			Ref<Texture> icon = get_icon("Help", "EditorIcons");
-			String tooltip = name + TTR(" Class Reference");
+			String tooltip = vformat(TTR("%s Class Reference"), name);
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;
