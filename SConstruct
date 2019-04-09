@@ -254,7 +254,12 @@ if env_base['platform'] != "":
     selected_platform = env_base['platform']
 elif env_base['p'] != "":
     selected_platform = env_base['p']
-    env_base["platform"] = selected_platform
+
+# Alias "linux" and "bsd" to "linuxbsd"
+if selected_platform == 'linux' or selected_platform == 'bsd':
+    selected_platform = 'linuxbsd'
+
+env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
