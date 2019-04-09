@@ -57,7 +57,6 @@ public:
 
 	void randomize();
 	_FORCE_INLINE_ uint32_t rand() {
-		current_seed = pcg.state;
 		return pcg32_random_r(&pcg);
 	}
 	_FORCE_INLINE_ double randd() { return (double)rand() / (double)RANDOM_MAX; }
