@@ -39,8 +39,8 @@
 #include "platform/osx/power_osx.h"
 #include "platform/osx/semaphore_osx.h"
 #else
-#include "platform/x11/crash_handler_x11.h"
-#include "platform/x11/power_x11.h"
+#include "platform/linuxbsd/crash_handler_linuxbsd.h"
+#include "platform/linuxbsd/power_linuxbsd.h"
 #endif
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -70,7 +70,7 @@ class OS_Server : public OS_Unix {
 #ifdef __APPLE__
 	PowerOSX *power_manager;
 #else
-	PowerX11 *power_manager;
+	PowerUnix *power_manager;
 #endif
 
 	CrashHandler crash_handler;

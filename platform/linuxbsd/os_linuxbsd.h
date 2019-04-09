@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_x11.h                                                             */
+/*  os_linuxbsd.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OS_X11_H
-#define OS_X11_H
+#ifndef OS_LINUXBSD_H
+#define OS_LINUXBSD_H
 
 #include "context_gl_x11.h"
 #include "core/os/input.h"
-#include "crash_handler_x11.h"
+#include "crash_handler_linuxbsd.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
-#include "power_x11.h"
+#include "power_linuxbsd.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
@@ -80,7 +80,7 @@ typedef struct _xrr_monitor_info {
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class OS_X11 : public OS_Unix {
+class OS_LinuxBSD : public OS_Unix {
 
 	Atom wm_delete;
 	Atom xdnd_enter;
@@ -183,7 +183,7 @@ class OS_X11 : public OS_Unix {
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
 
-	PowerX11 *power_manager;
+	PowerLinuxBSD *power_manager;
 
 	bool layered_window;
 
@@ -317,7 +317,7 @@ public:
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
 	void update_real_mouse_position();
-	OS_X11();
+	OS_LinuxBSD();
 };
 
 #endif

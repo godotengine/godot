@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  export.h                                                             */
+/*  crash_handler_linuxbsd.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,4 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-void register_x11_exporter();
+#ifndef CRASH_HANDLER_LINUXBSD_H
+#define CRASH_HANDLER_LINUXBSD_H
+
+class CrashHandler {
+
+	bool disabled;
+
+public:
+	void initialize();
+
+	void disable();
+	bool is_disabled() const { return disabled; };
+
+	CrashHandler();
+	~CrashHandler();
+};
+
+#endif // CRASH_HANDLER_LINUXBSD_H
