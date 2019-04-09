@@ -5,7 +5,13 @@
 	</brief_description>
 	<description>
 		This is a generic mobile VR implementation where you need to provide details about the phone and HMD used. It does not rely on any existing framework. This is the most basic interface we have. For the best effect you do need a mobile phone with a gyroscope and accelerometer.
-		Note that even though there is no positional tracking the camera will assume the headset is at a height of 1.85 meters.
+		Note that even though there is no positional tracking the camera will assume the headset is at a height of 1.85 meters, you can change this by setting [member eye_height].
+		You can initialise this interface as follows:
+		[codeblock]
+		var interface = ARVRServer.find_interface("Native mobile")
+		if interface and interface.initialize():
+		    get_viewport().arvr = true
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -19,6 +25,9 @@
 		</member>
 		<member name="display_width" type="float" setter="set_display_width" getter="get_display_width">
 			The width of the display in centimeters.
+		</member>
+		<member name="eye_height" type="float" setter="set_eye_height" getter="get_eye_height">
+			The height at which the camera is placed in relation to the ground (i.e. [ARVROrigin] node).
 		</member>
 		<member name="iod" type="float" setter="set_iod" getter="get_iod">
 			The interocular distance, also known as the interpupillary distance. The distance between the pupils of the left and right eye.
