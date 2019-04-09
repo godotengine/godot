@@ -2125,6 +2125,18 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	}
 }
 
+void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
+	// Right click is pressed in the empty space of the tree
+	path = "res://";
+	tree_popup->clear();
+	tree_popup->set_size(Size2(1, 1));
+	tree_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+	tree_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
+	tree_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->set_position(tree->get_global_position() + p_pos);
+	tree_popup->popup();
+}
+
 void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 }
@@ -2318,6 +2330,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_option", "option"), &FileSystemDock::_file_list_rmb_option);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_select"), &FileSystemDock::_file_list_rmb_select);
 	ClassDB::bind_method(D_METHOD("_file_list_rmb_pressed"), &FileSystemDock::_file_list_rmb_pressed);
+	ClassDB::bind_method(D_METHOD("_tree_rmb_empty"), &FileSystemDock::_tree_rmb_empty);
 
 	ClassDB::bind_method(D_METHOD("_file_deleted"), &FileSystemDock::_file_deleted);
 	ClassDB::bind_method(D_METHOD("_folder_deleted"), &FileSystemDock::_folder_deleted);
@@ -2450,6 +2463,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->connect("item_activated", this, "_tree_activate_file");
 	tree->connect("multi_selected", this, "_tree_multi_selected");
 	tree->connect("item_rmb_selected", this, "_tree_rmb_select");
+	tree->connect("empty_rmb", this, "_tree_rmb_empty");
 	tree->connect("nothing_selected", this, "_tree_empty_selected");
 	tree->connect("gui_input", this, "_tree_gui_input");
 
