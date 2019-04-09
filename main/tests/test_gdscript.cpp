@@ -289,6 +289,11 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 			}
 
 		} break;
+		case GDScriptParser::Node::TYPE_CAST: {
+			const GDScriptParser::CastNode *cast_node = static_cast<const GDScriptParser::CastNode *>(p_expr);
+			txt = _parser_expr(cast_node->source_node) + " as " + cast_node->cast_type.to_string();
+
+		} break;
 		case GDScriptParser::Node::TYPE_NEWLINE: {
 
 			//skippie
@@ -669,6 +674,17 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 2;
 
 				} break;
+				case GDScriptFunction::OPCODE_CAST_TO_SCRIPT: {
+
+					txt += " cast ";
+					txt += DADDR(3);
+					txt += "=";
+					txt += DADDR(1);
+					txt += " as ";
+					txt += DADDR(2);
+					incr += 4;
+
+				} break;
 				case GDScriptFunction::OPCODE_CONSTRUCT: {
 
 					Variant::Type t = Variant::Type(code[ip + 1]);
@@ -1018,18 +1034,16 @@ MainLoop *test(TestType p_type) {
 			return NULL;
 		}
 
-		GDScript *script = memnew(GDScript);
+		Ref<GDScript> gds;
+		gds.instance();
 
 		GDScriptCompiler gdc;
-		err = gdc.compile(&parser, script);
+		err = gdc.compile(&parser, gds.ptr());
 		if (err) {
 
 			print_line("Compile Error:\n" + itos(gdc.get_error_line()) + ":" + itos(gdc.get_error_column()) + ":" + gdc.get_error());
-			memdelete(script);
 			return NULL;
 		}
-
-		Ref<GDScript> gds = Ref<GDScript>(script);
 
 		Ref<GDScript> current = gds;
 
