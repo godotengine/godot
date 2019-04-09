@@ -57,6 +57,15 @@
 				Returns an array with all [Script] objects which are currently open in editor.
 			</description>
 		</method>
+		<method name="goto_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line_number" type="int">
+			</argument>
+			<description>
+				Goes to the specified line in the current script.
+			</description>
+		</method>
 		<method name="open_script_create_dialog">
 			<return type="void">
 			</return>
