@@ -70,7 +70,7 @@ class OS_Server : public OS_Unix {
 #ifdef __APPLE__
 	PowerOSX *power_manager;
 #else
-	PowerUnix *power_manager;
+	PowerLinuxBSD *power_manager;
 #endif
 
 	CrashHandler crash_handler;
