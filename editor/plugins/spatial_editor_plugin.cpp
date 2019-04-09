@@ -5686,11 +5686,11 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
 	snap_rotate = memnew(LineEdit);
-	snap_rotate->set_text("5");
+	snap_rotate->set_text("15");
 	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
 	snap_scale = memnew(LineEdit);
-	snap_scale->set_text("5");
+	snap_scale->set_text("10");
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
 
 	/* SETTINGS DIALOG */
@@ -5846,6 +5846,39 @@ Vector3 SpatialEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 		p_target.z = Math::snap_scalar(0.0, get_translate_snap(), p_target.z);
 	}
 	return p_target;
+}
+
+float SpatialEditor::get_translate_snap() const {
+	float snap_value;
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		snap_value = snap_translate->get_text().to_double() / 10.0;
+	} else {
+		snap_value = snap_translate->get_text().to_double();
+	}
+
+	return snap_value;
+}
+
+float SpatialEditor::get_rotate_snap() const {
+	float snap_value;
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		snap_value = snap_rotate->get_text().to_double() / 3.0;
+	} else {
+		snap_value = snap_rotate->get_text().to_double();
+	}
+
+	return snap_value;
+}
+
+float SpatialEditor::get_scale_snap() const {
+	float snap_value;
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		snap_value = snap_scale->get_text().to_double() / 2.0;
+	} else {
+		snap_value = snap_scale->get_text().to_double();
+	}
+
+	return snap_value;
 }
 
 void SpatialEditorPlugin::_bind_methods() {
