@@ -30,17 +30,6 @@
 
 package org.godotengine.godot.payments;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotPaymentV3;
-import org.godotengine.godot.utils.Crypt;
-import org.godotengine.godot.utils.HttpRequester;
-import org.godotengine.godot.utils.RequestParams;
-import com.android.vending.billing.IInAppBillingService;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -51,8 +40,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
-
+import com.android.vending.billing.IInAppBillingService;
 import java.lang.ref.WeakReference;
+import org.godotengine.godot.Godot;
+import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.GodotPaymentV3;
+import org.godotengine.godot.utils.Crypt;
+import org.godotengine.godot.utils.HttpRequester;
+import org.godotengine.godot.utils.RequestParams;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 abstract public class ValidateTask {
 

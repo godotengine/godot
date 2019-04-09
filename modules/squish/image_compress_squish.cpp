@@ -119,7 +119,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 				case Image::FORMAT_RGBA5551: {
 					dc = Image::DETECTED_RGBA;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 

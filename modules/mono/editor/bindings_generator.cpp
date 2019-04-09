@@ -2520,7 +2520,8 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.default_argument = Variant::get_type_name(p_val.get_type()) + ".Identity";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type.cname == name_cache.type_Variant && r_iarg.default_argument != "null")

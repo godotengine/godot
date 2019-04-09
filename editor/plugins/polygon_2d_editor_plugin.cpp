@@ -905,7 +905,8 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					bone_paint_pos = Vector2(mm->get_position().x, mm->get_position().y);
 				} break;
-				default: {}
+				default: {
+				}
 			}
 
 			if (bone_painting) {

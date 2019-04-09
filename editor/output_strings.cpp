@@ -105,7 +105,8 @@ void OutputStrings::_notification(int p_what) {
 					case LINE_LINK: {
 
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				line_ofs.y += font->get_ascent();

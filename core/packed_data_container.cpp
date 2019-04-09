@@ -319,7 +319,8 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 
 	return OK;

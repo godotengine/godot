@@ -310,7 +310,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1049,7 +1050,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1091,7 +1093,8 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			emit_signal("variant_changed");
 			hide();
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1432,7 +1435,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 		} break;
 
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -1699,7 +1703,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1753,7 +1758,8 @@ void CustomPropertyEditor::_focus_enter() {
 				}
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1774,7 +1780,8 @@ void CustomPropertyEditor::_focus_exit() {
 				value_editor[i]->select(0, 0);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

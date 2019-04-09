@@ -1725,7 +1725,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				get_string_index(np.get_subname(i));
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

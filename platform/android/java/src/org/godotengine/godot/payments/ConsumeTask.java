@@ -30,13 +30,11 @@
 
 package org.godotengine.godot.payments;
 
-import com.android.vending.billing.IInAppBillingService;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.RemoteException;
 import android.util.Log;
-
+import com.android.vending.billing.IInAppBillingService;
 import java.lang.ref.WeakReference;
 
 abstract public class ConsumeTask {

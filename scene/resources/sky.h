@@ -191,7 +191,7 @@ public:
 
 	virtual RID get_rid() const;
 
-	ProceduralSky(bool p_desaturate=false);
+	ProceduralSky(bool p_desaturate = false);
 	~ProceduralSky();
 };
 

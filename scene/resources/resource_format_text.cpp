@@ -1459,7 +1459,8 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 				_find_resources(v);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

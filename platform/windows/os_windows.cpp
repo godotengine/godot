@@ -670,7 +670,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						mb->set_button_index(BUTTON_XBUTTON2);
 					mb->set_doubleclick(true);
 				} break;
-				default: { return 0; }
+				default: {
+					return 0;
+				}
 			}
 
 			mb->set_control((wParam & MK_CONTROL) != 0);

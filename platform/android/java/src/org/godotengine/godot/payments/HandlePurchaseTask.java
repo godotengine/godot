@@ -30,13 +30,6 @@
 
 package org.godotengine.godot.payments;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.utils.Crypt;
-import com.android.vending.billing.IInAppBillingService;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -47,6 +40,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
+import com.android.vending.billing.IInAppBillingService;
+import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.utils.Crypt;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 abstract public class HandlePurchaseTask {
 

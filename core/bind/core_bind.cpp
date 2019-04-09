@@ -2445,7 +2445,8 @@ void _Thread::_start_func(void *ud) {
 
 				reason = "Method Not Found";
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		ERR_EXPLAIN("Could not call function '" + t->target_method.operator String() + "'' starting thread ID: " + t->get_id() + " Reason: " + reason);

@@ -711,7 +711,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 			} break;
 
-			default: {}
+			default: {
+			}
 		}
 
 		Item *itp = it;

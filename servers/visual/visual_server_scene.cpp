@@ -399,7 +399,8 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				VSG::scene_render->free(gi_probe->probe_instance);
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		if (instance->base_data) {
@@ -476,7 +477,8 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 				gi_probe->probe_instance = VSG::scene_render->gi_probe_instance_create();
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		VSG::storage->instance_add_dependency(p_base, instance);
@@ -524,7 +526,8 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 					gi_probe_update_list.remove(&gi_probe->update_element);
 				}
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		instance->scenario = NULL;
@@ -556,7 +559,8 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 					gi_probe_update_list.add(&gi_probe->update_element);
 				}
 			} break;
-			default: {}
+			default: {
+			}
 		}
 
 		_instance_queue_update(instance, true, true);
@@ -671,7 +675,8 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 inline bool is_geometry_instance(VisualServer::InstanceType p_type) {
@@ -848,7 +853,8 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 			instance->redraw_if_visible = p_enabled;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting) {
@@ -1040,7 +1046,8 @@ void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 			new_aabb = VSG::storage->lightmap_capture_get_bounds(p_instance->base);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	// <Zylann> This is why I didn't re-use Instance::aabb to implement custom AABBs

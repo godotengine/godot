@@ -294,7 +294,8 @@ void ProjectSettingsEditor::_device_input_add() {
 			ie = jb;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (idx < 0 || idx >= events.size()) {
@@ -519,7 +520,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

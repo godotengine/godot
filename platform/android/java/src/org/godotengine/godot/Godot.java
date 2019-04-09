@@ -32,6 +32,7 @@ package org.godotengine.godot;
 
 //import android.R;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -53,7 +54,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -75,7 +75,6 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
 import com.google.android.vending.expansion.downloader.DownloaderServiceMarshaller;
@@ -83,10 +82,6 @@ import com.google.android.vending.expansion.downloader.Helpers;
 import com.google.android.vending.expansion.downloader.IDownloaderClient;
 import com.google.android.vending.expansion.downloader.IDownloaderService;
 import com.google.android.vending.expansion.downloader.IStub;
-
-import org.godotengine.godot.input.GodotEditText;
-import org.godotengine.godot.payments.PaymentsManager;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -96,8 +91,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-
 import javax.microedition.khronos.opengles.GL10;
+import org.godotengine.godot.input.GodotEditText;
+import org.godotengine.godot.payments.PaymentsManager;
 
 public class Godot extends Activity implements SensorEventListener, IDownloaderClient {
 

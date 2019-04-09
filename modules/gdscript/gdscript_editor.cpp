@@ -1070,7 +1070,8 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 						case GDScriptParser::OperatorNode::OP_BIT_AND: vop = Variant::OP_BIT_AND; break;
 						case GDScriptParser::OperatorNode::OP_BIT_OR: vop = Variant::OP_BIT_OR; break;
 						case GDScriptParser::OperatorNode::OP_BIT_XOR: vop = Variant::OP_BIT_XOR; break;
-						default: {}
+						default: {
+						}
 					}
 
 					if (vop == Variant::OP_MAX) {
@@ -1125,7 +1126,8 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 				} break;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	// It may have found a null, but that's never useful
@@ -3380,7 +3382,8 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 				return OK;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return ERR_CANT_RESOLVE;

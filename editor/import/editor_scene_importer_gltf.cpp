@@ -581,7 +581,9 @@ int EditorSceneImporterGLTF::_get_component_type_size(int component_type) {
 		case COMPONENT_TYPE_UNSIGNED_SHORT: return 2; break;
 		case COMPONENT_TYPE_INT: return 4; break;
 		case COMPONENT_TYPE_FLOAT: return 4; break;
-		default: { ERR_FAIL_V(0); }
+		default: {
+			ERR_FAIL_V(0);
+		}
 	}
 	return 0;
 }
@@ -631,7 +633,8 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, int p
 				element_size = 16; //override for this case
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	Vector<double> dst_buffer;

@@ -174,7 +174,8 @@ void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, real_t p_value)
 
 			angular_damp = p_value;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -206,7 +207,8 @@ real_t Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 
 			return angular_damp;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return 0;
@@ -443,7 +445,8 @@ void Body2DSW::integrate_forces(real_t p_step) {
 					_compute_area_gravity_and_dampenings(aa[i].area);
 					stopped = mode == Physics2DServer::AREA_SPACE_OVERRIDE_REPLACE;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 	}

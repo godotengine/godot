@@ -2781,7 +2781,8 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				return false;
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (r_valid)
@@ -2912,7 +2913,8 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			//nothing
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -3251,7 +3253,8 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	valid = false;
@@ -3408,7 +3411,8 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	r_valid = false;

@@ -115,7 +115,8 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 			case Image::FORMAT_RGBA5551: {
 				detected_channels = Image::DETECTED_RGBA;
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 

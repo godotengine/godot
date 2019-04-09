@@ -1637,7 +1637,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				_clear_internal_resource_paths(d[E->get()]);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

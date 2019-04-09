@@ -199,7 +199,8 @@ void DocDump::dump(const String &p_file) {
 							case Variant::ARRAY:
 							case Variant::_RID:
 
-							default: {}
+							default: {
+							}
 						}
 
 						_write_string(f, 3, "<argument index=\"" + itos(i) + "\" name=\"" + _escape_string(arginfo.name) + "\" type=\"" + type_name + "\" default=\"" + _escape_string(default_arg_text) + "\">");
@@ -227,7 +228,8 @@ void DocDump::dump(const String &p_file) {
 						}
 						break;
 					case PROPERTY_HINT_FILE: hint = "A file:"; break;
-					default: {}
+					default: {
+					}
 						//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;
 				};
 				if (hint != "")

@@ -160,7 +160,9 @@ void ConnectDialog::_add_bind() {
 		case Variant::BASIS: value = Basis(); break;
 		case Variant::TRANSFORM: value = Transform(); break;
 		case Variant::COLOR: value = Color(); break;
-		default: { ERR_FAIL(); } break;
+		default: {
+			ERR_FAIL();
+		} break;
 	}
 
 	ERR_FAIL_COND(value.get_type() == Variant::NIL);

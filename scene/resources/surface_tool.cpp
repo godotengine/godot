@@ -397,7 +397,8 @@ Array SurfaceTool::commit_to_arrays() {
 				a[i] = array;
 			} break;
 
-			default: {}
+			default: {
+			}
 		}
 	}
 

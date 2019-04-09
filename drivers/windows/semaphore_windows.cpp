@@ -54,7 +54,8 @@ int SemaphoreWindows::get() const {
 		case WAIT_TIMEOUT: {
 			return 0;
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	ERR_FAIL_V(-1);

@@ -924,7 +924,8 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj, Map<RES, bool> 
 						ret_changed = true;
 				}
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 

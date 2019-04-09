@@ -432,7 +432,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 			} break;
 
-			default: {}
+			default: {
+			}
 		}
 
 		wb = PoolVector<uint8_t>::Write();

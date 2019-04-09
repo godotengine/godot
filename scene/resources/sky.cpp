@@ -553,10 +553,10 @@ ProceduralSky::ProceduralSky(bool p_desaturate) {
 	ground_energy = 1;
 
 	if (p_desaturate) {
-		sky_top_color.set_hsv(sky_top_color.get_h(),0,sky_top_color.get_v());
-		sky_horizon_color.set_hsv(sky_horizon_color.get_h(),0,sky_horizon_color.get_v());
-		ground_bottom_color.set_hsv(ground_bottom_color.get_h(),0,ground_bottom_color.get_v());
-		ground_horizon_color.set_hsv(ground_horizon_color.get_h(),0,ground_horizon_color.get_v());
+		sky_top_color.set_hsv(sky_top_color.get_h(), 0, sky_top_color.get_v());
+		sky_horizon_color.set_hsv(sky_horizon_color.get_h(), 0, sky_horizon_color.get_v());
+		ground_bottom_color.set_hsv(ground_bottom_color.get_h(), 0, ground_bottom_color.get_v());
+		ground_horizon_color.set_hsv(ground_horizon_color.get_h(), 0, ground_horizon_color.get_v());
 	}
 	sun_color = Color(1, 1, 1);
 	sun_latitude = 35;

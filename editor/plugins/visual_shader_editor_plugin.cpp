@@ -453,7 +453,8 @@ void VisualShaderEditor::_update_graph() {
 						Vector3 v = default_value;
 						button->set_text(String::num(v.x, 3) + "," + String::num(v.y, 3) + "," + String::num(v.z, 3));
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 
