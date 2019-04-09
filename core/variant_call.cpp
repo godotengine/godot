@@ -296,6 +296,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(String, is_valid_ip_address);
 	VCALL_LOCALMEM0R(String, is_valid_filename);
 	VCALL_LOCALMEM0R(String, to_int);
+	VCALL_LOCALMEM0R(String, to_int64);
 	VCALL_LOCALMEM0R(String, to_float);
 	VCALL_LOCALMEM0R(String, hex_to_int);
 	VCALL_LOCALMEM1R(String, pad_decimals);
@@ -1545,6 +1546,7 @@ void register_variant_methods() {
 	ADDFUNC0R(STRING, BOOL, String, is_valid_ip_address, varray());
 	ADDFUNC0R(STRING, BOOL, String, is_valid_filename, varray());
 	ADDFUNC0R(STRING, INT, String, to_int, varray());
+	ADDFUNC0R(STRING, INT, String, to_int64, varray());
 	ADDFUNC0R(STRING, REAL, String, to_float, varray());
 	ADDFUNC0R(STRING, INT, String, hex_to_int, varray());
 	ADDFUNC1R(STRING, STRING, String, pad_decimals, INT, "digits", varray());

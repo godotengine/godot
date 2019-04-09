@@ -769,6 +769,13 @@
 				Converts a string containing an integer number into an [code]int[/code].
 			</description>
 		</method>
+		<method name="to_int64">
+			<return type="int">
+			</return>
+			<description>
+				Converts a string containing an integer number into an 64 bits [code]int[/code].
+			</description>
+		</method>
 		<method name="to_lower">
 			<return type="String">
 			</return>
