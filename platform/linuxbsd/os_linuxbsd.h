@@ -81,7 +81,7 @@ typedef struct _xrr_monitor_info {
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class OS_LinuxBSD : public OS_Unix {
+class OS_LinuxBSD : public OS_Unix, public DisplayDriver {
 
 	Atom wm_delete;
 	Atom xdnd_enter;
@@ -207,8 +207,12 @@ protected:
 	virtual int get_current_video_driver() const;
 
 	virtual void initialize_core();
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
+
+	virtual Error initialize_os(int p_audio_driver);
+	virtual void finalize_os();
+
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver);
+	virtual void finalize_display();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 

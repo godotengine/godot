@@ -98,7 +98,32 @@ int OS_LinuxBSD::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-Error OS_LinuxBSD::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+Error OS_LinuxBSD::initialize_os(int p_audio_driver) {
+
+	args = OS::get_singleton()->get_cmdline_args();
+	AudioDriverManager::initialize(p_audio_driver);
+	_ensure_user_data_dir();
+	power_manager = memnew(PowerLinuxBSD);
+	return OK;
+}
+
+void OS_LinuxBSD::finalize_os() {
+
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
+#ifdef ALSAMIDI_ENABLED
+	driver_alsamidi.close();
+#endif
+
+	memdelete(power_manager);
+
+	args.clear();
+}
+
+Error OS_LinuxBSD::initialize_display(const VideoMode &p_desired, int p_video_driver) {
 
 	long im_event_mask = 0;
 	last_button_state = 0;
@@ -108,7 +133,6 @@ Error OS_LinuxBSD::initialize(const VideoMode &p_desired, int p_video_driver, in
 	last_click_ms = 0;
 	last_click_button_index = -1;
 	last_click_pos = Point2(-100, -100);
-	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
 	main_loop = NULL;
 	last_timestamp = 0;
@@ -580,17 +604,12 @@ Error OS_LinuxBSD::initialize(const VideoMode &p_desired, int p_video_driver, in
 
 	visual_server->init();
 
-	AudioDriverManager::initialize(p_audio_driver);
-
 	input = memnew(InputDefault);
 
 	window_has_focus = true; // Set focus to true at init
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(input));
 #endif
-	_ensure_user_data_dir();
-
-	power_manager = memnew(PowerLinuxBSD);
 
 	if (p_desired.layered_splash) {
 		set_window_per_pixel_transparency_enabled(true);
@@ -607,6 +626,53 @@ Error OS_LinuxBSD::initialize(const VideoMode &p_desired, int p_video_driver, in
 	update_real_mouse_position();
 
 	return OK;
+}
+
+void OS_LinuxBSD::finalize_display() {
+
+	if (main_loop)
+		memdelete(main_loop);
+	main_loop = NULL;
+
+#ifdef JOYDEV_ENABLED
+	memdelete(joypad);
+#endif
+
+	xi.touch_devices.clear();
+	xi.state.clear();
+
+	memdelete(input);
+
+	visual_server->finish();
+	memdelete(visual_server);
+	//memdelete(rasterizer);
+
+	if (xrandr_handle)
+		dlclose(xrandr_handle);
+
+	XUnmapWindow(x11_display, x11_window);
+	XDestroyWindow(x11_display, x11_window);
+
+#if defined(OPENGL_ENABLED)
+	memdelete(context_gl);
+#endif
+	for (int i = 0; i < CURSOR_MAX; i++) {
+		if (cursors[i] != None)
+			XFreeCursor(x11_display, cursors[i]);
+		if (img[i] != NULL)
+			XcursorImageDestroy(img[i]);
+	};
+
+	if (xic) {
+		XDestroyIC(xic);
+	}
+	if (xim) {
+		XCloseIM(xim);
+	}
+
+	XCloseDisplay(x11_display);
+	if (xmbstring)
+		memfree(xmbstring);
 }
 
 bool OS_LinuxBSD::refresh_device_info() {
@@ -756,66 +822,6 @@ String OS_LinuxBSD::get_unique_id() const {
 		}
 	}
 	return machine_id;
-}
-
-void OS_LinuxBSD::finalize() {
-
-	if (main_loop)
-		memdelete(main_loop);
-	main_loop = NULL;
-
-	/*
-	if (debugger_connection_console) {
-		memdelete(debugger_connection_console);
-	}
-	*/
-#ifdef ALSAMIDI_ENABLED
-	driver_alsamidi.close();
-#endif
-
-#ifdef JOYDEV_ENABLED
-	memdelete(joypad);
-#endif
-
-	xi.touch_devices.clear();
-	xi.state.clear();
-
-	memdelete(input);
-
-	visual_server->finish();
-	memdelete(visual_server);
-	//memdelete(rasterizer);
-
-	memdelete(power_manager);
-
-	if (xrandr_handle)
-		dlclose(xrandr_handle);
-
-	XUnmapWindow(x11_display, x11_window);
-	XDestroyWindow(x11_display, x11_window);
-
-#if defined(OPENGL_ENABLED)
-	memdelete(context_gl);
-#endif
-	for (int i = 0; i < CURSOR_MAX; i++) {
-		if (cursors[i] != None)
-			XFreeCursor(x11_display, cursors[i]);
-		if (img[i] != NULL)
-			XcursorImageDestroy(img[i]);
-	};
-
-	if (xic) {
-		XDestroyIC(xic);
-	}
-	if (xim) {
-		XCloseIM(xim);
-	}
-
-	XCloseDisplay(x11_display);
-	if (xmbstring)
-		memfree(xmbstring);
-
-	args.clear();
 }
 
 void OS_LinuxBSD::set_mouse_mode(MouseMode p_mode) {
@@ -2719,7 +2725,7 @@ void OS_LinuxBSD::set_cursor_shape(CursorShape p_shape) {
 	current_cursor = p_shape;
 }
 
-OS::CursorShape OS_LinuxBSD::get_cursor_shape() const {
+DisplayDriver::CursorShape OS_LinuxBSD::get_cursor_shape() const {
 
 	return current_cursor;
 }
