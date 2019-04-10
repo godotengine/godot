@@ -647,6 +647,8 @@ private:
 
 		if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST)
 			_remove_created_folder();
+		else if (p_what == NOTIFICATION_VISIBILITY_CHANGED)
+			set_process_unhandled_input(is_visible_in_tree());
 	}
 
 protected:
@@ -660,6 +662,7 @@ protected:
 		ClassDB::bind_method("_file_selected", &ProjectDialog::_file_selected);
 		ClassDB::bind_method("_install_path_selected", &ProjectDialog::_install_path_selected);
 		ClassDB::bind_method("_browse_install_path", &ProjectDialog::_browse_install_path);
+		ClassDB::bind_method("_unhandled_input", &ProjectDialog::_unhandled_input);
 		ADD_SIGNAL(MethodInfo("project_created"));
 		ADD_SIGNAL(MethodInfo("projects_updated"));
 	}
@@ -749,7 +752,7 @@ public:
 				name_container->hide();
 				install_path_container->hide();
 				rasterizer_container->hide();
-				project_path->grab_focus();
+				project_path->call_deferred("grab_focus");
 
 			} else if (mode == MODE_NEW) {
 
@@ -775,6 +778,48 @@ public:
 		}
 
 		popup_centered_minsize(Size2(500, 0) * EDSCALE);
+	}
+
+	void _unhandled_input(const Ref<InputEvent> &p_ev) {
+
+		Ref<InputEventKey> k = p_ev;
+
+		if (k.is_valid()) {
+
+			if (!k->is_pressed())
+				return;
+
+			bool scancode_handled = false;
+
+			switch (k->get_scancode()) {
+
+				case KEY_ENTER: {
+
+					if (is_visible()) {
+
+						switch (mode) {
+
+							case ProjectDialog::MODE_RENAME: {
+								ok_pressed();
+							} break;
+
+							case ProjectDialog::MODE_NEW:
+							case ProjectDialog::MODE_IMPORT: {
+								if (!get_ok()->is_disabled())
+									ok_pressed();
+							} break;
+
+							default: {
+							}
+						}
+						scancode_handled = true;
+					}
+				} break;
+			}
+			if (scancode_handled) {
+				accept_event();
+			}
+		}
 	}
 
 	ProjectDialog() {
