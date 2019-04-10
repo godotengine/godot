@@ -34,6 +34,7 @@
 #include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
+#include "scene/3d/mesh_instance.h"
 
 #include <iostream>
 
@@ -331,6 +332,20 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 				ba.owner = p_anim->node_cache[i];
 
 				p_anim->node_cache[i]->bezier_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
+			}
+		}
+
+		if (a->track_get_type(i) == Animation::TYPE_BLENDSHAPE) { // && leftover_path.size()) {
+
+			if (!p_anim->node_cache[i]->blend_shape_anim.has(a->track_get_path(i).get_concatenated_subnames())) {
+
+				TrackNodeCache::BlendshapeAnim ba;
+				//ba.subpath = leftover_path;
+				ba.blend_shape_property = leftover_path;
+				ba.object = resource.is_valid() ? (Object *)resource.ptr() : (Object *)child;
+				ba.owner = p_anim->node_cache[i];
+
+				p_anim->node_cache[i]->blend_shape_anim[a->track_get_path(i).get_concatenated_subnames()] = ba;
 			}
 		}
 	}
@@ -674,6 +689,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_ANIMATION: {
+				if (!nc->node)
+					continue;
+
 				AnimationPlayer *player = Object::cast_to<AnimationPlayer>(nc->node);
 				if (!player)
 					continue;
@@ -788,6 +806,77 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 						player->stop();
 						nc->animation_playing = false;
 					}
+				}
+
+			} break;
+			case Animation::TYPE_BLENDSHAPE: {
+				if (!nc->node)
+					continue;
+
+				MeshInstance *meshInstance = Object::cast_to<MeshInstance>(nc->node);
+				if (!meshInstance)
+					continue;
+
+				Ref<Mesh> mesh = meshInstance->get_mesh();
+				if (mesh.is_null())
+					continue;
+
+				int key_count = a->track_get_key_count(i);
+				if (key_count == 0)
+					continue; //eeh not worth it
+
+				//meshInstance->reset_all_blend_amounts();
+
+				Map<StringName, TrackNodeCache::BlendshapeAnim>::Element *E = nc->blend_shape_anim.find(a->track_get_path(i).get_concatenated_subnames());
+				ERR_CONTINUE(!E); //should it continue, or create a new one?
+
+				TrackNodeCache::BlendshapeAnim *pa = &E->get();
+
+				StringName from_blend_key;
+				StringName to_blend_key;
+				float from_strength;
+				float to_strength;
+				float value;
+
+				Error err = a->blend_shape_track_interpolate(i, p_time, &from_blend_key, &to_blend_key, &from_strength, &to_strength, &value);
+				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+
+				if (err != OK)
+					continue;
+
+				if (nc->blend_key_A != StringName() && nc->blend_key_A != from_blend_key) {
+					meshInstance->reset_blend_amount(nc->blend_key_A);
+					nc->blend_key_A = StringName();
+				}
+
+				if (nc->blend_key_B != StringName() && nc->blend_key_B != to_blend_key) {
+					meshInstance->reset_blend_amount(nc->blend_key_B);
+					nc->blend_key_B = StringName();
+				}
+
+				if (pa->accum_pass != accum_pass) {
+					ERR_CONTINUE(cache_update_blend_shape_size >= NODE_CACHE_UPDATE_MAX);
+					cache_update_blend_shape[cache_update_blend_shape_size++] = pa;
+					pa->accum_pass = accum_pass;
+
+					pa->from_blend_key_accum = from_blend_key;
+					pa->to_blend_key_accum = to_blend_key;
+					pa->from_strength_accum = from_strength;
+					pa->to_strength_accum = to_strength;
+					pa->value_accum = value;
+
+					nc->blend_key_A = from_blend_key;
+					nc->blend_key_B = to_blend_key;
+					
+				} else {
+					pa->from_blend_key_accum = from_blend_key;
+					pa->to_blend_key_accum = to_blend_key;
+					pa->from_strength_accum = from_strength;
+					pa->to_strength_accum = to_strength;
+					pa->value_accum = value;
+
+					nc->blend_key_A = from_blend_key;
+					nc->blend_key_B = to_blend_key;
 				}
 
 			} break;
@@ -1081,6 +1170,20 @@ void AnimationPlayer::_animation_update_transforms() {
 	}
 
 	cache_update_bezier_size = 0;
+
+	//
+
+	for (int i = 0; i < cache_update_blend_shape_size; i++) {
+
+		TrackNodeCache::BlendshapeAnim *ba = cache_update_blend_shape[i];
+
+		ERR_CONTINUE(ba->accum_pass != accum_pass); //MeshInstance *meshInstance = Object::cast_to<MeshInstance>(ba->object);
+
+		ba->object->set("blend_shapes/" + ba->from_blend_key_accum, 1.0f - ba->value_accum); //meshInstance->set_blend_amount(ba->from_blend_key_accum, 1.0f - ba->value_accum);
+		ba->object->set("blend_shapes/" + ba->to_blend_key_accum, ba->value_accum); //meshInstance->set_blend_amount(ba->to_blend_key_accum, ba->value_accum);
+	}
+
+	cache_update_blend_shape_size = 0;
 }
 
 void AnimationPlayer::_animation_process(float p_delta) {
@@ -1691,6 +1794,7 @@ void AnimationPlayer::clear_caches() {
 	cache_update_size = 0;
 	cache_update_prop_size = 0;
 	cache_update_bezier_size = 0;
+	cache_update_blend_shape_size = 0;
 }
 
 void AnimationPlayer::set_active(bool p_active) {
@@ -1964,6 +2068,7 @@ AnimationPlayer::AnimationPlayer() {
 	cache_update_size = 0;
 	cache_update_prop_size = 0;
 	cache_update_bezier_size = 0;
+	cache_update_blend_shape_size = 0;
 	speed_scale = 1;
 	end_reached = false;
 	end_notify = false;

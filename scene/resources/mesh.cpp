@@ -477,6 +477,23 @@ Size2 Mesh::get_lightmap_size_hint() const {
 	return lightmap_size_hint;
 }
 
+void Mesh::get_blend_shape_list(List<StringName> *r_blend_shapes) const {
+
+	List<String> blends;
+
+	int count = get_blend_shape_count();
+	for (int i = 0; i < count; i++) { //for (Map<StringName, BlendShapeData>::Element *E = blendshape_set.front(); E; E = E->next()) {
+		blends.push_back(get_blend_shape_name(i)); //E->key());
+	}
+
+	blends.sort();
+
+	for (List<String>::Element *E = blends.front(); E; E = E->next()) {
+
+		r_blend_shapes->push_back(E->get());
+	}
+}
+
 void Mesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lightmap_size_hint", "size"), &Mesh::set_lightmap_size_hint);
@@ -488,6 +505,8 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &Mesh::surface_get_arrays);
 	ClassDB::bind_method(D_METHOD("surface_get_blend_shape_arrays", "surf_idx"), &Mesh::surface_get_blend_shape_arrays);
 	ClassDB::bind_method(D_METHOD("surface_get_material", "surf_idx"), &Mesh::surface_get_material);
+
+	ClassDB::bind_method(D_METHOD("get_blend_shape_list"), &Mesh::_get_blend_shape_list);
 
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);
@@ -834,6 +853,30 @@ int ArrayMesh::get_surface_count() const {
 
 	return surfaces.size();
 }
+
+//void ArrayMesh::set_blend_amount(const StringName &p_name, float p_amount) {
+	//if (surfaces.size()) {
+	//	ERR_EXPLAIN("Can't add a shape key count if surfaces are already created.");
+	//	ERR_FAIL_COND(surfaces.size());
+	//}
+
+	/*
+	StringName name = p_name;
+
+	if (blend_shapes.find(name) != -1) {
+
+		int count = 2;
+		do {
+
+			name = String(p_name) + " " + itos(count);
+			count++;
+		} while (blend_shapes.find(name) != -1);
+	}
+	*/
+
+	//VS::get_singleton()->instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
+	//_set("blend_shapes/" + p_name, Variant(p_amount)); // + p_name
+//}
 
 void ArrayMesh::add_blend_shape(const StringName &p_name) {
 

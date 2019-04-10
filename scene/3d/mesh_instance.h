@@ -73,6 +73,10 @@ public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
+	void set_blend_amount(const StringName &p_name, float p_amount); //NEW
+	void reset_blend_amount(const StringName &p_name); //NEW
+	void reset_all_blend_amounts(); //NEW
+
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 

@@ -50,6 +50,21 @@ class Mesh : public Resource {
 protected:
 	static void _bind_methods();
 
+private:
+	// bind helpers
+	PoolVector<String> _get_blend_shape_list() const {
+
+		List<StringName> blendings;
+		get_blend_shape_list(&blendings);
+		PoolVector<String> ret;
+		while (blendings.size()) {
+
+			ret.push_back(blendings.front()->get());
+			blendings.pop_front();
+		}
+		return ret;
+	}
+
 public:
 	enum {
 
@@ -130,6 +145,8 @@ public:
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
 	virtual int get_blend_shape_count() const = 0;
 	virtual StringName get_blend_shape_name(int p_index) const = 0;
+
+	void get_blend_shape_list(List<StringName> *r_blend_shapes) const;
 
 	PoolVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;

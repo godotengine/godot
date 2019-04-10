@@ -37,6 +37,25 @@
 #include "scene/scene_string_names.h"
 #include "skeleton.h"
 
+void MeshInstance::set_blend_amount(const StringName &p_name, float p_amount) {
+	set("blend_shapes/" + p_name, Variant(p_amount));
+} //NEW
+
+void MeshInstance::reset_blend_amount(const StringName &p_name) {
+	set("blend_shapes/" + p_name, Variant(0.0f));
+} //NEW
+
+void MeshInstance::reset_all_blend_amounts() {
+	if (mesh.is_valid()) {
+		List<StringName> blend_shapes;
+		mesh->get_blend_shape_list(&blend_shapes);
+
+		for (int i = 0; i < blend_shapes.size(); i++) {
+			reset_blend_amount(blend_shapes[0]);
+		}
+	}
+} //NEW
+
 bool MeshInstance::_set(const StringName &p_name, const Variant &p_value) {
 
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -369,6 +388,8 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
 	ClassDB::bind_method(D_METHOD("get_surface_material", "surface"), &MeshInstance::get_surface_material);
+
+	ClassDB::bind_method(D_METHOD("set_blend_amount", "name", "amount"), &MeshInstance::set_blend_amount);
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);

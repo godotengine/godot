@@ -1,4 +1,4 @@
-# German translation of the Godot Engine editor
+﻿# German translation of the Godot Engine editor
 # Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
@@ -190,6 +190,10 @@ msgid "Animation Playback Track"
 msgstr "Animationsspielerspur"
 
 #: editor/animation_track_editor.cpp
+msgid "BlendShape Playback Track"
+msgstr "Blendshapespur"
+
+#: editor/animation_track_editor.cpp
 msgid "Add Track"
 msgstr "Spur hinzufügen"
 
@@ -213,6 +217,10 @@ msgstr "Audioschnipsel:"
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
 msgstr "Animationsschnipsel:"
+
+#: editor/animation_track_editor.cpp
+msgid "Shape Blends:"
+msgstr "Blendshapeschnipsel:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"

@@ -115,6 +115,9 @@ private:
 		float animation_start;
 		float animation_len;
 
+		StringName blend_key_A;
+		StringName blend_key_B;
+
 		struct PropertyAnim {
 
 			TrackNodeCache *owner;
@@ -150,6 +153,37 @@ private:
 		};
 
 		Map<StringName, BezierAnim> bezier_anim;
+
+		struct BlendshapeAnim {
+
+			/*
+			Vector<StringName> subpath;
+			Object *object;
+			Variant value_accum;
+			uint64_t accum_pass;
+			*/
+
+			Vector<StringName> blend_shape_property;
+			TrackNodeCache *owner;
+			StringName from_blend_key_accum;
+			StringName to_blend_key_accum;
+			float from_strength_accum;
+			float to_strength_accum;
+			float value_accum;
+			//Variant blend_shape_accum;
+			Object *object;
+			uint64_t accum_pass;
+
+			BlendshapeAnim() :
+					owner(NULL),
+					from_strength_accum(1.0f),
+					to_strength_accum(1.0f),
+					value_accum(0.0f), //blend_shape_accum(0.0)
+					object(NULL),
+					accum_pass(0) {}
+		};
+
+		Map<StringName, BlendshapeAnim> blend_shape_anim;
 
 		TrackNodeCache() :
 				id(0),
@@ -193,6 +227,8 @@ private:
 	int cache_update_prop_size;
 	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
 	int cache_update_bezier_size;
+	TrackNodeCache::BlendshapeAnim *cache_update_blend_shape[NODE_CACHE_UPDATE_MAX];
+	int cache_update_blend_shape_size;
 	Set<TrackNodeCache *> playing_caches;
 
 	uint64_t accum_pass;

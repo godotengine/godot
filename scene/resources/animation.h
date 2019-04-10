@@ -48,6 +48,7 @@ public:
 		TYPE_BEZIER, ///< Bezier curve
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
+		TYPE_BLENDSHAPE
 	};
 
 	enum InterpolationType {
@@ -60,8 +61,7 @@ public:
 		UPDATE_CONTINUOUS,
 		UPDATE_DISCRETE,
 		UPDATE_TRIGGER,
-		UPDATE_CAPTURE,
-
+		UPDATE_CAPTURE
 	};
 
 private:
@@ -179,7 +179,7 @@ private:
 		}
 	};
 
-	/* AUDIO TRACK */
+	/* ANIMATION TRACK */
 
 	struct AnimationKey {
 		StringName animation;
@@ -202,6 +202,45 @@ private:
 		}
 	};
 
+	/* BLENDSHAPE TRACK */
+
+	struct BlendShapeInterpData;
+
+	struct BlendShapeKey {
+		StringName blend_shape;
+		float strength;
+
+		BlendShapeInterpData *blendShapeInterpData; //void *interp_data;
+
+		BlendShapeKey() {
+			strength = 1;
+			blendShapeInterpData = nullptr; //interp_data = nullptr;
+		}
+	};
+
+	struct BlendShapeInterpData {
+		float value;
+
+		BlendShapeKey blend_shape_key_from;
+		BlendShapeKey blend_shape_key_to;
+
+		BlendShapeInterpData() {
+			value = 0.0;
+		}
+	};
+
+	struct BlendShapeTrack : public Track {
+		UpdateMode update_mode;
+		bool update_on_seek;
+
+		Vector<TKey<BlendShapeKey> > values;
+
+		BlendShapeTrack() {
+			type = TYPE_BLENDSHAPE;
+			update_mode = UPDATE_CONTINUOUS;
+		}
+	};
+
 	Vector<Track *> tracks;
 
 	/*
@@ -218,17 +257,18 @@ private:
 	inline int _find(const Vector<K> &p_keys, float p_time) const;
 
 	_FORCE_INLINE_ Animation::TransformKey _interpolate(const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, float p_c) const;
-
 	_FORCE_INLINE_ Vector3 _interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_c) const;
 	_FORCE_INLINE_ Quat _interpolate(const Quat &p_a, const Quat &p_b, float p_c) const;
 	_FORCE_INLINE_ Variant _interpolate(const Variant &p_a, const Variant &p_b, float p_c) const;
 	_FORCE_INLINE_ float _interpolate(const float &p_a, const float &p_b, float p_c) const;
+	_FORCE_INLINE_ Animation::BlendShapeKey _interpolate(const Animation::BlendShapeKey &p_a, const Animation::BlendShapeKey &p_b, float p_c) const;
 
 	_FORCE_INLINE_ Animation::TransformKey _cubic_interpolate(const Animation::TransformKey &p_pre_a, const Animation::TransformKey &p_a, const Animation::TransformKey &p_b, const Animation::TransformKey &p_post_b, float p_c) const;
 	_FORCE_INLINE_ Vector3 _cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, float p_c) const;
 	_FORCE_INLINE_ Quat _cubic_interpolate(const Quat &p_pre_a, const Quat &p_a, const Quat &p_b, const Quat &p_post_b, float p_c) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, float p_c) const;
 	_FORCE_INLINE_ float _cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const;
+	_FORCE_INLINE_ Animation::BlendShapeKey _cubic_interpolate(const Animation::BlendShapeKey &p_pre_a, const Animation::BlendShapeKey &p_a, const Animation::BlendShapeKey &p_b, const Animation::BlendShapeKey &p_post_b, float p_c) const;
 
 	template <class T>
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T> > &p_keys, float p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok) const;
@@ -238,8 +278,8 @@ private:
 
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const;
-
 	_FORCE_INLINE_ void _animation_track_get_key_indices_in_range(const AnimationTrack *vt, float from_time, float to_time, List<int> *p_indices) const;
+	_FORCE_INLINE_ void _audio_track_get_key_indices_in_range(const AudioTrack *at, float from_time, float to_time, List<int> *p_indices) const;
 
 	float length;
 	float step;
@@ -275,6 +315,18 @@ private:
 
 		List<int> idxs;
 		method_track_get_key_indices(p_track, p_time, p_delta, &idxs);
+		PoolVector<int> idxr;
+
+		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
+
+			idxr.push_back(E->get());
+		}
+		return idxr;
+	}
+	PoolVector<int> _audio_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+
+		List<int> idxs;
+		audio_track_get_key_indices(p_track, p_time, p_delta, &idxs);
 		PoolVector<int> idxr;
 
 		for (List<int>::Element *E = idxs.front(); E; E = E->next()) {
@@ -372,6 +424,12 @@ public:
 	float animation_track_get_key_start_offset(int p_track, int p_key) const;
 	float animation_track_get_key_end_offset(int p_track, int p_key) const;
 
+	int blendshape_track_insert_key(int p_track, float p_time, const StringName &p_blend_key, float p_strength = 1);
+	void blendshape_track_set_key_blend_shape(int p_track, int p_key, const StringName &p_blend_key);
+	void blendshape_track_set_key_strength(int p_track, int p_key, float p_strength);
+	StringName blendshape_track_get_key_blend_shape(int p_track, int p_key) const;
+	float blendshape_track_get_key_strength(int p_track, int p_key) const;
+
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
 
@@ -382,10 +440,13 @@ public:
 	void value_track_set_update_mode(int p_track, UpdateMode p_mode);
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
+	Error blend_shape_track_interpolate(int p_track, float p_time, StringName *r_from_blend_key, StringName *r_to_blend_key, float *r_from_strength, float *r_to_strength, float *r_value) const;
+
 	void method_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
 
+	void audio_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 	void animation_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);

@@ -38,6 +38,7 @@
 #include "editor_scale.h"
 #include "scene/main/viewport.h"
 #include "servers/audio/audio_stream.h"
+#include "scene/3d/mesh_instance.h"
 
 class AnimationTrackKeyEdit : public Object {
 
@@ -450,6 +451,43 @@ public:
 				*/
 
 			} break;
+			case Animation::TYPE_BLENDSHAPE: {
+
+				if (name == "blend_shape") {
+
+					StringName anim_name = p_value;
+
+					setting = true;
+					undo_redo->create_action(TTR("BlendShape Change Keyframe BlendShape Name"), UndoRedo::MERGE_ENDS);
+					StringName prev = animation->blendshape_track_get_key_blend_shape(track, key);
+					undo_redo->add_do_method(animation.ptr(), "blendshape_track_set_key_blend_shape", track, key, anim_name);
+					undo_redo->add_undo_method(animation.ptr(), "blendshape_track_set_key_blend_shape", track, key, prev);
+					undo_redo->add_do_method(this, "_update_obj", animation);
+					undo_redo->add_undo_method(this, "_update_obj", animation);
+					undo_redo->commit_action();
+
+					setting = false;
+					return true;
+				}
+
+				if (name == "strength") {
+
+					float value = p_value;
+
+					setting = true;
+					undo_redo->create_action(TTR("BlendShape Change Keyframe Strength"), UndoRedo::MERGE_ENDS);
+					float prev = animation->blendshape_track_get_key_strength(track, key);
+					undo_redo->add_do_method(animation.ptr(), "blendshape_track_set_key_strength", track, key, value);
+					undo_redo->add_undo_method(animation.ptr(), "blendshape_track_set_key_strength", track, key, prev);
+					undo_redo->add_do_method(this, "_update_obj", animation);
+					undo_redo->add_undo_method(this, "_update_obj", animation);
+					undo_redo->commit_action();
+
+					setting = false;
+					return true;
+				}
+
+			} break;
 		}
 
 		return false;
@@ -579,6 +617,18 @@ public:
 				*/
 
 			} break;
+			case Animation::TYPE_BLENDSHAPE: {
+
+				if (name == "blend_shape") {
+					r_ret = animation->blendshape_track_get_key_blend_shape(track, key);
+					return true;
+				}
+				if (name == "strength") {
+					r_ret = animation->blendshape_track_get_key_strength(track, key);
+					return true;
+				}
+
+			} break;
 		}
 
 		return false;
@@ -701,6 +751,37 @@ public:
 				//p_list->push_back(PropertyInfo(Variant::BOOL, "loop")); //, PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 
 			} break;
+			case Animation::TYPE_BLENDSHAPE: {
+
+				String blendings;
+
+				if (root_path && root_path->has_node(animation->track_get_path(track))) {
+
+					MeshInstance *meshInstance = Object::cast_to<MeshInstance>(root_path->get_node(animation->track_get_path(track)));
+					if (meshInstance) {
+						Ref<Mesh> mesh = meshInstance->get_mesh();
+
+						List<StringName> blends;
+						mesh->get_blend_shape_list(&blends);
+						for (List<StringName>::Element *E = blends.front(); E; E = E->next()) {
+							if (blendings != String()) {
+								blendings += ",";
+							}
+
+							blendings += String(E->get());
+						}
+					}
+				}
+
+				if (blendings != String()) {
+					blendings += ",";
+				}
+				blendings += "[base]";
+
+				p_list->push_back(PropertyInfo(Variant::STRING, "blend_shape", PROPERTY_HINT_ENUM, blendings));
+				p_list->push_back(PropertyInfo(Variant::REAL, "strength", PROPERTY_HINT_RANGE, "0.0,1.0,or_between"));
+
+			} break;
 		}
 
 		if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
@@ -817,6 +898,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		add_track->get_popup()->add_icon_item(get_icon("KeyBezier", "EditorIcons"), TTR("Bezier Curve Track"));
 		add_track->get_popup()->add_icon_item(get_icon("KeyAudio", "EditorIcons"), TTR("Audio Playback Track"));
 		add_track->get_popup()->add_icon_item(get_icon("KeyAnimation", "EditorIcons"), TTR("Animation Playback Track"));
+		add_track->get_popup()->add_icon_item(get_icon("KeyBlendshape", "EditorIcons"), TTR("BlendShape Playback Track"));
 	}
 
 	if (p_what == NOTIFICATION_RESIZED) {
@@ -1209,13 +1291,14 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		Ref<Font> font = get_font("font", "Label");
 		Color color = get_color("font_color", "Label");
-		Ref<Texture> type_icons[6] = {
+		Ref<Texture> type_icons[7] = {
 			get_icon("KeyValue", "EditorIcons"),
 			get_icon("KeyXform", "EditorIcons"),
 			get_icon("KeyCall", "EditorIcons"),
 			get_icon("KeyBezier", "EditorIcons"),
 			get_icon("KeyAudio", "EditorIcons"),
-			get_icon("KeyAnimation", "EditorIcons")
+			get_icon("KeyAnimation", "EditorIcons"),
+			get_icon("KeyBlendshape", "EditorIcons")
 		};
 		int hsep = get_constant("hseparation", "ItemList");
 		Color linecolor = color;
@@ -1262,6 +1345,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 					text = TTR("Audio Clips:");
 				} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
 					text = TTR("Anim Clips:");
+				} else if (animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
+					text = TTR("Shape Blends:");
 				} else {
 					Vector<StringName> sn = path.get_subnames();
 					for (int i = 0; i < sn.size(); i++) {
@@ -1678,13 +1763,14 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	track = p_track;
 	update();
 
-	Ref<Texture> type_icons[6] = {
+	Ref<Texture> type_icons[7] = {
 		get_icon("KeyValue", "EditorIcons"),
 		get_icon("KeyXform", "EditorIcons"),
 		get_icon("KeyCall", "EditorIcons"),
 		get_icon("KeyBezier", "EditorIcons"),
 		get_icon("KeyAudio", "EditorIcons"),
-		get_icon("KeyAnimation", "EditorIcons")
+		get_icon("KeyAnimation", "EditorIcons"),
+		get_icon("KeyBlendshape", "EditorIcons")
 	};
 
 	ERR_FAIL_INDEX(track, animation->get_track_count());
@@ -1924,6 +2010,16 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					//bool lo = animation->animation_track_get_key_loop(track, key_idx);
 					//String value = lo ? "true" : "false";
 					//text += "Loop (s): " + value + "\n";
+
+				} break;
+				case Animation::TYPE_BLENDSHAPE: {
+
+					String name = animation->blendshape_track_get_key_blend_shape(track, key_idx);
+					text += "Shape Blend: " + name + "\n";
+
+					text += "BlendShape: " + name + "\n";
+					float so = animation->blendshape_track_get_key_strength(track, key_idx);
+					text += "Strength (s): " + rtos(so) + "\n";
 
 				} break;
 			}
@@ -2425,6 +2521,15 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 	}
 	return NULL;
 }
+
+/*
+AnimationTrackEdit *AnimationTrackEditPlugin::create_blendshape_track_edit(Object *p_object) {
+	if (get_script_instance()) {
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_blendshape_track_edit", p_object).operator Object *());
+	}
+	return NULL;
+}
+*/
 
 ///////////////////////////////////////
 
@@ -3261,6 +3366,9 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 		case Animation::TYPE_ANIMATION: {
 			value = p_id.value;
 		} break;
+		case Animation::TYPE_BLENDSHAPE: { //NEW
+			value = p_id.value;
+		} break;
 		default: {
 		}
 	}
@@ -3399,6 +3507,26 @@ void AnimationTrackEditor::_update_tracks() {
 				}
 			}
 		}
+
+		/*
+		if (animation->track_get_type(i) == Animation::TYPE_BLENDSHAPE) {
+			NodePath path = animation->track_get_path(i);
+
+			Node *node = NULL;
+			if (root && root->has_node(path)) {
+				node = root->get_node(path);
+			}
+
+			if (node && Object::cast_to<MeshInstance>(node)) {
+				for (int j = 0; j < track_edit_plugins.size(); j++) {
+					track_edit = track_edit_plugins.write[j]->create_blendshape_track_edit(node);
+					if (track_edit) {
+						break;
+					}
+				}
+			}
+		}
+		*/
 
 		if (track_edit == NULL) {
 			//no valid plugin_found
@@ -3679,6 +3807,28 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			undo_redo->commit_action();
 
 		} break;
+		case Animation::TYPE_BLENDSHAPE: {  //TODO: check if propper!
+
+			if (!node->is_class("MeshInstance")) {
+				EditorNode::get_singleton()->show_warning(TTR("BlendShape tracks can only point to MeshInstance nodes."));
+				return;
+			}
+
+			//TODO: müsste raus können
+			/*
+			if (node == AnimationPlayerEditor::singleton->get_player()) {
+				EditorNode::get_singleton()->show_warning(TTR("An mesh can't mesh itself, only other meshes."));
+				return;
+			}
+			*/
+
+			undo_redo->create_action(TTR("Add Track"));
+			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
+			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
+			undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
+			undo_redo->commit_action();
+
+		} break;
 	}
 }
 
@@ -3884,6 +4034,17 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			ak["start_offset"] = 0;
 			ak["end_offset"] = 0;
 			//ak["loop"] = false;
+
+			undo_redo->create_action(TTR("Add Track Key"));
+			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, ak);
+			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", p_track, p_ofs);
+			undo_redo->commit_action();
+		} break;
+		case Animation::TYPE_BLENDSHAPE: {
+
+			Dictionary ak;
+			ak["blend_shape"] = "[base]";
+			ak["strength"] = 1;
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, ak);
@@ -4446,6 +4607,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					case Animation::TYPE_METHOD: text += " (Methods)"; break;
 					case Animation::TYPE_BEZIER: text += " (Bezier)"; break;
 					case Animation::TYPE_AUDIO: text += " (Audio)"; break;
+					case Animation::TYPE_BLENDSHAPE: text += " (BlendShape)"; break;
 					default: {
 					};
 				}

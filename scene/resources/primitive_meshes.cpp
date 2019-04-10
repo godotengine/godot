@@ -171,6 +171,10 @@ StringName PrimitiveMesh::get_blend_shape_name(int p_index) const {
 	return StringName();
 }
 
+//void PrimitiveMesh::set_blend_amount(const StringName &p_name, float p_amount) {
+	
+//}
+
 AABB PrimitiveMesh::get_aabb() const {
 	if (pending_request) {
 		_update();
