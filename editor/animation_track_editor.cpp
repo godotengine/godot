@@ -36,9 +36,9 @@
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_scale.h"
+#include "scene/3d/mesh_instance.h"
 #include "scene/main/viewport.h"
 #include "servers/audio/audio_stream.h"
-#include "scene/3d/mesh_instance.h"
 
 class AnimationTrackKeyEdit : public Object {
 
@@ -459,9 +459,9 @@ public:
 
 					setting = true;
 					undo_redo->create_action(TTR("BlendShape Change Keyframe BlendShape Name"), UndoRedo::MERGE_ENDS);
-					StringName prev = animation->blendshape_track_get_key_blend_shape(track, key);
-					undo_redo->add_do_method(animation.ptr(), "blendshape_track_set_key_blend_shape", track, key, anim_name);
-					undo_redo->add_undo_method(animation.ptr(), "blendshape_track_set_key_blend_shape", track, key, prev);
+					StringName prev = animation->blend_shape_track_get_key_blend_shape(track, key);
+					undo_redo->add_do_method(animation.ptr(), "blend_shape_track_set_key_blend_shape", track, key, anim_name);
+					undo_redo->add_undo_method(animation.ptr(), "blend_shape_track_set_key_blend_shape", track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -476,9 +476,9 @@ public:
 
 					setting = true;
 					undo_redo->create_action(TTR("BlendShape Change Keyframe Strength"), UndoRedo::MERGE_ENDS);
-					float prev = animation->blendshape_track_get_key_strength(track, key);
-					undo_redo->add_do_method(animation.ptr(), "blendshape_track_set_key_strength", track, key, value);
-					undo_redo->add_undo_method(animation.ptr(), "blendshape_track_set_key_strength", track, key, prev);
+					float prev = animation->blend_shape_track_get_key_strength(track, key);
+					undo_redo->add_do_method(animation.ptr(), "blend_shape_track_set_key_strength", track, key, value);
+					undo_redo->add_undo_method(animation.ptr(), "blend_shape_track_set_key_strength", track, key, prev);
 					undo_redo->add_do_method(this, "_update_obj", animation);
 					undo_redo->add_undo_method(this, "_update_obj", animation);
 					undo_redo->commit_action();
@@ -620,11 +620,11 @@ public:
 			case Animation::TYPE_BLENDSHAPE: {
 
 				if (name == "blend_shape") {
-					r_ret = animation->blendshape_track_get_key_blend_shape(track, key);
+					r_ret = animation->blend_shape_track_get_key_blend_shape(track, key);
 					return true;
 				}
 				if (name == "strength") {
-					r_ret = animation->blendshape_track_get_key_strength(track, key);
+					r_ret = animation->blend_shape_track_get_key_strength(track, key);
 					return true;
 				}
 
@@ -1460,6 +1460,8 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 				if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
 					update_mode = animation->value_track_get_update_mode(track);
+				} else if (animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
+					update_mode = animation->blend_shape_track_get_update_mode(track);
 				} else {
 					update_mode = Animation::UPDATE_CONTINUOUS;
 				}
@@ -1470,9 +1472,10 @@ void AnimationTrackEdit::_notification(int p_what) {
 				update_mode_rect.position.y = int(get_size().height - update_icon->get_height()) / 2;
 				update_mode_rect.size = update_icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
 					draw_texture(update_icon, update_mode_rect.position);
 				}
+
 				//make it easier to click
 				update_mode_rect.position.y = 0;
 				update_mode_rect.size.y = get_size().height;
@@ -1491,6 +1494,10 @@ void AnimationTrackEdit::_notification(int p_what) {
 					bezier_edit_rect.size = bezier_icon->get_size();
 					draw_texture(bezier_icon, bezier_edit_rect.position);
 					update_mode_rect = Rect2();
+				} else if (animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
+					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
+					update_mode_rect.size.x += down_icon->get_width();
+					bezier_edit_rect = Rect2();
 				} else {
 					update_mode_rect = Rect2();
 					bezier_edit_rect = Rect2();
@@ -1512,7 +1519,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				interp_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				interp_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM || animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
 					draw_texture(icon, interp_mode_rect.position);
 				}
 				//make it easier to click
@@ -1522,7 +1529,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				interp_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM || animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					interp_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -1545,7 +1552,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				loop_mode_rect.position.y = int(get_size().height - icon->get_height()) / 2;
 				loop_mode_rect.size = icon->get_size();
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM || animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
 					draw_texture(icon, loop_mode_rect.position);
 				}
 
@@ -1555,7 +1562,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				ofs += icon->get_width() + hsep;
 				loop_mode_rect.size.x += hsep;
 
-				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM) {
+				if (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_TRANSFORM || animation->track_get_type(track) == Animation::TYPE_BLENDSHAPE) {
 					draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 					loop_mode_rect.size.x += down_icon->get_width();
 				} else {
@@ -2013,12 +2020,42 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 				} break;
 				case Animation::TYPE_BLENDSHAPE: {
+					/*
+					Variant v = animation->track_get_key_value(track, key_idx);
+					//text+="value: "+String(v)+"\n";
 
-					String name = animation->blendshape_track_get_key_blend_shape(track, key_idx);
+					bool prop_exists = false;
+					Variant::Type valid_type = Variant::NIL;
+					Object *obj = NULL;
+
+					RES res;
+					Vector<StringName> leftover_path;
+					Node *node = root->get_node_and_resource(animation->track_get_path(track), res, leftover_path);
+
+					if (res.is_valid()) {
+						obj = res.ptr();
+					} else if (node) {
+						obj = node;
+					}
+
+					if (obj) {
+						valid_type = obj->get_static_property_type_indexed(leftover_path, &prop_exists);
+					}
+
+					text += "Type: " + Variant::get_type_name(v.get_type()) + "\n";
+					if (prop_exists && !Variant::can_convert(v.get_type(), valid_type)) {
+						text += "Value: " + String(v) + "  (Invalid, expected type: " + Variant::get_type_name(valid_type) + ")\n";
+					} else {
+						text += "Value: " + String(v) + "\n";
+					}
+					text += "Easing: " + rtos(animation->track_get_key_transition(track, key_idx));
+					*/
+
+					String name = animation->blend_shape_track_get_key_blend_shape(track, key_idx);
 					text += "Shape Blend: " + name + "\n";
 
 					text += "BlendShape: " + name + "\n";
-					float so = animation->blendshape_track_get_key_strength(track, key_idx);
+					float so = animation->blend_shape_track_get_key_strength(track, key_idx);
 					text += "Strength (s): " + rtos(so) + "\n";
 
 				} break;
@@ -2522,6 +2559,35 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 	return NULL;
 }
 
+//NEW
+
+AnimationTrackEdit *AnimationTrackEditPlugin::create_blend_shape_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
+	if (get_script_instance()) {
+		Variant args[6] = {
+			p_object,
+			p_type,
+			p_property,
+			p_hint,
+			p_hint_string,
+			p_usage
+		};
+
+		Variant *argptrs[6] = {
+			&args[0],
+			&args[1],
+			&args[2],
+			&args[3],
+			&args[4],
+			&args[5]
+		};
+
+		Variant::CallError ce;
+		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_blend_shape_track_edit", (const Variant **)&argptrs, 6, ce).operator Object *());
+	}
+	return NULL;
+}
+//NEW
+
 /*
 AnimationTrackEdit *AnimationTrackEditPlugin::create_blendshape_track_edit(Object *p_object) {
 	if (get_script_instance()) {
@@ -2746,6 +2812,10 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", idx, animation->value_track_get_update_mode(idx));
 		}
 
+		if (animation->track_get_type(idx) == Animation::TYPE_BLENDSHAPE) {
+			undo_redo->add_undo_method(animation.ptr(), "blend_shape_track_set_update_mode", idx, animation->value_track_get_update_mode(idx));
+		}
+
 		undo_redo->commit_action();
 	}
 }
@@ -2791,11 +2861,11 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 
 			bool all_bezier = true;
 			for (int i = 0; i < insert_data.size(); i++) {
-				if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) {
+				if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) { // && insert_data[i].type != Animation::TYPE_BLENDSHAPE) {
 					all_bezier = false;
 				}
 
-				if (insert_data[i].type != Animation::TYPE_VALUE) {
+				if (insert_data[i].type != Animation::TYPE_VALUE) { // || insert_data[i].type != Animation::TYPE_BLENDSHAPE) {
 					continue;
 				}
 				switch (insert_data[i].value.get_type()) {
@@ -3022,7 +3092,9 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			//dialog insert
 			_query_insert(id);
 			inserted = true;
-		}
+		} /*else if (animation->track_get_type(i) == Animation::TYPE_BLENDSHAPE) {
+			//TODO:
+		}*/
 	}
 
 	if (inserted || p_only_if_exists)
@@ -3117,7 +3189,9 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			//dialog insert
 			_query_insert(id);
 			inserted = true;
-		}
+		} /*else if (animation->track_get_type(i) == Animation::TYPE_BLENDSHAPE) {
+			//TODO:
+		}*/
 	}
 
 	if (!inserted) {
@@ -3508,8 +3582,36 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 		}
 
-		/*
 		if (animation->track_get_type(i) == Animation::TYPE_BLENDSHAPE) {
+			/*
+			NodePath path = animation->track_get_path(i);
+
+			if (root && root->has_node_and_resource(path)) {
+				RES res;
+				NodePath base_path;
+				Vector<StringName> leftover_path;
+				Node *node = root->get_node_and_resource(path, res, leftover_path, true);
+				PropertyInfo pinfo = _find_hint_for_track(i, base_path);
+
+				Object *object = node;
+				if (res.is_valid()) {
+					object = res.ptr();
+				}
+
+				if (object && !leftover_path.empty()) {
+					if (pinfo.name.empty()) {
+						pinfo.name = leftover_path[leftover_path.size() - 1];
+					}
+
+					for (int j = 0; j < track_edit_plugins.size(); j++) {
+						track_edit = track_edit_plugins.write[j]->create_value_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage);
+						if (track_edit) {
+							break;
+						}
+					}
+				}
+			}
+			*/
 			NodePath path = animation->track_get_path(i);
 
 			Node *node = NULL;
@@ -3518,15 +3620,22 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 
 			if (node && Object::cast_to<MeshInstance>(node)) {
+				Object *object = node;
+				//if (res.is_valid()) {
+				//	object = res.ptr();
+				//}
+
+				NodePath base_path;
+				PropertyInfo pinfo = _find_hint_for_track(i, base_path);
+
 				for (int j = 0; j < track_edit_plugins.size(); j++) {
-					track_edit = track_edit_plugins.write[j]->create_blendshape_track_edit(node);
+					track_edit = track_edit_plugins.write[j]->create_blend_shape_track_edit(object, pinfo.type, pinfo.name, pinfo.hint, pinfo.hint_string, pinfo.usage); //->create_blendshape_track_edit(node);
 					if (track_edit) {
 						break;
 					}
 				}
 			}
 		}
-		*/
 
 		if (track_edit == NULL) {
 			//no valid plugin_found
@@ -3807,7 +3916,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			undo_redo->commit_action();
 
 		} break;
-		case Animation::TYPE_BLENDSHAPE: {  //TODO: check if propper!
+		case Animation::TYPE_BLENDSHAPE: { //TODO: check if propper!
 
 			if (!node->is_class("MeshInstance")) {
 				EditorNode::get_singleton()->show_warning(TTR("BlendShape tracks can only point to MeshInstance nodes."));

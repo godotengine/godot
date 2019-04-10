@@ -810,6 +810,81 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 			} break;
 			case Animation::TYPE_BLENDSHAPE: {
+				/*
+				if (!nc->node)
+					continue;
+
+				//StringName property=a->track_get_path(i).get_property();
+
+				Map<StringName, TrackNodeCache::PropertyAnim>::Element *E = nc->property_anim.find(a->track_get_path(i).get_concatenated_subnames());
+				ERR_CONTINUE(!E); //should it continue, or create a new one?
+
+				TrackNodeCache::PropertyAnim *pa = &E->get();
+
+				Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
+
+				if (update_mode == Animation::UPDATE_CAPTURE) {
+
+					if (p_started) {
+						pa->capture = pa->object->get_indexed(pa->subpath);
+					}
+
+					int key_count = a->track_get_key_count(i);
+					if (key_count == 0)
+						continue; //eeh not worth it
+
+					float first_key_time = a->track_get_key_time(i, 0);
+					float transition = 1.0;
+					int first_key = 0;
+
+					if (first_key_time == 0.0) {
+						//ignore, use for transition
+						if (key_count == 1)
+							continue; //with one key we can't do anything
+						transition = a->track_get_key_transition(i, 0);
+						first_key_time = a->track_get_key_time(i, 1);
+						first_key = 1;
+					}
+
+					if (p_time < first_key_time) {
+						float c = Math::ease(p_time / first_key_time, transition);
+						Variant first_value = a->track_get_key_value(i, first_key);
+						Variant interp_value;
+						Variant::interpolate(pa->capture, first_value, c, interp_value);
+
+						if (pa->accum_pass != accum_pass) {
+							ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
+							cache_update_prop[cache_update_prop_size++] = pa;
+							pa->value_accum = interp_value;
+							pa->accum_pass = accum_pass;
+						} else {
+							Variant::interpolate(pa->value_accum, interp_value, p_interp, pa->value_accum);
+						}
+
+						continue; //handled
+					}
+				}
+
+				if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE || (p_delta == 0 && update_mode == Animation::UPDATE_DISCRETE)) { //delta == 0 means seek
+
+					Variant value = a->value_track_interpolate(i, p_time);
+
+					if (value == Variant())
+						continue;
+
+					if (pa->accum_pass != accum_pass) {
+						ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
+						cache_update_prop[cache_update_prop_size++] = pa;
+						pa->value_accum = value;
+						pa->accum_pass = accum_pass;
+					} else {
+						Variant::interpolate(pa->value_accum, value, p_interp, pa->value_accum);
+					}
+				}
+				*/
+
+				//////////////////////
+
 				if (!nc->node)
 					continue;
 
@@ -831,6 +906,8 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 				ERR_CONTINUE(!E); //should it continue, or create a new one?
 
 				TrackNodeCache::BlendshapeAnim *pa = &E->get();
+
+				Animation::UpdateMode update_mode = a->blend_shape_track_get_update_mode(i);
 
 				StringName from_blend_key;
 				StringName to_blend_key;

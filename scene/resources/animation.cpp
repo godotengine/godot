@@ -2148,7 +2148,6 @@ Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 
 	return OK;
 }
 
-
 Error Animation::blend_shape_track_interpolate(int p_track, float p_time, StringName *r_from_blend_key, StringName *r_to_blend_key, float *r_from_strength, float *r_to_strength, float *r_value) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), ERR_INVALID_PARAMETER);
 	Track *t = tracks[p_track];
@@ -2163,24 +2162,39 @@ Error Animation::blend_shape_track_interpolate(int p_track, float p_time, String
 	if (!ok)
 		return ERR_UNAVAILABLE;
 
-	if (r_from_blend_key)
-		*r_from_blend_key = bk.blendShapeInterpData->blend_shape_key_from.blend_shape;
-
-	if (r_to_blend_key)
-		*r_to_blend_key = bk.blendShapeInterpData->blend_shape_key_to.blend_shape;
-
-	if (r_from_strength)
-		*r_from_strength = bk.blendShapeInterpData->blend_shape_key_from.strength;
-
-	if (r_to_strength)
-		*r_to_strength = bk.blendShapeInterpData->blend_shape_key_to.strength;
-
-	if (r_value)
-		*r_value = bk.blendShapeInterpData->value;
-
 	if (bk.blendShapeInterpData != nullptr) {
+		if (r_from_blend_key)
+			*r_from_blend_key = bk.blendShapeInterpData->blend_shape_key_from.blend_shape;
+
+		if (r_to_blend_key)
+			*r_to_blend_key = bk.blendShapeInterpData->blend_shape_key_to.blend_shape;
+
+		if (r_from_strength)
+			*r_from_strength = bk.blendShapeInterpData->blend_shape_key_from.strength;
+
+		if (r_to_strength)
+			*r_to_strength = bk.blendShapeInterpData->blend_shape_key_to.strength;
+
+		if (r_value)
+			*r_value = bk.blendShapeInterpData->value;
+
 		delete bk.blendShapeInterpData;
 		bk.blendShapeInterpData = nullptr;
+	} else {
+		if (r_from_blend_key)
+			*r_from_blend_key = bk.blend_shape;
+
+		if (r_to_blend_key)
+			*r_to_blend_key = bk.blend_shape;
+
+		if (r_from_strength)
+			*r_from_strength = bk.strength;
+
+		if (r_to_strength)
+			*r_to_strength = bk.strength;
+
+		if (r_value)
+			*r_value = 1.0;
 	}
 
 	return OK;
@@ -2460,6 +2474,31 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 	ValueTrack *vt = static_cast<ValueTrack *>(t);
 	return vt->update_mode;
 }
+
+//NEW
+
+void Animation::blend_shape_track_set_update_mode(int p_track, UpdateMode p_mode) {
+
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_BLENDSHAPE);
+	ERR_FAIL_INDEX((int)p_mode, 4);
+
+	BlendShapeTrack *bt = static_cast<BlendShapeTrack *>(t);
+	bt->update_mode = p_mode;
+}
+
+Animation::UpdateMode Animation::blend_shape_track_get_update_mode(int p_track) const {
+
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), UPDATE_CONTINUOUS);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_BLENDSHAPE, UPDATE_CONTINUOUS);
+
+	BlendShapeTrack *bt = static_cast<BlendShapeTrack *>(t);
+	return bt->update_mode;
+}
+
+//NEW
 
 template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, List<int> *p_indices) const {
@@ -3179,7 +3218,7 @@ bool Animation::animation_track_get_key_loop(int p_track, int p_key) const {
 
 //
 
-int Animation::blendshape_track_insert_key(int p_track, float p_time, const StringName &p_blend_shape, float p_strength) {
+int Animation::blend_shape_track_insert_key(int p_track, float p_time, const StringName &p_blend_shape, float p_strength) {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
@@ -3203,7 +3242,7 @@ int Animation::blendshape_track_insert_key(int p_track, float p_time, const Stri
 	return key;
 }
 
-void Animation::blendshape_track_set_key_blend_shape(int p_track, int p_key, const StringName &p_blend_shape) {
+void Animation::blend_shape_track_set_key_blend_shape(int p_track, int p_key, const StringName &p_blend_shape) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
@@ -3218,7 +3257,7 @@ void Animation::blendshape_track_set_key_blend_shape(int p_track, int p_key, con
 	emit_changed();
 }
 
-void Animation::blendshape_track_set_key_strength(int p_track, int p_key, float p_strength) {
+void Animation::blend_shape_track_set_key_strength(int p_track, int p_key, float p_strength) {
 
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
@@ -3239,7 +3278,7 @@ void Animation::blendshape_track_set_key_strength(int p_track, int p_key, float 
 	emit_changed();
 }
 
-StringName Animation::blendshape_track_get_key_blend_shape(int p_track, int p_key) const {
+StringName Animation::blend_shape_track_get_key_blend_shape(int p_track, int p_key) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), StringName());
 	const Track *t = tracks[p_track];
@@ -3251,7 +3290,7 @@ StringName Animation::blendshape_track_get_key_blend_shape(int p_track, int p_ke
 
 	return bs->values[p_key].value.blend_shape; //return at->values[p_key].value;
 }
-float Animation::blendshape_track_get_key_strength(int p_track, int p_key) const {
+float Animation::blend_shape_track_get_key_strength(int p_track, int p_key) const {
 
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	const Track *t = tracks[p_track];
@@ -3459,11 +3498,14 @@ void Animation::_bind_methods() {
 
 	/////////NEW
 
-	ClassDB::bind_method(D_METHOD("blendshape_track_insert_key", "track", "time", "blend_shape", "strength"), &Animation::blendshape_track_insert_key, DEFVAL(1)); //, "loop", DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("blendshape_track_set_key_blend_shape", "idx", "key_idx", "blend_shape"), &Animation::blendshape_track_set_key_blend_shape);
-	ClassDB::bind_method(D_METHOD("blendshape_track_set_key_strength", "idx", "key_idx", "strength"), &Animation::blendshape_track_set_key_strength);
-	ClassDB::bind_method(D_METHOD("blendshape_track_get_key_blend_shape", "idx", "key_idx"), &Animation::blendshape_track_get_key_blend_shape);
-	ClassDB::bind_method(D_METHOD("blendshape_track_get_key_strength", "idx", "key_idx"), &Animation::blendshape_track_get_key_strength);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_insert_key", "track", "time", "blend_shape", "strength"), &Animation::blend_shape_track_insert_key, DEFVAL(1)); //, "loop", DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("blend_shape_track_set_key_blend_shape", "idx", "key_idx", "blend_shape"), &Animation::blend_shape_track_set_key_blend_shape);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_set_key_strength", "idx", "key_idx", "strength"), &Animation::blend_shape_track_set_key_strength);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_get_key_blend_shape", "idx", "key_idx"), &Animation::blend_shape_track_get_key_blend_shape);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_get_key_strength", "idx", "key_idx"), &Animation::blend_shape_track_get_key_strength);
+
+	ClassDB::bind_method(D_METHOD("blend_shape_track_set_update_mode", "idx", "mode"), &Animation::blend_shape_track_set_update_mode);
+	ClassDB::bind_method(D_METHOD("blend_shape_track_get_update_mode", "idx"), &Animation::blend_shape_track_get_update_mode);
 
 	/////////NEW
 

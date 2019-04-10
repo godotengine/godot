@@ -424,11 +424,11 @@ public:
 	float animation_track_get_key_start_offset(int p_track, int p_key) const;
 	float animation_track_get_key_end_offset(int p_track, int p_key) const;
 
-	int blendshape_track_insert_key(int p_track, float p_time, const StringName &p_blend_key, float p_strength = 1);
-	void blendshape_track_set_key_blend_shape(int p_track, int p_key, const StringName &p_blend_key);
-	void blendshape_track_set_key_strength(int p_track, int p_key, float p_strength);
-	StringName blendshape_track_get_key_blend_shape(int p_track, int p_key) const;
-	float blendshape_track_get_key_strength(int p_track, int p_key) const;
+	int blend_shape_track_insert_key(int p_track, float p_time, const StringName &p_blend_key, float p_strength = 1);
+	void blend_shape_track_set_key_blend_shape(int p_track, int p_key, const StringName &p_blend_key);
+	void blend_shape_track_set_key_strength(int p_track, int p_key, float p_strength);
+	StringName blend_shape_track_get_key_blend_shape(int p_track, int p_key) const;
+	float blend_shape_track_get_key_strength(int p_track, int p_key) const;
 
 	void track_set_interpolation_loop_wrap(int p_track, bool p_enable);
 	bool track_get_interpolation_loop_wrap(int p_track) const;
@@ -441,6 +441,9 @@ public:
 	UpdateMode value_track_get_update_mode(int p_track) const;
 
 	Error blend_shape_track_interpolate(int p_track, float p_time, StringName *r_from_blend_key, StringName *r_to_blend_key, float *r_from_strength, float *r_to_strength, float *r_value) const;
+
+	void blend_shape_track_set_update_mode(int p_track, UpdateMode p_mode);
+	UpdateMode blend_shape_track_get_update_mode(int p_track) const;
 
 	void method_track_get_key_indices(int p_track, float p_time, float p_delta, List<int> *p_indices) const;
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
