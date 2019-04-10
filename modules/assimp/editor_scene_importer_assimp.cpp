@@ -588,7 +588,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(const aiScene *p_scene, 
 	}
 }
 
-void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> removed_bones) {
+void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> p_removed_bones) {
 	String name = "Animation";
 	aiAnimation const *anim = NULL;
 	if (p_index != -1) {
@@ -714,17 +714,14 @@ void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vec
 				anim_tracks.insert(_bone_name, ai_tracks);
 			}
 			for (Map<String, Vector<const aiNodeAnim *> >::Element *F = anim_tracks.front(); F; F = F->next()) {
-				_insert_pivot_anim_track(p_meshes, F->key(), F->get(), ap, sk, length, ticks_per_second, animation, p_bake_fps, p_path, p_scene);
+				_insert_pivot_anim_track(p_meshes, F->key(), F->get(), ap, sk, length, ticks_per_second, animation, p_bake_fps, p_path, p_scene, p_removed_bones.has(F->key()));
 			}
 		}
 		for (Map<String, Vector<const aiNodeAnim *> >::Element *E = node_tracks.front(); E; E = E->next()) {
 			if (p_removed_nodes.has(E->key())) {
 				continue;
 			}
-			if (removed_bones.find(E->key())) {
-				continue;
-			}
-			_insert_pivot_anim_track(p_meshes, E->key(), E->get(), ap, NULL, length, ticks_per_second, animation, p_bake_fps, p_path, p_scene);
+			_insert_pivot_anim_track(p_meshes, E->key(), E->get(), ap, NULL, length, ticks_per_second, animation, p_bake_fps, p_path, p_scene, false);
 		}
 		for (size_t i = 0; i < anim->mNumMorphMeshChannels; i++) {
 			const aiMeshMorphAnim *anim_mesh = anim->mMorphMeshChannels[i];
@@ -816,7 +813,7 @@ void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vec
 	}
 }
 
-void EditorSceneImporterAssimp::_insert_pivot_anim_track(const Vector<MeshInstance *> p_meshes, const String p_node_name, Vector<const aiNodeAnim *> F, AnimationPlayer *ap, Skeleton *sk, float &length, float ticks_per_second, Ref<Animation> animation, int p_bake_fps, const String &p_path, const aiScene *p_scene) {
+void EditorSceneImporterAssimp::_insert_pivot_anim_track(const Vector<MeshInstance *> p_meshes, const String p_node_name, Vector<const aiNodeAnim *> F, AnimationPlayer *ap, Skeleton *sk, float &length, float ticks_per_second, Ref<Animation> animation, int p_bake_fps, const String &p_path, const aiScene *p_scene, bool p_is_filled_bone) {
 	NodePath node_path;
 	if (sk != NULL) {
 		const String path = ap->get_owner()->get_path_to(sk);
@@ -957,7 +954,7 @@ void EditorSceneImporterAssimp::_insert_pivot_anim_track(const Vector<MeshInstan
 			pos = _interpolate_track<Vector3>(pos_times, pos_values, time, AssetImportAnimation::INTERP_LINEAR);
 			Transform anim_xform;
 			String ext = p_path.get_file().get_extension().to_lower();
-			if (ext == "fbx") {
+			if (ext == "fbx" && p_is_filled_bone) {
 				aiNode *ai_node = _ai_find_node(p_scene->mRootNode, p_node_name);
 				Transform mesh_xform = _get_global_ai_node_transform(p_scene, ai_node);
 				pos = mesh_xform.origin + pos;

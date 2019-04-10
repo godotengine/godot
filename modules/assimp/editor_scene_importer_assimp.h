@@ -171,8 +171,8 @@ private:
 	String _ai_string_to_string(const aiString p_string) const;
 	String _ai_anim_string_to_string(const aiString p_string) const;
 	String _ai_raw_string_to_string(const aiString p_string) const;
-	void _import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> removed_bones);
-	void _insert_pivot_anim_track(const Vector<MeshInstance *> p_meshes, const String p_node_name, Vector<const aiNodeAnim *> F, AnimationPlayer *ap, Skeleton *sk, float &length, float ticks_per_second, Ref<Animation> animation, int p_bake_fps, const String &p_path, const aiScene *p_scene);
+	void _import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> p_removed_bones);
+	void _insert_pivot_anim_track(const Vector<MeshInstance *> p_meshes, const String p_node_name, Vector<const aiNodeAnim *> F, AnimationPlayer *ap, Skeleton *sk, float &length, float ticks_per_second, Ref<Animation> animation, int p_bake_fps, const String &p_path, const aiScene *p_scene, bool p_is_filled_bone);
 	float _get_fbx_fps(int32_t time_mode, const aiScene *p_scene);
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, AssetImportAnimation::Interpolation p_interp);
