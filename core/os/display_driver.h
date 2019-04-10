@@ -96,8 +96,8 @@ protected:
 	RenderThreadMode _render_thread_mode;
 
 	// functions used by main to initialize/deinitialize the OS
-	virtual Error initialize(const VideoMode &p_desired, int p_video_driver) = 0;
-	virtual void finalize() = 0;
+	virtual Error initialize_display(const VideoMode &p_desired, int p_video_driver) = 0;
+	virtual void finalize_display() = 0;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
