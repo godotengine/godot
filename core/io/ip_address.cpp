@@ -41,7 +41,7 @@ IP_Address::operator Variant() const {
 IP_Address::operator String() const {
 
 	if (wildcard)
-		return "wildcard";
+		return "*";
 
 	if (!valid)
 		return "";
