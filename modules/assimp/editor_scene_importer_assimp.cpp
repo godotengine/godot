@@ -377,8 +377,7 @@ Spatial *EditorSceneImporterAssimp::_generate_scene(const String &p_path, const 
 	int32_t mesh_count = 0;
 	Skeleton *s = memnew(Skeleton);
 	Set<String> removed_bones;
-	Map<String, Map<uint32_t, String> > path_morph_mesh_names;
-	_generate_node(p_path, scene, scene->mRootNode, root, root, bone_names, light_names, camera_names, skeletons, bone_rests, meshes, mesh_count, s, p_max_bone_weights, removed_bones, path_morph_mesh_names);
+	_generate_node(p_path, scene, scene->mRootNode, root, root, bone_names, light_names, camera_names, skeletons, bone_rests, meshes, mesh_count, s, p_max_bone_weights, removed_bones);
 	for (Map<Skeleton *, MeshInstance *>::Element *E = skeletons.front(); E; E = E->next()) {
 		E->key()->localize_rests();
 	}
@@ -389,7 +388,7 @@ Spatial *EditorSceneImporterAssimp::_generate_scene(const String &p_path, const 
 	_filter_node(p_path, root, root, keep_nodes, removed_nodes);
 	if (p_flags & IMPORT_ANIMATION) {
 		for (size_t i = 0; i < scene->mNumAnimations; i++) {
-			_import_animation(p_path, meshes, scene, ap, i, p_bake_fps, skeletons, removed_nodes, removed_bones, path_morph_mesh_names);
+			_import_animation(p_path, meshes, scene, ap, i, p_bake_fps, skeletons, removed_nodes, removed_bones);
 		}
 		List<StringName> animation_names;
 		ap->get_animation_list(&animation_names);
@@ -589,7 +588,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(const aiScene *p_scene, 
 	}
 }
 
-void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> removed_bones, const Map<String, Map<uint32_t, String> > p_path_morph_mesh_names) {
+void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> removed_bones) {
 	String name = "Animation";
 	aiAnimation const *anim = NULL;
 	if (p_index != -1) {
@@ -748,27 +747,65 @@ void EditorSceneImporterAssimp::_import_animation(const String p_path, const Vec
 			}
 			Ref<Mesh> mesh = mesh_instance->get_mesh();
 			ERR_CONTINUE(mesh.is_null());
-			const Map<String, Map<uint32_t, String> >::Element *E = p_path_morph_mesh_names.find(mesh_name);
-			ERR_CONTINUE(E == NULL);
+
 			for (size_t k = 0; k < anim_mesh->mNumKeys; k++) {
 				for (size_t j = 0; j < anim_mesh->mKeys[k].mNumValuesAndWeights; j++) {
-					const Map<uint32_t, String>::Element *F = E->get().find(anim_mesh->mKeys[k].mValues[j]);
-					ERR_CONTINUE(F == NULL);
-					const String prop = "blend_shapes/" + F->get();
+					length = MAX(length, anim_mesh->mKeys[k].mTime / ticks_per_second);
+				}
+			}
+
+			float base_weight = 0.0f;
+			if (anim_mesh->mNumKeys != 0) {
+				if (anim_mesh->mKeys[0].mNumValuesAndWeights) {
+					base_weight = anim_mesh->mKeys[0].mWeights[0];
+				}
+			}
+
+			struct Blend {
+				Vector<float> blend_weights;
+				Vector<float> blend_times;
+			};
+			Map<int32_t, Blend> track_blends;
+			for (size_t k = 0; k < anim_mesh->mNumKeys; k++) {
+				for (size_t j = 0; j < anim_mesh->mKeys[k].mNumValuesAndWeights; j++) {
+					
+					const String prop = "blend_shapes/" + mesh->get_blend_shape_name(anim_mesh->mKeys[k].mValues[j]);
 					const NodePath node_path = String(path) + ":" + prop;
 					ERR_CONTINUE(ap->get_owner()->has_node(node_path) == false);
-					int32_t blend_track_idx = -1;
+					int32_t blend_track_idx = animation->find_track(node_path);
 					if (animation->find_track(node_path) == -1) {
 						blend_track_idx = animation->get_track_count();
 						animation->add_track(Animation::TYPE_VALUE);
 						animation->track_set_interpolation_type(blend_track_idx, Animation::INTERPOLATION_LINEAR);
 						animation->track_set_path(blend_track_idx, node_path);
-					} else {
-						blend_track_idx = animation->find_track(node_path);
+						Blend blend = Blend();
+						track_blends.insert(blend_track_idx, blend);
 					}
-					float t = anim_mesh->mKeys[k].mTime / ticks_per_second;
-					float w = anim_mesh->mKeys[k].mWeights[j];
-					animation->track_insert_key(blend_track_idx, t, w);
+					Blend &blend = track_blends.find(blend_track_idx)->get();
+					blend.blend_weights.push_back(anim_mesh->mKeys[k].mWeights[j]);
+					blend.blend_times.push_back(anim_mesh->mKeys[k].mTime / ticks_per_second);
+				}
+			}
+			for (Map<int32_t, Blend>::Element *E = track_blends.front(); E; E = E->next()) {
+				float increment = 1.0 / float(p_bake_fps);
+				float time = 0.0;
+				bool last = false;
+				while (true) {
+					float weight = base_weight;
+
+					if (E->get().blend_weights.size()) {
+						weight = _interpolate_track<float>(E->get().blend_times, E->get().blend_weights, time, AssetImportAnimation::INTERP_LINEAR);
+					}
+					animation->track_insert_key(E->key(), time, weight);
+
+					if (last) {
+						break;
+					}
+					time += increment;
+					if (time >= length) {
+						last = true;
+						time = length;
+					}
 				}
 			}
 		}
@@ -1107,7 +1144,7 @@ void EditorSceneImporterAssimp::_filter_node(const String &p_path, Node *p_curre
 	}
 }
 
-void EditorSceneImporterAssimp::_generate_node(const String &p_path, const aiScene *p_scene, const aiNode *p_node, Node *p_parent, Node *p_owner, Set<String> &r_bone_name, Set<String> p_light_names, Set<String> p_camera_names, Map<Skeleton *, MeshInstance *> &r_skeletons, const Map<String, Transform> &p_bone_rests, Vector<MeshInstance *> &r_mesh_instances, int32_t &r_mesh_count, Skeleton *p_skeleton, const int32_t p_max_bone_weights, Set<String> &r_removed_bones, Map<String, Map<uint32_t, String> > &r_name_morph_mesh_names) {
+void EditorSceneImporterAssimp::_generate_node(const String &p_path, const aiScene *p_scene, const aiNode *p_node, Node *p_parent, Node *p_owner, Set<String> &r_bone_name, Set<String> p_light_names, Set<String> p_camera_names, Map<Skeleton *, MeshInstance *> &r_skeletons, const Map<String, Transform> &p_bone_rests, Vector<MeshInstance *> &r_mesh_instances, int32_t &r_mesh_count, Skeleton *p_skeleton, const int32_t p_max_bone_weights, Set<String> &r_removed_bones) {
 	Spatial *child_node = NULL;
 	if (p_node == NULL) {
 		return;
@@ -1159,7 +1196,7 @@ void EditorSceneImporterAssimp::_generate_node(const String &p_path, const aiSce
 			if (mi) {
 				r_mesh_instances.push_back(mi);
 			}
-			_add_mesh_to_mesh_instance(p_node, p_scene, p_skeleton, p_path, mesh_node, p_owner, r_bone_name, r_mesh_count, p_max_bone_weights, r_name_morph_mesh_names);
+			_add_mesh_to_mesh_instance(p_node, p_scene, p_skeleton, p_path, mesh_node, p_owner, r_bone_name, r_mesh_count, p_max_bone_weights);
 		}
 		if (p_skeleton->get_bone_count() > 0 && p_owner->find_node(p_skeleton->get_name()) == NULL) {
 			Node *node = p_owner->find_node(_ai_string_to_string(p_scene->mRootNode->mName));
@@ -1215,7 +1252,7 @@ void EditorSceneImporterAssimp::_generate_node(const String &p_path, const aiSce
 	}
 	child_node->set_name(node_name);
 	for (size_t i = 0; i < p_node->mNumChildren; i++) {
-		_generate_node(p_path, p_scene, p_node->mChildren[i], child_node, p_owner, r_bone_name, p_light_names, p_camera_names, r_skeletons, p_bone_rests, r_mesh_instances, r_mesh_count, p_skeleton, p_max_bone_weights, r_removed_bones, r_name_morph_mesh_names);
+		_generate_node(p_path, p_scene, p_node->mChildren[i], child_node, p_owner, r_bone_name, p_light_names, p_camera_names, r_skeletons, p_bone_rests, r_mesh_instances, r_mesh_count, p_skeleton, p_max_bone_weights, r_removed_bones);
 	}
 }
 
@@ -1329,7 +1366,7 @@ void EditorSceneImporterAssimp::_get_track_set(const aiScene *p_scene, Set<Strin
 	}
 }
 
-void EditorSceneImporterAssimp::_add_mesh_to_mesh_instance(const aiNode *p_node, const aiScene *p_scene, Skeleton *s, const String &p_path, MeshInstance *p_mesh_instance, Node *p_owner, Set<String> &r_bone_name, int32_t &r_mesh_count, int32_t p_max_bone_weights, Map<String, Map<uint32_t, String> > &r_name_morph_mesh_names) {
+void EditorSceneImporterAssimp::_add_mesh_to_mesh_instance(const aiNode *p_node, const aiScene *p_scene, Skeleton *s, const String &p_path, MeshInstance *p_mesh_instance, Node *p_owner, Set<String> &r_bone_name, int32_t &r_mesh_count, int32_t p_max_bone_weights) {
 	Ref<ArrayMesh> mesh;
 	mesh.instance();
 	bool has_uvs = false;
@@ -1949,7 +1986,6 @@ void EditorSceneImporterAssimp::_add_mesh_to_mesh_instance(const aiNode *p_node,
 
 			morphs[j] = array_copy;
 		}
-		r_name_morph_mesh_names.insert(_ai_string_to_string(p_node->mName), morph_mesh_idx_names);
 		mesh->add_surface_from_arrays(primitive, array_mesh, morphs);
 		mesh->surface_set_material(i, mat);
 		mesh->surface_set_name(i, _ai_string_to_string(ai_mesh->mName));
