@@ -32,6 +32,7 @@
 
 #include "gdnative/gdnative.h"
 
+#include "core/core_string_names.h"
 #include "core/global_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
@@ -769,6 +770,27 @@ void NativeScriptInstance::notification(int p_notification) {
 	Variant value = p_notification;
 	const Variant *args[1] = { &value };
 	call_multilevel("_notification", args, 1);
+}
+
+String NativeScriptInstance::to_string(bool *r_valid) {
+	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
+		Variant::CallError ce;
+		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
+		if (ce.error == Variant::CallError::CALL_OK) {
+			if (ret.get_type() != Variant::STRING) {
+				if (r_valid)
+					*r_valid = false;
+				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+				ERR_FAIL_V(String());
+			}
+			if (r_valid)
+				*r_valid = true;
+			return ret.operator String();
+		}
+	}
+	if (r_valid)
+		*r_valid = false;
+	return String();
 }
 
 void NativeScriptInstance::refcount_incremented() {

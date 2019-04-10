@@ -1601,7 +1601,7 @@ String Variant::stringify(List<const void *> &stack) const {
 					};
 				};
 #endif
-				return "[" + _get_obj().obj->get_class() + ":" + itos(_get_obj().obj->get_instance_id()) + "]";
+				return _get_obj().obj->to_string();
 			} else
 				return "[Object:null]";
 
