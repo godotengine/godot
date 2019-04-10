@@ -106,6 +106,9 @@ public:
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
 
+	Ref<AudioStreamPlayback> get_stream_playback();
+
+
 	AudioStreamPlayer();
 	~AudioStreamPlayer();
 };
