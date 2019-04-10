@@ -914,6 +914,7 @@ uniform mat4 radiance_inverse_xform;
 
 #endif
 
+uniform vec4 bg_color;
 uniform float bg_energy;
 
 uniform float ambient_sky_contribution;
@@ -1561,7 +1562,6 @@ FRAGMENT_SHADER_CODE
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
-
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
 		vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).xyz * bg_energy;
@@ -1572,6 +1572,7 @@ FRAGMENT_SHADER_CODE
 #else
 
 	ambient_light = ambient_color.rgb;
+	specular_light = bg_color.rgb * bg_energy;
 
 #endif
 
@@ -1630,6 +1631,19 @@ FRAGMENT_SHADER_CODE
 #endif
 
 #endif // defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
+
+	// scales the specular reflections, needs to be be computed before lighting happens,
+	// but after environment and reflection probes are added
+	//TODO: this curve is not really designed for gammaspace, should be adjusted
+	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+	vec4 r = roughness * c0 + c1;
+	float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+	float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+	vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+	vec3 f0 = F0(metallic, specular, albedo);
+	specular_light *= env.x * f0 + env.y;
 
 #ifdef USE_LIGHTMAP
 	//ambient light will come entirely from lightmap is lightmap is used
@@ -2080,17 +2094,6 @@ FRAGMENT_SHADER_CODE
 #if defined(DIFFUSE_TOON)
 		//simplify for toon, as
 		specular_light *= specular * metallic * albedo * 2.0;
-#else
-		//TODO: this curve is not really designed for gammaspace, should be adjusted
-		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
-		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		vec3 f0 = F0(metallic, specular, albedo);
-		specular_light *= env.x * f0 + env.y;
 #endif
 	}
 

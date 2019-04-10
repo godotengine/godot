@@ -1802,6 +1802,7 @@ FRAGMENT_SHADER_CODE
 	ambient_light = vec3(0.0, 0.0, 0.0);
 #else
 	ambient_light = ambient_light_color.rgb;
+	env_reflection_light = bg_color.rgb * bg_energy;
 #endif //AMBIENT_LIGHT_DISABLED
 
 #endif
@@ -1812,6 +1813,39 @@ FRAGMENT_SHADER_CODE
 #if defined(SPECULAR_TOON)
 	specular_blob_intensity *= specular * 2.0;
 #endif
+
+#ifdef USE_FORWARD_LIGHTING
+
+	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
+	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+	for (int i = 0; i < reflection_count; i++) {
+		reflection_process(reflection_indices[i], vertex, normal, binormal, tangent, roughness, anisotropy, ambient_light, env_reflection_light, reflection_accum, ambient_accum);
+	}
+
+	if (reflection_accum.a > 0.0) {
+		specular_light += reflection_accum.rgb / reflection_accum.a;
+	} else {
+		specular_light += env_reflection_light;
+	}
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
+	if (ambient_accum.a > 0.0) {
+		ambient_light = ambient_accum.rgb / ambient_accum.a;
+	}
+#endif
+
+	// scales the specular reflections, needs to be be computed before lighting happens,
+	// but after environment and reflection probes are added
+	// Environment brdf approximation (Lazarov 2013)
+	// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
+	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+	vec4 r = roughness * c0 + c1;
+	float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
+	float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+	vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+	vec3 f0 = F0(metallic, specular, albedo);
+	env_reflection_light *= env.x * f0 + env.y;
 
 #if defined(USE_LIGHT_DIRECTIONAL)
 
@@ -2004,25 +2038,6 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
-#ifdef USE_FORWARD_LIGHTING
-
-	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
-	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
-	for (int i = 0; i < reflection_count; i++) {
-		reflection_process(reflection_indices[i], vertex, normal, binormal, tangent, roughness, anisotropy, ambient_light, env_reflection_light, reflection_accum, ambient_accum);
-	}
-
-	if (reflection_accum.a > 0.0) {
-		specular_light += reflection_accum.rgb / reflection_accum.a;
-	} else {
-		specular_light += env_reflection_light;
-	}
-#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
-	if (ambient_accum.a > 0.0) {
-		ambient_light = ambient_accum.rgb / ambient_accum.a;
-	}
-#endif
-
 #ifdef USE_VERTEX_LIGHTING
 
 	diffuse_light *= albedo;
@@ -2063,18 +2078,6 @@ FRAGMENT_SHADER_CODE
 #if defined(DIFFUSE_TOON)
 		//simplify for toon, as
 		specular_light *= specular * metallic * albedo * 2.0;
-#else
-		// Environment brdf approximation (Lazarov 2013)
-		// see https://www.unrealengine.com/en-US/blog/physically-based-shading-on-mobile
-		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
-		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		vec3 f0 = F0(metallic, specular, albedo);
-		specular_light *= env.x * f0 + env.y;
 #endif
 	}
 
