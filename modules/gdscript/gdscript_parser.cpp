@@ -3500,6 +3500,10 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					_set_error("'class_name' is only valid for the main class namespace.");
 					return;
 				}
+				if (self_path.empty()) {
+					_set_error("'class_name' not allowed in built-in scripts.");
+					return;
+				}
 				if (tokenizer->get_token(1) != GDScriptTokenizer::TK_IDENTIFIER) {
 
 					_set_error("'class_name' syntax: 'class_name <UniqueName>'");
