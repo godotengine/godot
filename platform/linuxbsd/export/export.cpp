@@ -44,7 +44,7 @@ void register_linuxbsd_exporter() {
 	logo.instance();
 	logo->create_from_image(img);
 	platform->set_logo(logo);
-	platform->set_name("LinuxBSD");
+	platform->set_name("Linux/X11");
 	platform->set_extension("x86");
 	platform->set_extension("x86_64", "binary_format/64_bits");
 	platform->set_release_32("linuxbsd_32_release");
