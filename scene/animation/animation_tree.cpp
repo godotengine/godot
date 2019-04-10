@@ -1302,9 +1302,17 @@ void AnimationTree::_notification(int p_what) {
 		_clear_caches();
 		if (last_animation_player) {
 
-			Object *old_player = ObjectDB::get_instance(last_animation_player);
-			if (old_player) {
-				old_player->disconnect("caches_cleared", this, "_clear_caches");
+			Object *player = ObjectDB::get_instance(last_animation_player);
+			if (player) {
+				player->disconnect("caches_cleared", this, "_clear_caches");
+			}
+		}
+	} else if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (last_animation_player) {
+
+			Object *player = ObjectDB::get_instance(last_animation_player);
+			if (player) {
+				player->connect("caches_cleared", this, "_clear_caches");
 			}
 		}
 	}
