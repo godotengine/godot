@@ -45,6 +45,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_disabled(bool p_disabled);
 	CheckButton();
 	~CheckButton();
 };

@@ -58,6 +58,14 @@ Size2 CheckButton::get_minimum_size() const {
 	return minsize;
 }
 
+void CheckButton::set_disabled(bool p_disabled) {
+	BaseButton::set_disabled(p_disabled);
+	if (p_disabled)
+		set_modulate(get_color("disabled_font_color", "Editor"));
+	else
+		set_modulate(Color(1, 1, 1)); // default white
+}
+
 void CheckButton::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
