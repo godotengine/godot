@@ -322,6 +322,7 @@ public:
 
 	int get_bus_effect_count(int p_bus);
 	Ref<AudioEffect> get_bus_effect(int p_bus, int p_effect);
+	Ref<AudioEffectInstance> get_bus_effect_instance(int p_bus, int p_effect, int p_channel = 0);
 
 	void swap_bus_effects(int p_bus, int p_effect, int p_by_effect);
 
