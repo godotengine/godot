@@ -31,6 +31,7 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
 #include "core/resource.h"
 #include "scene/resources/material.h"
@@ -146,6 +147,12 @@ public:
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
 	void clear_cache() const;
+
+	typedef Vector<Vector<Face3> > (*ConvexDecompositionFunc)(const Vector<Face3> &);
+
+	static ConvexDecompositionFunc convex_composition_function;
+
+	Vector<Ref<Shape> > convex_decompose() const;
 
 	Mesh();
 };

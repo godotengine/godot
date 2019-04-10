@@ -95,10 +95,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			if (trimesh_shape)
-				ur->create_action(TTR("Create Static Trimesh Body"));
-			else
-				ur->create_action(TTR("Create Static Convex Body"));
+			ur->create_action(TTR("Create Static Trimesh Body"));
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
@@ -132,8 +129,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 		} break;
 
-		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE:
-		case MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE: {
+		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE: {
 
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("This doesn't work on scene root!"));
@@ -141,9 +137,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 				return;
 			}
 
-			bool trimesh_shape = (p_option == MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
-
-			Ref<Shape> shape = trimesh_shape ? mesh->create_trimesh_shape() : mesh->create_convex_shape();
+			Ref<Shape> shape = mesh->create_trimesh_shape();
 			if (shape.is_null())
 				return;
 
@@ -154,16 +148,47 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 
-			if (trimesh_shape)
-				ur->create_action(TTR("Create Trimesh Shape"));
-			else
-				ur->create_action(TTR("Create Convex Shape"));
+			ur->create_action(TTR("Create Trimesh Static Shape"));
 
 			ur->add_do_method(node->get_parent(), "add_child", cshape);
 			ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
 			ur->add_do_method(cshape, "set_owner", owner);
 			ur->add_do_reference(cshape);
 			ur->add_undo_method(node->get_parent(), "remove_child", cshape);
+			ur->commit_action();
+		} break;
+		case MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE: {
+
+			if (node == get_tree()->get_edited_scene_root()) {
+				err_dialog->set_text(TTR("This doesn't work on scene root!"));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+
+			Vector<Ref<Shape> > shapes = mesh->convex_decompose();
+
+			if (!shapes.size()) {
+				err_dialog->set_text(TTR("Failed creating shapes!"));
+				err_dialog->popup_centered_minsize();
+				return;
+			}
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+
+			ur->create_action(TTR("Create Convex Shape(s)"));
+
+			for (int i = 0; i < shapes.size(); i++) {
+
+				CollisionShape *cshape = memnew(CollisionShape);
+				cshape->set_shape(shapes[i]);
+
+				Node *owner = node->get_owner();
+
+				ur->add_do_method(node->get_parent(), "add_child", cshape);
+				ur->add_do_method(node->get_parent(), "move_child", cshape, node->get_index() + 1);
+				ur->add_do_method(cshape, "set_owner", owner);
+				ur->add_do_reference(cshape);
+				ur->add_undo_method(node->get_parent(), "remove_child", cshape);
+			}
 			ur->commit_action();
 
 		} break;
@@ -393,10 +418,9 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MeshInstance", "EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Create Trimesh Static Body"), MENU_OPTION_CREATE_STATIC_TRIMESH_BODY);
-	options->get_popup()->add_item(TTR("Create Convex Static Body"), MENU_OPTION_CREATE_STATIC_CONVEX_BODY);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
-	options->get_popup()->add_item(TTR("Create Convex Collision Sibling"), MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE);
+	options->get_popup()->add_item(TTR("Create Convex Collision Sibling(s)"), MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
 	options->get_popup()->add_separator();
