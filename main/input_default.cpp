@@ -641,7 +641,7 @@ void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
 
 Input::CursorShape InputDefault::get_current_cursor_shape() const {
 
-	return (Input::CursorShape)OS::get_singleton()->get_cursor_shape();
+	return (Input::CursorShape)DisplayDriver::get_singleton()->get_cursor_shape();
 }
 
 void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
