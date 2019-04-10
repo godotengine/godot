@@ -335,7 +335,7 @@ void SkeletonIK::_validate_property(PropertyInfo &property) const {
 
 		if (skeleton) {
 
-			String names;
+			String names("--,");
 			for (int i = 0; i < skeleton->get_bone_count(); i++) {
 				if (i > 0)
 					names += ",";
