@@ -62,6 +62,7 @@ public:
 	StringName _iter_next;
 	StringName _iter_get;
 	StringName get_rid;
+	StringName _to_string;
 #ifdef TOOLS_ENABLED
 	StringName _sections_unfolded;
 #endif

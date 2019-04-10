@@ -956,6 +956,16 @@ void Object::notification(int p_notification, bool p_reversed) {
 	}
 }
 
+String Object::to_string() {
+	if (script_instance) {
+		bool valid;
+		String ret = script_instance->to_string(&valid);
+		if (valid)
+			return ret;
+	}
+	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
+}
+
 void Object::_changed_callback(Object *p_changed, const char *p_prop) {
 }
 
@@ -1682,6 +1692,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 
 	ClassDB::bind_method(D_METHOD("set_script", "script"), &Object::set_script);
@@ -1768,6 +1779,7 @@ void Object::_bind_methods() {
 
 #endif
 	BIND_VMETHOD(MethodInfo("_init"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_to_string"));
 
 	BIND_CONSTANT(NOTIFICATION_POSTINITIALIZE);
 	BIND_CONSTANT(NOTIFICATION_PREDELETE);

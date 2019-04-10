@@ -59,6 +59,22 @@
 				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
 			</description>
 		</method>
+		<method name="_to_string" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Override this method to customize the [String] representation of the object when it's being converted to a string, for example: [code]print(obj)[/code].
+			</description>
+		</method>
+		<method name="to_string">
+			<return type="String">
+			</return>
+			<description>
+				Returns a [String] representing the object. Default is [code]"[ClassName:RID]"[/code].
+				Override the method [method _to_string] to customize the [String] representation.
+			</description>
+		</method>
 		<method name="add_user_signal">
 			<return type="void">
 			</return>

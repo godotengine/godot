@@ -30,6 +30,7 @@
 
 #include "visual_script.h"
 
+#include "core/core_string_names.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
@@ -1974,6 +1975,27 @@ void VisualScriptInstance::notification(int p_notification) {
 	const Variant *whatp = &what;
 	Variant::CallError ce;
 	call(VisualScriptLanguage::singleton->notification, &whatp, 1, ce); //do as call
+}
+
+String VisualScriptInstance::to_string(bool *r_valid) {
+	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
+		Variant::CallError ce;
+		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
+		if (ce.error == Variant::CallError::CALL_OK) {
+			if (ret.get_type() != Variant::STRING) {
+				if (r_valid)
+					*r_valid = false;
+				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+				ERR_FAIL_V(String());
+			}
+			if (r_valid)
+				*r_valid = true;
+			return ret.operator String();
+		}
+	}
+	if (r_valid)
+		*r_valid = false;
+	return String();
 }
 
 Ref<Script> VisualScriptInstance::get_script() const {
