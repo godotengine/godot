@@ -119,9 +119,6 @@ public:
 
 	virtual int get_packet_peer() const;
 
-	virtual Dictionary get_bind_address() const;
-	virtual int get_bind_port() const;
-
 	virtual IP_Address get_peer_address(int p_peer_id) const;
 	virtual int get_peer_port(int p_peer_id) const;
 

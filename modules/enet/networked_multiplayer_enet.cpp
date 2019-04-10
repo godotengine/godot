@@ -761,30 +761,6 @@ void NetworkedMultiplayerENet::enet_compressor_destroy(void *context) {
 	// Nothing to do
 }
 
-Dictionary NetworkedMultiplayerENet::get_bind_address() const {
-
-	Dictionary rc;
-	rc["address"] = bind_ip;
-	rc["adapter"] = bind_ip.get_adapter();
-	rc["friendly"] = bind_ip.get_adapter_friendly();
-	rc["type"] = IP::TYPE_NONE;
-	if (bind_ip.is_ipv4())
-		rc["type"] = IP::TYPE_IPV4;
-	else if (bind_ip.is_ipv6())
-		rc["type"] = IP::TYPE_IPV6;
-		
-	return rc;
-}
-
-int NetworkedMultiplayerENet::get_bind_port() const {
-
-#ifdef GODOT_ENET
-	return host->address.port;
-#else
-	return host->address.port;
-#endif
-}
-
 IP_Address NetworkedMultiplayerENet::get_peer_address(int p_peer_id) const {
 
 	ERR_FAIL_COND_V(!peer_map.has(p_peer_id), IP_Address());
@@ -856,8 +832,6 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_compression_mode", "mode"), &NetworkedMultiplayerENet::set_compression_mode);
 	ClassDB::bind_method(D_METHOD("get_compression_mode"), &NetworkedMultiplayerENet::get_compression_mode);
 	ClassDB::bind_method(D_METHOD("set_bind_ip", "ip"), &NetworkedMultiplayerENet::set_bind_ip);
-	ClassDB::bind_method(D_METHOD("get_bind_address"), &NetworkedMultiplayerENet::get_bind_address);
-	ClassDB::bind_method(D_METHOD("get_bind_port"), &NetworkedMultiplayerENet::get_bind_port);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &NetworkedMultiplayerENet::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &NetworkedMultiplayerENet::get_peer_port);
 

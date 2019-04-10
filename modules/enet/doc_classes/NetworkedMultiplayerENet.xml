@@ -97,24 +97,6 @@
 				Returns the remote port of the given peer.
 			</description>
 		</method>
-		<method name="get_bind_address" qualifiers="const">
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the IP address of the bound address.
-			</description>
-		</method>
-		<method name="get_bind_port" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="id" type="int">
-			</argument>
-			<description>
-				Returns the remote port of the bound address.
-			</description>
-		</method>
 		<method name="set_bind_ip">
 			<return type="void">
 			</return>
