@@ -50,7 +50,9 @@
 #include "audio/effects/audio_effect_pitch_shift.h"
 #include "audio/effects/audio_effect_record.h"
 #include "audio/effects/audio_effect_reverb.h"
+#include "audio/effects/audio_effect_spectrum_analyzer.h"
 #include "audio/effects/audio_effect_stereo_enhance.h"
+#include "audio/effects/audio_stream_generator.h"
 #include "audio_server.h"
 #include "core/script_debugger_remote.h"
 #include "physics/physics_server_sw.h"
@@ -120,12 +122,17 @@ void register_server_types() {
 
 	ClassDB::register_virtual_class<AudioStream>();
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
+	ClassDB::register_virtual_class<AudioStreamPlaybackResampled>();
 	ClassDB::register_class<AudioStreamMicrophone>();
 	ClassDB::register_class<AudioStreamRandomPitch>();
 	ClassDB::register_virtual_class<AudioEffect>();
+	ClassDB::register_virtual_class<AudioEffectInstance>();
 	ClassDB::register_class<AudioEffectEQ>();
 	ClassDB::register_class<AudioEffectFilter>();
 	ClassDB::register_class<AudioBusLayout>();
+
+	ClassDB::register_class<AudioStreamGenerator>();
+	ClassDB::register_virtual_class<AudioStreamGeneratorPlayback>();
 
 	{
 		//audio effects
@@ -156,7 +163,10 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectLimiter>();
 		ClassDB::register_class<AudioEffectPitchShift>();
 		ClassDB::register_class<AudioEffectPhaser>();
+
 		ClassDB::register_class<AudioEffectRecord>();
+		ClassDB::register_class<AudioEffectSpectrumAnalyzer>();
+		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
 	}
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();

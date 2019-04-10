@@ -31,6 +31,7 @@
 #ifndef AUDIOFRAME_H
 #define AUDIOFRAME_H
 
+#include "core/math/vector2.h"
 #include "core/typedefs.h"
 
 static inline float undenormalise(volatile float f) {
@@ -128,6 +129,14 @@ struct AudioFrame {
 		return *this;
 	}
 
+	_ALWAYS_INLINE_ operator Vector2() const {
+		return Vector2(l, r);
+	}
+
+	_ALWAYS_INLINE_ AudioFrame(const Vector2 &p_v2) {
+		l = p_v2.x;
+		r = p_v2.y;
+	}
 	_ALWAYS_INLINE_ AudioFrame() {}
 };
 

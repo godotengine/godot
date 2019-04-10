@@ -331,6 +331,10 @@ void AudioStreamPlayer::_bus_layout_changed() {
 	_change_notify();
 }
 
+Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
+	return stream_playback;
+}
+
 void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer::set_stream);
@@ -365,6 +369,8 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer::get_stream_paused);
+
+	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24"), "set_volume_db", "get_volume_db");
