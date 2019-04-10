@@ -37,6 +37,8 @@
 
 #include <stdlib.h>
 
+Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = NULL;
+
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 	if (triangle_mesh.is_valid())
@@ -541,6 +543,49 @@ void Mesh::_bind_methods() {
 void Mesh::clear_cache() const {
 	triangle_mesh.unref();
 	debug_lines.clear();
+}
+
+Vector<Ref<Shape> > Mesh::convex_decompose() const {
+
+	ERR_FAIL_COND_V(!convex_composition_function, Vector<Ref<Shape> >());
+
+	PoolVector<Face3> faces = get_faces();
+	Vector<Face3> f3;
+	f3.resize(faces.size());
+	PoolVector<Face3>::Read f = faces.read();
+	for (int i = 0; i < f3.size(); i++) {
+		f3.write[i] = f[i];
+	}
+
+	Vector<Vector<Face3> > decomposed = convex_composition_function(f3);
+
+	Vector<Ref<Shape> > ret;
+
+	for (int i = 0; i < decomposed.size(); i++) {
+		Set<Vector3> points;
+		for (int j = 0; j < decomposed[i].size(); j++) {
+			points.insert(decomposed[i][j].vertex[0]);
+			points.insert(decomposed[i][j].vertex[1]);
+			points.insert(decomposed[i][j].vertex[2]);
+		}
+
+		PoolVector<Vector3> convex_points;
+		convex_points.resize(points.size());
+		{
+			PoolVector<Vector3>::Write w = convex_points.write();
+			int idx = 0;
+			for (Set<Vector3>::Element *E = points.front(); E; E = E->next()) {
+				w[idx++] = E->get();
+			}
+		}
+
+		Ref<ConvexPolygonShape> shape;
+		shape.instance();
+		shape->set_points(convex_points);
+		ret.push_back(shape);
+	}
+
+	return ret;
 }
 
 Mesh::Mesh() {
