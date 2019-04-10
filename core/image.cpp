@@ -1428,6 +1428,145 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
+Error Image::generate_palette(int p_num_colors, bool p_high_quality) {
+
+	bool has_alpha = false;
+
+	switch (format) {
+		case FORMAT_RGB8: has_alpha = false; break;
+		case FORMAT_RGBA8: has_alpha = true; break;
+		default: {
+		}
+	}
+
+	pExq = exq_init();
+	pExq->transparency = int(!has_alpha);
+
+	int pixel_size = get_format_pixel_size(format);
+	int num_pixels = data.size() / pixel_size;
+
+	PoolVector<uint8_t>::Write w = data.write();
+	uint8_t *ptr = w.ptr();
+
+	exq_feed(pExq, ptr, num_pixels);
+	exq_quantize_ex(pExq, p_num_colors, (int)p_high_quality);
+
+	palette_data.resize(0);
+	palette_data.resize(pixel_size * p_num_colors);
+
+	w = palette_data.write();
+	ptr = w.ptr();
+
+	exq_get_palette(pExq, ptr, p_num_colors);
+
+	exq_free(pExq);
+
+	return OK;
+}
+
+PoolColorArray Image::get_palette() {
+
+	bool has_alpha = false;
+
+	switch (format) {
+
+		case FORMAT_RGB8: has_alpha = false; break;
+		case FORMAT_RGBA8: has_alpha = true; break;
+		default: {
+		}
+	}
+
+	PoolColorArray palette;
+
+	int pixel_size = get_format_pixel_size(format);
+	int num_colors = palette_data.size() / pixel_size;
+	palette.resize(num_colors);
+
+	PoolVector<uint8_t>::Write w_src = palette_data.write();
+	PoolColorArray::Write w_dest = palette.write();
+
+	uint8_t *src = w_src.ptr();
+	Color *dest = w_dest.ptr();
+
+	for (int i = 0; i < num_colors; i++) {
+		float rc = (src[0] / 255.9f);
+		float gc = (src[1] / 255.9f);
+		float bc = (src[2] / 255.9f);
+		float ac = (src[3] / 255.9f);
+
+		dest[i] = Color(rc, gc, bc, ac);
+
+		src += pixel_size;
+	}
+
+	return palette;
+}
+
+// void Image::set_palette(const PoolColorArray &p_palette) {
+
+// 	bool has_alpha = false;
+
+// 	switch (format) {
+
+// 		case FORMAT_RGB8: has_alpha = false; break;
+// 		case FORMAT_RGBA8: has_alpha = true; break;
+// 		default: {
+// 		}
+// 	}
+// 	int num_colors = p_palette.size();
+
+// 	exq_data *pExq;
+// 	pExq = exq_init();
+// 	pExq->numColors = num_colors;
+// 	pExq->transparency = (int)has_alpha;
+
+// 	PoolVector<uint8_t>::Write w_dest = palette_data.write();
+// 	uint8_t *dest = w_dest.ptr();
+
+// 	exq_set_palette(pExq, src, num_colors);
+
+// 	// int pixel_size = get_format_pixel_size(format);
+// 	// int num_colors = palette_data.size() / pixel_size;
+// 	// palette.resize(num_colors);
+
+// 	// PoolColorArray::Write w_dest = palette.write();
+
+// 	// Color *dest = w_dest.ptr();
+
+// 	for(int i = 0; i < num_colors; i++) {
+// 		float rc = (src[0] / 255.9f);
+// 		float gc = (src[1] / 255.9f);
+// 		float bc = (src[2] / 255.9f);
+// 		float ac = (src[3] / 255.9f);
+
+// 		dest[i] = Color(rc, gc, bc, ac);
+
+// 		src += pixel_size;
+// 	}
+
+// 	return palette;
+// }
+
+void Image::apply_palette() {
+
+	int pixel_size = get_format_pixel_size(format);
+	int num_pixels = data.size() / pixel_size;
+
+	PoolVector<uint8_t> dest_data;
+	dest_data.resize(data.size());
+
+	{
+		PoolVector<uint8_t>::Write w_src = data.write();
+		PoolVector<uint8_t>::Write w_dest = dest_data.write();
+
+		uint8_t *src = w_src.ptr();
+		uint8_t *dest = w_dest.ptr();
+
+		exq_map_image(pExq, num_pixels, src, dest);
+	}
+	create(width, height, mipmaps, format, dest_data);
+}
+
 bool Image::empty() const {
 
 	return (data.size() == 0);
@@ -2591,6 +2730,10 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
+
+	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors"), &Image::generate_palette, DEFVAL(256), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_palette"), &Image::get_palette);
+	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
 	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);

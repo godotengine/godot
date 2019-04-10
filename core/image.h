@@ -36,6 +36,8 @@
 #include "core/pool_vector.h"
 #include "core/resource.h"
 
+#include "thirdparty/misc/exoquant.h"
+
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>
  *
@@ -148,6 +150,7 @@ public:
 
 protected:
 	static void _bind_methods();
+	exq_data *pExq;
 
 private:
 	void _create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
@@ -162,6 +165,8 @@ private:
 	PoolVector<uint8_t> data;
 	int width, height;
 	bool mipmaps;
+
+	PoolVector<uint8_t> palette_data;
 
 	void _copy_internals_from(const Image &p_image) {
 		format = p_image.format;
@@ -240,6 +245,14 @@ public:
 
 	void clear_mipmaps();
 	void normalize(); //for normal maps
+
+	/**
+	 * Generate an optimal color palette of an image
+	 */
+	Error generate_palette(int p_num_colors = 256, bool p_high_quality = true);
+	PoolColorArray get_palette();
+	void set_palette(const PoolColorArray &p_palette);
+	void apply_palette();
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost

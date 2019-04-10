@@ -51,6 +51,7 @@ thirdparty_misc_sources = [
     "fastlz.c",
     "sha256.c",
     "smaz.c",
+    "exoquant.c",
 
     # C++ sources
     "aes256.cpp",
