@@ -31,6 +31,7 @@
 #include "line_edit.h"
 
 #include "core/message_queue.h"
+#include "core/os/display_driver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -124,8 +125,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->show_virtual_keyboard(text, get_global_rect());
 		}
 
 		update();
@@ -270,8 +271,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_ENTER: {
 
 					emit_signal("text_entered", text);
-					if (OS::get_singleton()->has_virtual_keyboard())
-						OS::get_singleton()->hide_virtual_keyboard();
+					if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+						DisplayDriver::get_singleton()->hide_virtual_keyboard();
 
 					return;
 				} break;
@@ -832,8 +833,8 @@ void LineEdit::_notification(int p_what) {
 
 			if (has_focus()) {
 
-				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
+				DisplayDriver::get_singleton()->set_ime_active(true);
+				DisplayDriver::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -842,30 +843,30 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			OS::get_singleton()->set_ime_active(true);
+			DisplayDriver::get_singleton()->set_ime_active(true);
 			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			DisplayDriver::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect());
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->show_virtual_keyboard(text, get_global_rect());
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
-			OS::get_singleton()->set_ime_position(Point2());
-			OS::get_singleton()->set_ime_active(false);
+			DisplayDriver::get_singleton()->set_ime_position(Point2());
+			DisplayDriver::get_singleton()->set_ime_active(false);
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->hide_virtual_keyboard();
+			if (DisplayDriver::get_singleton()->has_virtual_keyboard())
+				DisplayDriver::get_singleton()->hide_virtual_keyboard();
 
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 
 			if (has_focus()) {
-				ime_text = OS::get_singleton()->get_ime_text();
-				ime_selection = OS::get_singleton()->get_ime_selection();
+				ime_text = DisplayDriver::get_singleton()->get_ime_text();
+				ime_selection = DisplayDriver::get_singleton()->get_ime_selection();
 				update();
 			}
 		} break;
@@ -875,21 +876,21 @@ void LineEdit::_notification(int p_what) {
 void LineEdit::copy_text() {
 
 	if (selection.enabled && !pass) {
-		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayDriver::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
 	}
 }
 
 void LineEdit::cut_text() {
 
 	if (selection.enabled && !pass) {
-		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayDriver::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
 		selection_delete();
 	}
 }
 
 void LineEdit::paste_text() {
 
-	String paste_buffer = OS::get_singleton()->get_clipboard();
+	String paste_buffer = DisplayDriver::get_singleton()->get_clipboard();
 
 	if (paste_buffer != "") {
 

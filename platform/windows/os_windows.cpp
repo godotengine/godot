@@ -1632,7 +1632,7 @@ void OS_Windows::set_window_title(const String &p_title) {
 void OS_Windows::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_Windows::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_Windows::get_video_mode(int p_screen) const {
 
 	return video_mode;
 }
@@ -2728,7 +2728,7 @@ int OS_Windows::get_processor_count() const {
 	return sysinfo.dwNumberOfProcessors;
 }
 
-OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
+DisplayDriver::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 
 	unsigned long azerty[] = {
 		0x00020401, // Arabic (102) AZERTY

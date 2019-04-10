@@ -35,6 +35,7 @@
 #include "app.h"
 
 #include "core/os/dir_access.h"
+#include "core/os/display_driver.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "main/main.h"
@@ -239,7 +240,7 @@ static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windo
 	}
 #endif
 
-	OS::VideoMode vm = os->get_video_mode();
+	DisplayDriver::VideoMode vm = os->get_video_mode();
 	outputPosition.X *= vm.width;
 	outputPosition.Y *= vm.height;
 
@@ -317,14 +318,14 @@ void App::OnPointerWheelChanged(Windows::UI::Core::CoreWindow ^ sender, Windows:
 
 void App::OnMouseModeChanged(Windows::System::Threading::Core::SignalNotifier ^ signalNotifier, bool timedOut) {
 
-	OS::MouseMode mode = os->get_mouse_mode();
+	DisplayDriver::MouseMode mode = os->get_mouse_mode();
 	SignalNotifier ^ notifier = mouseChangedNotifier;
 
 	window->Dispatcher->RunAsync(
 			CoreDispatcherPriority::High,
 			ref new DispatchedHandler(
 					[mode, notifier, this]() {
-						if (mode == OS::MOUSE_MODE_CAPTURED) {
+						if (mode == DisplayDriver::MOUSE_MODE_CAPTURED) {
 
 							this->MouseMovedToken = MouseDevice::GetForCurrentView()->MouseMoved +=
 									ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &App::OnMouseMoved);
@@ -358,7 +359,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 	} else {
 
 		// In case the mouse grabbed, MouseMoved will handle this
-		if (os->get_mouse_mode() == OS::MouseMode::MOUSE_MODE_CAPTURED)
+		if (os->get_mouse_mode() == DisplayDriver::MouseMode::MOUSE_MODE_CAPTURED)
 			return;
 
 		Ref<InputEventMouseMotion> mouse_motion;
@@ -377,7 +378,7 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Co
 void App::OnMouseMoved(MouseDevice ^ mouse_device, MouseEventArgs ^ args) {
 
 	// In case the mouse isn't grabbed, PointerMoved will handle this
-	if (os->get_mouse_mode() != OS::MouseMode::MOUSE_MODE_CAPTURED)
+	if (os->get_mouse_mode() != DisplayDriver::MouseMode::MOUSE_MODE_CAPTURED)
 		return;
 
 	Windows::Foundation::Point pos;
@@ -495,7 +496,7 @@ void App::UpdateWindowSize(Size size) {
 	mWindowWidth = static_cast<GLsizei>(pixelSize.Width);
 	mWindowHeight = static_cast<GLsizei>(pixelSize.Height);
 
-	OS::VideoMode vm;
+	DisplayDriver::VideoMode vm;
 	vm.width = mWindowWidth;
 	vm.height = mWindowHeight;
 	vm.fullscreen = true;

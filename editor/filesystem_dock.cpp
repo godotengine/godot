@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/os/dir_access.h"
+#include "core/os/display_driver.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -1650,7 +1651,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 			// Copy the file path
 			if (!p_selected.empty()) {
 				String fpath = p_selected[0];
-				OS::get_singleton()->set_clipboard(fpath);
+				DisplayDriver::get_singleton()->set_clipboard(fpath);
 			}
 		} break;
 

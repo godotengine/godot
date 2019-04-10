@@ -31,6 +31,7 @@
 #include "os_javascript.h"
 
 #include "core/io/file_access_buffered_fa.h"
+#include "core/os/display_driver.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -97,7 +98,7 @@ void OS_JavaScript::set_video_mode(const VideoMode &p_video_mode, int p_screen) 
 	video_mode = p_video_mode;
 }
 
-OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
 	return video_mode;
 }
@@ -198,7 +199,7 @@ bool OS_JavaScript::is_window_fullscreen() const {
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 
 	Size2 screen = get_screen_size();
-	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
+	p_list->push_back(DisplayDriver::VideoMode(screen.width, screen.height, true));
 }
 
 // Keys
@@ -372,28 +373,28 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 	return false;
 }
 
-static const char *godot2dom_cursor(OS::CursorShape p_shape) {
+static const char *godot2dom_cursor(DisplayDriver::CursorShape p_shape) {
 
 	switch (p_shape) {
-		case OS::CURSOR_ARROW:
+		case DisplayDriver::CURSOR_ARROW:
 		default:
 			return "auto";
-		case OS::CURSOR_IBEAM: return "text";
-		case OS::CURSOR_POINTING_HAND: return "pointer";
-		case OS::CURSOR_CROSS: return "crosshair";
-		case OS::CURSOR_WAIT: return "progress";
-		case OS::CURSOR_BUSY: return "wait";
-		case OS::CURSOR_DRAG: return "grab";
-		case OS::CURSOR_CAN_DROP: return "grabbing";
-		case OS::CURSOR_FORBIDDEN: return "no-drop";
-		case OS::CURSOR_VSIZE: return "ns-resize";
-		case OS::CURSOR_HSIZE: return "ew-resize";
-		case OS::CURSOR_BDIAGSIZE: return "nesw-resize";
-		case OS::CURSOR_FDIAGSIZE: return "nwse-resize";
-		case OS::CURSOR_MOVE: return "move";
-		case OS::CURSOR_VSPLIT: return "row-resize";
-		case OS::CURSOR_HSPLIT: return "col-resize";
-		case OS::CURSOR_HELP: return "help";
+		case DisplayDriver::CURSOR_IBEAM: return "text";
+		case DisplayDriver::CURSOR_POINTING_HAND: return "pointer";
+		case DisplayDriver::CURSOR_CROSS: return "crosshair";
+		case DisplayDriver::CURSOR_WAIT: return "progress";
+		case DisplayDriver::CURSOR_BUSY: return "wait";
+		case DisplayDriver::CURSOR_DRAG: return "grab";
+		case DisplayDriver::CURSOR_CAN_DROP: return "grabbing";
+		case DisplayDriver::CURSOR_FORBIDDEN: return "no-drop";
+		case DisplayDriver::CURSOR_VSIZE: return "ns-resize";
+		case DisplayDriver::CURSOR_HSIZE: return "ew-resize";
+		case DisplayDriver::CURSOR_BDIAGSIZE: return "nesw-resize";
+		case DisplayDriver::CURSOR_FDIAGSIZE: return "nwse-resize";
+		case DisplayDriver::CURSOR_MOVE: return "move";
+		case DisplayDriver::CURSOR_VSPLIT: return "row-resize";
+		case DisplayDriver::CURSOR_HSPLIT: return "col-resize";
+		case DisplayDriver::CURSOR_HELP: return "help";
 	}
 }
 
@@ -549,7 +550,7 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 	set_cursor_shape(cursor_shape);
 }
 
-void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
+void OS_JavaScript::set_mouse_mode(DisplayDriver::MouseMode p_mode) {
 
 	ERR_EXPLAIN("MOUSE_MODE_CONFINED is not supported for the HTML5 platform");
 	ERR_FAIL_COND(p_mode == MOUSE_MODE_CONFINED);
@@ -580,7 +581,7 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 	}
 }
 
-OS::MouseMode OS_JavaScript::get_mouse_mode() const {
+DisplayDriver::MouseMode OS_JavaScript::get_mouse_mode() const {
 
 	if (is_css_cursor_hidden())
 		return MOUSE_MODE_HIDDEN;

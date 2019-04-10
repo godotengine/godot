@@ -312,7 +312,7 @@ void OS_Haiku::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 	ERR_PRINT("set_video_mode() NOT IMPLEMENTED");
 }
 
-OS::VideoMode OS_Haiku::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_Haiku::get_video_mode(int p_screen) const {
 	return current_video_mode;
 }
 

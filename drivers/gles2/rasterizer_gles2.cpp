@@ -30,6 +30,7 @@
 
 #include "rasterizer_gles2.h"
 
+#include "core/os/display_driver.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
@@ -315,7 +316,7 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 	} else {
 		storage->frame.current_rt = NULL;
 		storage->frame.clear_request = false;
-		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+		glViewport(0, 0, DisplayDriver::get_singleton()->get_window_size().width, DisplayDriver::get_singleton()->get_window_size().height);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 	}
 }
@@ -339,14 +340,14 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	if (p_image.is_null() || p_image->empty())
 		return;
 
-	int window_w = OS::get_singleton()->get_video_mode(0).width;
-	int window_h = OS::get_singleton()->get_video_mode(0).height;
+	int window_w = DisplayDriver::get_singleton()->get_video_mode(0).width;
+	int window_h = DisplayDriver::get_singleton()->get_video_mode(0).height;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, window_w, window_h);
 	glDisable(GL_BLEND);
 	glDepthMask(GL_FALSE);
-	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+	if (DisplayDriver::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 		glClearColor(0.0, 0.0, 0.0, 0.0);
 	} else {
 		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
@@ -445,14 +446,14 @@ void RasterizerGLES2::output_lens_distorted_to_screen(RID p_render_target, const
 
 void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 
-	if (OS::get_singleton()->is_layered_allowed()) {
-		if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
+	if (DisplayDriver::get_singleton()->is_layered_allowed()) {
+		if (DisplayDriver::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 #if (defined WINDOWS_ENABLED) && !(defined UWP_ENABLED)
-			Size2 wndsize = OS::get_singleton()->get_layered_buffer_size();
-			uint8_t *data = OS::get_singleton()->get_layered_buffer_data();
+			Size2 wndsize = DisplayDriver::get_singleton()->get_layered_buffer_size();
+			uint8_t *data = DisplayDriver::get_singleton()->get_layered_buffer_data();
 			if (data) {
 				glReadPixels(0, 0, wndsize.x, wndsize.y, GL_BGRA, GL_UNSIGNED_BYTE, data);
-				OS::get_singleton()->swap_layered_buffer();
+				DisplayDriver::get_singleton()->swap_layered_buffer();
 
 				return;
 			}
@@ -467,7 +468,7 @@ void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 	}
 
 	if (p_swap_buffers)
-		OS::get_singleton()->swap_buffers();
+		DisplayDriver::get_singleton()->swap_buffers();
 	else
 		glFinish();
 }

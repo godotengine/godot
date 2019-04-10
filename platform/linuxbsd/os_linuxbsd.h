@@ -32,6 +32,7 @@
 #define OS_LINUXBSD_H
 
 #include "context_gl_x11.h"
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "crash_handler_linuxbsd.h"
 #include "drivers/alsa/audio_driver_alsa.h"

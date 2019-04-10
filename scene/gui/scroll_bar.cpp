@@ -30,6 +30,7 @@
 
 #include "scroll_bar.h"
 
+#include "core/os/display_driver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
@@ -571,7 +572,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 			last_drag_node_accum = Vector2();
 			drag_node_from = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
 
-			drag_node_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+			drag_node_touching = DisplayDriver::get_singleton()->has_touchscreen_ui_hint();
 			drag_node_touching_deaccel = false;
 			time_since_motion = 0;
 

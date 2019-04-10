@@ -31,6 +31,7 @@
 #include "progress_dialog.h"
 
 #include "core/message_queue.h"
+#include "core/os/display_driver.h"
 #include "core/os/os.h"
 #include "editor_scale.h"
 #include "main/main.h"
@@ -218,7 +219,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	t.state->set_text(p_state);
 	last_progress_tick = OS::get_singleton()->get_ticks_usec();
 	if (cancel_hb->is_visible()) {
-		OS::get_singleton()->force_process_input();
+		DisplayDriver::get_singleton()->force_process_input();
 	}
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 	return cancelled;

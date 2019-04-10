@@ -37,6 +37,7 @@
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/message_queue.h"
+#include "core/os/display_driver.h"
 #include "core/os/file_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
@@ -185,7 +186,7 @@ void EditorNode::_update_title() {
 	if (unsaved_cache)
 		title += " (*)";
 
-	OS::get_singleton()->set_window_title(title);
+	DisplayDriver::get_singleton()->set_window_title(title);
 }
 
 void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
@@ -2306,7 +2307,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
-				OS::get_singleton()->request_attention();
+				DisplayDriver::get_singleton()->request_attention();
 				break;
 			}
 
@@ -2421,7 +2422,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 
-			OS::get_singleton()->set_window_fullscreen(!OS::get_singleton()->is_window_fullscreen());
+			DisplayDriver::get_singleton()->set_window_fullscreen(!DisplayDriver::get_singleton()->is_window_fullscreen());
 
 		} break;
 		case SETTINGS_PICK_MAIN_SCENE: {
@@ -4852,7 +4853,7 @@ void EditorNode::_video_driver_selected(int p_which) {
 
 	String driver = video_driver->get_item_metadata(p_which);
 
-	String current = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
+	String current = DisplayDriver::get_singleton()->get_video_driver_name(DisplayDriver::get_singleton()->get_current_video_driver());
 
 	if (driver == current) {
 		return;
@@ -5029,7 +5030,7 @@ EditorNode::EditorNode() {
 
 	if (id) {
 
-		if (!OS::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
+		if (!DisplayDriver::get_singleton()->has_touchscreen_ui_hint() && Input::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch_from_mouse(false); //just disable just in case
 		}
@@ -5061,8 +5062,8 @@ EditorNode::EditorNode() {
 		switch (display_scale) {
 			case 0: {
 				// Try applying a suitable display scale automatically
-				const int screen = OS::get_singleton()->get_current_screen();
-				editor_set_scale(OS::get_singleton()->get_screen_dpi(screen) >= 192 && OS::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
+				const int screen = DisplayDriver::get_singleton()->get_current_screen();
+				editor_set_scale(DisplayDriver::get_singleton()->get_screen_dpi(screen) >= 192 && DisplayDriver::get_singleton()->get_screen_size(screen).x > 2000 ? 2.0 : 1.0);
 			} break;
 
 			case 1: {
@@ -5772,7 +5773,7 @@ EditorNode::EditorNode() {
 	right_menu_hb->add_child(video_driver);
 
 	String video_drivers = ProjectSettings::get_singleton()->get_custom_property_info()["rendering/quality/driver/driver_name"].hint_string;
-	String current_video_driver = OS::get_singleton()->get_video_driver_name(OS::get_singleton()->get_current_video_driver());
+	String current_video_driver = DisplayDriver::get_singleton()->get_video_driver_name(DisplayDriver::get_singleton()->get_current_video_driver());
 	video_driver_current = 0;
 	for (int i = 0; i < video_drivers.get_slice_count(","); i++) {
 		String driver = video_drivers.get_slice(",", i);

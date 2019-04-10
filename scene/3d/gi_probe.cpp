@@ -30,7 +30,7 @@
 
 #include "gi_probe.h"
 
-#include "core/os/os.h"
+#include "core/os/display_driver.h"
 
 #include "mesh_instance.h"
 #include "voxel_light_baker.h"
@@ -494,7 +494,7 @@ PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 
 String GIProbe::get_configuration_warning() const {
 
-	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+	if (DisplayDriver::get_singleton()->get_current_video_driver() == DisplayDriver::VIDEO_DRIVER_GLES2) {
 		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
 	return String();

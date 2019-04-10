@@ -587,7 +587,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 }
 
 - (void)cursorUpdate:(NSEvent *)event {
-	OS::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
+	DisplayDriver::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
 	OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
 	OS_OSX::singleton->set_cursor_shape(p_shape);
 }
@@ -710,17 +710,17 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	if (!OS_OSX::singleton)
 		return;
 
-	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != DisplayDriver::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 }
 
 - (void)mouseEntered:(NSEvent *)event {
 	if (!OS_OSX::singleton)
 		return;
-	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != OS::MOUSE_MODE_CAPTURED)
+	if (OS_OSX::singleton->main_loop && OS_OSX::singleton->mouse_mode != DisplayDriver::MOUSE_MODE_CAPTURED)
 		OS_OSX::singleton->main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 
-	OS::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
+	DisplayDriver::CursorShape p_shape = OS_OSX::singleton->cursor_shape;
 	OS_OSX::singleton->cursor_shape = OS::CURSOR_MAX;
 	OS_OSX::singleton->set_cursor_shape(p_shape);
 }
@@ -2061,7 +2061,7 @@ void OS_OSX::wm_minimized(bool p_minimized) {
 void OS_OSX::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_OSX::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_OSX::get_video_mode(int p_screen) const {
 
 	VideoMode vm;
 	vm.width = window_size.width;
@@ -2519,7 +2519,7 @@ static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
 	return (NSString *)output;
 }
 
-OS::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
+DisplayDriver::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
 
 	static LatinKeyboardVariant layout = LATIN_KEYBOARD_QWERTY;
 
@@ -2685,7 +2685,7 @@ void OS_OSX::set_mouse_mode(MouseMode p_mode) {
 	mouse_mode = p_mode;
 }
 
-OS::MouseMode OS_OSX::get_mouse_mode() const {
+DisplayDriver::MouseMode OS_OSX::get_mouse_mode() const {
 
 	return mouse_mode;
 }
@@ -2742,7 +2742,7 @@ OS_OSX::OS_OSX() {
 
 	memset(cursors, 0, sizeof(cursors));
 	key_event_pos = 0;
-	mouse_mode = OS::MOUSE_MODE_VISIBLE;
+	mouse_mode = DisplayDriver::MOUSE_MODE_VISIBLE;
 	main_loop = NULL;
 	singleton = this;
 	im_active = false;

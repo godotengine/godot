@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -272,7 +273,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 				set_depth(-1);
 				set_lines_left(-1);
-				OS::get_singleton()->move_window_to_foreground();
+				DisplayDriver::get_singleton()->move_window_to_foreground();
 				break;
 			} else if (command == "break") {
 				ERR_PRINT("Got break when already broke!");

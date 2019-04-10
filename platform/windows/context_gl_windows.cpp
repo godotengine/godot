@@ -33,6 +33,7 @@
 // Author: Juan Linietsky <reduzio@gmail.com>, (C) 2008
 
 #include "context_gl_windows.h"
+#include "core/os/display_driver.h"
 
 #define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -55,12 +56,12 @@ void ContextGL_Windows::make_current() {
 
 int ContextGL_Windows::get_window_width() {
 
-	return OS::get_singleton()->get_video_mode().width;
+	return DisplayDriver::get_singleton()->get_video_mode().width;
 }
 
 int ContextGL_Windows::get_window_height() {
 
-	return OS::get_singleton()->get_video_mode().height;
+	return DisplayDriver::get_singleton()->get_video_mode().height;
 }
 
 void ContextGL_Windows::swap_buffers() {
@@ -92,9 +93,9 @@ Error ContextGL_Windows::initialize() {
 				PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 				PFD_DOUBLEBUFFER,
 		(BYTE)PFD_TYPE_RGBA,
-		(BYTE)(OS::get_singleton()->is_layered_allowed() ? 32 : 24),
+		(BYTE)(DisplayDriver::get_singleton()->is_layered_allowed() ? 32 : 24),
 		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Color Bits Ignored
-		(BYTE)(OS::get_singleton()->is_layered_allowed() ? 8 : 0), // Alpha Buffer
+		(BYTE)(DisplayDriver::get_singleton()->is_layered_allowed() ? 8 : 0), // Alpha Buffer
 		(BYTE)0, // Shift Bit Ignored
 		(BYTE)0, // No Accumulation Buffer
 		(BYTE)0, (BYTE)0, (BYTE)0, (BYTE)0, // Accumulation Bits Ignored

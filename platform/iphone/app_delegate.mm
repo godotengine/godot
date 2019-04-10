@@ -30,6 +30,7 @@
 
 #import "app_delegate.h"
 
+#include "core/os/display_driver.h"
 #include "core/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "gl_view.h"
@@ -148,7 +149,7 @@ static void on_focus_out(ViewController *view_controller, bool *is_focus_out) {
 					MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 
 		[view_controller.view stopAnimation];
-		if (OS::get_singleton()->native_video_is_playing()) {
+		if (DisplayDriver::get_singleton()->native_video_is_playing()) {
 			OSIPhone::get_singleton()->native_video_focus_out();
 		}
 
@@ -404,7 +405,7 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 	};
 };
 
-OS::VideoMode _get_video_mode() {
+DisplayDriver::VideoMode _get_video_mode() {
 	int backingWidth;
 	int backingHeight;
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
@@ -412,7 +413,7 @@ OS::VideoMode _get_video_mode() {
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
 
-	OS::VideoMode vm;
+	DisplayDriver::VideoMode vm;
 	vm.fullscreen = true;
 	vm.width = backingWidth;
 	vm.height = backingHeight;
@@ -426,7 +427,7 @@ static int frame_count = 0;
 
 	switch (frame_count) {
 		case 0: {
-			OS::get_singleton()->set_video_mode(_get_video_mode());
+			DisplayDriver::get_singleton()->set_video_mode(_get_video_mode());
 
 			if (!OS::get_singleton()) {
 				exit(0);
@@ -616,7 +617,7 @@ static int frame_count = 0;
 	// Create a full-screen window
 	window = [[UIWindow alloc] initWithFrame:rect];
 
-	OS::VideoMode vm = _get_video_mode();
+	DisplayDriver::VideoMode vm = _get_video_mode();
 
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
 			NSUserDomainMask, YES);

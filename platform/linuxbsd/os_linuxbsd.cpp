@@ -907,7 +907,7 @@ void OS_LinuxBSD::flush_mouse_motion() {
 	xi.relative_motion.y = 0;
 }
 
-OS::MouseMode OS_LinuxBSD::get_mouse_mode() const {
+DisplayDriver::MouseMode OS_LinuxBSD::get_mouse_mode() const {
 	return mouse_mode;
 }
 
@@ -949,7 +949,7 @@ void OS_LinuxBSD::set_window_title(const String &p_title) {
 void OS_LinuxBSD::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_LinuxBSD::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_LinuxBSD::get_video_mode(int p_screen) const {
 	return current_videomode;
 }
 
@@ -2295,7 +2295,7 @@ void OS_LinuxBSD::process_xevents() {
 						req->target == XA_STRING ||
 						req->target == XInternAtom(x11_display, "text/plain;charset=utf-8", 0) ||
 						req->target == XInternAtom(x11_display, "text/plain", 0)) {
-					CharString clip = OS::get_clipboard().utf8();
+					CharString clip = DisplayDriver::get_clipboard().utf8();
 					XChangeProperty(x11_display,
 							req->requestor,
 							req->property,
@@ -2483,7 +2483,7 @@ bool OS_LinuxBSD::can_draw() const {
 
 void OS_LinuxBSD::set_clipboard(const String &p_text) {
 
-	OS::set_clipboard(p_text);
+	DisplayDriver::set_clipboard(p_text);
 
 	XSetSelectionOwner(x11_display, XA_PRIMARY, x11_window, CurrentTime);
 	XSetSelectionOwner(x11_display, XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, CurrentTime);
@@ -2561,10 +2561,10 @@ static String _get_clipboard(Atom p_source, Window x11_window, ::Display *x11_di
 String OS_LinuxBSD::get_clipboard() const {
 
 	String ret;
-	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, x11_display, OS::get_clipboard());
+	ret = _get_clipboard(XInternAtom(x11_display, "CLIPBOARD", 0), x11_window, x11_display, DisplayDriver::get_clipboard());
 
 	if (ret == "") {
-		ret = _get_clipboard(XA_PRIMARY, x11_window, x11_display, OS::get_clipboard());
+		ret = _get_clipboard(XA_PRIMARY, x11_window, x11_display, DisplayDriver::get_clipboard());
 	};
 
 	return ret;
@@ -3179,7 +3179,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	return OK;
 }
 
-OS::LatinKeyboardVariant OS_LinuxBSD::get_latin_keyboard_variant() const {
+DisplayDriver::LatinKeyboardVariant OS_LinuxBSD::get_latin_keyboard_variant() const {
 
 	XkbDescRec *xkbdesc = XkbAllocKeyboard();
 	ERR_FAIL_COND_V(!xkbdesc, LATIN_KEYBOARD_QWERTY);

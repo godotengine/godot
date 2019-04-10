@@ -31,6 +31,7 @@
 #include "visual_server_raster.h"
 
 #include "core/io/marshalls.h"
+#include "core/os/display_driver.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/sort_array.h"
@@ -185,7 +186,7 @@ void VisualServerRaster::set_debug_generate_wireframes(bool p_generate) {
 }
 
 void VisualServerRaster::call_set_use_vsync(bool p_enable) {
-	OS::get_singleton()->_set_use_vsync(p_enable);
+	DisplayDriver::get_singleton()->_set_use_vsync(p_enable);
 }
 
 bool VisualServerRaster::is_low_end() const {

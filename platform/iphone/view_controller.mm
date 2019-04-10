@@ -30,6 +30,7 @@
 
 #import "view_controller.h"
 
+#include "core/os/display_driver.h"
 #include "os_iphone.h"
 
 extern "C" {
@@ -84,10 +85,10 @@ int add_cmdline(int p_argc, char **p_args) {
 };
 
 - (BOOL)shouldAutorotate {
-	switch (OS::get_singleton()->get_screen_orientation()) {
-		case OS::SCREEN_SENSOR:
-		case OS::SCREEN_SENSOR_LANDSCAPE:
-		case OS::SCREEN_SENSOR_PORTRAIT:
+	switch (DisplayDriver::get_singleton()->get_screen_orientation()) {
+		case DisplayDriver::SCREEN_SENSOR:
+		case DisplayDriver::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayDriver::SCREEN_SENSOR_PORTRAIT:
 			return YES;
 		default:
 			return NO;
@@ -95,20 +96,20 @@ int add_cmdline(int p_argc, char **p_args) {
 };
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-	switch (OS::get_singleton()->get_screen_orientation()) {
-		case OS::SCREEN_PORTRAIT:
+	switch (DisplayDriver::get_singleton()->get_screen_orientation()) {
+		case DisplayDriver::SCREEN_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait;
-		case OS::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayDriver::SCREEN_REVERSE_LANDSCAPE:
 			return UIInterfaceOrientationMaskLandscapeRight;
-		case OS::SCREEN_REVERSE_PORTRAIT:
+		case DisplayDriver::SCREEN_REVERSE_PORTRAIT:
 			return UIInterfaceOrientationMaskPortraitUpsideDown;
-		case OS::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayDriver::SCREEN_SENSOR_LANDSCAPE:
 			return UIInterfaceOrientationMaskLandscape;
-		case OS::SCREEN_SENSOR_PORTRAIT:
+		case DisplayDriver::SCREEN_SENSOR_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
-		case OS::SCREEN_SENSOR:
+		case DisplayDriver::SCREEN_SENSOR:
 			return UIInterfaceOrientationMaskAll;
-		case OS::SCREEN_LANDSCAPE:
+		case DisplayDriver::SCREEN_LANDSCAPE:
 			return UIInterfaceOrientationMaskLandscapeLeft;
 	}
 };

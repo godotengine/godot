@@ -256,7 +256,7 @@ void OS_Android::set_window_title(const String &p_title) {
 void OS_Android::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_Android::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }

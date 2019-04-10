@@ -35,6 +35,7 @@
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry.h"
+#include "core/os/display_driver.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -192,16 +193,16 @@ _ResourceSaver::_ResourceSaver() {
 
 Point2 _OS::get_mouse_position() const {
 
-	return OS::get_singleton()->get_mouse_position();
+	return DisplayDriver::get_singleton()->get_mouse_position();
 }
 void _OS::set_window_title(const String &p_title) {
 
-	OS::get_singleton()->set_window_title(p_title);
+	DisplayDriver::get_singleton()->set_window_title(p_title);
 }
 
 int _OS::get_mouse_button_state() const {
 
-	return OS::get_singleton()->get_mouse_button_state();
+	return DisplayDriver::get_singleton()->get_mouse_button_state();
 }
 
 String _OS::get_unique_id() const {
@@ -209,28 +210,28 @@ String _OS::get_unique_id() const {
 }
 bool _OS::has_touchscreen_ui_hint() const {
 
-	return OS::get_singleton()->has_touchscreen_ui_hint();
+	return DisplayDriver::get_singleton()->has_touchscreen_ui_hint();
 }
 
 void _OS::set_clipboard(const String &p_text) {
 
-	OS::get_singleton()->set_clipboard(p_text);
+	DisplayDriver::get_singleton()->set_clipboard(p_text);
 }
 String _OS::get_clipboard() const {
 
-	return OS::get_singleton()->get_clipboard();
+	return DisplayDriver::get_singleton()->get_clipboard();
 }
 
 int _OS::get_video_driver_count() const {
-	return OS::get_singleton()->get_video_driver_count();
+	return DisplayDriver::get_singleton()->get_video_driver_count();
 }
 
 String _OS::get_video_driver_name(VideoDriver p_driver) const {
-	return OS::get_singleton()->get_video_driver_name((int)p_driver);
+	return DisplayDriver::get_singleton()->get_video_driver_name((int)p_driver);
 }
 
 _OS::VideoDriver _OS::get_current_video_driver() const {
-	return (VideoDriver)OS::get_singleton()->get_current_video_driver();
+	return (VideoDriver)DisplayDriver::get_singleton()->get_current_video_driver();
 }
 
 int _OS::get_audio_driver_count() const {
@@ -255,147 +256,149 @@ void _OS::close_midi_inputs() {
 
 void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
 
-	OS::VideoMode vm;
+	DisplayDriver::VideoMode vm;
 	vm.width = p_size.width;
 	vm.height = p_size.height;
 	vm.fullscreen = p_fullscreen;
 	vm.resizable = p_resizeable;
-	OS::get_singleton()->set_video_mode(vm, p_screen);
+	DisplayDriver::get_singleton()->set_video_mode(vm, p_screen);
 }
+
 Size2 _OS::get_video_mode(int p_screen) const {
 
-	OS::VideoMode vm;
-	vm = OS::get_singleton()->get_video_mode(p_screen);
+	DisplayDriver::VideoMode vm;
+	vm = DisplayDriver::get_singleton()->get_video_mode(p_screen);
 	return Size2(vm.width, vm.height);
 }
+
 bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
-	OS::VideoMode vm;
-	vm = OS::get_singleton()->get_video_mode(p_screen);
+	DisplayDriver::VideoMode vm;
+	vm = DisplayDriver::get_singleton()->get_video_mode(p_screen);
 	return vm.fullscreen;
 }
 
 int _OS::get_screen_count() const {
-	return OS::get_singleton()->get_screen_count();
+	return DisplayDriver::get_singleton()->get_screen_count();
 }
 
 int _OS::get_current_screen() const {
-	return OS::get_singleton()->get_current_screen();
+	return DisplayDriver::get_singleton()->get_current_screen();
 }
 
 void _OS::set_current_screen(int p_screen) {
-	OS::get_singleton()->set_current_screen(p_screen);
+	DisplayDriver::get_singleton()->set_current_screen(p_screen);
 }
 
 Point2 _OS::get_screen_position(int p_screen) const {
-	return OS::get_singleton()->get_screen_position(p_screen);
+	return DisplayDriver::get_singleton()->get_screen_position(p_screen);
 }
 
 Size2 _OS::get_screen_size(int p_screen) const {
-	return OS::get_singleton()->get_screen_size(p_screen);
+	return DisplayDriver::get_singleton()->get_screen_size(p_screen);
 }
 
 int _OS::get_screen_dpi(int p_screen) const {
 
-	return OS::get_singleton()->get_screen_dpi(p_screen);
+	return DisplayDriver::get_singleton()->get_screen_dpi(p_screen);
 }
 
 Point2 _OS::get_window_position() const {
-	return OS::get_singleton()->get_window_position();
+	return DisplayDriver::get_singleton()->get_window_position();
 }
 
 void _OS::set_window_position(const Point2 &p_position) {
-	OS::get_singleton()->set_window_position(p_position);
+	DisplayDriver::get_singleton()->set_window_position(p_position);
 }
 
 Size2 _OS::get_window_size() const {
-	return OS::get_singleton()->get_window_size();
+	return DisplayDriver::get_singleton()->get_window_size();
 }
 
 Size2 _OS::get_real_window_size() const {
-	return OS::get_singleton()->get_real_window_size();
+	return DisplayDriver::get_singleton()->get_real_window_size();
 }
 
 void _OS::set_window_size(const Size2 &p_size) {
-	OS::get_singleton()->set_window_size(p_size);
+	DisplayDriver::get_singleton()->set_window_size(p_size);
 }
 
 Rect2 _OS::get_window_safe_area() const {
-	return OS::get_singleton()->get_window_safe_area();
+	return DisplayDriver::get_singleton()->get_window_safe_area();
 }
 
 void _OS::set_window_fullscreen(bool p_enabled) {
-	OS::get_singleton()->set_window_fullscreen(p_enabled);
+	DisplayDriver::get_singleton()->set_window_fullscreen(p_enabled);
 }
 
 bool _OS::is_window_fullscreen() const {
-	return OS::get_singleton()->is_window_fullscreen();
+	return DisplayDriver::get_singleton()->is_window_fullscreen();
 }
 
 void _OS::set_window_resizable(bool p_enabled) {
-	OS::get_singleton()->set_window_resizable(p_enabled);
+	DisplayDriver::get_singleton()->set_window_resizable(p_enabled);
 }
 
 bool _OS::is_window_resizable() const {
-	return OS::get_singleton()->is_window_resizable();
+	return DisplayDriver::get_singleton()->is_window_resizable();
 }
 
 void _OS::set_window_minimized(bool p_enabled) {
-	OS::get_singleton()->set_window_minimized(p_enabled);
+	DisplayDriver::get_singleton()->set_window_minimized(p_enabled);
 }
 
 bool _OS::is_window_minimized() const {
-	return OS::get_singleton()->is_window_minimized();
+	return DisplayDriver::get_singleton()->is_window_minimized();
 }
 
 void _OS::set_window_maximized(bool p_enabled) {
-	OS::get_singleton()->set_window_maximized(p_enabled);
+	DisplayDriver::get_singleton()->set_window_maximized(p_enabled);
 }
 
 bool _OS::is_window_maximized() const {
-	return OS::get_singleton()->is_window_maximized();
+	return DisplayDriver::get_singleton()->is_window_maximized();
 }
 
 void _OS::set_window_always_on_top(bool p_enabled) {
-	OS::get_singleton()->set_window_always_on_top(p_enabled);
+	DisplayDriver::get_singleton()->set_window_always_on_top(p_enabled);
 }
 
 bool _OS::is_window_always_on_top() const {
-	return OS::get_singleton()->is_window_always_on_top();
+	return DisplayDriver::get_singleton()->is_window_always_on_top();
 }
 
 void _OS::set_borderless_window(bool p_borderless) {
-	OS::get_singleton()->set_borderless_window(p_borderless);
+	DisplayDriver::get_singleton()->set_borderless_window(p_borderless);
 }
 
 bool _OS::get_window_per_pixel_transparency_enabled() const {
-	return OS::get_singleton()->get_window_per_pixel_transparency_enabled();
+	return DisplayDriver::get_singleton()->get_window_per_pixel_transparency_enabled();
 }
 
 void _OS::set_window_per_pixel_transparency_enabled(bool p_enabled) {
-	OS::get_singleton()->set_window_per_pixel_transparency_enabled(p_enabled);
+	DisplayDriver::get_singleton()->set_window_per_pixel_transparency_enabled(p_enabled);
 }
 
 bool _OS::get_borderless_window() const {
-	return OS::get_singleton()->get_borderless_window();
+	return DisplayDriver::get_singleton()->get_borderless_window();
 }
 
 void _OS::set_ime_active(const bool p_active) {
 
-	OS::get_singleton()->set_ime_active(p_active);
+	DisplayDriver::get_singleton()->set_ime_active(p_active);
 }
 
 void _OS::set_ime_position(const Point2 &p_pos) {
 
-	OS::get_singleton()->set_ime_position(p_pos);
+	DisplayDriver::get_singleton()->set_ime_position(p_pos);
 }
 
 Point2 _OS::get_ime_selection() const {
-	return OS::get_singleton()->get_ime_selection();
+	return DisplayDriver::get_singleton()->get_ime_selection();
 }
 
 String _OS::get_ime_text() const {
-	return OS::get_singleton()->get_ime_text();
+	return DisplayDriver::get_singleton()->get_ime_text();
 }
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
@@ -405,17 +408,17 @@ void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 bool _OS::is_video_mode_resizable(int p_screen) const {
 
-	OS::VideoMode vm;
-	vm = OS::get_singleton()->get_video_mode(p_screen);
+	DisplayDriver::VideoMode vm;
+	vm = DisplayDriver::get_singleton()->get_video_mode(p_screen);
 	return vm.resizable;
 }
 
 Array _OS::get_fullscreen_mode_list(int p_screen) const {
 
-	List<OS::VideoMode> vmlist;
-	OS::get_singleton()->get_fullscreen_mode_list(&vmlist, p_screen);
+	List<DisplayDriver::VideoMode> vmlist;
+	DisplayDriver::get_singleton()->get_fullscreen_mode_list(&vmlist, p_screen);
 	Array vmarr;
-	for (List<OS::VideoMode>::Element *E = vmlist.front(); E; E = E->next()) {
+	for (List<DisplayDriver::VideoMode>::Element *E = vmlist.front(); E; E = E->next()) {
 
 		vmarr.push_back(Size2(E->get().width, E->get().height));
 	}
@@ -499,14 +502,14 @@ String _OS::get_locale() const {
 }
 
 String _OS::get_latin_keyboard_variant() const {
-	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
-		case OS::LATIN_KEYBOARD_QWERTY: return "QWERTY";
-		case OS::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
-		case OS::LATIN_KEYBOARD_AZERTY: return "AZERTY";
-		case OS::LATIN_KEYBOARD_QZERTY: return "QZERTY";
-		case OS::LATIN_KEYBOARD_DVORAK: return "DVORAK";
-		case OS::LATIN_KEYBOARD_NEO: return "NEO";
-		case OS::LATIN_KEYBOARD_COLEMAK: return "COLEMAK";
+	switch (DisplayDriver::get_singleton()->get_latin_keyboard_variant()) {
+		case DisplayDriver::LATIN_KEYBOARD_QWERTY: return "QWERTY";
+		case DisplayDriver::LATIN_KEYBOARD_QWERTZ: return "QWERTZ";
+		case DisplayDriver::LATIN_KEYBOARD_AZERTY: return "AZERTY";
+		case DisplayDriver::LATIN_KEYBOARD_QZERTY: return "QZERTY";
+		case DisplayDriver::LATIN_KEYBOARD_DVORAK: return "DVORAK";
+		case DisplayDriver::LATIN_KEYBOARD_NEO: return "NEO";
+		case DisplayDriver::LATIN_KEYBOARD_COLEMAK: return "COLEMAK";
 		default: return "ERROR";
 	}
 }
@@ -527,12 +530,12 @@ Error _OS::set_thread_name(const String &p_name) {
 };
 
 void _OS::set_use_vsync(bool p_enable) {
-	OS::get_singleton()->set_use_vsync(p_enable);
+	DisplayDriver::get_singleton()->set_use_vsync(p_enable);
 }
 
 bool _OS::is_vsync_enabled() const {
 
-	return OS::get_singleton()->is_vsync_enabled();
+	return DisplayDriver::get_singleton()->is_vsync_enabled();
 }
 
 _OS::PowerState _OS::get_power_state() {
@@ -613,7 +616,7 @@ uint64_t _OS::get_dynamic_memory_usage() const {
 
 void _OS::set_icon(const Ref<Image> &p_icon) {
 
-	OS::get_singleton()->set_icon(p_icon);
+	DisplayDriver::get_singleton()->set_icon(p_icon);
 }
 
 int _OS::get_exit_code() const {
@@ -867,7 +870,7 @@ bool _OS::can_use_threads() const {
 
 bool _OS::can_draw() const {
 
-	return OS::get_singleton()->can_draw();
+	return DisplayDriver::get_singleton()->can_draw();
 }
 
 bool _OS::is_userfs_persistent() const {
@@ -967,19 +970,19 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 };
 
 bool _OS::has_virtual_keyboard() const {
-	return OS::get_singleton()->has_virtual_keyboard();
+	return DisplayDriver::get_singleton()->has_virtual_keyboard();
 }
 
 void _OS::show_virtual_keyboard(const String &p_existing_text) {
-	OS::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2());
+	DisplayDriver::get_singleton()->show_virtual_keyboard(p_existing_text, Rect2());
 }
 
 void _OS::hide_virtual_keyboard() {
-	OS::get_singleton()->hide_virtual_keyboard();
+	DisplayDriver::get_singleton()->hide_virtual_keyboard();
 }
 
 int _OS::get_virtual_keyboard_height() {
-	return OS::get_singleton()->get_virtual_keyboard_height();
+	return DisplayDriver::get_singleton()->get_virtual_keyboard_height();
 }
 
 void _OS::print_all_resources(const String &p_to_file) {
@@ -1004,41 +1007,41 @@ String _OS::get_user_data_dir() const {
 
 Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 
-	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
+	return DisplayDriver::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
 };
 
 bool _OS::native_video_is_playing() {
 
-	return OS::get_singleton()->native_video_is_playing();
+	return DisplayDriver::get_singleton()->native_video_is_playing();
 };
 
 void _OS::native_video_pause() {
 
-	OS::get_singleton()->native_video_pause();
+	DisplayDriver::get_singleton()->native_video_pause();
 };
 
 void _OS::native_video_unpause() {
-	OS::get_singleton()->native_video_unpause();
+	DisplayDriver::get_singleton()->native_video_unpause();
 };
 
 void _OS::native_video_stop() {
 
-	OS::get_singleton()->native_video_stop();
+	DisplayDriver::get_singleton()->native_video_stop();
 };
 
 void _OS::request_attention() {
 
-	OS::get_singleton()->request_attention();
+	DisplayDriver::get_singleton()->request_attention();
 }
 
 void _OS::center_window() {
 
-	OS::get_singleton()->center_window();
+	DisplayDriver::get_singleton()->center_window();
 }
 
 void _OS::move_window_to_foreground() {
 
-	OS::get_singleton()->move_window_to_foreground();
+	DisplayDriver::get_singleton()->move_window_to_foreground();
 }
 
 bool _OS::is_debug_build() const {
@@ -1052,22 +1055,22 @@ bool _OS::is_debug_build() const {
 
 void _OS::set_screen_orientation(ScreenOrientation p_orientation) {
 
-	OS::get_singleton()->set_screen_orientation(OS::ScreenOrientation(p_orientation));
+	DisplayDriver::get_singleton()->set_screen_orientation(DisplayDriver::ScreenOrientation(p_orientation));
 }
 
 _OS::ScreenOrientation _OS::get_screen_orientation() const {
 
-	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
+	return ScreenOrientation(DisplayDriver::get_singleton()->get_screen_orientation());
 }
 
 void _OS::set_keep_screen_on(bool p_enabled) {
 
-	OS::get_singleton()->set_keep_screen_on(p_enabled);
+	DisplayDriver::get_singleton()->set_keep_screen_on(p_enabled);
 }
 
 bool _OS::is_keep_screen_on() const {
 
-	return OS::get_singleton()->is_keep_screen_on();
+	return DisplayDriver::get_singleton()->is_keep_screen_on();
 }
 
 String _OS::get_system_dir(SystemDir p_dir) const {

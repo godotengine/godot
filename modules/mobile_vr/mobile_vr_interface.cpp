@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "mobile_vr_interface.h"
+#include "core/os/display_driver.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "servers/visual/visual_server_globals.h"
@@ -339,8 +340,7 @@ Size2 MobileVRInterface::get_render_targetsize() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size
-	Size2 target_size = OS::get_singleton()->get_window_size();
-
+	Size2 target_size = DisplayDriver::get_singleton()->get_window_size();
 	target_size.x *= 0.5 * oversample;
 	target_size.y *= oversample;
 

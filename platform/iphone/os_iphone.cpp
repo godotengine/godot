@@ -431,7 +431,7 @@ void OSIPhone::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 	video_mode = p_video_mode;
 };
 
-OS::VideoMode OSIPhone::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OSIPhone::get_video_mode(int p_screen) const {
 
 	return video_mode;
 };

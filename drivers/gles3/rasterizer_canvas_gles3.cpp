@@ -30,6 +30,7 @@
 
 #include "rasterizer_canvas_gles3.h"
 
+#include "core/os/display_driver.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "rasterizer_scene_gles3.h"
@@ -1866,7 +1867,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 		canvas_transform.translate(-(storage->frame.current_rt->width / 2.0f), -(storage->frame.current_rt->height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / storage->frame.current_rt->width, csy * -2.0f / storage->frame.current_rt->height, 1.0f));
 	} else {
-		Vector2 ssize = OS::get_singleton()->get_window_size();
+		Vector2 ssize = DisplayDriver::get_singleton()->get_window_size();
 		canvas_transform.translate(-(ssize.width / 2.0f), -(ssize.height / 2.0f), 0.0f);
 		canvas_transform.scale(Vector3(2.0f / ssize.width, -2.0f / ssize.height, 1.0f));
 	}
@@ -1897,7 +1898,7 @@ void RasterizerCanvasGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, float
 	if (storage->frame.current_rt) {
 		half_size = Vector2(storage->frame.current_rt->width, storage->frame.current_rt->height);
 	} else {
-		half_size = OS::get_singleton()->get_window_size();
+		half_size = DisplayDriver::get_singleton()->get_window_size();
 	}
 	half_size *= 0.5;
 	Vector2 offset((p_rect.position.x - half_size.x) / half_size.x, (p_rect.position.y - half_size.y) / half_size.y);
@@ -1927,7 +1928,7 @@ void RasterizerCanvasGLES3::draw_lens_distortion_rect(const Rect2 &p_rect, float
 
 void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_image) {
 
-	Vector2 window_size = OS::get_singleton()->get_window_size();
+	Vector2 window_size = DisplayDriver::get_singleton()->get_window_size();
 	int window_h = window_size.height;
 	int window_w = window_size.width;
 

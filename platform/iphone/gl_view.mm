@@ -30,6 +30,7 @@
 
 #import "gl_view.h"
 
+#include "core/os/display_driver.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "os_iphone.h"
@@ -376,12 +377,12 @@ static void clear_touches() {
 	}
 
 	if (OS::get_singleton()) {
-		OS::VideoMode vm;
+		DisplayDriver::VideoMode vm;
 		vm.fullscreen = true;
 		vm.width = backingWidth;
 		vm.height = backingHeight;
 		vm.resizable = false;
-		OS::get_singleton()->set_video_mode(vm);
+		DisplayDriver::get_singleton()->set_video_mode(vm);
 		OSIPhone::get_singleton()->set_base_framebuffer(viewFramebuffer);
 	};
 	gl_view_base_fb = viewFramebuffer;

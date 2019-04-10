@@ -31,6 +31,7 @@
 #include "script_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/os/display_driver.h"
 #include "core/os/file_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
@@ -607,7 +608,7 @@ void ScriptEditor::_close_docs_tab() {
 void ScriptEditor::_copy_script_path() {
 	ScriptEditorBase *se = _get_current_editor();
 	RES script = se->get_edited_resource();
-	OS::get_singleton()->set_clipboard(script->get_path());
+	DisplayDriver::get_singleton()->set_clipboard(script->get_path());
 }
 
 void ScriptEditor::_close_other_tabs() {

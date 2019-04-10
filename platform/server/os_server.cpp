@@ -154,7 +154,7 @@ void OS_Server::set_window_title(const String &p_title) {
 void OS_Server::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
-OS::VideoMode OS_Server::get_video_mode(int p_screen) const {
+DisplayDriver::VideoMode OS_Server::get_video_mode(int p_screen) const {
 
 	return current_videomode;
 }

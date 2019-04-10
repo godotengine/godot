@@ -30,6 +30,7 @@
 
 #include "physics_2d_server_wrap_mt.h"
 
+#include "core/os/display_driver.h"
 #include "core/os/os.h"
 
 void Physics2DServerWrapMT::thread_exit() {
@@ -54,7 +55,7 @@ void Physics2DServerWrapMT::thread_loop() {
 
 	server_thread = Thread::get_caller_id();
 
-	OS::get_singleton()->make_rendering_thread();
+	DisplayDriver::get_singleton()->make_rendering_thread();
 
 	physics_2d_server->init();
 
@@ -110,7 +111,7 @@ void Physics2DServerWrapMT::init() {
 	if (create_thread) {
 
 		step_sem = Semaphore::create();
-		//OS::get_singleton()->release_rendering_thread();
+		//DisplayDriver::get_singleton()->release_rendering_thread();
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);
 		}
