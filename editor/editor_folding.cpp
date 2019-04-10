@@ -112,14 +112,16 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 	List<PropertyInfo> plist;
 	p_node->get_property_list(&plist);
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (E->get().type == Variant::OBJECT) {
-			RES res = p_node->get(E->get().name);
-			if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
+		if (E->get().usage & PROPERTY_USAGE_EDITOR) {
+			if (E->get().type == Variant::OBJECT) {
+				RES res = p_node->get(E->get().name);
+				if (res.is_valid() && !resources.has(res) && res->get_path() != String() && !res->get_path().is_resource_file()) {
 
-				PoolVector<String> res_unfolds = _get_unfolds(res.ptr());
-				resource_folds.push_back(res->get_path());
-				resource_folds.push_back(res_unfolds);
-				resources.insert(res);
+					PoolVector<String> res_unfolds = _get_unfolds(res.ptr());
+					resource_folds.push_back(res->get_path());
+					resource_folds.push_back(res_unfolds);
+					resources.insert(res);
+				}
 			}
 		}
 	}
