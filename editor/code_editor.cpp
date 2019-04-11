@@ -684,7 +684,7 @@ void CodeTextEditor::_toogle_comment() {
 		const int line_indent_size = text_editor->get_line_indent_size(i);
 		if (i == begin) {
 			comment_pos = line_indent_size;
-		} else if(line_indent_size > -1 && line_indent_size < comment_pos) {
+		} else if (line_indent_size > -1 && line_indent_size < comment_pos) {
 			comment_pos = line_indent_size;
 		}
 	}
