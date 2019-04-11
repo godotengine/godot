@@ -4984,7 +4984,7 @@ void RasterizerSceneGLES3::initialize() {
 		//default material and shader for light affect debug
 
 		default_light_affect_debug_shader = storage->shader_create();
-		storage->shader_set_code(default_light_affect_debug_shader, "shader_type spatial;\nrender_mode ambient_light_disabled,blend_add;\n void light() { SPECULAR_LIGHT.r+=1.0; int lc=int((SPECULAR_LIGHT.r)+0.1); if(lc<=4) { DIFFUSE_LIGHT=vec3(0.1, 0.3, 0.5); } else if(lc<=6) { DIFFUSE_LIGHT=vec3(0.3, 0.1, 0.7); } else if(lc<=7) { DIFFUSE_LIGHT=vec3(0.8, 0.6, 0.1); } else if(lc>=8) { DIFFUSE_LIGHT=vec3(1.0, 0.1, 0.1); } }\n void fragment() { SPECULAR=0.0; ALBEDO=vec3(1.0); EMISSION=vec3(0.1,0.1,0.1); ALPHA=0.4; }");
+		storage->shader_set_code(default_light_affect_debug_shader, "shader_type spatial;\nrender_mode ambient_light_disabled,blend_mix;\n void light() { SPECULAR_LIGHT.r+=1.0; int lc=int((SPECULAR_LIGHT.r)+0.1); if(lc<=4) { DIFFUSE_LIGHT=vec3(0.1, 0.3, 0.5); } else if(lc<=6) { DIFFUSE_LIGHT=vec3(0.3, 0.1, 0.7); } else if(lc<=7) { DIFFUSE_LIGHT=vec3(0.8, 0.6, 0.1); } else if(lc>=8) { DIFFUSE_LIGHT=vec3(1.0, 0.1, 0.1); } }\n void fragment() { SPECULAR=0.0; ALBEDO=vec3(1.0); EMISSION=vec3(0.1,0.1,0.1); }");
 		default_light_affect_debug_material=storage->material_create();
 		storage->material_set_shader(default_light_affect_debug_material, default_light_affect_debug_shader);
 	}
