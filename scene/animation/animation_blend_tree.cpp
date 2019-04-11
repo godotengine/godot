@@ -363,6 +363,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 	fade_out = 0.1;
 	autorestart = false;
 	autorestart_delay = 1;
+	autorestart_random_delay = 0;
 
 	mix = MIX_MODE_BLEND;
 	sync = false;
