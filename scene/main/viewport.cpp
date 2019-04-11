@@ -50,6 +50,7 @@
 #include "scene/resources/mesh.h"
 #include "scene/scene_string_names.h"
 #include "servers/physics_2d_server.h"
+#include "editor/editor_settings.h"
 
 void ViewportTexture::setup_local_to_scene() {
 
@@ -3222,7 +3223,12 @@ Viewport::Viewport() {
 	gui.tooltip_timer = -1;
 
 	//gui.tooltip_timer->force_parent_owned();
-	gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
+	if (isEngine()) {
+		gui.tooltip_delay = EditorSettings::get_singleton()->get("interface/editor/tooltip_delay");
+	} else {
+		gui.tooltip_delay = GLOBAL_DEF("gui/timers/tooltip_delay_sec", 0.5);
+	}
+
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::REAL, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 	gui.tooltip = NULL;
