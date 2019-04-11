@@ -28,10 +28,18 @@ subject to the following restrictions:
 /* SVN $Revision$ on $Date$ from http://bullet.googlecode.com*/
 #define BT_BULLET_VERSION 279
 
+// -- GODOT start --
+namespace VHACD {
+// -- GODOT end --
+
 inline int32_t btGetVersion()
 {
     return BT_BULLET_VERSION;
 }
+
+// -- GODOT start --
+}; // namespace VHACD
+// -- GODOT end --
 
 #if defined(DEBUG) || defined(_DEBUG)
 #define BT_DEBUG
@@ -198,6 +206,10 @@ inline int32_t btGetVersion()
 
 #endif //__CELLOS_LV2__
 #endif
+
+// -- GODOT start --
+namespace VHACD {
+// -- GODOT end --
 
 ///The btScalar type abstracts floating point numbers, to easily switch between double and single floating point precision.
 #if defined(BT_USE_DOUBLE_PRECISION)
@@ -530,4 +542,9 @@ struct btTypedObject {
         return m_objectType;
     }
 };
+
+// -- GODOT start --
+}; // namespace VHACD
+// -- GODOT end --
+
 #endif //BT_SCALAR_H
