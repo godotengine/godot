@@ -634,8 +634,8 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_reset_zoom();
 			}
-			if (ED_IS_SHORTCUT("script_editor/toogle_comment", p_event)) {
-				_toogle_comment();
+			if (ED_IS_SHORTCUT("script_editor/toggle_comment", p_event)) {
+				_toggle_comment();
 			}
 		}
 	}
@@ -665,7 +665,7 @@ void CodeTextEditor::_reset_zoom() {
 	}
 }
 
-void CodeTextEditor::_toogle_comment() {
+void CodeTextEditor::_toggle_comment() {
 	int begin = text_editor->cursor_get_line();
 	int end = begin;
 
@@ -1373,7 +1373,7 @@ CodeTextEditor::CodeTextEditor() {
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
 	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
-	ED_SHORTCUT("script_editor/toogle_comment", TTR("Toogle Comment"), KEY_MASK_CMD | KEY_SLASH);
+	ED_SHORTCUT("script_editor/toggle_comment", TTR("Toogle Comment"), KEY_MASK_CMD | KEY_SLASH);
 
 	text_editor = memnew(TextEdit);
 	add_child(text_editor);
