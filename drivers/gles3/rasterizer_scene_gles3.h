@@ -87,6 +87,9 @@ public:
 	RID default_overdraw_material;
 	RID default_overdraw_shader;
 
+	RID default_light_affect_debug_material;
+	RID default_light_affect_debug_shader;
+
 	RasterizerStorageGLES3 *storage;
 
 	Vector<RasterizerStorageGLES3::RenderTarget::Exposure> exposure_shrink;

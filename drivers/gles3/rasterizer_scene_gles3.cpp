@@ -2293,6 +2293,8 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 
 	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		m_src = default_overdraw_material;
+	} else if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_LIGHT_AFFECT) {
+		m_src = default_light_affect_debug_material;
 	}
 
 	/*
@@ -4291,6 +4293,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
 		use_mrt = use_mrt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW;
+		use_mrt = use_mrt && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_LIGHT_AFFECT;
 		use_mrt = use_mrt && env && (env->bg_mode != VS::ENV_BG_KEEP && env->bg_mode != VS::ENV_BG_CANVAS);
 
 		glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
@@ -4345,7 +4348,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	RasterizerStorageGLES3::Sky *sky = NULL;
 	GLuint env_radiance_tex = 0;
 
-	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+	if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW || state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_LIGHT_AFFECT) {
 		clear_color = Color(0, 0, 0, 0);
 		storage->frame.clear_request = false;
 	} else if (!probe && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
@@ -4471,7 +4474,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		glDrawBuffers(1, &gldb);
 	}
 
-	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW))) {
+	if (env && env->bg_mode == VS::ENV_BG_SKY && (!storage->frame.current_rt || (!storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_OVERDRAW && state.debug_draw != VS::VIEWPORT_DEBUG_DRAW_LIGHT_AFFECT))) {
 
 		/*
 		if (use_mrt) {
@@ -4977,6 +4980,15 @@ void RasterizerSceneGLES3::initialize() {
 		storage->material_set_shader(default_overdraw_material, default_overdraw_shader);
 	}
 
+	{
+		//default material and shader for light affect debug
+
+		default_light_affect_debug_shader = storage->shader_create();
+		storage->shader_set_code(default_light_affect_debug_shader, "shader_type spatial;\nrender_mode ambient_light_disabled,blend_add;\n void light() { SPECULAR_LIGHT.r+=1.0; int lc=int((SPECULAR_LIGHT.r)+0.1); if(lc<=4) { DIFFUSE_LIGHT=vec3(0.1, 0.3, 0.5); } else if(lc<=6) { DIFFUSE_LIGHT=vec3(0.3, 0.1, 0.7); } else if(lc<=7) { DIFFUSE_LIGHT=vec3(0.8, 0.6, 0.1); } else if(lc>=8) { DIFFUSE_LIGHT=vec3(1.0, 0.1, 0.1); } }\n void fragment() { SPECULAR=0.0; ALBEDO=vec3(1.0); EMISSION=vec3(0.1,0.1,0.1); ALPHA=0.4; }");
+		default_light_affect_debug_material=storage->material_create();
+		storage->material_set_shader(default_light_affect_debug_material, default_light_affect_debug_shader);
+	}
+
 	glGenBuffers(1, &state.scene_ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, state.scene_ubo);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(State::SceneDataUBO), &state.scene_ubo, GL_DYNAMIC_DRAW);
@@ -5294,6 +5306,9 @@ RasterizerSceneGLES3::~RasterizerSceneGLES3() {
 
 	memdelete(default_overdraw_material.get_data());
 	memdelete(default_overdraw_shader.get_data());
+
+	memdelete(default_light_affect_debug_material.get_data());
+	memdelete(default_light_affect_debug_shader.get_data());
 
 	memfree(state.spot_array_tmp);
 	memfree(state.omni_array_tmp);
