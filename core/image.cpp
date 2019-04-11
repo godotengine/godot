@@ -59,6 +59,7 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"RGBHalf",
 	"RGBAHalf",
 	"RGBE9995",
+	"Indexed",
 	"DXT1 RGB8", //s3tc
 	"DXT3 RGBA8",
 	"DXT5 RGBA8",
@@ -420,10 +421,92 @@ void Image::convert(Format p_new_format) {
 	if (p_new_format == format)
 		return;
 
-	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
+	if (format >= FORMAT_DXT1 || p_new_format >= FORMAT_DXT1) {
 
 		ERR_EXPLAIN("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 		ERR_FAIL();
+
+	} else if (format == FORMAT_INDEXED) {
+
+		ERR_EXPLAIN("Cannot convert indexed image to format other than RGB8 or RGBA8.");
+		ERR_FAIL_COND(p_new_format != FORMAT_RGB8 || p_new_format != FORMAT_RGBA8);
+
+		ERR_EXPLAIN("An indexed image should have a color palette.");
+		ERR_FAIL_COND(!has_palette());
+
+		return;
+
+	} else if (p_new_format == FORMAT_INDEXED) {
+
+		ERR_EXPLAIN("Cannot convert an image to indexed format other than RGB8 or RGBA8.");
+		ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+
+		// Map image to palette
+
+		if (has_palette()) {
+
+		} else {
+			// generate_palette();
+
+			print_line("converting rbg to index");
+
+			clear_mipmaps();
+
+			pExq = exq_init();
+			if (format == FORMAT_RGB8) {
+				exq_no_transparency(pExq);
+			}
+
+			int pixel_size = get_format_pixel_size(format);
+			int num_pixels = data.size() / pixel_size;
+
+			// Quantize
+			PoolVector<uint8_t>::Write w_src = data.write();
+			uint8_t *src = w_src.ptr();
+
+			exq_feed(pExq, src, num_pixels);
+			exq_quantize_hq(pExq, 256);
+
+			// Extract palette
+			PoolVector<uint8_t> palette_data;
+			palette_data.resize(pixel_size * 256);
+
+			PoolVector<uint8_t>::Write w_pal_raw = palette_data.write();
+			uint8_t *pal_raw = w_pal_raw.ptr();
+
+			exq_get_palette(pExq, pal_raw, 256);
+
+			PoolVector<uint8_t> dest_data;
+			dest_data.resize(data.size());
+			PoolVector<uint8_t>::Write w_dest = dest_data.write();
+			uint8_t *dest = w_dest.ptr();
+
+			exq_map_image(pExq, num_pixels, src, dest);
+
+			data = dest_data;
+
+			// Convert palette to compatible format
+			clear_palette();
+			palette.resize(256);
+
+			PoolColorArray::Write w_pal = palette.write();
+			Color *pal = w_pal.ptr();
+
+			for (int i = 0; i < 256; i++) {
+				float rc = (pal_raw[0] / 255.9f);
+				float gc = (pal_raw[1] / 255.9f);
+				float bc = (pal_raw[2] / 255.9f);
+				float ac = (pal_raw[3] / 255.9f);
+
+				pal[i] = Color(rc, gc, bc, ac);
+
+				pal_raw += pixel_size;
+			}
+
+			exq_free(pExq);
+
+			return;
+		}
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 
@@ -1445,127 +1528,114 @@ Error Image::generate_palette(int p_num_colors, bool p_high_quality) {
 	int pixel_size = get_format_pixel_size(format);
 	int num_pixels = data.size() / pixel_size;
 
-	PoolVector<uint8_t>::Write w = data.write();
-	uint8_t *ptr = w.ptr();
+	// Quantize
+	PoolVector<uint8_t>::Write w_src = data.write();
+	uint8_t *src = w_src.ptr();
 
-	exq_feed(pExq, ptr, num_pixels);
+	exq_feed(pExq, src, num_pixels);
 	exq_quantize_ex(pExq, p_num_colors, (int)p_high_quality);
 
-	palette_data.resize(0);
+	// Extract palette
+	PoolVector<uint8_t> palette_data;
 	palette_data.resize(pixel_size * p_num_colors);
 
-	w = palette_data.write();
-	ptr = w.ptr();
+	PoolVector<uint8_t>::Write w_pal_raw = palette_data.write();
+	uint8_t *pal_raw = w_pal_raw.ptr();
 
-	exq_get_palette(pExq, ptr, p_num_colors);
+	exq_get_palette(pExq, pal_raw, p_num_colors);
+
+	// Convert to color array
+	clear_palette();
+	palette.resize(p_num_colors);
+
+	PoolColorArray::Write w_pal = palette.write();
+	Color *pal = w_pal.ptr();
+
+	for (int i = 0; i < p_num_colors; i++) {
+		float rc = (pal_raw[0] / 255.9f);
+		float gc = (pal_raw[1] / 255.9f);
+		float bc = (pal_raw[2] / 255.9f);
+		float ac = (pal_raw[3] / 255.9f);
+
+		pal[i] = Color(rc, gc, bc, ac);
+
+		pal_raw += pixel_size;
+	}
 
 	exq_free(pExq);
 
 	return OK;
 }
 
-PoolColorArray Image::get_palette() {
-
-	bool has_alpha = false;
-
-	switch (format) {
-
-		case FORMAT_RGB8: has_alpha = false; break;
-		case FORMAT_RGBA8: has_alpha = true; break;
-		default: {
-		}
-	}
-
-	PoolColorArray palette;
-
-	int pixel_size = get_format_pixel_size(format);
-	int num_colors = palette_data.size() / pixel_size;
-	palette.resize(num_colors);
-
-	PoolVector<uint8_t>::Write w_src = palette_data.write();
-	PoolColorArray::Write w_dest = palette.write();
-
-	uint8_t *src = w_src.ptr();
-	Color *dest = w_dest.ptr();
-
-	for (int i = 0; i < num_colors; i++) {
-		float rc = (src[0] / 255.9f);
-		float gc = (src[1] / 255.9f);
-		float bc = (src[2] / 255.9f);
-		float ac = (src[3] / 255.9f);
-
-		dest[i] = Color(rc, gc, bc, ac);
-
-		src += pixel_size;
-	}
+PoolColorArray Image::get_palette() const {
 
 	return palette;
 }
 
-// void Image::set_palette(const PoolColorArray &p_palette) {
+void Image::set_palette(const PoolColorArray &p_palette) {
+
+	palette = p_palette;
+}
+
+bool Image::has_palette() const {
+
+	return palette.size() > 0;
+}
+
+void Image::clear_palette() {
+
+	palette.resize(0);
+}
+
+// void Image::apply_palette() {
 
 // 	bool has_alpha = false;
 
 // 	switch (format) {
-
 // 		case FORMAT_RGB8: has_alpha = false; break;
 // 		case FORMAT_RGBA8: has_alpha = true; break;
 // 		default: {
 // 		}
 // 	}
-// 	int num_colors = p_palette.size();
 
-// 	exq_data *pExq;
+// 	int pixel_size = get_format_pixel_size(format);
+// 	int num_pixels = data.size() / pixel_size;
+
+// 	PoolVector<uint8_t> dest_data;
+// 	dest_data.resize(data.size());
+
 // 	pExq = exq_init();
-// 	pExq->numColors = num_colors;
-// 	pExq->transparency = (int)has_alpha;
+// 	pExq->transparency = int(!has_alpha);
 
-// 	PoolVector<uint8_t>::Write w_dest = palette_data.write();
+// 	PoolVector<uint8_t>::Write w_src = data.write();
+// 	PoolVector<uint8_t>::Write w_dest = dest_data.write();
+
+// 	// palette_data.resize(0);
+// 	// palette_data.resize(pixel_size * p_num_colors);
+
+// 	uint8_t *src = w_src.ptr();
 // 	uint8_t *dest = w_dest.ptr();
 
-// 	exq_set_palette(pExq, src, num_colors);
+// 	exq_feed(pExq, src, num_pixels);
 
-// 	// int pixel_size = get_format_pixel_size(format);
-// 	// int num_colors = palette_data.size() / pixel_size;
-// 	// palette.resize(num_colors);
+// 	// exq_set_palette(pExq, pal, palette_data.size() / pixel_size);
 
-// 	// PoolColorArray::Write w_dest = palette.write();
+// 	exq_quantize_ex(pExq, 256, 1);
 
-// 	// Color *dest = w_dest.ptr();
+// 	palette_data.resize(0);
+// 	palette_data.resize(pixel_size * 256);
 
-// 	for(int i = 0; i < num_colors; i++) {
-// 		float rc = (src[0] / 255.9f);
-// 		float gc = (src[1] / 255.9f);
-// 		float bc = (src[2] / 255.9f);
-// 		float ac = (src[3] / 255.9f);
+// 	PoolVector<uint8_t>::Write w_pal = palette_data.write();
+// 	uint8_t *pal = w_pal.ptr();
 
-// 		dest[i] = Color(rc, gc, bc, ac);
+// 	exq_get_palette(pExq, pal, 256);
 
-// 		src += pixel_size;
-// 	}
+// 	exq_map_image(pExq, num_pixels, src, dest);
 
-// 	return palette;
+// 	exq_free(pExq);
+
+// 	create(width, height, mipmaps, format, dest_data);
 // }
-
-void Image::apply_palette() {
-
-	int pixel_size = get_format_pixel_size(format);
-	int num_pixels = data.size() / pixel_size;
-
-	PoolVector<uint8_t> dest_data;
-	dest_data.resize(data.size());
-
-	{
-		PoolVector<uint8_t>::Write w_src = data.write();
-		PoolVector<uint8_t>::Write w_dest = dest_data.write();
-
-		uint8_t *src = w_src.ptr();
-		uint8_t *dest = w_dest.ptr();
-
-		exq_map_image(pExq, num_pixels, src, dest);
-	}
-	create(width, height, mipmaps, format, dest_data);
-}
 
 bool Image::empty() const {
 
@@ -2731,9 +2801,11 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors"), &Image::generate_palette, DEFVAL(256), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_palette", "palette"), &Image::set_palette);
 	ClassDB::bind_method(D_METHOD("get_palette"), &Image::get_palette);
-	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
+	ClassDB::bind_method(D_METHOD("has_palette"), &Image::has_palette);
+	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
 	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
@@ -2783,6 +2855,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "palette", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_palette", "get_palette");
 
 	BIND_CONSTANT(MAX_WIDTH);
 	BIND_CONSTANT(MAX_HEIGHT);
@@ -2804,6 +2877,7 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_RGBH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBAH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBE9995);
+	BIND_ENUM_CONSTANT(FORMAT_INDEXED);
 	BIND_ENUM_CONSTANT(FORMAT_DXT1); //s3tc bc1
 	BIND_ENUM_CONSTANT(FORMAT_DXT3); //bc2
 	BIND_ENUM_CONSTANT(FORMAT_DXT5); //bc3

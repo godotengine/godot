@@ -81,6 +81,7 @@ public:
 		FORMAT_RGBH,
 		FORMAT_RGBAH,
 		FORMAT_RGBE9995,
+		FORMAT_INDEXED,
 		FORMAT_DXT1, //s3tc bc1
 		FORMAT_DXT3, //bc2
 		FORMAT_DXT5, //bc3
@@ -163,10 +164,9 @@ private:
 
 	Format format;
 	PoolVector<uint8_t> data;
+	PoolColorArray palette;
 	int width, height;
 	bool mipmaps;
-
-	PoolVector<uint8_t> palette_data;
 
 	void _copy_internals_from(const Image &p_image) {
 		format = p_image.format;
@@ -250,9 +250,10 @@ public:
 	 * Generate an optimal color palette of an image
 	 */
 	Error generate_palette(int p_num_colors = 256, bool p_high_quality = true);
-	PoolColorArray get_palette();
+	PoolColorArray get_palette() const;
 	void set_palette(const PoolColorArray &p_palette);
-	void apply_palette();
+	bool has_palette() const;
+	void clear_palette();
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost

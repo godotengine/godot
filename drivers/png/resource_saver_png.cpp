@@ -103,40 +103,73 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	int pngf = 0;
 	int cs = 0;
 
-	switch (img->get_format()) {
+	png_colorp png_palette;
+	png_bytep png_palette_trans;
 
-		case Image::FORMAT_L8: {
+	if (p_img->has_palette()) {
+		pngf = PNG_COLOR_TYPE_PALETTE;
+		cs = 1;
 
-			pngf = PNG_COLOR_TYPE_GRAY;
-			cs = 1;
-		} break;
-		case Image::FORMAT_LA8: {
+		const PoolColorArray &palette = p_img->get_palette();
+		PoolColorArray::Read read = palette.read();
 
-			pngf = PNG_COLOR_TYPE_GRAY_ALPHA;
-			cs = 2;
-		} break;
-		case Image::FORMAT_RGB8: {
+		int palette_size = palette.size();
 
-			pngf = PNG_COLOR_TYPE_RGB;
-			cs = 3;
-		} break;
-		case Image::FORMAT_RGBA8: {
+		// Palette
+		png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
+		for (int i = 0; i < palette_size; i++) {
+			png_color *col = &png_palette[i];
 
-			pngf = PNG_COLOR_TYPE_RGB_ALPHA;
-			cs = 4;
-		} break;
-		default: {
+			col->red = read[i].r * 255.0;
+			col->green = read[i].g * 255.0;
+			col->blue = read[i].b * 255.0;
+		}
+		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
 
-			if (img->detect_alpha()) {
+		// Palette alpha
+		png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
+		for (int i = 0; i < palette_size; i++) {
+			png_bytep a = &png_palette_trans[i];
+			*a = (uint8_t)(read[i].a * 255.0);
+		}
+		png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
 
-				img->convert(Image::FORMAT_RGBA8);
-				pngf = PNG_COLOR_TYPE_RGB_ALPHA;
-				cs = 4;
-			} else {
+	} else {
+		switch (img->get_format()) {
 
-				img->convert(Image::FORMAT_RGB8);
+			case Image::FORMAT_L8: {
+
+				pngf = PNG_COLOR_TYPE_GRAY;
+				cs = 1;
+			} break;
+			case Image::FORMAT_LA8: {
+
+				pngf = PNG_COLOR_TYPE_GRAY_ALPHA;
+				cs = 2;
+			} break;
+			case Image::FORMAT_RGB8: {
+
 				pngf = PNG_COLOR_TYPE_RGB;
 				cs = 3;
+			} break;
+			case Image::FORMAT_RGBA8: {
+
+				pngf = PNG_COLOR_TYPE_RGB_ALPHA;
+				cs = 4;
+			} break;
+			default: {
+
+				if (img->detect_alpha()) {
+
+					img->convert(Image::FORMAT_RGBA8);
+					pngf = PNG_COLOR_TYPE_RGB_ALPHA;
+					cs = 4;
+				} else {
+
+					img->convert(Image::FORMAT_RGB8);
+					pngf = PNG_COLOR_TYPE_RGB;
+					cs = 3;
+				}
 			}
 		}
 	}
@@ -178,6 +211,10 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	/* cleanup heap allocation */
 	png_destroy_write_struct(&png_ptr, &info_ptr);
+
+	if (p_img->has_palette()) {
+		png_free(png_ptr, png_palette);
+	}
 
 	return OK;
 }
