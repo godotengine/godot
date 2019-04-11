@@ -544,6 +544,29 @@ struct btTypedObject {
 };
 
 // -- GODOT start --
+// Cherry-picked from Bullet 2.88 to fix GH-27926
+///align a pointer to the provided alignment, upwards
+template <typename T>
+T *btAlignPointer(T *unalignedPtr, size_t alignment)
+{
+    struct btConvertPointerSizeT
+    {
+        union {
+            T *ptr;
+            size_t integer;
+        };
+    };
+    btConvertPointerSizeT converter;
+
+    const size_t bit_mask = ~(alignment - 1);
+    converter.ptr = unalignedPtr;
+    converter.integer += alignment - 1;
+    converter.integer &= bit_mask;
+    return converter.ptr;
+}
+// -- GODOT end --
+
+// -- GODOT start --
 }; // namespace VHACD
 // -- GODOT end --
 
