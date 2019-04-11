@@ -49,6 +49,10 @@ void register_bullet_types() {
 	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
 	PhysicsServerManager::set_default_server("Bullet", 1);
 
+	ClassDB::register_class<BulletPhysicsServer>();
+	ClassDB::register_class<BulletPhysicsDirectBodyState>();
+	ClassDB::register_class<BulletPhysicsDirectSpaceState>();
+
 	GLOBAL_DEF("physics/3d/active_soft_world", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
 #endif

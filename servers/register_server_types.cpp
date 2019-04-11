@@ -61,6 +61,7 @@
 #include "physics_2d_server.h"
 #include "physics_server.h"
 #include "visual/shader_types.h"
+#include "visual/visual_server_raster.h"
 #include "visual_server.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage> *r_usage) {
@@ -110,9 +111,12 @@ void register_server_types() {
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
 	ClassDB::register_virtual_class<VisualServer>();
+	ClassDB::register_class<VisualServerRaster>();
 	ClassDB::register_class<AudioServer>();
 	ClassDB::register_virtual_class<PhysicsServer>();
+	ClassDB::register_class<PhysicsServerSW>();
 	ClassDB::register_virtual_class<Physics2DServer>();
+	ClassDB::register_class<Physics2DServerSW>();
 	ClassDB::register_class<ARVRServer>();
 
 	shader_types = memnew(ShaderTypes);
@@ -170,14 +174,18 @@ void register_server_types() {
 	}
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
+	ClassDB::register_class<Physics2DDirectBodyStateSW>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
+	ClassDB::register_class<Physics2DDirectSpaceStateSW>();
 	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
 	ClassDB::register_class<Physics2DTestMotionResult>();
 	ClassDB::register_class<Physics2DShapeQueryParameters>();
 
 	ClassDB::register_class<PhysicsShapeQueryParameters>();
 	ClassDB::register_virtual_class<PhysicsDirectBodyState>();
+	ClassDB::register_class<PhysicsDirectBodyStateSW>();
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
+	ClassDB::register_class<PhysicsDirectSpaceStateSW>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
 
 	ScriptDebuggerRemote::resource_usage_func = _debugger_get_resource_usage;

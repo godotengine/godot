@@ -57,9 +57,8 @@
 	@author AndreaCatania
 */
 
-BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_space) :
-		PhysicsDirectSpaceState(),
-		space(p_space) {}
+BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState() :
+		PhysicsDirectSpaceState() {}
 
 int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 
@@ -345,7 +344,8 @@ SpaceBullet::SpaceBullet() :
 		delta_time(0.) {
 
 	create_empty_world(GLOBAL_DEF("physics/3d/active_soft_world", true));
-	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
+	direct_access = memnew(BulletPhysicsDirectSpaceState());
+	direct_access->space = this;
 }
 
 SpaceBullet::~SpaceBullet() {
