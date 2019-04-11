@@ -385,6 +385,12 @@ Copyright: 2014-2018, Syoyo Fujita
   2002, Industrial Light & Magic, a division of Lucas Digital Ltd. LLC
 License: BSD-3-clause
 
+Files: ./thirdparty/vhacd/
+Comment: V-HACD
+Copyright: 2011, Khaled Mamou
+  2003-2009, Erwin Coumans
+License: BSD-3-clause
+
 Files: ./thirdparty/zlib/
 Comment: zlib
 Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
