@@ -370,7 +370,6 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
-	void _uncomment_line(int p_line);
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 
@@ -460,6 +459,10 @@ public:
 
 	//void delete_char();
 	//void delete_line();
+
+	int get_line_indent_size(int p_line) const;
+	void uncomment_line(int p_line);
+	void comment_line(int p_line, int pos);
 
 	void begin_complex_operation();
 	void end_complex_operation();

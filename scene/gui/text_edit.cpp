@@ -3107,10 +3107,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						int end = selection.to_line;
 
 						for (int i = ini; i <= end; i++) {
-							_uncomment_line(i);
+							uncomment_line(i);
 						}
 					} else {
-						_uncomment_line(cursor.line);
+						uncomment_line(cursor.line);
 						if (cursor.column >= get_line(cursor.line).length()) {
 							cursor.column = MAX(0, get_line(cursor.line).length() - 1);
 						}
@@ -3177,13 +3177,19 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 }
 
-void TextEdit::_uncomment_line(int p_line) {
+void TextEdit::uncomment_line(int p_line) {
 	String line_text = get_line(p_line);
 	for (int i = 0; i < line_text.length(); i++) {
 		if (line_text[i] == '#') {
-			_remove_text(p_line, i, p_line, i + 1);
-			if (p_line == selection.to_line && selection.to_column > line_text.length() - 1) {
-				selection.to_column -= 1;
+
+			int n = 1;
+			if (i + 1 <= line_text.length() && line_text[i + 1] == ' ') {
+				n = 2;
+			}
+
+			_remove_text(p_line, i, p_line, i + n);
+			if (p_line == selection.to_line && selection.to_column > line_text.length() - n) {
+				selection.to_column -= n;
 				if (selection.to_column >= selection.from_column) {
 					selection.active = false;
 				}
@@ -3193,6 +3199,34 @@ void TextEdit::_uncomment_line(int p_line) {
 			return;
 		}
 	}
+}
+
+void TextEdit::comment_line(int p_line, int pos) {
+	String line_text = get_line(p_line);
+
+	int line_length = line_text.length();
+	if (line_length > 1) {
+		_insert_text(p_line, pos, "# ");
+		cursor_set_column(line_length + 3);
+	}
+}
+
+int TextEdit::get_line_indent_size(int p_line) const {
+	String line_text = get_line(p_line);
+
+	if (line_text[0] == '\n') {
+		return -1;
+	}
+
+	for (int i = 0; i < line_text.length(); i++) {
+		if (line_text[i] == '\t') {
+			continue;
+		}
+
+		return i;
+	}
+
+	return 0;
 }
 
 void TextEdit::_scroll_up(real_t p_delta) {

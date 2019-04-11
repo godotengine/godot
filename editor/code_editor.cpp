@@ -634,6 +634,9 @@ void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 			if (ED_IS_SHORTCUT("script_editor/reset_zoom", p_event)) {
 				_reset_zoom();
 			}
+			if (ED_IS_SHORTCUT("script_editor/toogle_comment", p_event)) {
+				_toogle_comment();
+			}
 		}
 	}
 }
@@ -659,6 +662,39 @@ void CodeTextEditor::_reset_zoom() {
 	if (font.is_valid()) {
 		EditorSettings::get_singleton()->set("interface/editor/code_font_size", 14);
 		font->set_size(14);
+	}
+}
+
+void CodeTextEditor::_toogle_comment() {
+	int begin = text_editor->cursor_get_line();
+	int end = begin;
+
+	if (text_editor->is_selection_active()) {
+		begin = text_editor->get_selection_from_line();
+		end = text_editor->get_selection_to_line();
+	}
+
+	bool is_uncommented = false;
+	int comment_pos = 0;
+	for (int i = begin; i < end + 1; i++) {
+		if (!text_editor->is_line_comment(i) && text_editor->get_line(i).length() > 1 && !is_uncommented) {
+			is_uncommented = true;
+		}
+
+		const int line_indent_size = text_editor->get_line_indent_size(i);
+		if (i == begin) {
+			comment_pos = line_indent_size;
+		} else if(line_indent_size > -1 && line_indent_size < comment_pos) {
+			comment_pos = line_indent_size;
+		}
+	}
+
+	for (int i = begin; i < end + 1; i++) {
+		if (is_uncommented) {
+			text_editor->comment_line(i, comment_pos);
+		} else {
+			text_editor->uncomment_line(i);
+		}
 	}
 }
 
@@ -1337,6 +1373,7 @@ CodeTextEditor::CodeTextEditor() {
 	ED_SHORTCUT("script_editor/zoom_in", TTR("Zoom In"), KEY_MASK_CMD | KEY_EQUAL);
 	ED_SHORTCUT("script_editor/zoom_out", TTR("Zoom Out"), KEY_MASK_CMD | KEY_MINUS);
 	ED_SHORTCUT("script_editor/reset_zoom", TTR("Reset Zoom"), KEY_MASK_CMD | KEY_0);
+	ED_SHORTCUT("script_editor/toogle_comment", TTR("Toogle Comment"), KEY_MASK_CMD | KEY_SLASH);
 
 	text_editor = memnew(TextEdit);
 	add_child(text_editor);
