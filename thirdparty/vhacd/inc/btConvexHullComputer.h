@@ -18,60 +18,63 @@ subject to the following restrictions:
 #include "btAlignedObjectArray.h"
 #include "btVector3.h"
 
-//GODOT ADDITION
+// -- GODOT start --
 namespace VHACD {
-//
+// -- GODOT end --
 
 /// Convex hull implementation based on Preparata and Hong
 /// See http://code.google.com/p/bullet/issues/detail?id=275
 /// Ole Kniemeyer, MAXON Computer GmbH
 class btConvexHullComputer {
 private:
-	btScalar compute(const void *coords, bool doubleCoords, int32_t stride, int32_t count, btScalar shrink, btScalar shrinkClamp);
+    btScalar compute(const void* coords, bool doubleCoords, int32_t stride, int32_t count, btScalar shrink, btScalar shrinkClamp);
 
 public:
-	class Edge {
-	private:
-		int32_t next;
-		int32_t reverse;
-		int32_t targetVertex;
+    class Edge {
+    private:
+        int32_t next;
+        int32_t reverse;
+        int32_t targetVertex;
 
-		friend class btConvexHullComputer;
+        friend class btConvexHullComputer;
 
-	public:
-		int32_t getSourceVertex() const {
-			return (this + reverse)->targetVertex;
-		}
+    public:
+        int32_t getSourceVertex() const
+        {
+            return (this + reverse)->targetVertex;
+        }
 
-		int32_t getTargetVertex() const {
-			return targetVertex;
-		}
+        int32_t getTargetVertex() const
+        {
+            return targetVertex;
+        }
 
-		const Edge *getNextEdgeOfVertex() const // clockwise list of all edges of a vertex
-		{
-			return this + next;
-		}
+        const Edge* getNextEdgeOfVertex() const // clockwise list of all edges of a vertex
+        {
+            return this + next;
+        }
 
-		const Edge *getNextEdgeOfFace() const // counter-clockwise list of all edges of a face
-		{
-			return (this + reverse)->getNextEdgeOfVertex();
-		}
+        const Edge* getNextEdgeOfFace() const // counter-clockwise list of all edges of a face
+        {
+            return (this + reverse)->getNextEdgeOfVertex();
+        }
 
-		const Edge *getReverseEdge() const {
-			return this + reverse;
-		}
-	};
+        const Edge* getReverseEdge() const
+        {
+            return this + reverse;
+        }
+    };
 
-	// Vertices of the output hull
-	btAlignedObjectArray<btVector3> vertices;
+    // Vertices of the output hull
+    btAlignedObjectArray<btVector3> vertices;
 
-	// Edges of the output hull
-	btAlignedObjectArray<Edge> edges;
+    // Edges of the output hull
+    btAlignedObjectArray<Edge> edges;
 
-	// Faces of the convex hull. Each entry is an index into the "edges" array pointing to an edge of the face. Faces are planar n-gons
-	btAlignedObjectArray<int32_t> faces;
+    // Faces of the convex hull. Each entry is an index into the "edges" array pointing to an edge of the face. Faces are planar n-gons
+    btAlignedObjectArray<int32_t> faces;
 
-	/*
+    /*
 		Compute convex hull of "count" vertices stored in "coords". "stride" is the difference in bytes
 		between the addresses of consecutive vertices. If "shrink" is positive, the convex hull is shrunken
 		by that amount (each face is moved by "shrink" length units towards the center along its normal).
@@ -83,18 +86,20 @@ public:
 
 		The output convex hull can be found in the member variables "vertices", "edges", "faces".
 		*/
-	btScalar compute(const float *coords, int32_t stride, int32_t count, btScalar shrink, btScalar shrinkClamp) {
-		return compute(coords, false, stride, count, shrink, shrinkClamp);
-	}
+    btScalar compute(const float* coords, int32_t stride, int32_t count, btScalar shrink, btScalar shrinkClamp)
+    {
+        return compute(coords, false, stride, count, shrink, shrinkClamp);
+    }
 
-	// same as above, but double precision
-	btScalar compute(const double *coords, int32_t stride, int32_t count, btScalar shrink, btScalar shrinkClamp) {
-		return compute(coords, true, stride, count, shrink, shrinkClamp);
-	}
+    // same as above, but double precision
+    btScalar compute(const double* coords, int32_t stride, int32_t count, btScalar shrink, btScalar shrinkClamp)
+    {
+        return compute(coords, true, stride, count, shrink, shrinkClamp);
+    }
 };
 
-//GODOT ADDITION
+// -- GODOT start --
 }; // namespace VHACD
-//
+// -- GODOT end --
 
 #endif //BT_CONVEX_HULL_COMPUTER_H

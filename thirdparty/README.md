@@ -1,5 +1,6 @@
 # Third party libraries
 
+
 ## assimp
 
 - Upstream: http://github.com/assimp/assimp
@@ -294,8 +295,12 @@ Godot build configurations, check them out when updating.
 File extracted from upstream release tarball `mbedtls-2.16.0-apache.tgz`:
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
-- Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453). Soon to be merged upstream. Check it out at next update.
-- Applied the patch in `thirdparty/mbedtls/padlock.diff`. This disables VIA padlock support which defines a symbol `unsupported` which clashses with a symbol in libwebsockets.
+- Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453).
+  Soon to be merged upstream. Check it out at next update.
+- Applied the patch in `thirdparty/mbedtls/padlock.diff`. This disables VIA
+  padlock support which defines a symbol `unsupported` which clashes with
+  a symbol in libwebsockets.
+
 
 ## miniupnpc
 
@@ -521,6 +526,23 @@ changes are marked with `// -- GODOT --` comments.
 Files extracted from upstream source:
 
 - `tinyexr.{cc,h}`
+
+
+## vhacd
+
+- Upstream: https://github.com/kmammou/v-hacd
+- Version: git (2297aa1, 2018)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- From `src/VHACD_Lib/`: `inc`, `public` and `src`
+- `LICENSE`
+
+Some downstream changes have been made and are identified by
+`// -- GODOT start --` and `// -- GODOT end --` comments.
+They can be reapplied using the patches included in the `vhacd`
+folder.
 
 
 ## zlib
