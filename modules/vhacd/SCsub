@@ -27,6 +27,10 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 env_vhacd.Append(CPPPATH=[thirdparty_dir+"/inc"])
 env_vhacd.Append(CPPFLAGS=["-DGODOT_ENET"])
 
+# upstream uses c++11
+if not env.msvc:
+	env_vhacd.Append(CCFLAGS="-std=c++11")
+
 env_thirdparty = env_vhacd.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
