@@ -724,6 +724,7 @@ CSGBrush *CSGMesh::_build_brush() {
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<Vector2> uvs;
+	Ref<Material> material = get_material();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 
@@ -760,7 +761,12 @@ CSGBrush *CSGMesh::_build_brush() {
 			uvr_used = true;
 		}
 
-		Ref<Material> mat = mesh->surface_get_material(i);
+		Ref<Material> mat;
+		if (material.is_valid()) {
+			mat = material;
+		} else {
+			mat = mesh->surface_get_material(i);
+		}
 
 		PoolVector<int> aindices = arrays[Mesh::ARRAY_INDEX];
 		if (aindices.size()) {
@@ -866,6 +872,18 @@ void CSGMesh::_mesh_changed() {
 	update_gizmo();
 }
 
+void CSGMesh::set_material(const Ref<Material> &p_material) {
+	if (material == p_material)
+		return;
+	material = p_material;
+	_make_dirty();
+}
+
+Ref<Material> CSGMesh::get_material() const {
+
+	return material;
+}
+
 void CSGMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh::set_mesh);
@@ -873,7 +891,11 @@ void CSGMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &CSGMesh::_mesh_changed);
 
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh::get_material);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
