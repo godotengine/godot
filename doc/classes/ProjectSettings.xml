@@ -4,7 +4,7 @@
 		Contains global variables accessible from everywhere.
 	</brief_description>
 	<description>
-		Contains global variables accessible from everywhere. Use "ProjectSettings.get_setting(variable)", "ProjectSettings.set_setting(variable,value)" or "ProjectSettings.has_setting(variable)" to access them. Variables stored in project.godot are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
+		Contains global variables accessible from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into ProjectSettings, making this object very useful for reading custom game configuration options.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,7 +15,7 @@
 			<argument index="0" name="hint" type="Dictionary">
 			</argument>
 			<description>
-				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@GlobalScope]), and optionally hint:[int](see PROPERTY_HINT_* in [@GlobalScope]), hint_string:[String].
+				Adds a custom property info to a property. The dictionary must contain: name:[String](the property's name) and type:[int](see TYPE_* in [@GlobalScope]), and optionally hint:[int](see PROPERTY_HINT_* in [@GlobalScope]), hint_string:[String].
 				Example:
 				[codeblock]
 				ProjectSettings.set("category/property_name", 0)
@@ -37,7 +37,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Clear the whole configuration (not recommended, may break things).
+				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
 		<method name="get_order" qualifiers="const">
@@ -46,7 +46,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return the order of a configuration value (influences when saved to the config file).
+				Returns the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
 		<method name="get_setting" qualifiers="const">
@@ -63,7 +63,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Convert a localized path (res://) to a full native OS path.
+				Converts a localized path ([code]res://[/code]) to a full native OS path.
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
@@ -72,7 +72,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return [code]true[/code] if a configuration value is present.
+				Returns [code]true[/code] if a configuration value is present.
 			</description>
 		</method>
 		<method name="load_resource_pack">
@@ -81,7 +81,7 @@
 			<argument index="0" name="pack" type="String">
 			</argument>
 			<description>
-				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem (res://). Returns [code]true[/code] on success.
+				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]). Returns [code]true[/code] on success.
 				Note: If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
 			</description>
 		</method>
@@ -91,7 +91,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Convert a path to a localized path (res:// path).
+				Convert a path to a localized path ([code]res://[/code] path).
 			</description>
 		</method>
 		<method name="property_can_revert">
@@ -109,14 +109,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns the initial value of the specified property. Returns null if the property does not exist.
+				Returns the specified property's initial value. Returns [code]null[/code] if the property does not exist.
 			</description>
 		</method>
 		<method name="save">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Saves the configuration to the project.godot file.
+				Saves the configuration to the [code]project.godot[/code] file.
 			</description>
 		</method>
 		<method name="save_custom">
@@ -146,7 +146,7 @@
 			<argument index="1" name="position" type="int">
 			</argument>
 			<description>
-				Set the order of a configuration value (influences when saved to the config file).
+				Sets the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
 		<method name="set_setting">
@@ -168,62 +168,64 @@
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="">
-			Scale the boot splash image to the full window length when engine starts (will leave it as default pixel size otherwise).
+			If [code]true[/code], scale the boot splash image to the full window length when engine starts. If [code]false[/code], the engine will leave it at the default pixel size.
 		</member>
 		<member name="application/boot_splash/image" type="String" setter="" getter="">
-			Path to an image used for boot splash.
+			Path to an image used as the boot splash.
 		</member>
 		<member name="application/config/custom_user_dir_name" type="String" setter="" getter="">
-			This user directory is used for storing persistent data ([code]user://[/code] filesystem). By default (no custom name defined), [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
+			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
 		<member name="application/config/icon" type="String" setter="" getter="">
-			Icon used for the project, set when project loads. Exporters will use this icon when possible to.
+			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
 		<member name="application/config/name" type="String" setter="" getter="">
-			Name of the project. It is used from both project manager and by the exporters. Overriding this as name.locale allows setting it in multiple languages.
+			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code].
 		</member>
 		<member name="application/config/use_custom_user_dir" type="bool" setter="" getter="">
-			Allow the project to save to its own custom user dir (see [member application/config/custom_user_dir_name]). This setting only works for desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect.
+			If [code]true[/code], the project will save user data to its own user directory (see [member application/config/custom_user_dir_name]). This setting is only effective on desktop platforms. A name must be set in the [member application/config/custom_user_dir_name] setting for this to take effect. If [code]false[/code], the project will save user data to [code](OS user data directory)/Godot/app_userdata/(project name)[/code].
 		</member>
 		<member name="application/run/disable_stderr" type="bool" setter="" getter="">
-			Disable printing to stderr on exported build.
+			If [code]true[/code], disables printing to standard error in an exported build.
 		</member>
 		<member name="application/run/disable_stdout" type="bool" setter="" getter="">
-			Disable printing to stdout on exported build.
+			If [code]true[/code], disables printing to standard output in an exported build.
 		</member>
 		<member name="application/run/frame_delay_msec" type="int" setter="" getter="">
-			Force a delay between frames in the main loop. This may be useful if you plan to disable vsync.
+			Forces a delay between frames in the main loop (in milliseconds). This may be useful if you plan to disable vertical synchronization.
 		</member>
 		<member name="application/run/low_processor_mode" type="bool" setter="" getter="">
-			Turn on low processor mode. This setting only works on desktops. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) on games.
+			If [code]true[/code], enables low-processor usage mode. This setting only works on desktop platforms. The screen is not redrawn if nothing changes visually. This is meant for writing applications and editors, but is pretty useless (and can hurt performance) in most games.
 		</member>
 		<member name="application/run/low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			Amount of sleeping between frames when the low_processor_mode is enabled. This effectively reduces CPU usage when this mode is enabled.
+			Amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
 		</member>
 		<member name="application/run/main_scene" type="String" setter="" getter="">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
 		<member name="audio/channel_disable_threshold_db" type="float" setter="" getter="">
-			Audio buses will disable automatically when sound goes below a given DB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
+			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
 		<member name="audio/channel_disable_time" type="float" setter="" getter="">
-			Audio buses will disable automatically when sound goes below a given DB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
+			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
 		<member name="audio/default_bus_layout" type="String" setter="" getter="">
 		</member>
 		<member name="audio/driver" type="String" setter="" getter="">
+			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 		</member>
 		<member name="audio/enable_audio_input" type="bool" setter="" getter="">
-			This option should be enabled if project works with microphone.
+			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
 		</member>
 		<member name="audio/mix_rate" type="int" setter="" getter="">
-			Mix rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
+			Mixing rate used for audio. In general, it's better to not touch this and leave it to the host operating system.
 		</member>
 		<member name="audio/output_latency" type="int" setter="" getter="">
+			Output latency in milliseconds for audio. Lower values will result in lower audio latency at the cost of increased CPU usage. Low values may result in audible cracking on slower hardware.
 		</member>
 		<member name="audio/video_delay_compensation_ms" type="int" setter="" getter="">
 			Setting to hardcode audio delay when playing video. Best to leave this untouched unless you know what you are doing.
@@ -232,75 +234,105 @@
 			Default compression level for gzip. Affects compressed scenes and resources.
 		</member>
 		<member name="compression/formats/zlib/compression_level" type="int" setter="" getter="">
-			Default compression level for zlib. Affects compressed scenes and resources.
+			Default compression level for Zlib. Affects compressed scenes and resources.
 		</member>
 		<member name="compression/formats/zstd/compression_level" type="int" setter="" getter="">
-			Default compression level for zstd. Affects compressed scenes and resources.
+			Default compression level for Zstandard. Affects compressed scenes and resources.
 		</member>
 		<member name="compression/formats/zstd/long_distance_matching" type="bool" setter="" getter="">
-			Enable long distance matching in zstd.
+			Enables long-distance matching in Zstandard.
 		</member>
 		<member name="compression/formats/zstd/window_log_size" type="int" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/completion/autocomplete_setters_and_getters" type="bool" setter="" getter="">
+			If [code]true[/code], displays getters and setters in autocompletion results in the script editor. This setting is meant to be used when porting old projects (Godot 2), as using member variables is the preferred style from Godot 3 onwards.
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a constant is used as a function.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when deprecated keywords such as [code]slave[/code] are used.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="">
+			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
 		</member>
 		<member name="debug/gdscript/warnings/function_conflicts_constant" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a function is declared with the same name as a constant.
 		</member>
 		<member name="debug/gdscript/warnings/function_conflicts_variable" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a function is declared with the same name as a variable. This will turn into an error in a future version when first-class functions become supported in GDScript.
 		</member>
 		<member name="debug/gdscript/warnings/function_may_yield" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a function assigned to a variable may yield and return a function state instead of a value.
 		</member>
 		<member name="debug/gdscript/warnings/function_used_as_property" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when using a function as if it was a property.
 		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a ternary operator may emit values with incompatible types.
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
 		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when using a property as if it was a function.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [Error] type.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="">
+			If [code]true[/code], all warnings will be reported as if they were errors.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when using a variable that wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_code" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_call_argument" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_cast" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when performing an unsafe cast.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_method_access" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_argument" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a function parameter is unused.
 		</member>
 		<member name="debug/gdscript/warnings/unused_class_variable" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a member variable is unused.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a signal is unused.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a local variable is unused.
 		</member>
 		<member name="debug/gdscript/warnings/variable_conflicts_function" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when a variable is declared with the same name as a function. This will turn into an error in a future version when first-class functions become supported in GDScript.
 		</member>
 		<member name="debug/gdscript/warnings/void_assignment" type="bool" setter="" getter="">
+			If [code]true[/code], enables warnings when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="">
+			Message to be displayed before the backtrace when the engine crashes.
 		</member>
 		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="">
 		</member>
@@ -311,34 +343,34 @@
 			Maximum amount of functions per frame allowed when profiling.
 		</member>
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="">
-			Print frames per second to stdout. Not very useful in general.
+			Print frames per second to standard output every second.
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="">
-			Print more information to stdout when running. It shows info such as memory leaks, which scenes and resources are being loaded, etc.
+			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc.
 		</member>
 		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="">
-			Custom image for the mouse cursor.
+			Custom image for the mouse cursor (limited to 256x256).
 		</member>
 		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="">
 			Hotspot for the custom mouse cursor image.
 		</member>
 		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="">
-			Position offset for tooltips, relative to the hotspot of the mouse cursor.
+			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="">
-			Allow HiDPI display on Windows and OSX. On Desktop Linux, this can't be enabled or disabled.
+			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="">
-			Force keep the screen on, so the screensaver does not take over. Works on Desktop and Mobile.
+			If [code]true[/code], keeps the screen on (even in case of inactivity), so the screensaver does not take over. Works on desktop and mobile platforms.
 		</member>
 		<member name="display/window/handheld/orientation" type="String" setter="" getter="">
-			Default orientation for cell phone or tablet.
+			Default orientation on mobile devices.
 		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="">
-			Allow per pixel transparency in a Desktop window. This affects performance if not needed, so leave it off.
+			If [code]true[/code], allows per-pixel transparency in a desktop window. This affects performance if not needed, so leave it on [code]false[/code] unless you need it.
 		</member>
 		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="">
 		</member>
@@ -357,19 +389,19 @@
 			Set the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="">
-			Allow the window to be resizable by default.
+			Allows the window to be resizable by default.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="">
-			Test a different height for the window. The main use for this is to test with stretch modes.
+			If greater than zero, uses a different height for the window when running from the editor. The main use for this is to test with stretch modes.
 		</member>
 		<member name="display/window/size/test_width" type="int" setter="" getter="">
-			Test a different width for the window. The main use for this is to test with stretch modes.
+			If greater than zero, uses a different width for the window when running from the editor. The main use for this is to test with stretch modes.
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="">
-			Set the main window width. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the main window width. On desktop platforms, this is the default window size. Stretch mode settings use this also as a reference when enabled.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="">
-			Use VSync. Don't be stupid, don't turn this off.
+			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
 		</member>
 		<member name="editor/active" type="bool" setter="" getter="">
 			Internal editor setting, don't touch.
@@ -377,22 +409,22 @@
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="">
 		</member>
 		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="">
-			Enable swap OK and Cancel buttons on dialogs. This is because Windows/MacOS/Desktop Linux may use them in different order, so the GUI swaps them depending on the host OS. Disable this behavior by turning this setting off.
+			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="">
 			Use a custom theme resource, set a path to it here.
 		</member>
 		<member name="gui/theme/custom_font" type="String" setter="" getter="">
-			USe a custom default font resource, set a path to it here.
+			Use a custom default font resource, set a path to it here.
 		</member>
 		<member name="gui/theme/use_hidpi" type="bool" setter="" getter="">
-			Make sure the theme used works with hidpi.
+			If [code]true[/code], makes sure the theme used works with HiDPI.
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="">
-			Timer setting for incremental search in Tree, IntemList, etc. controls.
+			Timer setting for incremental search in Tree, IntemList, etc. controls (in milliseconds).
 		</member>
 		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="">
-			Timer for detecting idle in the editor.
+			Timer for detecting idle in the editor (in seconds).
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 		</member>
@@ -421,8 +453,10 @@
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="">
+			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
 		</member>
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="">
+			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
 		</member>
 		<member name="layer_names/2d_physics/layer_1" type="String" setter="" getter="">
 		</member>
@@ -585,23 +619,25 @@
 		<member name="layer_names/3d_render/layer_9" type="String" setter="" getter="">
 		</member>
 		<member name="locale/fallback" type="String" setter="" getter="">
+			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
 		</member>
 		<member name="locale/test" type="String" setter="" getter="">
+			If non-empty, this locale will be used when running the project from the editor.
 		</member>
 		<member name="logging/file_logging/enable_file_logging" type="bool" setter="" getter="">
-			Log all output to a file.
+			If [code]true[/code], logs all output to files.
 		</member>
 		<member name="logging/file_logging/log_path" type="String" setter="" getter="">
-			Path to logs withint he project. Using an [code]user://[/code] based path is recommended.
+			Path to logs within the project. Using an [code]user://[/code] path is recommended.
 		</member>
 		<member name="logging/file_logging/max_log_files" type="int" setter="" getter="">
-			Amount of log files (used for rotation).
+			Specifies the maximum amount of log files allowed (used for rotation).
 		</member>
 		<member name="memory/limits/message_queue/max_size_kb" type="int" setter="" getter="">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.
 		</member>
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="">
-			This is used by servers when used in multi threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
+			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
@@ -613,7 +649,7 @@
 			Maximum amount of messages allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="">
-			Default size of packet peer stream for deserializing godot data. Over this size, data is dropped.
+			Default size of packet peer stream for deserializing Godot data. Over this size, data is dropped.
 		</member>
 		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="">
 		</member>
@@ -632,13 +668,13 @@
 		<member name="network/limits/websocket_server/max_out_packets" type="int" setter="" getter="">
 		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="">
-			Amount of read ahead used by remote filesystem. Improves latency.
+			Amount of read ahead used by remote filesystem. Higher values decrease the effects of latency at the cost of higher bandwidth usage.
 		</member>
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="">
-			Page size used by remote filesystem.
+			Page size used by remote filesystem (in bytes).
 		</member>
 		<member name="node/name_casing" type="int" setter="" getter="">
-			When creating nodes names automatically, set the type of casing in this project. This is mostly an editor setting.
+			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
 		</member>
 		<member name="node/name_num_separator" type="int" setter="" getter="">
 			What to use to separate node name from number. This is mostly an editor setting.
@@ -646,20 +682,21 @@
 		<member name="physics/2d/physics_engine" type="String" setter="" getter="">
 		</member>
 		<member name="physics/2d/thread_model" type="int" setter="" getter="">
-			Set whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API Access to only physics process.
+			Sets whether physics is run on the main thread or a separate one. Running the server on a thread increases performance, but restricts API access to only physics process.
 		</member>
 		<member name="physics/3d/active_soft_world" type="bool" setter="" getter="">
 		</member>
 		<member name="physics/3d/physics_engine" type="String" setter="" getter="">
+			Sets which physics engine to use.
 		</member>
 		<member name="physics/common/physics_fps" type="int" setter="" getter="">
 			Frames per second used in the physics. Physics always needs a fixed amount of frames per second.
 		</member>
 		<member name="physics/common/physics_jitter_fix" type="float" setter="" getter="">
-			Fix to improve physics jitter, specially on monitors where refresh rate is different than physics FPS.
+			Fix to improve physics jitter, specially on monitors where refresh rate is different than the physics FPS.
 		</member>
 		<member name="rendering/environment/default_clear_color" type="Color" setter="" getter="">
-			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
+			Default background clear color. Overriddable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method VisualServer.set_default_clear_color].
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
@@ -674,68 +711,70 @@
 			Max buffer size for drawing immediate objects (ImmediateGeometry nodes). Nodes using more than this size will not work.
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="">
-			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not mesh themselves.
+			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="">
-			Shaders have a time variable that constantly increases. At some point it needs to be rolled back to zero to avoid numerical errors on shader animations. This setting specifies when.
+			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
 		</member>
 		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="">
-			Some Nvidia GPU drivers have a bug, which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to https://github.com/godotengine/godot/issues/9913 for details.
-			If [code]true[/code], this option enables a "safe" code path for such Nvidia GPUs, at the cost of performance. This option only impacts the GLES2 rendering backend (so the bug stays if you use GLES3), and only desktop platforms. Default value: [code]false[/code].
+			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url]https://github.com/godotengine/godot/issues/9913[/url] for details.
+			If [code]true[/code], this option enables a "safe" code path for such NVIDIA GPUs at the cost of performance. This option only impacts the GLES2 rendering backend (so the bug stays if you use GLES3), and only desktop platforms.
 		</member>
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="">
-			Force snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
+			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
 		</member>
 		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="">
 			Disable depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
 		</member>
 		<member name="rendering/quality/depth_prepass/enable" type="bool" setter="" getter="">
-			Do a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
+			If [code]true[/code], performs a previous depth pass before rendering materials. This increases performance in scenes with high overdraw, when complex materials and lighting are used.
 		</member>
 		<member name="rendering/quality/directional_shadow/size" type="int" setter="" getter="">
-			Size in pixels of the directional shadow.
+			The directional shadow's size in pixels. Higher values will result in sharper shadows, at the cost of performance.
 		</member>
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="">
 		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="">
-			Name of the configured video driver ("GLES2" or "GLES3").
-			Note that the backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at runtime.
+			The video driver to use ("GLES2" or "GLES3").
+			Note that the backend in use can be overridden at runtime via the [code]--video-driver[/code] command line argument, or by the [member rendering/quality/driver/fallback_to_gles2] option if the target system does not support GLES3 and falls back to GLES2. In such cases, this property is not updated, so use [method OS.get_current_video_driver] to query it at run-time.
 		</member>
 		<member name="rendering/quality/driver/fallback_to_gles2" type="bool" setter="" getter="">
-			Whether to allow falling back to the GLES2 driver if the GLES3 driver is not supported. Default value: [code]false[/code].
-			Note that the two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the size of the game data pack.
+			If [code]true[/code], allows falling back to the GLES2 driver if the GLES3 driver is not supported.
+			Note that the two video drivers are not drop-in replacements for each other, so a game designed for GLES3 might not work properly when falling back to GLES2. In particular, some features of the GLES3 backend are not available in GLES2. Enabling this setting also means that both ETC and ETC2 VRAM-compressed textures will be exported on Android and iOS, increasing the data pack's size.
 		</member>
 		<member name="rendering/quality/filters/anisotropic_filter_level" type="int" setter="" getter="">
-			Maximum Anisotropic filter level used for textures when anisotropy enabled.
+			Maximum anisotropic filter level used for textures with anisotropy enabled. Higher values will result in sharper textures when viewed from oblique angles, at the cost of performance. Only power-of-two values are valid (2, 4, 8, 16).
 		</member>
 		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="">
-			Force to use nearest mipmap filtering when using mipmaps. This may increase performance in mobile as less memory bandwidth is used.
+			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="">
-			Strategy used for framebuffer allocation. The simpler it is, the less memory it uses (but the least features it supports).
+			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports).
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation.mobile" type="int" setter="" getter="">
 		</member>
 		<member name="rendering/quality/reflections/high_quality_ggx" type="bool" setter="" getter="">
-			For reflection probes and panorama backgrounds (sky), use a high amount of samples to create ggx blurred versions (used for roughness).
+			If [code]true[/code], uses a high amount of samples to create blurred variants of reflection probes and panorama backgrounds (sky). Those blurred variants are used by rough materials.
 		</member>
 		<member name="rendering/quality/reflections/high_quality_ggx.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections" type="bool" setter="" getter="">
-			For reflection probes and panorama backgrounds (sky), use a texture array instead of mipmaps. This reduces jitter noise on reflections, but costs more performance and memory.
+			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise on reflections, but costs more performance and memory.
 		</member>
 		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/shading/force_blinn_over_ggx" type="bool" setter="" getter="">
+			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
 		</member>
 		<member name="rendering/quality/shading/force_blinn_over_ggx.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/shading/force_lambert_over_burley" type="bool" setter="" getter="">
+			If [code]true[/code], uses faster but lower-quality Lambert material lighting model instead of Burley.
 		</member>
 		<member name="rendering/quality/shading/force_lambert_over_burley.mobile" type="bool" setter="" getter="">
 		</member>
 		<member name="rendering/quality/shading/force_vertex_shading" type="bool" setter="" getter="">
-			Force vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can work to optimize on very low end mobile.
+			If [code]true[/code], forces vertex shading for all rendering. This can increase performance a lot, but also reduces quality immensely. Can be used to optimize performance on low-end mobile devices.
 		</member>
 		<member name="rendering/quality/shading/force_vertex_shading.mobile" type="bool" setter="" getter="">
 		</member>
@@ -752,12 +791,12 @@
 			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
 		</member>
 		<member name="rendering/quality/shadow_atlas/size" type="int" setter="" getter="">
-			Size for shadow atlas (used for point and omni lights). See documentation.
+			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
 		</member>
 		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="">
 		</member>
 		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="">
-			Shadow filter mode. The more complex the filter, the more memory bandwidth required.
+			Shadow filter mode. Higher-quality settings result in smoother shadows that flicker less when moving. "Disabled" is the fastest option, but also has the lowest quality. "PCF5" is smoother but is also slower. "PCF13" is the smoothest option, but is also the slowest.
 		</member>
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="">
 		</member>
@@ -773,24 +812,25 @@
 			Weight subsurface scattering samples. Helps to avoid reading samples from unrelated parts of the screen.
 		</member>
 		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="">
-			Use high quality voxel cone tracing (looks better, but requires a higher end GPU).
+			Use high-quality voxel cone tracing. This results in better-looking reflections, but is much more expensive on the GPU.
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="">
-			Thread model for rendering. Rendering on a thread can vastly improve performance, but syncinc to the main thread can cause a bit more jitter.
+			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
 		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="">
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the GLES3 renderer.
 		</member>
 		<member name="rendering/vram_compression/import_etc" type="bool" setter="" getter="">
-			If the project uses this compression (usually low end mobile), texture importer will import these.
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression algorithm. This algorithm doesn't support alpha channels in textures.
 		</member>
 		<member name="rendering/vram_compression/import_etc2" type="bool" setter="" getter="">
-			If the project uses this compression (usually high end mobile), texture importer will import these.
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the Ericsson Texture Compression 2 algorithm. This texture compression algorithm is only supported when using the GLES3 renderer.
 		</member>
 		<member name="rendering/vram_compression/import_pvrtc" type="bool" setter="" getter="">
-			If the project uses this compression (usually iOS), texture importer will import these.
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the PowerVR Texture Compression algorithm. This texture compression algorithm is only supported on iOS.
 		</member>
 		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="">
-			If the project uses this compression (usually Desktop and Consoles), texture importer will import these.
+			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 		</member>
 		<member name="script" type="Script" setter="" getter="">
 		</member>
