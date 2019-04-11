@@ -1038,25 +1038,26 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 		tileset->get_tile_list(tiles);
 		for (List<int>::Element *E = tiles->front(); E; E = E->next()) {
 			int t_id = E->get();
-			if (tileset->tile_get_texture(t_id)->get_rid() == current_texture_rid) {
-				Rect2i region = tileset->tile_get_region(t_id);
-				region.position += WORKSPACE_MARGIN;
-				region.position *= workspace->get_scale().x;
-				Color c;
-				if (tileset->tile_get_tile_mode(t_id) == TileSet::SINGLE_TILE)
-					c = COLOR_SINGLE;
-				else if (tileset->tile_get_tile_mode(t_id) == TileSet::AUTO_TILE)
-					c = COLOR_AUTOTILE;
-				else if (tileset->tile_get_tile_mode(t_id) == TileSet::ATLAS_TILE)
-					c = COLOR_ATLAS;
-				String tile_id_name = String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id);
-				Ref<Font> font = get_font("font", "Label");
-				region.set_size(font->get_string_size(tile_id_name));
-				workspace_overlay->draw_rect(region, c);
-				region.position.y += region.size.y - 2;
-				c = Color(0.1, 0.1, 0.1);
-				workspace_overlay->draw_string(font, region.position, tile_id_name, c);
-			}
+			if (tileset->tile_get_texture(t_id)->get_rid() != current_texture_rid)
+				continue;
+
+			Rect2 region = tileset->tile_get_region(t_id);
+			region.position += WORKSPACE_MARGIN;
+			region.position *= workspace->get_scale().x;
+			Color c;
+			if (tileset->tile_get_tile_mode(t_id) == TileSet::SINGLE_TILE)
+				c = COLOR_SINGLE;
+			else if (tileset->tile_get_tile_mode(t_id) == TileSet::AUTO_TILE)
+				c = COLOR_AUTOTILE;
+			else if (tileset->tile_get_tile_mode(t_id) == TileSet::ATLAS_TILE)
+				c = COLOR_ATLAS;
+			String tile_id_name = String::num(t_id, 0) + ": " + tileset->tile_get_name(t_id);
+			Ref<Font> font = get_font("font", "Label");
+			region.set_size(font->get_string_size(tile_id_name));
+			workspace_overlay->draw_rect(region, c);
+			region.position.y += region.size.y - 2;
+			c = Color(0.1, 0.1, 0.1);
+			workspace_overlay->draw_string(font, region.position, tile_id_name, c);
 		}
 	}
 
