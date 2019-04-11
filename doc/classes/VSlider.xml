@@ -4,7 +4,7 @@
 		Vertical slider.
 	</brief_description>
 	<description>
-		Vertical slider. See [Slider]. This one goes from left (min) to right (max).
+		Vertical slider. See [Slider]. This one goes from bottom (min) to top (max).
 	</description>
 	<tutorials>
 	</tutorials>
