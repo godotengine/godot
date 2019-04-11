@@ -129,6 +129,14 @@ void Sprite::_notification(int p_what) {
 			texture->draw_rect_region(ci, dst_rect, src_rect, Color(1, 1, 1), false, normal_map, filter_clip);
 
 		} break;
+
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+
+			if (get_scale() != prev_scale) {
+				prev_scale = get_scale();
+				_change_notify("pixel_size");
+			}
+		} break;
 	}
 }
 
@@ -148,6 +156,7 @@ void Sprite::set_texture(const Ref<Texture> &p_texture) {
 	update();
 	emit_signal("texture_changed");
 	item_rect_changed();
+	_change_notify("pixel_size");
 	_change_notify("texture");
 }
 
@@ -165,6 +174,22 @@ Ref<Texture> Sprite::get_normal_map() const {
 Ref<Texture> Sprite::get_texture() const {
 
 	return texture;
+}
+
+void Sprite::set_pixel_size(const Size2 &p_size) {
+
+	if (texture.is_null())
+		return;
+
+	set_scale(p_size / texture->get_size());
+}
+
+Size2 Sprite::get_pixel_size() const {
+
+	if (texture.is_null())
+		return Size2();
+
+	return (texture->get_size() * get_scale()).round();
 }
 
 void Sprite::set_centered(bool p_center) {
@@ -398,6 +423,9 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &Sprite::set_normal_map);
 	ClassDB::bind_method(D_METHOD("get_normal_map"), &Sprite::get_normal_map);
 
+	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &Sprite::set_pixel_size);
+	ClassDB::bind_method(D_METHOD("get_pixel_size"), &Sprite::get_pixel_size);
+
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &Sprite::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &Sprite::is_centered);
 
@@ -437,6 +465,7 @@ void Sprite::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "pixel_size"), "set_pixel_size", "get_pixel_size");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
@@ -465,6 +494,9 @@ Sprite::Sprite() {
 
 	vframes = 1;
 	hframes = 1;
+
+	prev_scale = get_scale();
+	set_notify_local_transform(true);
 }
 
 Sprite::~Sprite() {

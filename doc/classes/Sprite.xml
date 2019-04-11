@@ -28,6 +28,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="pixel_size" type="Vector2" setter="set_pixel_size" getter="get_pixel_size">
+			Size of the sprite in pixels. Alternative for changing scale.
+		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered">
 			If [code]true[/code], texture is centered. Default value: [code]true[/code].
 		</member>

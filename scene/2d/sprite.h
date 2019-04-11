@@ -40,6 +40,7 @@ class Sprite : public Node2D {
 
 	Ref<Texture> texture;
 	Ref<Texture> normal_map;
+	Size2 prev_scale;
 
 	bool centered;
 	Point2 offset;
@@ -85,6 +86,9 @@ public:
 
 	void set_normal_map(const Ref<Texture> &p_texture);
 	Ref<Texture> get_normal_map() const;
+
+	void set_pixel_size(const Size2 &p_size);
+	Size2 get_pixel_size() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;
