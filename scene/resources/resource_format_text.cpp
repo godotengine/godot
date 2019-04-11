@@ -445,6 +445,11 @@ Error ResourceInteractiveLoaderText::poll() {
 		} else {
 
 			resource_cache.push_back(res);
+#ifdef TOOLS_ENABLED
+			//remember ID for saving
+			res->set_id_for_path(local_path,index);
+#endif
+
 		}
 
 		ExtResource er;
@@ -1355,7 +1360,7 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 
 	if (external_resources.has(res)) {
 
-		return "ExtResource( " + itos(external_resources[res] + 1) + " )";
+		return "ExtResource( " + itos(external_resources[res]) + " )";
 	} else {
 
 		if (internal_resources.has(res)) {
@@ -1539,18 +1544,65 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		f->store_line("]\n"); //one empty line
 	}
 
-	Vector<RES> sorted_er;
-	sorted_er.resize(external_resources.size());
+	{
+
+
+
+	}
+
+#ifdef TOOLS_ENABLED
+	//keep order from cached ids
+	Set<int> cached_ids_found;
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		int cached_id = E->key()->get_id_for_path(local_path);
+		if (cached_id < 0 || cached_ids_found.has(cached_id)) {
+			E->get() = -1; //reset
+		} else {
+			E->get() = cached_id;
+			cached_ids_found.insert(cached_id);
+		}
+	}
+	//create IDs for non cached resources
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		if (cached_ids_found.has(E->get())) { //already cached, go on
+			continue;
+		}
+
+		int attempt = 1; //start from one, more readable format
+		while(cached_ids_found.has(attempt)) {
+			attempt++;
+		}
+
+		cached_ids_found.insert(attempt);
+		E->get() = attempt;
+		//update also in resource
+		Ref<Resource> res = E->key();
+		res->set_id_for_path(local_path,attempt);
+	}
+#else
+	//make sure to start from one, as it makes format more readable
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		E->get() = E->get() + 1;
+	}
+#endif
+
+	Vector<ResourceSort> sorted_er;
 
 	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
 
-		sorted_er.write[E->get()] = E->key();
+		ResourceSort rs;
+		rs.resource = E->key();
+		rs.index = E->get();
+		sorted_er.push_back(rs);
 	}
 
-	for (int i = 0; i < sorted_er.size(); i++) {
-		String p = sorted_er[i]->get_path();
+	sorted_er.sort();
 
-		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i]->get_save_class() + "\" id=" + itos(i + 1) + "]\n"); //bundled
+
+	for (int i = 0; i < sorted_er.size(); i++) {
+		String p = sorted_er[i].resource->get_path();
+
+		f->store_string("[ext_resource path=\"" + p + "\" type=\"" + sorted_er[i].resource->get_save_class() + "\" id=" + itos(sorted_er[i].index) + "]\n"); //bundled
 	}
 
 	if (external_resources.size())
