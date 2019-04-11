@@ -38,6 +38,10 @@ subject to the following restrictions:
 #include <new> //for placement new
 #endif //BT_USE_PLACEMENT_NEW
 
+// -- GODOT start --
+namespace VHACD {
+// -- GODOT end --
+
 ///The btAlignedObjectArray template class uses a subset of the stl::vector interface for its methods
 ///It is developed to replace stl::vector to avoid portability issues, including STL alignment issues to add SIMD/SSE data
 template <typename T>
@@ -444,5 +448,9 @@ public:
         otherArray.copy(0, otherSize, m_data);
     }
 };
+
+// -- GODOT start --
+}; // namespace VHACD
+// -- GODOT end --
 
 #endif //BT_OBJECT_ARRAY__

@@ -15,6 +15,10 @@ subject to the following restrictions:
 
 #include "btAlignedAllocator.h"
 
+// -- GODOT start --
+namespace VHACD {
+// -- GODOT end --
+
 #ifdef _MSC_VER
 #pragma warning(disable:4311 4302)
 #endif
@@ -176,5 +180,9 @@ void btAlignedFreeInternal(void* ptr)
     //	printf("btAlignedFreeInternal %x\n",ptr);
     sAlignedFreeFunc(ptr);
 }
+
+// -- GODOT start --
+}; // namespace VHACD
+// -- GODOT end --
 
 #endif //BT_DEBUG_MEMORY_ALLOCATIONS

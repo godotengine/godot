@@ -26,6 +26,10 @@ subject to the following restrictions:
 #define btVector3DataName "btVector3FloatData"
 #endif //BT_USE_DOUBLE_PRECISION
 
+// -- GODOT start --
+namespace VHACD {
+// -- GODOT end --
+
 /**@brief btVector3 can be used to represent 3D points and vectors.
  * It has an un-used w component to suit 16-byte alignment when btVector3 is stored in containers. This extra component can be used by derived classes (Quaternion?) or by user
  * Ideally, this class should be replaced by a platform optimized SIMD version that keeps the data in registers
@@ -711,5 +715,9 @@ SIMD_FORCE_INLINE void btVector3::deSerialize(const struct btVector3Data& dataIn
     for (int32_t i = 0; i < 4; i++)
         m_floats[i] = dataIn.m_floats[i];
 }
+
+// -- GODOT start --
+}; // namespace VHACD
+// -- GODOT end --
 
 #endif //BT_VECTOR3_H

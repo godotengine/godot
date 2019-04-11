@@ -539,6 +539,11 @@ Files extracted from upstream source:
 - From `src/VHACD_Lib/`: `inc`, `public` and `src`
 - `LICENSE`
 
+Some downstream changes have been made and are identified by
+`// -- GODOT start --` and `// -- GODOT end --` comments.
+They can be reapplied using the patches included in the `vhacd`
+folder.
+
 
 ## zlib
 

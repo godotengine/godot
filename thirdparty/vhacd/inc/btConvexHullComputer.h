@@ -18,6 +18,10 @@ subject to the following restrictions:
 #include "btAlignedObjectArray.h"
 #include "btVector3.h"
 
+// -- GODOT start --
+namespace VHACD {
+// -- GODOT end --
+
 /// Convex hull implementation based on Preparata and Hong
 /// See http://code.google.com/p/bullet/issues/detail?id=275
 /// Ole Kniemeyer, MAXON Computer GmbH
@@ -93,5 +97,9 @@ public:
         return compute(coords, true, stride, count, shrink, shrinkClamp);
     }
 };
+
+// -- GODOT start --
+}; // namespace VHACD
+// -- GODOT end --
 
 #endif //BT_CONVEX_HULL_COMPUTER_H
