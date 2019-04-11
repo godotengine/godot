@@ -88,7 +88,9 @@ protected:
 
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);
-
+#ifdef TOOLS_ENABLED
+	Map<String, int> id_for_path;
+#endif
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
 
@@ -136,6 +138,12 @@ public:
 	bool is_translation_remapped() const;
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
+
+#ifdef TOOLS_ENABLED
+	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+	void set_id_for_path(const String &p_path, int p_id);
+	int get_id_for_path(const String &p_path) const;
+#endif
 
 	Resource();
 	~Resource();

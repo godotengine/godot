@@ -363,6 +363,26 @@ bool Resource::is_translation_remapped() const {
 	return remapped_list.in_list();
 }
 
+#ifdef TOOLS_ENABLED
+//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+void Resource::set_id_for_path(const String &p_path, int p_id) {
+	if (p_id == -1) {
+		id_for_path.erase(p_path);
+	} else {
+		id_for_path[p_path] = p_id;
+	}
+}
+
+int Resource::get_id_for_path(const String &p_path) const {
+
+	if (id_for_path.has(p_path)) {
+		return id_for_path[p_path];
+	} else {
+		return -1;
+	}
+}
+#endif
+
 void Resource::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &Resource::_set_path);

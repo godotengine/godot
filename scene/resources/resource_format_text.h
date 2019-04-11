@@ -169,6 +169,15 @@ class ResourceFormatSaverTextInstance {
 	Map<RES, int> external_resources;
 	Map<RES, int> internal_resources;
 
+	struct ResourceSort {
+		RES resource;
+		int index;
+		bool operator<(const ResourceSort& p_right) const {
+			return index < p_right.index;
+		}
+
+	};
+
 	void _find_resources(const Variant &p_variant, bool p_main = false);
 
 	static String _write_resources(void *ud, const RES &p_resource);

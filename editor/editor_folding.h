@@ -38,7 +38,7 @@ class EditorFolding {
 	PoolVector<String> _get_unfolds(const Object *p_object);
 	void _set_unfolds(Object *p_object, const PoolVector<String> &p_unfolds);
 
-	void _fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Set<RES> &resources);
+	void _fill_folds(const Node *p_root, const Node *p_node, Array &p_folds, Array &resource_folds, Array &nodes_folded, Set<RES> &resources);
 
 	void _do_object_unfolds(Object *p_object, Set<RES> &resources);
 	void _do_node_unfolds(Node *p_root, Node *p_node, Set<RES> &resources);
