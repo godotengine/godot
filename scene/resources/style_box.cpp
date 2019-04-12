@@ -228,7 +228,7 @@ void StyleBoxTexture::set_expand_margin_size_individual(float p_left, float p_to
 	emit_changed();
 }
 
-void StyleBoxTexture::set_expand_margin_size_all(float p_expand_margin_size) {
+void StyleBoxTexture::set_expand_margin_size_all(int p_expand_margin_size) {
 	for (int i = 0; i < 4; i++) {
 
 		expand_margin[i] = p_expand_margin_size;
@@ -298,13 +298,13 @@ void StyleBoxTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal_map", "normal_map"), &StyleBoxTexture::set_normal_map);
 	ClassDB::bind_method(D_METHOD("get_normal_map"), &StyleBoxTexture::get_normal_map);
 
-	ClassDB::bind_method(D_METHOD("set_margin_size", "margin", "size"), &StyleBoxTexture::set_margin_size);
-	ClassDB::bind_method(D_METHOD("get_margin_size", "margin"), &StyleBoxTexture::get_margin_size);
+	ClassDB::bind_method(D_METHOD("set_texture_margin", "margin", "size"), &StyleBoxTexture::set_texture_margin);
+	ClassDB::bind_method(D_METHOD("get_texture_margin", "margin", "dpi_context"), &StyleBoxTexture::get_texture_margin, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("set_expand_margin_size", "margin", "size"), &StyleBoxTexture::set_expand_margin_size);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxTexture::set_expand_margin_size_all);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxTexture::set_expand_margin_size_individual);
-	ClassDB::bind_method(D_METHOD("get_expand_margin_size", "margin"), &StyleBoxTexture::get_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin", "dpi_context"), &StyleBoxTexture::get_expand_margin, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("set_region_rect", "region"), &StyleBoxTexture::set_region_rect);
 	ClassDB::bind_method(D_METHOD("get_region_rect"), &StyleBoxTexture::get_region_rect);
@@ -325,16 +325,16 @@ void StyleBoxTexture::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
-	ADD_GROUP("Margin", "margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_TOP);
+	ADD_GROUP("Margin", "texture_margin_");
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "texture_margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_texture_margin", "get_texture_margin", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "texture_margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_texture_margin", "get_texture_margin", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "texture_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_texture_margin", "get_texture_margin", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "texture_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_texture_margin", "get_texture_margin", MARGIN_BOTTOM);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_margin_size", "get_margin_size", MARGIN_BOTTOM);
-	ADD_GROUP("Expand Margin", "expand_margin_");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_LEFT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_RIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_left", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin", MARGIN_LEFT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin", MARGIN_RIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin", MARGIN_TOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin", MARGIN_BOTTOM);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE, "0,2048,1"), "set_expand_margin_size", "get_expand_margin_size", MARGIN_BOTTOM);
 	ADD_GROUP("Axis Stretch", "axis_stretch_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis_stretch_horizontal", PROPERTY_HINT_ENUM, "Stretch,Tile,Tile Fit"), "set_h_axis_stretch_mode", "get_h_axis_stretch_mode");
@@ -469,7 +469,7 @@ void StyleBoxFlat::set_expand_margin_size(Margin p_expand_margin, float p_size) 
 	emit_changed();
 }
 
-void StyleBoxFlat::set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom) {
+void StyleBoxFlat::set_expand_margin_size_individual(int p_left, int p_top, int p_right, int p_bottom) {
 	expand_margin[MARGIN_LEFT] = p_left;
 	expand_margin[MARGIN_TOP] = p_top;
 	expand_margin[MARGIN_RIGHT] = p_right;
@@ -485,7 +485,7 @@ void StyleBoxFlat::set_expand_margin_size_all(float p_expand_margin_size) {
 	emit_changed();
 }
 
-float StyleBoxFlat::get_expand_margin_size(Margin p_expand_margin) const {
+int StyleBoxFlat::get_expand_margin(Margin p_expand_margin, const Control *p_context) const {
 
 	return expand_margin[p_expand_margin];
 }
@@ -799,7 +799,7 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_expand_margin", "margin", "size"), &StyleBoxFlat::set_expand_margin_size);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_all", "size"), &StyleBoxFlat::set_expand_margin_size_all);
 	ClassDB::bind_method(D_METHOD("set_expand_margin_individual", "size_left", "size_top", "size_right", "size_bottom"), &StyleBoxFlat::set_expand_margin_size_individual);
-	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin"), &StyleBoxFlat::get_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("get_expand_margin", "margin", "dpi_context"), &StyleBoxFlat::get_expand_margin, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("set_draw_center", "draw_center"), &StyleBoxFlat::set_draw_center);
 	ClassDB::bind_method(D_METHOD("is_draw_center_enabled"), &StyleBoxFlat::is_draw_center_enabled);
