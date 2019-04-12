@@ -1454,10 +1454,10 @@ void Image::generate_palette(int p_num_colors, bool p_high_quality) {
 	exq_get_palette(pExq, pal_raw, p_num_colors);
 
 	// Map image to palette (doesn't overwrite original image)
-	data_indexed.resize(0);
-	data_indexed.resize(num_pixels);
+	index_data.resize(0);
+	index_data.resize(num_pixels);
 
-	PoolVector<uint8_t>::Write w_dest = data_indexed.write();
+	PoolVector<uint8_t>::Write w_dest = index_data.write();
 	uint8_t *dest = w_dest.ptr();
 
 	exq_map_image(pExq, num_pixels, src, dest);
@@ -1554,21 +1554,24 @@ bool Image::has_palette() const {
 
 Ref<Image> Image::palette_to_rgba() const {
 
+	ERR_FAIL_COND_V(index_data.size() == 0, NULL);
+	ERR_FAIL_COND_V(palette_data.size() == 0, NULL);
+
 	PoolVector<uint8_t> dest_data;
 	dest_data.resize(data.size());
 	PoolVector<uint8_t>::Write w_dest = dest_data.write();
 	uint8_t *dest = w_dest.ptr();
 
 	PoolVector<uint8_t>::Read pal = palette_data.read();
-	PoolVector<uint8_t>::Read indexed = data_indexed.read();
+	PoolVector<uint8_t>::Read ind = index_data.read();
 
 	const int num_pixels = width * height;
 
 	for (int i = 0; i < num_pixels; i++) {
-		dest[0] = pal[indexed[i] * 4 + 0];
-		dest[1] = pal[indexed[i] * 4 + 1];
-		dest[2] = pal[indexed[i] * 4 + 2];
-		dest[3] = pal[indexed[i] * 4 + 3];
+		dest[0] = pal[ind[i] * 4 + 0];
+		dest[1] = pal[ind[i] * 4 + 1];
+		dest[2] = pal[ind[i] * 4 + 2];
+		dest[3] = pal[ind[i] * 4 + 3];
 
 		dest += 4;
 	}
@@ -1577,6 +1580,11 @@ Ref<Image> Image::palette_to_rgba() const {
 	img->create(width, height, mipmaps, FORMAT_RGBA8, dest_data);
 
 	return img;
+}
+
+void Image::set_index_data(const PoolVector<uint8_t> &p_index_data) {
+
+	index_data = p_index_data;
 }
 
 bool Image::empty() const {

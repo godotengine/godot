@@ -107,14 +107,12 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	png_read_info(png, info);
 	png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 
-	// png_colorp png_palette = NULL;
-	// int palette_size;
-	// bool has_palette = false;
+	png_colorp png_palette = NULL;
+	int palette_size = 0;
 
-	// if (png_get_valid(png, info, PNG_INFO_PLTE)) {
-	// 	png_get_PLTE(png, info, &png_palette, &palette_size);
-	// 	has_palette = true;
-	// }
+	if (png_get_valid(png, info, PNG_INFO_PLTE)) {
+		png_get_PLTE(png, info, &png_palette, &palette_size);
+	}
 
 	//https://svn.gov.pt/projects/ccidadao/repository/middleware-offline/trunk/_src/eidmw/FreeImagePTEiD/Source/FreeImage/PluginPNG.cpp
 	//png_get_text(png,info,)
@@ -133,26 +131,18 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 		update_info = true;
 	};
 
-	if (png_get_color_type(png, info) == PNG_COLOR_TYPE_PALETTE) {
-		png_set_palette_to_rgb(png);
-		update_info = true;
-	}
-
 	if (depth > 8) {
 		png_set_strip_16(png);
 		update_info = true;
 	}
 
-	// png_bytep *png_palette_trans = NULL;
-	// int num_trans = 0;
+	png_bytep png_palette_trans = NULL;
+	int palette_trans_size = 0;
 
 	if (png_get_valid(png, info, PNG_INFO_tRNS)) {
 		//png_set_expand_gray_1_2_4_to_8(png);
 
-		// if (has_palette) {
-		// 	// Retrieve auxiliary chunk for alpha
-		// 	png_get_tRNS(png, info, png_palette_trans, &num_trans, NULL);
-		png_set_tRNS_to_alpha(png);
+		png_get_tRNS(png, info, &png_palette_trans, &palette_trans_size, NULL);
 		update_info = true;
 	}
 
@@ -166,6 +156,11 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	Image::Format fmt;
 	switch (color) {
 
+		case PNG_COLOR_TYPE_PALETTE: {
+
+			fmt = Image::FORMAT_L8;
+			components = 1;
+		} break;
 		case PNG_COLOR_TYPE_GRAY: {
 
 			fmt = Image::FORMAT_L8;
@@ -215,28 +210,46 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 
 	memdelete_arr(row_p);
 
-	p_image->create(width, height, 0, fmt, dstbuff);
+	if (color == PNG_COLOR_TYPE_PALETTE) {
+		// Loaded data is indices
+		p_image->create(width, height, 0, Image::FORMAT_RGBA8);
+		p_image->set_index_data(dstbuff); // byte
 
-	// if (has_palette) {
+		// Construct palette
+		PoolVector<Color> palette;
+		palette.resize(palette_size);
 
-	// 	PoolColorArray palette;
-	// 	palette.resize(palette_size);
-	// 	PoolColorArray::Write w = palette.write();
+		PoolVector<Color>::Write w = palette.write();
 
-	// 	for (int i = 0; i < palette_size; i++) {
-	// 		png_colorp c = &png_palette[i];
-	// 		w[i] = Color(c->red / 255.0, c->green / 255.0, c->blue / 255.0);
-	// 	}
-	// 	// Set alpha from auxiliary chunk
-	// 	if (png_palette_trans && num_trans == palette_size) {
+		if (png_palette) {
 
-	// 		for (int i = 0; i < palette_size; i++) {
-	// 			png_bytep a = png_palette_trans[i];
-	// 			w[i].a = *a / 255.0;
-	// 		}
-	// 	}
-	// 	p_image->set_palette(palette);
-	// }
+			for (int i = 0; i < palette_size; i++) {
+				png_colorp c = &png_palette[i];
+				w[i] = Color(c->red / 255.0, c->green / 255.0, c->blue / 255.0);
+			}
+			// png_free(png, png_palette);
+		}
+		if (png_palette_trans && palette_trans_size == palette_size) {
+
+			for (int i = 0; i < palette_trans_size; i++) {
+				png_bytep a = &png_palette_trans[i];
+				w[i].a = *a / 255.0;
+			}
+			// png_free(png, png_palette_trans);
+		}
+		p_image->set_palette(palette);
+
+		// Extend indexed image (similarly to png_palette_to_rgb)
+		Ref<Image> extended = p_image->palette_to_rgba();
+		p_image->create(width, height, 0, Image::FORMAT_RGBA8, extended->get_data());
+
+	} else {
+		// Loaded data is pixels
+		ERR_EXPLAIN("Attempt to create a regular image with palette");
+		ERR_FAIL_COND_V(png_palette, ERR_BUG);
+
+		p_image->create(width, height, 0, fmt, dstbuff);
+	}
 
 	png_destroy_read_struct(&png, &info, NULL);
 

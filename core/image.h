@@ -163,7 +163,7 @@ private:
 
 	Format format;
 	PoolVector<uint8_t> data;
-	PoolVector<uint8_t> data_indexed;
+	PoolVector<uint8_t> index_data;
 	PoolVector<uint8_t> palette_data;
 	int width, height;
 	bool mipmaps;
@@ -264,6 +264,8 @@ public:
 	bool has_palette() const;
 
 	Ref<Image> palette_to_rgba() const;
+
+	void set_index_data(const PoolVector<uint8_t> &p_index_data);
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost
