@@ -162,7 +162,7 @@ public:
 
 private:
 	Type hint;
-	PropertySelector *selector;
+	PropertySelectorDialog *selector;
 	Button *property;
 	String hint_text;
 

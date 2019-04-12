@@ -5093,11 +5093,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	add_child(pick_track);
 	pick_track->set_title(TTR("Pick the node that will be animated:"));
 	pick_track->connect("selected", this, "_new_track_node_selected");
-	prop_selector = memnew(PropertySelector);
+	prop_selector = memnew(PropertySelectorDialog);
 	add_child(prop_selector);
 	prop_selector->connect("selected", this, "_new_track_property_selected");
 
-	method_selector = memnew(PropertySelector);
+	method_selector = memnew(PropertySelectorDialog);
 	add_child(method_selector);
 	method_selector->connect("selected", this, "_add_method_key");
 

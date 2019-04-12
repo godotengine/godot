@@ -35,8 +35,8 @@
 #include "editor_help.h"
 #include "scene/gui/rich_text_label.h"
 
-class PropertySelector : public ConfirmationDialog {
-	GDCLASS(PropertySelector, ConfirmationDialog)
+class PropertySelector : public VBoxContainer {
+	GDCLASS(PropertySelector, VBoxContainer)
 
 	LineEdit *search_box;
 	Tree *search_options;
@@ -45,7 +45,6 @@ class PropertySelector : public ConfirmationDialog {
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 
-	void _confirmed();
 	void _text_changed(const String &p_newtext);
 
 	EditorHelpBit *help_bit;
@@ -58,9 +57,49 @@ class PropertySelector : public ConfirmationDialog {
 	Object *instance;
 	bool virtuals_only;
 
+	void _item_activated();
 	void _item_selected();
+	void _request_hide();
 
 	Vector<Variant::Type> type_filter;
+
+protected:
+	static void _bind_methods();
+
+public:
+	LineEdit *get_search_box();
+	Tree *get_search_options();
+	EditorHelpBit *get_help_bit();
+
+	void select_method_from_base_type(const String &p_base, const String &p_current = "", bool p_virtuals_only = false);
+	void select_method_from_script(const Ref<Script> &p_script, const String &p_current = "");
+	void select_method_from_basic_type(Variant::Type p_type, const String &p_current = "");
+	void select_method_from_instance(Object *p_instance, const String &p_current = "");
+
+	void select_property_from_base_type(const String &p_base, const String &p_current = "");
+	void select_property_from_script(const Ref<Script> &p_script, const String &p_current = "");
+	void select_property_from_basic_type(Variant::Type p_type, const String &p_current = "");
+	void select_property_from_instance(Object *p_instance, const String &p_current = "");
+
+	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
+
+	bool is_properties_only() const;
+	bool is_virtuals_only() const;
+
+	PropertySelector();
+};
+
+//========================================
+
+class PropertySelectorDialog : public ConfirmationDialog {
+	GDCLASS(PropertySelectorDialog, ConfirmationDialog)
+
+	PropertySelector *selector;
+
+	void _update_title();
+
+	void _selected(String p_name);
+	void _confirmed();
 
 protected:
 	void _notification(int p_what);
@@ -79,7 +118,7 @@ public:
 
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
-	PropertySelector();
+	PropertySelectorDialog();
 };
 
 #endif // PROPERTYSELECTOR_H

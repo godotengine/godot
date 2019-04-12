@@ -52,7 +52,7 @@
 
 class PropertyValueEvaluator;
 class CreateDialog;
-class PropertySelector;
+class PropertySelectorDialog;
 
 class EditorResourceConversionPlugin : public Reference {
 
@@ -124,7 +124,7 @@ class CustomPropertyEditor : public Popup {
 
 	Control *easing_draw;
 	CreateDialog *create_dialog;
-	PropertySelector *property_select;
+	PropertySelectorDialog *property_select;
 
 	Object *owner;
 

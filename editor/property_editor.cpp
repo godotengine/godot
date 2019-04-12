@@ -600,7 +600,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			} else if (hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE) {
 #define MAKE_PROPSELECT                                                          \
 	if (!property_select) {                                                      \
-		property_select = memnew(PropertySelector);                              \
+		property_select = memnew(PropertySelectorDialog);                              \
 		property_select->connect("selected", this, "_create_selected_property"); \
 		add_child(property_select);                                              \
 	}                                                                            \
