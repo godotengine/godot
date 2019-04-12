@@ -432,6 +432,14 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
 			</description>
 		</method>
+		<method name="is_valid_filename">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this string is free from characters that aren't allowed in file names, those being:
+				[code]: / \ ? * " | % < >[/code]
+			</description>
+		</method>
 		<method name="is_valid_float">
 			<return type="bool">
 			</return>
