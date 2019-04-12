@@ -263,6 +263,8 @@ public:
 
 	bool has_palette() const;
 
+	Ref<Image> palette_to_rgba() const;
+
 	/**
 	 * Create a new image of a given size and format. Current image will be lost
 	 */
