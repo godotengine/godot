@@ -103,8 +103,8 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	int pngf = 0;
 	int cs = 0;
 
-	png_colorp png_palette;
-	png_bytep png_palette_trans;
+	// png_colorp png_palette;
+	// png_bytep png_palette_trans;
 
 	// if (p_img->has_palette()) {
 	// 	pngf = PNG_COLOR_TYPE_PALETTE;

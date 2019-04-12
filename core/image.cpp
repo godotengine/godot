@@ -1594,6 +1594,16 @@ void Image::generate_palette(int p_num_colors, bool p_high_quality) {
 
 	exq_get_palette(pExq, pal_raw, p_num_colors);
 
+	// Finally, map image to palette (doesn't overwrite original image)
+	data_indexed.resize(0);
+	data_indexed.resize(num_pixels);
+
+	PoolVector<uint8_t>::Write w_dest = data_indexed.write();
+	uint8_t *dest = w_dest.ptr();
+
+	exq_map_image(pExq, num_pixels, src, dest);
+
+	// Cleanup
 	exq_free(pExq);
 }
 
@@ -1605,23 +1615,20 @@ PoolColorArray Image::get_palette() {
 	PoolColorArray palette;
 	palette.resize(num_colors);
 
-	PoolColorArray::Write w_pal = palette.write();
-	Color *pal = w_pal.ptr();
+	PoolColorArray::Write w = palette.write();
 
-	palette_data.resize(0);
-	palette_data.resize(num_colors * 4);
-	PoolVector<uint8_t>::Write w_pal_raw = palette_data.write();
-	uint8_t *pal_raw = w_pal_raw.ptr();
+	PoolVector<uint8_t>::Write w_pal = palette_data.write();
+	uint8_t *r = w_pal.ptr(); // pointer arithmetic
 
 	for (int i = 0; i < num_colors; i++) {
-		float rc = (pal_raw[0] / 255.0f);
-		float gc = (pal_raw[1] / 255.0f);
-		float bc = (pal_raw[2] / 255.0f);
-		float ac = (pal_raw[3] / 255.0f);
+		float rc = (r[0] / 255.9f);
+		float gc = (r[1] / 255.9f);
+		float bc = (r[2] / 255.9f);
+		float ac = (r[3] / 255.9f);
 
-		pal[i] = Color(rc, gc, bc, ac);
+		w[i] = Color(rc, gc, bc, ac);
 
-		pal_raw += 4;
+		r += 4;
 	}
 
 	return palette;
@@ -1632,21 +1639,21 @@ void Image::set_palette(const PoolColorArray &p_palette) {
 	// Convert to color array
 	int num_colors = p_palette.size();
 
-	PoolColorArray::Read w_pal = p_palette.read();
-	const Color *pal = w_pal.ptr();
+	PoolColorArray::Read r = p_palette.read();
 
 	palette_data.resize(0);
 	palette_data.resize(num_colors * 4);
-	PoolVector<uint8_t>::Write w_pal_raw = palette_data.write();
-	uint8_t *pal_raw = w_pal_raw.ptr();
+
+	PoolVector<uint8_t>::Write w_pal = palette_data.write();
+	uint8_t *w = w_pal.ptr();
 
 	for (int i = 0; i < num_colors; i++) {
-		pal_raw[0] = pal[i].r * 255.0f;
-		pal_raw[1] = pal[i].g * 255.0f;
-		pal_raw[2] = pal[i].b * 255.0f;
-		pal_raw[3] = pal[i].a * 255.0f;
+		w[0] = r[i].r * 255.0f;
+		w[1] = r[i].g * 255.0f;
+		w[2] = r[i].b * 255.0f;
+		w[3] = r[i].a * 255.0f;
 
-		pal_raw += 4;
+		w += 4;
 	}
 }
 
