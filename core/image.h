@@ -81,7 +81,6 @@ public:
 		FORMAT_RGBH,
 		FORMAT_RGBAH,
 		FORMAT_RGBE9995,
-		FORMAT_INDEXED,
 		FORMAT_DXT1, //s3tc bc1
 		FORMAT_DXT3, //bc2
 		FORMAT_DXT5, //bc3
@@ -164,7 +163,8 @@ private:
 
 	Format format;
 	PoolVector<uint8_t> data;
-	PoolColorArray palette;
+	PoolVector<uint8_t> data_indexed;
+	PoolVector<uint8_t> palette_data;
 	int width, height;
 	bool mipmaps;
 
@@ -247,13 +247,21 @@ public:
 	void normalize(); //for normal maps
 
 	/**
-	 * Generate an optimal color palette of an image
+	 * Generate an optimal color palette of this image
+	 * The image can be saved as indexed if it has a palette associated with it
+	 * NOTE: there's no actual format for indexed images.
 	 */
-	Error generate_palette(int p_num_colors = 256, bool p_high_quality = true);
-	PoolColorArray get_palette() const;
-	void set_palette(const PoolColorArray &p_palette);
-	bool has_palette() const;
+	void generate_palette(int p_num_colors = 256, bool p_high_quality = true);
+
 	void clear_palette();
+
+	void set_palette(const PoolColorArray &p_palette);
+	PoolColorArray get_palette();
+
+	void set_palette_color(int p_idx, const Color p_color);
+	Color get_palette_color(int p_idx) const;
+
+	bool has_palette() const;
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost
