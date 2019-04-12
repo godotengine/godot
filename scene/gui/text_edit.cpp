@@ -590,6 +590,12 @@ void TextEdit::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
+
+			if (first_draw) {
+				//size may not be the final one, so attempts to ensure cursor was visible may have failed
+				adjust_viewport_to_cursor();
+				first_draw = false;
+			}
 			Size2 size = get_size();
 			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
 				draw_caret = false;
@@ -6356,6 +6362,7 @@ TextEdit::TextEdit() {
 	menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 	menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
+	first_draw = true;
 }
 
 TextEdit::~TextEdit() {

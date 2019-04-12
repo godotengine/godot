@@ -53,12 +53,15 @@ class ConnectDialog : public ConfirmationDialog {
 
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
+	Label *connect_to_label;
+	LineEdit *from_signal;
 	Node *source;
 	StringName signal;
-	LineEdit *dst_path;
 	LineEdit *dst_method;
 	ConnectDialogBinds *cdbinds;
 	bool bEditMode;
+	NodePath dst_path;
+	VBoxContainer *vbc_right;
 
 	SceneTreeEditor *tree;
 	ConfirmationDialog *error;
@@ -66,13 +69,16 @@ class ConnectDialog : public ConfirmationDialog {
 	OptionButton *type_list;
 	CheckButton *deferred;
 	CheckButton *oneshot;
-	CheckButton *make_callback;
+	CheckBox *advanced;
+
+	Label *error_label;
 
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
 	void _add_bind();
 	void _remove_bind();
+	void _advanced_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -87,13 +93,13 @@ public:
 	void set_dst_method(const StringName &p_method);
 	Vector<Variant> get_binds() const;
 
-	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	bool get_deferred() const;
 	bool get_oneshot() const;
 	bool is_editing() const;
 
 	void init(Connection c, bool bEdit = false);
 
+	void popup_dialog(const String &p_for_signal, bool p_advanced);
 	ConnectDialog();
 	~ConnectDialog();
 };

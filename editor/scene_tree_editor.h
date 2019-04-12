@@ -67,6 +67,8 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *error;
 	AcceptDialog *warning;
 
+	bool connect_to_script_mode;
+
 	int blocked;
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
@@ -150,6 +152,8 @@ public:
 	void set_valid_types(const Vector<StringName> &p_valid);
 
 	void update_tree() { _update_tree(); }
+
+	void set_connect_to_script_mode(bool p_enable);
 
 	Tree *get_scene_tree() { return tree; }
 
