@@ -3388,10 +3388,13 @@ void Tree::ensure_cursor_is_visible() {
 	int h = compute_item_height(selected) + cache.vseparation;
 	int screenh = get_size().height - h_scroll->get_combined_minimum_size().height;
 
-	if (ofs + h > v_scroll->get_value() + screenh)
-		v_scroll->call_deferred("set_value", ofs - screenh + h);
-	else if (ofs < v_scroll->get_value())
+	if (h > screenh) { //screen size is too small, maybe it was not resized yet.
 		v_scroll->set_value(ofs);
+	} else if (ofs + h > v_scroll->get_value() + screenh) {
+		v_scroll->call_deferred("set_value", ofs - screenh + h);
+	} else if (ofs < v_scroll->get_value()) {
+		v_scroll->set_value(ofs);
+	}
 }
 
 int Tree::get_pressed_button() const {

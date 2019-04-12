@@ -275,6 +275,7 @@ private:
 	int wrap_at;
 	int wrap_right_offset;
 
+	bool first_draw;
 	bool setting_row;
 	bool draw_tabs;
 	bool override_selected_font_color;
