@@ -127,14 +127,16 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
 
 		// Palette alpha
-		png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
-		for (int i = 0; i < palette_size; i++) {
-			png_bytep a = &png_palette_trans[i];
-			*a = (uint8_t)(read[i].a * 255.0);
+		if (img->detect_alpha()) {
+			png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
+			for (int i = 0; i < palette_size; i++) {
+				png_bytep a = &png_palette_trans[i];
+				*a = (uint8_t)(read[i].a * 255.0);
+			}
+			png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
 		}
-		png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
 
-	} else {
+	} else { // has no palette associated
 		switch (img->get_format()) {
 
 			case Image::FORMAT_L8: {
@@ -212,9 +214,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	/* cleanup heap allocation */
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	if (p_img->has_palette()) {
-		png_free(png_ptr, png_palette);
-	}
+	png_free(png_ptr, png_palette);
 
 	return OK;
 }

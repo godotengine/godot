@@ -107,9 +107,9 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	png_read_info(png, info);
 	png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 
-	bool has_palette = false;
+	png_colorp png_palette = NULL;
 	int palette_size;
-	png_colorp png_palette;
+	bool has_palette = false;
 
 	if (png_get_valid(png, info, PNG_INFO_PLTE)) {
 		png_get_PLTE(png, info, &png_palette, &palette_size);
@@ -143,9 +143,18 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 		update_info = true;
 	}
 
+	png_bytep *png_palette_trans = NULL;
+	int num_trans = 0;
+
 	if (png_get_valid(png, info, PNG_INFO_tRNS)) {
 		//png_set_expand_gray_1_2_4_to_8(png);
-		png_set_tRNS_to_alpha(png);
+
+		if (has_palette) {
+			// Retrieve auxiliary chunk for alpha
+			png_get_tRNS(png, info, png_palette_trans, &num_trans, NULL);
+		} else {
+			png_set_tRNS_to_alpha(png);
+		}
 		update_info = true;
 	}
 
@@ -219,6 +228,14 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 		for (int i = 0; i < palette_size; i++) {
 			png_colorp c = &png_palette[i];
 			w[i] = Color(c->red / 255.0, c->green / 255.0, c->blue / 255.0);
+		}
+		// Set alpha from auxiliary chunk
+		if (png_palette_trans && num_trans == palette_size) {
+
+			for (int i = 0; i < palette_size; i++) {
+				png_bytep a = png_palette_trans[i];
+				w[i].a = *a / 255.0;
+			}
 		}
 		p_image->set_palette(palette);
 	}
