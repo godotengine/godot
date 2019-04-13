@@ -3372,7 +3372,7 @@ void GDScriptParser::_parse_extends(ClassNode *p_class) {
 		return;
 	}
 
-	if (!p_class->constant_expressions.empty() || !p_class->subclasses.empty() || !p_class->functions.empty() || !p_class->variables.empty()) {
+	if (!p_class->constant_expressions.empty() || !p_class->subclasses.empty() || !p_class->functions.empty() || !p_class->variables.empty() || p_class->classname_used) {
 
 		_set_error("'extends' must be used before anything else.");
 		return;
@@ -3509,6 +3509,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					_set_error("'class_name' syntax: 'class_name <UniqueName>'");
 					return;
 				}
+				if (p_class->classname_used) {
+					_set_error("'class_name' already used for this class.");
+					return;
+				}
+
+				p_class->classname_used = true;
 
 				p_class->name = tokenizer->get_token_identifier(1);
 
