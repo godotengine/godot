@@ -70,6 +70,8 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	ERR_FAIL_COND_V(img->is_compressed(), ERR_INVALID_PARAMETER);
 
+	bool has_palette = p_img->has_palette();
+
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_bytep *row_pointers;
@@ -103,40 +105,10 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	int pngf = 0;
 	int cs = 0;
 
-	png_colorp png_palette = NULL;
-	png_bytep png_palette_trans = NULL;
-
-	if (p_img->has_palette()) {
+	if (has_palette) {
 		pngf = PNG_COLOR_TYPE_PALETTE;
 		cs = 1;
-
-		const PoolColorArray &palette = p_img->get_palette();
-		PoolColorArray::Read read = palette.read();
-
-		int palette_size = palette.size();
-
-		// Palette
-		png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
-		for (int i = 0; i < palette_size; i++) {
-			png_color *col = &png_palette[i];
-
-			col->red = read[i].r * 255.0;
-			col->green = read[i].g * 255.0;
-			col->blue = read[i].b * 255.0;
-		}
-		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
-
-		// Palette alpha
-		if (img->detect_alpha()) {
-			png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
-			for (int i = 0; i < palette_size; i++) {
-				png_bytep a = &png_palette_trans[i];
-				*a = (uint8_t)(read[i].a * 255.0);
-			}
-			png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
-		}
-
-	} else { // has no palette associated
+	} else {
 		switch (img->get_format()) {
 
 			case Image::FORMAT_L8: {
@@ -178,9 +150,41 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	int w = img->get_width();
 	int h = img->get_height();
-	png_set_IHDR(png_ptr, info_ptr, w, h,
-			8, pngf, PNG_INTERLACE_NONE,
-			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	png_set_IHDR(png_ptr, info_ptr, w, h, 8, pngf,
+			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	// Prepare palette
+	png_colorp png_palette;
+	png_bytep png_palette_trans = NULL;
+
+	if (has_palette) {
+		const PoolColorArray &palette = p_img->get_palette();
+		PoolColorArray::Read read = palette.read();
+
+		// Palette RGB
+		int palette_size = palette.size();
+		png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
+
+		for (int i = 0; i < palette_size; i++) {
+			png_color *col = &png_palette[i];
+
+			col->red = read[i].r * 255.0;
+			col->green = read[i].g * 255.0;
+			col->blue = read[i].b * 255.0;
+		}
+		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
+
+		// Palette Alpha
+		if (img->detect_alpha()) {
+			png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
+			for (int i = 0; i < palette_size; i++) {
+				png_bytep a = &png_palette_trans[i];
+				*a = (uint8_t)(read[i].a * 255.0);
+			}
+			png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
+		}
+	}
 
 	png_write_info(png_ptr, info_ptr);
 
@@ -192,8 +196,8 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	PoolVector<uint8_t>::Read r;
 
-	if (p_img->has_palette()) {
-		r = img->get_index_data().read();
+	if (has_palette) {
+		r = p_img->get_index_data().read();
 	} else {
 		r = img->get_data().read();
 	}
@@ -220,11 +224,11 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	/* cleanup heap allocation */
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	// if (png_palette)
-	// 	png_free(png_ptr, png_palette);
+	if (png_palette)
+		png_free(png_ptr, png_palette);
 
-	// if (png_palette_trans)
-	// 	png_free(png_ptr, png_palette_trans);
+	if (png_palette_trans)
+		png_free(png_ptr, png_palette_trans);
 
 	return OK;
 }

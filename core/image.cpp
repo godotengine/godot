@@ -1482,17 +1482,14 @@ PoolColorArray Image::get_palette() const {
 
 	PoolVector<uint8_t>::Read r_pal = palette_data.read();
 	const uint8_t *r = r_pal.ptr();
-	uint8_t *ofs = const_cast<uint8_t *>(r); // perform pointer arithmetic
 
 	for (int i = 0; i < num_colors; i++) {
-		float rc = (r[0] / 255.0f);
-		float gc = (r[1] / 255.0f);
-		float bc = (r[2] / 255.0f);
-		float ac = (r[3] / 255.0f);
+		float rc = r[i * 4 + 0] / 255.0f;
+		float gc = r[i * 4 + 1] / 255.0f;
+		float bc = r[i * 4 + 2] / 255.0f;
+		float ac = r[i * 4 + 3] / 255.0f;
 
 		w[i] = Color(rc, gc, bc, ac);
-
-		ofs += 4;
 	}
 
 	return palette;
