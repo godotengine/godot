@@ -38,6 +38,7 @@
 #include "core/undo_redo.h"
 #include "editor/editor_inspector.h"
 #include "editor/scene_tree_editor.h"
+#include "editor/property_selector.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
@@ -49,36 +50,81 @@
 class PopupMenu;
 class ConnectDialogBinds;
 
+class ArgumentsBindsDialog : public AcceptDialog {
+
+	GDCLASS(ArgumentsBindsDialog, AcceptDialog);
+
+	ConnectDialogBinds *cdbinds;
+	VBoxContainer *vb_container;
+	OptionButton *type_list;
+	EditorInspector *bind_editor;
+
+	void _add_bind();
+	void _remove_bind();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	Vector<Variant> get_binds() const;
+
+	void init(Vector<Variant> p_binds);
+
+	ArgumentsBindsDialog();
+	~ArgumentsBindsDialog();
+
+};
+
 class ConnectDialog : public ConfirmationDialog {
 
 	GDCLASS(ConnectDialog, ConfirmationDialog);
 
+	enum CallMode {
+		DEFERRED = 0,
+		ONESHOT = 1
+	};
+
+public:
+	enum Mode {
+		NEW_METHOD = 0,
+		EXISTING_METHOD = 1
+	};
+
+private:
 	Label *connect_to_label;
 	LineEdit *from_signal;
 	Node *source;
 	StringName signal;
+	OptionButton *mode_list;
 	LineEdit *dst_method;
-	ConnectDialogBinds *cdbinds;
+	//ConnectDialogBinds *cdbinds;
 	bool bEditMode;
 	NodePath dst_path;
 	VBoxContainer *vbc_right;
+	PropertySelector *selector_right;
 
 	SceneTreeEditor *tree;
 	ConfirmationDialog *error;
-	EditorInspector *bind_editor;
-	OptionButton *type_list;
-	CheckButton *deferred;
-	CheckButton *oneshot;
-	CheckBox *advanced;
+	//EditorInspector *bind_editor;
+	//OptionButton *type_list;
+	MenuButton *settings;
+	ArgumentsBindsDialog *args_dialog;
+	ToolButton *edit_args;
+	Label *args_info;
 
 	Label *error_label;
 
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
-	void _add_bind();
-	void _remove_bind();
-	void _advanced_pressed();
+	//void _add_bind();
+	//void _remove_bind();
+	void _mode_changed(int p_mode);
+	void _method_selected(String p_method);
+	void _settings_flags_changed(int p_setting_idx);
+	void _set_settings_flags(bool p_deferred, bool p_oneshot);
+	void _edit_arguments_pressed();
 
 protected:
 	void _notification(int p_what);
@@ -99,7 +145,7 @@ public:
 
 	void init(Connection c, bool bEdit = false);
 
-	void popup_dialog(const String &p_for_signal, bool p_advanced);
+	void popup_dialog(const String &p_for_signal, int p_mode);
 	ConnectDialog();
 	~ConnectDialog();
 };

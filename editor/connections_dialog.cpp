@@ -108,6 +108,162 @@ public:
 };
 
 /*
+Adds a new parameter bind to connection.
+*/
+void ArgumentsBindsDialog::_add_bind() {
+
+	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
+		return;
+	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
+
+	Variant value;
+
+	switch (vt) {
+		case Variant::BOOL: value = false; break;
+		case Variant::INT: value = 0; break;
+		case Variant::REAL: value = 0.0; break;
+		case Variant::STRING: value = ""; break;
+		case Variant::VECTOR2: value = Vector2(); break;
+		case Variant::RECT2: value = Rect2(); break;
+		case Variant::VECTOR3: value = Vector3(); break;
+		case Variant::TRANSFORM2D: value = Transform2D(); break;
+		case Variant::PLANE: value = Plane(); break;
+		case Variant::QUAT: value = Quat(); break;
+		case Variant::AABB: value = AABB(); break;
+		case Variant::BASIS: value = Basis(); break;
+		case Variant::TRANSFORM: value = Transform(); break;
+		case Variant::COLOR: value = Color(); break;
+		case Variant::NODE_PATH: value = NodePath(); break;
+		case Variant::_RID: value = RID(); break;
+		case Variant::OBJECT: value = Ref<Reference>(memnew(Reference)); break;
+		case Variant::DICTIONARY: value = Dictionary(); break;
+		case Variant::ARRAY: value = Array(); break;
+		case Variant::POOL_BYTE_ARRAY: value = PoolByteArray(); break;
+		case Variant::POOL_INT_ARRAY: value = PoolIntArray(); break;
+		case Variant::POOL_REAL_ARRAY: value = PoolRealArray(); break;
+		case Variant::POOL_STRING_ARRAY: value = PoolStringArray(); break;
+		case Variant::POOL_VECTOR2_ARRAY: value = PoolVector2Array(); break;
+		case Variant::POOL_VECTOR3_ARRAY: value = PoolVector3Array(); break;
+		case Variant::POOL_COLOR_ARRAY: value = PoolColorArray(); break;
+		default: {
+			ERR_FAIL();
+		} break;
+	}
+
+	ERR_FAIL_COND(value.get_type() == Variant::NIL);
+
+	cdbinds->params.push_back(value);
+	cdbinds->notify_changed();
+}
+
+/*
+Remove parameter bind from connection.
+*/
+void ArgumentsBindsDialog::_remove_bind() {
+
+	String st = bind_editor->get_selected_path();
+	if (st == "")
+		return;
+	int idx = st.get_slice("/", 1).to_int() - 1;
+
+	ERR_FAIL_INDEX(idx, cdbinds->params.size());
+	cdbinds->params.remove(idx);
+	cdbinds->notify_changed();
+}
+
+void ArgumentsBindsDialog::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		bind_editor->edit(cdbinds);
+	}
+}
+
+void ArgumentsBindsDialog::_bind_methods() {
+
+	ClassDB::bind_method("_add_bind", &ArgumentsBindsDialog::_add_bind);
+	ClassDB::bind_method("_remove_bind", &ArgumentsBindsDialog::_remove_bind);
+}
+
+Vector<Variant> ArgumentsBindsDialog::get_binds() const {
+
+	return cdbinds->params;
+}
+
+void ArgumentsBindsDialog::init(Vector<Variant> p_binds) {
+
+	cdbinds->params.clear();
+	cdbinds->params = p_binds;
+	cdbinds->notify_changed();
+}
+
+ArgumentsBindsDialog::ArgumentsBindsDialog() {
+
+	vb_container = memnew(VBoxContainer);
+	add_child(vb_container);
+	vb_container->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
+
+	type_list = memnew(OptionButton);
+	type_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_bind_hb->add_child(type_list);
+	type_list->add_item("bool", Variant::BOOL);
+	type_list->add_item("int", Variant::INT);
+	type_list->add_item("real", Variant::REAL);
+	type_list->add_item("string", Variant::STRING);
+	type_list->add_item("Vector2", Variant::VECTOR2);
+	type_list->add_item("Rect2", Variant::RECT2);
+	type_list->add_item("Vector3", Variant::VECTOR3);
+	type_list->add_item("Transform2D", Variant::TRANSFORM2D);
+	type_list->add_item("Plane", Variant::PLANE);
+	type_list->add_item("Quat", Variant::QUAT);
+	type_list->add_item("AABB", Variant::AABB);
+	type_list->add_item("Basis", Variant::BASIS);
+	type_list->add_item("Transform", Variant::TRANSFORM);
+	type_list->add_item("Color", Variant::COLOR);
+	type_list->add_item("NodePath", Variant::NODE_PATH);
+	type_list->add_item("RID", Variant::_RID);
+	type_list->add_item("Object", Variant::OBJECT);
+	type_list->add_item("Dictionary", Variant::DICTIONARY);
+	type_list->add_item("Array", Variant::ARRAY);
+	type_list->add_item("PoolByteArray", Variant::POOL_BYTE_ARRAY);
+	type_list->add_item("PoolIntArray", Variant::POOL_INT_ARRAY);
+	type_list->add_item("PoolRealArray", Variant::POOL_REAL_ARRAY);
+	type_list->add_item("PoolStringArray", Variant::POOL_STRING_ARRAY);
+	type_list->add_item("PoolVector2Array", Variant::POOL_VECTOR2_ARRAY);
+	type_list->add_item("PoolVector3Array", Variant::POOL_VECTOR3_ARRAY);
+	type_list->add_item("PoolColorArray", Variant::POOL_COLOR_ARRAY);
+	type_list->select(0);
+
+	Button *add_bind = memnew(Button);
+	add_bind->set_text(TTR("Add"));
+	add_bind_hb->add_child(add_bind);
+	add_bind->connect("pressed", this, "_add_bind");
+
+	Button *del_bind = memnew(Button);
+	del_bind->set_text(TTR("Remove"));
+	add_bind_hb->add_child(del_bind);
+	del_bind->connect("pressed", this, "_remove_bind");
+
+	vb_container->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
+
+	bind_editor = memnew(EditorInspector);
+
+	vb_container->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
+
+	set_as_toplevel(true);
+
+	cdbinds = memnew(ConnectDialogBinds);
+}
+
+ArgumentsBindsDialog::~ArgumentsBindsDialog() {
+
+	memdelete(cdbinds);
+}
+
+//ConnectDialog ==========================
+
+/*
 Signal automatically called by parent dialog.
 */
 void ConnectDialog::ok_pressed() {
@@ -146,73 +302,102 @@ void ConnectDialog::_tree_node_selected() {
 
 	dst_path = source->get_path_to(current);
 	get_ok()->set_disabled(false);
+
+	if (mode_list->get_selected() != 0 && current) {
+		selector_right->select_method_from_instance(current);
+	}
 }
 
-/*
-Adds a new parameter bind to connection.
-*/
-void ConnectDialog::_add_bind() {
+void ConnectDialog::_mode_changed(int p_mode) {
 
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
-		return;
-	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
+	bool show_methods = p_mode != 0;
 
-	Variant value;
+	selector_right->set_visible(show_methods);
+	dst_method->set_editable(!show_methods);
 
-	switch (vt) {
-		case Variant::BOOL: value = false; break;
-		case Variant::INT: value = 0; break;
-		case Variant::REAL: value = 0.0; break;
-		case Variant::STRING: value = ""; break;
-		case Variant::VECTOR2: value = Vector2(); break;
-		case Variant::RECT2: value = Rect2(); break;
-		case Variant::VECTOR3: value = Vector3(); break;
-		case Variant::PLANE: value = Plane(); break;
-		case Variant::QUAT: value = Quat(); break;
-		case Variant::AABB: value = AABB(); break;
-		case Variant::BASIS: value = Basis(); break;
-		case Variant::TRANSFORM: value = Transform(); break;
-		case Variant::COLOR: value = Color(); break;
-		default: {
-			ERR_FAIL();
-		} break;
+	Rect2 new_rect;
+
+	if (show_methods) {
+		new_rect.size = Size2(900, 500) * EDSCALE;
+		connect_to_label->set_text(TTR("Connect To Node:"));
+		tree->set_connect_to_script_mode(false);
+		error_label->hide();
+
+		if (tree->get_selected()) {
+			selector_right->select_method_from_instance(tree->get_selected());
+		}
+	} else {
+		new_rect.size = Size2(700, 500) * EDSCALE;
+		connect_to_label->set_text(TTR("Connect To Script:"));
+		tree->set_connect_to_script_mode(true);
+
+		if (!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root())) {
+			error_label->show();
+		} else {
+			error_label->hide();
+		}
 	}
 
-	ERR_FAIL_COND(value.get_type() == Variant::NIL);
-
-	cdbinds->params.push_back(value);
-	cdbinds->notify_changed();
+	set_position(((get_viewport_rect().size - new_rect.size) / 2.0 + get_position() + get_size() / 2.0 - get_viewport_rect().size / 2.0).floor());
+	set_size(new_rect.size);
 }
 
-/*
-Remove parameter bind from connection.
-*/
-void ConnectDialog::_remove_bind() {
+void ConnectDialog::_method_selected(String p_method) {
 
-	String st = bind_editor->get_selected_path();
-	if (st == "")
+	set_dst_method(p_method);
+}
+
+void ConnectDialog::_settings_flags_changed(int p_setting_idx) {
+
+	settings->get_popup()->set_item_checked(p_setting_idx, !settings->get_popup()->is_item_checked(p_setting_idx));
+
+	_set_settings_flags(settings->get_popup()->is_item_checked(CallMode::DEFERRED), settings->get_popup()->is_item_checked(CallMode::ONESHOT));
+}
+
+void ConnectDialog::_set_settings_flags(bool p_deferred, bool p_oneshot) {
+
+	String menu_button_text = TTR("Default");
+
+	if (!p_deferred && !p_oneshot) {
+		settings->set_text(menu_button_text);
 		return;
-	int idx = st.get_slice("/", 1).to_int() - 1;
+	}
 
-	ERR_FAIL_INDEX(idx, cdbinds->params.size());
-	cdbinds->params.remove(idx);
-	cdbinds->notify_changed();
+	menu_button_text = "";
+
+	if (p_deferred) {
+		menu_button_text += settings->get_popup()->get_item_text(CallMode::DEFERRED) + ", ";
+	}
+	if (p_oneshot) {
+		menu_button_text += settings->get_popup()->get_item_text(CallMode::ONESHOT) + ", ";
+	}
+	menu_button_text = menu_button_text.substr(0, menu_button_text.length() - 2);
+	settings->set_text(menu_button_text);
+}
+
+void ConnectDialog::_edit_arguments_pressed() {
+
+	args_dialog->popup_centered(Size2(500, 400));
+	args_dialog->set_title(TTR("Edit Signal Arguments"));
 }
 
 void ConnectDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bind_editor->edit(cdbinds);
+	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
+		//Ref<Theme> theme = EditorNode::get_singleton()->the
+		settings->set_icon(Control::get_icon("arrow", "OptionButton"));
+		edit_args->set_icon(Control::get_icon("Edit", "EditorIcons"));
 	}
 }
 
 void ConnectDialog::_bind_methods() {
 
-	ClassDB::bind_method("_advanced_pressed", &ConnectDialog::_advanced_pressed);
+	ClassDB::bind_method("_mode_changed", &ConnectDialog::_mode_changed);
+	ClassDB::bind_method("_method_selected", &ConnectDialog::_method_selected);
+	ClassDB::bind_method("_settings_flags_changed", &ConnectDialog::_settings_flags_changed);
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
 	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
-	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
-	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
+	ClassDB::bind_method("_edit_arguments_pressed", &ConnectDialog::_edit_arguments_pressed);
 
 	ADD_SIGNAL(MethodInfo("connected"));
 }
@@ -252,17 +437,19 @@ void ConnectDialog::set_dst_method(const StringName &p_method) {
 
 Vector<Variant> ConnectDialog::get_binds() const {
 
-	return cdbinds->params;
+	return args_dialog->get_binds();
 }
 
 bool ConnectDialog::get_deferred() const {
 
-	return deferred->is_pressed();
+	//return deferred->is_pressed();
+	return settings->get_popup()->is_item_checked(CallMode::DEFERRED);
 }
 
 bool ConnectDialog::get_oneshot() const {
 
-	return oneshot->is_pressed();
+	//return oneshot->is_pressed();
+	return settings->get_popup()->is_item_checked(CallMode::ONESHOT);
 }
 
 /*
@@ -297,48 +484,41 @@ void ConnectDialog::init(Connection c, bool bEdit) {
 	bool bDeferred = (c.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
 	bool bOneshot = (c.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
 
+	settings->get_popup()->set_item_checked(CallMode::DEFERRED, bDeferred);
+	settings->get_popup()->set_item_checked(CallMode::ONESHOT, bOneshot);
+	_set_settings_flags(bDeferred, bOneshot);
+
+	/*
 	deferred->set_pressed(bDeferred);
 	oneshot->set_pressed(bOneshot);
+	*/
 
+	args_dialog->init(c.binds);
+	/*
 	cdbinds->params.clear();
 	cdbinds->params = c.binds;
 	cdbinds->notify_changed();
+	*/
 
 	bEditMode = bEdit;
 }
 
-void ConnectDialog::popup_dialog(const String &p_for_signal, bool p_advanced) {
+void ConnectDialog::popup_dialog(const String &p_for_signal, int p_mode) {
 
-	advanced->set_pressed(p_advanced);
 	from_signal->set_text(p_for_signal);
 	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
 	vbc_right->set_visible(p_advanced);
 
-	if (p_advanced) {
+	popup_centered(Size2(700, 500) * EDSCALE);
 
-		popup_centered(Size2(900, 500) * EDSCALE);
-		connect_to_label->set_text("Connect to Node:");
-		tree->set_connect_to_script_mode(false);
-		error_label->hide();
-	} else {
-		popup_centered(Size2(700, 500) * EDSCALE);
-		connect_to_label->set_text("Connect to Script:");
-		tree->set_connect_to_script_mode(true);
-
-		if (!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root())) {
-			error_label->show();
-		} else {
-			error_label->hide();
-		}
-	}
-}
-
-void ConnectDialog::_advanced_pressed() {
-
-	popup_dialog(from_signal->get_text(), advanced->is_pressed());
+	// Index and IDs are the same in this case.
+	mode_list->select(p_mode);
+	_mode_changed(p_mode);
 }
 
 ConnectDialog::ConnectDialog() {
+
+	set_h_grow_direction(GrowDirection::GROW_DIRECTION_BOTH);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -373,53 +553,29 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
 	vbc_right->hide();
 
-	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
+	selector_right = memnew(PropertySelector);
+	main_hb->add_child(selector_right);
+	selector_right->set_h_size_flags(SIZE_EXPAND_FILL);
+	selector_right->connect("item_selected", this, "_method_selected");
+	selector_right->connect("request_hide", this, "_closed");
+	selector_right->hide();
 
-	type_list = memnew(OptionButton);
-	type_list->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_bind_hb->add_child(type_list);
-	type_list->add_item("bool", Variant::BOOL);
-	type_list->add_item("int", Variant::INT);
-	type_list->add_item("real", Variant::REAL);
-	type_list->add_item("string", Variant::STRING);
-	type_list->add_item("Vector2", Variant::VECTOR2);
-	type_list->add_item("Rect2", Variant::RECT2);
-	type_list->add_item("Vector3", Variant::VECTOR3);
-	type_list->add_item("Plane", Variant::PLANE);
-	type_list->add_item("Quat", Variant::QUAT);
-	type_list->add_item("AABB", Variant::AABB);
-	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform", Variant::TRANSFORM);
-	type_list->add_item("Color", Variant::COLOR);
-	type_list->select(0);
-
-	Button *add_bind = memnew(Button);
-	add_bind->set_text(TTR("Add"));
-	add_bind_hb->add_child(add_bind);
-	add_bind->connect("pressed", this, "_add_bind");
-
-	Button *del_bind = memnew(Button);
-	del_bind->set_text(TTR("Remove"));
-	add_bind_hb->add_child(del_bind);
-	del_bind->connect("pressed", this, "_remove_bind");
-
-	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
-
-	bind_editor = memnew(EditorInspector);
-
-	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child("Method to Create:", dstm_hb);
+	vbc_left->add_margin_child("Connect To:", dstm_hb);
+	//vbc_left->add_child(dstm_hb);
+
+	mode_list = memnew(OptionButton);
+	mode_list->set_h_size_flags(SIZE_FILL);
+	dstm_hb->add_child(mode_list);
+	mode_list->add_item(TTR("New Method"), Mode::NEW_METHOD);
+	mode_list->add_item(TTR("Existing Method"), Mode::EXISTING_METHOD);
+	mode_list->select(0);
+	mode_list->connect("item_selected", this, "_mode_changed");
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
 	dstm_hb->add_child(dst_method);
-
-	advanced = memnew(CheckBox);
-	dstm_hb->add_child(advanced);
-	advanced->set_text(TTR("Advanced..."));
-	advanced->connect("pressed", this, "_advanced_pressed");
 
 	/*
 	dst_method_list = memnew( MenuButton );
@@ -432,17 +588,49 @@ ConnectDialog::ConnectDialog() {
 	dst_method_list->set_end( Point2( 15,39  ) );
 	*/
 
-	deferred = memnew(CheckButton);
-	deferred->set_text(TTR("Deferred"));
-	vbc_right->add_child(deferred);
+	settings = memnew(MenuButton);
+	//settings->set_text(TTR("Default"));
 
-	oneshot = memnew(CheckButton);
+	settings->set_h_size_flags(SIZE_FILL);
+	settings->get_popup()->set_hide_on_checkable_item_selection(false);
+	settings->get_popup()->add_check_item(TTR("Deferred"), CallMode::DEFERRED);
+	settings->get_popup()->add_check_item(TTR("Oneshot"), CallMode::ONESHOT);
+	settings->get_popup()->connect("index_pressed", this, "_settings_flags_changed");
+	dstm_hb->add_child(settings);
+
+	/*
+	deferred = memnew(CheckBox);
+	deferred->set_text(TTR("Deferred"));
+	deferred->set_h_size_flags(SIZE_FILL);
+	dstm_hb->add_child(deferred);
+	*/
+
+	HBoxContainer *args_hb = memnew(HBoxContainer);
+	args_hb->set_alignment(BoxContainer::AlignMode::ALIGN_END);
+	vbc_left->add_child(args_hb);
+
+	edit_args = memnew(ToolButton);
+	edit_args->set_text(TTR("Edit Arguments..."));
+	edit_args->set_h_size_flags(SIZE_FILL);
+	edit_args->connect("pressed", this, "_edit_arguments_pressed");
+	args_hb->add_child(edit_args);
+
+	args_info = memnew(Label);
+	args_info->set_text("");
+	args_info->set_h_size_flags(SIZE_EXPAND);
+	//args_hb->add_child(args_info);
+
+	args_dialog = memnew(ArgumentsBindsDialog);
+	args_dialog->set_as_toplevel(true);
+	add_child(args_dialog);
+
+	/*
+	oneshot = memnew(CheckBox);
 	oneshot->set_text(TTR("Oneshot"));
-	vbc_right->add_child(oneshot);
+	args_hb->add_child(oneshot);
+	*/
 
 	set_as_toplevel(true);
-
-	cdbinds = memnew(ConnectDialogBinds);
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
@@ -450,10 +638,7 @@ ConnectDialog::ConnectDialog() {
 	get_ok()->set_text(TTR("Connect"));
 }
 
-ConnectDialog::~ConnectDialog() {
-
-	memdelete(cdbinds);
-}
+ConnectDialog::~ConnectDialog() { }
 
 //ConnectionsDock ==========================
 
@@ -663,7 +848,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 	c.method = dst_method;
 
 	//connect_dialog->set_title(TTR("Connect Signal: ") + signalname);
-	connect_dialog->popup_dialog(signalname, false);
+	connect_dialog->popup_dialog(signalname, ConnectDialog::Mode::NEW_METHOD);
 	connect_dialog->init(c);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
 }
