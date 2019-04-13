@@ -103,78 +103,78 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	int pngf = 0;
 	int cs = 0;
 
-	// png_colorp png_palette;
-	// png_bytep png_palette_trans;
+	png_colorp png_palette = NULL;
+	png_bytep png_palette_trans = NULL;
 
-	// if (p_img->has_palette()) {
-	// 	pngf = PNG_COLOR_TYPE_PALETTE;
-	// 	cs = 1;
+	if (p_img->has_palette()) {
+		pngf = PNG_COLOR_TYPE_PALETTE;
+		cs = 1;
 
-	// 	const PoolColorArray &palette = p_img->get_palette();
-	// 	PoolColorArray::Read read = palette.read();
+		const PoolColorArray &palette = p_img->get_palette();
+		PoolColorArray::Read read = palette.read();
 
-	// 	int palette_size = palette.size();
+		int palette_size = palette.size();
 
-	// 	// Palette
-	// 	png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
-	// 	for (int i = 0; i < palette_size; i++) {
-	// 		png_color *col = &png_palette[i];
+		// Palette
+		png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
+		for (int i = 0; i < palette_size; i++) {
+			png_color *col = &png_palette[i];
 
-	// 		col->red = read[i].r * 255.0;
-	// 		col->green = read[i].g * 255.0;
-	// 		col->blue = read[i].b * 255.0;
-	// 	}
-	// 	png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
+			col->red = read[i].r * 255.0;
+			col->green = read[i].g * 255.0;
+			col->blue = read[i].b * 255.0;
+		}
+		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
 
-	// 	// Palette alpha
-	// 	if (img->detect_alpha()) {
-	// 		png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
-	// 		for (int i = 0; i < palette_size; i++) {
-	// 			png_bytep a = &png_palette_trans[i];
-	// 			*a = (uint8_t)(read[i].a * 255.0);
-	// 		}
-	// 		png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
-	// 	}
+		// Palette alpha
+		if (img->detect_alpha()) {
+			png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
+			for (int i = 0; i < palette_size; i++) {
+				png_bytep a = &png_palette_trans[i];
+				*a = (uint8_t)(read[i].a * 255.0);
+			}
+			png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
+		}
 
-	// } else { // has no palette associated
-	switch (img->get_format()) {
+	} else { // has no palette associated
+		switch (img->get_format()) {
 
-		case Image::FORMAT_L8: {
+			case Image::FORMAT_L8: {
 
-			pngf = PNG_COLOR_TYPE_GRAY;
-			cs = 1;
-		} break;
-		case Image::FORMAT_LA8: {
+				pngf = PNG_COLOR_TYPE_GRAY;
+				cs = 1;
+			} break;
+			case Image::FORMAT_LA8: {
 
-			pngf = PNG_COLOR_TYPE_GRAY_ALPHA;
-			cs = 2;
-		} break;
-		case Image::FORMAT_RGB8: {
+				pngf = PNG_COLOR_TYPE_GRAY_ALPHA;
+				cs = 2;
+			} break;
+			case Image::FORMAT_RGB8: {
 
-			pngf = PNG_COLOR_TYPE_RGB;
-			cs = 3;
-		} break;
-		case Image::FORMAT_RGBA8: {
-
-			pngf = PNG_COLOR_TYPE_RGB_ALPHA;
-			cs = 4;
-		} break;
-		default: {
-
-			if (img->detect_alpha()) {
-
-				img->convert(Image::FORMAT_RGBA8);
-				pngf = PNG_COLOR_TYPE_RGB_ALPHA;
-				cs = 4;
-			} else {
-
-				img->convert(Image::FORMAT_RGB8);
 				pngf = PNG_COLOR_TYPE_RGB;
 				cs = 3;
+			} break;
+			case Image::FORMAT_RGBA8: {
+
+				pngf = PNG_COLOR_TYPE_RGB_ALPHA;
+				cs = 4;
+			} break;
+			default: {
+
+				if (img->detect_alpha()) {
+
+					img->convert(Image::FORMAT_RGBA8);
+					pngf = PNG_COLOR_TYPE_RGB_ALPHA;
+					cs = 4;
+				} else {
+
+					img->convert(Image::FORMAT_RGB8);
+					pngf = PNG_COLOR_TYPE_RGB;
+					cs = 3;
+				}
 			}
 		}
 	}
-	// }
 
 	int w = img->get_width();
 	int h = img->get_height();
@@ -190,7 +190,13 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 
-	PoolVector<uint8_t>::Read r = img->get_data().read();
+	PoolVector<uint8_t>::Read r;
+
+	if (p_img->has_palette()) {
+		r = img->get_index_data().read();
+	} else {
+		r = img->get_data().read();
+	}
 
 	row_pointers = (png_bytep *)memalloc(sizeof(png_bytep) * h);
 	for (int i = 0; i < h; i++) {
@@ -214,7 +220,11 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	/* cleanup heap allocation */
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	// png_free(png_ptr, png_palette);
+	// if (png_palette)
+	// 	png_free(png_ptr, png_palette);
+
+	// if (png_palette_trans)
+	// 	png_free(png_ptr, png_palette_trans);
 
 	return OK;
 }

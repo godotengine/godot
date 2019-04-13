@@ -136,13 +136,13 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 		update_info = true;
 	}
 
-	png_bytep png_palette_trans = NULL;
-	int palette_trans_size = 0;
+	png_bytep png_palette_alpha = NULL;
+	int palette_alpha_size = 0;
 
 	if (png_get_valid(png, info, PNG_INFO_tRNS)) {
 		//png_set_expand_gray_1_2_4_to_8(png);
 
-		png_get_tRNS(png, info, &png_palette_trans, &palette_trans_size, NULL);
+		png_get_tRNS(png, info, &png_palette_alpha, &palette_alpha_size, NULL);
 		update_info = true;
 	}
 
@@ -212,7 +212,9 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 
 	if (color == PNG_COLOR_TYPE_PALETTE) {
 		// Loaded data is indices
-		p_image->create(width, height, 0, Image::FORMAT_RGBA8);
+		fmt = png_palette_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+
+		p_image->create(width, height, 0, fmt);
 		p_image->set_index_data(dstbuff); // byte
 
 		// Construct palette
@@ -221,33 +223,32 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 
 		PoolVector<Color>::Write w = palette.write();
 
+		// Convert png palette
 		if (png_palette) {
 
 			for (int i = 0; i < palette_size; i++) {
 				png_colorp c = &png_palette[i];
 				w[i] = Color(c->red / 255.0, c->green / 255.0, c->blue / 255.0);
 			}
-			// png_free(png, png_palette);
 		}
-		if (png_palette_trans && palette_trans_size == palette_size) {
+		// Convert png alpha (png_set_tRNS_to_alpha)
+		if (png_palette_alpha && palette_alpha_size == palette_size) {
 
-			for (int i = 0; i < palette_trans_size; i++) {
-				png_bytep a = &png_palette_trans[i];
+			for (int i = 0; i < palette_alpha_size; i++) {
+				png_bytep a = &png_palette_alpha[i];
 				w[i].a = *a / 255.0;
 			}
-			// png_free(png, png_palette_trans);
 		}
 		p_image->set_palette(palette);
 
-		// Extend indexed image (similarly to png_palette_to_rgb)
-		Ref<Image> extended = p_image->palette_to_rgba();
-		p_image->create(width, height, 0, Image::FORMAT_RGBA8, extended->get_data());
+		// Extend indexed image (png_palette_to_rgb)
+		p_image->apply_palette();
 
 	} else {
-		// Loaded data is pixels
 		ERR_EXPLAIN("Attempt to create a regular image with palette");
 		ERR_FAIL_COND_V(png_palette, ERR_BUG);
 
+		// Loaded data are pixels
 		p_image->create(width, height, 0, fmt, dstbuff);
 	}
 

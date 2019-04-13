@@ -251,21 +251,24 @@ public:
 	 * The image can be saved as indexed if it has a palette associated with it
 	 * NOTE: there's no actual format for indexed images.
 	 */
-	void generate_palette(int p_num_colors = 256, bool p_high_quality = true);
-
+	Error generate_palette(int p_num_colors = 256, bool p_high_quality = true);
 	void clear_palette();
 
 	void set_palette(const PoolColorArray &p_palette);
-	PoolColorArray get_palette();
+	PoolColorArray get_palette() const;
 
 	void set_palette_color(int p_idx, const Color p_color);
 	Color get_palette_color(int p_idx) const;
 
 	bool has_palette() const;
 
-	Ref<Image> palette_to_rgba() const;
+	Error apply_palette();
 
+	/**
+	 * Intended to be used by image loaders/savers directly:
+	 */
 	void set_index_data(const PoolVector<uint8_t> &p_index_data);
+	PoolVector<uint8_t> get_index_data() const;
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost

@@ -1428,10 +1428,12 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-void Image::generate_palette(int p_num_colors, bool p_high_quality) {
+Error Image::generate_palette(int p_num_colors, bool p_high_quality) {
 
 	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
-	ERR_FAIL_COND(format != FORMAT_RGBA8);
+	ERR_FAIL_COND_V(format != FORMAT_RGBA8, ERR_UNAVAILABLE);
+
+	ERR_FAIL_COND_V(width == 0 || height == 0, ERR_UNCONFIGURED);
 
 	const int num_pixels = width * height;
 
@@ -1464,11 +1466,13 @@ void Image::generate_palette(int p_num_colors, bool p_high_quality) {
 
 	// Cleanup
 	exq_free(pExq);
+
+	return OK;
 }
 
-PoolColorArray Image::get_palette() {
+PoolColorArray Image::get_palette() const {
 
-	// Convert to compatible format
+	// Convert palette to bindable type
 	const int num_colors = palette_data.size() / 4;
 
 	PoolColorArray palette;
@@ -1476,8 +1480,9 @@ PoolColorArray Image::get_palette() {
 
 	PoolColorArray::Write w = palette.write();
 
-	PoolVector<uint8_t>::Write w_pal = palette_data.write();
-	uint8_t *r = w_pal.ptr(); // pointer arithmetic
+	PoolVector<uint8_t>::Read r_pal = palette_data.read();
+	const uint8_t *r = r_pal.ptr();
+	uint8_t *ofs = const_cast<uint8_t *>(r); // perform pointer arithmetic
 
 	for (int i = 0; i < num_colors; i++) {
 		float rc = (r[0] / 255.0f);
@@ -1487,7 +1492,7 @@ PoolColorArray Image::get_palette() {
 
 		w[i] = Color(rc, gc, bc, ac);
 
-		r += 4;
+		ofs += 4;
 	}
 
 	return palette;
@@ -1552,10 +1557,12 @@ bool Image::has_palette() const {
 	return palette_data.size() > 0;
 }
 
-Ref<Image> Image::palette_to_rgba() const {
+Error Image::apply_palette() {
 
-	ERR_FAIL_COND_V(index_data.size() == 0, NULL);
-	ERR_FAIL_COND_V(palette_data.size() == 0, NULL);
+	// Converts indexed data with associated palette to compatible format
+
+	ERR_FAIL_COND_V(index_data.size() == 0, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(palette_data.size() == 0, ERR_UNCONFIGURED);
 
 	PoolVector<uint8_t> dest_data;
 	dest_data.resize(data.size());
@@ -1567,24 +1574,44 @@ Ref<Image> Image::palette_to_rgba() const {
 
 	const int num_pixels = width * height;
 
-	for (int i = 0; i < num_pixels; i++) {
-		dest[0] = pal[ind[i] * 4 + 0];
-		dest[1] = pal[ind[i] * 4 + 1];
-		dest[2] = pal[ind[i] * 4 + 2];
-		dest[3] = pal[ind[i] * 4 + 3];
+	switch (format) {
+		case FORMAT_RGB8: {
+			for (int i = 0; i < num_pixels; i++) {
+				dest[0] = pal[ind[i] * 3 + 0];
+				dest[1] = pal[ind[i] * 3 + 1];
+				dest[2] = pal[ind[i] * 3 + 2];
 
-		dest += 4;
+				dest += 3;
+			}
+		} break;
+		case FORMAT_RGBA8: {
+			for (int i = 0; i < num_pixels; i++) {
+				dest[0] = pal[ind[i] * 4 + 0];
+				dest[1] = pal[ind[i] * 4 + 1];
+				dest[2] = pal[ind[i] * 4 + 2];
+				dest[3] = pal[ind[i] * 4 + 3];
+
+				dest += 4;
+			}
+		} break;
+		default: {
+			ERR_EXPLAIN("Cannot apply palette, unsupported format");
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
 	}
-	Ref<Image> img;
-	img.instance();
-	img->create(width, height, mipmaps, FORMAT_RGBA8, dest_data);
+	create(width, height, mipmaps, format, dest_data);
 
-	return img;
+	return OK;
 }
 
 void Image::set_index_data(const PoolVector<uint8_t> &p_index_data) {
 
 	index_data = p_index_data;
+}
+
+PoolVector<uint8_t> Image::get_index_data() const {
+
+	return index_data;
 }
 
 bool Image::empty() const {
@@ -2752,13 +2779,13 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
 	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
 	ClassDB::bind_method(D_METHOD("set_palette", "palette"), &Image::set_palette);
 	ClassDB::bind_method(D_METHOD("get_palette"), &Image::get_palette);
 	ClassDB::bind_method(D_METHOD("set_palette_color", "index", "color"), &Image::set_palette_color);
 	ClassDB::bind_method(D_METHOD("get_palette_color", "index"), &Image::get_palette_color);
 	ClassDB::bind_method(D_METHOD("has_palette"), &Image::has_palette);
-	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
-	ClassDB::bind_method(D_METHOD("palette_to_rgba"), &Image::palette_to_rgba);
+	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
 	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
