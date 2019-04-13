@@ -248,11 +248,16 @@ public:
 
 	/**
 	 * Image color palette interface.
-	 * Can generate an optimal color palette of this image
-	 * The image can be saved as indexed if it has a palette associated with it
+	 * Can generate an optimal color palette of this image.
+	 * The image can be saved/loaded as indexed if it has a palette associated.
 	 * NOTE: there's no actual format for indexed images.
 	 */
-	Error generate_palette(int p_num_colors = 256, bool p_high_quality = true);
+	enum DitherMode {
+		DITHER_NONE,
+		DITHER_ORDERED,
+		DITHER_RANDOM,
+	};
+	Error generate_palette(int p_num_colors = 256, DitherMode p_dither = DITHER_NONE, bool p_high_quality = true);
 	void clear_palette();
 	Error apply_palette();
 
@@ -401,6 +406,7 @@ VARIANT_ENUM_CAST(Image::Format)
 VARIANT_ENUM_CAST(Image::Interpolation)
 VARIANT_ENUM_CAST(Image::CompressMode)
 VARIANT_ENUM_CAST(Image::CompressSource)
+VARIANT_ENUM_CAST(Image::DitherMode)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 
 #endif

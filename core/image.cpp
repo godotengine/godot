@@ -1428,7 +1428,7 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-Error Image::generate_palette(int p_num_colors, bool p_high_quality) {
+Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_high_quality) {
 
 	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
 	ERR_FAIL_COND_V(format != FORMAT_RGBA8, ERR_UNAVAILABLE);
@@ -1455,15 +1455,18 @@ Error Image::generate_palette(int p_num_colors, bool p_high_quality) {
 
 	exq_get_palette(pExq, pal_raw, p_num_colors);
 
-	// Map image to palette (doesn't overwrite original image)
+	// Map indices to palette (doesn't overwrite original image)
 	index_data.resize(0);
 	index_data.resize(num_pixels);
 
 	PoolVector<uint8_t>::Write w_dest = index_data.write();
 	uint8_t *dest = w_dest.ptr();
 
-	exq_map_image(pExq, num_pixels, src, dest);
-
+	switch (p_dither) {
+		case DITHER_NONE: exq_map_image(pExq, num_pixels, src, dest); break;
+		case DITHER_ORDERED: exq_map_image_ordered(pExq, width, height, src, dest); break;
+		case DITHER_RANDOM: exq_map_image_random(pExq, num_pixels, src, dest); break;
+	}
 	// Cleanup
 	exq_free(pExq);
 
@@ -2798,7 +2801,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "dithering", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(DITHER_NONE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
 	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
 
@@ -2906,6 +2909,10 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATE_BILINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATE_CUBIC);
 	BIND_ENUM_CONSTANT(INTERPOLATE_TRILINEAR);
+
+	BIND_ENUM_CONSTANT(DITHER_NONE);
+	BIND_ENUM_CONSTANT(DITHER_ORDERED);
+	BIND_ENUM_CONSTANT(DITHER_RANDOM);
 
 	BIND_ENUM_CONSTANT(ALPHA_NONE);
 	BIND_ENUM_CONSTANT(ALPHA_BIT);
