@@ -318,7 +318,6 @@ void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 			_load_theme_settings();
-			_change_syntax_highlighter(EditorSettings::get_singleton()->get_project_metadata("script_text_editor", "syntax_highlighter", 0));
 			break;
 	}
 }
@@ -363,6 +362,14 @@ Variant ScriptTextEditor::get_edit_state() {
 void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 
 	code_editor->set_edit_state(p_state);
+
+	Dictionary state = p_state;
+	if (state.has("syntax_highlighter")) {
+		int idx = highlighter_menu->get_item_idx_from_text(state["syntax_highlighter"]);
+		if (idx >= 0) {
+			_change_syntax_highlighter(idx);
+		}
+	}
 }
 
 void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
@@ -1024,7 +1031,6 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 	}
 	// highlighter_menu->set_item_checked(p_idx, true);
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
-	EditorSettings::get_singleton()->set_project_metadata("script_text_editor", "syntax_highlighter", p_idx);
 }
 
 void ScriptTextEditor::_bind_methods() {
