@@ -1519,29 +1519,34 @@ void Image::set_palette(const PoolColorArray &p_palette) {
 
 void Image::set_palette_color(int p_idx, const Color p_color) {
 
-	ERR_FAIL_INDEX(p_idx, palette_data.size() / 4);
+	int ofs = p_idx * 4;
 
-	PoolVector<uint8_t>::Write w = palette_data.write();
+	ERR_FAIL_INDEX(ofs, palette_data.size());
 
-	w[p_idx + 0] = p_color.r * 255.0;
-	w[p_idx + 1] = p_color.g * 255.0;
-	w[p_idx + 2] = p_color.b * 255.0;
-	w[p_idx + 3] = p_color.a * 255.0;
+	PoolVector<uint8_t>::Write write = palette_data.write();
+	uint8_t *ptr = write.ptr();
+
+	ptr[ofs + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
+	ptr[ofs + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
+	ptr[ofs + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
+	ptr[ofs + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
 }
 
 Color Image::get_palette_color(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, palette_data.size() / 4, Color());
+	int ofs = p_idx * 4;
 
-	PoolVector<uint8_t>::Read r = palette_data.read();
+	ERR_FAIL_INDEX_V(ofs, palette_data.size(), Color());
 
-	Color pc;
-	pc.r = r[p_idx + 0] / 255.0;
-	pc.g = r[p_idx + 1] / 255.0;
-	pc.b = r[p_idx + 2] / 255.0;
-	pc.a = r[p_idx + 3] / 255.0;
+	PoolVector<uint8_t>::Read read = palette_data.read();
+	const uint8_t *ptr = read.ptr();
 
-	return pc;
+	float r = ptr[ofs + 0] / 255.0;
+	float g = ptr[ofs + 1] / 255.0;
+	float b = ptr[ofs + 2] / 255.0;
+	float a = ptr[ofs + 3] / 255.0;
+
+	return Color(r, g, b, a);
 }
 
 void Image::clear_palette() {
