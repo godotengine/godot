@@ -66,7 +66,6 @@ void TextEditor::_change_syntax_highlighter(int p_idx) {
 		el = el->next();
 	}
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
-	EditorSettings::get_singleton()->set_project_metadata("text_editor", "syntax_highlighter", p_idx);
 }
 
 void TextEditor::_load_theme_settings() {
@@ -234,6 +233,14 @@ Variant TextEditor::get_edit_state() {
 void TextEditor::set_edit_state(const Variant &p_state) {
 
 	code_editor->set_edit_state(p_state);
+
+	Dictionary state = p_state;
+	if (state.has("syntax_highlighter")) {
+		int idx = highlighter_menu->get_item_idx_from_text(state["syntax_highlighter"]);
+		if (idx >= 0) {
+			_change_syntax_highlighter(idx);
+		}
+	}
 }
 
 void TextEditor::trim_trailing_whitespace() {
@@ -299,7 +306,6 @@ void TextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 			_load_theme_settings();
-			_change_syntax_highlighter(EditorSettings::get_singleton()->get_project_metadata("text_editor", "syntax_highlighter", 0));
 			break;
 	}
 }

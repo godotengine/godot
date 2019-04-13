@@ -2482,22 +2482,33 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	for (int i = 0; i < scripts.size(); i++) {
 
 		String path = scripts[i];
+
+		Dictionary script_info = scripts[i];
+		if (!script_info.empty()) {
+			path = script_info["path"];
+		}
+
 		if (!FileAccess::exists(path))
 			continue;
 
 		if (extensions.find(path.get_extension())) {
 			Ref<Script> scr = ResourceLoader::load(path);
-			if (scr.is_valid()) {
-				edit(scr);
+			if (!scr.is_valid()) {
 				continue;
 			}
+			edit(scr);
+		} else {
+			Error error;
+			Ref<TextFile> text_file = _load_text_file(path, &error);
+			if (error != OK || !text_file.is_valid()) {
+				continue;
+			}
+			edit(text_file);
 		}
 
-		Error error;
-		Ref<TextFile> text_file = _load_text_file(path, &error);
-		if (error == OK && text_file.is_valid()) {
-			edit(text_file);
-			continue;
+		if (!script_info.empty()) {
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+			se->set_edit_state(script_info["state"]);
 		}
 	}
 
@@ -2537,7 +2548,11 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 			if (!path.is_resource_file())
 				continue;
 
-			scripts.push_back(path);
+			Dictionary script_info;
+			script_info["path"] = path;
+			script_info["state"] = se->get_edit_state();
+
+			scripts.push_back(script_info);
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
