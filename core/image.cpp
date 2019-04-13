@@ -1558,7 +1558,10 @@ Error Image::apply_palette() {
 
 	// Converts indexed data with associated palette to compatible format
 
+	ERR_EXPLAIN("No index data. Generate palette first.");
 	ERR_FAIL_COND_V(index_data.size() == 0, ERR_UNCONFIGURED);
+
+	ERR_EXPLAIN("No palette data. Generate or manually set palette first.");
 	ERR_FAIL_COND_V(palette_data.size() == 0, ERR_UNCONFIGURED);
 
 	PoolVector<uint8_t> dest_data;
@@ -1599,6 +1602,16 @@ Error Image::apply_palette() {
 	create(width, height, mipmaps, format, dest_data);
 
 	return OK;
+}
+
+void Image::set_palette_data(const PoolVector<uint8_t> &p_palette_data) {
+
+	palette_data = p_palette_data;
+}
+
+PoolVector<uint8_t> Image::get_palette_data() const {
+
+	return palette_data;
 }
 
 void Image::set_index_data(const PoolVector<uint8_t> &p_index_data) {

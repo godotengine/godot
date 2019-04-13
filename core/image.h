@@ -267,6 +267,9 @@ public:
 	/**
 	 * Intended to be used by image loaders/savers directly:
 	 */
+	void set_palette_data(const PoolVector<uint8_t> &p_palette_data);
+	PoolVector<uint8_t> get_palette_data() const;
+
 	void set_index_data(const PoolVector<uint8_t> &p_index_data);
 	PoolVector<uint8_t> get_index_data() const;
 

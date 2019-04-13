@@ -213,39 +213,40 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	if (color == PNG_COLOR_TYPE_PALETTE) {
 		// Loaded data is indices
 		fmt = png_palette_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+		int ps = png_palette_alpha ? 4 : 3;
 
 		p_image->create(width, height, 0, fmt);
 		p_image->set_index_data(dstbuff); // byte
 
-		// Construct palette
-		PoolVector<Color> palette;
-		palette.resize(palette_size);
-
-		PoolVector<Color>::Write w = palette.write();
-
 		// Convert png palette
-		if (png_palette) {
+		PoolVector<uint8_t> palette_data;
+		palette_data.resize(palette_size * ps);
 
+		PoolVector<uint8_t>::Write w = palette_data.write();
+		// RGB
+		if (png_palette) {
 			for (int i = 0; i < palette_size; i++) {
 				png_colorp c = &png_palette[i];
-				w[i] = Color(c->red / 255.0, c->green / 255.0, c->blue / 255.0);
+				w[i * ps + 0] = c->red;
+				w[i * ps + 1] = c->green;
+				w[i * ps + 2] = c->blue;
 			}
 		}
-		// Convert png alpha (png_set_tRNS_to_alpha)
+		// Alpha (png_set_tRNS_to_alpha)
 		if (png_palette_alpha && palette_alpha_size == palette_size) {
 
 			for (int i = 0; i < palette_alpha_size; i++) {
 				png_bytep a = &png_palette_alpha[i];
-				w[i].a = *a / 255.0;
+				w[i * ps + 3] = *a;
 			}
 		}
-		p_image->set_palette(palette);
+		p_image->set_palette_data(palette_data);
 
-		// Extend indexed image (png_palette_to_rgb)
-		p_image->apply_palette();
+		// (png_palette_to_rgb)
+		p_image->apply_palette(); // still has the palette associated
 
 	} else {
-		ERR_EXPLAIN("Attempt to create a regular image with palette");
+		ERR_EXPLAIN("Attempt to create a regular image with a palette.");
 		ERR_FAIL_COND_V(png_palette, ERR_BUG);
 
 		// Loaded data are pixels
