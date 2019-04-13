@@ -146,37 +146,65 @@ private:
 			COORD_LEFT = 1
 		};
 	};
-	Spatial *_generate_scene(const String &p_path, const aiScene *scene, const uint32_t p_flags, int p_bake_fps, const int32_t p_max_bone_weights);
-	void _fill_kept_node(Set<Node *> &keep_nodes);
-	String _find_skeleton_bone_root(Map<Skeleton *, MeshInstance *> &skeletons, Map<MeshInstance *, String> &meshes, Spatial *root);
-	void _set_bone_parent(Skeleton *s, Node *p_owner, aiNode *p_node);
-	Transform _get_global_ai_node_transform(const aiScene *p_scene, const aiNode *p_current_node);
-	void _generate_node_bone(const aiScene *p_scene, const aiNode *p_node, Map<String, bool> &p_mesh_bones, Skeleton *p_skeleton, const String p_path, const int32_t p_max_bone_weights);
-	void _generate_node_bone_parents(const aiScene *p_scene, const aiNode *p_node, Map<String, bool> &p_mesh_bones, Skeleton *p_skeleton, const MeshInstance *p_mi);
-	void _calculate_skeleton_root(Skeleton *s, const aiScene *p_scene, aiNode *&p_ai_skeleton_root, Map<String, bool> &mesh_bones, const aiNode *p_node);
-	void _fill_skeleton(const aiScene *p_scene, const aiNode *p_node, Spatial *p_current, Node *p_owner, Skeleton *p_skeleton, const Map<String, bool> p_mesh_bones, const Map<String, Transform> &p_bone_rests, Set<String> p_tracks, const String p_path, Set<String> &r_removed_bones);
-	void _keep_node(const String &p_path, Node *p_current, Node *p_owner, Set<Node *> &r_keep_nodes);
-	void _filter_node(const String &p_path, Node *p_current, Node *p_owner, const Set<Node *> p_keep_nodes, Set<String> &r_removed_nodes);
-	void _generate_node(const String &p_path, const aiScene *p_scene, const aiNode *p_node, Node *p_parent, Node *p_owner, Set<String> &r_bone_name, Set<String> p_light_names, Set<String> p_camera_names, Map<Skeleton *, MeshInstance *> &r_skeletons, const Map<String, Transform> &p_bone_rests, Vector<MeshInstance *> &r_mesh_instances, int32_t &r_mesh_count, Skeleton *p_skeleton, const int32_t p_max_bone_weights, Set<String> &r_removed_bones, Map<String, Map<uint32_t, String> > &r_name_morph_mesh_names);
-	aiNode *_ai_find_node(aiNode *ai_child_node, const String bone_name);
-	Transform _format_rot_xform(const String p_path, const aiScene *p_scene);
-	void _get_track_set(const aiScene *p_scene, Set<String> &tracks);
-	void _insert_animation_track(const aiScene *p_scene, const String p_path, int p_bake_fps, Ref<Animation> animation, float ticks_per_second, float length, const Skeleton *sk, const aiNodeAnim *track, String node_name, NodePath node_path);
-	void _add_mesh_to_mesh_instance(const aiNode *p_node, const aiScene *p_scene, Skeleton *s, const String &p_path, MeshInstance *p_mesh_instance, Node *p_owner, Set<String> &r_bone_name, int32_t &r_mesh_count, int32_t p_max_bone_weights, Map<String, Map<uint32_t, String> > &r_name_morph_mesh_names);
-	Ref<Texture> _load_texture(const aiScene *p_scene, String p_path);
+
+	struct ImportState {
+
+		String path;
+		const aiScene *assimp_scene;
+		uint32_t max_bone_weights;
+		Spatial *root;
+		Map<String, Ref<Mesh> > mesh_cache;
+		Map<int, Ref<Material> > material_cache;
+		Map<String, int> light_cache;
+		Map<String, int> camera_cache;
+		Vector<Skeleton *> skeletons;
+		Map<String, int> bone_owners; //maps bones to skeleton index owned by
+		Map<String, Node *> node_map;
+		Map<MeshInstance *, Skeleton *> mesh_skeletons;
+		bool fbx; //for some reason assimp does some things different for FBX
+		AnimationPlayer *animation_player;
+	};
+
+	struct BoneInfo {
+		uint32_t bone;
+		float weight;
+	};
+
+	struct SkeletonHole { //nodes may be part of the skeleton by used by vertex
+		String name;
+		String parent;
+		Transform pose;
+		const aiNode *node;
+	};
+
+	const Transform _assimp_matrix_transform(const aiMatrix4x4 p_matrix);
+	String _assimp_get_string(const aiString p_string) const;
+	Transform _get_global_assimp_node_transform(const aiNode *p_current_node);
+
 	void _calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w);
 	void _set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<Texture> texture);
 	void _find_texture_path(const String &p_path, String &path, bool &r_found);
 	void _find_texture_path(const String &p_path, _Directory &dir, String &path, bool &found, String extension);
-	String _ai_string_to_string(const aiString p_string) const;
-	String _ai_anim_string_to_string(const aiString p_string) const;
-	String _ai_raw_string_to_string(const aiString p_string) const;
-	void _import_animation(const String p_path, const Vector<MeshInstance *> p_meshes, const aiScene *p_scene, AnimationPlayer *ap, int32_t p_index, int p_bake_fps, Map<Skeleton *, MeshInstance *> p_skeletons, const Set<String> p_removed_nodes, const Set<String> removed_bones, const Map<String, Map<uint32_t, String> > p_path_morph_mesh_names);
-	void _insert_pivot_anim_track(const Vector<MeshInstance *> p_meshes, const String p_node_name, Vector<const aiNodeAnim *> F, AnimationPlayer *ap, Skeleton *sk, float &length, float ticks_per_second, Ref<Animation> animation, int p_bake_fps, const String &p_path, const aiScene *p_scene);
+
+	Ref<Texture> _load_texture(ImportState &state, String p_path);
+	Ref<Material> _generate_material_from_index(ImportState &state, int p_index, bool p_double_sided);
+	Ref<Mesh> _generate_mesh_from_surface_indices(ImportState &state, const Vector<int> &p_surface_indices, Skeleton *p_skeleton = NULL, bool p_double_sided_material = false);
+	void _generate_node(ImportState &state, const aiNode *p_assimp_node, Node *p_parent);
+	void _generate_bone_groups(ImportState &state, const aiNode *p_assimp_node, Map<String, int> &ownership, Map<String, Transform> &bind_xforms);
+	void _fill_node_relationships(ImportState &state, const aiNode *p_assimp_node, Map<String, int> &ownership, Map<int, int> &skeleton_map, int p_skeleton_id, Skeleton *p_skeleton, const String &p_parent_name, int &holecount, const Vector<SkeletonHole> &p_holes, const Map<String, Transform> &bind_xforms);
+	void _generate_skeletons(ImportState &state, const aiNode *p_assimp_node, Map<String, int> &ownership, Map<int, int> &skeleton_map, const Map<String, Transform> &bind_xforms);
+
+	void _insert_animation_track(ImportState &scene, const aiAnimation *assimp_anim, int p_track, int p_bake_fps, Ref<Animation> animation, float ticks_per_second, Skeleton *p_skeleton, const NodePath &p_path, const String &p_name);
+
+	void _import_animation(ImportState &state, int p_animation_index, int p_bake_fps);
+
+	Spatial *_generate_scene(const String &p_path, const aiScene *scene, const uint32_t p_flags, int p_bake_fps, const int32_t p_max_bone_weights);
+
+	String _assimp_anim_string_to_string(const aiString p_string) const;
+	String _assimp_raw_string_to_string(const aiString p_string) const;
 	float _get_fbx_fps(int32_t time_mode, const aiScene *p_scene);
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, AssetImportAnimation::Interpolation p_interp);
-	const Transform _ai_matrix_transform(const aiMatrix4x4 p_matrix);
 	void _register_project_setting_import(const String generic, const String import_setting_string, const Vector<String> &exts, List<String> *r_extensions, const bool p_enabled) const;
 
 	struct ImportFormat {
