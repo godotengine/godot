@@ -61,6 +61,8 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_PAGEUP                        ,"PageUp"},
 		{KEY_PAGEDOWN                      ,"PageDown"},
 		{KEY_SHIFT                         ,"Shift"},
+		{KEY_LSHIFT                        ,"LeftShift"},
+		{KEY_RSHIFT                        ,"RightShift"},
 		{KEY_CONTROL                       ,"Control"},
 #ifdef OSX_ENABLED
 		{KEY_META                          ,"Command"},
@@ -68,6 +70,8 @@ static const _KeyCodeText _keycodes[] = {
 		{KEY_META                          ,"Meta"},
 #endif
 		{KEY_ALT                           ,"Alt"},
+		{KEY_LALT                          ,"LeftAlt"},
+		{KEY_RALT                          ,"RightAlt"},
 		{KEY_CAPSLOCK                      ,"CapsLock"},
 		{KEY_NUMLOCK                       ,"NumLock"},
 		{KEY_SCROLLLOCK                    ,"ScrollLock"},
@@ -317,9 +321,13 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_PAGEUP:
 		case KEY_PAGEDOWN:
 		case KEY_SHIFT:
+		case KEY_LSHIFT:
+		case KEY_RSHIFT:
 		case KEY_CONTROL:
 		case KEY_META:
 		case KEY_ALT:
+		case KEY_LALT:
+		case KEY_RALT:
 		case KEY_CAPSLOCK:
 		case KEY_NUMLOCK:
 		case KEY_SCROLLLOCK:

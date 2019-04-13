@@ -166,12 +166,12 @@ static _WinTranslatePair _vk_to_keycode[] = {
 	{ KEY_F16, VK_F16 }, // (0x7F)
 	{ KEY_NUMLOCK, VK_NUMLOCK }, // (0x90)
 	{ KEY_SCROLLLOCK, VK_SCROLL }, // (0x91)
-	{ KEY_SHIFT, VK_LSHIFT }, // (0xA0)
-	{ KEY_SHIFT, VK_RSHIFT }, // (0xA1)
+	{ KEY_LSHIFT, VK_LSHIFT }, // (0xA0)
+	{ KEY_RSHIFT, VK_RSHIFT }, // (0xA1)
 	{ KEY_CONTROL, VK_LCONTROL }, // (0xA2)
 	{ KEY_CONTROL, VK_RCONTROL }, // (0xA3)
-	{ KEY_MENU, VK_LMENU }, // (0xA4)
-	{ KEY_MENU, VK_RMENU }, // (0xA5)
+	{ KEY_LALT, VK_LMENU }, // (0xA4)
+	{ KEY_RALT, VK_RMENU }, // (0xA5)
 
 	{ KEY_BACK, VK_BROWSER_BACK }, // (0xA6)
 
