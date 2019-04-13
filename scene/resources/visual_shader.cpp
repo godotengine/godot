@@ -782,7 +782,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 			} else if (in_type == VisualShaderNode::PORT_TYPE_VECTOR && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
 				inputs[i] = "vec3(" + src_var + ")";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_BOOLEAN && out_type == VisualShaderNode::PORT_TYPE_VECTOR) {
-				inputs[i] = "all(" + src_var + ")";
+				inputs[i] = "all(bvec3(" + src_var + "))";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_BOOLEAN && out_type == VisualShaderNode::PORT_TYPE_SCALAR) {
 				inputs[i] = src_var + ">0.0?true:false";
 			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR && out_type == VisualShaderNode::PORT_TYPE_BOOLEAN) {

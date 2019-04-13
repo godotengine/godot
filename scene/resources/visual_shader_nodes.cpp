@@ -2948,3 +2948,140 @@ String VisualShaderNodeCubeMapUniform::generate_code(Shader::Mode p_mode, Visual
 
 VisualShaderNodeCubeMapUniform::VisualShaderNodeCubeMapUniform() {
 }
+
+////////////// If
+
+String VisualShaderNodeIf::get_caption() const {
+	return "If";
+}
+
+int VisualShaderNodeIf::get_input_port_count() const {
+	return 6;
+}
+
+VisualShaderNodeIf::PortType VisualShaderNodeIf::get_input_port_type(int p_port) const {
+	if (p_port == 0 || p_port == 1 || p_port == 2) {
+		return PORT_TYPE_SCALAR;
+	}
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeIf::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "a";
+		case 1:
+			return "b";
+		case 2:
+			return "tolerance";
+		case 3:
+			return "a == b";
+		case 4:
+			return "a > b";
+		case 5:
+			return "a < b";
+		default:
+			return "";
+	}
+}
+
+int VisualShaderNodeIf::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeIf::PortType VisualShaderNodeIf::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeIf::get_output_port_name(int p_port) const {
+	return "result";
+}
+
+String VisualShaderNodeIf::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+
+	String code;
+	code += "\tif(abs(" + p_input_vars[0] + "-" + p_input_vars[1] + ")<" + p_input_vars[2] + ")\n"; // abs(a - b) < tolerance eg. a == b
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[3] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + "<" + p_input_vars[1] + ")\n"; // a < b
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[5] + ";\n";
+	code += "\t}\n";
+	code += "\telse\n"; // a > b (or a >= b if abs(a - b) < tolerance is false)
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[4] + ";\n";
+	code += "\t}\n";
+	return code;
+}
+
+VisualShaderNodeIf::VisualShaderNodeIf() {
+	set_input_port_default_value(0, 0.0);
+	set_input_port_default_value(1, 0.0);
+	set_input_port_default_value(2, CMP_EPSILON);
+	set_input_port_default_value(3, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(4, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(5, Vector3(0.0, 0.0, 0.0));
+}
+
+////////////// Switch
+
+String VisualShaderNodeSwitch::get_caption() const {
+	return "Switch";
+}
+
+int VisualShaderNodeSwitch::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeSwitch::PortType VisualShaderNodeSwitch::get_input_port_type(int p_port) const {
+	if (p_port == 0) {
+		return PORT_TYPE_BOOLEAN;
+	}
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeSwitch::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "value";
+		case 1:
+			return "true";
+		case 2:
+			return "false";
+		default:
+			return "";
+	}
+}
+
+int VisualShaderNodeSwitch::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeSwitch::PortType VisualShaderNodeSwitch::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeSwitch::get_output_port_name(int p_port) const {
+	return "result";
+}
+
+String VisualShaderNodeSwitch::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+
+	String code;
+	code += "\tif(" + p_input_vars[0] + ")\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[1] + ";\n";
+	code += "\t}\n";
+	code += "\telse\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[2] + ";\n";
+	code += "\t}\n";
+	return code;
+}
+
+VisualShaderNodeSwitch::VisualShaderNodeSwitch() {
+	set_input_port_default_value(0, false);
+	set_input_port_default_value(1, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
+}
