@@ -540,10 +540,11 @@ void Skeleton::clear_bones() {
 void Skeleton::set_bone_pose(int p_bone, const Transform &p_pose) {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	ERR_FAIL_COND(!is_inside_tree());
 
 	bones.write[p_bone].pose = p_pose;
-	_make_dirty();
+	if (is_inside_tree()) {
+		_make_dirty();
+	}
 }
 Transform Skeleton::get_bone_pose(int p_bone) const {
 

@@ -62,6 +62,14 @@ private:
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
 	};
 
+	struct WeightSort {
+		int index;
+		float weight;
+		bool operator<(const WeightSort &p_right) const {
+			return weight < p_right.weight;
+		}
+	};
+
 	bool begun;
 	bool first;
 	Mesh::PrimitiveType primitive;
