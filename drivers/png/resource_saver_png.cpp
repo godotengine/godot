@@ -71,6 +71,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	ERR_FAIL_COND_V(img->is_compressed(), ERR_INVALID_PARAMETER);
 
 	bool has_palette = p_img->has_palette();
+	bool has_alpha = p_img->detect_alpha() > Image::ALPHA_NONE;
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -133,7 +134,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 			} break;
 			default: {
 
-				if (img->detect_alpha()) {
+				if (has_alpha) {
 
 					img->convert(Image::FORMAT_RGBA8);
 					pngf = PNG_COLOR_TYPE_RGB_ALPHA;
@@ -147,7 +148,6 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 			}
 		}
 	}
-
 	int w = img->get_width();
 	int h = img->get_height();
 
@@ -155,37 +155,35 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	// Prepare palette
-	png_colorp png_palette;
+	png_colorp png_palette = NULL;
 	png_bytep png_palette_trans = NULL;
 
 	if (has_palette) {
-		const PoolColorArray &palette = p_img->get_palette();
-		PoolColorArray::Read read = palette.read();
+		PoolVector<uint8_t>::Read r = p_img->get_palette_data().read();
 
-		// Palette RGB
-		int palette_size = palette.size();
+		// RGB
+		int palette_size = p_img->get_palette_size();
 		png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
 
 		for (int i = 0; i < palette_size; i++) {
-			png_color *col = &png_palette[i];
+			png_color *c = &png_palette[i];
 
-			col->red = read[i].r * 255.0;
-			col->green = read[i].g * 255.0;
-			col->blue = read[i].b * 255.0;
+			c->red = r[i * 4 + 0];
+			c->green = r[i * 4 + 1];
+			c->blue = r[i * 4 + 2];
 		}
 		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
 
-		// Palette Alpha
-		if (img->detect_alpha()) {
+		// Alpha
+		if (has_alpha) {
 			png_palette_trans = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
 			for (int i = 0; i < palette_size; i++) {
 				png_bytep a = &png_palette_trans[i];
-				*a = (uint8_t)(read[i].a * 255.0);
+				*a = r[i * 4 + 3];
 			}
 			png_set_tRNS(png_ptr, info_ptr, png_palette_trans, palette_size, NULL);
 		}
 	}
-
 	png_write_info(png_ptr, info_ptr);
 
 	/* write bytes */

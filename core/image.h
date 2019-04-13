@@ -247,22 +247,23 @@ public:
 	void normalize(); //for normal maps
 
 	/**
-	 * Generate an optimal color palette of this image
+	 * Image color palette interface.
+	 * Can generate an optimal color palette of this image
 	 * The image can be saved as indexed if it has a palette associated with it
 	 * NOTE: there's no actual format for indexed images.
 	 */
 	Error generate_palette(int p_num_colors = 256, bool p_high_quality = true);
 	void clear_palette();
+	Error apply_palette();
+
+	bool has_palette() const;
+	int get_palette_size() const;
 
 	void set_palette(const PoolColorArray &p_palette);
 	PoolColorArray get_palette() const;
 
 	void set_palette_color(int p_idx, const Color p_color);
 	Color get_palette_color(int p_idx) const;
-
-	bool has_palette() const;
-
-	Error apply_palette();
 
 	/**
 	 * Intended to be used by image loaders/savers directly:

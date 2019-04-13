@@ -1554,6 +1554,11 @@ bool Image::has_palette() const {
 	return palette_data.size() > 0;
 }
 
+int Image::get_palette_size() const {
+
+	return palette_data.size() / 4;
+}
+
 Error Image::apply_palette() {
 
 	// Converts indexed data with associated palette to compatible format
@@ -2790,12 +2795,15 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
+	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
+
+	ClassDB::bind_method(D_METHOD("has_palette"), &Image::has_palette);
+	ClassDB::bind_method(D_METHOD("get_palette_size"), &Image::get_palette_size);
+
 	ClassDB::bind_method(D_METHOD("set_palette", "palette"), &Image::set_palette);
 	ClassDB::bind_method(D_METHOD("get_palette"), &Image::get_palette);
 	ClassDB::bind_method(D_METHOD("set_palette_color", "index", "color"), &Image::set_palette_color);
 	ClassDB::bind_method(D_METHOD("get_palette_color", "index"), &Image::get_palette_color);
-	ClassDB::bind_method(D_METHOD("has_palette"), &Image::has_palette);
-	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
 
 	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::_create_empty);
 	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data);
