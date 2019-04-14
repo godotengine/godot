@@ -3532,15 +3532,17 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 void AnimationTrackEditor::_update_step_spinbox() {
 	step->set_block_signals(true);
 
-	if (timeline->is_using_fps()) {
-		if (animation->get_step() == 0) {
-			step->set_value(0);
-		} else {
-			step->set_value(1.0 / animation->get_step());
-		}
+	if (animation != NULL) {
+		if (timeline->is_using_fps()) {
+			if (animation->get_step() == 0) {
+				step->set_value(0);
+			} else {
+				step->set_value(1.0 / animation->get_step());
+			}
 
-	} else {
-		step->set_value(animation->get_step());
+		} else {
+			step->set_value(animation->get_step());
+		}
 	}
 
 	step->set_block_signals(false);
