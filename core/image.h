@@ -150,7 +150,6 @@ public:
 
 protected:
 	static void _bind_methods();
-	exq_data *pExq;
 
 private:
 	void _create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {

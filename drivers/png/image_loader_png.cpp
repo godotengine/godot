@@ -211,7 +211,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	memdelete_arr(row_p);
 
 	if (color == PNG_COLOR_TYPE_PALETTE) {
-		// Loaded data is indices
+		// Loaded data are indices
 		fmt = png_palette_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 		int ps = png_palette_alpha ? 4 : 3;
 

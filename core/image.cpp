@@ -1439,15 +1439,17 @@ real_t Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_wit
 	const int num_pixels = width * height;
 	const int num_colors = int(CLAMP(p_num_colors, 1, 256));
 
-	// Quantize
+	// Init
 	PoolVector<uint8_t>::Write w_src = data.write();
 	uint8_t *src = w_src.ptr();
 
-	pExq = exq_init();
+	exq_data *pExq = exq_init();
 	if (!p_with_alpha) {
 		exq_no_transparency(pExq);
 	}
 	exq_feed(pExq, src, num_pixels);
+
+	// Quantize
 	exq_quantize_ex(pExq, num_colors, (int)p_high_quality);
 
 	// Extract palette
