@@ -1433,7 +1433,8 @@ Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with
 	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
 	ERR_FAIL_COND_V(format != FORMAT_RGBA8, ERR_UNAVAILABLE);
 
-	ERR_FAIL_COND_V(width == 0 || height == 0, ERR_UNCONFIGURED);
+	ERR_EXPLAIN("Cannot generate a palette from an empty image.");
+	ERR_FAIL_COND_V(empty(), ERR_UNCONFIGURED);
 
 	const int num_pixels = width * height;
 	const int num_colors = int(CLAMP(p_num_colors, 1, 256));
