@@ -259,25 +259,20 @@ public:
 		DITHER_RANDOM,
 	};
 	real_t generate_palette(int p_num_colors = 256, DitherMode p_dither = DITHER_NONE, bool p_with_alpha = true, bool p_high_quality = false);
+	Error create_palette(const PoolVector<uint8_t> &p_palette_data, const PoolVector<uint8_t> &p_index_data);
 	void clear_palette();
 	Error apply_palette();
 
 	bool has_palette() const;
 	int get_palette_size() const;
 
-	void set_palette(const PoolColorArray &p_palette);
-	PoolColorArray get_palette() const;
+	void set_palette(const PoolVector<Color> &p_palette);
+	PoolVector<Color> get_palette() const;
 
 	void set_palette_color(int p_idx, const Color p_color);
 	Color get_palette_color(int p_idx) const;
 
-	/**
-	 * Intended to be used by image loaders/savers directly:
-	 */
-	void set_palette_data(const PoolVector<uint8_t> &p_palette_data);
 	PoolVector<uint8_t> get_palette_data() const;
-
-	void set_index_data(const PoolVector<uint8_t> &p_index_data);
 	PoolVector<uint8_t> get_index_data() const;
 
 	/**

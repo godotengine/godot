@@ -1632,19 +1632,17 @@ Error Image::apply_palette() {
 	return OK;
 }
 
-void Image::set_palette_data(const PoolVector<uint8_t> &p_palette_data) {
+Error Image::create_palette(const PoolVector<uint8_t> &p_palette_data, const PoolVector<uint8_t> &p_index_data) {
 
 	palette_data = p_palette_data;
+	index_data = p_index_data;
+
+	return OK;
 }
 
 PoolVector<uint8_t> Image::get_palette_data() const {
 
 	return palette_data;
-}
-
-void Image::set_index_data(const PoolVector<uint8_t> &p_index_data) {
-
-	index_data = p_index_data;
 }
 
 PoolVector<uint8_t> Image::get_index_data() const {
