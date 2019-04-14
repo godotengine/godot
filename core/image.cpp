@@ -1428,7 +1428,7 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_high_quality) {
+Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with_alpha, bool p_high_quality) {
 
 	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
 	ERR_FAIL_COND_V(format != FORMAT_RGBA8, ERR_UNAVAILABLE);
@@ -1436,24 +1436,27 @@ Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_high
 	ERR_FAIL_COND_V(width == 0 || height == 0, ERR_UNCONFIGURED);
 
 	const int num_pixels = width * height;
+	const int num_colors = int(CLAMP(p_num_colors, 1, 256));
 
 	// Quantize
 	PoolVector<uint8_t>::Write w_src = data.write();
 	uint8_t *src = w_src.ptr();
 
 	pExq = exq_init();
-	// exq_no_transparency(pExq);
+	if (!p_with_alpha) {
+		exq_no_transparency(pExq);
+	}
 	exq_feed(pExq, src, num_pixels);
-	exq_quantize_ex(pExq, p_num_colors, (int)p_high_quality);
+	exq_quantize_ex(pExq, num_colors, (int)p_high_quality);
 
 	// Extract palette
 	palette_data.resize(0);
-	palette_data.resize(p_num_colors * 4);
+	palette_data.resize(num_colors * 4);
 
 	PoolVector<uint8_t>::Write w_pal_raw = palette_data.write();
 	uint8_t *pal_raw = w_pal_raw.ptr();
 
-	exq_get_palette(pExq, pal_raw, p_num_colors);
+	exq_get_palette(pExq, pal_raw, num_colors);
 
 	// Map indices to palette (doesn't overwrite original image)
 	index_data.resize(0);
@@ -1463,9 +1466,15 @@ Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_high
 	uint8_t *dest = w_dest.ptr();
 
 	switch (p_dither) {
-		case DITHER_NONE: exq_map_image(pExq, num_pixels, src, dest); break;
-		case DITHER_ORDERED: exq_map_image_ordered(pExq, width, height, src, dest); break;
-		case DITHER_RANDOM: exq_map_image_random(pExq, num_pixels, src, dest); break;
+		case DITHER_NONE: {
+			exq_map_image(pExq, num_pixels, src, dest);
+		} break;
+		case DITHER_ORDERED: {
+			exq_map_image_ordered(pExq, width, height, src, dest);
+		} break;
+		case DITHER_RANDOM: {
+			exq_map_image_random(pExq, num_pixels, src, dest);
+		} break;
 	}
 	// Cleanup
 	exq_free(pExq);
@@ -2801,7 +2810,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "dithering", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(DITHER_NONE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "dithering", "with_alpha", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(DITHER_NONE), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
 	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
 
