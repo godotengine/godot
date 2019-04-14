@@ -1004,6 +1004,58 @@ void VisualShaderEditor::_duplicate_nodes() {
 	}
 }
 
+void VisualShaderEditor::_on_nodes_delete() {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	List<int> to_erase;
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			if (gn->is_selected() && gn->is_close_button_visible()) {
+				to_erase.push_back(gn->get_name().operator String().to_int());
+			}
+		}
+	}
+
+	if (to_erase.empty())
+		return;
+
+	undo_redo->create_action(TTR("Delete Nodes"));
+
+	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
+		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F->get());
+		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, visual_shader->get_node(type, F->get()), visual_shader->get_node_position(type, F->get()), F->get());
+	}
+
+	List<VisualShader::Connection> conns;
+	visual_shader->get_node_connections(type, &conns);
+
+	List<VisualShader::Connection> used_conns;
+	for (List<int>::Element *F = to_erase.front(); F; F = F->next()) {
+		for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+			if (E->get().from_node == F->get() || E->get().to_node == F->get()) {
+
+				bool cancel = false;
+				for (List<VisualShader::Connection>::Element *R = used_conns.front(); R; R = R->next()) {
+					if (R->get().from_node == E->get().from_node && R->get().from_port == E->get().from_port && R->get().to_node == E->get().to_node && R->get().to_port == E->get().to_port) {
+						cancel = true; // to avoid ERR_ALREADY_EXISTS warning
+						break;
+					}
+				}
+				if (!cancel) {
+					undo_redo->add_undo_method(visual_shader.ptr(), "connect_nodes", type, E->get().from_node, E->get().from_port, E->get().to_node, E->get().to_port);
+					used_conns.push_back(E->get());
+				}
+			}
+		}
+	}
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_mode_selected(int p_id) {
 	_update_options_menu();
 	_update_graph();
@@ -1175,6 +1227,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_node_selected", &VisualShaderEditor::_node_selected);
 	ClassDB::bind_method("_scroll_changed", &VisualShaderEditor::_scroll_changed);
 	ClassDB::bind_method("_delete_request", &VisualShaderEditor::_delete_request);
+	ClassDB::bind_method("_on_nodes_delete", &VisualShaderEditor::_on_nodes_delete);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_edit_port_default_input", &VisualShaderEditor::_edit_port_default_input);
 	ClassDB::bind_method("_port_edited", &VisualShaderEditor::_port_edited);
@@ -1224,6 +1277,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("node_selected", this, "_node_selected");
 	graph->connect("scroll_offset_changed", this, "_scroll_changed");
 	graph->connect("duplicate_nodes_request", this, "_duplicate_nodes");
+	graph->connect("delete_nodes_request", this, "_on_nodes_delete");
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_BOOLEAN);
