@@ -89,10 +89,10 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 
 	if (frames_selected.size() == 0) {
 		split_sheet_dialog->get_ok()->set_disabled(true);
-		split_sheet_dialog->get_ok()->set_text(TTR("No frames selected"));
+		split_sheet_dialog->get_ok()->set_text(TTR("No Frames Selected"));
 	} else {
 		split_sheet_dialog->get_ok()->set_disabled(false);
-		split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d frame(s)"), frames_selected.size()));
+		split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
 	}
 }
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
@@ -168,7 +168,24 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_sheet_select_clear_all_frames() {
+
+	bool should_clear = true;
+	for (int i = 0; i < split_sheet_h->get_value() * split_sheet_v->get_value(); i++) {
+		if (!frames_selected.has(i)) {
+			frames_selected.insert(i);
+			should_clear = false;
+		}
+	}
+	if (should_clear) {
+		frames_selected.clear();
+	}
+
+	split_sheet_preview->update();
+}
+
 void SpriteFramesEditor::_sheet_spin_changed(double) {
+
 	frames_selected.clear();
 	last_frame_selected = -1;
 	split_sheet_preview->update();
@@ -195,22 +212,26 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 
 void SpriteFramesEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-
-		load->set_icon(get_icon("Load", "EditorIcons"));
-		load_sheet->set_icon(get_icon("SpriteSheet", "EditorIcons"));
-		copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
-		paste->set_icon(get_icon("ActionPaste", "EditorIcons"));
-		empty->set_icon(get_icon("InsertBefore", "EditorIcons"));
-		empty2->set_icon(get_icon("InsertAfter", "EditorIcons"));
-		move_up->set_icon(get_icon("MoveLeft", "EditorIcons"));
-		move_down->set_icon(get_icon("MoveRight", "EditorIcons"));
-		_delete->set_icon(get_icon("Remove", "EditorIcons"));
-		new_anim->set_icon(get_icon("New", "EditorIcons"));
-		remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
-	} else if (p_what == NOTIFICATION_READY) {
-
-		add_constant_override("autohide", 1); // Fixes the dragger always showing up.
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			load->set_icon(get_icon("Load", "EditorIcons"));
+			load_sheet->set_icon(get_icon("SpriteSheet", "EditorIcons"));
+			copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
+			paste->set_icon(get_icon("ActionPaste", "EditorIcons"));
+			empty->set_icon(get_icon("InsertBefore", "EditorIcons"));
+			empty2->set_icon(get_icon("InsertAfter", "EditorIcons"));
+			move_up->set_icon(get_icon("MoveLeft", "EditorIcons"));
+			move_down->set_icon(get_icon("MoveRight", "EditorIcons"));
+			_delete->set_icon(get_icon("Remove", "EditorIcons"));
+			new_anim->set_icon(get_icon("New", "EditorIcons"));
+			remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
+		} // Fallthrough.
+		case NOTIFICATION_THEME_CHANGED: {
+			splite_sheet_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
+		} break;
+		case NOTIFICATION_READY: {
+			add_constant_override("autohide", 1); // Fixes the dragger always showing up.
+		} break;
 	}
 }
 
@@ -818,6 +839,7 @@ void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_sheet_preview_input"), &SpriteFramesEditor::_sheet_preview_input);
 	ClassDB::bind_method(D_METHOD("_sheet_spin_changed"), &SpriteFramesEditor::_sheet_spin_changed);
 	ClassDB::bind_method(D_METHOD("_sheet_add_frames"), &SpriteFramesEditor::_sheet_add_frames);
+	ClassDB::bind_method(D_METHOD("_sheet_select_clear_all_frames"), &SpriteFramesEditor::_sheet_select_clear_all_frames);
 }
 
 SpriteFramesEditor::SpriteFramesEditor() {
@@ -879,7 +901,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc->add_child(load);
 
 	load_sheet = memnew(ToolButton);
-	load_sheet->set_tooltip(TTR("Add frames from a Sprite Sheet"));
+	load_sheet->set_tooltip(TTR("Add Frames from a Sprite Sheet"));
 	hbc->add_child(load_sheet);
 
 	hbc->add_child(memnew(VSeparator));
@@ -960,25 +982,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_dialog->set_title(TTR("Select Frames"));
 	split_sheet_dialog->connect("confirmed", this, "_sheet_add_frames");
 
-	ScrollContainer *scroll = memnew(ScrollContainer);
-	split_sheet_preview = memnew(TextureRect);
-	split_sheet_preview->set_expand(false);
-	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
-	split_sheet_preview->connect("draw", this, "_sheet_preview_draw");
-	split_sheet_preview->connect("gui_input", this, "_sheet_preview_input");
-
-	scroll->set_enable_h_scroll(true);
-	scroll->set_enable_v_scroll(true);
-	CenterContainer *cc = memnew(CenterContainer);
-	cc->add_child(split_sheet_preview);
-	cc->set_h_size_flags(SIZE_EXPAND_FILL);
-	cc->set_v_size_flags(SIZE_EXPAND_FILL);
-	scroll->add_child(cc);
-
-	split_sheet_vb->add_margin_child(TTR("Base Image:"), scroll, true);
-
 	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
-	split_sheet_hb->add_spacer();
+
 	Label *ss_label = memnew(Label(TTR("Horizontal:")));
 	split_sheet_hb->add_child(ss_label);
 	split_sheet_h = memnew(SpinBox);
@@ -986,7 +991,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_h->set_max(128);
 	split_sheet_h->set_step(1);
 	split_sheet_hb->add_child(split_sheet_h);
-	split_sheet_hb->add_spacer();
 	split_sheet_h->connect("value_changed", this, "_sheet_spin_changed");
 
 	ss_label = memnew(Label(TTR("Vertical:")));
@@ -996,13 +1000,37 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_v->set_max(128);
 	split_sheet_v->set_step(1);
 	split_sheet_hb->add_child(split_sheet_v);
-	split_sheet_hb->add_spacer();
 	split_sheet_v->connect("value_changed", this, "_sheet_spin_changed");
 
-	split_sheet_vb->add_margin_child(TTR("Split Settings:"), split_sheet_hb);
+	split_sheet_hb->add_spacer();
+
+	Button *select_clear_all = memnew(Button);
+	select_clear_all->set_text(TTR("Select/Clear All Frames"));
+	select_clear_all->connect("pressed", this, "_sheet_select_clear_all_frames");
+	split_sheet_hb->add_child(select_clear_all);
+
+	split_sheet_vb->add_child(split_sheet_hb);
+
+	split_sheet_preview = memnew(TextureRect);
+	split_sheet_preview->set_expand(false);
+	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
+	split_sheet_preview->connect("draw", this, "_sheet_preview_draw");
+	split_sheet_preview->connect("gui_input", this, "_sheet_preview_input");
+
+	splite_sheet_scroll = memnew(ScrollContainer);
+	splite_sheet_scroll->set_enable_h_scroll(true);
+	splite_sheet_scroll->set_enable_v_scroll(true);
+	splite_sheet_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+	CenterContainer *cc = memnew(CenterContainer);
+	cc->add_child(split_sheet_preview);
+	cc->set_h_size_flags(SIZE_EXPAND_FILL);
+	cc->set_v_size_flags(SIZE_EXPAND_FILL);
+	splite_sheet_scroll->add_child(cc);
+
+	split_sheet_vb->add_child(splite_sheet_scroll);
 
 	file_split_sheet = memnew(EditorFileDialog);
-	file_split_sheet->set_title(TTR("Create frames from Sprite Sheet"));
+	file_split_sheet->set_title(TTR("Create Frames from Sprite Sheet"));
 	file_split_sheet->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_split_sheet);
 	file_split_sheet->connect("file_selected", this, "_prepare_sprite_sheet");
