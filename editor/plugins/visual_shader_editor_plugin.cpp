@@ -172,6 +172,7 @@ void VisualShaderEditor::_update_options_menu() {
 
 	int item_count = 0;
 	int item_count2 = 0;
+	bool is_first_item = true;
 
 	for (int i = 0; i < add_options.size() + 1; i++) {
 
@@ -197,6 +198,7 @@ void VisualShaderEditor::_update_options_menu() {
 				prev_sub_category = "";
 				category = members->create_item(root);
 				category->set_text(0, add_options[i].category);
+				category->set_selectable(0, false);
 				if (!use_filter)
 					category->set_collapsed(true);
 			}
@@ -212,6 +214,7 @@ void VisualShaderEditor::_update_options_menu() {
 						item_count2 = 0;
 						sub_category = members->create_item(category);
 						sub_category->set_text(0, add_options[i].sub_category);
+						sub_category->set_selectable(0, false);
 						if (!use_filter)
 							sub_category->set_collapsed(true);
 					}
@@ -221,6 +224,10 @@ void VisualShaderEditor::_update_options_menu() {
 						++item_count2;
 						TreeItem *item = members->create_item(sub_category);
 						item->set_text(0, add_options[i].name);
+						if (is_first_item) {
+							item->select(0);
+							is_first_item = false;
+						}
 						switch (add_options[i].return_type) {
 							case VisualShaderNode::PORT_TYPE_SCALAR:
 								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
@@ -833,40 +840,56 @@ void VisualShaderEditor::_node_selected(Object *p_node) {
 	//EditorNode::get_singleton()->push_item(vsnode.ptr(), "", true);
 }
 
-void VisualShaderEditor::_member_gui_input(const Ref<InputEvent> p_event) {
+void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> p_event) {
+
 	Ref<InputEventMouseButton> mb = p_event;
-	Ref<InputEventKey> key = p_event;
 
-	if (mb.is_valid()) {
-		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && mb->is_doubleclick()) {
-			_member_create();
-		}
-	} else if (key.is_valid()) {
-		if (key->is_pressed() && key->get_scancode() == KEY_ENTER) {
-			_member_create();
-		}
-	}
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT)
+		_show_members_dialog(true);
 }
 
-void VisualShaderEditor::_input(const Ref<InputEvent> p_event) {
-	if (graph->has_focus()) {
-		Ref<InputEventMouseButton> mb = p_event;
+void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
 
-		if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-			saved_node_pos_dirty = true;
-			saved_node_pos = graph->get_local_mouse_position();
-
-			Point2 gpos = Input::get_singleton()->get_mouse_position();
-			members_dialog->popup();
-			members_dialog->set_position(gpos);
-		}
-	}
-}
-
-void VisualShaderEditor::_show_members_dialog() {
-	saved_node_pos_dirty = false;
 	members_dialog->popup();
-	members_dialog->set_position(graph->get_global_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+
+	if (at_mouse_pos) {
+		saved_node_pos_dirty = true;
+		saved_node_pos = graph->get_local_mouse_position();
+
+		Point2 gpos = Input::get_singleton()->get_mouse_position();
+		members_dialog->popup();
+		members_dialog->set_position(gpos);
+	} else {
+		saved_node_pos_dirty = false;
+		members_dialog->set_position(graph->get_global_position() + Point2(5 * EDSCALE, 65 * EDSCALE));
+	}
+
+	// keep dialog within window bounds
+	Size2 window_size = OS::get_singleton()->get_window_size();
+	Rect2 dialog_rect = members_dialog->get_global_rect();
+	if (dialog_rect.position.y + dialog_rect.size.y > window_size.y) {
+		int difference = dialog_rect.position.y + dialog_rect.size.y - window_size.y;
+		members_dialog->set_position(members_dialog->get_position() - Point2(0, difference));
+	}
+	if (dialog_rect.position.x + dialog_rect.size.x > window_size.x) {
+		int difference = dialog_rect.position.x + dialog_rect.size.x - window_size.x;
+		members_dialog->set_position(members_dialog->get_position() - Point2(difference, 0));
+	}
+
+	node_filter->call_deferred("grab_focus"); // still not visible
+	node_filter->select_all();
+}
+
+void VisualShaderEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
+	Ref<InputEventKey> ie = p_ie;
+	if (ie.is_valid() && (ie->get_scancode() == KEY_UP ||
+								 ie->get_scancode() == KEY_DOWN ||
+								 ie->get_scancode() == KEY_ENTER ||
+								 ie->get_scancode() == KEY_KP_ENTER)) {
+
+		members->call("_gui_input", ie);
+		node_filter->accept_event();
+	}
 }
 
 void VisualShaderEditor::_notification(int p_what) {
@@ -1238,7 +1261,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
-	ClassDB::bind_method("_input", &VisualShaderEditor::_input);
+	ClassDB::bind_method("_graph_gui_input", &VisualShaderEditor::_graph_gui_input);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -1247,7 +1270,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 	ClassDB::bind_method("_tools_menu_option", &VisualShaderEditor::_tools_menu_option);
 	ClassDB::bind_method("_show_members_dialog", &VisualShaderEditor::_show_members_dialog);
-	ClassDB::bind_method("_member_gui_input", &VisualShaderEditor::_member_gui_input);
+	ClassDB::bind_method("_sbox_input", &VisualShaderEditor::_sbox_input);
 	ClassDB::bind_method("_member_filter_changed", &VisualShaderEditor::_member_filter_changed);
 	ClassDB::bind_method("_member_selected", &VisualShaderEditor::_member_selected);
 	ClassDB::bind_method("_member_unselected", &VisualShaderEditor::_member_unselected);
@@ -1278,6 +1301,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("scroll_offset_changed", this, "_scroll_changed");
 	graph->connect("duplicate_nodes_request", this, "_duplicate_nodes");
 	graph->connect("delete_nodes_request", this, "_on_nodes_delete");
+	graph->connect("gui_input", this, "_graph_gui_input");
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_BOOLEAN);
@@ -1306,7 +1330,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->get_zoom_hbox()->add_child(add_node);
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
-	add_node->connect("pressed", this, "_show_members_dialog");
+	add_node->connect("pressed", this, "_show_members_dialog", varray(false));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
@@ -1321,6 +1345,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	node_filter = memnew(LineEdit);
 	filter_hb->add_child(node_filter);
 	node_filter->connect("text_changed", this, "_member_filter_changed");
+	node_filter->connect("gui_input", this, "_sbox_input");
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
 
@@ -1340,9 +1365,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	members->set_allow_reselect(true);
 	members->set_hide_folding(false);
 	members->set_custom_minimum_size(Size2(180 * EDSCALE, 200 * EDSCALE));
+	members->connect("item_activated", this, "_member_create");
 	members->connect("item_selected", this, "_member_selected");
 	members->connect("nothing_selected", this, "_member_unselected");
-	members->connect("gui_input", this, "_member_gui_input");
 
 	Label *desc_label = memnew(Label);
 	members_vb->add_child(desc_label);
