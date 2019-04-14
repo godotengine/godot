@@ -1053,6 +1053,10 @@ void Object::set_meta(const String &p_name, const Variant &p_value) {
 	metadata[p_name] = p_value;
 }
 
+void Object::remove_meta(const String &p_name) {
+	metadata.erase(p_name);
+}
+
 Variant Object::get_meta(const String &p_name) const {
 
 	ERR_FAIL_COND_V(!metadata.has(p_name), Variant());
@@ -1688,6 +1692,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script"), &Object::get_script);
 
 	ClassDB::bind_method(D_METHOD("set_meta", "name", "value"), &Object::set_meta);
+	ClassDB::bind_method(D_METHOD("remove_meta", "name"), &Object::remove_meta);
 	ClassDB::bind_method(D_METHOD("get_meta", "name"), &Object::get_meta);
 	ClassDB::bind_method(D_METHOD("has_meta", "name"), &Object::has_meta);
 	ClassDB::bind_method(D_METHOD("get_meta_list"), &Object::_get_meta_list_bind);
