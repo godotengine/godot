@@ -38,11 +38,167 @@
 void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
 }
 
+void SpriteFramesEditor::_open_sprite_sheet() {
+
+	file_split_sheet->clear_filters();
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("Texture", &extensions);
+	for (int i = 0; i < extensions.size(); i++) {
+		file_split_sheet->add_filter("*." + extensions[i]);
+	}
+
+	file_split_sheet->popup_centered_ratio();
+}
+
+void SpriteFramesEditor::_sheet_preview_draw() {
+	Size2i size = split_sheet_preview->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+	const float a = 0.3;
+	for (int i = 1; i < h; i++) {
+		for (int j = 1; j < v; j++) {
+
+			int x = i * size.width / h;
+			int y = i * size.height / v;
+
+			split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
+			split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
+
+			split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
+			split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
+		}
+	}
+
+	Color accent = get_color("accent_color", "Editor");
+
+	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
+		int idx = E->get();
+		int x = (idx % h) * size.width / h;
+		int y = (idx / v) * size.height / v;
+		int width = size.width / h;
+		int height = size.height / v;
+
+		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 0.35), true);
+		split_sheet_preview->draw_rect(Rect2(x + 0, y + 0, width - 0, height - 0), Color(0, 0, 0, 1), false);
+		split_sheet_preview->draw_rect(Rect2(x + 1, y + 1, width - 2, height - 2), Color(0, 0, 0, 1), false);
+		split_sheet_preview->draw_rect(Rect2(x + 2, y + 2, width - 4, height - 4), accent, false);
+		split_sheet_preview->draw_rect(Rect2(x + 3, y + 3, width - 6, height - 6), accent, false);
+		split_sheet_preview->draw_rect(Rect2(x + 4, y + 4, width - 8, height - 8), Color(0, 0, 0, 1), false);
+		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 1), false);
+	}
+
+	if (frames_selected.size() == 0) {
+		split_sheet_dialog->get_ok()->set_disabled(true);
+		split_sheet_dialog->get_ok()->set_text(TTR("No frames selected"));
+	} else {
+		split_sheet_dialog->get_ok()->set_disabled(false);
+		split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d frame(s)"), frames_selected.size()));
+	}
+}
+void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+		Size2i size = split_sheet_preview->get_size();
+		int h = split_sheet_h->get_value();
+		int v = split_sheet_v->get_value();
+
+		int x = CLAMP(int(mb->get_position().x) * h / size.width, 0, h - 1);
+		int y = CLAMP(int(mb->get_position().y) * v / size.height, 0, v - 1);
+
+		int idx = h * y + x;
+
+		if (mb->get_shift() && last_frame_selected >= 0) {
+			//select multiple
+			int from = idx;
+			int to = last_frame_selected;
+			if (from > to) {
+				SWAP(from, to);
+			}
+
+			for (int i = from; i <= to; i++) {
+				if (mb->get_control()) {
+					frames_selected.erase(i);
+				} else {
+					frames_selected.insert(i);
+				}
+			}
+		} else {
+			if (frames_selected.has(idx)) {
+				frames_selected.erase(idx);
+			} else {
+				frames_selected.insert(idx);
+			}
+		}
+
+		last_frame_selected = idx;
+		split_sheet_preview->update();
+	}
+}
+
+void SpriteFramesEditor::_sheet_add_frames() {
+
+	Size2i size = split_sheet_preview->get_size();
+	int h = split_sheet_h->get_value();
+	int v = split_sheet_v->get_value();
+
+	undo_redo->create_action(TTR("Add Frame"));
+
+	int fc = frames->get_frame_count(edited_anim);
+
+	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
+		int idx = E->get();
+		int x = (idx % h) * size.width / h;
+		int y = (idx / v) * size.height / v;
+		int width = size.width / h;
+		int height = size.height / v;
+
+		Ref<AtlasTexture> at;
+		at.instance();
+		at->set_atlas(split_sheet_preview->get_texture());
+		at->set_region(Rect2(x, y, width, height));
+
+		undo_redo->add_do_method(frames, "add_frame", edited_anim, at, -1);
+		undo_redo->add_undo_method(frames, "remove_frame", edited_anim, fc);
+	}
+
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+	undo_redo->commit_action();
+}
+
+void SpriteFramesEditor::_sheet_spin_changed(double) {
+	frames_selected.clear();
+	last_frame_selected = -1;
+	split_sheet_preview->update();
+}
+
+void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
+
+	Ref<Resource> texture = ResourceLoader::load(p_file);
+	if (!texture.is_valid()) {
+		EditorNode::get_singleton()->show_warning("Unable to load images");
+		ERR_FAIL_COND(!texture.is_valid());
+	}
+	if (texture != split_sheet_preview->get_texture()) {
+		//different texture, reset to 4x4
+		split_sheet_h->set_value(4);
+		split_sheet_v->set_value(4);
+	}
+	frames_selected.clear();
+	last_frame_selected = -1;
+
+	split_sheet_preview->set_texture(texture);
+	split_sheet_dialog->popup_centered_ratio(0.65);
+}
+
 void SpriteFramesEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		load->set_icon(get_icon("Load", "EditorIcons"));
+		load_sheet->set_icon(get_icon("SpriteSheet", "EditorIcons"));
 		copy->set_icon(get_icon("ActionCopy", "EditorIcons"));
 		paste->set_icon(get_icon("ActionPaste", "EditorIcons"));
 		empty->set_icon(get_icon("InsertBefore", "EditorIcons"));
@@ -72,6 +228,7 @@ void SpriteFramesEditor::_file_load_request(const PoolVector<String> &p_path, in
 		if (resource.is_null()) {
 			dialog->set_text(TTR("ERROR: Couldn't load frame resource!"));
 			dialog->set_title(TTR("Error!"));
+
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text(TTR("Close"));
 			dialog->popup_centered_minsize();
@@ -655,6 +812,12 @@ void SpriteFramesEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SpriteFramesEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SpriteFramesEditor::can_drop_data_fw);
 	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SpriteFramesEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_prepare_sprite_sheet"), &SpriteFramesEditor::_prepare_sprite_sheet);
+	ClassDB::bind_method(D_METHOD("_open_sprite_sheet"), &SpriteFramesEditor::_open_sprite_sheet);
+	ClassDB::bind_method(D_METHOD("_sheet_preview_draw"), &SpriteFramesEditor::_sheet_preview_draw);
+	ClassDB::bind_method(D_METHOD("_sheet_preview_input"), &SpriteFramesEditor::_sheet_preview_input);
+	ClassDB::bind_method(D_METHOD("_sheet_spin_changed"), &SpriteFramesEditor::_sheet_spin_changed);
+	ClassDB::bind_method(D_METHOD("_sheet_add_frames"), &SpriteFramesEditor::_sheet_add_frames);
 }
 
 SpriteFramesEditor::SpriteFramesEditor() {
@@ -712,8 +875,14 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	sub_vb->add_child(hbc);
 
 	load = memnew(ToolButton);
-	load->set_tooltip(TTR("Load Resource"));
+	load->set_tooltip(TTR("Add a Texture from File"));
 	hbc->add_child(load);
+
+	load_sheet = memnew(ToolButton);
+	load_sheet->set_tooltip(TTR("Add frames from a Sprite Sheet"));
+	hbc->add_child(load_sheet);
+
+	hbc->add_child(memnew(VSeparator));
 
 	copy = memnew(ToolButton);
 	copy->set_tooltip(TTR("Copy"));
@@ -723,6 +892,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	paste->set_tooltip(TTR("Paste"));
 	hbc->add_child(paste);
 
+	hbc->add_spacer(false);
+
 	empty = memnew(ToolButton);
 	empty->set_tooltip(TTR("Insert Empty (Before)"));
 	hbc->add_child(empty);
@@ -731,7 +902,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	empty2->set_tooltip(TTR("Insert Empty (After)"));
 	hbc->add_child(empty2);
 
-	hbc->add_spacer(false);
+	hbc->add_child(memnew(VSeparator));
 
 	move_up = memnew(ToolButton);
 	move_up->set_tooltip(TTR("Move (Before)"));
@@ -766,6 +937,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_child(dialog);
 
 	load->connect("pressed", this, "_load_pressed");
+	load_sheet->connect("pressed", this, "_open_sprite_sheet");
 	_delete->connect("pressed", this, "_delete_pressed");
 	copy->connect("pressed", this, "_copy_pressed");
 	paste->connect("pressed", this, "_paste_pressed");
@@ -780,6 +952,60 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	updating = false;
 
 	edited_anim = "default";
+
+	split_sheet_dialog = memnew(ConfirmationDialog);
+	add_child(split_sheet_dialog);
+	VBoxContainer *split_sheet_vb = memnew(VBoxContainer);
+	split_sheet_dialog->add_child(split_sheet_vb);
+	split_sheet_dialog->set_title(TTR("Select Frames"));
+	split_sheet_dialog->connect("confirmed", this, "_sheet_add_frames");
+
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	split_sheet_preview = memnew(TextureRect);
+	split_sheet_preview->set_expand(false);
+	split_sheet_preview->set_mouse_filter(MOUSE_FILTER_PASS);
+	split_sheet_preview->connect("draw", this, "_sheet_preview_draw");
+	split_sheet_preview->connect("gui_input", this, "_sheet_preview_input");
+
+	scroll->set_enable_h_scroll(true);
+	scroll->set_enable_v_scroll(true);
+	CenterContainer *cc = memnew(CenterContainer);
+	cc->add_child(split_sheet_preview);
+	cc->set_h_size_flags(SIZE_EXPAND_FILL);
+	cc->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll->add_child(cc);
+
+	split_sheet_vb->add_margin_child(TTR("Base Image:"), scroll, true);
+
+	HBoxContainer *split_sheet_hb = memnew(HBoxContainer);
+	split_sheet_hb->add_spacer();
+	Label *ss_label = memnew(Label(TTR("Horizontal:")));
+	split_sheet_hb->add_child(ss_label);
+	split_sheet_h = memnew(SpinBox);
+	split_sheet_h->set_min(1);
+	split_sheet_h->set_max(128);
+	split_sheet_h->set_step(1);
+	split_sheet_hb->add_child(split_sheet_h);
+	split_sheet_hb->add_spacer();
+	split_sheet_h->connect("value_changed", this, "_sheet_spin_changed");
+
+	ss_label = memnew(Label(TTR("Vertical:")));
+	split_sheet_hb->add_child(ss_label);
+	split_sheet_v = memnew(SpinBox);
+	split_sheet_v->set_min(1);
+	split_sheet_v->set_max(128);
+	split_sheet_v->set_step(1);
+	split_sheet_hb->add_child(split_sheet_v);
+	split_sheet_hb->add_spacer();
+	split_sheet_v->connect("value_changed", this, "_sheet_spin_changed");
+
+	split_sheet_vb->add_margin_child(TTR("Split Settings:"), split_sheet_hb);
+
+	file_split_sheet = memnew(EditorFileDialog);
+	file_split_sheet->set_title(TTR("Create frames from Sprite Sheet"));
+	file_split_sheet->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	add_child(file_split_sheet);
+	file_split_sheet->connect("file_selected", this, "_prepare_sprite_sheet");
 }
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
