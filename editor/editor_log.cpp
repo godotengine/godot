@@ -78,8 +78,17 @@ void EditorLog::_clear_request() {
 	tool_button->set_icon(Ref<Texture>());
 }
 
+void EditorLog::_copy_request() {
+
+	log->selection_copy();
+}
+
 void EditorLog::clear() {
 	_clear_request();
+}
+
+void EditorLog::copy() {
+	_copy_request();
 }
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
@@ -125,7 +134,9 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 void EditorLog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
+	ClassDB::bind_method(D_METHOD("_copy_request"), &EditorLog::_copy_request);
 	ADD_SIGNAL(MethodInfo("clear_request"));
+	ADD_SIGNAL(MethodInfo("copy_request"));
 }
 
 EditorLog::EditorLog() {
@@ -138,6 +149,12 @@ EditorLog::EditorLog() {
 	title->set_text(TTR("Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
+
+	copybutton = memnew(Button);
+	hb->add_child(copybutton);
+	copybutton->set_text(TTR("Copy"));
+	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
+	copybutton->connect("pressed", this, "_copy_request");
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
