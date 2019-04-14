@@ -1428,13 +1428,13 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with_alpha, bool p_high_quality) {
+real_t Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with_alpha, bool p_high_quality) {
 
 	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
-	ERR_FAIL_COND_V(format != FORMAT_RGBA8, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(format != FORMAT_RGBA8, -1.0);
 
 	ERR_EXPLAIN("Cannot generate a palette from an empty image.");
-	ERR_FAIL_COND_V(empty(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(empty(), -1.0);
 
 	const int num_pixels = width * height;
 	const int num_colors = int(CLAMP(p_num_colors, 1, 256));
@@ -1477,10 +1477,13 @@ Error Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with
 			exq_map_image_random(pExq, num_pixels, src, dest);
 		} break;
 	}
+	// Determine quantization quality
+	real_t mean_error = exq_get_mean_error(pExq);
+
 	// Cleanup
 	exq_free(pExq);
 
-	return OK;
+	return mean_error;
 }
 
 PoolColorArray Image::get_palette() const {

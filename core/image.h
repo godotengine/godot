@@ -259,7 +259,7 @@ public:
 		DITHER_ORDERED,
 		DITHER_RANDOM,
 	};
-	Error generate_palette(int p_num_colors = 256, DitherMode p_dither = DITHER_NONE, bool p_with_alpha = true, bool p_high_quality = false);
+	real_t generate_palette(int p_num_colors = 256, DitherMode p_dither = DITHER_NONE, bool p_with_alpha = true, bool p_high_quality = false);
 	void clear_palette();
 	Error apply_palette();
 
