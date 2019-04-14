@@ -670,6 +670,7 @@ Dictionary AnimationPlayerEditor::get_state() const {
 	if (EditorNode::get_singleton()->get_edited_scene() && is_visible_in_tree() && player) {
 		d["player"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
 		d["animation"] = player->get_assigned_animation();
+		d["track_editor_state"] = track_editor->get_state();
 	}
 
 	return d;
@@ -695,6 +696,10 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 				_select_anim_by_name(anim);
 				_animation_edit();
 			}
+		}
+
+		if (p_state.has("track_editor_state")) {
+			track_editor->set_state(p_state["track_editor_state"]);
 		}
 	}
 }
