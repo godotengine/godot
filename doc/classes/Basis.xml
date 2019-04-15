@@ -76,6 +76,12 @@
 				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to Godot source code.
 			</description>
 		</method>
+		<method name="get_rotation_quat">
+			<return type="Quat">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_scale">
 			<return type="Vector3">
 			</return>
@@ -88,6 +94,16 @@
 			</return>
 			<description>
 				Return the inverse of the matrix.
+			</description>
+		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="b" type="Basis">
+			</argument>
+			<argument index="1" name="epsilon" type="float" default="0.00001">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="orthonormalized">

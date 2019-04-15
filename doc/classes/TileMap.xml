@@ -171,7 +171,7 @@
 				    # Write your custom logic here.
 				    # To call the default method:
 				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
-				[/codeblock] 
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_cellv">

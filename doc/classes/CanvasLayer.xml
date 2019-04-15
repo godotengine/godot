@@ -25,6 +25,10 @@
 		<member name="custom_viewport" type="Node" setter="set_custom_viewport" getter="get_custom_viewport">
 			The custom [Viewport] node assigned to the [CanvasLayer]. If null, uses the default viewport instead.
 		</member>
+		<member name="follow_viewport_enable" type="bool" setter="set_follow_viewport" getter="is_following_viewport">
+		</member>
+		<member name="follow_viewport_scale" type="float" setter="set_follow_viewport_scale" getter="get_follow_viewport_scale">
+		</member>
 		<member name="layer" type="int" setter="set_layer" getter="get_layer">
 			Layer index for draw order. Lower values are drawn first. Default value: [code]1[/code].
 		</member>

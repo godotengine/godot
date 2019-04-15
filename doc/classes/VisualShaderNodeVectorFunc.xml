@@ -27,5 +27,61 @@
 		</constant>
 		<constant name="FUNC_HSV2RGB" value="5" enum="Function">
 		</constant>
+		<constant name="FUNC_ABS" value="6" enum="Function">
+		</constant>
+		<constant name="FUNC_ACOS" value="7" enum="Function">
+		</constant>
+		<constant name="FUNC_ACOSH" value="8" enum="Function">
+		</constant>
+		<constant name="FUNC_ASIN" value="9" enum="Function">
+		</constant>
+		<constant name="FUNC_ASINH" value="10" enum="Function">
+		</constant>
+		<constant name="FUNC_ATAN" value="11" enum="Function">
+		</constant>
+		<constant name="FUNC_ATANH" value="12" enum="Function">
+		</constant>
+		<constant name="FUNC_CEIL" value="13" enum="Function">
+		</constant>
+		<constant name="FUNC_COS" value="14" enum="Function">
+		</constant>
+		<constant name="FUNC_COSH" value="15" enum="Function">
+		</constant>
+		<constant name="FUNC_DEGREES" value="16" enum="Function">
+		</constant>
+		<constant name="FUNC_EXP" value="17" enum="Function">
+		</constant>
+		<constant name="FUNC_EXP2" value="18" enum="Function">
+		</constant>
+		<constant name="FUNC_FLOOR" value="19" enum="Function">
+		</constant>
+		<constant name="FUNC_FRAC" value="20" enum="Function">
+		</constant>
+		<constant name="FUNC_INVERSE_SQRT" value="21" enum="Function">
+		</constant>
+		<constant name="FUNC_LOG" value="22" enum="Function">
+		</constant>
+		<constant name="FUNC_LOG2" value="23" enum="Function">
+		</constant>
+		<constant name="FUNC_RADIANS" value="24" enum="Function">
+		</constant>
+		<constant name="FUNC_ROUND" value="25" enum="Function">
+		</constant>
+		<constant name="FUNC_ROUNDEVEN" value="26" enum="Function">
+		</constant>
+		<constant name="FUNC_SIGN" value="27" enum="Function">
+		</constant>
+		<constant name="FUNC_SIN" value="28" enum="Function">
+		</constant>
+		<constant name="FUNC_SINH" value="29" enum="Function">
+		</constant>
+		<constant name="FUNC_SQRT" value="30" enum="Function">
+		</constant>
+		<constant name="FUNC_TAN" value="31" enum="Function">
+		</constant>
+		<constant name="FUNC_TANH" value="32" enum="Function">
+		</constant>
+		<constant name="FUNC_TRUNC" value="33" enum="Function">
+		</constant>
 	</constants>
 </class>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamGeneratorPlayback" inherits="AudioStreamPlaybackResampled" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="can_push_buffer" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_buffer">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_frames_available" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_skips" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="push_buffer">
+			<return type="bool">
+			</return>
+			<argument index="0" name="frames" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="push_frame">
+			<return type="bool">
+			</return>
+			<argument index="0" name="frame" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

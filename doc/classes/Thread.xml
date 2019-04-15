@@ -34,7 +34,7 @@
 			</argument>
 			<argument index="2" name="userdata" type="Variant" default="null">
 			</argument>
-			<argument index="3" name="priority" type="int" default="1">
+			<argument index="3" name="priority" type="int" enum="Thread.Priority" default="1">
 			</argument>
 			<description>
 				Starts a new [Thread] that runs "method" on object "instance" with "userdata" passed as an argument. The "priority" of the [Thread] can be changed by passing a PRIORITY_* enum.

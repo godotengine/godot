@@ -33,5 +33,7 @@
 		</constant>
 		<constant name="OP_ATAN2" value="8" enum="Operator">
 		</constant>
+		<constant name="OP_STEP" value="9" enum="Operator">
+		</constant>
 	</constants>
 </class>

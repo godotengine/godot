@@ -48,6 +48,12 @@
 				Returns the editor [Viewport].
 			</description>
 		</method>
+		<method name="get_inspector" qualifiers="const">
+			<return type="EditorInspector">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="Array">
 			</return>

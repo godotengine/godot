@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamGenerator" inherits="AudioStream" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length">
+		</member>
+		<member name="mix_rate" type="float" setter="set_mix_rate" getter="get_mix_rate">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

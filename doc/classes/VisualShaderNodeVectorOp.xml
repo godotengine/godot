@@ -33,5 +33,11 @@
 		</constant>
 		<constant name="OP_CROSS" value="8" enum="Operator">
 		</constant>
+		<constant name="OP_ATAN2" value="9" enum="Operator">
+		</constant>
+		<constant name="OP_REFLECT" value="10" enum="Operator">
+		</constant>
+		<constant name="OP_STEP" value="11" enum="Operator">
+		</constant>
 	</constants>
 </class>

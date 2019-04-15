@@ -227,7 +227,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="flags" type="int">
+			<argument index="1" name="flags" type="int" enum="File.ModeFlags">
 			</argument>
 			<description>
 				Opens the file for writing or reading, depending on the flags.
@@ -238,9 +238,9 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="mode_flags" type="int">
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
-			<argument index="2" name="compression_mode" type="int" default="0">
+			<argument index="2" name="compression_mode" type="int" enum="File.CompressionMode" default="0">
 			</argument>
 			<description>
 				Opens a compressed file for reading or writing. Use COMPRESSION_* constants to set [code]compression_mode[/code].
@@ -251,7 +251,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="mode_flags" type="int">
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
 			<argument index="2" name="key" type="PoolByteArray">
 			</argument>
@@ -264,7 +264,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="mode_flags" type="int">
+			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
 			<argument index="2" name="pass" type="String">
 			</argument>

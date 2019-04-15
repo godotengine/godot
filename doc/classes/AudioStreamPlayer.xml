@@ -19,6 +19,12 @@
 				Returns the position in the [AudioStream] in seconds.
 			</description>
 		</method>
+		<method name="get_stream_playback">
+			<return type="AudioStreamPlayback">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="play">
 			<return type="void">
 			</return>
