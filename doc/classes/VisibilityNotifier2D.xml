@@ -16,6 +16,7 @@
 			</return>
 			<description>
 				If [code]true[/code], the bounding rectangle is on the screen.
+				Note: It takes one frame for the node's visibility to be assessed once added to the scene tree, so this method will return [code]false[/code] right after it is instantiated, even if it will be on screen in the draw pass.
 			</description>
 		</method>
 	</methods>
