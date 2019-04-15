@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeVectorDerivativeFunc" inherits="VisualShaderNode" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+	</methods>
+	<members>
+		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorDerivativeFunc.Function">
+		</member>
+	</members>
+	<constants>
+		<constant name="FUNC_SUM" value="0" enum="Function">
+		</constant>
+		<constant name="FUNC_X" value="1" enum="Function">
+		</constant>
+		<constant name="FUNC_Y" value="2" enum="Function">
+		</constant>
+	</constants>
+</class>

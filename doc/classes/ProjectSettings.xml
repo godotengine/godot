@@ -215,6 +215,8 @@
 		<member name="audio/channel_disable_time" type="float" setter="" getter="">
 			Audio buses will disable automatically when sound goes below a given DB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
+		<member name="audio/default_bus_layout" type="String" setter="" getter="">
+		</member>
 		<member name="audio/driver" type="String" setter="" getter="">
 		</member>
 		<member name="audio/enable_audio_input" type="bool" setter="" getter="">

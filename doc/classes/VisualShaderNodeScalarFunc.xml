@@ -55,5 +55,27 @@
 		</constant>
 		<constant name="FUNC_NEGATE" value="19" enum="Function">
 		</constant>
+		<constant name="FUNC_ACOSH" value="20" enum="Function">
+		</constant>
+		<constant name="FUNC_ASINH" value="21" enum="Function">
+		</constant>
+		<constant name="FUNC_ATANH" value="22" enum="Function">
+		</constant>
+		<constant name="FUNC_DEGREES" value="23" enum="Function">
+		</constant>
+		<constant name="FUNC_EXP2" value="24" enum="Function">
+		</constant>
+		<constant name="FUNC_INVERSE_SQRT" value="25" enum="Function">
+		</constant>
+		<constant name="FUNC_LOG2" value="26" enum="Function">
+		</constant>
+		<constant name="FUNC_RADIANS" value="27" enum="Function">
+		</constant>
+		<constant name="FUNC_RECIPROCAL" value="28" enum="Function">
+		</constant>
+		<constant name="FUNC_ROUNDEVEN" value="29" enum="Function">
+		</constant>
+		<constant name="FUNC_TRUNC" value="30" enum="Function">
+		</constant>
 	</constants>
 </class>

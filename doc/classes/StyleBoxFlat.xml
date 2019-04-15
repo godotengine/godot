@@ -148,11 +148,11 @@
 		<member name="shadow_color" type="Color" setter="set_shadow_color" getter="get_shadow_color">
 			The color of the shadow. (This has no effect when shadow_size &lt; 1)
 		</member>
-		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size">
-			The shadow size in pixels.
-		</member>
 		<member name="shadow_offset" type="Vector2" setter="set_shadow_offset" getter="get_shadow_offset">
 			The shadow offset in pixels. Adjusts the position of the shadow relatively to the stylebox.
+		</member>
+		<member name="shadow_size" type="int" setter="set_shadow_size" getter="get_shadow_size">
+			The shadow size in pixels.
 		</member>
 	</members>
 	<constants>

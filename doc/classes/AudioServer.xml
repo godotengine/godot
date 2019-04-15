@@ -97,6 +97,18 @@
 				Returns the number of effects on the bus at [code]bus_idx[/code].
 			</description>
 		</method>
+		<method name="get_bus_effect_instance">
+			<return type="AudioEffectInstance">
+			</return>
+			<argument index="0" name="bus_idx" type="int">
+			</argument>
+			<argument index="1" name="effect_idx" type="int">
+			</argument>
+			<argument index="2" name="channel" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_bus_index" qualifiers="const">
 			<return type="int">
 			</return>

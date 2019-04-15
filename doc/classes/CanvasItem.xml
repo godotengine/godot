@@ -575,7 +575,7 @@
 		<constant name="BLEND_MODE_DISABLED" value="5" enum="BlendMode">
 			Disable blending mode. Colors including alpha are written as is. Only applicable for render targets with a transparent background. No lighting will be applied.
 		</constant>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			Canvas item transform has changed. Notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">

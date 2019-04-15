@@ -23,6 +23,8 @@
 			</return>
 			<argument index="0" name="anim" type="String" default="&quot;&quot;">
 			</argument>
+			<argument index="1" name="backwards" type="bool" default="false">
+			</argument>
 			<description>
 				Play the animation set in parameter. If no parameter is provided, the current animation is played. Property [code]backwards[/code] plays the animation in reverse if set to [code]true[/code].
 			</description>

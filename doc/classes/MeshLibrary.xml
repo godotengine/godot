@@ -68,6 +68,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_item_navmesh_transform" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_preview" qualifiers="const">
 			<return type="Texture">
 			</return>
@@ -128,6 +136,16 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="navmesh" type="NavigationMesh">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_item_navmesh_transform">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="navmesh" type="Transform">
 			</argument>
 			<description>
 			</description>

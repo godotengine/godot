@@ -19,5 +19,9 @@
 		</constant>
 		<constant name="OP_BxA" value="1" enum="Operator">
 		</constant>
+		<constant name="OP_AxB_COMP" value="2" enum="Operator">
+		</constant>
+		<constant name="OP_BxA_COMP" value="3" enum="Operator">
+		</constant>
 	</constants>
 </class>

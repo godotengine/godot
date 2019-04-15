@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorFeatureProfile" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_feature_name">
+			<return type="String">
+			</return>
+			<argument index="0" name="feature" type="int" enum="EditorFeatureProfile.Feature">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_class_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="class_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_class_editor_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="class_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_class_property_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="class_name" type="String">
+			</argument>
+			<argument index="1" name="arg1" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_feature_disabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="feature" type="int" enum="EditorFeatureProfile.Feature">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_from_file">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save_to_file">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_class">
+			<return type="void">
+			</return>
+			<argument index="0" name="class_name" type="String">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_class_editor">
+			<return type="void">
+			</return>
+			<argument index="0" name="class_name" type="String">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_class_property">
+			<return type="void">
+			</return>
+			<argument index="0" name="class_name" type="String">
+			</argument>
+			<argument index="1" name="property" type="String">
+			</argument>
+			<argument index="2" name="arg2" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_feature">
+			<return type="void">
+			</return>
+			<argument index="0" name="feature" type="int" enum="EditorFeatureProfile.Feature">
+			</argument>
+			<argument index="1" name="disable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FEATURE_3D" value="0" enum="Feature">
+		</constant>
+		<constant name="FEATURE_SCRIPT" value="1" enum="Feature">
+		</constant>
+		<constant name="FEATURE_ASSET_LIB" value="2" enum="Feature">
+		</constant>
+		<constant name="FEATURE_SCENE_TREE" value="3" enum="Feature">
+		</constant>
+		<constant name="FEATURE_IMPORT_DOCK" value="4" enum="Feature">
+		</constant>
+		<constant name="FEATURE_NODE_DOCK" value="5" enum="Feature">
+		</constant>
+		<constant name="FEATURE_FILESYSTEM_DOCK" value="6" enum="Feature">
+		</constant>
+		<constant name="FEATURE_MAX" value="7" enum="Feature">
+		</constant>
+	</constants>
+</class>

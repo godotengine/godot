@@ -172,9 +172,9 @@
 		</constant>
 		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</constant>
-		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
 		</constant>
-		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
 		</constant>
 	</constants>
 </class>

@@ -886,14 +886,36 @@
 		<constant name="NOTIFICATION_PATH_CHANGED" value="23">
 			Notification received when the node's [NodePath] changed.
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="24">
-			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
-		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PROCESS" value="25">
 			Notification received every frame when the internal process flag is set (see [method set_process_internal]).
 		</constant>
 		<constant name="NOTIFICATION_INTERNAL_PHYSICS_PROCESS" value="26">
 			Notification received every frame when the internal physics process flag is set (see [method set_physics_process_internal]).
+		</constant>
+		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
+		</constant>
+		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="1003">
+		</constant>
+		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
+		</constant>
+		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
+		</constant>
+		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
+		</constant>
+		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
+		</constant>
+		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
+		</constant>
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
+		</constant>
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
+			Notification received when translations may have changed. Can be triggered by the user changing the locale. Can be used to respond to language changes, for example to change the UI strings on the fly. Useful when working with the built-in translation support, like [method Object.tr].
+		</constant>
+		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
+		</constant>
+		<constant name="NOTIFICATION_CRASH" value="1012">
+		</constant>
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
 		</constant>
 		<constant name="PAUSE_MODE_INHERIT" value="0" enum="PauseMode">
 			Inherits pause mode from the node's parent. For the root node, it is equivalent to PAUSE_MODE_STOP. Default.

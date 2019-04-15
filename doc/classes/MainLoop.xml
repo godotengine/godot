@@ -114,29 +114,29 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="2">
+		<constant name="NOTIFICATION_WM_MOUSE_ENTER" value="1002">
 		</constant>
-		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="3">
+		<constant name="NOTIFICATION_WM_MOUSE_EXIT" value="1003">
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_IN" value="4">
+		<constant name="NOTIFICATION_WM_FOCUS_IN" value="1004">
 		</constant>
-		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="5">
+		<constant name="NOTIFICATION_WM_FOCUS_OUT" value="1005">
 		</constant>
-		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="6">
+		<constant name="NOTIFICATION_WM_QUIT_REQUEST" value="1006">
 		</constant>
-		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="7">
+		<constant name="NOTIFICATION_WM_GO_BACK_REQUEST" value="1007">
 		</constant>
-		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="8">
+		<constant name="NOTIFICATION_WM_UNFOCUS_REQUEST" value="1008">
 		</constant>
-		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="9">
+		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="1009">
 		</constant>
-		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="90">
+		<constant name="NOTIFICATION_TRANSLATION_CHANGED" value="1010">
 		</constant>
-		<constant name="NOTIFICATION_WM_ABOUT" value="91">
+		<constant name="NOTIFICATION_WM_ABOUT" value="1011">
 		</constant>
-		<constant name="NOTIFICATION_CRASH" value="92">
+		<constant name="NOTIFICATION_CRASH" value="1012">
 		</constant>
-		<constant name="NOTIFICATION_OS_IME_UPDATE" value="93">
+		<constant name="NOTIFICATION_OS_IME_UPDATE" value="1013">
 		</constant>
 	</constants>
 </class>

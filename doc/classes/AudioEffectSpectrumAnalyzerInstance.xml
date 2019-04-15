@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectSpectrumAnalyzerInstance" inherits="AudioEffectInstance" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<demos>
+	</demos>
+	<methods>
+		<method name="get_magnitude_for_frequency_range" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="from_hz" type="float">
+			</argument>
+			<argument index="1" name="to_hz" type="float">
+			</argument>
+			<argument index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="MAGNITUDE_AVERAGE" value="0" enum="MagnitudeMode">
+		</constant>
+		<constant name="MAGNITUDE_MAX" value="1" enum="MagnitudeMode">
+		</constant>
+	</constants>
+</class>
