@@ -3085,3 +3085,123 @@ VisualShaderNodeSwitch::VisualShaderNodeSwitch() {
 	set_input_port_default_value(1, Vector3(0.0, 0.0, 0.0));
 	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
 }
+
+////////////// Flipbook
+
+String VisualShaderNodeFlipbook::get_caption() const {
+	return "Flipbook";
+}
+
+int VisualShaderNodeFlipbook::get_input_port_count() const {
+	return 12;
+}
+
+VisualShaderNodeFlipbook::PortType VisualShaderNodeFlipbook::get_input_port_type(int p_port) const {
+	if (p_port == 0 || p_port == 1) {
+		return PORT_TYPE_SCALAR;
+	}
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeFlipbook::get_input_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "time";
+		case 1:
+			return "texture value";
+		case 2:
+			return "texture 1";
+		case 3:
+			return "texture 2";
+		case 4:
+			return "texture 3";
+		case 5:
+			return "texture 4";
+		case 6:
+			return "texture 5";
+		case 7:
+			return "texture 6";
+		case 8:
+			return "texture 7";
+		case 9:
+			return "texture 8";
+		case 10:
+			return "texture 9";
+		case 11:
+			return "texture 10";
+		default:
+			return "";
+	}
+}
+
+int VisualShaderNodeFlipbook::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeFlipbook::PortType VisualShaderNodeFlipbook::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeFlipbook::get_output_port_name(int p_port) const {
+	return "result";
+}
+
+String VisualShaderNodeFlipbook::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String code;
+	code += "\tif(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.1)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[2] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.2)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[3] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.3)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[4] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.4)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[5] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.5)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[6] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.6)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[7] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.7)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[8] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.8)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[9] + ";\n";
+	code += "\t}\n";
+	code += "\telse if(" + p_input_vars[0] + " * abs(clamp(" + p_input_vars[1] + ", 0.0, 1.0)) < 0.9)\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[10] + ";\n";
+	code += "\t}\n";
+	code += "\telse\n";
+	code += "\t{\n";
+	code += "\t\t" + p_output_vars[0] + " = " + p_input_vars[11] + ";\n";
+	code += "\t}\n";
+	return code;
+}
+
+VisualShaderNodeFlipbook::VisualShaderNodeFlipbook() {
+	set_input_port_default_value(0, 0.0);
+	set_input_port_default_value(1, 0.0);
+	set_input_port_default_value(2, Vector3());
+	set_input_port_default_value(3, Vector3());
+	set_input_port_default_value(4, Vector3());
+	set_input_port_default_value(5, Vector3());
+	set_input_port_default_value(6, Vector3());
+	set_input_port_default_value(7, Vector3());
+	set_input_port_default_value(8, Vector3());
+	set_input_port_default_value(9, Vector3());
+	set_input_port_default_value(10, Vector3());
+	set_input_port_default_value(11, Vector3());
+}

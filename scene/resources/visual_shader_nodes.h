@@ -1484,4 +1484,26 @@ public:
 	VisualShaderNodeSwitch();
 };
 
+///////////////////////////////////////
+/// Flipbook
+///////////////////////////////////////
+
+class VisualShaderNodeFlipbook : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeFlipbook, VisualShaderNode)
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+
+	VisualShaderNodeFlipbook();
+};
+
 #endif // VISUAL_SHADER_NODES_H

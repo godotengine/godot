@@ -1514,6 +1514,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform."), -1, VisualShaderNode::PORT_TYPE_COLOR));
 	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform."), -1, VisualShaderNode::PORT_TYPE_COLOR));
 
+	add_options.push_back(AddOption("Flipbook", "Textures", "Functions", "VisualShaderNodeFlipbook", TTR("Flipbook animation the texture, eg min 0.1 = 1 to max 1.0 = 10 (amount textures)"), -1, VisualShaderNode::PORT_TYPE_VECTOR));
 	// TRANSFORM
 
 	add_options.push_back(AddOption("TransformFunc", "Transform", "Common", "VisualShaderNodeTransformFunc", TTR("Transform function."), -1, VisualShaderNode::PORT_TYPE_TRANSFORM));
