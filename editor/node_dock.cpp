@@ -107,6 +107,7 @@ NodeDock::NodeDock() {
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	connections_button->set_text_align(Button::ALIGN_LEFT);
 	mode_hb->add_child(connections_button);
 	connections_button->connect("pressed", this, "show_connections");
 
@@ -115,6 +116,7 @@ NodeDock::NodeDock() {
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	groups_button->set_text_align(Button::ALIGN_LEFT);
 	mode_hb->add_child(groups_button);
 	groups_button->connect("pressed", this, "show_groups");
 
