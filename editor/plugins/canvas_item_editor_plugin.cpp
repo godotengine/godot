@@ -1340,6 +1340,10 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 		// Confirms the node rotation
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
 			_commit_canvas_item_state(drag_selection, TTR("Rotate CanvasItem"));
+			if (key_auto_insert_button->is_pressed()) {
+				_insert_animation_keys(false, true, false, true);
+			}
+
 			drag_type = DRAG_NONE;
 			return true;
 		}
@@ -1641,6 +1645,9 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 		// Confirm resize
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
 			_commit_canvas_item_state(drag_selection, TTR("Resize CanvasItem"));
+			if (key_auto_insert_button->is_pressed()) {
+				_insert_animation_keys(false, false, true, true);
+			}
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
@@ -1747,6 +1754,10 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 		// Confirm resize
 		if (b.is_valid() && b->get_button_index() == BUTTON_LEFT && !b->is_pressed()) {
 			_commit_canvas_item_state(drag_selection, TTR("Scale CanvasItem"));
+			if (key_auto_insert_button->is_pressed()) {
+				_insert_animation_keys(false, false, true, true);
+			}
+
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
@@ -1852,6 +1863,9 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 				_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
 			}
 
+			if (key_auto_insert_button->is_pressed()) {
+				_insert_animation_keys(true, false, false, true);
+			}
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
@@ -3384,6 +3398,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		key_rot_button->set_icon(get_icon("KeyRotation", "EditorIcons"));
 		key_scale_button->set_icon(get_icon("KeyScale", "EditorIcons"));
 		key_insert_button->set_icon(get_icon("Key", "EditorIcons"));
+		key_auto_insert_button->set_icon(get_icon("AutoKey", "EditorIcons"));
 
 		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
 		zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
@@ -3716,6 +3731,77 @@ void CanvasItemEditor::_button_tool_select(int p_index) {
 	tool = (Tool)p_index;
 }
 
+void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
+
+	Map<Node *, Object *> &selection = editor_selection->get_selection();
+
+	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
+
+		CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
+		if (!canvas_item || !canvas_item->is_visible_in_tree())
+			continue;
+
+		if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
+			continue;
+
+		if (Object::cast_to<Node2D>(canvas_item)) {
+			Node2D *n2d = Object::cast_to<Node2D>(canvas_item);
+
+			if (key_pos && p_location)
+				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), p_on_existing);
+			if (key_rot && p_rotation)
+				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "rotation_degrees", Math::rad2deg(n2d->get_rotation()), p_on_existing);
+			if (key_scale && p_scale)
+				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), p_on_existing);
+
+			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
+				//look for an IK chain
+				List<Node2D *> ik_chain;
+
+				Node2D *n = Object::cast_to<Node2D>(n2d->get_parent_item());
+				bool has_chain = false;
+
+				while (n) {
+
+					ik_chain.push_back(n);
+					if (n->has_meta("_edit_ik_")) {
+						has_chain = true;
+						break;
+					}
+
+					if (!n->get_parent_item())
+						break;
+					n = Object::cast_to<Node2D>(n->get_parent_item());
+				}
+
+				if (has_chain && ik_chain.size()) {
+
+					for (List<Node2D *>::Element *F = ik_chain.front(); F; F = F->next()) {
+
+						if (key_pos)
+							AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "position", F->get()->get_position(), p_on_existing);
+						if (key_rot)
+							AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "rotation_degrees", Math::rad2deg(F->get()->get_rotation()), p_on_existing);
+						if (key_scale)
+							AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "scale", F->get()->get_scale(), p_on_existing);
+					}
+				}
+			}
+
+		} else if (Object::cast_to<Control>(canvas_item)) {
+
+			Control *ctrl = Object::cast_to<Control>(canvas_item);
+
+			if (key_pos)
+				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), p_on_existing);
+			if (key_rot)
+				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation_degrees(), p_on_existing);
+			if (key_scale)
+				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), p_on_existing);
+		}
+	}
+}
+
 void CanvasItemEditor::_popup_callback(int p_op) {
 
 	last_option = MenuOption(p_op);
@@ -3983,73 +4069,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			bool existing = p_op == ANIM_INSERT_KEY_EXISTING;
 
-			Map<Node *, Object *> &selection = editor_selection->get_selection();
-
-			for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
-
-				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(E->key());
-				if (!canvas_item || !canvas_item->is_visible_in_tree())
-					continue;
-
-				if (canvas_item->get_viewport() != EditorNode::get_singleton()->get_scene_root())
-					continue;
-
-				if (Object::cast_to<Node2D>(canvas_item)) {
-					Node2D *n2d = Object::cast_to<Node2D>(canvas_item);
-
-					if (key_pos)
-						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "position", n2d->get_position(), existing);
-					if (key_rot)
-						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "rotation_degrees", Math::rad2deg(n2d->get_rotation()), existing);
-					if (key_scale)
-						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), existing);
-
-					if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
-						//look for an IK chain
-						List<Node2D *> ik_chain;
-
-						Node2D *n = Object::cast_to<Node2D>(n2d->get_parent_item());
-						bool has_chain = false;
-
-						while (n) {
-
-							ik_chain.push_back(n);
-							if (n->has_meta("_edit_ik_")) {
-								has_chain = true;
-								break;
-							}
-
-							if (!n->get_parent_item())
-								break;
-							n = Object::cast_to<Node2D>(n->get_parent_item());
-						}
-
-						if (has_chain && ik_chain.size()) {
-
-							for (List<Node2D *>::Element *F = ik_chain.front(); F; F = F->next()) {
-
-								if (key_pos)
-									AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "position", F->get()->get_position(), existing);
-								if (key_rot)
-									AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "rotation_degrees", Math::rad2deg(F->get()->get_rotation()), existing);
-								if (key_scale)
-									AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(F->get(), "scale", F->get()->get_scale(), existing);
-							}
-						}
-					}
-
-				} else if (Object::cast_to<Control>(canvas_item)) {
-
-					Control *ctrl = Object::cast_to<Control>(canvas_item);
-
-					if (key_pos)
-						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_position", ctrl->get_position(), existing);
-					if (key_rot)
-						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_rotation", ctrl->get_rotation_degrees(), existing);
-					if (key_scale)
-						AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(ctrl, "rect_size", ctrl->get_size(), existing);
-				}
-			}
+			_insert_animation_keys(true, true, true, existing);
 
 		} break;
 		case ANIM_INSERT_POS: {
@@ -4866,6 +4886,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
 	key_loc_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_POS));
+	key_loc_button->set_tooltip(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
 	key_rot_button = memnew(Button);
 	key_rot_button->set_toggle_mode(true);
@@ -4873,21 +4894,30 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
 	key_rot_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_ROT));
+	key_rot_button->set_tooltip(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
 	key_scale_button = memnew(Button);
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_flat(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_SCALE));
+	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
-	key_insert_button->set_tooltip(TTR("Insert keys."));
+	key_insert_button->set_tooltip(TTR("Insert keys (based on mask)."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_insert_key", TTR("Insert Key"), KEY_INSERT));
-
 	animation_hb->add_child(key_insert_button);
+	key_auto_insert_button = memnew(Button);
+	key_auto_insert_button->set_flat(true);
+	key_auto_insert_button->set_toggle_mode(true);
+	key_auto_insert_button->set_focus_mode(FOCUS_NONE);
+	//key_auto_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
+	key_auto_insert_button->set_tooltip(TTR("Auto insert keys when objects are translated, rotated on scaled (based on mask).\nKeys are only added to existing tracks, no new tracks will be created.\nKeys must be inserted manually for the first time."));
+	key_auto_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_auto_insert_key", TTR("Auto Insert Key")));
+	animation_hb->add_child(key_auto_insert_button);
 
 	animation_menu = memnew(MenuButton);
 	animation_menu->set_text(TTR("Animation"));
