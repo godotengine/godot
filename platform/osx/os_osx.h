@@ -172,6 +172,7 @@ public:
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	virtual void set_mouse_show(bool p_show);

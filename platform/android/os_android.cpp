@@ -292,14 +292,6 @@ bool OS_Android::can_draw() const {
 	return true; //always?
 }
 
-void OS_Android::set_cursor_shape(CursorShape p_shape) {
-
-	//android really really really has no mouse.. how amazing..
-}
-
-void OS_Android::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-}
-
 void OS_Android::main_loop_begin() {
 
 	if (main_loop)

@@ -490,16 +490,10 @@ void OSIPhone::set_keep_screen_on(bool p_enabled) {
 	_set_keep_screen_on(p_enabled);
 };
 
-void OSIPhone::set_cursor_shape(CursorShape p_shape){
-
-};
-
 String OSIPhone::get_user_data_dir() const {
 
 	return data_dir;
 };
-
-void OSIPhone::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){};
 
 String OSIPhone::get_name() {
 

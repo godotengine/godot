@@ -2041,15 +2041,11 @@ void OS_X11::process_xevents() {
 			case LeaveNotify: {
 				if (main_loop && !mouse_mode_grab)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-				if (input)
-					input->set_mouse_in_window(false);
 
 			} break;
 			case EnterNotify: {
 				if (main_loop && !mouse_mode_grab)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-				if (input)
-					input->set_mouse_in_window(true);
 			} break;
 			case FocusIn:
 				minimized = false;
@@ -2720,6 +2716,11 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 	}
 
 	current_cursor = p_shape;
+}
+
+OS::CursorShape OS_X11::get_cursor_shape() const {
+
+	return current_cursor;
 }
 
 void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
