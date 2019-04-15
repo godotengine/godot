@@ -195,7 +195,9 @@ def configure_msvc(env, manual_msvc_config):
 
     ## Compile/link flags
 
-    env.AppendUnique(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo', '/utf-8'])
+    env.AppendUnique(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
+    if int(env['MSVC_VERSION'].split('.')[0]) >= 14: #vs2015 and later
+        env.AppendUnique(CCFLAGS=['/utf-8'])
     env.AppendUnique(CXXFLAGS=['/TP']) # assume all sources are C++
     if manual_msvc_config: # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
