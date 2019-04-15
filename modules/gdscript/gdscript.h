@@ -273,6 +273,7 @@ struct GDScriptWarning {
 		UNASSIGNED_VARIABLE, // Variable used but never assigned
 		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc)
 		UNUSED_VARIABLE, // Local variable is declared but never used
+		SHADOWED_VARIABLE, // Variable name shadowed by other variable
 		UNUSED_CLASS_VARIABLE, // Class variable is declared but never used in the file
 		UNUSED_ARGUMENT, // Function argument is never used
 		UNREACHABLE_CODE, // Code after a return statement
