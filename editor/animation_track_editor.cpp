@@ -5040,6 +5040,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_mode->add_item(TTR("FPS"));
 	bottom_hb->add_child(snap_mode);
 	snap_mode->connect("item_selected", this, "_snap_mode_changed");
+	snap_mode->set_disabled(true);
 
 	bottom_hb->add_child(memnew(VSeparator));
 
