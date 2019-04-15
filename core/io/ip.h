@@ -74,7 +74,6 @@ protected:
 
 	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;
 	Array _get_local_addresses() const;
-	Array _get_local_addresses_full() const;
 	Array _get_local_interfaces() const;
 
 	static IP *(*_create)();

@@ -265,7 +265,7 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 			continue; // will go back and alloc the right size
 		};
 
-		ERR_EXPLAIN("Call to GetAdaptersAddresses failed with error " + itos(err));
+		ERR_EXPLAIN("Call to GetLocalInterfaces failed with error " + itos(err));
 		ERR_FAIL();
 		return;
 	};
@@ -275,25 +275,7 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	while (adapter != NULL) {
 	
 		Interface_Info info;
-
-		bool found = false;
-		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
-			Interface_Info &c = E->get();
-			if (c.get_name() == adapter->AdapterName) {
-				info = c;
-				found = true;
-				break;
-			}
-		}
-
-		if (!found) {
-			Interface_Info temp;
-			temp.set_name(adapter->FriendlyName);
-			temp.set_name_friendly(adapter->FriendlyName);
-			info = temp;
-		}
-
-		info.set_name(adapter->AdapterName);
+		info.set_name(adapter->FriendlyName);
 		info.set_name_friendly(adapter->FriendlyName);
 
 		IP_ADAPTER_UNICAST_ADDRESS *address = adapter->FirstUnicastAddress;
@@ -374,6 +356,8 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 		if (family != AF_INET && family != AF_INET6)
 			continue;
 
+		Interface_Info info;
+
 		bool found = false;
 		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
 			Interface_Info &c = E->get();
@@ -396,7 +380,7 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 			info.set_ipv4(ip);
 		else
 			info.set_ipv6(ip);
-		
+
 		r_interfaces->push_back(info);
 	}
 
