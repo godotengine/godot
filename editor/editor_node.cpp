@@ -1306,6 +1306,7 @@ void EditorNode::_dialog_action(String p_file) {
 				_save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
+				save_layout();
 
 				if (scene_idx != -1)
 					_discard_changes();
@@ -4069,6 +4070,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const S
 	for (int i = 0; i < scenes.size(); i++) {
 		load_scene(scenes[i]);
 	}
+	save_layout();
 
 	restoring_scenes = false;
 }
