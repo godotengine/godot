@@ -3540,6 +3540,9 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 }
 
 void AnimationTrackEditor::_update_step_spinbox() {
+	if (!animation.is_valid()) {
+		return;
+	}
 	step->set_block_signals(true);
 
 	if (timeline->is_using_fps()) {
