@@ -116,12 +116,13 @@ void main() {
 #ifdef GAUSSIAN_HORIZONTAL
 	vec2 pix_size = pixel_size;
 	pix_size *= 0.5; //reading from larger buffer, so use more samples
+	// sigma 2
 	vec4 color = textureLod(source_color, uv_interp + vec2(0.0, 0.0) * pix_size, lod) * 0.214607;
 	color += textureLod(source_color, uv_interp + vec2(1.0, 0.0) * pix_size, lod) * 0.189879;
-	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.157305;
+	color += textureLod(source_color, uv_interp + vec2(2.0, 0.0) * pix_size, lod) * 0.131514;
 	color += textureLod(source_color, uv_interp + vec2(3.0, 0.0) * pix_size, lod) * 0.071303;
 	color += textureLod(source_color, uv_interp + vec2(-1.0, 0.0) * pix_size, lod) * 0.189879;
-	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.157305;
+	color += textureLod(source_color, uv_interp + vec2(-2.0, 0.0) * pix_size, lod) * 0.131514;
 	color += textureLod(source_color, uv_interp + vec2(-3.0, 0.0) * pix_size, lod) * 0.071303;
 	frag_color = color;
 #endif
