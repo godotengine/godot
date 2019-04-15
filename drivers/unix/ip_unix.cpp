@@ -144,6 +144,49 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 		}
 	}
 };
+
+void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
+
+	using namespace Windows::Networking;
+	using namespace Windows::Networking::Connectivity;
+
+	auto hostnames = NetworkInformation::GetHostNames();
+
+	for (int i = 0; i < hostnames->Size; i++) {
+		
+		if (!((hostnames->GetAt(i)->Type == HostNameType::Ipv4 || hostnames->GetAt(i)->Type == HostNameType::Ipv6) && hostnames->GetAt(i)->IPInformation != nullptr))
+			continue;
+			
+		String name = hostnames->GetAt(i)->DisplayName->Data();
+	
+		Interface_Info info;
+		
+		bool found = false;
+		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
+			Interface_Info &c = E->get();
+			if (c.get_name() == name) {
+				info = c;
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			Interface_Info temp;
+			temp.set_name(name);
+			temp.set_name_friendly(name);
+			info = temp;
+		}
+
+		IP_Address ip = IP_Address(String(hostnames->GetAt(i)->CanonicalName->Data()));
+		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4)
+			info.set_ipv4(ip);
+		if (hostnames->GetAt(i)->Type == HostNameType::Ipv6)
+			info.set_ipv6(ip);
+
+		r_interfaces->push_back(info);
+	}
+}
 #else
 
 void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
@@ -204,6 +247,86 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	memfree(addrs);
 };
 
+void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
+
+	ULONG buf_size = 1024;
+	IP_ADAPTER_ADDRESSES *addrs;
+
+	while (true) {
+
+		addrs = (IP_ADAPTER_ADDRESSES *)memalloc(buf_size);
+		int err = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME,
+				NULL, addrs, &buf_size);
+		if (err == NO_ERROR) {
+			break;
+		};
+		memfree(addrs);
+		if (err == ERROR_BUFFER_OVERFLOW) {
+			continue; // will go back and alloc the right size
+		};
+
+		ERR_EXPLAIN("Call to GetAdaptersAddresses failed with error " + itos(err));
+		ERR_FAIL();
+		return;
+	};
+
+	IP_ADAPTER_ADDRESSES *adapter = addrs;
+
+	while (adapter != NULL) {
+	
+		Interface_Info info;
+
+		bool found = false;
+		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
+			Interface_Info &c = E->get();
+			if (c.get_name() == adapter->AdapterName) {
+				info = c;
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			Interface_Info temp;
+			temp.set_name(adapter->FriendlyName);
+			temp.set_name_friendly(adapter->FriendlyName);
+			info = temp;
+		}
+
+		info.set_name(adapter->AdapterName);
+		info.set_name_friendly(adapter->FriendlyName);
+
+		IP_ADAPTER_UNICAST_ADDRESS *address = adapter->FirstUnicastAddress;
+		while (address != NULL) {
+
+			IP_Address ip;
+
+			if (address->Address.lpSockaddr->sa_family == AF_INET) {
+
+				SOCKADDR_IN *ipv4 = reinterpret_cast<SOCKADDR_IN *>(address->Address.lpSockaddr);
+
+				ip.set_ipv4((uint8_t *)&(ipv4->sin_addr));
+				info.set_ipv4(ip);
+
+			} else if (address->Address.lpSockaddr->sa_family == AF_INET6) { // ipv6
+
+				SOCKADDR_IN6 *ipv6 = reinterpret_cast<SOCKADDR_IN6 *>(address->Address.lpSockaddr);
+
+				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
+				info.set_ipv6(ip);
+			};
+
+			address = address->Next;
+		};
+
+		r_interfaces->push_back(info);
+
+		adapter = adapter->Next;
+	};
+
+	memfree(addrs);
+};
+
 #endif
 
 #else // UNIX
@@ -232,6 +355,53 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	}
 
 	if (ifAddrStruct != NULL) freeifaddrs(ifAddrStruct);
+}
+
+void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
+
+	struct ifaddrs *ifAddrStruct = NULL;
+	struct ifaddrs *ifa = NULL;
+	int family;
+
+	getifaddrs(&ifAddrStruct);
+
+	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+		if (!ifa->ifa_addr)
+			continue;
+
+		family = ifa->ifa_addr->sa_family;
+
+		if (family != AF_INET && family != AF_INET6)
+			continue;
+
+		bool found = false;
+		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
+			Interface_Info &c = E->get();
+			if (c.get_name() == ifa->ifa_name) {
+				info = c;
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			Interface_Info temp;
+			temp.set_name(ifa->ifa_name);
+			temp.set_name_friendly(ifa->ifa_name);
+			info = temp;
+		}
+
+		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);
+		if (ip.is_ipv4())
+			info.set_ipv4(ip);
+		else
+			info.set_ipv6(ip);
+		
+		r_interfaces->push_back(info);
+	}
+
+	if (ifAddrStruct != NULL)
+		freeifaddrs(ifAddrStruct);
 }
 #endif
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ip.h                                                                 */
+/*  interface_info.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,77 +28,83 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IP_H
-#define IP_H
+#include "interface_info.h"
 
-#include "core/io/interface_info.h"
-#include "core/io/ip_address.h"
-#include "core/os/os.h"
+#include <stdio.h>
+#include <string.h>
 
-struct _IP_ResolverPrivate;
+Interface_Info::operator String() const {
 
-class IP : public Object {
-	GDCLASS(IP, Object);
-	OBJ_CATEGORY("Networking");
+	/*
+	if (wildcard)
+		return "*";
 
-public:
-	enum ResolverStatus {
+	if (!valid)
+		return "";
 
-		RESOLVER_STATUS_NONE,
-		RESOLVER_STATUS_WAITING,
-		RESOLVER_STATUS_DONE,
-		RESOLVER_STATUS_ERROR,
+	if (is_ipv4())
+		// IPv4 address mapped to IPv6
+		return itos(field8[12]) + "." + itos(field8[13]) + "." + itos(field8[14]) + "." + itos(field8[15]);
+	String ret;
+	for (int i = 0; i < 8; i++) {
+		if (i > 0)
+			ret = ret + ":";
+		uint16_t num = (field8[i * 2] << 8) + field8[i * 2 + 1];
+		ret = ret + String::num_int64(num, 16);
 	};
+	
+	return ret;
+	*/
 
-	enum Type {
+	return name;
+}
 
-		TYPE_NONE = 0,
-		TYPE_IPV4 = 1,
-		TYPE_IPV6 = 2,
-		TYPE_ANY = 3,
-	};
+IP_Address Interface_Info::get_ipv4() const {
+	return ipv4;
+}
 
-	enum {
-		RESOLVER_MAX_QUERIES = 32,
-		RESOLVER_INVALID_ID = -1
-	};
+void Interface_Info::set_ipv4(const IP_Address &p_ip) {
+	ERR_FAIL_COND(!p_ip.is_valid());
 
-	typedef int ResolverID;
+	ipv4 = p_ip;
+}
 
-private:
-	_IP_ResolverPrivate *resolver;
+IP_Address Interface_Info::get_ipv6() const {
+	return ipv6;
+}
 
-protected:
-	static IP *singleton;
-	static void _bind_methods();
+void Interface_Info::set_ipv6(const IP_Address &p_ip) {
+	ERR_FAIL_COND(!p_ip.is_valid());
 
-	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;
-	Array _get_local_addresses() const;
-	Array _get_local_addresses_full() const;
-	Array _get_local_interfaces() const;
+	ipv6 = p_ip;
+}
 
-	static IP *(*_create)();
+void Interface_Info::set_name(const String &p_name) {
 
-public:
-	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
-	// async resolver hostname
-	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
-	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
-	IP_Address get_resolve_item_address(ResolverID p_id) const;
-	virtual void get_local_addresses(List<IP_Address> *r_addresses) const = 0;
-	virtual void get_local_interfaces(List<Interface_Info> *r_interfaces) const = 0;
-	void erase_resolve_item(ResolverID p_id);
+	name = p_name;
+}
+String Interface_Info::get_name() const {
 
-	void clear_cache(const String &p_hostname = "");
+	return name;
+}
 
-	static IP *get_singleton();
+void Interface_Info::set_name_friendly(const String &p_name) {
+	name_friendly = p_name;
+}
+String Interface_Info::get_name_friendly() const {
 
-	static IP *create();
+	return name_friendly;
+}
 
-	IP();
-	~IP();
-};
+Interface_Info::Interface_Info(const String &p_name, IP_Address p_ipv4, IP_Address p_ipv6) {
+	name = p_name;
+	ipv4 = p_ipv4;
+	ipv4 = p_ipv6;
+}
 
-VARIANT_ENUM_CAST(IP::Type);
-
-#endif // IP_H
+Interface_Info::Interface_Info(const String &p_name, const String &p_name_friendly, IP_Address p_ipv4, IP_Address p_ipv6) {
+	name = p_name;
+	name_friendly = p_name_friendly;
+	ipv4 = p_ipv4;
+	ipv4 = p_ipv6;
+}
