@@ -34,10 +34,13 @@
 #include "core/resource.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
+
+// #include "scene/resources/theme.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class CanvasItem;
+// class Theme;
 
 class StyleBox : public Resource {
 
@@ -47,23 +50,24 @@ class StyleBox : public Resource {
 	float margin[4];
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const = 0;
+	virtual float get_style_margin(Margin p_margin, const Control *p_context = NULL) const = 0;
 	static void _bind_methods();
 
 public:
 	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
 
 	void set_default_margin(Margin p_margin, float p_value);
-	float get_default_margin(Margin p_margin) const;
-	float get_margin(Margin p_margin) const;
-	virtual Size2 get_center_size() const;
+	virtual float get_default_margin(Margin p_margin, const Control *p_context = NULL) const;
+	virtual float get_margin(Margin p_margin, const Control *p_context = NULL) const;
+	virtual Size2 get_center_size(const Control *p_context = NULL) const;
 
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	CanvasItem *get_current_item_drawn() const;
+	float get_dpi_scale(const Control *context) const;
 
-	Size2 get_minimum_size() const;
-	Point2 get_offset() const;
+	virtual Size2 get_minimum_size(const Control *p_context = NULL) const;
+	virtual Point2 get_offset(const Control *p_context = NULL) const;
 
 	StyleBox();
 };
@@ -71,7 +75,7 @@ public:
 class StyleBoxEmpty : public StyleBox {
 
 	GDCLASS(StyleBoxEmpty, StyleBox);
-	virtual float get_style_margin(Margin p_margin) const { return 0; }
+	virtual float get_style_margin(Margin p_margin, const Control *p_context = NULL) const { return 0; }
 
 public:
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const { StyleBox::draw(p_canvas_item, p_rect); }
@@ -101,17 +105,19 @@ private:
 	AxisStretchMode axis_v;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const;
+	virtual float get_style_margin(Margin p_margin, const Control *p_context = NULL) const;
 	static void _bind_methods();
 
 public:
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
-	void set_expand_margin_size_all(float p_expand_margin_size);
-	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_expand_margin_size(Margin p_expand_margin) const;
+	void _update_dpi_texture_cache();
+	// void _set_from_theme(const Ref<Theme> &p_theme);
+	void set_expand_margin_size(Margin p_expand_margin, int p_size);
+	void set_expand_margin_size_all(int p_expand_margin_size);
+	void set_expand_margin_size_individual(int p_left, int p_top, int p_right, int p_bottom);
+	int get_expand_margin(Margin p_expand_margin, const Control *p_context = NULL) const;
 
 	void set_texture_margin(Margin p_margin, float p_size);
-	float get_texture_margin(Margin p_margin, const Control *p_context = NULL) const;
+	float get_texture_margin(Margin p_margin) const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
@@ -124,7 +130,7 @@ public:
 
 	void set_draw_center(bool p_enabled);
 	bool is_draw_center_enabled() const;
-	virtual Size2 get_center_size() const;
+	virtual Size2 get_center_size(const Control *p_context = NULL) const;
 
 	void set_h_axis_stretch_mode(AxisStretchMode p_mode);
 	AxisStretchMode get_h_axis_stretch_mode() const;
@@ -164,7 +170,7 @@ class StyleBoxFlat : public StyleBox {
 	int aa_size;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const;
+	virtual float get_style_margin(Margin p_margin, const Control *p_context = NULL) const;
 	static void _bind_methods();
 
 public:
@@ -181,10 +187,10 @@ public:
 	//BORDER
 	//width
 	void set_border_width_all(int p_size);
-	int get_border_width_min() const;
+	int get_border_width_min(const Control *p_context = NULL) const;
 
 	void set_border_width(Margin p_margin, int p_width);
-	int get_border_width(Margin p_margin) const;
+	int get_border_width(Margin p_margin, const Control *p_context = NULL) const;
 
 	//blend
 	void set_border_blend(bool p_blend);
@@ -193,19 +199,19 @@ public:
 	//CORNER
 	void set_corner_radius_all(int radius);
 	void set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_botton_right, const int radius_bottom_left);
-	int get_corner_radius_min() const;
+	int get_corner_radius_min(const Control *p_context = NULL) const;
 
 	void set_corner_radius(Corner p_corner, const int radius);
-	int get_corner_radius(Corner p_corner) const;
+	int get_corner_radius(Corner p_corner, const Control *p_context = NULL) const;
 
 	void set_corner_detail(const int &p_corner_detail);
 	int get_corner_detail() const;
 
 	//EXPANDS
-	void set_expand_margin_size(Margin p_expand_margin, float p_size);
-	void set_expand_margin_size_all(float p_expand_margin_size);
-	void set_expand_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
-	float get_expand_margin_size(Margin p_expand_margin) const;
+	void set_expand_margin_size(Margin p_expand_margin, int p_size);
+	void set_expand_margin_size_all(int p_expand_margin_size);
+	void set_expand_margin_size_individual(int p_left, int p_top, int p_right, int p_bottom);
+	int get_expand_margin(Margin p_expand_margin, const Control *p_context = NULL) const;
 
 	//DRAW CENTER
 	void set_draw_center(bool p_enabled);
@@ -216,7 +222,7 @@ public:
 	Color get_shadow_color() const;
 
 	void set_shadow_size(const int &p_size);
-	int get_shadow_size() const;
+	int get_shadow_size(const Control *p_context = NULL) const;
 
 	//ANTI_ALIASING
 	void set_anti_aliased(const bool &p_anti_aliased);
@@ -225,7 +231,7 @@ public:
 	void set_aa_size(const int &p_aa_size);
 	int get_aa_size() const;
 
-	virtual Size2 get_center_size() const;
+	virtual Size2 get_center_size(const Control *p_context = NULL) const;
 
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
@@ -244,7 +250,7 @@ class StyleBoxLine : public StyleBox {
 	float grow_end;
 
 protected:
-	virtual float get_style_margin(Margin p_margin) const;
+	virtual float get_style_margin(Margin p_margin, const Control *p_context = NULL) const;
 	static void _bind_methods();
 
 public:
@@ -263,12 +269,41 @@ public:
 	void set_grow_end(float p_grow);
 	float get_grow_end() const;
 
-	virtual Size2 get_center_size() const;
+	virtual Size2 get_center_size(const Control *p_context = NULL) const;
 
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	StyleBoxLine();
 	~StyleBoxLine();
+};
+
+class ScaledThemeStylebox : public StyleBox {
+
+private:
+	Ref<StyleBox> unscaled_stylebox;
+	const Control *context_control;
+
+protected:
+	virtual float get_style_margin(Margin p_margin, const Control *p_context = NULL) const { return 0.0; };
+
+public:
+	void set_unscaled_stylebox(const Ref<StyleBox> p_stylebox);
+	Ref<Texture> get_unscaled_stylebox() const;
+
+	void set_context_control(const Control *p_control);
+	const Control *get_context_control() const;
+
+	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const { return unscaled_stylebox->test_mask(p_point, p_rect); };
+	virtual float get_default_margin(Margin p_margin, const Control *p_context = NULL) const { return unscaled_stylebox->get_default_margin(p_margin, context_control); };
+	virtual float get_margin(Margin p_margin, const Control *p_context = NULL) const { return unscaled_stylebox->get_margin(p_margin, context_control); };
+	virtual Size2 get_center_size(const Control *p_context = NULL) const { return unscaled_stylebox->get_center_size(context_control); };
+
+	virtual Size2 get_minimum_size(const Control *p_context = NULL) const { return unscaled_stylebox->get_minimum_size(context_control); };
+	virtual Point2 get_offset(const Control *p_context = NULL) const { return unscaled_stylebox->get_offset(context_control); };
+
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const { unscaled_stylebox->draw(p_canvas_item, p_rect); };
+
+	ScaledThemeStylebox();
 };
 
 #endif
