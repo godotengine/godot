@@ -687,7 +687,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("draw_relationship_lines", "Tree", relationship_line_opacity >= 0.01);
 	theme->set_constant("draw_guides", "Tree", relationship_line_opacity < 0.01);
-	theme->set_constant("scroll_border", "Tree", default_margin_size * EDSCALE);
+	theme->set_constant("scroll_border", "Tree", 40 * EDSCALE);
 	theme->set_constant("scroll_speed", "Tree", 12);
 
 	Ref<StyleBoxFlat> style_tree_btn = style_default->duplicate();
