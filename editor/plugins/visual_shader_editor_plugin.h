@@ -143,6 +143,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _node_selected(Object *p_node);
 
 	void _delete_request(int);
+	void _on_nodes_delete();
 
 	void _removed_from_graph();
 
