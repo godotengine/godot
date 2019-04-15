@@ -717,6 +717,9 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 		return;
 
 	p_new_len = MAX(0.001, p_new_len);
+	if (use_fps && animation->get_step() > 0) {
+		p_new_len *= animation->get_step();
+	}
 
 	editing = true;
 	undo_redo->create_action(TTR("Change Animation Length"));
@@ -1017,7 +1020,11 @@ void AnimationTimelineEdit::update_values() {
 		return;
 
 	editing = true;
-	length->set_value(animation->get_length());
+	if (use_fps && animation->get_step() > 0) {
+		length->set_value(animation->get_length() / animation->get_step());
+	} else {
+		length->set_value(animation->get_length());
+	}
 	loop->set_pressed(animation->has_loop());
 	editing = false;
 }
@@ -1104,6 +1111,7 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	use_fps = p_use_fps;
+	update_values();
 	update();
 }
 bool AnimationTimelineEdit::is_using_fps() const {
@@ -1164,7 +1172,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb->add_child(time_icon);
 	length = memnew(EditorSpinSlider);
 	length->set_min(0.001);
-	length->set_max(3600);
+	length->set_max(36000);
 	length->set_step(0.01);
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
