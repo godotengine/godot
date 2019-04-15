@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  webrtc_peer.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,51 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "core/error_macros.h"
-#include "core/project_settings.h"
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
-#include "emws_peer.h"
-#include "emws_server.h"
-#else
-#include "lws_client.h"
-#include "lws_peer.h"
-#include "lws_server.h"
-#endif
+#ifndef WEBRTC_PEER_H
+#define WEBRTC_PEER_H
 
-void register_websocket_types() {
-#define _SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);          \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+#include "core/io/packet_peer.h"
 
-	// Client buffers project settings
-	_SET_HINT(WSC_IN_BUF, 64, 4096);
-	_SET_HINT(WSC_IN_PKT, 1024, 16384);
-	_SET_HINT(WSC_OUT_BUF, 64, 4096);
-	_SET_HINT(WSC_OUT_PKT, 1024, 16384);
+class WebRTCPeer : public PacketPeer {
+	GDCLASS(WebRTCPeer, PacketPeer);
 
-	// Server buffers project settings
-	_SET_HINT(WSS_IN_BUF, 64, 4096);
-	_SET_HINT(WSS_IN_PKT, 1024, 16384);
-	_SET_HINT(WSS_OUT_BUF, 64, 4096);
-	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
+public:
+	enum WriteMode {
+		WRITE_MODE_TEXT,
+		WRITE_MODE_BINARY,
+	};
 
-#ifdef JAVASCRIPT_ENABLED
-	EMWSPeer::make_default();
-	EMWSClient::make_default();
-	EMWSServer::make_default();
-#else
-	LWSPeer::make_default();
-	LWSClient::make_default();
-	LWSServer::make_default();
-#endif
+	enum ConnectionState {
+		STATE_NEW,
+		STATE_CONNECTING,
+		STATE_CONNECTED,
+		STATE_DISCONNECTED,
+		STATE_FAILED,
+		STATE_CLOSED
+	};
 
-	ClassDB::register_virtual_class<WebSocketMultiplayerPeer>();
-	ClassDB::register_custom_instance_class<WebSocketServer>();
-	ClassDB::register_custom_instance_class<WebSocketClient>();
-	ClassDB::register_custom_instance_class<WebSocketPeer>();
-}
+protected:
+	static void _bind_methods();
+	static WebRTCPeer *(*_create)();
 
-void unregister_websocket_types() {}
+public:
+	virtual void set_write_mode(WriteMode mode) = 0;
+	virtual WriteMode get_write_mode() const = 0;
+	virtual bool was_string_packet() const = 0;
+	virtual ConnectionState get_connection_state() const = 0;
+
+	virtual Error create_offer() = 0;
+	virtual Error set_remote_description(String type, String sdp) = 0;
+	virtual Error set_local_description(String type, String sdp) = 0;
+	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName) = 0;
+	virtual Error poll() = 0;
+
+	/** Inherited from PacketPeer: **/
+	virtual int get_available_packet_count() const = 0;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) = 0; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
+
+	virtual int get_max_packet_size() const = 0;
+
+	static Ref<WebRTCPeer> create_ref();
+	static WebRTCPeer *create();
+
+	WebRTCPeer();
+	~WebRTCPeer();
+};
+
+VARIANT_ENUM_CAST(WebRTCPeer::WriteMode);
+VARIANT_ENUM_CAST(WebRTCPeer::ConnectionState);
+#endif // WEBRTC_PEER_H
