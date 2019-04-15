@@ -261,8 +261,9 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 
 	Map<ObjectID, AreaState>::Element *E = area_map.find(objid);
 
-	ERR_FAIL_COND(!area_in && !E);
-
+	if (!area_in && !E) {
+		return; //likely removed from the tree
+	}
 	locked = true;
 
 	if (area_in) {
