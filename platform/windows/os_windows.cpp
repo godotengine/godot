@@ -346,6 +346,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				control_mem = false;
 				shift_mem = false;
 			} else { // WM_INACTIVE
+				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 				alt_mem = false;
 			};
@@ -786,6 +787,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
+			input->release_pressed_events();
 			move_timer_id = SetTimer(hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC)NULL);
 		} break;
 		case WM_EXITSIZEMOVE: {

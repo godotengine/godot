@@ -2076,7 +2076,9 @@ void OS_X11::process_xevents() {
 
 			case FocusOut:
 				window_has_focus = false;
+				input->release_pressed_events();
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+
 				if (mouse_mode_grab) {
 					//dear X11, I try, I really try, but you never work, you do whathever you want.
 					if (mouse_mode == MOUSE_MODE_CAPTURED) {
