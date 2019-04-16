@@ -60,8 +60,27 @@ class ConnectDialogBinds : public Object {
 
 	GDCLASS(ConnectDialogBinds, Object);
 
-public:
+	Vector<PropertyInfo> locked_params;
 	Vector<Variant> params;
+
+public:
+
+	void init(Vector<PropertyInfo> p_properties, Vector<Variant> p_params) {
+		locked_params.clear();
+		params.clear();
+		locked_params = p_properties;
+		params = p_params;
+
+		notify_changed();
+	}
+
+	Vector<PropertyInfo> get_locked_params() {
+		return locked_params;
+	}
+
+	Vector<Variant> *get_params() {
+		return &params;
+	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 
@@ -85,13 +104,31 @@ public:
 			int which = name.get_slice("/", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			r_ret = params[which];
-		} else
-			return false;
 
-		return true;
+			return true;
+		} else {
+			for (int i = 0; i < locked_params.size(); i++) {
+				if (locked_params[i].name == p_name) {
+					//r_ret = Variant::get_type_name(locked_params[i].type);
+					r_ret = locked_params[i].class_name != StringName() ? locked_params[i].class_name : Variant::get_type_name(locked_params[i].type);
+
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
+
+		for (int i = 0; i < locked_params.size(); i++) {
+
+			PropertyInfo info = locked_params[i];
+			//p_list->push_back(locked_params[i]);
+
+			p_list->push_back(PropertyInfo(Variant::STRING, info.name, PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, "", PROPERTY_USAGE_EDITOR));
+		}
 
 		for (int i = 0; i < params.size(); i++) {
 			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/" + itos(i + 1)));
@@ -112,7 +149,7 @@ Adds a new parameter bind to connection.
 */
 void ArgumentsBindsDialog::_add_bind() {
 
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
+	if (cdbinds->get_params()->size() >= VARIANT_ARG_MAX)
 		return;
 	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
@@ -152,8 +189,10 @@ void ArgumentsBindsDialog::_add_bind() {
 
 	ERR_FAIL_COND(value.get_type() == Variant::NIL);
 
-	cdbinds->params.push_back(value);
+	cdbinds->get_params()->push_back(value);
 	cdbinds->notify_changed();
+
+	emit_signal("bindings_changed");
 }
 
 /*
@@ -166,9 +205,11 @@ void ArgumentsBindsDialog::_remove_bind() {
 		return;
 	int idx = st.get_slice("/", 1).to_int() - 1;
 
-	ERR_FAIL_INDEX(idx, cdbinds->params.size());
-	cdbinds->params.remove(idx);
+	ERR_FAIL_INDEX(idx, cdbinds->get_params()->size());
+	cdbinds->get_params()->remove(idx);
 	cdbinds->notify_changed();
+
+	emit_signal("bindings_changed");
 }
 
 void ArgumentsBindsDialog::_notification(int p_what) {
@@ -182,18 +223,23 @@ void ArgumentsBindsDialog::_bind_methods() {
 
 	ClassDB::bind_method("_add_bind", &ArgumentsBindsDialog::_add_bind);
 	ClassDB::bind_method("_remove_bind", &ArgumentsBindsDialog::_remove_bind);
+
+	ADD_SIGNAL(MethodInfo("bindings_changed"));
+}
+
+Vector<PropertyInfo> ArgumentsBindsDialog::get_params() const {
+
+	return cdbinds->get_locked_params();
 }
 
 Vector<Variant> ArgumentsBindsDialog::get_binds() const {
 
-	return cdbinds->params;
+	return *cdbinds->get_params();
 }
 
-void ArgumentsBindsDialog::init(Vector<Variant> p_binds) {
+void ArgumentsBindsDialog::init(Vector<PropertyInfo> p_arguments, Vector<Variant> p_binds) {
 
-	cdbinds->params.clear();
-	cdbinds->params = p_binds;
-	cdbinds->notify_changed();
+	cdbinds->init(p_arguments, p_binds);
 }
 
 ArgumentsBindsDialog::ArgumentsBindsDialog() {
@@ -249,7 +295,7 @@ ArgumentsBindsDialog::ArgumentsBindsDialog() {
 
 	bind_editor = memnew(EditorInspector);
 
-	vb_container->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
+	vb_container->add_margin_child(TTR("Call Arguments:"), bind_editor, true);
 
 	set_as_toplevel(true);
 
@@ -320,7 +366,7 @@ void ConnectDialog::_mode_changed(int p_mode) {
 	if (show_methods) {
 		new_rect.size = Size2(900, 500) * EDSCALE;
 		connect_to_label->set_text(TTR("Connect To Node:"));
-		tree->set_connect_to_script_mode(false);
+		tree->set_connect_mode(SceneTreeEditor::ConnectMode::CONNECT_TO_NODE);
 		error_label->hide();
 
 		if (tree->get_selected()) {
@@ -329,7 +375,7 @@ void ConnectDialog::_mode_changed(int p_mode) {
 	} else {
 		new_rect.size = Size2(700, 500) * EDSCALE;
 		connect_to_label->set_text(TTR("Connect To Script:"));
-		tree->set_connect_to_script_mode(true);
+		tree->set_connect_mode(SceneTreeEditor::ConnectMode::CONNECT_TO_SCRIPT);
 
 		if (!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root())) {
 			error_label->show();
@@ -381,6 +427,11 @@ void ConnectDialog::_edit_arguments_pressed() {
 	args_dialog->set_title(TTR("Edit Signal Arguments"));
 }
 
+void ConnectDialog::_bindings_changed() {
+
+	args_info->set_text(vformat(TTR("Connection has %d argument(s)."), args_dialog->get_params().size() + args_dialog->get_binds().size()));
+}
+
 void ConnectDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
@@ -398,6 +449,7 @@ void ConnectDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
 	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
 	ClassDB::bind_method("_edit_arguments_pressed", &ConnectDialog::_edit_arguments_pressed);
+	ClassDB::bind_method("_bindings_changed", &ConnectDialog::_bindings_changed);
 
 	ADD_SIGNAL(MethodInfo("connected"));
 }
@@ -493,12 +545,29 @@ void ConnectDialog::init(Connection c, bool bEdit) {
 	oneshot->set_pressed(bOneshot);
 	*/
 
-	args_dialog->init(c.binds);
+	Vector<PropertyInfo> arguments;
+
+	List<MethodInfo> signal_list;
+	c.source->get_signal_list(&signal_list);
+
+	for (List<MethodInfo>::Element *E = signal_list.front(); E; E = E->next()) {
+		if (E->get().name == signal) {
+			for (List<PropertyInfo>::Element *A = E->get().arguments.front(); A; A = A->next()) {
+				arguments.push_back(A->get());
+			}
+			break;
+		}
+	}
+
+	args_dialog->init(arguments, c.binds);
 	/*
 	cdbinds->params.clear();
 	cdbinds->params = c.binds;
 	cdbinds->notify_changed();
 	*/
+
+	_bindings_changed();
+	//args_info->set_text(vformat(TTR("Connection has %d argument(s)."), arguments.size() + c.binds.size()));
 
 	bEditMode = bEdit;
 }
@@ -538,7 +607,8 @@ ConnectDialog::ConnectDialog() {
 	tree = memnew(SceneTreeEditor(false));
 	tree->get_scene_tree()->connect("item_activated", this, "_ok");
 	tree->connect("node_selected", this, "_tree_node_selected");
-	tree->set_connect_to_script_mode(true);
+	tree->set_show_enabled_subscene(true);
+	tree->set_connect_mode(SceneTreeEditor::ConnectMode::CONNECT_TO_SCRIPT);
 
 	Node *mc = vbc_left->add_margin_child(TTR("Connect To Script:"), tree, true);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
@@ -548,10 +618,12 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_child(error_label);
 	error_label->hide();
 
+	/*
 	vbc_right = memnew(VBoxContainer);
 	main_hb->add_child(vbc_right);
 	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
 	vbc_right->hide();
+	*/
 
 	selector_right = memnew(PropertySelector);
 	main_hb->add_child(selector_right);
@@ -609,19 +681,21 @@ ConnectDialog::ConnectDialog() {
 	args_hb->set_alignment(BoxContainer::AlignMode::ALIGN_END);
 	vbc_left->add_child(args_hb);
 
+	args_info = memnew(Label);
+	args_info->set_text("");
+	args_info->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("disabled_font_color", "Editor"));
+	args_info->set_h_size_flags(SIZE_EXPAND);
+	args_hb->add_child(args_info);
+
 	edit_args = memnew(ToolButton);
 	edit_args->set_text(TTR("Edit Arguments..."));
 	edit_args->set_h_size_flags(SIZE_FILL);
 	edit_args->connect("pressed", this, "_edit_arguments_pressed");
 	args_hb->add_child(edit_args);
 
-	args_info = memnew(Label);
-	args_info->set_text("");
-	args_info->set_h_size_flags(SIZE_EXPAND);
-	//args_hb->add_child(args_info);
-
 	args_dialog = memnew(ArgumentsBindsDialog);
 	args_dialog->set_as_toplevel(true);
+	args_dialog->connect("bindings_changed", this, "_bindings_changed");
 	add_child(args_dialog);
 
 	/*

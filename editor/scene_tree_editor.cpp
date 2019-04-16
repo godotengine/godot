@@ -48,7 +48,7 @@ Node *SceneTreeEditor::get_scene_node() {
 
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 
-	if (connect_to_script_mode) {
+	if (connect_mode != ConnectMode::NONE) {
 		return; //dont do anything in this mode
 	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
@@ -193,19 +193,33 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	item->set_icon(0, icon);
 	item->set_metadata(0, p_node->get_path());
 
-	if (connect_to_script_mode) {
+	if (connect_mode != ConnectMode::NONE) {
+
 		Color accent = get_color("accent_color", "Editor");
 
 		if (!p_node->get_script().is_null()) {
 			//has script
-			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
-		} else {
-			//has no script
-			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
-			item->set_selectable(0, false);
-			accent.a *= 0.7;
+			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, Ref<Script>(p_node->get_script())->get_path());
 		}
-
+		if (p_node != get_scene_node() && p_node->get_filename() != "") {
+			//it's an instanced scene
+			item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, p_node->get_filename());
+			item->set_tooltip(0, TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class());
+		}
+		if (connect_mode == ConnectMode::CONNECT_TO_SCRIPT) {
+			if (p_node->get_script().is_null()) {
+				//has no script
+				item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+				item->set_selectable(0, false);
+				accent.a *= 0.7;
+			}
+		} else if (connect_mode == ConnectMode::CONNECT_TO_NODE) {
+			if (part_of_subscene && valid_types.size() == 0) {
+				//it's part of an instanced scene
+				item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
+				accent.a *= 0.7;
+			}
+		}
 		if (marked.has(p_node)) {
 			item->set_text(0, String(p_node->get_name()) + " " + TTR("(Connecting From)"));
 
@@ -220,9 +234,6 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 	} else if (marked.has(p_node)) {
 
-		if (!connect_to_script_mode) {
-			item->set_selectable(0, marked_selectable);
-		}
 		item->set_custom_color(0, get_color("error_color", "Editor"));
 	} else if (!marked_selectable && !marked_children_selectable) {
 
@@ -1002,8 +1013,8 @@ void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 	update_timer->start();
 }
 
-void SceneTreeEditor::set_connect_to_script_mode(bool p_enable) {
-	connect_to_script_mode = p_enable;
+void SceneTreeEditor::set_connect_mode(ConnectMode p_mode) {
+	connect_mode = p_mode;
 	update_tree();
 }
 
@@ -1049,7 +1060,7 @@ void SceneTreeEditor::_bind_methods() {
 
 SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_open_instance) {
 
-	connect_to_script_mode = false;
+	connect_mode = ConnectMode::NONE;
 	undo_redo = NULL;
 	tree_dirty = true;
 	selected = NULL;

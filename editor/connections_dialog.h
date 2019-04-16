@@ -67,9 +67,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	Vector<PropertyInfo> get_params() const;
 	Vector<Variant> get_binds() const;
 
-	void init(Vector<Variant> p_binds);
+	void init(Vector<PropertyInfo> p_arguments, Vector<Variant> p_binds);
 
 	ArgumentsBindsDialog();
 	~ArgumentsBindsDialog();
@@ -101,7 +102,7 @@ private:
 	//ConnectDialogBinds *cdbinds;
 	bool bEditMode;
 	NodePath dst_path;
-	VBoxContainer *vbc_right;
+	//VBoxContainer *vbc_right;
 	PropertySelector *selector_right;
 
 	SceneTreeEditor *tree;
@@ -125,6 +126,7 @@ private:
 	void _settings_flags_changed(int p_setting_idx);
 	void _set_settings_flags(bool p_deferred, bool p_oneshot);
 	void _edit_arguments_pressed();
+	void _bindings_changed();
 
 protected:
 	void _notification(int p_what);

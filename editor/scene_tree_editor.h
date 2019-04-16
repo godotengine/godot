@@ -44,6 +44,14 @@ class SceneTreeEditor : public Control {
 
 	GDCLASS(SceneTreeEditor, Control);
 
+public:
+	enum ConnectMode {
+		NONE = 0,
+		CONNECT_TO_SCRIPT = 1,
+		CONNECT_TO_NODE = 2
+	};
+
+private:
 	EditorSelection *editor_selection;
 
 	enum {
@@ -67,7 +75,7 @@ class SceneTreeEditor : public Control {
 	AcceptDialog *error;
 	AcceptDialog *warning;
 
-	bool connect_to_script_mode;
+	ConnectMode connect_mode;
 
 	int blocked;
 
@@ -153,7 +161,7 @@ public:
 
 	void update_tree() { _update_tree(); }
 
-	void set_connect_to_script_mode(bool p_enable);
+	void set_connect_mode(ConnectMode p_mode);
 
 	Tree *get_scene_tree() { return tree; }
 
