@@ -1021,6 +1021,7 @@ void FileSystemDock::_try_move_item(const FileOrFolder &p_item, const String &p_
 				for (int j = 0; j < ed->get_edited_scene_count(); j++) {
 					if (ed->get_scene_path(j) == file_changed_paths[i]) {
 						ed->get_edited_scene_root(j)->set_filename(new_item_path);
+						editor->save_layout();
 						break;
 					}
 				}
