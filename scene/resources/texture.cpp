@@ -82,7 +82,7 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture::get_data);
 
 	ADD_GROUP("Flags", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface"), "set_flags", "get_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Mipmaps,Repeat,Filter,Anisotropic Linear,Convert to Linear,Mirrored Repeat,Video Surface,Clamp Border"), "set_flags", "get_flags");
 	ADD_GROUP("", "");
 
 	BIND_ENUM_CONSTANT(FLAGS_DEFAULT);
@@ -93,6 +93,7 @@ void Texture::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_CONVERT_TO_LINEAR);
 	BIND_ENUM_CONSTANT(FLAG_MIRRORED_REPEAT);
 	BIND_ENUM_CONSTANT(FLAG_VIDEO_SURFACE);
+	BIND_ENUM_CONSTANT(FLAG_CLAMP_BORDER);
 }
 
 Texture::Texture() {

@@ -1,3 +1,4 @@
+
 /*************************************************************************/
 /*  rasterizer_storage_gles3.cpp                                         */
 /*************************************************************************/
@@ -832,11 +833,14 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // raw Filtering
 	}
 
-	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT)) && texture->target != GL_TEXTURE_CUBE_MAP) {
+	if (((texture->flags & VS::TEXTURE_FLAG_REPEAT) || (texture->flags & (VS::TEXTURE_FLAG_MIRRORED_REPEAT | VS::TEXTURE_FLAG_CLAMP_BORDER))) && texture->target != GL_TEXTURE_CUBE_MAP) {
 
 		if (texture->flags & VS::TEXTURE_FLAG_MIRRORED_REPEAT) {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		} else if (texture->flags & VS::TEXTURE_FLAG_CLAMP_BORDER) {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 		} else {
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
