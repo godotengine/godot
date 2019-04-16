@@ -53,21 +53,20 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			err = FAILED;
 		}
 		// Check whether we can load it
-		switch (bits_per_pixel) {
-			case 1:
-				// Requires bit unpacking
-				ERR_FAIL_COND_V(width % 8 != 0, ERR_UNAVAILABLE);
-				ERR_FAIL_COND_V(height % 8 != 0, ERR_UNAVAILABLE);
-			case 4:
-				ERR_FAIL_COND_V(width % 2 != 0, ERR_UNAVAILABLE);
-				ERR_FAIL_COND_V(height % 2 != 0, ERR_UNAVAILABLE);
-			case 8:
-			case 24:
-			case 32:
-				break;
-			default: {
-				ERR_FAIL_V(ERR_UNAVAILABLE);
-			}
+
+		if (bits_per_pixel == 1) {
+			// Requires bit unpacking...
+			ERR_FAIL_COND_V(width % 8 != 0, ERR_UNAVAILABLE);
+			ERR_FAIL_COND_V(height % 8 != 0, ERR_UNAVAILABLE);
+
+		} else if (bits_per_pixel == 4) {
+			// Requires bit unpacking...
+			ERR_FAIL_COND_V(width % 2 != 0, ERR_UNAVAILABLE);
+			ERR_FAIL_COND_V(height % 2 != 0, ERR_UNAVAILABLE);
+
+		} else if (bits_per_pixel == 16) {
+
+			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 		if (err == OK) {
 			// Palette data
@@ -109,16 +108,10 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			PoolVector<uint8_t> image_data;
 			int image_data_len = 0;
 
-			switch (bits_per_pixel) {
-				case 1:
-				case 4:
-				case 8: { // indexed
-					image_data_len = width * height;
-				} break;
-				case 24:
-				case 32: { // color
-					image_data_len = width * height * 4;
-				} break;
+			if (bits_per_pixel <= 8) { // indexed
+				image_data_len = width * height;
+			} else { // color
+				image_data_len = width * height * 4;
 			}
 			ERR_FAIL_COND_V(image_data_len == 0, ERR_BUG);
 			err = image_data.resize(image_data_len);
