@@ -52,13 +52,21 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		if (p_header.bmp_info_header.bmp_compression != 0) {
 			err = FAILED;
 		}
+		// Check whether we can load it
 		switch (bits_per_pixel) {
+			case 1:
+				// Requires bit unpacking
+				ERR_FAIL_COND_V(width % 8 != 0, ERR_UNAVAILABLE);
+				ERR_FAIL_COND_V(height % 8 != 0, ERR_UNAVAILABLE);
+			case 4:
+				ERR_FAIL_COND_V(width % 2 != 0, ERR_UNAVAILABLE);
+				ERR_FAIL_COND_V(height % 2 != 0, ERR_UNAVAILABLE);
 			case 8:
 			case 24:
 			case 32:
 				break;
 			default: {
-				err = ERR_UNAVAILABLE;
+				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
 		}
 		if (err == OK) {
@@ -99,29 +107,65 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			}
 			// Pixel data (or index data)
 			PoolVector<uint8_t> image_data;
+			int image_data_len = 0;
 
 			switch (bits_per_pixel) {
-				case 8: {
-					err = image_data.resize(width * height * 2);
+				case 1:
+				case 4:
+				case 8: { // indexed
+					image_data_len = width * height;
 				} break;
-				default: {
-					err = image_data.resize(width * height * 4);
-				}
+				case 24:
+				case 32: { // color
+					image_data_len = width * height * 4;
+				} break;
 			}
+			ERR_FAIL_COND_V(image_data_len == 0, ERR_BUG);
+			err = image_data.resize(image_data_len);
+
 			PoolVector<uint8_t>::Write image_data_w = image_data.write();
 			uint8_t *write_buffer = image_data_w.ptr();
 
-			const uint32_t line_width = ((width * bits_per_pixel / 8) + 3) & ~3;
+			const uint32_t width_bytes = width * bits_per_pixel / 8;
+			const uint32_t line_width = (width_bytes + 3) & ~3;
+			const uint32_t w = bits_per_pixel >= 24 ? width : width_bytes;
+
 			const uint8_t *line = p_buffer + (line_width * (height - 1));
 
 			for (unsigned int i = 0; i < height; i++) {
 				const uint8_t *line_ptr = line;
-				for (unsigned int j = 0; j < width; j++) {
+
+				for (unsigned int j = 0; j < w; j++) {
 					switch (bits_per_pixel) {
+						case 1: {
+							uint8_t color_index = *line_ptr;
+
+							write_buffer[index + 0] = (color_index >> 7) & 1;
+							write_buffer[index + 1] = (color_index >> 6) & 1;
+							write_buffer[index + 2] = (color_index >> 5) & 1;
+							write_buffer[index + 3] = (color_index >> 4) & 1;
+							write_buffer[index + 4] = (color_index >> 3) & 1;
+							write_buffer[index + 5] = (color_index >> 2) & 1;
+							write_buffer[index + 6] = (color_index >> 1) & 1;
+							write_buffer[index + 7] = (color_index >> 0) & 1;
+
+							index += 8;
+							line_ptr += 1;
+						} break;
+						case 4: {
+							uint8_t color_index = *line_ptr;
+
+							write_buffer[index + 0] = (color_index >> 4) & 0x0f;
+							write_buffer[index + 1] = color_index & 0x0f;
+
+							index += 2;
+							line_ptr += 1;
+						} break;
 						case 8: {
 							uint8_t color_index = *line_ptr;
 
 							write_buffer[index] = color_index;
+
 							index += 1;
 							line_ptr += 1;
 						} break;
@@ -132,6 +176,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 							write_buffer[index + 1] = (color >> 8) & 0xff;
 							write_buffer[index + 0] = (color >> 16) & 0xff;
 							write_buffer[index + 3] = 0xff;
+
 							index += 4;
 							line_ptr += 3;
 						} break;
@@ -142,6 +187,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 							write_buffer[index + 1] = (color >> 8) & 0xff;
 							write_buffer[index + 0] = (color >> 16) & 0xff;
 							write_buffer[index + 3] = color >> 24;
+
 							index += 4;
 							line_ptr += 4;
 						} break;
@@ -178,7 +224,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 			// Info Header
 			bmp_header.bmp_info_header.bmp_header_size = f->get_32();
-			ERR_FAIL_COND_V(bmp_header.bmp_info_header.bmp_header_size < 40, ERR_FILE_CORRUPT);
+			ERR_FAIL_COND_V(bmp_header.bmp_info_header.bmp_header_size < BITMAP_INFO_HEADER_MIN_SIZE, ERR_FILE_CORRUPT);
 
 			bmp_header.bmp_info_header.bmp_width = f->get_32();
 			bmp_header.bmp_info_header.bmp_height = f->get_32();
