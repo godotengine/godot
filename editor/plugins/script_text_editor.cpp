@@ -81,6 +81,8 @@ void ScriptTextEditor::set_edited_resource(const RES &p_res) {
 
 	emit_signal("name_changed");
 	code_editor->update_line_and_column();
+
+	_validate_script();
 }
 
 void ScriptTextEditor::_update_member_keywords() {
