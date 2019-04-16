@@ -3106,9 +3106,9 @@ VisualShaderNodeFlipbook::PortType VisualShaderNodeFlipbook::get_input_port_type
 String VisualShaderNodeFlipbook::get_input_port_name(int p_port) const {
 	switch (p_port) {
 		case 0:
-			return "time";
+			return "step";
 		case 1:
-			return "texture value";
+			return "frames";
 		case 2:
 			return "texture 1";
 		case 3:
