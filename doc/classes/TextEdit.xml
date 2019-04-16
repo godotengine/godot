@@ -401,9 +401,10 @@
 			String value of the [TextEdit].
 		</member>
 		<member name="v_scroll_speed" type="float" setter="set_v_scroll_speed" getter="get_v_scroll_speed">
-			If [code]true[/code], enables text wrapping when it goes beyond he edge of what is visible.
+			Vertical scroll sensitivity.
 		</member>
 		<member name="wrap_enabled" type="bool" setter="set_wrap_enabled" getter="is_wrap_enabled">
+			If [code]true[/code], enables text wrapping when it goes beyond the edge of what is visible.
 		</member>
 	</members>
 	<signals>
