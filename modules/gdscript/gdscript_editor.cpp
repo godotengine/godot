@@ -2458,11 +2458,11 @@ static void _find_call_arguments(GDScriptCompletionContext &p_context, const GDS
 	r_forced = r_result.size() > 0;
 }
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 
 	GDScriptParser parser;
 
-	parser.parse(p_code, p_base_path, false, "", true);
+	parser.parse(p_code, p_path.get_base_dir(), false, p_path, true);
 	r_forced = false;
 	Set<String> options;
 	GDScriptCompletionContext context;
@@ -2473,7 +2473,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 	if (!context._class || context._class->owner == NULL) {
 		context.base = p_owner;
-		context.base_path = p_base_path;
+		context.base_path = p_path.get_base_dir();
 	}
 
 	bool is_function = false;
@@ -2879,7 +2879,7 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 #else
 
-Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
+Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint) {
 	return OK;
 }
 

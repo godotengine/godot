@@ -368,7 +368,7 @@ public:
 	virtual bool supports_builtin_mode() const;
 	/* TODO? */ virtual int find_function(const String &p_function, const String &p_code) const { return -1; }
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
-	/* TODO? */ Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	/* TODO? */ Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }
 	virtual String _get_indentation() const;
 	/* TODO? */ virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {}
 	/* TODO */ virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) {}
