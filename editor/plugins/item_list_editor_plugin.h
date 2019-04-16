@@ -157,7 +157,7 @@ public:
 	virtual void set_item_enabled(int p_idx, int p_enabled) { pp->set_item_disabled(p_idx, !p_enabled); }
 	virtual bool is_item_enabled(int p_idx) const { return !pp->is_item_disabled(p_idx); }
 
-	virtual void set_item_id(int p_idx, int p_id) { pp->set_item_id(p_idx, p_idx); }
+	virtual void set_item_id(int p_idx, int p_id) { pp->set_item_id(p_idx, p_id); }
 	virtual int get_item_id(int p_idx) const { return pp->get_item_id(p_idx); }
 
 	virtual void set_item_separator(int p_idx, bool p_separator) { pp->set_item_as_separator(p_idx, p_separator); }
