@@ -1945,6 +1945,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(1);
 			return "The local variable '" + symbols[0] + "' is declared but never used in the block.";
 		} break;
+		case SHADOWED_VARIABLE: {
+			CHECK_SYMBOLS(2);
+			return "The local variable '" + symbols[0] + "' is shadowing an already defined variable at line " + symbols[1] + ".";
+		} break;
 		case UNUSED_CLASS_VARIABLE: {
 			CHECK_SYMBOLS(1);
 			return "The class variable '" + symbols[0] + "' is declared but never used in the script.";
@@ -2048,6 +2052,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNASSIGNED_VARIABLE",
 		"UNASSIGNED_VARIABLE_OP_ASSIGN",
 		"UNUSED_VARIABLE",
+		"SHADOWED_VARIABLE",
 		"UNUSED_CLASS_VARIABLE",
 		"UNUSED_ARGUMENT",
 		"UNREACHABLE_CODE",
