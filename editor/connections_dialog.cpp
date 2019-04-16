@@ -113,14 +113,14 @@ Signal automatically called by parent dialog.
 void ConnectDialog::ok_pressed() {
 
 	if (dst_method->get_text() == "") {
-		error->set_text(TTR("Method in target Node must be specified!"));
+		error->set_text(TTR("Method in target node must be specified."));
 		error->popup_centered_minsize();
 		return;
 	}
 	Node *target = tree->get_selected();
 	if (target->get_script().is_null()) {
 		if (!target->has_method(dst_method->get_text())) {
-			error->set_text(TTR("Target method not found! Specify a valid method or attach a script to target Node."));
+			error->set_text(TTR("Target method not found. Specify a valid method or attach a script to the target node."));
 			error->popup_centered_minsize();
 			return;
 		}
@@ -440,8 +440,9 @@ ConnectDialog::ConnectDialog() {
 
 	cdbinds = memnew(ConnectDialogBinds);
 
-	error = memnew(ConfirmationDialog);
+	error = memnew(AcceptDialog);
 	add_child(error);
+	error->set_title(TTR("Cannot connect signal"));
 	error->get_ok()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Connect"));
 }
