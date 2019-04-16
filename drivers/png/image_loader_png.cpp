@@ -235,7 +235,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 				w[i * 4 + 3] = *a;
 			}
 		}
-		// Create image with palette and flatten it
+		// Create image with palette and extend it
 		fmt = png_palette_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
 
 		p_image->create(width, height, 0, fmt);

@@ -37,7 +37,10 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 	Error err = OK;
 
-	if (p_buffer == NULL)
+	bool has_data = p_buffer != NULL;
+	bool has_palette = p_color_buffer != NULL;
+
+	if (!has_data)
 		err = FAILED;
 
 	if (err == OK) {
@@ -49,29 +52,79 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		if (p_header.bmp_info_header.bmp_compression != 0) {
 			err = FAILED;
 		}
-
-		if (!(bits_per_pixel == 24 || bits_per_pixel == 32)) {
-			err = FAILED;
+		switch (bits_per_pixel) {
+			case 8:
+			case 24:
+			case 32:
+				break;
+			default: {
+				err = ERR_UNAVAILABLE;
+			}
 		}
-
 		if (err == OK) {
+			// Palette data
+			PoolVector<uint8_t> palette_data;
 
-			uint32_t line_width = ((p_header.bmp_info_header.bmp_width *
-										   p_header.bmp_info_header.bmp_bit_count / 8) +
-										  3) &
-								  ~3;
+			if (has_palette) {
 
+				uint32_t color_table_size = 0;
+				if (p_header.bmp_info_header.bmp_bit_count == 1)
+					color_table_size = 2;
+				else if (p_header.bmp_info_header.bmp_bit_count == 4)
+					color_table_size = 16;
+				else if (p_header.bmp_info_header.bmp_bit_count == 8)
+					color_table_size = 256;
+
+				uint32_t palette_size = p_header.bmp_info_header.bmp_colors_used;
+				if (palette_size == 0)
+					palette_size = color_table_size;
+
+				palette_data.resize(palette_size * 4);
+
+				PoolVector<uint8_t>::Write palette_data_w = palette_data.write();
+				uint8_t *pal = palette_data_w.ptr();
+
+				const uint8_t *cb = p_color_buffer;
+
+				for (unsigned int i = 0; i < palette_size; ++i) {
+					uint32_t color = *((uint32_t *)cb);
+
+					pal[i * 4 + 0] = (color >> 16) & 0xff;
+					pal[i * 4 + 1] = (color >> 8) & 0xff;
+					pal[i * 4 + 2] = (color)&0xff;
+					pal[i * 4 + 3] = 0xff;
+
+					cb += 4;
+				}
+			}
+			// Pixel data (or index data)
 			PoolVector<uint8_t> image_data;
-			err = image_data.resize(width * height * 4);
 
+			switch (bits_per_pixel) {
+				case 8: {
+					err = image_data.resize(width * height * 2);
+				} break;
+				default: {
+					err = image_data.resize(width * height * 4);
+				}
+			}
 			PoolVector<uint8_t>::Write image_data_w = image_data.write();
 			uint8_t *write_buffer = image_data_w.ptr();
 
+			const uint32_t line_width = ((width * bits_per_pixel / 8) + 3) & ~3;
 			const uint8_t *line = p_buffer + (line_width * (height - 1));
+
 			for (unsigned int i = 0; i < height; i++) {
 				const uint8_t *line_ptr = line;
 				for (unsigned int j = 0; j < width; j++) {
 					switch (bits_per_pixel) {
+						case 8: {
+							uint8_t color_index = *line_ptr;
+
+							write_buffer[index] = color_index;
+							index += 1;
+							line_ptr += 1;
+						} break;
 						case 24: {
 							uint32_t color = *((uint32_t *)line_ptr);
 
@@ -96,7 +149,14 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 				}
 				line -= line_width;
 			}
-			p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
+
+			if (bits_per_pixel > 8) {
+				p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
+			} else {
+				p_image->create(width, height, 0, Image::FORMAT_RGBA8);
+				p_image->create_palette(palette_data, image_data);
+				p_image->apply_palette();
+			}
 		}
 	}
 	return err;
@@ -108,7 +168,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 
-	if (f->get_len() > sizeof(bmp_header)) {
+	if (f->get_len() > BITMAP_FILE_HEADER_SIZE + BITMAP_INFO_HEADER_MIN_SIZE) {
 		// File Header
 		bmp_header.bmp_file_header.bmp_signature = f->get_16();
 		if (bmp_header.bmp_file_header.bmp_signature == BITMAP_SIGNATURE) {
@@ -118,9 +178,14 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 			// Info Header
 			bmp_header.bmp_info_header.bmp_header_size = f->get_32();
+			ERR_FAIL_COND_V(bmp_header.bmp_info_header.bmp_header_size < 40, ERR_FILE_CORRUPT);
+
 			bmp_header.bmp_info_header.bmp_width = f->get_32();
 			bmp_header.bmp_info_header.bmp_height = f->get_32();
+
 			bmp_header.bmp_info_header.bmp_planes = f->get_16();
+			ERR_FAIL_COND_V(bmp_header.bmp_info_header.bmp_planes != 1, ERR_FILE_CORRUPT);
+
 			bmp_header.bmp_info_header.bmp_bit_count = f->get_16();
 			bmp_header.bmp_info_header.bmp_compression = f->get_32();
 			bmp_header.bmp_info_header.bmp_size_image = f->get_32();
@@ -141,8 +206,9 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			bmp_header.bmp_info_header.bmp_gamma_green = f->get_32();
 			bmp_header.bmp_info_header.bmp_gamma_blue = f->get_32();
 
-			f->seek(sizeof(bmp_header.bmp_file_header) +
-					bmp_header.bmp_info_header.bmp_header_size);
+			uint32_t ct_offset = BITMAP_FILE_HEADER_SIZE +
+								 bmp_header.bmp_info_header.bmp_header_size;
+			f->seek(ct_offset);
 
 			uint32_t color_table_size = 0;
 			if (bmp_header.bmp_info_header.bmp_bit_count == 1)
@@ -156,8 +222,7 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			if (color_table_size > 0) {
 				err = bmp_color_table.resize(color_table_size * 4);
 				PoolVector<uint8_t>::Write bmp_color_table_w = bmp_color_table.write();
-				f->get_buffer(bmp_color_table_w.ptr(),
-						bmp_header.bmp_info_header.bmp_colors_used * 4);
+				f->get_buffer(bmp_color_table_w.ptr(), color_table_size * 4);
 			}
 
 			f->seek(bmp_header.bmp_file_header.bmp_file_offset);

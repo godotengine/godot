@@ -37,6 +37,9 @@ class ImageLoaderBMP : public ImageFormatLoader {
 protected:
 	static const unsigned BITMAP_SIGNATURE = 0x4d42;
 
+	static const unsigned BITMAP_FILE_HEADER_SIZE = 14; // bmp_file_header_s
+	static const unsigned BITMAP_INFO_HEADER_MIN_SIZE = 40; // bmp_info_header_s
+
 	struct bmp_header_s {
 		struct bmp_file_header_s {
 			uint16_t bmp_signature;
