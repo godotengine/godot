@@ -75,6 +75,8 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
 	};
 
+	static int orphan_node_count;
+
 private:
 	struct GroupData {
 
