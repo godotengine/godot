@@ -48,7 +48,7 @@ int AnimationTrackEditBool::get_key_height() const {
 Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
 
 	Ref<Texture> checked = get_icon("checked", "CheckBox");
-	return Rect2(0, 0, checked->get_width(), get_size().height);
+	return Rect2(-checked->get_width() / 2, 0, checked->get_width(), get_size().height);
 }
 
 bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
@@ -57,17 +57,18 @@ bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
 }
 void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 
-	Ref<Texture> icon;
 	bool checked = get_animation()->track_get_key_value(get_track(), p_index);
+	Ref<Texture> icon = get_icon(checked ? "checked" : "unchecked", "CheckBox");
 
-	if (checked)
-		icon = get_icon("checked", "CheckBox");
-	else
-		icon = get_icon("unchecked", "CheckBox");
+	Vector2 ofs(p_x - icon->get_width() / 2, int(get_size().height - icon->get_height()) / 2);
 
-	Vector2 ofs(p_x, int(get_size().height - icon->get_height()) / 2);
+	if (ofs.x + icon->get_width() / 2 < p_clip_left)
+		return;
 
-	draw_texture_clipped(icon, ofs);
+	if (ofs.x + icon->get_width() / 2 > p_clip_right)
+		return;
+
+	draw_texture(icon, ofs);
 
 	if (p_selected) {
 		Color color = get_color("accent_color", "Editor");
@@ -86,7 +87,7 @@ Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 
 	Ref<Font> font = get_font("font", "Label");
 	int fh = font->get_height() * 0.8;
-	return Rect2(0, 0, fh, get_size().height);
+	return Rect2(-fh / 2, 0, fh, get_size().height);
 }
 
 bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
@@ -96,20 +97,14 @@ bool AnimationTrackEditColor::is_key_selectable_by_distance() const {
 
 void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
 
-	int x_from = p_x;
-	int x_to = p_next_x;
-
 	Ref<Font> font = get_font("font", "Label");
 	int fh = (font->get_height() * 0.8);
 
-	x_from += fh - 1;
-	x_to += 1;
+	int x_from = p_x + fh / 2 - 1;
+	int x_to = p_next_x - fh / 2 + 1;
 	fh /= 3;
 
-	if (x_from > p_clip_right)
-		return;
-
-	if (x_to < p_clip_left)
+	if (x_from > p_clip_right || x_to < p_clip_left)
 		return;
 
 	Color color = get_animation()->track_get_key_value(get_track(), p_index);
@@ -154,7 +149,7 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 	Ref<Font> font = get_font("font", "Label");
 	int fh = font->get_height() * 0.8;
 
-	Rect2 rect(Vector2(p_x, int(get_size().height - fh) / 2), Size2(fh, fh));
+	Rect2 rect(Vector2(p_x - fh / 2, int(get_size().height - fh) / 2), Size2(fh, fh));
 
 	draw_rect_clipped(Rect2(rect.position, rect.size / 2), Color(0.4, 0.4, 0.4));
 	draw_rect_clipped(Rect2(rect.position + rect.size / 2, rect.size / 2), Color(0.4, 0.4, 0.4));
