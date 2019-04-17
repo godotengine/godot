@@ -1490,8 +1490,11 @@ real_t Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_wit
 
 PoolColorArray Image::get_palette() const {
 
+	ERR_FAIL_COND_V(!has_palette(), PoolColorArray());
+
 	// Convert palette to bindable type
-	const int num_colors = palette_data.size() / 4;
+	int ps = get_format_pixel_size(format);
+	int num_colors = palette_data.size() / ps;
 
 	PoolColorArray palette;
 	palette.resize(num_colors);
@@ -1501,75 +1504,145 @@ PoolColorArray Image::get_palette() const {
 	PoolVector<uint8_t>::Read r_pal = palette_data.read();
 	const uint8_t *r = r_pal.ptr();
 
-	for (int i = 0; i < num_colors; i++) {
-		float rc = r[i * 4 + 0] / 255.0f;
-		float gc = r[i * 4 + 1] / 255.0f;
-		float bc = r[i * 4 + 2] / 255.0f;
-		float ac = r[i * 4 + 3] / 255.0f;
+	switch (ps) {
+		case 3: {
+			for (int i = 0; i < num_colors; i++) {
+				float rc = r[i * ps + 0] / 255.0f;
+				float gc = r[i * ps + 1] / 255.0f;
+				float bc = r[i * ps + 2] / 255.0f;
 
-		w[i] = Color(rc, gc, bc, ac);
+				w[i] = Color(rc, gc, bc);
+			}
+		} break;
+		case 4: {
+			for (int i = 0; i < num_colors; i++) {
+				float rc = r[i * ps + 0] / 255.0f;
+				float gc = r[i * ps + 1] / 255.0f;
+				float bc = r[i * ps + 2] / 255.0f;
+				float ac = r[i * ps + 3] / 255.0f;
+
+				w[i] = Color(rc, gc, bc, ac);
+			}
+		} break;
+		default: {
+			ERR_EXPLAIN("Unsupported palette format");
+			ERR_FAIL_V(PoolColorArray());
+		}
 	}
-
 	return palette;
 }
 
 void Image::set_palette(const PoolColorArray &p_palette) {
 
-	const int num_colors = p_palette.size();
+	int ps = get_format_pixel_size(format);
+	int num_colors = p_palette.size();
 
 	PoolColorArray::Read r = p_palette.read();
 
 	palette_data.resize(0);
-	palette_data.resize(num_colors * 4);
+	palette_data.resize(num_colors * ps);
 
 	PoolVector<uint8_t>::Write w_pal = palette_data.write();
 	uint8_t *w = w_pal.ptr();
 
-	for (int i = 0; i < num_colors; i++) {
-		w[0] = r[i].r * 255.0f;
-		w[1] = r[i].g * 255.0f;
-		w[2] = r[i].b * 255.0f;
-		w[3] = r[i].a * 255.0f;
+	switch (ps) {
+		case 3: {
+			for (int i = 0; i < num_colors; i++) {
+				w[0] = r[i].r * 255.0f;
+				w[1] = r[i].g * 255.0f;
+				w[2] = r[i].b * 255.0f;
 
-		w += 4;
+				w += 4;
+			}
+		} break;
+		case 4: {
+			for (int i = 0; i < num_colors; i++) {
+				w[0] = r[i].r * 255.0f;
+				w[1] = r[i].g * 255.0f;
+				w[2] = r[i].b * 255.0f;
+				w[3] = r[i].a * 255.0f;
+
+				w += 4;
+			}
+		} break;
+		default: {
+			ERR_EXPLAIN("Unsupported palette format");
+			ERR_FAIL();
+		}
 	}
 }
 
 void Image::set_palette_color(int p_idx, const Color p_color) {
 
-	int ofs = p_idx * 4;
+	ERR_FAIL_COND(!has_palette());
+
+	int pixel_size = get_format_pixel_size(format);
+	int ofs = p_idx * pixel_size;
 
 	ERR_FAIL_INDEX(ofs, palette_data.size());
 
 	PoolVector<uint8_t>::Write write = palette_data.write();
 	uint8_t *ptr = write.ptr();
 
-	ptr[ofs + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-	ptr[ofs + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-	ptr[ofs + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
-	ptr[ofs + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+	switch (pixel_size) {
+		case 3: {
+			ptr[ofs + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
+			ptr[ofs + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
+			ptr[ofs + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
+		} break;
+		case 4: {
+			ptr[ofs + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
+			ptr[ofs + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
+			ptr[ofs + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
+			ptr[ofs + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+		} break;
+		default: {
+			ERR_EXPLAIN("Unsupported palette format");
+			ERR_FAIL();
+		}
+	}
 }
 
 Color Image::get_palette_color(int p_idx) const {
 
-	int ofs = p_idx * 4;
+	ERR_FAIL_COND_V(!has_palette(), Color());
+
+	int ps = get_format_pixel_size(format);
+	int ofs = p_idx * ps;
 
 	ERR_FAIL_INDEX_V(ofs, palette_data.size(), Color());
 
 	PoolVector<uint8_t>::Read read = palette_data.read();
 	const uint8_t *ptr = read.ptr();
 
-	float r = ptr[ofs + 0] / 255.0;
-	float g = ptr[ofs + 1] / 255.0;
-	float b = ptr[ofs + 2] / 255.0;
-	float a = ptr[ofs + 3] / 255.0;
+	switch (ps) {
+		case 3: {
+			float r = ptr[ofs + 0] / 255.0;
+			float g = ptr[ofs + 1] / 255.0;
+			float b = ptr[ofs + 2] / 255.0;
 
-	return Color(r, g, b, a);
+			return Color(r, g, b);
+		} break;
+		case 4: {
+			float r = ptr[ofs + 0] / 255.0;
+			float g = ptr[ofs + 1] / 255.0;
+			float b = ptr[ofs + 2] / 255.0;
+			float a = ptr[ofs + 3] / 255.0;
+
+			return Color(r, g, b, a);
+		} break;
+		default: {
+			ERR_EXPLAIN("Unsupported palette format");
+			ERR_FAIL_V(Color());
+		}
+	}
+	return Color();
 }
 
 void Image::clear_palette() {
 
 	palette_data.resize(0);
+	index_data.resize(0);
 }
 
 bool Image::has_palette() const {
@@ -1579,7 +1652,11 @@ bool Image::has_palette() const {
 
 int Image::get_palette_size() const {
 
-	return palette_data.size() / 4;
+	int pixel_size = get_format_pixel_size(format);
+
+	ERR_FAIL_COND_V(palette_data.size() % pixel_size != 0, -1);
+
+	return palette_data.size() / pixel_size;
 }
 
 Error Image::apply_palette() {
@@ -1600,26 +1677,27 @@ Error Image::apply_palette() {
 	PoolVector<uint8_t>::Read pal = palette_data.read();
 	PoolVector<uint8_t>::Read ind = index_data.read();
 
-	const int num_pixels = width * height;
+	int ps = get_format_pixel_size(format);
+	int num_pixels = width * height;
 
-	switch (format) {
-		case FORMAT_RGB8: {
+	switch (ps) {
+		case 3: {
 			for (int i = 0; i < num_pixels; i++) {
-				dest[0] = pal[ind[i] * 3 + 0];
-				dest[1] = pal[ind[i] * 3 + 1];
-				dest[2] = pal[ind[i] * 3 + 2];
+				dest[0] = pal[ind[i] * ps + 0];
+				dest[1] = pal[ind[i] * ps + 1];
+				dest[2] = pal[ind[i] * ps + 2];
 
-				dest += 3;
+				dest += ps;
 			}
 		} break;
-		case FORMAT_RGBA8: {
+		case 4: {
 			for (int i = 0; i < num_pixels; i++) {
-				dest[0] = pal[ind[i] * 4 + 0];
-				dest[1] = pal[ind[i] * 4 + 1];
-				dest[2] = pal[ind[i] * 4 + 2];
-				dest[3] = pal[ind[i] * 4 + 3];
+				dest[0] = pal[ind[i] * ps + 0];
+				dest[1] = pal[ind[i] * ps + 1];
+				dest[2] = pal[ind[i] * ps + 2];
+				dest[3] = pal[ind[i] * ps + 3];
 
-				dest += 4;
+				dest += ps;
 			}
 		} break;
 		default: {
