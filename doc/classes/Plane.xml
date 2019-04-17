@@ -80,7 +80,7 @@
 			<argument index="1" name="epsilon" type="float" default="0.00001">
 			</argument>
 			<description>
-				Returns true if "point" is inside the plane (by a very minimum threshold).
+				Returns [code]true[/code] if "point" is inside the plane (by a very minimum threshold).
 			</description>
 		</method>
 		<method name="intersect_3">
@@ -122,7 +122,7 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-				Returns true if "point" is located above the plane.
+				Returns [code]true[/code] if "point" is located above the plane.
 			</description>
 		</method>
 		<method name="normalized">
