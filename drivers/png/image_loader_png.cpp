@@ -107,11 +107,14 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	png_read_info(png, info);
 	png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 
+	bool update_info = false;
+
 	png_colorp png_palette = NULL;
 	int palette_size = 0;
 
 	if (png_get_valid(png, info, PNG_INFO_PLTE)) {
 		png_get_PLTE(png, info, &png_palette, &palette_size);
+		update_info = true;
 	}
 
 	//https://svn.gov.pt/projects/ccidadao/repository/middleware-offline/trunk/_src/eidmw/FreeImagePTEiD/Source/FreeImage/PluginPNG.cpp
@@ -123,13 +126,10 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	printf("Color type:%i\n", color);
 	*/
 
-	bool update_info = false;
-
 	if (depth < 8) { //only bit dept 8 per channel is handled
-
 		png_set_packing(png);
 		update_info = true;
-	};
+	}
 
 	if (depth > 8) {
 		png_set_strip_16(png);
@@ -211,36 +211,38 @@ Error ImageLoaderPNG::_load_image(void *rf_up, png_rw_ptr p_func, Ref<Image> p_i
 	memdelete_arr(row_p);
 
 	if (color == PNG_COLOR_TYPE_PALETTE) {
-
 		// Loaded data are indices
+
+		ERR_EXPLAIN("Expected to extract PNG palette, got none.");
+		ERR_FAIL_COND_V(png_palette == NULL, ERR_BUG);
+
 		PoolVector<uint8_t> palette_data;
 		palette_data.resize(palette_size * 4);
-
 		PoolVector<uint8_t>::Write w = palette_data.write();
 
-		// (RGB) convert png palette
-		if (png_palette) {
+		if (png_palette_alpha && palette_alpha_size == palette_size) {
+
 			for (int i = 0; i < palette_size; i++) {
 				png_colorp c = &png_palette[i];
 				w[i * 4 + 0] = c->red;
 				w[i * 4 + 1] = c->green;
 				w[i * 4 + 2] = c->blue;
-			}
-		}
-		// Alpha (png_set_tRNS_to_alpha)
-		if (png_palette_alpha && palette_alpha_size == palette_size) {
 
-			for (int i = 0; i < palette_alpha_size; i++) {
 				png_bytep a = &png_palette_alpha[i];
 				w[i * 4 + 3] = *a;
 			}
+		} else {
+			for (int i = 0; i < palette_size; i++) {
+				png_colorp c = &png_palette[i];
+				w[i * 4 + 0] = c->red;
+				w[i * 4 + 1] = c->green;
+				w[i * 4 + 2] = c->blue;
+				w[i * 4 + 3] = 255;
+			}
 		}
 		// Create image with palette and extend it
-		fmt = png_palette_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
-
-		p_image->create(width, height, 0, fmt);
+		p_image->create(width, height, 0, Image::FORMAT_RGBA8);
 		p_image->create_palette(palette_data, dstbuff); // dstbuff = index data
-
 		p_image->apply_palette(); // (png_palette_to_rgb)
 
 	} else {
