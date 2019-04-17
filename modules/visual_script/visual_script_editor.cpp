@@ -42,6 +42,8 @@
 #include "visual_script_func_nodes.h"
 #include "visual_script_nodes.h"
 
+#include <iostream>
+
 #ifdef TOOLS_ENABLED
 class VisualScriptEditorSignalEdit : public Object {
 
@@ -2232,6 +2234,12 @@ void VisualScriptEditor::_change_base_type_callback() {
 
 void VisualScriptEditor::_node_selected(Node *p_node) {
 
+	//VisualScriptComment comment_node = Object::cast_to<VisualScriptComment>(*script->get_node(edited_func, p_node->get_name().operator String().to_int()).ptr());
+
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+
+	}
+
 	Ref<VisualScriptNode> vnode = p_node->get_meta("__vnode");
 	if (vnode.is_null())
 		return;
@@ -3280,7 +3288,67 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 		} break;
+		case EDIT_INSERT_COMMENT: {
+			List<int> selected_nodes;
+
+			List<int> nodes;
+			script->get_node_list(edited_func, &nodes);
+			for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+				int id = E->get();
+				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(itos(id)));
+				if (gn && gn->is_selected()) {
+					selected_nodes.push_back(id);
+				}
+			}
+
+			if (selected_nodes.size() > 0) {
+				Rect2 comment_size = get_rect_around(selected_nodes);
+
+				undo_redo->create_action(TTR("Insert Comment Node"));
+
+				Ref<VisualScriptComment> comment_node = VisualScriptLanguage::singleton->create_node_from_name("data/comment");
+				comment_node->set_size(comment_size.get_size());
+
+				int new_id = script->get_available_id() + 1;
+
+				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, comment_node, comment_size.get_position());
+				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+
+				undo_redo->add_do_method(this, "_update_graph");
+				undo_redo->add_undo_method(this, "_update_graph");
+
+				undo_redo->commit_action();
+			}
+		};
 	}
+}
+
+Rect2 VisualScriptEditor::get_rect_around(List<int> &nodes) {
+	Vector2 left_upper_pos = Vector2(INFINITY, INFINITY);
+	Vector2 right_lower_pos = Vector2(-INFINITY, -INFINITY);
+
+	for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+		GraphNode* gn = Object::cast_to<GraphNode>(graph->get_node(itos(E->get())));
+		if (gn) {
+			Vector2 gn_pos = script->get_node_position(edited_func, E->get());
+			Size2 gn_size = gn->get_rect().get_size();
+
+			if (gn_pos.x < left_upper_pos.x) {
+				left_upper_pos.x = gn_pos.x;
+			}
+			if (gn_pos.y < left_upper_pos.y) {
+				left_upper_pos.y = gn_pos.y;
+			}
+			if (right_lower_pos.x < (gn_pos.x + gn_size.x)) {
+				right_lower_pos.x = gn_pos.x + gn_size.x;
+			}
+			if (right_lower_pos.y < (gn_pos.y + gn_size.y)) {
+				right_lower_pos.y = gn_pos.y + gn_size.y;
+			}
+		}
+	}
+
+	return Rect2(left_upper_pos - Vector2(10, 50), right_lower_pos - left_upper_pos + Vector2(20, 60));
 }
 
 void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
@@ -3499,6 +3567,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/copy_nodes"), EDIT_COPY_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/cut_nodes"), EDIT_CUT_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/paste_nodes"), EDIT_PASTE_NODES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/insert_comment"), EDIT_INSERT_COMMENT);
 
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
@@ -3699,6 +3768,7 @@ static void register_editor_callback() {
 	ED_SHORTCUT("visual_script_editor/cut_nodes", TTR("Cut Nodes"), KEY_MASK_CMD + KEY_X);
 	ED_SHORTCUT("visual_script_editor/paste_nodes", TTR("Paste Nodes"), KEY_MASK_CMD + KEY_V);
 	ED_SHORTCUT("visual_script_editor/edit_member", TTR("Edit Member"), KEY_MASK_CMD + KEY_E);
+	ED_SHORTCUT("visual_script_editor/insert_comment", TTR("Insert Comment"), KEY_MASK_CMD + KEY_K);
 }
 
 void VisualScriptEditor::register_editor() {
