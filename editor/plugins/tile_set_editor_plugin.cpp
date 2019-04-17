@@ -405,6 +405,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	toolbar->add_child(tools[SHAPE_NEW_RECTANGLE]);
 	tools[SHAPE_NEW_RECTANGLE]->set_toggle_mode(true);
 	tools[SHAPE_NEW_RECTANGLE]->set_button_group(tg);
+	tools[SHAPE_NEW_RECTANGLE]->set_shortcut(ED_SHORTCUT("tileset_editor/new_rectangle", TTR("New Rectangle"), KEY_R));
 	tools[SHAPE_NEW_RECTANGLE]->set_tooltip(TTR("Create a new rectangle."));
 
 	tools[SHAPE_NEW_POLYGON] = memnew(ToolButton);
