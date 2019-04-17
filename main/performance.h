@@ -43,6 +43,8 @@ class Performance : public Object {
 	static Performance *singleton;
 	static void _bind_methods();
 
+	float _get_node_count() const;
+
 	float _process_time;
 	float _physics_process_time;
 
@@ -60,6 +62,7 @@ public:
 		OBJECT_COUNT,
 		OBJECT_RESOURCE_COUNT,
 		OBJECT_NODE_COUNT,
+		OBJECT_ORPHAN_NODE_COUNT,
 		RENDER_OBJECTS_IN_FRAME,
 		RENDER_VERTICES_IN_FRAME,
 		RENDER_MATERIAL_CHANGES_IN_FRAME,
