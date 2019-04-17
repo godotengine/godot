@@ -634,7 +634,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			EditorNode::get_singleton()->load_resource(p_symbol);
 		}
 
-	} else if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path().get_base_dir(), base, result) == OK) {
+	} else if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), p_symbol, script->get_path(), base, result) == OK) {
 
 		_goto_line(p_row);
 
@@ -1256,7 +1256,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					base = _find_node_for_script(base, base, script);
 				}
 				ScriptLanguage::LookupResult result;
-				if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), word_at_mouse, script->get_path().get_base_dir(), base, result) == OK) {
+				if (script->get_language()->lookup_code(code_editor->get_text_edit()->get_text_for_lookup_completion(), word_at_mouse, script->get_path(), base, result) == OK) {
 					open_docs = true;
 				}
 			}

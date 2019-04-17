@@ -3150,7 +3150,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	return ERR_CANT_RESOLVE;
 }
 
-Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result) {
+Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
 
 	//before parsing, try the usual stuff
 	if (ClassDB::class_exists(p_symbol)) {
@@ -3192,7 +3192,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	}
 
 	GDScriptParser parser;
-	parser.parse(p_code, p_base_path, false, "", true);
+	parser.parse(p_code, p_path.get_base_dir(), false, p_path, true);
 
 	if (parser.get_completion_type() == GDScriptParser::COMPLETION_NONE) {
 		return ERR_CANT_RESOLVE;
@@ -3204,7 +3204,7 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 	context.block = parser.get_completion_block();
 	context.line = parser.get_completion_line();
 	context.base = p_owner;
-	context.base_path = p_base_path;
+	context.base_path = p_path.get_base_dir();
 
 	if (context._class && context._class->extends_class.size() > 0) {
 		bool success = false;
