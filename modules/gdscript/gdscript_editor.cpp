@@ -1936,9 +1936,18 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 				Ref<GDScript> script = base_type.script_type;
 				if (script.is_valid()) {
 					if (!_static && !p_only_functions) {
-						for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
-							ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
-							r_result.insert(option.display, option);
+						if (p_context.base && p_context.base->get_script_instance()) {
+							List<PropertyInfo> members;
+							p_context.base->get_script_instance()->get_property_list(&members);
+							for (List<PropertyInfo>::Element *E = members.front(); E; E = E->next()) {
+								ScriptCodeCompletionOption option(E->get().name, ScriptCodeCompletionOption::KIND_MEMBER);
+								r_result.insert(option.display, option);
+							}
+						} else {
+							for (const Set<StringName>::Element *E = script->get_members().front(); E; E = E->next()) {
+								ScriptCodeCompletionOption option(E->get().operator String(), ScriptCodeCompletionOption::KIND_MEMBER);
+								r_result.insert(option.display, option);
+							}
 						}
 					}
 					if (!p_only_functions) {
