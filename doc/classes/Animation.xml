@@ -440,7 +440,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if the given track is imported. Else, return false.
+				Return [code]true[/code] if the given track is imported. Else, return [code]false[/code].
 			</description>
 		</method>
 		<method name="track_move_down">

@@ -247,7 +247,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the selection is active.
+				Return [code]true[/code] if the selection is active.
 			</description>
 		</method>
 		<method name="menu_option">
