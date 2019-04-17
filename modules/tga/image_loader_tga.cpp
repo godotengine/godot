@@ -85,6 +85,12 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	image_data_w[image_data_ofs * 4 + 2] = b; \
 	image_data_w[image_data_ofs * 4 + 3] = a;
 
+#define TGA_PUT_PIXEL_INDEXED(index)        \
+	int image_data_ofs = ((y * width) + x); \
+	image_data_w[image_data_ofs] = index;
+
+	bool has_palette = p_palette != NULL;
+
 	uint32_t width = p_header.image_width;
 	uint32_t height = p_header.image_height;
 	tga_origin_e origin = static_cast<tga_origin_e>((p_header.image_descriptor & TGA_ORIGIN_MASK) >> TGA_ORIGIN_SHIFT);
@@ -115,91 +121,122 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 		x_step = -1;
 		x_end = -1;
 	}
+	// Palette data
+	PoolVector<uint8_t> palette_data;
+	size_t palette_size = p_header.color_map_length;
 
+	if (has_palette) {
+
+		if (p_header.pixel_depth == 8 && p_header.color_map_depth == 24 && !p_is_monochrome) {
+
+			palette_data.resize(palette_size * 3);
+
+			PoolVector<uint8_t>::Write palette_data_w = palette_data.write();
+			uint8_t *pal = palette_data_w.ptr();
+
+			for (unsigned int i = 0; i < palette_size; ++i) {
+				pal[i * 3 + 0] = p_palette[i * 3 + 2];
+				pal[i * 3 + 1] = p_palette[i * 3 + 1];
+				pal[i * 3 + 2] = p_palette[i * 3 + 0];
+			}
+		} else {
+			return ERR_UNAVAILABLE;
+		}
+	}
+
+	// Pixel data (or index data)
 	PoolVector<uint8_t> image_data;
-	image_data.resize(width * height * sizeof(uint32_t));
+	int image_data_len = 0;
+
+	if (p_header.pixel_depth > 8 || p_is_monochrome) {
+		image_data_len = width * height * sizeof(uint32_t); // color
+	} else {
+		image_data_len = width * height; // indexed
+	}
+	ERR_FAIL_COND_V(image_data_len == 0, ERR_BUG);
+	image_data.resize(image_data_len);
+
 	PoolVector<uint8_t>::Write image_data_w = image_data.write();
 
 	size_t i = 0;
 	uint32_t x = x_start;
 	uint32_t y = y_start;
 
-	if (p_header.pixel_depth == 8) {
-		if (p_is_monochrome) {
+	switch (p_header.pixel_depth) {
+
+		case 8: {
+			if (p_is_monochrome) {
+				while (y != y_end) {
+					while (x != x_end) {
+						uint8_t shade = p_buffer[i];
+
+						TGA_PUT_PIXEL(shade, shade, shade, 0xff)
+
+						x += x_step;
+						i += 1;
+					}
+					x = x_start;
+					y += y_step;
+				}
+			} else { // color
+				while (y != y_end) {
+					while (x != x_end) {
+						uint8_t index = p_buffer[i];
+
+						TGA_PUT_PIXEL_INDEXED(index)
+
+						x += x_step;
+						i += 1;
+					}
+					x = x_start;
+					y += y_step;
+				}
+			}
+		} break;
+
+		case 24: {
 			while (y != y_end) {
 				while (x != x_end) {
-					uint8_t shade = p_buffer[i];
+					uint8_t r = p_buffer[i + 2];
+					uint8_t g = p_buffer[i + 1];
+					uint8_t b = p_buffer[i + 0];
 
-					TGA_PUT_PIXEL(shade, shade, shade, 0xff)
+					TGA_PUT_PIXEL(r, g, b, 0xff)
 
 					x += x_step;
-					i += 1;
+					i += 3;
 				}
 				x = x_start;
 				y += y_step;
 			}
-		} else {
+		} break;
+
+		case 32: {
 			while (y != y_end) {
 				while (x != x_end) {
-					uint8_t index = p_buffer[i];
-					uint8_t r = 0x00;
-					uint8_t g = 0x00;
-					uint8_t b = 0x00;
-					uint8_t a = 0xff;
-
-					if (p_header.color_map_depth == 24) {
-						r = (p_palette[(index * 3) + 0]);
-						g = (p_palette[(index * 3) + 1]);
-						b = (p_palette[(index * 3) + 2]);
-					} else {
-						return ERR_INVALID_DATA;
-					}
+					uint8_t a = p_buffer[i + 3];
+					uint8_t r = p_buffer[i + 2];
+					uint8_t g = p_buffer[i + 1];
+					uint8_t b = p_buffer[i + 0];
 
 					TGA_PUT_PIXEL(r, g, b, a)
 
 					x += x_step;
-					i += 1;
+					i += 4;
 				}
 				x = x_start;
 				y += y_step;
 			}
-		}
-	} else if (p_header.pixel_depth == 24) {
-		while (y != y_end) {
-			while (x != x_end) {
-				uint8_t r = p_buffer[i + 2];
-				uint8_t g = p_buffer[i + 1];
-				uint8_t b = p_buffer[i + 0];
-
-				TGA_PUT_PIXEL(r, g, b, 0xff)
-
-				x += x_step;
-				i += 3;
-			}
-			x = x_start;
-			y += y_step;
-		}
-	} else if (p_header.pixel_depth == 32) {
-		while (y != y_end) {
-			while (x != x_end) {
-				uint8_t a = p_buffer[i + 3];
-				uint8_t r = p_buffer[i + 2];
-				uint8_t g = p_buffer[i + 1];
-				uint8_t b = p_buffer[i + 0];
-
-				TGA_PUT_PIXEL(r, g, b, a)
-
-				x += x_step;
-				i += 4;
-			}
-			x = x_start;
-			y += y_step;
-		}
+		} break;
 	}
 
-	image_data_w = PoolVector<uint8_t>::Write();
-
-	p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
+	if (has_palette) {
+		p_image->create(width, height, 0, Image::FORMAT_RGB8);
+		p_image->create_palette(palette_data, image_data);
+		p_image->apply_palette();
+	} else {
+		p_image->create(width, height, 0, Image::FORMAT_RGBA8, image_data);
+	}
 
 	return OK;
 }
