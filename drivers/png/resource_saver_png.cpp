@@ -72,6 +72,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 
 	bool has_palette = p_img->has_palette();
 	bool has_alpha = p_img->detect_alpha() > Image::ALPHA_NONE;
+	const int format = p_img->get_format();
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -151,7 +152,9 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	int w = img->get_width();
 	int h = img->get_height();
 
-	png_set_IHDR(png_ptr, info_ptr, w, h, 8, pngf,
+	const int bit_depth = 8; // 1-2-4-8 bit depths for PNG_COLOR_TYPE_PALETTE
+
+	png_set_IHDR(png_ptr, info_ptr, w, h, bit_depth, pngf,
 			PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	// Prepare palette
@@ -161,6 +164,16 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	if (has_palette) {
 		PoolVector<uint8_t>::Read r = p_img->get_palette_data().read();
 
+		int ps = 4;
+
+		switch (format) {
+			case Image::FORMAT_RGB8: ps = 3; break;
+			case Image::FORMAT_RGBA8: ps = 4; break;
+			default: {
+				ERR_EXPLAIN("Cannot save indexed PNG image, unsupported format");
+				ERR_FAIL_V(ERR_UNAVAILABLE);
+			}
+		}
 		// RGB
 		int palette_size = p_img->get_palette_size();
 		png_palette = (png_color *)png_malloc(png_ptr, palette_size * sizeof(png_color));
@@ -168,18 +181,20 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 		for (int i = 0; i < palette_size; i++) {
 			png_color *c = &png_palette[i];
 
-			c->red = r[i * 4 + 0];
-			c->green = r[i * 4 + 1];
-			c->blue = r[i * 4 + 2];
+			c->red = r[i * ps + 0];
+			c->green = r[i * ps + 1];
+			c->blue = r[i * ps + 2];
 		}
 		png_set_PLTE(png_ptr, info_ptr, png_palette, palette_size);
 
 		// Alpha
 		if (has_alpha) {
+			ERR_FAIL_COND_V(format != Image::FORMAT_RGBA8, ERR_BUG);
+
 			png_palette_alpha = (png_byte *)png_malloc(png_ptr, palette_size * sizeof(png_byte));
 			for (int i = 0; i < palette_size; i++) {
 				png_bytep a = &png_palette_alpha[i];
-				*a = r[i * 4 + 3];
+				*a = r[i * ps + 3];
 			}
 			png_set_tRNS(png_ptr, info_ptr, png_palette_alpha, palette_size, NULL);
 		}
