@@ -688,6 +688,10 @@ void PropertySelectorDialog::set_type_filter(const Vector<Variant::Type> &p_type
 	selector->set_type_filter(p_type_filter);
 }
 
+PropertySelector* PropertySelectorDialog::get_property_selector() {
+	return selector;
+}
+
 void PropertySelectorDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_selected"), &PropertySelectorDialog::_selected);

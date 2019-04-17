@@ -99,16 +99,14 @@ private:
 	StringName signal;
 	OptionButton *mode_list;
 	LineEdit *dst_method;
-	//ConnectDialogBinds *cdbinds;
 	bool bEditMode;
 	NodePath dst_path;
-	//VBoxContainer *vbc_right;
-	PropertySelector *selector_right;
+	VBoxContainer *right_container;
+	PropertySelector *method_selector;
+	Label *bind_info;
 
 	SceneTreeEditor *tree;
 	ConfirmationDialog *error;
-	//EditorInspector *bind_editor;
-	//OptionButton *type_list;
 	MenuButton *settings;
 	ArgumentsBindsDialog *args_dialog;
 	ToolButton *edit_args;
@@ -119,14 +117,15 @@ private:
 	void ok_pressed();
 	void _cancel_pressed();
 	void _tree_node_selected();
-	//void _add_bind();
-	//void _remove_bind();
 	void _mode_changed(int p_mode);
+	void _method_text_changed(String p_method_text);
 	void _method_selected(String p_method);
 	void _settings_flags_changed(int p_setting_idx);
 	void _set_settings_flags(bool p_deferred, bool p_oneshot);
 	void _edit_arguments_pressed();
 	void _bindings_changed();
+	void _bind_arguments_pressed();
+	void _check_valid();
 
 protected:
 	void _notification(int p_what);
@@ -145,9 +144,8 @@ public:
 	bool get_oneshot() const;
 	bool is_editing() const;
 
-	void init(Connection c, bool bEdit = false);
+	void init(const String &p_for_signal, Connection c, int p_mode, bool bEdit = false);
 
-	void popup_dialog(const String &p_for_signal, int p_mode);
 	ConnectDialog();
 	~ConnectDialog();
 };

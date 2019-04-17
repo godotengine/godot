@@ -118,6 +118,8 @@ public:
 
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
+	PropertySelector *get_property_selector();
+
 	PropertySelectorDialog();
 };
 
