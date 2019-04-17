@@ -126,8 +126,8 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 	int32_t post_process_Steps = aiProcess_CalcTangentSpace |
 								 //aiProcess_FlipUVs |
 								 //aiProcess_FlipWindingOrder |
-								 aiProcess_DropNormals |
-								 aiProcess_GenSmoothNormals |
+								 //aiProcess_DropNormals |
+								 //aiProcess_GenSmoothNormals |
 								 aiProcess_JoinIdenticalVertices |
 								 aiProcess_ImproveCacheLocality |
 								 aiProcess_LimitBoneWeights |
