@@ -60,7 +60,7 @@
 			<argument index="1" name="now" type="bool" default="false">
 			</argument>
 			<description>
-				Disconnect the given peer. If "now" is set to true, the connection will be closed immediately without flushing queued messages.
+				Disconnect the given peer. If "now" is set to [code]true[/code], the connection will be closed immediately without flushing queued messages.
 			</description>
 		</method>
 		<method name="get_last_packet_channel" qualifiers="const">

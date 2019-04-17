@@ -92,7 +92,7 @@
 			<argument index="0" name="condition" type="bool">
 			</argument>
 			<description>
-				Assert that the [code]condition[/code] is true. If the [code]condition[/code] is false a fatal error is generated and the program is halted. Useful for debugging to make sure a value is always true.
+				Assert that the [code]condition[/code] is [code]true[/code] . If the [code]condition[/code] is [code]false[/code] a fatal error is generated and the program is halted. Useful for debugging to make sure a value is always [code]true[/code].
 				[codeblock]
 				# Speed should always be between 0 and 20
 				speed = -10

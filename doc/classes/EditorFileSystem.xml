@@ -45,7 +45,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true of the filesystem is being scanned.
+				Return [code]true[/code] of the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">

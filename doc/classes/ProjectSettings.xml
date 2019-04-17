@@ -72,7 +72,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Return true if a configuration value is present.
+				Return [code]true[/code] if a configuration value is present.
 			</description>
 		</method>
 		<method name="load_resource_pack">
@@ -81,7 +81,7 @@
 			<argument index="0" name="pack" type="String">
 			</argument>
 			<description>
-				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem (res://). Returns true on success.
+				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem (res://). Returns [code]true[/code] on success.
 				Note: If a file from [code]pack[/code] shares the same path as a file already in the resource filesystem, any attempts to load that file will use the file from [code]pack[/code].
 			</description>
 		</method>
@@ -100,7 +100,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns true if the specified property exists and its initial value differs from the current value.
+				Returns [code]true[/code] if the specified property exists and its initial value differs from the current value.
 			</description>
 		</method>
 		<method name="property_get_revert">
