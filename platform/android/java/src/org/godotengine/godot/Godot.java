@@ -429,7 +429,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 
 		io = new GodotIO(this);
-		io.unique_id = Secure.ANDROID_ID;
+		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
 		GodotLib.io = io;
 		mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
