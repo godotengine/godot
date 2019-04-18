@@ -253,12 +253,14 @@ public:
 	 * Loaded images will have a color palette (if present) and extended to
 	 * compatible format, as there's no actual support for indexed images.
 	 */
+	static const int MAX_PALETTE_SIZE;
+
 	enum DitherMode {
 		DITHER_NONE,
 		DITHER_ORDERED,
 		DITHER_RANDOM,
 	};
-	real_t generate_palette(int p_num_colors = 256, DitherMode p_dither = DITHER_NONE, bool p_with_alpha = true, bool p_high_quality = false);
+	real_t generate_palette(int p_num_colors = MAX_PALETTE_SIZE, DitherMode p_dither = DITHER_NONE, bool p_with_alpha = true, bool p_high_quality = false);
 	Error create_palette(const PoolVector<uint8_t> &p_palette_data, const PoolVector<uint8_t> &p_index_data);
 	void clear_palette();
 	Error apply_palette();

@@ -448,6 +448,8 @@ void Image::convert(Format p_new_format) {
 
 		_copy_internals_from(new_img);
 
+		clear_palette();
+
 		return;
 	}
 
@@ -504,6 +506,8 @@ void Image::convert(Format p_new_format) {
 
 	if (gen_mipmaps)
 		generate_mipmaps();
+
+	clear_palette();
 }
 
 Image::Format Image::get_format() const {
@@ -1428,16 +1432,18 @@ void Image::clear_mipmaps() {
 	mipmaps = false;
 }
 
-real_t Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with_alpha, bool p_high_quality) {
+const int Image::MAX_PALETTE_SIZE = 256;
 
-	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
-	ERR_FAIL_COND_V(format != FORMAT_RGBA8, -1.0);
+real_t Image::generate_palette(int p_num_colors, DitherMode p_dither, bool p_with_alpha, bool p_high_quality) {
 
 	ERR_EXPLAIN("Cannot generate a palette from an empty image.");
 	ERR_FAIL_COND_V(empty(), -1.0);
 
+	ERR_EXPLAIN("Cannot generate a palette, convert to FORMAT_RBGA8 first.");
+	ERR_FAIL_COND_V(format != FORMAT_RGBA8, -1.0);
+
 	const int num_pixels = width * height;
-	const int num_colors = int(CLAMP(p_num_colors, 1, 256));
+	const int num_colors = int(CLAMP(p_num_colors, 1, MAX_PALETTE_SIZE));
 
 	// Init
 	PoolVector<uint8_t>::Write w_src = data.write();
@@ -1534,6 +1540,12 @@ PoolColorArray Image::get_palette() const {
 
 void Image::set_palette(const PoolColorArray &p_palette) {
 
+	ERR_EXPLAIN("No index data. Generate or create palette first.");
+	ERR_FAIL_COND(index_data.size() == 0);
+
+	ERR_EXPLAIN("Cannot set a palette with different size.")
+	ERR_FAIL_COND(p_palette.size() != get_palette_size());
+
 	int ps = get_format_pixel_size(format);
 	int num_colors = p_palette.size();
 
@@ -1552,7 +1564,7 @@ void Image::set_palette(const PoolColorArray &p_palette) {
 				w[1] = r[i].g * 255.0f;
 				w[2] = r[i].b * 255.0f;
 
-				w += 4;
+				w += ps;
 			}
 		} break;
 		case 4: {
@@ -1562,7 +1574,7 @@ void Image::set_palette(const PoolColorArray &p_palette) {
 				w[2] = r[i].b * 255.0f;
 				w[3] = r[i].a * 255.0f;
 
-				w += 4;
+				w += ps;
 			}
 		} break;
 		default: {
@@ -1663,7 +1675,7 @@ Error Image::apply_palette() {
 
 	// Converts indexed data with associated palette to compatible format
 
-	ERR_EXPLAIN("No index data. Generate palette first.");
+	ERR_EXPLAIN("No index data. Generate or create palette first.");
 	ERR_FAIL_COND_V(index_data.size() == 0, ERR_UNCONFIGURED);
 
 	ERR_EXPLAIN("No palette data. Generate or manually set palette first.");
@@ -1712,6 +1724,40 @@ Error Image::apply_palette() {
 
 Error Image::create_palette(const PoolVector<uint8_t> &p_palette_data, const PoolVector<uint8_t> &p_index_data) {
 
+	ERR_FAIL_COND_V(empty(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(p_index_data.size() == 0, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V(p_palette_data.size() == 0, ERR_CANT_CREATE);
+
+	int ps = get_format_pixel_size(format);
+
+	switch (ps) {
+		case 3: break;
+		case 4: break;
+		default: {
+			ERR_EXPLAIN("Cannot create a palette, incompatible image format.");
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
+	}
+	ERR_FAIL_COND_V(palette_data.size() % ps != 0, ERR_INVALID_DATA);
+
+	int palette_size = p_palette_data.size() / ps;
+	ERR_FAIL_COND_V(palette_size > MAX_PALETTE_SIZE, ERR_CANT_CREATE);
+
+	int index_size = p_index_data.size();
+	int num_pixels = width * height;
+	ERR_FAIL_COND_V(index_size != num_pixels, ERR_CANT_CREATE);
+
+#ifdef DEBUG_ENABLED
+	// Ensure all indices point to valid palette entries
+	{
+		PoolVector<uint8_t>::Read ind = p_index_data.read();
+
+		for (int i = 0; i < index_size; ++i) {
+			ERR_EXPLAIN("Indices exceed (maximum) palette size.");
+			ERR_FAIL_COND_V(ind[i] > palette_size - 1, ERR_INVALID_DATA);
+		}
+	}
+#endif
 	palette_data = p_palette_data;
 	index_data = p_index_data;
 
@@ -2892,7 +2938,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "dithering", "with_alpha", "high_quality"), &Image::generate_palette, DEFVAL(256), DEFVAL(DITHER_NONE), DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_palette", "num_colors", "dithering", "with_alpha", "high_quality"), &Image::generate_palette, DEFVAL(MAX_PALETTE_SIZE), DEFVAL(DITHER_NONE), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_palette"), &Image::clear_palette);
 	ClassDB::bind_method(D_METHOD("apply_palette"), &Image::apply_palette);
 
@@ -2952,10 +2998,11 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_webp_from_buffer", "buffer"), &Image::load_webp_from_buffer);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "_set_data", "_get_data");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "palette"), "set_palette", "get_palette");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "palette", PROPERTY_HINT_NONE, "", 0), "set_palette", "get_palette");
 
 	BIND_CONSTANT(MAX_WIDTH);
 	BIND_CONSTANT(MAX_HEIGHT);
+	BIND_CONSTANT(MAX_PALETTE_SIZE);
 
 	BIND_ENUM_CONSTANT(FORMAT_L8); //luminance
 	BIND_ENUM_CONSTANT(FORMAT_LA8); //luminance-alpha
