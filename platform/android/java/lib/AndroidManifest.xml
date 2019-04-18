@@ -9,6 +9,12 @@
 
         <service android:name=".GodotDownloaderService" />
 
+        <activity android:name="org.godotengine.godot.xr.arcore.ARCoreSetupActivity"
+                  android:label="@string/godot_arcore_setup_activity_label"
+                  android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+                  android:screenOrientation="landscape"/>
+
+
     </application>
 
     <instrumentation

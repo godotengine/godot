@@ -168,6 +168,14 @@ public:
 		t->image = Ref<Image>(memnew(Image));
 		t->image->create(p_width, p_height, false, p_format);
 	}
+	void texture_set_external(RID p_texture, int p_width, int p_height) {
+		DummyTexture *t = texture_owner.getornull(p_texture);
+		ERR_FAIL_COND(!t);
+		t->width = p_width;
+		t->height = p_height;
+		t->flags = 0;
+		t->format = Image::FORMAT_RGBA8;
+	}
 	void texture_set_data(RID p_texture, const Ref<Image> &p_image, int p_level) {
 		DummyTexture *t = texture_owner.getornull(p_texture);
 		ERR_FAIL_COND(!t);

@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  XRMode.java                                                          */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,25 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.xr;
+#include "register_types.h"
 
-/**
- * Godot available XR modes.
- */
-public enum XRMode {
-	REGULAR(0, "Regular", "--xr_mode_regular", "Default Android Gamepad"), // Regular/flatscreen
-	OVR(1, "Oculus Mobile VR", "--xr_mode_ovr", ""),
-	ARCORE(2, "AR Core", "--xr_mode_arcore", "");
+#include "arcore_interface.h"
 
-	final int index;
-	final String label;
-	public final String cmdLineArg;
-	public final String inputFallbackMapping;
+void register_arcore_types() {
+	ClassDB::register_class<ARCoreInterface>();
 
-	XRMode(int index, String label, String cmdLineArg, String inputFallbackMapping) {
-		this.index = index;
-		this.label = label;
-		this.cmdLineArg = cmdLineArg;
-		this.inputFallbackMapping = inputFallbackMapping;
-	}
+	Ref<ARCoreInterface> arcore_interface;
+	arcore_interface.instance();
+	ARVRServer::get_singleton()->add_interface(arcore_interface);
+}
+
+void unregister_arcore_types() {
 }

@@ -235,6 +235,11 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 	{ "res/mipmap/icon_background.png", 432 }
 };
 
+// XR Mode constants. The values should match the ones defined in org.godotengine.godot.xr.XRMode.java
+static const int XR_MODE_REGULAR = 0;
+static const int XR_MODE_OVR = 1;
+static const int XR_MODE_ARCORE = 2;
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
@@ -815,6 +820,13 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				perms.push_back("android.permission.INTERNET");
 		}
 
+		// Check if we should enable the camera permission for ARCore apps.
+		if (xr_mode_index == XR_MODE_ARCORE) {
+			if (perms.find("android.permission.CAMERA") == -1) {
+				perms.push_back("android.permission.CAMERA");
+			}
+		}
+
 		while (ofs < (uint32_t)p_manifest.size()) {
 
 			uint32_t chunk = decode_uint32(&p_manifest[ofs]);
@@ -943,20 +955,41 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							encode_uint32(min_gles3 ? 0x00030000 : 0x00020000, &p_manifest.write[iofs + 16]);
 						}
 
-						// FIXME: `attr_value != 0xFFFFFFFF` below added as a stopgap measure for GH-32553,
-						// but the issue should be debugged further and properly addressed.
-						if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
-							// Update the meta-data 'android:name' attribute based on the selected XR mode.
-							if (xr_mode_index == 1 /* XRMode.OVR */) {
-								string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
+						// Parameters specific to XR modes
+						if (xr_mode_index != XR_MODE_REGULAR) {
+							if (tname == "uses-feature" && attrname == "name" && value == "xr_mode_uses_camera_name") {
+								if (xr_mode_index == XR_MODE_ARCORE) {
+									string_table.write[attr_value] = "android.hardware.camera.ar";
+								}
 							}
-						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
-							// Update the meta-data 'android:value' attribute based on the selected XR mode.
-							if (xr_mode_index == 1 /* XRMode.OVR */) {
-								string_table.write[attr_value] = "vr_only";
+							if (tname == "meta-data" && attrname == "name" && value == "xr_mode_metadata_name") {
+								// Update the meta-data 'android:name' attribute based on the selected XR mode.
+								if (xr_mode_index == XR_MODE_OVR) {
+									string_table.write[attr_value] = "com.samsung.android.vr.application.mode";
+								} else if (xr_mode_index == XR_MODE_ARCORE) {
+									string_table.write[attr_value] = "com.google.ar.core";
+								}
 							}
+							if (tname == "meta-data" && attrname == "value" && value == "xr_mode_metadata_value") {
+								// Update the meta-data 'android:value' attribute based on the selected XR mode.
+								if (xr_mode_index == XR_MODE_OVR) {
+									string_table.write[attr_value] = "vr_only";
+								} else if (xr_mode_index == XR_MODE_ARCORE) {
+									string_table.write[attr_value] = "required";
+								}
+							}
+
+							/* Seems to crash when trying to write the value.
+							if (tname == "uses-sdk" && attrname == "minSdkVersion") {
+								if (xr_mode_index == XR_MODE_ARCORE) {
+									// ARCore requires a min sdk version of 24.
+									if (value.to_int() < 24) {
+										string_table.write[attr_value] = "24";
+									}
+								}
+							}
+							*/
 						}
 
 						if (tname == "meta-data" && attrname == "value" && is_focus_aware_metadata) {
@@ -1494,7 +1527,7 @@ public:
 	virtual void get_export_options(List<ExportOption> *r_options) {
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR,AR Core"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "xr_features/focus_awareness"), false));
@@ -2615,6 +2648,8 @@ public:
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
 		if (xr_mode_index == 1 /* XRMode.OVR */) {
 			cl.push_back("--xr_mode_ovr");
+		} else if (xr_mode_index == 2 /* XRMode.ARCode */) {
+			cl.push_back("--xr_mode_arcore");
 		} else {
 			// XRMode.REGULAR is the default.
 			cl.push_back("--xr_mode_regular");

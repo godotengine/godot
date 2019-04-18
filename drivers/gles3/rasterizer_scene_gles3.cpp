@@ -4421,7 +4421,6 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 						VS::get_singleton()->texture_bind(camera_YCbCr, 0);
 
 						storage->shaders.copy.set_conditional(CopyShaderGLES3::YCBCR_TO_SRGB, true);
-
 					} else if (feed->get_datatype() == CameraFeed::FEED_YCBCR_SEP) {
 						RID camera_Y = feed->get_texture(CameraServer::FEED_Y_IMAGE);
 						RID camera_CbCr = feed->get_texture(CameraServer::FEED_CBCR_IMAGE);
@@ -4431,6 +4430,14 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 						storage->shaders.copy.set_conditional(CopyShaderGLES3::SEP_CBCR_TEXTURE, true);
 						storage->shaders.copy.set_conditional(CopyShaderGLES3::YCBCR_TO_SRGB, true);
+					} else if (feed->get_datatype() == CameraFeed::FEED_EXTERNAL) {
+						RID camera_RGBA = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
+
+						VS::get_singleton()->texture_bind(camera_RGBA, 0);
+
+						// TODO: we need to find a better way of doing this
+						storage->shaders.copy.add_custom_define("#extension GL_OES_EGL_image_external_essl3 : require\n");
+						storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_EXTERNAL_SAMPLER, true);
 					};
 
 					storage->shaders.copy.bind();
@@ -4439,11 +4446,13 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 					_copy_screen(true, true);
 
 					//turn off everything used
+					storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_EXTERNAL_SAMPLER, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES3::USE_DISPLAY_TRANSFORM, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES3::DISABLE_ALPHA, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES3::SRGB_TO_LINEAR, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES3::SEP_CBCR_TEXTURE, false);
 					storage->shaders.copy.set_conditional(CopyShaderGLES3::YCBCR_TO_SRGB, false);
+					storage->shaders.copy.clear_custom_defines();
 
 					//restore
 					glEnable(GL_BLEND);
@@ -4453,6 +4462,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 				} else {
 					// don't have a feed, just show greenscreen :)
 					clear_color = Color(0.0, 1.0, 0.0, 1.0);
+					storage->frame.clear_request = true;
 				}
 				break;
 			default: {
