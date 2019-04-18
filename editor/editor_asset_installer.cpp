@@ -228,6 +228,7 @@ void EditorAssetInstaller::ok_pressed() {
 	int ret = unzGoToFirstFile(pkg);
 
 	Vector<String> failed_files;
+	Set<StringName> plugin_folders;
 
 	ProgressDialog::get_singleton()->add_task("uncompress", TTR("Uncompressing Assets"), status_map.size());
 
@@ -260,6 +261,17 @@ void EditorAssetInstaller::ok_pressed() {
 				DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
 				memdelete(da);
+
+				if (enable_plugins && dirpath.begins_with("res://addons")) {
+					Vector<String> separated = dirpath.split("/");
+					int addon_pos = separated.find("addons");
+					if (separated.size() >= addon_pos + 2) {
+						String plugin_folder = separated[addon_pos + 1];
+						if (!plugin_folders.has(plugin_folder)) {
+							plugin_folders.insert(plugin_folder);
+						}
+					}
+				}
 
 			} else {
 
@@ -307,11 +319,24 @@ void EditorAssetInstaller::ok_pressed() {
 			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
+	if (!failed_files.size()) {
+		for (Set<StringName>::Element *E = plugin_folders.front(); E; E = E->next()) {
+			EditorNode::get_singleton()->set_addon_plugin_enabled(E->get(), true, true);
+		}
+	}
+}
+
+void EditorAssetInstaller::custom_action(const String &p_action) {
+
+	enable_plugins = true;
+	ok_pressed();
+	hide();
 }
 
 void EditorAssetInstaller::_bind_methods() {
 
 	ClassDB::bind_method("_item_edited", &EditorAssetInstaller::_item_edited);
+	ClassDB::bind_method("custom_action", &EditorAssetInstaller::custom_action);
 }
 
 EditorAssetInstaller::EditorAssetInstaller() {
@@ -328,7 +353,12 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	get_ok()->set_text(TTR("Install"));
 	set_title(TTR("Package Installer"));
 
+	add_button("Install and enable plugins", true, "install_and_enable");
+
+	connect("custom_action", this, "custom_action");
+
 	updating = false;
+	enable_plugins = false;
 
 	set_hide_on_ok(true);
 }
