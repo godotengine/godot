@@ -776,6 +776,12 @@ void ColorPickerButton::_notification(int p_what) {
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
 		popup->hide();
 	}
+
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (popup && !is_visible_in_tree()) {
+			popup->hide();
+		}
+	}
 }
 
 void ColorPickerButton::set_pick_color(const Color &p_color) {
