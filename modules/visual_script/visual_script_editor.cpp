@@ -1320,6 +1320,14 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	}
 }
 
+void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+		_generic_search();
+	}
+}
+
 void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -3435,6 +3443,7 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_end_node_move", &VisualScriptEditor::_end_node_move);
 	ClassDB::bind_method("_remove_node", &VisualScriptEditor::_remove_node);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
+	ClassDB::bind_method("_graph_gui_input", &VisualScriptEditor::_graph_gui_input);
 	ClassDB::bind_method("_node_ports_changed", &VisualScriptEditor::_node_ports_changed);
 	ClassDB::bind_method("_available_node_doubleclicked", &VisualScriptEditor::_available_node_doubleclicked);
 	ClassDB::bind_method("_default_value_edited", &VisualScriptEditor::_default_value_edited);
@@ -3559,6 +3568,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->connect("_end_node_move", this, "_end_node_move");
 	graph->connect("delete_nodes_request", this, "_on_nodes_delete");
 	graph->connect("duplicate_nodes_request", this, "_on_nodes_duplicate");
+	graph->connect("gui_input", this, "_graph_gui_input");
 	graph->set_drag_forwarding(this);
 	graph->hide();
 	graph->connect("scroll_offset_changed", this, "_graph_ofs_changed");
