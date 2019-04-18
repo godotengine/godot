@@ -36,9 +36,9 @@ extern "C" {
 #define ZSTD_DUBT_UNSORTED_MARK 1   /* For btlazy2 strategy, index 1 now means "unsorted".
                                        It could be confused for a real successor at index "1", if sorted as larger than its predecessor.
                                        It's not a big deal though : candidate will just be sorted again.
-                                       Additionnally, candidate position 1 will be lost.
+                                       Additionally, candidate position 1 will be lost.
                                        But candidate 1 cannot hide a large tree of candidates, so it's a minimal loss.
-                                       The benefit is that ZSTD_DUBT_UNSORTED_MARK cannot be misdhandled after table re-use with a different strategy
+                                       The benefit is that ZSTD_DUBT_UNSORTED_MARK cannot be mishandled after table re-use with a different strategy
                                        Constant required by ZSTD_compressBlock_btlazy2() and ZSTD_reduceTable_internal() */
 
 
@@ -53,6 +53,14 @@ typedef struct ZSTD_prefixDict_s {
     size_t dictSize;
     ZSTD_dictContentType_e dictContentType;
 } ZSTD_prefixDict;
+
+typedef struct {
+    void* dictBuffer;
+    void const* dict;
+    size_t dictSize;
+    ZSTD_dictContentType_e dictContentType;
+    ZSTD_CDict* cdict;
+} ZSTD_localDict;
 
 typedef struct {
     U32 CTable[HUF_CTABLE_SIZE_U32(255)];
@@ -107,6 +115,7 @@ typedef struct {
     U32  offCodeSumBasePrice;    /* to compare to log2(offreq)  */
     ZSTD_OptPrice_e priceType;   /* prices can be determined dynamically, or follow a pre-defined cost structure */
     const ZSTD_entropyCTables_t* symbolCosts;  /* pre-calculated dictionary statistics */
+    ZSTD_literalCompressionMode_e literalCompressionMode;
 } optState_t;
 
 typedef struct {
@@ -188,6 +197,7 @@ struct ZSTD_CCtx_params_s {
                                 * 1<<wLog, even for dictionary */
 
     ZSTD_dictAttachPref_e attachDictPref;
+    ZSTD_literalCompressionMode_e literalCompressionMode;
 
     /* Multithreading: used to pass parameters to mtctx */
     int nbWorkers;
@@ -243,7 +253,7 @@ struct ZSTD_CCtx_s {
     U32    frameEnded;
 
     /* Dictionary */
-    ZSTD_CDict* cdictLocal;
+    ZSTD_localDict localDict;
     const ZSTD_CDict* cdict;
     ZSTD_prefixDict prefixDict;   /* single-usage dictionary */
 
@@ -806,13 +816,6 @@ size_t ZSTD_initCStream_internal(ZSTD_CStream* zcs,
 
 void ZSTD_resetSeqStore(seqStore_t* ssPtr);
 
-/*! ZSTD_compressStream_generic() :
- *  Private use only. To be called from zstdmt_compress.c in single-thread mode. */
-size_t ZSTD_compressStream_generic(ZSTD_CStream* zcs,
-                                   ZSTD_outBuffer* output,
-                                   ZSTD_inBuffer* input,
-                                   ZSTD_EndDirective const flushMode);
-
 /*! ZSTD_getCParamsFromCDict() :
  *  as the name implies */
 ZSTD_compressionParameters ZSTD_getCParamsFromCDict(const ZSTD_CDict* cdict);
@@ -839,7 +842,7 @@ size_t ZSTD_compress_advanced_internal(ZSTD_CCtx* cctx,
 /* ZSTD_writeLastEmptyBlock() :
  * output an empty Block with end-of-frame mark to complete a frame
  * @return : size of data written into `dst` (== ZSTD_blockHeaderSize (defined in zstd_internal.h))
- *           or an error code if `dstCapcity` is too small (<ZSTD_blockHeaderSize)
+ *           or an error code if `dstCapacity` is too small (<ZSTD_blockHeaderSize)
  */
 size_t ZSTD_writeLastEmptyBlock(void* dst, size_t dstCapacity);
 

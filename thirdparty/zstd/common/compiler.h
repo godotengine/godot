@@ -40,7 +40,7 @@
 
 /**
  * FORCE_INLINE_TEMPLATE is used to define C "templates", which take constant
- * parameters. They must be inlined for the compiler to elimininate the constant
+ * parameters. They must be inlined for the compiler to eliminate the constant
  * branches.
  */
 #define FORCE_INLINE_TEMPLATE static INLINE_KEYWORD FORCE_INLINE_ATTR
