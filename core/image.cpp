@@ -1717,8 +1717,13 @@ Error Image::apply_palette() {
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 	}
+	bool used_mipmaps = has_mipmaps();
+
 	create(width, height, mipmaps, format, dest_data);
 
+	if (used_mipmaps) {
+		generate_mipmaps();
+	}
 	return OK;
 }
 
