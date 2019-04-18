@@ -111,7 +111,8 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 void unhandled_exception(MonoException *p_exc) {
 	mono_unhandled_exception((MonoObject *)p_exc); // prints the exception as well
-	abort();
+	// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
+	GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
 	GD_UNREACHABLE();
 }
 
