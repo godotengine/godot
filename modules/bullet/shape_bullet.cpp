@@ -316,7 +316,7 @@ void ConvexPolygonShapeBullet::set_data(const Variant &p_data) {
 void ConvexPolygonShapeBullet::get_vertices(Vector<Vector3> &out_vertices) {
 	const int n_of_vertices = vertices.size();
 	out_vertices.resize(n_of_vertices);
-	for (int i = n_of_vertices - 1; 0 <= i; --i) {
+	for (int i = 0; i < n_of_vertices; ++i) {
 		B_TO_G(vertices[i], out_vertices.write[i]);
 	}
 }
@@ -336,7 +336,7 @@ void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
 	// Make a copy of vertices
 	const int n_of_vertices = p_vertices.size();
 	vertices.resize(n_of_vertices);
-	for (int i = n_of_vertices - 1; 0 <= i; --i) {
+	for (int i = 0; i < n_of_vertices; ++i) {
 		G_TO_B(p_vertices[i], vertices[i]);
 	}
 	notifyShapeChanged();

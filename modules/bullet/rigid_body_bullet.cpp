@@ -222,7 +222,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 
 	btVector3 owner_scale(owner->get_bt_body_scale());
 
-	for (int i = shapes_count - 1; 0 <= i; --i) {
+	for (int i = 0; i < shapes_count; ++i) {
 		shape_wrapper = &shapes_wrappers[i];
 		if (!shape_wrapper->active) {
 			continue;
@@ -247,7 +247,7 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 }
 
 void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
-	for (int i = shapes.size() - 1; 0 <= i; --i) {
+	for (int i = 0; i < shapes.size(); ++i) {
 		if (shapes[i].shape) {
 			bulletdelete(shapes.write[i].shape);
 		}
@@ -290,7 +290,7 @@ RigidBodyBullet::RigidBodyBullet() :
 	reload_axis_lock();
 
 	areasWhereIam.resize(maxAreasWhereIam);
-	for (int i = areasWhereIam.size() - 1; 0 <= i; --i) {
+	for (int i = 0; i < areasWhereIam.size(); ++i) {
 		areasWhereIam.write[i] = NULL;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
@@ -451,7 +451,7 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 }
 
 bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
-	for (int i = prev_collision_count - 1; 0 <= i; --i) {
+	for (int i = 0; i < prev_collision_count; ++i) {
 		if ((*prev_collision_traces)[i] == p_other_object)
 			return true;
 	}

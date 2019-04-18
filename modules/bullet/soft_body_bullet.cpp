@@ -217,7 +217,7 @@ btScalar SoftBodyBullet::get_node_mass(int node_index) const {
 
 void SoftBodyBullet::reset_all_node_mass() {
 	if (bt_soft_body) {
-		for (int i = pinned_nodes.size() - 1; 0 <= i; --i) {
+		for (int i = 0; i < pinned_nodes.size(); ++i) {
 			bt_soft_body->setMass(pinned_nodes[i], 1);
 		}
 	}
@@ -232,7 +232,7 @@ void SoftBodyBullet::reset_all_node_positions() {
 	PoolVector<Vector3> vs_vertices(arrays[VS::ARRAY_VERTEX]);
 	PoolVector<Vector3>::Read vs_vertices_read = vs_vertices.read();
 
-	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {
+	for (int vertex_index = 0; vertex_index < bt_soft_body->m_nodes.size(); ++vertex_index) {
 
 		G_TO_B(vs_vertices_read[indices_table[vertex_index][0]], bt_soft_body->m_nodes[vertex_index].m_x);
 
@@ -446,7 +446,7 @@ void SoftBodyBullet::setup_soft_body() {
 	bt_soft_body->updateBounds();
 
 	// Set pinned nodes
-	for (int i = pinned_nodes.size() - 1; 0 <= i; --i) {
+	for (int i = 0; i < pinned_nodes.size(); ++i) {
 		bt_soft_body->setMass(pinned_nodes[i], 0);
 	}
 }
@@ -465,7 +465,7 @@ void SoftBodyBullet::unpin_node(int p_node_index) {
 }
 
 int SoftBodyBullet::search_node_pinned(int p_node_index) const {
-	for (int i = pinned_nodes.size() - 1; 0 <= i; --i) {
+	for (int i = 0; i < pinned_nodes.size(); ++i) {
 		if (p_node_index == pinned_nodes[i]) {
 			return i;
 		}
