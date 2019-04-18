@@ -2870,39 +2870,41 @@ String OS_Windows::get_godot_dir_name() const {
 
 String OS_Windows::get_system_dir(SystemDir p_dir) const {
 
-	int id;
+	KNOWNFOLDERID id;
 
 	switch (p_dir) {
 		case SYSTEM_DIR_DESKTOP: {
-			id = CSIDL_DESKTOPDIRECTORY;
+			id = FOLDERID_Desktop;
 		} break;
 		case SYSTEM_DIR_DCIM: {
-			id = CSIDL_MYPICTURES;
+			id = FOLDERID_Pictures;
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
-			id = CSIDL_PERSONAL;
+			id = FOLDERID_Documents;
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
-			id = 0x000C;
+			id = FOLDERID_Downloads;
 		} break;
 		case SYSTEM_DIR_MOVIES: {
-			id = CSIDL_MYVIDEO;
+			id = FOLDERID_Videos;
 		} break;
 		case SYSTEM_DIR_MUSIC: {
-			id = CSIDL_MYMUSIC;
+			id = FOLDERID_Music;
 		} break;
 		case SYSTEM_DIR_PICTURES: {
-			id = CSIDL_MYPICTURES;
+			id = FOLDERID_Pictures;
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
-			id = CSIDL_MYMUSIC;
+			id = FOLDERID_Music;
 		} break;
 	}
 
-	WCHAR szPath[MAX_PATH];
-	HRESULT res = SHGetFolderPathW(NULL, id, NULL, 0, szPath);
+	PWSTR szPath;
+	HRESULT res = SHGetKnownFolderPath(id, 0, NULL, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	return String(szPath);
+	String path = String(szPath);
+	CoTaskMemFree(szPath);
+	return path;
 }
 
 String OS_Windows::get_user_data_dir() const {
