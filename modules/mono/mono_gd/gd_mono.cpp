@@ -30,6 +30,7 @@
 
 #include "gd_mono.h"
 
+#include <mono/metadata/environment.h>
 #include <mono/metadata/exception.h>
 #include <mono/metadata/mono-config.h>
 #include <mono/metadata/mono-debug.h>
@@ -1008,7 +1009,9 @@ void GDMono::unhandled_exception_hook(MonoObject *p_exc, void *) {
 	if (ScriptDebugger::get_singleton())
 		ScriptDebugger::get_singleton()->idle_poll();
 #endif
-	abort();
+
+	exit(mono_environment_exitcode_get());
+
 	GD_UNREACHABLE();
 }
 
