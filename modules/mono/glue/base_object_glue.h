@@ -60,6 +60,8 @@ MonoBoolean godot_icall_DynamicGodotObject_GetMember(Object *p_ptr, MonoString *
 
 MonoBoolean godot_icall_DynamicGodotObject_SetMember(Object *p_ptr, MonoString *p_name, MonoObject *p_value);
 
+MonoString *godot_icall_Object_ToString(Object *p_ptr);
+
 // Register internal calls
 
 void godot_register_object_icalls();
