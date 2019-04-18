@@ -37,6 +37,7 @@
 #include "core/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
+#include "scene/main/viewport.h"
 #include "visual_script_expression.h"
 #include "visual_script_flow_control.h"
 #include "visual_script_func_nodes.h"
@@ -1330,6 +1331,7 @@ void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 }
 
 void VisualScriptEditor::_generic_search() {
+	port_action_pos = graph->get_viewport()->get_mouse_position() - graph->get_global_position();
 	new_connect_node_select->select_from_visual_script(String(""), false);
 }
 
