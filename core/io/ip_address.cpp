@@ -213,24 +213,6 @@ void IP_Address::set_ipv6(const uint8_t *p_buf) {
 		field8[i] = p_buf[i];
 }
 
-void IP_Address::set_adapter(const String &p_adapter) {
-
-	adapter = p_adapter;
-}
-String IP_Address::get_adapter() const {
-
-	return adapter;
-}
-
-void IP_Address::set_adapter_friendly(const String &p_adapter) {
-
-	adapter_friendly = p_adapter;
-}
-String IP_Address::get_adapter_friendly() const {
-
-	return adapter_friendly;
-}
-
 IP_Address::IP_Address(const String &p_string) {
 
 	clear();

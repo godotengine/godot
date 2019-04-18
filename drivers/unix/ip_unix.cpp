@@ -234,9 +234,6 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
 			};
 
-			ip.set_adapter(adapter->AdapterName);
-			ip.set_adapter_friendly(adapter->FriendlyName);
-
 			r_addresses->push_back(ip);
 
 			address = address->Next;
@@ -331,8 +328,6 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 			continue;
 
 		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);
-		ip.set_adapter(ifa->ifa_name);
-		ip.set_adapter_friendly(ifa->ifa_name);
 		r_addresses->push_back(ip);
 	}
 

@@ -42,9 +42,6 @@ private:
 		uint32_t field32[4];
 	};
 
-	String adapter;
-	String adapter_friendly;
-
 	bool valid;
 	bool wildcard;
 
@@ -81,12 +78,6 @@ public:
 
 	const uint8_t *get_ipv6() const;
 	void set_ipv6(const uint8_t *p_buf);
-
-	void set_adapter(const String &p_adapter);
-	String get_adapter() const;
-
-	void set_adapter_friendly(const String &p_adapter);
-	String get_adapter_friendly() const;
 
 	operator String() const;
 	IP_Address(const String &p_string);
