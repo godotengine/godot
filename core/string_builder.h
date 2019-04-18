@@ -70,6 +70,10 @@ public:
 		return appended_strings.size();
 	}
 
+	_FORCE_INLINE_ uint32_t get_string_length() const {
+		return string_length;
+	}
+
 	String as_string() const;
 
 	_FORCE_INLINE_ operator String() const {

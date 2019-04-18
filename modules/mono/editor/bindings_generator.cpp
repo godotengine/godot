@@ -38,7 +38,6 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
-#include "core/string_builder.h"
 #include "core/ucaps.h"
 
 #include "../glue/cs_compressed.gen.h"
@@ -757,47 +756,47 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 	}
 }
 
-void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
+void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 	// Constants (in partial GD class)
 
-	p_output.push_back("\n#pragma warning disable CS1591 // Disable warning: "
-					   "'Missing XML comment for publicly visible type or member'\n");
+	p_output.append("\n#pragma warning disable CS1591 // Disable warning: "
+					"'Missing XML comment for publicly visible type or member'\n");
 
-	p_output.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	p_output.push_back(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
+	p_output.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
+	p_output.append(INDENT1 "public static partial class " BINDINGS_GLOBAL_SCOPE_CLASS "\n" INDENT1 "{");
 
 	for (const List<ConstantInterface>::Element *E = global_constants.front(); E; E = E->next()) {
 		const ConstantInterface &iconstant = E->get();
 
 		if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), NULL);
-			Vector<String> summary_lines = xml_summary.split("\n");
+			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 			if (summary_lines.size()) {
-				p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
-					p_output.push_back(INDENT2 "/// ");
-					p_output.push_back(summary_lines[i]);
-					p_output.push_back("\n");
+					p_output.append(INDENT2 "/// ");
+					p_output.append(summary_lines[i]);
+					p_output.append("\n");
 				}
 
-				p_output.push_back(INDENT2 "/// </summary>");
+				p_output.append(INDENT2 "/// </summary>");
 			}
 		}
 
-		p_output.push_back(MEMBER_BEGIN "public const int ");
-		p_output.push_back(iconstant.proxy_name);
-		p_output.push_back(" = ");
-		p_output.push_back(itos(iconstant.value));
-		p_output.push_back(";");
+		p_output.append(MEMBER_BEGIN "public const int ");
+		p_output.append(iconstant.proxy_name);
+		p_output.append(" = ");
+		p_output.append(itos(iconstant.value));
+		p_output.append(";");
 	}
 
 	if (!global_constants.empty())
-		p_output.push_back("\n");
+		p_output.append("\n");
 
-	p_output.push_back(INDENT1 CLOSE_BLOCK); // end of GD class
+	p_output.append(INDENT1 CLOSE_BLOCK); // end of GD class
 
 	// Enums
 
@@ -821,51 +820,51 @@ void BindingsGenerator::_generate_global_constants(List<String> &p_output) {
 				WARN_PRINTS("Declaring global enum `" + enum_proxy_name + "` inside static class `" + enum_class_name + "`");
 			}
 
-			p_output.push_back("\n" INDENT1 "public static partial class ");
-			p_output.push_back(enum_class_name);
-			p_output.push_back("\n" INDENT1 OPEN_BLOCK);
+			p_output.append("\n" INDENT1 "public static partial class ");
+			p_output.append(enum_class_name);
+			p_output.append("\n" INDENT1 OPEN_BLOCK);
 		}
 
-		p_output.push_back("\n" INDENT1 "public enum ");
-		p_output.push_back(enum_proxy_name);
-		p_output.push_back("\n" INDENT1 OPEN_BLOCK);
+		p_output.append("\n" INDENT1 "public enum ");
+		p_output.append(enum_proxy_name);
+		p_output.append("\n" INDENT1 OPEN_BLOCK);
 
 		for (const List<ConstantInterface>::Element *F = ienum.constants.front(); F; F = F->next()) {
 			const ConstantInterface &iconstant = F->get();
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), NULL);
-				Vector<String> summary_lines = xml_summary.split("\n");
+				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
-					p_output.push_back(INDENT2 "/// <summary>\n");
+					p_output.append(INDENT2 "/// <summary>\n");
 
 					for (int i = 0; i < summary_lines.size(); i++) {
-						p_output.push_back(INDENT2 "/// ");
-						p_output.push_back(summary_lines[i]);
-						p_output.push_back("\n");
+						p_output.append(INDENT2 "/// ");
+						p_output.append(summary_lines[i]);
+						p_output.append("\n");
 					}
 
-					p_output.push_back(INDENT2 "/// </summary>\n");
+					p_output.append(INDENT2 "/// </summary>\n");
 				}
 			}
 
-			p_output.push_back(INDENT2);
-			p_output.push_back(iconstant.proxy_name);
-			p_output.push_back(" = ");
-			p_output.push_back(itos(iconstant.value));
-			p_output.push_back(F != ienum.constants.back() ? ",\n" : "\n");
+			p_output.append(INDENT2);
+			p_output.append(iconstant.proxy_name);
+			p_output.append(" = ");
+			p_output.append(itos(iconstant.value));
+			p_output.append(F != ienum.constants.back() ? ",\n" : "\n");
 		}
 
-		p_output.push_back(INDENT1 CLOSE_BLOCK);
+		p_output.append(INDENT1 CLOSE_BLOCK);
 
 		if (enum_in_static_class)
-			p_output.push_back(INDENT1 CLOSE_BLOCK);
+			p_output.append(INDENT1 CLOSE_BLOCK);
 	}
 
-	p_output.push_back(CLOSE_BLOCK); // end of namespace
+	p_output.append(CLOSE_BLOCK); // end of namespace
 
-	p_output.push_back("\n#pragma warning restore CS1591\n");
+	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output) {
@@ -893,7 +892,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 
 	// Generate source file for global scope constants and enums
 	{
-		List<String> constants_source;
+		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
 		String output_file = path_join(core_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
 		Error save_err = _save_file(output_file, constants_source);
@@ -951,28 +950,28 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 		compile_items.push_back(output_file);
 	}
 
-	List<String> cs_icalls_content;
+	StringBuilder cs_icalls_content;
 
-	cs_icalls_content.push_back("using System;\n"
-								"using System.Runtime.CompilerServices;\n"
-								"\n");
-	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 OPEN_BLOCK);
+	cs_icalls_content.append("using System;\n"
+							 "using System.Runtime.CompilerServices;\n"
+							 "\n");
+	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
+	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS "\n" INDENT1 OPEN_BLOCK);
 
-	cs_icalls_content.push_back(MEMBER_BEGIN "internal static ulong godot_api_hash = ");
-	cs_icalls_content.push_back(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + ";\n");
-	cs_icalls_content.push_back(MEMBER_BEGIN "internal static uint bindings_version = ");
-	cs_icalls_content.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
-	cs_icalls_content.push_back(MEMBER_BEGIN "internal static uint cs_glue_version = ");
-	cs_icalls_content.push_back(String::num_uint64(CS_GLUE_VERSION) + ";\n");
+	cs_icalls_content.append(MEMBER_BEGIN "internal static ulong godot_api_hash = ");
+	cs_icalls_content.append(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + ";\n");
+	cs_icalls_content.append(MEMBER_BEGIN "internal static uint bindings_version = ");
+	cs_icalls_content.append(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
+	cs_icalls_content.append(MEMBER_BEGIN "internal static uint cs_glue_version = ");
+	cs_icalls_content.append(String::num_uint64(CS_GLUE_VERSION) + ";\n");
 
-#define ADD_INTERNAL_CALL(m_icall)                                                                  \
-	if (!m_icall.editor_only) {                                                                     \
-		cs_icalls_content.push_back(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.push_back(INDENT2 "internal extern static ");                             \
-		cs_icalls_content.push_back(m_icall.im_type_out + " ");                                     \
-		cs_icalls_content.push_back(m_icall.name + "(");                                            \
-		cs_icalls_content.push_back(m_icall.im_sig + ");\n");                                       \
+#define ADD_INTERNAL_CALL(m_icall)                                                               \
+	if (!m_icall.editor_only) {                                                                  \
+		cs_icalls_content.append(MEMBER_BEGIN "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
+		cs_icalls_content.append(INDENT2 "internal extern static ");                             \
+		cs_icalls_content.append(m_icall.im_type_out + " ");                                     \
+		cs_icalls_content.append(m_icall.name + "(");                                            \
+		cs_icalls_content.append(m_icall.im_sig + ");\n");                                       \
 	}
 
 	for (const List<InternalCall>::Element *E = core_custom_icalls.front(); E; E = E->next())
@@ -982,7 +981,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 
 #undef ADD_INTERNAL_CALL
 
-	cs_icalls_content.push_back(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
+	cs_icalls_content.append(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
 
 	String internal_methods_file = path_join(core_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
@@ -1049,29 +1048,29 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir
 		compile_items.push_back(output_file);
 	}
 
-	List<String> cs_icalls_content;
+	StringBuilder cs_icalls_content;
 
-	cs_icalls_content.push_back("using System;\n"
-								"using System.Runtime.CompilerServices;\n"
-								"\n");
-	cs_icalls_content.push_back("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
-	cs_icalls_content.push_back(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" INDENT1 OPEN_BLOCK);
+	cs_icalls_content.append("using System;\n"
+							 "using System.Runtime.CompilerServices;\n"
+							 "\n");
+	cs_icalls_content.append("namespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
+	cs_icalls_content.append(INDENT1 "internal static class " BINDINGS_CLASS_NATIVECALLS_EDITOR "\n" INDENT1 OPEN_BLOCK);
 
-	cs_icalls_content.push_back(INDENT2 "internal static ulong godot_api_hash = ");
-	cs_icalls_content.push_back(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) + ";\n");
-	cs_icalls_content.push_back(INDENT2 "internal static uint bindings_version = ");
-	cs_icalls_content.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
-	cs_icalls_content.push_back(INDENT2 "internal static uint cs_glue_version = ");
-	cs_icalls_content.push_back(String::num_uint64(CS_GLUE_VERSION) + ";\n");
-	cs_icalls_content.push_back("\n");
+	cs_icalls_content.append(INDENT2 "internal static ulong godot_api_hash = ");
+	cs_icalls_content.append(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) + ";\n");
+	cs_icalls_content.append(INDENT2 "internal static uint bindings_version = ");
+	cs_icalls_content.append(String::num_uint64(BINDINGS_GENERATOR_VERSION) + ";\n");
+	cs_icalls_content.append(INDENT2 "internal static uint cs_glue_version = ");
+	cs_icalls_content.append(String::num_uint64(CS_GLUE_VERSION) + ";\n");
+	cs_icalls_content.append("\n");
 
-#define ADD_INTERNAL_CALL(m_icall)                                                             \
-	if (m_icall.editor_only) {                                                                 \
-		cs_icalls_content.push_back(INDENT2 "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
-		cs_icalls_content.push_back(INDENT2 "internal extern static ");                        \
-		cs_icalls_content.push_back(m_icall.im_type_out + " ");                                \
-		cs_icalls_content.push_back(m_icall.name + "(");                                       \
-		cs_icalls_content.push_back(m_icall.im_sig + ");\n");                                  \
+#define ADD_INTERNAL_CALL(m_icall)                                                          \
+	if (m_icall.editor_only) {                                                              \
+		cs_icalls_content.append(INDENT2 "[MethodImpl(MethodImplOptions.InternalCall)]\n"); \
+		cs_icalls_content.append(INDENT2 "internal extern static ");                        \
+		cs_icalls_content.append(m_icall.im_type_out + " ");                                \
+		cs_icalls_content.append(m_icall.name + "(");                                       \
+		cs_icalls_content.append(m_icall.im_sig + ");\n");                                  \
 	}
 
 	for (const List<InternalCall>::Element *E = editor_custom_icalls.front(); E; E = E->next())
@@ -1081,7 +1080,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir
 
 #undef ADD_INTERNAL_CALL
 
-	cs_icalls_content.push_back(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
+	cs_icalls_content.append(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
 
 	String internal_methods_file = path_join(core_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
@@ -1174,60 +1173,60 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
-	List<String> output;
+	StringBuilder output;
 
-	output.push_back("using System;\n"); // IntPtr
-	output.push_back("using System.Diagnostics;\n"); // DebuggerBrowsable
+	output.append("using System;\n"); // IntPtr
+	output.append("using System.Diagnostics;\n"); // DebuggerBrowsable
 
-	output.push_back("\n"
-					 "#pragma warning disable CS1591 // Disable warning: "
-					 "'Missing XML comment for publicly visible type or member'\n"
-					 "#pragma warning disable CS1573 // Disable warning: "
-					 "'Parameter has no matching param tag in the XML comment'\n");
+	output.append("\n"
+				  "#pragma warning disable CS1591 // Disable warning: "
+				  "'Missing XML comment for publicly visible type or member'\n"
+				  "#pragma warning disable CS1573 // Disable warning: "
+				  "'Parameter has no matching param tag in the XML comment'\n");
 
-	output.push_back("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
+	output.append("\nnamespace " BINDINGS_NAMESPACE "\n" OPEN_BLOCK);
 
 	const DocData::ClassDoc *class_doc = itype.class_doc;
 
 	if (class_doc && class_doc->description.size()) {
 		String xml_summary = bbcode_to_xml(fix_doc_description(class_doc->description), &itype);
-		Vector<String> summary_lines = xml_summary.split("\n");
+		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 		if (summary_lines.size()) {
-			output.push_back(INDENT1 "/// <summary>\n");
+			output.append(INDENT1 "/// <summary>\n");
 
 			for (int i = 0; i < summary_lines.size(); i++) {
-				output.push_back(INDENT1 "/// ");
-				output.push_back(summary_lines[i]);
-				output.push_back("\n");
+				output.append(INDENT1 "/// ");
+				output.append(summary_lines[i]);
+				output.append("\n");
 			}
 
-			output.push_back(INDENT1 "/// </summary>\n");
+			output.append(INDENT1 "/// </summary>\n");
 		}
 	}
 
-	output.push_back(INDENT1 "public ");
+	output.append(INDENT1 "public ");
 	if (itype.is_singleton) {
-		output.push_back("static partial class ");
+		output.append("static partial class ");
 	} else {
-		output.push_back(itype.is_instantiable ? "partial class " : "abstract partial class ");
+		output.append(itype.is_instantiable ? "partial class " : "abstract partial class ");
 	}
-	output.push_back(itype.proxy_name);
+	output.append(itype.proxy_name);
 
 	if (itype.is_singleton) {
-		output.push_back("\n");
+		output.append("\n");
 	} else if (is_derived_type) {
 		if (obj_types.has(itype.base_name)) {
-			output.push_back(" : ");
-			output.push_back(obj_types[itype.base_name].proxy_name);
-			output.push_back("\n");
+			output.append(" : ");
+			output.append(obj_types[itype.base_name].proxy_name);
+			output.append("\n");
 		} else {
 			ERR_PRINTS("Base type '" + itype.base_name.operator String() + "' does not exist, for class " + itype.name);
 			return ERR_INVALID_DATA;
 		}
 	}
 
-	output.push_back(INDENT1 "{");
+	output.append(INDENT1 "{");
 
 	if (class_doc) {
 
@@ -1238,30 +1237,30 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 				String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), &itype);
-				Vector<String> summary_lines = xml_summary.split("\n");
+				Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 				if (summary_lines.size()) {
-					output.push_back(MEMBER_BEGIN "/// <summary>\n");
+					output.append(MEMBER_BEGIN "/// <summary>\n");
 
 					for (int i = 0; i < summary_lines.size(); i++) {
-						output.push_back(INDENT2 "/// ");
-						output.push_back(summary_lines[i]);
-						output.push_back("\n");
+						output.append(INDENT2 "/// ");
+						output.append(summary_lines[i]);
+						output.append("\n");
 					}
 
-					output.push_back(INDENT2 "/// </summary>");
+					output.append(INDENT2 "/// </summary>");
 				}
 			}
 
-			output.push_back(MEMBER_BEGIN "public const int ");
-			output.push_back(iconstant.proxy_name);
-			output.push_back(" = ");
-			output.push_back(itos(iconstant.value));
-			output.push_back(";");
+			output.append(MEMBER_BEGIN "public const int ");
+			output.append(iconstant.proxy_name);
+			output.append(" = ");
+			output.append(itos(iconstant.value));
+			output.append(";");
 		}
 
 		if (itype.constants.size())
-			output.push_back("\n");
+			output.append("\n");
 
 		// Add enums
 
@@ -1270,38 +1269,38 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			ERR_FAIL_COND_V(ienum.constants.empty(), ERR_BUG);
 
-			output.push_back(MEMBER_BEGIN "public enum ");
-			output.push_back(ienum.cname.operator String());
-			output.push_back(MEMBER_BEGIN OPEN_BLOCK);
+			output.append(MEMBER_BEGIN "public enum ");
+			output.append(ienum.cname.operator String());
+			output.append(MEMBER_BEGIN OPEN_BLOCK);
 
 			for (const List<ConstantInterface>::Element *F = ienum.constants.front(); F; F = F->next()) {
 				const ConstantInterface &iconstant = F->get();
 
 				if (iconstant.const_doc && iconstant.const_doc->description.size()) {
 					String xml_summary = bbcode_to_xml(fix_doc_description(iconstant.const_doc->description), &itype);
-					Vector<String> summary_lines = xml_summary.split("\n");
+					Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 					if (summary_lines.size()) {
-						output.push_back(INDENT3 "/// <summary>\n");
+						output.append(INDENT3 "/// <summary>\n");
 
 						for (int i = 0; i < summary_lines.size(); i++) {
-							output.push_back(INDENT3 "/// ");
-							output.push_back(summary_lines[i]);
-							output.push_back("\n");
+							output.append(INDENT3 "/// ");
+							output.append(summary_lines[i]);
+							output.append("\n");
 						}
 
-						output.push_back(INDENT3 "/// </summary>\n");
+						output.append(INDENT3 "/// </summary>\n");
 					}
 				}
 
-				output.push_back(INDENT3);
-				output.push_back(iconstant.proxy_name);
-				output.push_back(" = ");
-				output.push_back(itos(iconstant.value));
-				output.push_back(F != ienum.constants.back() ? ",\n" : "\n");
+				output.append(INDENT3);
+				output.append(iconstant.proxy_name);
+				output.append(" = ");
+				output.append(itos(iconstant.value));
+				output.append(F != ienum.constants.back() ? ",\n" : "\n");
 			}
 
-			output.push_back(INDENT2 CLOSE_BLOCK);
+			output.append(INDENT2 CLOSE_BLOCK);
 		}
 
 		// Add properties
@@ -1322,53 +1321,53 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
 
-		output.push_back(MEMBER_BEGIN "private static Godot.Object singleton;\n");
-		output.push_back(MEMBER_BEGIN "public static Godot.Object Singleton\n" INDENT2 "{\n" INDENT3
-									  "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
-									  "singleton = Engine.GetSingleton(" BINDINGS_NATIVE_NAME_FIELD ");\n" INDENT4
-									  "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
+		output.append(MEMBER_BEGIN "private static Godot.Object singleton;\n");
+		output.append(MEMBER_BEGIN "public static Godot.Object Singleton\n" INDENT2 "{\n" INDENT3
+								   "get\n" INDENT3 "{\n" INDENT4 "if (singleton == null)\n" INDENT5
+								   "singleton = Engine.GetSingleton(" BINDINGS_NATIVE_NAME_FIELD ");\n" INDENT4
+								   "return singleton;\n" INDENT3 "}\n" INDENT2 "}\n");
 
-		output.push_back(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.push_back(itype.name);
-		output.push_back("\";\n");
+		output.append(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
+		output.append(itype.name);
+		output.append("\";\n");
 
-		output.push_back(INDENT2 "internal static IntPtr " BINDINGS_PTR_FIELD " = ");
-		output.push_back(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
-		output.push_back("." ICALL_PREFIX);
-		output.push_back(itype.name);
-		output.push_back(SINGLETON_ICALL_SUFFIX "();\n");
+		output.append(INDENT2 "internal static IntPtr " BINDINGS_PTR_FIELD " = ");
+		output.append(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
+		output.append("." ICALL_PREFIX);
+		output.append(itype.name);
+		output.append(SINGLETON_ICALL_SUFFIX "();\n");
 	} else if (is_derived_type) {
 		// Add member fields
 
-		output.push_back(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
-		output.push_back(itype.name);
-		output.push_back("\";\n");
+		output.append(MEMBER_BEGIN "private const string " BINDINGS_NATIVE_NAME_FIELD " = \"");
+		output.append(itype.name);
+		output.append("\";\n");
 
 		// Add default constructor
 		if (itype.is_instantiable) {
-			output.push_back(MEMBER_BEGIN "public ");
-			output.push_back(itype.proxy_name);
-			output.push_back("() : this(");
-			output.push_back(itype.memory_own ? "true" : "false");
+			output.append(MEMBER_BEGIN "public ");
+			output.append(itype.proxy_name);
+			output.append("() : this(");
+			output.append(itype.memory_own ? "true" : "false");
 
 			// The default constructor may also be called by the engine when instancing existing native objects
 			// The engine will initialize the pointer field of the managed side before calling the constructor
 			// This is why we only allocate a new native object from the constructor if the pointer field is not set
-			output.push_back(")\n" OPEN_BLOCK_L2 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" INDENT4 BINDINGS_PTR_FIELD " = ");
-			output.push_back(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
-			output.push_back("." + ctor_method);
-			output.push_back("(this);\n" CLOSE_BLOCK_L2);
+			output.append(")\n" OPEN_BLOCK_L2 "if (" BINDINGS_PTR_FIELD " == IntPtr.Zero)\n" INDENT4 BINDINGS_PTR_FIELD " = ");
+			output.append(itype.api_type == ClassDB::API_EDITOR ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS);
+			output.append("." + ctor_method);
+			output.append("(this);\n" CLOSE_BLOCK_L2);
 		} else {
 			// Hide the constructor
-			output.push_back(MEMBER_BEGIN "internal ");
-			output.push_back(itype.proxy_name);
-			output.push_back("() {}\n");
+			output.append(MEMBER_BEGIN "internal ");
+			output.append(itype.proxy_name);
+			output.append("() {}\n");
 		}
 
 		// Add.. em.. trick constructor. Sort of.
-		output.push_back(MEMBER_BEGIN "internal ");
-		output.push_back(itype.proxy_name);
-		output.push_back("(bool " CS_FIELD_MEMORYOWN ") : base(" CS_FIELD_MEMORYOWN ") {}\n");
+		output.append(MEMBER_BEGIN "internal ");
+		output.append(itype.proxy_name);
+		output.append("(bool " CS_FIELD_MEMORYOWN ") : base(" CS_FIELD_MEMORYOWN ") {}\n");
 	}
 
 	int method_bind_count = 0;
@@ -1395,17 +1394,17 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			custom_icalls.push_back(ctor_icall);
 	}
 
-	output.push_back(INDENT1 CLOSE_BLOCK /* class */
+	output.append(INDENT1 CLOSE_BLOCK /* class */
 					CLOSE_BLOCK /* namespace */);
 
-	output.push_back("\n"
-					 "#pragma warning restore CS1591\n"
-					 "#pragma warning restore CS1573\n");
+	output.append("\n"
+				  "#pragma warning restore CS1591\n"
+				  "#pragma warning restore CS1573\n");
 
 	return _save_file(p_output_file, output);
 }
 
-Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInterface &p_itype, const PropertyInterface &p_iprop, List<String> &p_output) {
+Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output) {
 
 	const MethodInterface *setter = p_itype.find_method_by_name(p_iprop.setter);
 
@@ -1452,72 +1451,72 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 
 	if (p_iprop.prop_doc && p_iprop.prop_doc->description.size()) {
 		String xml_summary = bbcode_to_xml(fix_doc_description(p_iprop.prop_doc->description), &p_itype);
-		Vector<String> summary_lines = xml_summary.split("\n");
+		Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
 		if (summary_lines.size()) {
-			p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+			p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 			for (int i = 0; i < summary_lines.size(); i++) {
-				p_output.push_back(INDENT2 "/// ");
-				p_output.push_back(summary_lines[i]);
-				p_output.push_back("\n");
+				p_output.append(INDENT2 "/// ");
+				p_output.append(summary_lines[i]);
+				p_output.append("\n");
 			}
 
-			p_output.push_back(INDENT2 "/// </summary>");
+			p_output.append(INDENT2 "/// </summary>");
 		}
 	}
 
-	p_output.push_back(MEMBER_BEGIN "public ");
+	p_output.append(MEMBER_BEGIN "public ");
 
 	if (p_itype.is_singleton)
-		p_output.push_back("static ");
+		p_output.append("static ");
 
-	p_output.push_back(prop_itype->cs_type);
-	p_output.push_back(" ");
-	p_output.push_back(p_iprop.proxy_name);
-	p_output.push_back("\n" INDENT2 OPEN_BLOCK);
+	p_output.append(prop_itype->cs_type);
+	p_output.append(" ");
+	p_output.append(p_iprop.proxy_name);
+	p_output.append("\n" INDENT2 OPEN_BLOCK);
 
 	if (getter) {
-		p_output.push_back(INDENT3 "get\n" OPEN_BLOCK_L3);
-		p_output.push_back("return ");
-		p_output.push_back(getter->proxy_name + "(");
+		p_output.append(INDENT3 "get\n" OPEN_BLOCK_L3);
+		p_output.append("return ");
+		p_output.append(getter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = getter->arguments.front()->get();
 			if (idx_arg.type.cname != name_cache.type_int) {
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == NULL);
-				p_output.push_back("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
+				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index));
 			} else {
-				p_output.push_back(itos(p_iprop.index));
+				p_output.append(itos(p_iprop.index));
 			}
 		}
-		p_output.push_back(");\n" CLOSE_BLOCK_L3);
+		p_output.append(");\n" CLOSE_BLOCK_L3);
 	}
 
 	if (setter) {
-		p_output.push_back(INDENT3 "set\n" OPEN_BLOCK_L3);
-		p_output.push_back(setter->proxy_name + "(");
+		p_output.append(INDENT3 "set\n" OPEN_BLOCK_L3);
+		p_output.append(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = setter->arguments.front()->get();
 			if (idx_arg.type.cname != name_cache.type_int) {
 				// Assume the index parameter is an enum
 				const TypeInterface *idx_arg_type = _get_type_or_null(idx_arg.type);
 				CRASH_COND(idx_arg_type == NULL);
-				p_output.push_back("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
+				p_output.append("(" + idx_arg_type->proxy_name + ")" + itos(p_iprop.index) + ", ");
 			} else {
-				p_output.push_back(itos(p_iprop.index) + ", ");
+				p_output.append(itos(p_iprop.index) + ", ");
 			}
 		}
-		p_output.push_back("value);\n" CLOSE_BLOCK_L3);
+		p_output.append("value);\n" CLOSE_BLOCK_L3);
 	}
 
-	p_output.push_back(CLOSE_BLOCK_L2);
+	p_output.append(CLOSE_BLOCK_L2);
 
 	return OK;
 }
 
-Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, List<String> &p_output) {
+Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
 
 	const TypeInterface *return_type = _get_type_or_placeholder(p_imethod.return_type);
 
@@ -1529,7 +1528,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	String icall_params = method_bind_field + ", ";
 	icall_params += sformat(p_itype.cs_in, "this");
 
-	List<String> default_args_doc;
+	StringBuilder default_args_doc;
 
 	// Retrieve information from the arguments
 	for (const List<ArgumentInterface>::Element *F = p_imethod.arguments.front(); F; F = F->next()) {
@@ -1598,7 +1597,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			// Apparently the name attribute must not include the @
 			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
 
-			default_args_doc.push_back(INDENT2 "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>\n");
+			default_args_doc.append(INDENT2 "/// <param name=\"" + param_tag_name + "\">If the parameter is null, then the default value is " + def_arg + "</param>\n");
 		} else {
 			icall_params += arg_type->cs_in.empty() ? iarg.name : sformat(arg_type->cs_in, iarg.name);
 		}
@@ -1607,61 +1606,58 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 	// Generate method
 	{
 		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
-			p_output.push_back(MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN "private static IntPtr ");
-			p_output.push_back(method_bind_field + " = Object." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
-			p_output.push_back(p_imethod.name);
-			p_output.push_back("\");\n");
+			p_output.append(MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN "private static IntPtr ");
+			p_output.append(method_bind_field + " = Object." ICALL_GET_METHODBIND "(" BINDINGS_NATIVE_NAME_FIELD ", \"");
+			p_output.append(p_imethod.name);
+			p_output.append("\");\n");
 		}
 
 		if (p_imethod.method_doc && p_imethod.method_doc->description.size()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_imethod.method_doc->description), &p_itype);
-			Vector<String> summary_lines = xml_summary.split("\n");
+			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
 
-			if (summary_lines.size() || default_args_doc.size()) {
-				p_output.push_back(MEMBER_BEGIN "/// <summary>\n");
+			if (summary_lines.size() || default_args_doc.get_string_length()) {
+				p_output.append(MEMBER_BEGIN "/// <summary>\n");
 
 				for (int i = 0; i < summary_lines.size(); i++) {
-					p_output.push_back(INDENT2 "/// ");
-					p_output.push_back(summary_lines[i]);
-					p_output.push_back("\n");
+					p_output.append(INDENT2 "/// ");
+					p_output.append(summary_lines[i]);
+					p_output.append("\n");
 				}
 
-				for (List<String>::Element *E = default_args_doc.front(); E; E = E->next()) {
-					p_output.push_back(E->get());
-				}
-
-				p_output.push_back(INDENT2 "/// </summary>");
+				p_output.append(default_args_doc.as_string());
+				p_output.append(INDENT2 "/// </summary>");
 			}
 		}
 
 		if (!p_imethod.is_internal) {
-			p_output.push_back(MEMBER_BEGIN "[GodotMethod(\"");
-			p_output.push_back(p_imethod.name);
-			p_output.push_back("\")]");
+			p_output.append(MEMBER_BEGIN "[GodotMethod(\"");
+			p_output.append(p_imethod.name);
+			p_output.append("\")]");
 		}
 
-		p_output.push_back(MEMBER_BEGIN);
-		p_output.push_back(p_imethod.is_internal ? "internal " : "public ");
+		p_output.append(MEMBER_BEGIN);
+		p_output.append(p_imethod.is_internal ? "internal " : "public ");
 
 		if (p_itype.is_singleton) {
-			p_output.push_back("static ");
+			p_output.append("static ");
 		} else if (p_imethod.is_virtual) {
-			p_output.push_back("virtual ");
+			p_output.append("virtual ");
 		}
 
-		p_output.push_back(return_type->cs_type + " ");
-		p_output.push_back(p_imethod.proxy_name + "(");
-		p_output.push_back(arguments_sig + ")\n" OPEN_BLOCK_L2);
+		p_output.append(return_type->cs_type + " ");
+		p_output.append(p_imethod.proxy_name + "(");
+		p_output.append(arguments_sig + ")\n" OPEN_BLOCK_L2);
 
 		if (p_imethod.is_virtual) {
 			// Godot virtual method must be overridden, therefore we return a default value by default.
 
 			if (return_type->cname == name_cache.type_void) {
-				p_output.push_back("return;\n" CLOSE_BLOCK_L2);
+				p_output.append("return;\n" CLOSE_BLOCK_L2);
 			} else {
-				p_output.push_back("return default(");
-				p_output.push_back(return_type->cs_type);
-				p_output.push_back(");\n" CLOSE_BLOCK_L2);
+				p_output.append("return default(");
+				p_output.append(return_type->cs_type);
+				p_output.append(");\n" CLOSE_BLOCK_L2);
 			}
 
 			return OK; // Won't increment method bind count
@@ -1670,16 +1666,16 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
 
-			p_output.push_back(CS_METHOD_CALL "(\"");
-			p_output.push_back(p_imethod.name);
-			p_output.push_back("\"");
+			p_output.append(CS_METHOD_CALL "(\"");
+			p_output.append(p_imethod.name);
+			p_output.append("\"");
 
 			for (const List<ArgumentInterface>::Element *F = p_imethod.arguments.front(); F; F = F->next()) {
-				p_output.push_back(", ");
-				p_output.push_back(F->get().name);
+				p_output.append(", ");
+				p_output.append(F->get().name);
 			}
 
-			p_output.push_back(");\n" CLOSE_BLOCK_L2);
+			p_output.append(");\n" CLOSE_BLOCK_L2);
 
 			return OK; // Won't increment method bind count
 		}
@@ -1693,21 +1689,22 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		im_call += "." + im_icall->name + "(" + icall_params + ")";
 
 		if (p_imethod.arguments.size())
-			p_output.push_back(cs_in_statements);
+			p_output.append(cs_in_statements);
 
 		if (return_type->cname == name_cache.type_void) {
-			p_output.push_back(im_call + ";\n");
+			p_output.append(im_call + ";\n");
 		} else if (return_type->cs_out.empty()) {
-			p_output.push_back("return " + im_call + ";\n");
+			p_output.append("return " + im_call + ";\n");
 		} else {
-			p_output.push_back(sformat(return_type->cs_out, im_call, return_type->cs_type, return_type->im_type_out));
-			p_output.push_back("\n");
+			p_output.append(sformat(return_type->cs_out, im_call, return_type->cs_type, return_type->im_type_out));
+			p_output.append("\n");
 		}
 
-		p_output.push_back(CLOSE_BLOCK_L2);
+		p_output.append(CLOSE_BLOCK_L2);
 	}
 
 	p_method_bind_count++;
+
 	return OK;
 }
 
@@ -1719,11 +1716,11 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	ERR_EXPLAIN("The output directory does not exist.");
 	ERR_FAIL_COND_V(!dir_exists, ERR_FILE_BAD_PATH);
 
-	List<String> output;
+	StringBuilder output;
 
-	output.push_back("/* THIS FILE IS GENERATED DO NOT EDIT */\n");
-	output.push_back("#include \"" GLUE_HEADER_FILE "\"\n");
-	output.push_back("\n#ifdef MONO_GLUE_ENABLED\n");
+	output.append("/* THIS FILE IS GENERATED DO NOT EDIT */\n");
+	output.append("#include \"" GLUE_HEADER_FILE "\"\n");
+	output.append("\n#ifdef MONO_GLUE_ENABLED\n");
 
 	generated_icall_funcs.clear();
 
@@ -1763,11 +1760,11 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 			if (!find_icall_by_name(singleton_icall.name, custom_icalls))
 				custom_icalls.push_back(singleton_icall);
 
-			output.push_back("Object* ");
-			output.push_back(singleton_icall_name);
-			output.push_back("() " OPEN_BLOCK "\treturn Engine::get_singleton()->get_singleton_object(\"");
-			output.push_back(itype.proxy_name);
-			output.push_back("\");\n" CLOSE_BLOCK "\n");
+			output.append("Object* ");
+			output.append(singleton_icall_name);
+			output.append("() " OPEN_BLOCK "\treturn Engine::get_singleton()->get_singleton_object(\"");
+			output.append(itype.proxy_name);
+			output.append("\");\n" CLOSE_BLOCK "\n");
 		}
 
 		if (is_derived_type && itype.is_instantiable) {
@@ -1776,43 +1773,43 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 			if (!find_icall_by_name(ctor_icall.name, custom_icalls))
 				custom_icalls.push_back(ctor_icall);
 
-			output.push_back("Object* ");
-			output.push_back(ctor_method);
-			output.push_back("(MonoObject* obj) " OPEN_BLOCK
-							 "\t" C_MACRO_OBJECT_CONSTRUCT "(instance, \"");
-			output.push_back(itype.name);
-			output.push_back("\");\n"
-							 "\t" C_METHOD_TIE_MANAGED_TO_UNMANAGED "(obj, instance);\n"
-							 "\treturn instance;\n" CLOSE_BLOCK "\n");
+			output.append("Object* ");
+			output.append(ctor_method);
+			output.append("(MonoObject* obj) " OPEN_BLOCK
+						  "\t" C_MACRO_OBJECT_CONSTRUCT "(instance, \"");
+			output.append(itype.name);
+			output.append("\");\n"
+						  "\t" C_METHOD_TIE_MANAGED_TO_UNMANAGED "(obj, instance);\n"
+						  "\treturn instance;\n" CLOSE_BLOCK "\n");
 		}
 	}
 
-	output.push_back("namespace GodotSharpBindings\n" OPEN_BLOCK "\n");
+	output.append("namespace GodotSharpBindings\n" OPEN_BLOCK "\n");
 
-	output.push_back("uint64_t get_core_api_hash() { return ");
-	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + "U; }\n");
+	output.append("uint64_t get_core_api_hash() { return ");
+	output.append(String::num_uint64(GDMono::get_singleton()->get_api_core_hash()) + "U; }\n");
 
-	output.push_back("#ifdef TOOLS_ENABLED\n"
-					 "uint64_t get_editor_api_hash() { return ");
-	output.push_back(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) + "U; }\n");
-	output.push_back("#endif // TOOLS_ENABLED\n");
+	output.append("#ifdef TOOLS_ENABLED\n"
+				  "uint64_t get_editor_api_hash() { return ");
+	output.append(String::num_uint64(GDMono::get_singleton()->get_api_editor_hash()) + "U; }\n");
+	output.append("#endif // TOOLS_ENABLED\n");
 
-	output.push_back("uint32_t get_bindings_version() { return ");
-	output.push_back(String::num_uint64(BINDINGS_GENERATOR_VERSION) + "; }\n");
+	output.append("uint32_t get_bindings_version() { return ");
+	output.append(String::num_uint64(BINDINGS_GENERATOR_VERSION) + "; }\n");
 
-	output.push_back("\nvoid register_generated_icalls() " OPEN_BLOCK);
-	output.push_back("\tgodot_register_glue_header_icalls();\n");
+	output.append("\nvoid register_generated_icalls() " OPEN_BLOCK);
+	output.append("\tgodot_register_glue_header_icalls();\n");
 
-#define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                                 \
-	{                                                                                                           \
-		output.push_back("\tmono_add_internal_call(");                                                          \
-		output.push_back("\"" BINDINGS_NAMESPACE ".");                                                          \
-		output.push_back(m_icall.editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS); \
-		output.push_back("::");                                                                                 \
-		output.push_back(m_icall.name);                                                                         \
-		output.push_back("\", (void*)");                                                                        \
-		output.push_back(m_icall.name);                                                                         \
-		output.push_back(");\n");                                                                               \
+#define ADD_INTERNAL_CALL_REGISTRATION(m_icall)                                                              \
+	{                                                                                                        \
+		output.append("\tmono_add_internal_call(");                                                          \
+		output.append("\"" BINDINGS_NAMESPACE ".");                                                          \
+		output.append(m_icall.editor_only ? BINDINGS_CLASS_NATIVECALLS_EDITOR : BINDINGS_CLASS_NATIVECALLS); \
+		output.append("::");                                                                                 \
+		output.append(m_icall.name);                                                                         \
+		output.append("\", (void*)");                                                                        \
+		output.append(m_icall.name);                                                                         \
+		output.append(");\n");                                                                               \
 	}
 
 	bool tools_sequence = false;
@@ -1821,11 +1818,11 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 		if (tools_sequence) {
 			if (!E->get().editor_only) {
 				tools_sequence = false;
-				output.push_back("#endif\n");
+				output.append("#endif\n");
 			}
 		} else {
 			if (E->get().editor_only) {
-				output.push_back("#ifdef TOOLS_ENABLED\n");
+				output.append("#ifdef TOOLS_ENABLED\n");
 				tools_sequence = true;
 			}
 		}
@@ -1835,23 +1832,23 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	if (tools_sequence) {
 		tools_sequence = false;
-		output.push_back("#endif\n");
+		output.append("#endif\n");
 	}
 
-	output.push_back("#ifdef TOOLS_ENABLED\n");
+	output.append("#ifdef TOOLS_ENABLED\n");
 	for (const List<InternalCall>::Element *E = editor_custom_icalls.front(); E; E = E->next())
 		ADD_INTERNAL_CALL_REGISTRATION(E->get());
-	output.push_back("#endif // TOOLS_ENABLED\n");
+	output.append("#endif // TOOLS_ENABLED\n");
 
 	for (const List<InternalCall>::Element *E = method_icalls.front(); E; E = E->next()) {
 		if (tools_sequence) {
 			if (!E->get().editor_only) {
 				tools_sequence = false;
-				output.push_back("#endif\n");
+				output.append("#endif\n");
 			}
 		} else {
 			if (E->get().editor_only) {
-				output.push_back("#ifdef TOOLS_ENABLED\n");
+				output.append("#ifdef TOOLS_ENABLED\n");
 				tools_sequence = true;
 			}
 		}
@@ -1861,14 +1858,14 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	if (tools_sequence) {
 		tools_sequence = false;
-		output.push_back("#endif\n");
+		output.append("#endif\n");
 	}
 
 #undef ADD_INTERNAL_CALL_REGISTRATION
 
-	output.push_back(CLOSE_BLOCK "\n} // namespace GodotSharpBindings\n");
+	output.append(CLOSE_BLOCK "\n} // namespace GodotSharpBindings\n");
 
-	output.push_back("\n#endif // MONO_GLUE_ENABLED\n");
+	output.append("\n#endif // MONO_GLUE_ENABLED\n");
 
 	Error save_err = _save_file(path_join(p_output_dir, "mono_glue.gen.cpp"), output);
 	if (save_err != OK)
@@ -1883,23 +1880,20 @@ uint32_t BindingsGenerator::get_version() {
 	return BINDINGS_GENERATOR_VERSION;
 }
 
-Error BindingsGenerator::_save_file(const String &p_path, const List<String> &p_content) {
+Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p_content) {
 
 	FileAccessRef file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	ERR_EXPLAIN("Cannot open file: " + p_path);
 	ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
 
-	for (const List<String>::Element *E = p_content.front(); E; E = E->next()) {
-		file->store_string(E->get());
-	}
-
+	file->store_string(p_content.as_string());
 	file->close();
 
 	return OK;
 }
 
-Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, List<String> &p_output) {
+Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, StringBuilder &p_output) {
 
 	if (p_imethod.is_virtual)
 		return OK; // Ignore
@@ -1955,15 +1949,15 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 		generated_icall_funcs.push_back(im_icall);
 
 		if (im_icall->editor_only)
-			p_output.push_back("#ifdef TOOLS_ENABLED\n");
+			p_output.append("#ifdef TOOLS_ENABLED\n");
 
 		// Generate icall function
 
-		p_output.push_back(ret_void ? "void " : return_type->c_type_out + " ");
-		p_output.push_back(icall_method);
-		p_output.push_back("(");
-		p_output.push_back(c_func_sig);
-		p_output.push_back(") " OPEN_BLOCK);
+		p_output.append(ret_void ? "void " : return_type->c_type_out + " ");
+		p_output.append(icall_method);
+		p_output.append("(");
+		p_output.append(c_func_sig);
+		p_output.append(") " OPEN_BLOCK);
 
 		String fail_ret = ret_void ? "" : ", " + (return_type->c_type_out.ends_with("*") ? "NULL" : return_type->c_type_out + "()");
 
@@ -1977,7 +1971,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				// the Variant alive until the method returns. Otherwise, if the returned Variant holds a RefPtr,
 				// it could be deleted too early. This is the case with GDScript.new() which returns OBJECT.
 				// Alternatively, we could just return Variant, but that would result in a worse API.
-				p_output.push_back("\tVariant " C_LOCAL_VARARG_RET ";\n");
+				p_output.append("\tVariant " C_LOCAL_VARARG_RET ";\n");
 			}
 
 			if (return_type->is_object_type) {
@@ -1987,83 +1981,82 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 				ptrcall_return_type = return_type->c_type;
 			}
 
-			p_output.push_back("\t" + ptrcall_return_type);
-			p_output.push_back(" " C_LOCAL_RET);
-			p_output.push_back(initialization + ";\n");
-			p_output.push_back("\tERR_FAIL_NULL_V(" CS_PARAM_INSTANCE);
-			p_output.push_back(fail_ret);
-			p_output.push_back(");\n");
+			p_output.append("\t" + ptrcall_return_type);
+			p_output.append(" " C_LOCAL_RET);
+			p_output.append(initialization + ";\n");
+			p_output.append("\tERR_FAIL_NULL_V(" CS_PARAM_INSTANCE);
+			p_output.append(fail_ret);
+			p_output.append(");\n");
 		} else {
-			p_output.push_back("\tERR_FAIL_NULL(" CS_PARAM_INSTANCE ");\n");
+			p_output.append("\tERR_FAIL_NULL(" CS_PARAM_INSTANCE ");\n");
 		}
 
 		if (p_imethod.arguments.size()) {
 			if (p_imethod.is_vararg) {
-				String err_fail_macro = ret_void ? "ERR_FAIL_COND" : "ERR_FAIL_COND_V";
 				String vararg_arg = "arg" + argc_str;
 				String real_argc_str = itos(p_imethod.arguments.size() - 1); // Arguments count without vararg
 
-				p_output.push_back("\tint vararg_length = mono_array_length(");
-				p_output.push_back(vararg_arg);
-				p_output.push_back(");\n\tint total_length = ");
-				p_output.push_back(real_argc_str);
-				p_output.push_back(" + vararg_length;\n"
-								   "\tArgumentsVector<Variant> varargs(vararg_length);\n"
-								   "\tArgumentsVector<const Variant *> " C_LOCAL_PTRCALL_ARGS "(total_length);\n");
-				p_output.push_back(c_in_statements);
-				p_output.push_back("\tfor (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
-								   "\t\tMonoObject* elem = mono_array_get(");
-				p_output.push_back(vararg_arg);
-				p_output.push_back(", MonoObject*, i);\n"
-								   "\t\tvarargs.set(i, GDMonoMarshal::mono_object_to_variant(elem));\n"
-								   "\t\t" C_LOCAL_PTRCALL_ARGS ".set(");
-				p_output.push_back(real_argc_str);
-				p_output.push_back(" + i, &varargs.get(i));\n\t" CLOSE_BLOCK);
+				p_output.append("\tint vararg_length = mono_array_length(");
+				p_output.append(vararg_arg);
+				p_output.append(");\n\tint total_length = ");
+				p_output.append(real_argc_str);
+				p_output.append(" + vararg_length;\n"
+								"\tArgumentsVector<Variant> varargs(vararg_length);\n"
+								"\tArgumentsVector<const Variant *> " C_LOCAL_PTRCALL_ARGS "(total_length);\n");
+				p_output.append(c_in_statements);
+				p_output.append("\tfor (int i = 0; i < vararg_length; i++) " OPEN_BLOCK
+								"\t\tMonoObject* elem = mono_array_get(");
+				p_output.append(vararg_arg);
+				p_output.append(", MonoObject*, i);\n"
+								"\t\tvarargs.set(i, GDMonoMarshal::mono_object_to_variant(elem));\n"
+								"\t\t" C_LOCAL_PTRCALL_ARGS ".set(");
+				p_output.append(real_argc_str);
+				p_output.append(" + i, &varargs.get(i));\n\t" CLOSE_BLOCK);
 			} else {
-				p_output.push_back(c_in_statements);
-				p_output.push_back("\tconst void* " C_LOCAL_PTRCALL_ARGS "[");
-				p_output.push_back(argc_str + "] = { ");
-				p_output.push_back(c_args_var_content + " };\n");
+				p_output.append(c_in_statements);
+				p_output.append("\tconst void* " C_LOCAL_PTRCALL_ARGS "[");
+				p_output.append(argc_str + "] = { ");
+				p_output.append(c_args_var_content + " };\n");
 			}
 		}
 
 		if (p_imethod.is_vararg) {
-			p_output.push_back("\tVariant::CallError vcall_error;\n\t");
+			p_output.append("\tVariant::CallError vcall_error;\n\t");
 
 			if (!ret_void) {
 				// See the comment on the C_LOCAL_VARARG_RET declaration
 				if (return_type->cname != name_cache.type_Variant) {
-					p_output.push_back(C_LOCAL_VARARG_RET " = ");
+					p_output.append(C_LOCAL_VARARG_RET " = ");
 				} else {
-					p_output.push_back(C_LOCAL_RET " = ");
+					p_output.append(C_LOCAL_RET " = ");
 				}
 			}
 
-			p_output.push_back(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
-			p_output.push_back(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
-			p_output.push_back(", total_length, vcall_error);\n");
+			p_output.append(CS_PARAM_METHODBIND "->call(" CS_PARAM_INSTANCE ", ");
+			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ".ptr()" : "NULL");
+			p_output.append(", total_length, vcall_error);\n");
 
 			// See the comment on the C_LOCAL_VARARG_RET declaration
 			if (return_type->cname != name_cache.type_Variant) {
-				p_output.push_back("\t" C_LOCAL_RET " = " C_LOCAL_VARARG_RET ";\n");
+				p_output.append("\t" C_LOCAL_RET " = " C_LOCAL_VARARG_RET ";\n");
 			}
 		} else {
-			p_output.push_back("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
-			p_output.push_back(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "NULL, ");
-			p_output.push_back(!ret_void ? "&" C_LOCAL_RET ");\n" : "NULL);\n");
+			p_output.append("\t" CS_PARAM_METHODBIND "->ptrcall(" CS_PARAM_INSTANCE ", ");
+			p_output.append(p_imethod.arguments.size() ? C_LOCAL_PTRCALL_ARGS ", " : "NULL, ");
+			p_output.append(!ret_void ? "&" C_LOCAL_RET ");\n" : "NULL);\n");
 		}
 
 		if (!ret_void) {
 			if (return_type->c_out.empty())
-				p_output.push_back("\treturn " C_LOCAL_RET ";\n");
+				p_output.append("\treturn " C_LOCAL_RET ";\n");
 			else
-				p_output.push_back(sformat(return_type->c_out, return_type->c_type_out, C_LOCAL_RET, return_type->name));
+				p_output.append(sformat(return_type->c_out, return_type->c_type_out, C_LOCAL_RET, return_type->name));
 		}
 
-		p_output.push_back(CLOSE_BLOCK "\n");
+		p_output.append(CLOSE_BLOCK "\n");
 
 		if (im_icall->editor_only)
-			p_output.push_back("#endif // TOOLS_ENABLED\n");
+			p_output.append("#endif // TOOLS_ENABLED\n");
 	}
 
 	return OK;
@@ -2362,8 +2355,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate enums and constants
 
-		List<String> constant_list;
-		ClassDB::get_integer_constant_list(type_cname, &constant_list, true);
+		List<String> constants;
+		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
 		const HashMap<StringName, List<StringName> > &enum_map = class_info->enum_map;
 		const StringName *k = NULL;
@@ -2378,13 +2371,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
 			EnumInterface ienum(enum_proxy_cname);
-			const List<StringName> &constants = enum_map.get(*k);
-			for (const List<StringName>::Element *E = constants.front(); E; E = E->next()) {
+			const List<StringName> &enum_constants = enum_map.get(*k);
+			for (const List<StringName>::Element *E = enum_constants.front(); E; E = E->next()) {
 				const StringName &constant_cname = E->get();
 				String constant_name = constant_cname.operator String();
 				int *value = class_info->constant_map.getptr(constant_cname);
 				ERR_FAIL_NULL(value);
-				constant_list.erase(constant_name);
+				constants.erase(constant_name);
 
 				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
@@ -2416,7 +2409,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			enum_types.insert(enum_itype.cname, enum_itype);
 		}
 
-		for (const List<String>::Element *E = constant_list.front(); E; E = E->next()) {
+		for (const List<String>::Element *E = constants.front(); E; E = E->next()) {
 			const String &constant_name = E->get();
 			int *value = class_info->constant_map.getptr(StringName(E->get()));
 			ERR_FAIL_NULL(value);
@@ -2898,9 +2891,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
 	while (elem && options_left) {
-
 		if (elem->get() == mono_glue_option) {
-
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
@@ -2912,9 +2903,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			}
 
 			--options_left;
-
 		} else if (elem->get() == cs_api_option) {
-
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
