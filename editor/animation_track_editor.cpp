@@ -2540,7 +2540,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 		step->set_block_signals(false);
 		step->set_read_only(false);
 		snap->set_disabled(false);
-		snap_mode->set_disabled(true);
+		snap_mode->set_disabled(false);
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -2549,7 +2549,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 		step->set_block_signals(false);
 		step->set_read_only(true);
 		snap->set_disabled(true);
-		snap_mode->set_disabled(false);
+		snap_mode->set_disabled(true);
 	}
 }
 
