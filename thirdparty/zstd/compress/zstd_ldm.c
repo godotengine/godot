@@ -429,7 +429,7 @@ size_t ZSTD_ldm_generateSequences(
      */
     assert(ldmState->window.nextSrc >= (BYTE const*)src + srcSize);
     /* The input could be very large (in zstdmt), so it must be broken up into
-     * chunks to enforce the maximmum distance and handle overflow correction.
+     * chunks to enforce the maximum distance and handle overflow correction.
      */
     assert(sequences->pos <= sequences->size);
     assert(sequences->size <= sequences->capacity);
