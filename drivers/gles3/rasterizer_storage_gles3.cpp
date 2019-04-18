@@ -101,6 +101,8 @@
 #define _EXT_COMPRESSED_RGB_BPTC_SIGNED_FLOAT 0x8E8E
 #define _EXT_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT 0x8E8F
 
+#define _GL_TEXTURE_EXTERNAL_OES 0x8D65
+
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -675,6 +677,10 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 			texture->target = GL_TEXTURE_3D;
 			texture->images.resize(p_depth_3d);
 		} break;
+		case VS::TEXTURE_TYPE_EXTERNAL: {
+			texture->target = _GL_TEXTURE_EXTERNAL_OES;
+			texture->images.resize(1);
+		} break;
 	}
 
 	Image::Format real_format;
@@ -726,6 +732,9 @@ void RasterizerStorageGLES3::texture_allocate(RID p_texture, int p_width, int p_
 		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, mipmaps - 1);
 
+	} else if (p_type == VS::TEXTURE_TYPE_EXTERNAL) {
+		glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	} else if (p_flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING) {
 		//prealloc if video
 		glTexImage2D(texture->target, 0, internal_format, p_width, p_height, 0, format, type, NULL);
@@ -743,6 +752,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	ERR_FAIL_COND(texture->render_target);
 	ERR_FAIL_COND(texture->format != p_image->get_format());
 	ERR_FAIL_COND(p_image.is_null());
+	ERR_FAIL_COND(texture->type == VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
@@ -978,6 +988,7 @@ void RasterizerStorageGLES3::texture_set_data_partial(RID p_texture, const Ref<I
 	ERR_FAIL_COND(src_x < 0 || src_y < 0 || src_x + src_w > p_image->get_width() || src_y + src_h > p_image->get_height());
 	ERR_FAIL_COND(dst_x < 0 || dst_y < 0 || dst_x + src_w > texture->alloc_width || dst_y + src_h > texture->alloc_height);
 	ERR_FAIL_COND(p_dst_mip < 0 || p_dst_mip >= texture->mipmaps);
+	ERR_FAIL_COND(texture->type == VS::TEXTURE_TYPE_EXTERNAL);
 
 	GLenum type;
 	GLenum format;
