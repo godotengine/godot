@@ -26,7 +26,7 @@ namespace Godot
     /// dynamic sprite = GetNode("Sprite").DynamicGodotObject;
     /// sprite.add_child(this);
     ///
-    /// if ((sprite.hframes * sprite.vframes) > 0)
+    /// if ((sprite.hframes * sprite.vframes) &gt; 0)
     ///     sprite.frame = 0;
     /// </code>
     /// </example>

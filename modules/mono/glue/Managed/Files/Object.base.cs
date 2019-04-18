@@ -73,6 +73,11 @@ namespace Godot
             disposed = true;
         }
 
+        public override string ToString()
+        {
+            return godot_icall_Object_ToString(GetPtr(this));
+        }
+
         /// <summary>
         /// Returns a new <see cref="Godot.SignalAwaiter"/> awaiter configured to complete when the instance
         /// <paramref name="source"/> emits the signal specified by the <paramref name="signal"/> parameter.
@@ -88,7 +93,7 @@ namespace Godot
         /// <code>
         /// public override void _Ready()
         /// {
-        ///     for (int i = 0; i < 100; i++)
+        ///     for (int i = 0; i &lt; 100; i++)
         ///     {
         ///         await ToSignal(GetTree(), "idle_frame");
         ///         GD.Print($"Frame {i}");
@@ -114,6 +119,9 @@ namespace Godot
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Reference_Disposed(Object obj, IntPtr ptr, bool isFinalizer);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_Object_ToString(IntPtr ptr);
 
         // Used by the generated API
         [MethodImpl(MethodImplOptions.InternalCall)]

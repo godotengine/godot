@@ -70,6 +70,8 @@ namespace Godot
             return godot_icall_RID_get_id(RID.GetPtr(this));
         }
 
+        public override string ToString() => "[RID]";
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static IntPtr godot_icall_RID_Ctor(IntPtr from);
 

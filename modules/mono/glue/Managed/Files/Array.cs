@@ -143,6 +143,11 @@ namespace Godot.Collections
             }
         }
 
+        public override string ToString()
+        {
+            return godot_icall_Array_ToString(GetPtr());
+        }
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static IntPtr godot_icall_Array_Ctor();
 
@@ -190,6 +195,9 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_Array_ToString(IntPtr ptr);
     }
 
     public class Array<T> : IList<T>, ICollection<T>, IEnumerable<T>
@@ -353,5 +361,7 @@ namespace Godot.Collections
         {
             return GetEnumerator();
         }
+
+        public override string ToString() => objectArray.ToString();
     }
 }

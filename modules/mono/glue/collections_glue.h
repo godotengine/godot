@@ -71,6 +71,8 @@ Error godot_icall_Array_Resize(Array *ptr, int new_size);
 
 void godot_icall_Array_Generic_GetElementTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
 
+MonoString *godot_icall_Array_ToString(Array *ptr);
+
 // Dictionary
 
 Dictionary *godot_icall_Dictionary_Ctor();
@@ -106,6 +108,8 @@ MonoBoolean godot_icall_Dictionary_TryGetValue(Dictionary *ptr, MonoObject *key,
 MonoBoolean godot_icall_Dictionary_TryGetValue_Generic(Dictionary *ptr, MonoObject *key, MonoObject **value, uint32_t type_encoding, GDMonoClass *type_class);
 
 void godot_icall_Dictionary_Generic_GetValueTypeInfo(MonoReflectionType *refltype, uint32_t *type_encoding, GDMonoClass **type_class);
+
+MonoString *godot_icall_Dictionary_ToString(Dictionary *ptr);
 
 // Register internal calls
 
