@@ -559,7 +559,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.3.8
+- Version: 1.4.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

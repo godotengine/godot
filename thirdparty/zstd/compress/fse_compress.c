@@ -129,9 +129,9 @@ size_t FSE_buildCTable_wksp(FSE_CTable* ct,
     {   U32 position = 0;
         U32 symbol;
         for (symbol=0; symbol<=maxSymbolValue; symbol++) {
-            int nbOccurences;
+            int nbOccurrences;
             int const freq = normalizedCounter[symbol];
-            for (nbOccurences=0; nbOccurences<freq; nbOccurences++) {
+            for (nbOccurrences=0; nbOccurrences<freq; nbOccurrences++) {
                 tableSymbol[position] = (FSE_FUNCTION_TYPE)symbol;
                 position = (position + step) & tableMask;
                 while (position > highThreshold)
