@@ -78,7 +78,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver;
 import android.view.Window;
@@ -139,6 +138,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private boolean mStatePaused;
 	private boolean activityResumed;
 	private int mState;
+	private int mDisplayRotation;
 
 	// Used to dispatch events to the main thread.
 	private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
@@ -462,6 +462,10 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		return deviceInfo.reqGlEsVersion;
 	}
 
+	public int getDisplayRotation() {
+		return mDisplayRotation;
+	}
+
 	@CallSuper
 	protected String[] getCommandLine() {
 		InputStream is;
@@ -597,6 +601,8 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 				xrMode = XRMode.REGULAR;
 			} else if (command_line[i].equals(XRMode.OVR.cmdLineArg)) {
 				xrMode = XRMode.OVR;
+			} else if (command_line[i].equals(XRMode.ARCORE.cmdLineArg)) {
+				xrMode = XRMode.ARCORE;
 			} else if (command_line[i].equals("--use_depth_32")) {
 				use_32_bits = true;
 			} else if (command_line[i].equals("--debug_opengl")) {
@@ -716,6 +722,10 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		initializeGodot();
 		return containerLayout;
+	}
+
+	public XRMode getXRMode() {
+		return this.xrMode;
 	}
 
 	@Override
@@ -840,7 +850,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	public void onSensorChanged(SensorEvent event) {
 		Display display =
 				((WindowManager)getActivity().getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-		int displayRotation = display.getRotation();
+		mDisplayRotation = display.getRotation();
 
 		float[] adjustedValues = new float[3];
 		final int axisSwap[][] = {
@@ -850,7 +860,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			{ 1, 1, 1, 0 }
 		}; // ROTATION_270
 
-		final int[] as = axisSwap[displayRotation];
+		final int[] as = axisSwap[mDisplayRotation];
 		adjustedValues[0] = (float)as[0] * event.values[as[2]];
 		adjustedValues[1] = (float)as[1] * event.values[as[3]];
 		adjustedValues[2] = event.values[2];
