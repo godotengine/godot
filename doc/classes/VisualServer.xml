@@ -3943,6 +3943,10 @@
 		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
 			Repeat texture with alternate sections mirrored.
 		</constant>
+		<constant name="TEXTURE_FLAG_CLAMP_BORDER" value="64" enum="TextureFlags">
+			Clamp to border the texture. If UVs are outside the range from 0 to 1, nothing will appear.
+			This doesn't work in OpenGl ES. On mobile devices, it uses clamp to edge.
+		</constant>
 		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="2048" enum="TextureFlags">
 			Texture is a video surface.
 		</constant>
