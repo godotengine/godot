@@ -1561,13 +1561,42 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 								_set_edited_collision_shape(Ref<ConvexPolygonShape2D>());
 								current_shape.resize(0);
-								current_shape.push_back(snap_point(shape_anchor));
-								current_shape.push_back(snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
-								current_shape.push_back(snap_point(shape_anchor + current_tile_region.size));
-								current_shape.push_back(snap_point(shape_anchor + Vector2(0, current_tile_region.size.y)));
-								close_shape(shape_anchor);
+								Vector2 pos = mb->get_position();
+								pos = snap_point(pos);
+								current_shape.push_back(pos);
+								current_shape.push_back(pos);
+								current_shape.push_back(pos);
+								current_shape.push_back(pos);
+								creating_shape = true;
 								workspace->update();
+								return;
 							} else if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
+								if (creating_shape) {
+									creating_shape = false;
+									_select_edited_shape_coord();
+									workspace->update();
+								}
+							} else if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
+								if (creating_shape) {
+									if ((current_shape[0] - current_shape[1]).length_squared() <= grab_threshold) {
+										current_shape.set(0, snap_point(shape_anchor));
+										current_shape.set(1, snap_point(shape_anchor + Vector2(current_tile_region.size.x, 0)));
+										current_shape.set(2, snap_point(shape_anchor + current_tile_region.size));
+										current_shape.set(3, snap_point(shape_anchor + Vector2(0, current_tile_region.size.y)));
+									}
+									close_shape(shape_anchor);
+									workspace->update();
+									return;
+								}
+							}
+						} else if (mm.is_valid()) {
+							if (creating_shape) {
+								Vector2 pos = mm->get_position();
+								pos = snap_point(pos);
+								Vector2 p = current_shape[2];
+								current_shape.set(3, snap_point(Vector2(pos.x, p.y)));
+								current_shape.set(0, snap_point(pos));
+								current_shape.set(1, snap_point(Vector2(p.x, pos.y)));
 								workspace->update();
 							}
 						}
