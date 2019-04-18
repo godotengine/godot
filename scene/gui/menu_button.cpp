@@ -91,6 +91,16 @@ bool MenuButton::is_switch_on_hover() {
 	return switch_on_hover;
 }
 
+void MenuButton::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (!is_visible_in_tree()) {
+			popup->hide();
+		}
+	}
+}
+
 void MenuButton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
