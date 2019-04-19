@@ -440,7 +440,7 @@ comments and a patch is provided in the squish/ folder.
 Files extracted from the upstream source:
 
 - Relevant sources from src/
-- License.txt
+- `LICENSE`, `ATTRIBUTION`
 
 Important: Some files have Godot-made changes, those
 changes are marked with `// -- GODOT --` comments and patches
