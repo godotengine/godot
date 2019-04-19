@@ -234,6 +234,11 @@ public:
 	virtual void apply_code() {}
 	void goto_error();
 
+	void toggle_bookmark();
+	void goto_next_bookmark();
+	void goto_prev_bookmark();
+	void remove_all_bookmarks();
+
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
 	CodeTextEditor();
