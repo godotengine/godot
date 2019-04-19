@@ -268,6 +268,8 @@
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="">
 		</member>
+		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="">
+		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="">
