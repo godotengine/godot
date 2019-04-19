@@ -443,7 +443,8 @@ Files extracted from the upstream source:
 - License.txt
 
 Important: Some files have Godot-made changes, those
-changes are marked with `// -- GODOT --` comments.
+changes are marked with `// -- GODOT --` comments and patches
+are provided to reapply them.
 
 
 ## tinyexr

@@ -1,0 +1,116 @@
+diff --git a/thirdparty/thekla_atlas/nvmath/Random.cpp b/thirdparty/thekla_atlas/nvmath/Random.cpp
+index 1a60e7f5e..bb7a1df6f 100644
+--- a/thirdparty/thekla_atlas/nvmath/Random.cpp
++++ b/thirdparty/thekla_atlas/nvmath/Random.cpp
+@@ -5,12 +5,6 @@
+ 
+ using namespace nv;
+ 
+-// Statics
+-const uint16 Rand48::a0 = 0xE66D; 
+-const uint16 Rand48::a1 = 0xDEEC; 
+-const uint16 Rand48::a2 = 0x0005;
+-const uint16 Rand48::c0 = 0x000B;
+-
+ 
+ /// Get a random seed based on the current time.
+ uint Rand::randomSeed()
+diff --git a/thirdparty/thekla_atlas/nvmath/Random.h b/thirdparty/thekla_atlas/nvmath/Random.h
+index 223292706..37bffb70b 100644
+--- a/thirdparty/thekla_atlas/nvmath/Random.h
++++ b/thirdparty/thekla_atlas/nvmath/Random.h
+@@ -283,94 +283,6 @@ namespace nv
+ 
+     };
+ 
+-
+-    /** Random number implementation from the GNU Sci. Lib. (GSL).
+-    * Adapted from Nicholas Chapman version:
+-    * 
+-    * Copyright (C) 1996, 1997, 1998, 1999, 2000 James Theiler, Brian Gough
+-    * This is the Unix rand48() generator. The generator returns the
+-    * upper 32 bits from each term of the sequence,
+-    * 
+-    * x_{n+1} = (a x_n + c) mod m 
+-    * 
+-    * using 48-bit unsigned arithmetic, with a = 0x5DEECE66D , c = 0xB
+-    * and m = 2^48. The seed specifies the upper 32 bits of the initial
+-    * value, x_1, with the lower 16 bits set to 0x330E.
+-    * 
+-    * The theoretical value of x_{10001} is 244131582646046.
+-    * 
+-    * The period of this generator is ? FIXME (probably around 2^48). 
+-    */
+-    class Rand48 : public Rand
+-    {
+-    public:
+-
+-        Rand48( time_e )
+-        {
+-            seed(randomSeed());
+-        }
+-
+-        Rand48( uint s = 0x1234ABCD )
+-        {
+-            seed(s);
+-        }	
+-
+-
+-        /** Set the given seed. */
+-        virtual void seed( uint s ) {
+-            vstate.x0 = 0x330E;
+-            vstate.x1 = uint16(s & 0xFFFF);
+-            vstate.x2 = uint16((s >> 16) & 0xFFFF);
+-        }
+-
+-        /** Get a random number. */
+-        virtual uint get() {
+-
+-            advance();
+-
+-            uint x1 = vstate.x1;
+-            uint x2 = vstate.x2;
+-            return (x2 << 16) + x1;
+-        }
+-
+-
+-    private:
+-
+-        void advance()
+-        {
+-            /* work with unsigned long ints throughout to get correct integer
+-            promotions of any unsigned short ints */
+-            const uint32 x0 = vstate.x0;
+-            const uint32 x1 = vstate.x1;
+-            const uint32 x2 = vstate.x2;
+-
+-            uint32 a;
+-            a = a0 * x0 + c0;
+-
+-            vstate.x0 = uint16(a & 0xFFFF);
+-            a >>= 16;
+-
+-            /* although the next line may overflow we only need the top 16 bits
+-            in the following stage, so it does not matter */
+-
+-            a += a0 * x1 + a1 * x0; 
+-            vstate.x1 = uint16(a & 0xFFFF);
+-
+-            a >>= 16;
+-            a += a0 * x2 + a1 * x1 + a2 * x0;
+-            vstate.x2 = uint16(a & 0xFFFF);
+-        }
+-
+-
+-    private:	
+-        NVMATH_API static const uint16 a0, a1, a2, c0;
+-
+-        struct rand48_state_t { 
+-            uint16 x0, x1, x2; 
+-        } vstate;
+-
+-    };
+-
+ } // nv namespace
+ 
+ #endif // NV_MATH_RANDOM_H
