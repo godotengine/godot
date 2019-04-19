@@ -1366,7 +1366,10 @@ Array Object::_get_incoming_connections() const {
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 
 	if (!script.is_null()) {
-		Ref<Script>(script)->get_script_signal_list(p_signals);
+		Ref<Script> scr = script;
+		if (scr.is_valid()) {
+			scr->get_script_signal_list(p_signals);
+		}
 	}
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
