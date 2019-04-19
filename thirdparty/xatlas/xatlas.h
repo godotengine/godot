@@ -3,6 +3,9 @@
 #ifndef XATLAS_H
 #define XATLAS_H
 #include <float.h> // FLT_MAX
+// -- GODOT start --
+#include <limits.h> // INT_MAX, UINT_MAX
+// -- GODOT end --
 
 namespace xatlas {
 
