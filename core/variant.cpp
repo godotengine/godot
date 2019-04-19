@@ -1415,7 +1415,12 @@ struct _VariantStrPair {
 };
 
 Variant::operator String() const {
+	List<const void *> stack;
 
+	return stringify(stack);
+}
+
+String Variant::stringify(List<const void *> &stack) const {
 	switch (type) {
 
 		case NIL: return "Null";
@@ -1467,6 +1472,12 @@ Variant::operator String() const {
 		case DICTIONARY: {
 
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
+			if (stack.find(d.id())) {
+				return "{...}";
+			}
+
+			stack.push_back(d.id());
+
 			//const String *K=NULL;
 			String str("{");
 			List<Variant> keys;
@@ -1477,8 +1488,9 @@ Variant::operator String() const {
 			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 
 				_VariantStrPair sp;
-				sp.key = String(E->get());
-				sp.value = d[E->get()];
+				sp.key = E->get().stringify(stack);
+				sp.value = d[E->get()].stringify(stack);
+
 				pairs.push_back(sp);
 			}
 
@@ -1561,12 +1573,19 @@ Variant::operator String() const {
 		case ARRAY: {
 
 			Array arr = operator Array();
+			if (stack.find(arr.id())) {
+				return "[...]";
+			}
+			stack.push_back(arr.id());
+
 			String str("[");
 			for (int i = 0; i < arr.size(); i++) {
 				if (i)
 					str += ", ";
-				str += String(arr[i]);
-			};
+
+				str += arr[i].stringify(stack);
+			}
+
 			str += "]";
 			return str;
 
