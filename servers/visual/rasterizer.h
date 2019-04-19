@@ -789,6 +789,8 @@ public:
 			RID mesh;
 			RID texture;
 			RID normal_map;
+			Transform2D transform;
+			Color modulate;
 			CommandMesh() { type = TYPE_MESH; }
 		};
 

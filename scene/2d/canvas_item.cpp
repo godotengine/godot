@@ -891,13 +891,13 @@ void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Colo
 	VisualServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid, rid_normal, p_antialiased);
 }
 
-void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
+void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map, const Transform2D &p_transform, const Color &p_modulate) {
 
 	ERR_FAIL_COND(p_mesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 
-	VisualServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), texture_rid, normal_map_rid);
+	VisualServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid, normal_map_rid);
 }
 void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
 
@@ -1168,7 +1168,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map", "transform", "modulate"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()), DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture", "normal_map"), &CanvasItem::draw_multimesh, DEFVAL(Ref<Texture>()));
 
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform);

@@ -88,6 +88,7 @@ enum PropertyHint {
 	PROPERTY_HINT_PROPERTY_OF_SCRIPT, ///< a property of a script & base
 	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
 	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
+	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	PROPERTY_HINT_MAX,
 	// When updating PropertyHint, also sync the hardcoded list in VisualScriptEditorVariableEdit
 };

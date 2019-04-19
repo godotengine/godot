@@ -1876,7 +1876,7 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const P
 
 Rect2 Image::get_used_rect() const {
 
-	if (format != FORMAT_LA8 && format != FORMAT_RGBA8)
+	if (format != FORMAT_LA8 && format != FORMAT_RGBA8 && format != FORMAT_RGBAF && format != FORMAT_RGBAH && format != FORMAT_RGBA4444 && format != FORMAT_RGBA5551)
 		return Rect2(Point2(), Size2(width, height));
 
 	int len = data.size();
@@ -1884,17 +1884,13 @@ Rect2 Image::get_used_rect() const {
 	if (len == 0)
 		return Rect2();
 
-	//int data_size = len;
-	PoolVector<uint8_t>::Read r = data.read();
-	const unsigned char *rptr = r.ptr();
-
-	int ps = format == FORMAT_LA8 ? 2 : 4;
+	const_cast<Image *>(this)->lock();
 	int minx = 0xFFFFFF, miny = 0xFFFFFFF;
 	int maxx = -1, maxy = -1;
 	for (int j = 0; j < height; j++) {
 		for (int i = 0; i < width; i++) {
 
-			bool opaque = rptr[(j * width + i) * ps + (ps - 1)] > 2;
+			bool opaque = get_pixel(i, j).a > 0.99;
 			if (!opaque)
 				continue;
 			if (i > maxx)
@@ -1907,6 +1903,8 @@ Rect2 Image::get_used_rect() const {
 				miny = j;
 		}
 	}
+
+	const_cast<Image *>(this)->unlock();
 
 	if (maxx == -1)
 		return Rect2();

@@ -600,7 +600,7 @@ public:
 	BIND7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	BIND7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
 	BIND10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
-	BIND4(canvas_item_add_mesh, RID, const RID &, RID, RID)
+	BIND6(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID)
 	BIND4(canvas_item_add_multimesh, RID, RID, RID, RID)
 	BIND4(canvas_item_add_particles, RID, RID, RID, RID)
 	BIND2(canvas_item_add_set_transform, RID, const Transform2D &)

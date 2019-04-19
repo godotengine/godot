@@ -56,6 +56,7 @@ class EditorFileSystemDirectory : public Object {
 		uint64_t modified_time;
 		uint64_t import_modified_time;
 		bool import_valid;
+		String import_group_file;
 		Vector<String> deps;
 		bool verified; //used for checking changes
 		String script_class_name;
@@ -167,6 +168,7 @@ class EditorFileSystem : public Node {
 		uint64_t import_modification_time;
 		Vector<String> deps;
 		bool import_valid;
+		String import_group_file;
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
@@ -211,6 +213,7 @@ class EditorFileSystem : public Node {
 	void _update_extensions();
 
 	void _reimport_file(const String &p_file);
+	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
 
@@ -236,6 +239,12 @@ class EditorFileSystem : public Node {
 
 	bool using_fat_32; //workaround for projects in FAT32 filesystem (pendrives, most of the time)
 
+	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String> > &group_files, Set<String> &groups_to_reimport);
+
+	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
+
+	Set<String> group_file_cache;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -259,6 +268,9 @@ public:
 	void reimport_files(const Vector<String> &p_files);
 
 	void update_script_classes();
+
+	bool is_group_file(const String &p_path) const;
+	void move_group_file(const String &p_path, const String &p_new_path);
 
 	EditorFileSystem();
 	~EditorFileSystem();

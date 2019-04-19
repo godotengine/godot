@@ -34,6 +34,7 @@
 #include "core/io/image_loader.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
+#include "mesh.h"
 #include "scene/resources/bit_map.h"
 
 Size2 Texture::get_size() const {
@@ -1131,6 +1132,138 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 
 AtlasTexture::AtlasTexture() {
 	filter_clip = false;
+}
+
+/////////////////////////////////////////
+
+int MeshTexture::get_width() const {
+	return size.width;
+}
+int MeshTexture::get_height() const {
+	return size.height;
+}
+RID MeshTexture::get_rid() const {
+	return RID();
+}
+
+bool MeshTexture::has_alpha() const {
+	return false;
+}
+
+void MeshTexture::set_flags(uint32_t p_flags) {
+}
+
+uint32_t MeshTexture::get_flags() const {
+	return 0;
+}
+
+void MeshTexture::set_mesh(const Ref<Mesh> &p_mesh) {
+	mesh = p_mesh;
+}
+Ref<Mesh> MeshTexture::get_mesh() const {
+	return mesh;
+}
+
+void MeshTexture::set_image_size(const Size2 &p_size) {
+	size = p_size;
+}
+
+Size2 MeshTexture::get_image_size() const {
+
+	return size;
+}
+
+void MeshTexture::set_base_texture(const Ref<Texture> &p_texture) {
+	base_texture = p_texture;
+}
+
+Ref<Texture> MeshTexture::get_base_texture() const {
+	return base_texture;
+}
+
+void MeshTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
+
+	if (mesh.is_null() || base_texture.is_null()) {
+		return;
+	}
+	Transform2D xform;
+	xform.set_origin(p_pos);
+	if (p_transpose) {
+		SWAP(xform.elements[0][1], xform.elements[1][0]);
+		SWAP(xform.elements[0][0], xform.elements[1][1]);
+	}
+	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
+}
+void MeshTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
+	if (mesh.is_null() || base_texture.is_null()) {
+		return;
+	}
+	Transform2D xform;
+	Vector2 origin = p_rect.position;
+	if (p_rect.size.x < 0) {
+		origin.x += size.x;
+	}
+	if (p_rect.size.y < 0) {
+		origin.y += size.y;
+	}
+	xform.set_origin(origin);
+	xform.set_scale(p_rect.size / size);
+
+	if (p_transpose) {
+		SWAP(xform.elements[0][1], xform.elements[1][0]);
+		SWAP(xform.elements[0][0], xform.elements[1][1]);
+	}
+	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
+}
+void MeshTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
+
+	if (mesh.is_null() || base_texture.is_null()) {
+		return;
+	}
+	Transform2D xform;
+	Vector2 origin = p_rect.position;
+	if (p_rect.size.x < 0) {
+		origin.x += size.x;
+	}
+	if (p_rect.size.y < 0) {
+		origin.y += size.y;
+	}
+	xform.set_origin(origin);
+	xform.set_scale(p_rect.size / size);
+
+	if (p_transpose) {
+		SWAP(xform.elements[0][1], xform.elements[1][0]);
+		SWAP(xform.elements[0][0], xform.elements[1][1]);
+	}
+	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_mesh(p_canvas_item, mesh->get_rid(), xform, p_modulate, base_texture->get_rid(), normal_rid);
+}
+bool MeshTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
+	r_rect = p_rect;
+	r_src_rect = p_src_rect;
+	return true;
+}
+
+bool MeshTexture::is_pixel_opaque(int p_x, int p_y) const {
+	return true;
+}
+
+void MeshTexture::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshTexture::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshTexture::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_image_size", "size"), &MeshTexture::set_image_size);
+	ClassDB::bind_method(D_METHOD("get_image_size"), &MeshTexture::get_image_size);
+	ClassDB::bind_method(D_METHOD("set_base_texture", "texture"), &MeshTexture::set_base_texture);
+	ClassDB::bind_method(D_METHOD("get_base_texture"), &MeshTexture::get_base_texture);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "base_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_base_texture", "get_base_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "image_size", PROPERTY_HINT_RANGE, "0,16384,1"), "set_image_size", "get_image_size");
+}
+
+MeshTexture::MeshTexture() {
 }
 
 //////////////////////////////////////////

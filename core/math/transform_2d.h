@@ -81,7 +81,7 @@ struct Transform2D {
 	real_t basis_determinant() const;
 
 	Size2 get_scale() const;
-	void set_scale(Size2 &p_scale);
+	void set_scale(const Size2 &p_scale);
 
 	_FORCE_INLINE_ const Vector2 &get_origin() const { return elements[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2 &p_origin) { elements[2] = p_origin; }
