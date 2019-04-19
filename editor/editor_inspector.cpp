@@ -470,10 +470,12 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 
 	if (!has_revert && !p_object->get_script().is_null()) {
 		Ref<Script> scr = p_object->get_script();
-		Variant orig_value;
-		if (scr->get_property_default_value(p_property, orig_value)) {
-			if (orig_value != p_object->get(p_property)) {
-				has_revert = true;
+		if (scr.is_valid()) {
+			Variant orig_value;
+			if (scr->get_property_default_value(p_property, orig_value)) {
+				if (orig_value != p_object->get(p_property)) {
+					has_revert = true;
+				}
 			}
 		}
 	}
@@ -668,11 +670,13 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (!object->get_script().is_null()) {
 				Ref<Script> scr = object->get_script();
-				Variant orig_value;
-				if (scr->get_property_default_value(property, orig_value)) {
-					emit_changed(property, orig_value);
-					update_property();
-					return;
+				if (scr.is_valid()) {
+					Variant orig_value;
+					if (scr->get_property_default_value(property, orig_value)) {
+						emit_changed(property, orig_value);
+						update_property();
+						return;
+					}
 				}
 			}
 
