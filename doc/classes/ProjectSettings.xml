@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_property_info">
 			<return type="void">
@@ -269,6 +267,8 @@
 		<member name="debug/gdscript/warnings/property_used_as_function" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="bool" setter="" getter="">
+		</member>
+		<member name="debug/gdscript/warnings/shadowed_variable" type="bool" setter="" getter="">
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="bool" setter="" getter="">
 		</member>

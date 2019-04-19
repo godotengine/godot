@@ -11,8 +11,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void">

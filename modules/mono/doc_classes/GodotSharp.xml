@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="attach_thread">
 			<return type="void">

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array">

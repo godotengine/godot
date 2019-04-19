@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="can_drop_data_fw" qualifiers="const">
 			<return type="bool">

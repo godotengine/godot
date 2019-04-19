@@ -10,8 +10,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/canvas_layers.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID">
