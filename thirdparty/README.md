@@ -530,6 +530,20 @@ They can be reapplied using the patches included in the `vhacd`
 folder.
 
 
+## xatlas
+
+- Upstream: https://github.com/jpcy/xatlas
+- Version: git (b8ec29b, 2018)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `xatlas.{cpp,h}`
+
+Note: License is marked as Public Domain in the files, but it was
+later clarified upstream to MIT license.
+
+
 ## zlib
 
 - Upstream: http://www.zlib.net
