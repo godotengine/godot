@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="size" qualifiers="const">
 			<return type="int">

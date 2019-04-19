@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_magnitude_for_frequency_range" qualifiers="const">
 			<return type="Vector2">

@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/workflow/export/exporting_for_web.html#calling-javascript-from-script</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="eval">
 			<return type="Variant">

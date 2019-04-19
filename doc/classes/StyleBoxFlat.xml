@@ -23,8 +23,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_border_width_min" qualifiers="const">
 			<return type="int">
