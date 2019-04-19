@@ -2993,13 +2993,17 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
 				editor->setup("Object", p_hint_text);
 				add_property_editor(p_path, editor);
-			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
+			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 
 				Vector<String> extensions = p_hint_text.split(",");
 				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE;
 				bool folder = p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_GLOBAL_DIR;
+				bool save = p_hint == PROPERTY_HINT_SAVE_FILE;
 				EditorPropertyPath *editor = memnew(EditorPropertyPath);
 				editor->setup(extensions, folder, global);
+				if (save) {
+					editor->set_save_mode();
+				}
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE ||
 					   p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||

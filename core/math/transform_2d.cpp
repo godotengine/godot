@@ -106,7 +106,7 @@ Size2 Transform2D::get_scale() const {
 	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 
-void Transform2D::set_scale(Size2 &p_scale) {
+void Transform2D::set_scale(const Size2 &p_scale) {
 	elements[0].normalize();
 	elements[1].normalize();
 	elements[0] *= p_scale.x;

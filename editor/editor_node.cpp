@@ -65,6 +65,7 @@
 #include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
+#include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
 #include "editor/plugins/animation_blend_space_1d_editor.h"
 #include "editor/plugins/animation_blend_space_2d_editor.h"
@@ -5120,6 +5121,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_image);
+
+		Ref<ResourceImporterTextureAtlas> import_texture_atlas;
+		import_texture_atlas.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_texture_atlas);
 
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instance();

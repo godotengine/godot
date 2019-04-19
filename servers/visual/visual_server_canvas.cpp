@@ -829,7 +829,7 @@ void VisualServerCanvas::canvas_item_add_set_transform(RID p_item, const Transfo
 	canvas_item->commands.push_back(tr);
 }
 
-void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_texture, RID p_normal_map) {
+void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform, const Color &p_modulate, RID p_texture, RID p_normal_map) {
 
 	Item *canvas_item = canvas_item_owner.getornull(p_item);
 	ERR_FAIL_COND(!canvas_item);
@@ -839,6 +839,8 @@ void VisualServerCanvas::canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID
 	m->mesh = p_mesh;
 	m->texture = p_texture;
 	m->normal_map = p_normal_map;
+	m->transform = p_transform;
+	m->modulate = p_modulate;
 
 	canvas_item->commands.push_back(m);
 }

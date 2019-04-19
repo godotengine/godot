@@ -1257,6 +1257,10 @@ void FileSystemDock::_rename_operation_confirm() {
 		return;
 	}
 
+	if (EditorFileSystem::get_singleton()->is_group_file(old_path)) {
+		EditorFileSystem::get_singleton()->move_group_file(old_path, new_path);
+	}
+
 	//Present a more user friendly warning for name conflict
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 #if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
@@ -1351,6 +1355,16 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 			overwrite_dialog->popup_centered_minsize();
 			overwrite_dialog->grab_focus();
 			return;
+		}
+	}
+
+	//check groups
+	for (int i = 0; i < to_move.size(); i++) {
+
+		print_line("is group: " + to_move[i].path + ": " + itos(EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)));
+		if (to_move[i].is_file && EditorFileSystem::get_singleton()->is_group_file(to_move[i].path)) {
+			print_line("move to: " + p_to_path.plus_file(to_move[i].path.get_file()));
+			EditorFileSystem::get_singleton()->move_group_file(to_move[i].path, p_to_path.plus_file(to_move[i].path.get_file()));
 		}
 	}
 
