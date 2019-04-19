@@ -5,12 +5,6 @@
 
 using namespace nv;
 
-// Statics
-const uint16 Rand48::a0 = 0xE66D; 
-const uint16 Rand48::a1 = 0xDEEC; 
-const uint16 Rand48::a2 = 0x0005;
-const uint16 Rand48::c0 = 0x000B;
-
 
 /// Get a random seed based on the current time.
 uint Rand::randomSeed()

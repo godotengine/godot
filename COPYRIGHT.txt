@@ -346,7 +346,10 @@ License: Expat
 Files: ./thirdparty/thekla_atlas/
 Comment: Thekla Atlas
 Copyright: 2013, Thekla, Inc
-License: Expat
+  2009-2017, Ignacio Castaño
+  2007-2009, NVIDIA Corporation
+  2004, Brian Hook
+License: Expat and BSD-3-clause
 
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
