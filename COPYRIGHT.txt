@@ -391,6 +391,13 @@ Copyright: 2011, Khaled Mamou
   2003-2009, Erwin Coumans
 License: BSD-3-clause
 
+Files: ./thirdparty/xatlas/
+Comment: xatlas
+Copyright: 2018, Jonathan Young
+  2013, Thekla, Inc
+  2006, NVIDIA Corporation, Ignacio Castano
+License: Expat
+
 Files: ./thirdparty/zlib/
 Comment: zlib
 Copyright: 1995-2017, Jean-loup Gailly and Mark Adler
