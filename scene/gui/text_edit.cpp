@@ -3287,28 +3287,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 			} break;
 
-			case KEY_U: {
-				if (!k->get_command() || k->get_shift()) {
-					scancode_handled = false;
-					break;
-				} else {
-					if (selection.active) {
-						int ini = selection.from_line;
-						int end = selection.to_line;
-
-						for (int i = ini; i <= end; i++) {
-							_uncomment_line(i);
-						}
-					} else {
-						_uncomment_line(cursor.line);
-						if (cursor.column >= get_line(cursor.line).length()) {
-							cursor.column = MAX(0, get_line(cursor.line).length() - 1);
-						}
-					}
-					update();
-				}
-			} break;
-
 			default: {
 
 				scancode_handled = false;
@@ -3364,24 +3342,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		return;
-	}
-}
-
-void TextEdit::_uncomment_line(int p_line) {
-	String line_text = get_line(p_line);
-	for (int i = 0; i < line_text.length(); i++) {
-		if (line_text[i] == '#') {
-			_remove_text(p_line, i, p_line, i + 1);
-			if (p_line == selection.to_line && selection.to_column > line_text.length() - 1) {
-				selection.to_column -= 1;
-				if (selection.to_column >= selection.from_column) {
-					selection.active = false;
-				}
-			}
-			return;
-		} else if (line_text[i] != '\t' && line_text[i] != ' ') {
-			return;
-		}
 	}
 }
 
