@@ -29,8 +29,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="erase_section">
 			<return type="void">

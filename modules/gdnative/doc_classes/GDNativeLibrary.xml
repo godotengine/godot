@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_current_dependencies" qualifiers="const">
 			<return type="PoolStringArray">

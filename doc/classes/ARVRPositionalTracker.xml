@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_hand" qualifiers="const">
 			<return type="int" enum="ARVRPositionalTracker.TrackerHand">

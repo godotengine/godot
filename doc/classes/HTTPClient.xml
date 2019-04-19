@@ -13,8 +13,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="close">
 			<return type="void">

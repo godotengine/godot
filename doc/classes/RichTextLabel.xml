@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_image">
 			<return type="void">

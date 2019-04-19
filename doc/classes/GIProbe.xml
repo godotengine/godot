@@ -7,8 +7,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/gi_probes.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="bake">
 			<return type="void">

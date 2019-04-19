@@ -261,7 +261,7 @@ class ClassStatus:
                 for sub_tag in list(tag):
                     status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
 
-            elif tag.tag in ['tutorials', 'demos']:
+            elif tag.tag in ['tutorials']:
                 pass  # Ignore those tags for now
 
             elif tag.tag in ['theme_items']:

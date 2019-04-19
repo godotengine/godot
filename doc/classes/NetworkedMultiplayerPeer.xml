@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_connection_status" qualifiers="const">
 			<return type="int" enum="NetworkedMultiplayerPeer.ConnectionStatus">

@@ -12,8 +12,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void">

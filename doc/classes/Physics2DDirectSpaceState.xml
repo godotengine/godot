@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="cast_motion">
 			<return type="Array">

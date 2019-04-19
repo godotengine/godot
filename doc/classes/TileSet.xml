@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_forward_subtile_selection" qualifiers="virtual">
 			<return type="Vector2">

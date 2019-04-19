@@ -23,8 +23,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_blend_shape">
 			<return type="void">
