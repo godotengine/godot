@@ -6,10 +6,8 @@
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
-	</tutorials>
-	<demos>
 		<link>https://github.com/godotengine/tps-demo</link>
-	</demos>
+	</tutorials>
 	<methods>
 		<method name="advance">
 			<return type="void">

@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/particle_systems_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="capture_rect" qualifiers="const">
 			<return type="Rect2">

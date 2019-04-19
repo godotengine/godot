@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="force_update_transform">
 			<return type="void">

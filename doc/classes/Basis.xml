@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Basis">
 			<return type="Basis">

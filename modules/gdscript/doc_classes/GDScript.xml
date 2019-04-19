@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_as_byte_code" qualifiers="const">
 			<return type="PoolByteArray">

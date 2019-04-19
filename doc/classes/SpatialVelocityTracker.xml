@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_tracked_linear_velocity" qualifiers="const">
 			<return type="Vector3">

@@ -17,8 +17,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Array">
 			<return type="Array">

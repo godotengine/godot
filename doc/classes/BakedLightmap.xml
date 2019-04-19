@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/baked_lightmaps.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="bake">
 			<return type="int" enum="BakedLightmap.BakeError">

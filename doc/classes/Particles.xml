@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/controlling_thousands_of_fish.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="capture_aabb" qualifiers="const">
 			<return type="AABB">

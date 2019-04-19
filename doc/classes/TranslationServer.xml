@@ -10,8 +10,6 @@
 		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html</link>
 		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/locales.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_translation">
 			<return type="void">

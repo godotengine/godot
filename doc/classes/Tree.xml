@@ -19,8 +19,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="are_column_titles_visible" qualifiers="const">
 			<return type="bool">

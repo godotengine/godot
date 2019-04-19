@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_recognized_extensions" qualifiers="virtual">
 			<return type="PoolStringArray">

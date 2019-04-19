@@ -17,8 +17,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_run" qualifiers="virtual">
 			<return type="void">

@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_collision_exception_with">
 			<return type="void">

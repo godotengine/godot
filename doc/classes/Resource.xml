@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/stable/getting_started/step_by_step/resources.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_setup_local_to_scene" qualifiers="virtual">
 			<return type="void">

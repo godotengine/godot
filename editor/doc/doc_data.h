@@ -86,7 +86,6 @@ public:
 		String brief_description;
 		String description;
 		Vector<String> tutorials;
-		String demos;
 		Vector<MethodDoc> methods;
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;

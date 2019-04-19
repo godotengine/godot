@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_scancode_with_modifiers" qualifiers="const">
 			<return type="int">

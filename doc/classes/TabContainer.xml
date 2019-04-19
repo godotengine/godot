@@ -11,8 +11,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_current_tab_control" qualifiers="const">
 			<return type="Control">

@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="make_convex_from_brothers">
 			<return type="void">

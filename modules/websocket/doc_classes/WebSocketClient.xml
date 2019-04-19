@@ -11,8 +11,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="connect_to_url">
 			<return type="int" enum="Error">

@@ -11,8 +11,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector3">

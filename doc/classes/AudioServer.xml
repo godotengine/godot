@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_buses.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_bus">
 			<return type="void">

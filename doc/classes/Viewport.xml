@@ -15,8 +15,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="find_world" qualifiers="const">
 			<return type="World">

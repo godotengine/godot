@@ -13,8 +13,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_get" qualifiers="virtual">
 			<return type="Variant">

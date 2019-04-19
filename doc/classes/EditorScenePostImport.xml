@@ -28,8 +28,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_scenes.html#custom-script</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_source_file" qualifiers="const">
 			<return type="String">

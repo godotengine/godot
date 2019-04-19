@@ -14,8 +14,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/2d_transforms.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_draw" qualifiers="virtual">
 			<return type="void">

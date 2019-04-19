@@ -11,8 +11,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html#interpolating-with-quaternions</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Quat">
 			<return type="Quat">

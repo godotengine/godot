@@ -51,8 +51,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/import_plugins.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_import_options" qualifiers="virtual">
 			<return type="Array">

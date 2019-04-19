@@ -30,8 +30,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_do_method" qualifiers="vararg">
 			<return type="Variant">
