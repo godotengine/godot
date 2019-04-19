@@ -401,6 +401,10 @@ Variant Array::max() const {
 	return maxval;
 }
 
+const void *Array::id() const {
+	return _p->array.ptr();
+}
+
 Array::Array(const Array &p_from) {
 
 	_p = NULL;

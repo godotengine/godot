@@ -401,6 +401,7 @@ public:
 
 	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize() const;
+	String stringify(List<const void *> &stack) const;
 
 	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
