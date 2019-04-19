@@ -211,6 +211,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	void _make_constant(const Variant &p_constant);
 	void _make_type(const Variant::Type &p_type);
 	void _make_error(const String &p_error);
+	void _make_eof();
 
 	String code;
 	int len;
@@ -220,6 +221,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	int column;
 	TokenData tk_rb[TK_RB_SIZE * 2 + 1];
 	int tk_rb_pos;
+	bool last_was_newline;
 	String last_error;
 	bool error_flag;
 #ifdef DEBUG_ENABLED

@@ -385,6 +385,7 @@ void GDScriptTokenizerText::_make_token(Token p_type) {
 	tk.col = column;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = false;
 }
 void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier) {
 
@@ -396,6 +397,7 @@ void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier) {
 	tk.col = column;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = false;
 }
 
 void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_func) {
@@ -408,6 +410,7 @@ void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_fu
 	tk.col = column;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = false;
 }
 void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
 
@@ -419,6 +422,7 @@ void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
 	tk.col = column;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = false;
 }
 
 void GDScriptTokenizerText::_make_type(const Variant::Type &p_type) {
@@ -431,6 +435,7 @@ void GDScriptTokenizerText::_make_type(const Variant::Type &p_type) {
 	tk.col = column;
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = false;
 }
 
 void GDScriptTokenizerText::_make_error(const String &p_error) {
@@ -444,6 +449,7 @@ void GDScriptTokenizerText::_make_error(const String &p_error) {
 	tk.line = line;
 	tk.col = column;
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = false;
 }
 
 void GDScriptTokenizerText::_make_newline(int p_spaces) {
@@ -454,6 +460,17 @@ void GDScriptTokenizerText::_make_newline(int p_spaces) {
 	tk.line = line;
 	tk.col = column;
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
+	last_was_newline = true;
+}
+
+void GDScriptTokenizerText::_make_eof() {
+	if (!last_was_newline) {
+		// Fake a newline at the end of the file if there is none
+		line++;
+		_make_newline(0);
+	} else {
+		_make_token(TK_EOF);
+	}
 }
 
 void GDScriptTokenizerText::_advance() {
@@ -465,7 +482,7 @@ void GDScriptTokenizerText::_advance() {
 	}
 
 	if (code_pos >= len) {
-		_make_token(TK_EOF);
+		_make_eof();
 		return;
 	}
 #define GETCHAR(m_ofs) ((m_ofs + code_pos) >= len ? 0 : _code[m_ofs + code_pos])
@@ -481,7 +498,7 @@ void GDScriptTokenizerText::_advance() {
 
 		switch (GETCHAR(0)) {
 			case 0:
-				_make_token(TK_EOF);
+				_make_eof();
 				break;
 			case '\\':
 				INCPOS(1);
@@ -530,7 +547,7 @@ void GDScriptTokenizerText::_advance() {
 					code_pos++;
 					if (GETCHAR(0) == 0) { //end of file
 						//_make_error("Unterminated Comment");
-						_make_token(TK_EOF);
+						_make_eof();
 						return;
 					}
 				}
@@ -1055,6 +1072,7 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	column = 1; //the same holds for columns
 	tk_rb_pos = 0;
 	error_flag = false;
+	last_was_newline = false;
 #ifdef DEBUG_ENABLED
 	ignore_warnings = false;
 #endif // DEBUG_ENABLED

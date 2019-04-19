@@ -888,10 +888,11 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 				case GDScriptFunction::OPCODE_LINE: {
 
 					int line = code[ip + 1] - 1;
+					txt = "\n" + txt + "(line: " + itos(line + 1) + ") ";
 					if (line >= 0 && line < p_code.size())
-						txt = "\n" + itos(line + 1) + ": " + p_code[line] + "\n";
+						txt += p_code[line] + "\n";
 					else
-						txt = "";
+						txt += "OOB";
 					incr += 2;
 				} break;
 				case GDScriptFunction::OPCODE_END: {
