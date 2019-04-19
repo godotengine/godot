@@ -619,6 +619,9 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 			//send focus to parent
 			emit_signal("raise_request");
+			if (mb->is_doubleclick()) {
+				emit_signal("double_clicked");
+			}
 			get_parent_control()->grab_focus();
 		}
 
@@ -726,6 +729,7 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(MethodInfo("double_clicked"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
 	BIND_ENUM_CONSTANT(OVERLAY_DISABLED);

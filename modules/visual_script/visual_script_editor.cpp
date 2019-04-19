@@ -42,8 +42,6 @@
 #include "visual_script_func_nodes.h"
 #include "visual_script_nodes.h"
 
-#include <iostream>
-
 #ifdef TOOLS_ENABLED
 class VisualScriptEditorSignalEdit : public Object {
 
@@ -542,6 +540,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		gnode->set_name(itos(E->get()));
 		gnode->connect("dragged", this, "_node_moved", varray(E->get()));
 		gnode->connect("close_request", this, "_remove_node", varray(E->get()), CONNECT_DEFERRED);
+		gnode->connect("double_clicked", this, "_node_double_clicked", varray(E->get()));
 
 		if (E->get() != script->get_function_node_id(edited_func)) {
 			//function can't be erased
@@ -2234,12 +2233,6 @@ void VisualScriptEditor::_change_base_type_callback() {
 
 void VisualScriptEditor::_node_selected(Node *p_node) {
 
-	//VisualScriptComment comment_node = Object::cast_to<VisualScriptComment>(*script->get_node(edited_func, p_node->get_name().operator String().to_int()).ptr());
-
-	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
-
-	}
-
 	Ref<VisualScriptNode> vnode = p_node->get_meta("__vnode");
 	if (vnode.is_null())
 		return;
@@ -2333,6 +2326,30 @@ void VisualScriptEditor::_remove_node(int p_id) {
 	undo_redo->add_undo_method(this, "_update_graph");
 
 	undo_redo->commit_action();
+}
+
+void VisualScriptEditor::_node_double_clicked(int p_id) {
+	GraphNode *com_node = Object::cast_to<GraphNode>(graph->get_node(itos(p_id)));
+	if (com_node->is_comment()) {
+		List<int> nodes_inside;
+		Rect2 com_rect = com_node->get_rect();
+		com_rect.position = script->get_node_position(edited_func, p_id);
+
+		List<int> nodes;
+		script->get_node_list(edited_func, &nodes);
+		for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+			int id = E->get();
+			Vector2 node_pos = script->get_node_position(edited_func, id);
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(itos(id)));
+			if (id != p_id && (com_rect.has_point(node_pos) || com_rect.has_point(node_pos + gn->get_rect().get_size()))) {
+				nodes_inside.push_back(id);
+			}
+		}
+
+		Rect2 comment_size = get_rect_around(nodes_inside);
+		_move_node(edited_func, p_id, comment_size.position);
+		_comment_node_resized(comment_size.size, p_id);
+	}
 }
 
 void VisualScriptEditor::_node_ports_changed(const String &p_func, int p_id) {
@@ -3306,12 +3323,12 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 				undo_redo->create_action(TTR("Insert Comment Node"));
 
-				Ref<VisualScriptComment> comment_node = VisualScriptLanguage::singleton->create_node_from_name("data/comment");
-				comment_node->set_size(comment_size.get_size());
+				Ref<VisualScriptComment> com_node = VisualScriptLanguage::singleton->create_node_from_name("data/comment");
+				com_node->set_size(comment_size.get_size());
 
 				int new_id = script->get_available_id() + 1;
 
-				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, comment_node, comment_size.get_position());
+				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, com_node, comment_size.get_position());
 				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
 
 				undo_redo->add_do_method(this, "_update_graph");
@@ -3328,7 +3345,7 @@ Rect2 VisualScriptEditor::get_rect_around(List<int> &nodes) {
 	Vector2 right_lower_pos = Vector2(-INFINITY, -INFINITY);
 
 	for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
-		GraphNode* gn = Object::cast_to<GraphNode>(graph->get_node(itos(E->get())));
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(itos(E->get())));
 		if (gn) {
 			Vector2 gn_pos = script->get_node_position(edited_func, E->get());
 			Size2 gn_size = gn->get_rect().get_size();
@@ -3502,6 +3519,7 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_begin_node_move", &VisualScriptEditor::_begin_node_move);
 	ClassDB::bind_method("_end_node_move", &VisualScriptEditor::_end_node_move);
 	ClassDB::bind_method("_remove_node", &VisualScriptEditor::_remove_node);
+	ClassDB::bind_method("_node_double_clicked", &VisualScriptEditor::_node_double_clicked);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
 	ClassDB::bind_method("_node_ports_changed", &VisualScriptEditor::_node_ports_changed);
 	ClassDB::bind_method("_available_node_doubleclicked", &VisualScriptEditor::_available_node_doubleclicked);
