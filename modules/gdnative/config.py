@@ -16,6 +16,7 @@ def get_doc_classes():
         "ResourceFormatLoaderVideoStreamGDNative",
         "StreamPeerGDNative",
         "VideoStreamGDNative",
+        "WebRTCPeerGDNative",
     ]
 
 def get_doc_path():

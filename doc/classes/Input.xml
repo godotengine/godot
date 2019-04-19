@@ -66,6 +66,12 @@
 				Returns an [Array] containing the device IDs of all currently connected joypads.
 			</description>
 		</method>
+		<method name="get_current_cursor_shape" qualifiers="const">
+			<return type="int" enum="Input.CursorShape">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_gravity" qualifiers="const">
 			<return type="Vector3">
 			</return>

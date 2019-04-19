@@ -982,8 +982,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 		if (err) {
 			ERR_EXPLAIN("Can't write doc file: " + save_file);
-
-			ERR_FAIL_V(err);
+			ERR_CONTINUE(err);
 		}
 
 		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
