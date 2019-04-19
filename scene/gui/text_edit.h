@@ -75,6 +75,7 @@ public:
 			int width_cache : 24;
 			bool marked : 1;
 			bool breakpoint : 1;
+			bool bookmark : 1;
 			bool hidden : 1;
 			bool safe : 1;
 			int wrap_amount_cache : 24;
@@ -105,6 +106,8 @@ public:
 		void set(int p_line, const String &p_text);
 		void set_marked(int p_line, bool p_marked) { text.write[p_line].marked = p_marked; }
 		bool is_marked(int p_line) const { return text[p_line].marked; }
+		void set_bookmark(int p_line, bool p_bookmark) { text.write[p_line].bookmark = p_bookmark; }
+		bool is_bookmark(int p_line) const { return text[p_line].bookmark; }
 		void set_breakpoint(int p_line, bool p_breakpoint) { text.write[p_line].breakpoint = p_breakpoint; }
 		bool is_breakpoint(int p_line) const { return text[p_line].breakpoint; }
 		void set_hidden(int p_line, bool p_hidden) { text.write[p_line].hidden = p_hidden; }
@@ -187,6 +190,7 @@ private:
 		Color member_variable_color;
 		Color selection_color;
 		Color mark_color;
+		Color bookmark_color;
 		Color breakpoint_color;
 		Color executing_line_color;
 		Color code_folding_color;
@@ -298,6 +302,7 @@ private:
 	bool line_numbers_zero_padded;
 	bool line_length_guideline;
 	int line_length_guideline_col;
+	bool draw_bookmark_gutter;
 	bool draw_breakpoint_gutter;
 	int breakpoint_gutter_width;
 	bool draw_fold_gutter;
@@ -488,6 +493,10 @@ public:
 	void insert_at(const String &p_text, int at);
 	int get_line_count() const;
 	void set_line_as_marked(int p_line, bool p_marked);
+	void set_line_as_bookmark(int p_line, bool p_bookmark);
+	bool is_line_set_as_bookmark(int p_line) const;
+	void get_bookmarks(List<int> *p_bookmarks) const;
+	Array get_bookmarks_array() const;
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
 	void set_executing_line(int p_line);
@@ -659,6 +668,9 @@ public:
 
 	void set_show_line_length_guideline(bool p_show);
 	void set_line_length_guideline_column(int p_column);
+
+	void set_bookmark_gutter_enabled(bool p_draw);
+	bool is_bookmark_gutter_enabled() const;
 
 	void set_breakpoint_gutter_enabled(bool p_draw);
 	bool is_breakpoint_gutter_enabled() const;

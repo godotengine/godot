@@ -764,6 +764,7 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_highlight_current_line(EditorSettings::get_singleton()->get("text_editor/highlighting/highlight_current_line"));
 	text_editor->cursor_set_blink_enabled(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink"));
 	text_editor->cursor_set_blink_speed(EditorSettings::get_singleton()->get("text_editor/cursor/caret_blink_speed"));
+	text_editor->set_bookmark_gutter_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_bookmark_gutter"));
 	text_editor->set_breakpoint_gutter_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_breakpoint_gutter"));
 	text_editor->set_hiding_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
@@ -1203,6 +1204,7 @@ Variant CodeTextEditor::get_edit_state() {
 
 	state["folded_lines"] = text_editor->get_folded_lines();
 	state["breakpoints"] = text_editor->get_breakpoints_array();
+	state["bookmarks"] = text_editor->get_bookmarks_array();
 
 	state["syntax_highlighter"] = TTR("Standard");
 	SyntaxHighlighter *syntax_highlighter = text_editor->_get_syntax_highlighting();
@@ -1237,6 +1239,13 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 		Array breakpoints = state["breakpoints"];
 		for (int i = 0; i < breakpoints.size(); i++) {
 			text_editor->set_line_as_breakpoint(breakpoints[i], true);
+		}
+	}
+
+	if (state.has("bookmarks")) {
+		Array bookmarks = state["bookmarks"];
+		for (int i = 0; i < bookmarks.size(); i++) {
+			text_editor->set_line_as_bookmark(bookmarks[i], true);
 		}
 	}
 
@@ -1355,6 +1364,70 @@ void CodeTextEditor::set_warning_nb(int p_warning_nb) {
 	warning_button->set_visible(p_warning_nb > 0);
 	if (!p_warning_nb)
 		_set_show_warnings_panel(false);
+}
+
+void CodeTextEditor::toggle_bookmark() {
+
+	int line = text_editor->cursor_get_line();
+	text_editor->set_line_as_bookmark(line, !text_editor->is_line_set_as_bookmark(line));
+}
+
+void CodeTextEditor::goto_next_bookmark() {
+
+	List<int> bmarks;
+	text_editor->get_bookmarks(&bmarks);
+	if (bmarks.size() <= 0) {
+		return;
+	}
+
+	int line = text_editor->cursor_get_line();
+	if (line >= bmarks[bmarks.size() - 1]) {
+		text_editor->unfold_line(bmarks[0]);
+		text_editor->cursor_set_line(bmarks[0]);
+	} else {
+		for (List<int>::Element *E = bmarks.front(); E; E = E->next()) {
+			int bline = E->get();
+			if (bline > line) {
+				text_editor->unfold_line(bline);
+				text_editor->cursor_set_line(bline);
+				return;
+			}
+		}
+	}
+}
+
+void CodeTextEditor::goto_prev_bookmark() {
+
+	List<int> bmarks;
+	text_editor->get_bookmarks(&bmarks);
+	if (bmarks.size() <= 0) {
+		return;
+	}
+
+	int line = text_editor->cursor_get_line();
+	if (line <= bmarks[0]) {
+		text_editor->unfold_line(bmarks[bmarks.size() - 1]);
+		text_editor->cursor_set_line(bmarks[bmarks.size() - 1]);
+	} else {
+		for (List<int>::Element *E = bmarks.back(); E; E = E->prev()) {
+			int bline = E->get();
+			if (bline < line) {
+				text_editor->unfold_line(bline);
+				text_editor->cursor_set_line(bline);
+				return;
+			}
+		}
+	}
+}
+
+void CodeTextEditor::remove_all_bookmarks() {
+
+	List<int> bmarks;
+	text_editor->get_bookmarks(&bmarks);
+
+	for (List<int>::Element *E = bmarks.front(); E; E = E->next()) {
+		text_editor->set_line_as_bookmark(E->get(), false);
+	}
 }
 
 void CodeTextEditor::_bind_methods() {

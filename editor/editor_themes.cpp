@@ -1115,6 +1115,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color function_color = main_color;
 	const Color member_variable_color = main_color.linear_interpolate(mono_color, 0.6);
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
+	const Color bookmark_color = Color(0.08, 0.49, 0.98);
 	const Color breakpoint_color = error_color;
 	const Color executing_line_color = Color(0.2, 0.8, 0.2, 0.4);
 	const Color code_folding_color = alpha3;
@@ -1151,6 +1152,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/function_color", function_color, true);
 		setting->set_initial_value("text_editor/highlighting/member_variable_color", member_variable_color, true);
 		setting->set_initial_value("text_editor/highlighting/mark_color", mark_color, true);
+		setting->set_initial_value("text_editor/highlighting/bookmark_color", bookmark_color, true);
 		setting->set_initial_value("text_editor/highlighting/breakpoint_color", breakpoint_color, true);
 		setting->set_initial_value("text_editor/highlighting/executing_line_color", executing_line_color, true);
 		setting->set_initial_value("text_editor/highlighting/code_folding_color", code_folding_color, true);
