@@ -502,21 +502,6 @@ They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments and a patch is provided in the squish/ folder.
 
 
-## thekla_atlas
-
-- Upstream: https://github.com/Thekla/thekla_atlas
-- Version: git (80a1430, 2017)
-- License: MIT
-
-Files extracted from the upstream source:
-
-- Relevant sources from src/
-- License.txt
-
-Important: Some files have Godot-made changes, those
-changes are marked with `// -- GODOT --` comments.
-
-
 ## tinyexr
 
 - Upstream: https://github.com/syoyo/tinyexr

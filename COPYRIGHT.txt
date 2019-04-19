@@ -374,11 +374,6 @@ Comment: libSquish
 Copyright: 2006, Simon Brown
 License: Expat
 
-Files: ./thirdparty/thekla_atlas/
-Comment: Thekla Atlas
-Copyright: 2013, Thekla, Inc
-License: Expat
-
 Files: ./thirdparty/tinyexr/
 Comment: TinyEXR
 Copyright: 2014-2018, Syoyo Fujita
