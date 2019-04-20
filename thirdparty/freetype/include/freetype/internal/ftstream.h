@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftstream.h                                                             */
-/*                                                                         */
-/*    Stream handling (specification).                                     */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftstream.h
+ *
+ *   Stream handling (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTSTREAM_H_
@@ -96,13 +96,13 @@ FT_BEGIN_HEADER
   /* The structure type must be set in the FT_STRUCTURE macro before       */
   /* calling the FT_FRAME_START() macro.                                   */
   /*                                                                       */
-#define FT_FIELD_SIZE( f ) \
+#define FT_FIELD_SIZE( f )                          \
           (FT_Byte)sizeof ( ((FT_STRUCTURE*)0)->f )
 
-#define FT_FIELD_SIZE_DELTA( f ) \
+#define FT_FIELD_SIZE_DELTA( f )                       \
           (FT_Byte)sizeof ( ((FT_STRUCTURE*)0)->f[0] )
 
-#define FT_FIELD_OFFSET( f ) \
+#define FT_FIELD_OFFSET( f )                         \
           (FT_UShort)( offsetof( FT_STRUCTURE, f ) )
 
 #define FT_FRAME_FIELD( frame_op, field ) \
@@ -147,11 +147,11 @@ FT_BEGIN_HEADER
 #define FT_FRAME_SKIP_BYTES( count )  { ft_frame_skip, count, 0 }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Integer extraction macros -- the `buffer' parameter must ALWAYS be of */
-  /* type `char*' or equivalent (1-byte elements).                         */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Integer extraction macros -- the 'buffer' parameter must ALWAYS be of
+   * type 'char*' or equivalent (1-byte elements).
+   */
 
 #define FT_BYTE_( p, i )  ( ((const FT_Byte*)(p))[(i)] )
 
@@ -165,6 +165,10 @@ FT_BEGIN_HEADER
 #define FT_BYTE_U32( p, i, s )  ( FT_UINT32( FT_BYTE_( p, i ) ) << (s) )
 
 
+  /*
+   * `FT_PEEK_XXX' are generic macros to get data from a buffer position.  No
+   * safety checks are performed.
+   */
 #define FT_PEEK_SHORT( p )  FT_INT16( FT_BYTE_U16( p, 0, 8 ) | \
                                       FT_BYTE_U16( p, 1, 0 ) )
 
@@ -213,7 +217,10 @@ FT_BEGIN_HEADER
                                           FT_BYTE_U32( p, 1,  8 ) | \
                                           FT_BYTE_U32( p, 0,  0 ) )
 
-
+  /*
+   * `FT_NEXT_XXX' are generic macros to get data from a buffer position
+   * which is then increased appropriately.  No safety checks are performed.
+   */
 #define FT_NEXT_CHAR( buffer )       \
           ( (signed char)*buffer++ )
 
@@ -258,10 +265,14 @@ FT_BEGIN_HEADER
           ( (unsigned long)( buffer += 4, FT_PEEK_ULONG_LE( buffer - 4 ) ) )
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Each GET_xxxx() macro uses an implicit `stream' variable.             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The `FT_GET_XXX` macros use an implicit 'stream' variable.
+   *
+   * Note that a call to `FT_STREAM_SEEK` or `FT_STREAM_POS` has **no**
+   * effect on `FT_GET_XXX`!  They operate on `stream->pos`, while
+   * `FT_GET_XXX` use `stream->cursor`.
+   */
 #if 0
 #define FT_GET_MACRO( type )    FT_NEXT_ ## type ( stream->cursor )
 
@@ -299,10 +310,18 @@ FT_BEGIN_HEADER
 #define FT_GET_ULONG_LE()   FT_GET_MACRO( FT_Stream_GetULongLE, FT_ULong )
 #endif
 
+
 #define FT_READ_MACRO( func, type, var )        \
           ( var = (type)func( stream, &error ), \
             error != FT_Err_Ok )
 
+  /*
+   * The `FT_READ_XXX' macros use implicit `stream' and `error' variables.
+   *
+   * `FT_READ_XXX' can be controlled with `FT_STREAM_SEEK' and
+   * `FT_STREAM_POS'.  They use the full machinery to check whether a read is
+   * valid.
+   */
 #define FT_READ_BYTE( var )       FT_READ_MACRO( FT_Stream_ReadChar, FT_Byte, var )
 #define FT_READ_CHAR( var )       FT_READ_MACRO( FT_Stream_ReadChar, FT_Char, var )
 #define FT_READ_SHORT( var )      FT_READ_MACRO( FT_Stream_ReadUShort, FT_Short, var )
@@ -387,11 +406,13 @@ FT_BEGIN_HEADER
 
   /* Enter a frame of `count' consecutive bytes in a stream.  Returns an */
   /* error if the frame could not be read/accessed.  The caller can use  */
-  /* the FT_Stream_Get_XXX functions to retrieve frame data without      */
+  /* the `FT_Stream_GetXXX' functions to retrieve frame data without     */
   /* error checks.                                                       */
   /*                                                                     */
-  /* You must _always_ call FT_Stream_ExitFrame() once you have entered  */
+  /* You must _always_ call `FT_Stream_ExitFrame' once you have entered  */
   /* a stream frame!                                                     */
+  /*                                                                     */
+  /* Nested frames are not permitted.                                    */
   /*                                                                     */
   FT_BASE( FT_Error )
   FT_Stream_EnterFrame( FT_Stream  stream,
@@ -401,24 +422,28 @@ FT_BEGIN_HEADER
   FT_BASE( void )
   FT_Stream_ExitFrame( FT_Stream  stream );
 
+
   /* Extract a stream frame.  If the stream is disk-based, a heap block */
   /* is allocated and the frame bytes are read into it.  If the stream  */
-  /* is memory-based, this function simply set a pointer to the data.   */
+  /* is memory-based, this function simply sets a pointer to the data.  */
   /*                                                                    */
   /* Useful to optimize access to memory-based streams transparently.   */
   /*                                                                    */
-  /* All extracted frames must be `freed' with a call to the function   */
-  /* FT_Stream_ReleaseFrame().                                          */
+  /* `FT_Stream_GetXXX' functions can't be used.                        */
+  /*                                                                    */
+  /* An extracted frame must be `freed' with a call to the function     */
+  /* `FT_Stream_ReleaseFrame'.                                          */
   /*                                                                    */
   FT_BASE( FT_Error )
   FT_Stream_ExtractFrame( FT_Stream  stream,
                           FT_ULong   count,
                           FT_Byte**  pbytes );
 
-  /* release an extract frame (see FT_Stream_ExtractFrame) */
+  /* release an extract frame (see `FT_Stream_ExtractFrame') */
   FT_BASE( void )
   FT_Stream_ReleaseFrame( FT_Stream  stream,
                           FT_Byte**  pbytes );
+
 
   /* read a byte from an entered frame */
   FT_BASE( FT_Char )

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftmm.c                                                                 */
-/*                                                                         */
-/*    Multiple Master font support (body).                                 */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftmm.c
+ *
+ *   Multiple Master font support (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -25,14 +25,14 @@
 #include FT_SERVICE_METRICS_VARIATIONS_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_mm
+#define FT_COMPONENT  mm
 
 
   static FT_Error
@@ -193,6 +193,67 @@
     {
       face->autohint.finalizer( face->autohint.data );
       face->autohint.data = NULL;
+    }
+
+    return error;
+  }
+
+
+  /* documentation is in ftmm.h */
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Set_MM_WeightVector( FT_Face    face,
+                          FT_UInt    len,
+                          FT_Fixed*  weightvector )
+  {
+    FT_Error                 error;
+    FT_Service_MultiMasters  service;
+
+
+    /* check of `face' delayed to `ft_face_get_mm_service' */
+
+    if ( len && !weightvector )
+      return FT_THROW( Invalid_Argument );
+
+    error = ft_face_get_mm_service( face, &service );
+    if ( !error )
+    {
+      error = FT_ERR( Invalid_Argument );
+      if ( service->set_mm_weightvector )
+        error = service->set_mm_weightvector( face, len, weightvector );
+    }
+
+    /* enforce recomputation of auto-hinting data */
+    if ( !error && face->autohint.finalizer )
+    {
+      face->autohint.finalizer( face->autohint.data );
+      face->autohint.data = NULL;
+    }
+
+    return error;
+  }
+
+
+  FT_EXPORT_DEF( FT_Error )
+  FT_Get_MM_WeightVector( FT_Face    face,
+                          FT_UInt*   len,
+                          FT_Fixed*  weightvector )
+  {
+    FT_Error                 error;
+    FT_Service_MultiMasters  service;
+
+
+    /* check of `face' delayed to `ft_face_get_mm_service' */
+
+    if ( len && !weightvector )
+      return FT_THROW( Invalid_Argument );
+
+    error = ft_face_get_mm_service( face, &service );
+    if ( !error )
+    {
+      error = FT_ERR( Invalid_Argument );
+      if ( service->get_mm_weightvector )
+        error = service->get_mm_weightvector( face, len, weightvector );
     }
 
     return error;

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afshaper.h                                                             */
-/*                                                                         */
-/*    HarfBuzz interface for accessing OpenType features (specification).  */
-/*                                                                         */
-/*  Copyright 2013-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afshaper.h
+ *
+ *   HarfBuzz interface for accessing OpenType features (specification).
+ *
+ * Copyright (C) 2013-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef AFSHAPER_H_
