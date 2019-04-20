@@ -2329,6 +2329,7 @@ void VisualScriptEditor::_remove_node(int p_id) {
 }
 
 void VisualScriptEditor::_node_double_clicked(int p_id) {
+
 	GraphNode *com_node = Object::cast_to<GraphNode>(graph->get_node(itos(p_id)));
 	if (com_node->is_comment()) {
 		List<int> nodes_inside;
@@ -2349,6 +2350,20 @@ void VisualScriptEditor::_node_double_clicked(int p_id) {
 		Rect2 comment_size = get_rect_around(nodes_inside);
 		_move_node(edited_func, p_id, comment_size.position);
 		_comment_node_resized(comment_size.size, p_id);
+	}
+
+	VisualScriptFunctionCall *func_node = Object::cast_to<VisualScriptFunctionCall>(script->get_node(edited_func, p_id).ptr());
+	if (func_node) {
+		TreeItem *to_check = members->get_root()->get_children()->get_children();
+		while (to_check) {
+			if (to_check->get_text(0) == func_node->get_function()) {
+				to_check->select(0);
+				break;
+			} else if (!to_check->is_editable(0)) {
+				break;
+			}
+			to_check = to_check->get_next();
+		}
 	}
 }
 
