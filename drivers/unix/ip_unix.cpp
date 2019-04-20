@@ -151,16 +151,16 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	using namespace Windows::Networking::Connectivity;
 
 	auto hostnames = NetworkInformation::GetHostNames();
-	
+
 	Map<String, Interface_Info> interface_map;
 
 	for (int i = 0; i < hostnames->Size; i++) {
-		
+
 		if (!((hostnames->GetAt(i)->Type == HostNameType::Ipv4 || hostnames->GetAt(i)->Type == HostNameType::Ipv6) && hostnames->GetAt(i)->IPInformation != nullptr))
 			continue;
-			
+
 		String name = hostnames->GetAt(i)->DisplayName->Data();
-	
+
 		Interface_Info info;
 
 		Map<String, Interface_Info>::Element *E = interface_map.find(name);
@@ -168,10 +168,9 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 			info.name = name;
 			info.name_friendly = name;
 			interface_map[name] = info;
-		}
-		else {
-		 	Interface_Info &c = E->get();
-		 	info = c;
+		} else {
+			Interface_Info &c = E->get();
+			info = c;
 		}
 
 		IP_Address ip = _sockaddr2ip(hostnames->GetAt(i)->CanonicalName->Data()));
@@ -263,7 +262,7 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	IP_ADAPTER_ADDRESSES *adapter = addrs;
 
 	while (adapter != NULL) {
-	
+
 		Interface_Info info;
 		info.name = adapter->FriendlyName;
 		info.name_friendly = adapter->FriendlyName;
@@ -334,7 +333,7 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	int family;
 
 	getifaddrs(&ifAddrStruct);
-	
+
 	Map<String, Interface_Info> interface_map;
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
@@ -353,12 +352,9 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 			info.name = ifa->ifa_name;
 			info.name_friendly = ifa->ifa_name;
 			interface_map[ifa->ifa_name] = info;
-			// info.name = ifa->ifa_name;
-			// info.name_friendly = ifa->ifa_name;
-		}
-		else {
-		 	Interface_Info &c = E->get();
-		 	info = c;
+		} else {
+			Interface_Info &c = E->get();
+			info = c;
 		}
 
 		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);
