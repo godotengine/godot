@@ -272,8 +272,10 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	while (adapter != NULL) {
 	
 		Interface_Info info;
-		info.set_name(adapter->FriendlyName);
-		info.set_name_friendly(adapter->FriendlyName);
+		//info.set_name(adapter->FriendlyName);
+		//info.set_name_friendly(adapter->FriendlyName);
+		info.name = adapter->FriendlyName;
+		info.name_friendly = adapter->FriendlyName;
 
 		IP_ADAPTER_UNICAST_ADDRESS *address = adapter->FirstUnicastAddress;
 		while (address != NULL) {
@@ -285,15 +287,16 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 				SOCKADDR_IN *ipv4 = reinterpret_cast<SOCKADDR_IN *>(address->Address.lpSockaddr);
 
 				ip.set_ipv4((uint8_t *)&(ipv4->sin_addr));
-				info.set_ipv4(ip);
 
 			} else if (address->Address.lpSockaddr->sa_family == AF_INET6) { // ipv6
 
 				SOCKADDR_IN6 *ipv6 = reinterpret_cast<SOCKADDR_IN6 *>(address->Address.lpSockaddr);
 
 				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
-				info.set_ipv6(ip);
 			};
+
+			//info.add_ip(ip);
+			info.ip_addresses.push_front(ip);
 
 			address = address->Next;
 		};
@@ -341,6 +344,9 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	int family;
 
 	getifaddrs(&ifAddrStruct);
+	
+	//const Map<StringName, Action>::Element *E = input_map.find(p_action);
+	//input_map.h
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)

@@ -31,7 +31,6 @@
 #ifndef IP_H
 #define IP_H
 
-#include "core/io/interface_info.h"
 #include "core/io/ip_address.h"
 #include "core/os/os.h"
 
@@ -79,6 +78,12 @@ protected:
 	static IP *(*_create)();
 
 public:
+	struct Interface_Info {
+		String name;
+		String name_friendly;
+		List<IP_Address> ip_addresses;
+	};
+
 	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
 	// async resolver hostname
 	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);

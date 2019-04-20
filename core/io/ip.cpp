@@ -242,23 +242,20 @@ Array IP::_get_local_interfaces() const {
 	for (List<Interface_Info>::Element *E = interfaces.front(); E; E = E->next()) {
 		Interface_Info &c = E->get();
 		Dictionary rc;
-		rc["name"] = c.get_name();
-		rc["friendly"] = c.get_name_friendly();
+		rc["name"] = c.name;
+		rc["friendly"] = c.name_friendly;
 
 		Array ips;
-
-		Dictionary rc_ipv4;
-		rc_ipv4["address"] = c.get_ipv4();
-		rc_ipv4["type"] = IP::TYPE_IPV4;
-		ips.push_back(rc_ipv4);
-		//rc["ipv4"] = rc_ipv4;
-
-		Dictionary rc_ipv6;
-		rc_ipv6["address"] = c.get_ipv6();
-		rc_ipv6["type"] = IP::TYPE_IPV6;
-		ips.push_back(rc_ipv6);
-		//rc["ipv6"] = rc_ipv6;
 		
+		for (const List<IP_Address>::Element *F = c.ip_addresses.front(); F; F = F->next()) {
+			IP_Address ip = F->get();
+			
+			Dictionary rc_ip;
+			rc_ip["address"] = ip;
+			rc_ip["type"] = (ip.is_ipv4() ? IP::TYPE_IPV4 : ip.is_ipv6() ? IP::TYPE_IPV6 : ip.is_wildcard() ? IP::TYPE_ANY : IP::TYPE_NONE);
+			ips.push_back(rc_ip);
+		}
+	
 		rc["addresses"] = ips;
 
 		results.push_back(rc);

@@ -75,7 +75,6 @@ public:
 	bool is_ipv6() const;
 	const uint8_t *get_ipv4() const;
 	void set_ipv4(const uint8_t *p_ip);
-
 	const uint8_t *get_ipv6() const;
 	void set_ipv6(const uint8_t *p_buf);
 
