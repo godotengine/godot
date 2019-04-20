@@ -36,11 +36,11 @@
 				Returns all of the user's current IPv4 and IPv6 addresses as an array.
 			</description>
 		</method>
-		<method name="get_local_addresses_full" qualifiers="const">
+		<method name="_get_local_interfaces" qualifiers="const">
 			<return type="Array">
 			</return>
 			<description>
-				Returns all of the user's current adapter ip addresses as an array; each item is a dictionary that provides the name of the adapter (adapter), the address ("address"), and the type ("type") of the address - IP.TYPE_IPV4 or IP.TYPE_IPV6.
+				Returns all of the user's current adapters as an array; each item is a dictionary that provides the name of the adapter given as "name", the address given as "address", and a list of the ip addresses, given as "addresses", for that addapter.  Each ip address has the address given as "address" as well as the type given as "type" - IP.TYPE_IPV4, IP.TYPE_IPV6 or IP.TYPE_ANY.
 			</description>
 		</method>
 		<method name="get_resolve_item_address" qualifiers="const">
