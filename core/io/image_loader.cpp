@@ -52,6 +52,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_c
 	if (!f) {
 		Error err;
 		f = FileAccess::open(p_file, FileAccess::READ, &err);
+		cout << p_file;
 		if (!f) {
 			ERR_PRINTS("Error opening file: " + p_file);
 			return err;
