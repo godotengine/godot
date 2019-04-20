@@ -1527,7 +1527,7 @@ void EditorInspector::update_tree() {
 					if (E) {
 						descr = E->get().brief_description;
 					}
-					class_descr_cache[type2] = descr.word_wrap(80);
+					class_descr_cache[type2] = descr;
 				}
 
 				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
@@ -1679,7 +1679,7 @@ void EditorInspector::update_tree() {
 				while (F && descr == String()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
-							descr = F->get().properties[i].description.strip_edges().word_wrap(80);
+							descr = F->get().properties[i].description.strip_edges();
 							break;
 						}
 					}
