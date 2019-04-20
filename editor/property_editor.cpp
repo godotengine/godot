@@ -2845,7 +2845,7 @@ void PropertyEditor::update_tree() {
 					if (E) {
 						descr = E->get().brief_description;
 					}
-					class_descr_cache[type] = descr.word_wrap(80);
+					class_descr_cache[type] = descr;
 				}
 
 				sep->set_tooltip(0, TTR("Class:") + " " + p.name + (class_descr_cache[type] == "" ? "" : "\n\n" + class_descr_cache[type]));
@@ -2972,7 +2972,7 @@ void PropertyEditor::update_tree() {
 				while (E && descr == String()) {
 					for (int i = 0; i < E->get().properties.size(); i++) {
 						if (E->get().properties[i].name == propname.operator String()) {
-							descr = E->get().properties[i].description.strip_edges().word_wrap(80);
+							descr = E->get().properties[i].description.strip_edges();
 							break;
 						}
 					}
