@@ -59,7 +59,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		for (int j = 1; j < v; j++) {
 
 			int x = i * size.width / h;
-			int y = i * size.height / v;
+			int y = j * size.height / v;
 
 			split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
 			split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
