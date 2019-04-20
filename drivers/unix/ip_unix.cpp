@@ -151,6 +151,8 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	using namespace Windows::Networking::Connectivity;
 
 	auto hostnames = NetworkInformation::GetHostNames();
+	
+	Map<String, Interface_Info> interface_map;
 
 	for (int i = 0; i < hostnames->Size; i++) {
 		
@@ -160,29 +162,20 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 		String name = hostnames->GetAt(i)->DisplayName->Data();
 	
 		Interface_Info info;
-		
-		bool found = false;
-		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
-			Interface_Info &c = E->get();
-			if (c.get_name() == name) {
-				info = c;
-				found = true;
-				break;
-			}
+
+		Map<String, Interface_Info>::Element *E = interface_map.find(name);
+		if (!E) {
+			info.name = name;
+			info.name_friendly = name;
+			interface_map[name] = info;
+		}
+		else {
+		 	Interface_Info &c = E->get();
+		 	info = c;
 		}
 
-		if (!found) {
-			Interface_Info temp;
-			temp.set_name(name);
-			temp.set_name_friendly(name);
-			info = temp;
-		}
-
-		IP_Address ip = IP_Address(String(hostnames->GetAt(i)->CanonicalName->Data()));
-		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4)
-			info.set_ipv4(ip);
-		if (hostnames->GetAt(i)->Type == HostNameType::Ipv6)
-			info.set_ipv6(ip);
+		IP_Address ip = _sockaddr2ip(hostnames->GetAt(i)->CanonicalName->Data()));
+		info.ip_addresses.push_front(ip);
 
 		r_interfaces->push_back(info);
 	}
@@ -272,8 +265,6 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 	while (adapter != NULL) {
 	
 		Interface_Info info;
-		//info.set_name(adapter->FriendlyName);
-		//info.set_name_friendly(adapter->FriendlyName);
 		info.name = adapter->FriendlyName;
 		info.name_friendly = adapter->FriendlyName;
 
@@ -295,7 +286,6 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
 			};
 
-			//info.add_ip(ip);
 			info.ip_addresses.push_front(ip);
 
 			address = address->Next;
@@ -345,8 +335,7 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 
 	getifaddrs(&ifAddrStruct);
 	
-	//const Map<StringName, Action>::Element *E = input_map.find(p_action);
-	//input_map.h
+	Map<String, Interface_Info> interface_map;
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
@@ -359,28 +348,21 @@ void IP_Unix::get_local_interfaces(List<Interface_Info> *r_interfaces) const {
 
 		Interface_Info info;
 
-		bool found = false;
-		for (List<Interface_Info>::Element *E = r_interfaces->front(); E; E = E->next()) {
-			Interface_Info &c = E->get();
-			if (c.get_name() == ifa->ifa_name) {
-				info = c;
-				found = true;
-				break;
-			}
+		Map<String, Interface_Info>::Element *E = interface_map.find(ifa->ifa_name);
+		if (!E) {
+			info.name = ifa->ifa_name;
+			info.name_friendly = ifa->ifa_name;
+			interface_map[ifa->ifa_name] = info;
+			// info.name = ifa->ifa_name;
+			// info.name_friendly = ifa->ifa_name;
 		}
-
-		if (!found) {
-			Interface_Info temp;
-			temp.set_name(ifa->ifa_name);
-			temp.set_name_friendly(ifa->ifa_name);
-			info = temp;
+		else {
+		 	Interface_Info &c = E->get();
+		 	info = c;
 		}
 
 		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);
-		if (ip.is_ipv4())
-			info.set_ipv4(ip);
-		else
-			info.set_ipv6(ip);
+		info.ip_addresses.push_front(ip);
 
 		r_interfaces->push_back(info);
 	}
