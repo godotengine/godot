@@ -1159,8 +1159,10 @@ void LineEdit::set_cursor_position(int p_pos) {
 	} else if (cursor_pos > window_pos) {
 		/* Adjust window if cursor goes too much to the right */
 		int window_width = get_size().width - style->get_minimum_size().width;
-		if (right_icon.is_valid()) {
-			window_width -= right_icon->get_width();
+		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
+		if (right_icon.is_valid() || display_clear_icon) {
+			Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+			window_width -= r_icon->get_width();
 		}
 
 		if (window_width < 0)
