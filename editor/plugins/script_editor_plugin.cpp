@@ -1801,6 +1801,16 @@ void ScriptEditor::_update_script_names() {
 	_update_script_colors();
 }
 
+void ScriptEditor::_update_script_connections() {
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(tab_container->get_child(i));
+		if (!ste) {
+			continue;
+		}
+		ste->_update_connected_methods();
+	}
+}
+
 Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -2203,6 +2213,7 @@ void ScriptEditor::_tree_changed() {
 
 	waiting_update_names = true;
 	call_deferred("_update_script_names");
+	call_deferred("_update_script_connections");
 }
 
 void ScriptEditor::_script_split_dragged(float) {
@@ -2871,6 +2882,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_autosave_scripts", &ScriptEditor::_autosave_scripts);
 	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
+	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
 	ClassDB::bind_method("_members_overview_selected", &ScriptEditor::_members_overview_selected);
 	ClassDB::bind_method("_help_overview_selected", &ScriptEditor::_help_overview_selected);

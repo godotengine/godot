@@ -35,6 +35,78 @@
 #include "editor/editor_settings.h"
 #include "editor/script_editor_debugger.h"
 
+void ConnectionInfoDialog::ok_pressed() {
+}
+
+void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_nodes) {
+	method->set_text(p_method);
+
+	tree->clear();
+	TreeItem *root = tree->create_item();
+
+	for (int i = 0; i < p_nodes.size(); i++) {
+		List<Connection> all_connections;
+		p_nodes[i]->get_signals_connected_to_this(&all_connections);
+
+		for (List<Connection>::Element *E = all_connections.front(); E; E = E->next()) {
+			Connection connection = E->get();
+
+			if (connection.method != p_method) {
+				continue;
+			}
+
+			TreeItem *node_item = tree->create_item(root);
+
+			node_item->set_text(0, Object::cast_to<Node>(connection.source)->get_name());
+			node_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(connection.source, "Node"));
+			node_item->set_selectable(0, false);
+			node_item->set_editable(0, false);
+
+			node_item->set_text(1, connection.signal);
+			node_item->set_icon(1, get_parent_control()->get_icon("Slot", "EditorIcons"));
+			node_item->set_selectable(1, false);
+			node_item->set_editable(1, false);
+
+			node_item->set_text(2, Object::cast_to<Node>(connection.target)->get_name());
+			node_item->set_icon(2, EditorNode::get_singleton()->get_object_icon(connection.target, "Node"));
+			node_item->set_selectable(2, false);
+			node_item->set_editable(2, false);
+		}
+	}
+
+	popup_centered(Size2(400, 300) * EDSCALE);
+}
+
+ConnectionInfoDialog::ConnectionInfoDialog() {
+	set_title(TTR("Connections to method:"));
+	set_resizable(true);
+
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_TOP, ANCHOR_BEGIN, 8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, -8 * EDSCALE);
+	vbc->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, -8 * EDSCALE);
+	add_child(vbc);
+
+	method = memnew(Label);
+	method->set_text("");
+	method->set_align(Label::ALIGN_CENTER);
+	vbc->add_child(method);
+
+	tree = memnew(Tree);
+	tree->set_columns(3);
+	tree->set_hide_root(true);
+	tree->set_column_titles_visible(true);
+	tree->set_column_title(0, TTR("Source"));
+	tree->set_column_title(1, TTR("Signal"));
+	tree->set_column_title(2, TTR("Target"));
+	vbc->add_child(tree);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_allow_rmb_select(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Vector<String> ScriptTextEditor::get_functions() {
 
 	String errortxt;
@@ -470,9 +542,32 @@ void ScriptTextEditor::_validate_script() {
 			functions.push_back(E->get());
 		}
 	}
+	_update_connected_methods();
 
-	code_editor->set_warning_nb(warnings.size());
+	code_editor->set_warning_nb(missing_connections.size() + warnings.size());
 	warnings_panel->clear();
+
+	// add missing connections
+	Node *base = get_tree()->get_edited_scene_root();
+	if (base && missing_connections.size() > 0) {
+		warnings_panel->push_table(1);
+		for (List<Connection>::Element *E = missing_connections.front(); E; E = E->next()) {
+			Connection connection = E->get();
+
+			String base_path = base->get_name();
+			String source_path = base == connection.source ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.source)));
+			String target_path = base == connection.target ? base_path : base_path + "/" + String(base->get_path_to(Object::cast_to<Node>(connection.target)));
+
+			warnings_panel->push_cell();
+			warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));
+			warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'"), connection.method, connection.signal, source_path, target_path));
+			warnings_panel->pop(); // Color
+			warnings_panel->pop(); // Cell
+		}
+		warnings_panel->pop(); // Table
+	}
+
+	// add script warnings
 	warnings_panel->push_table(3);
 	for (List<ScriptLanguage::Warning>::Element *E = warnings.front(); E; E = E->next()) {
 		ScriptLanguage::Warning w = E->get();
@@ -524,6 +619,27 @@ void ScriptTextEditor::_validate_script() {
 
 	emit_signal("name_changed");
 	emit_signal("edited_script_changed");
+}
+
+static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
+
+	Vector<Node *> nodes;
+
+	if (p_current->get_owner() != p_base && p_base != p_current) {
+		return nodes;
+	}
+
+	Ref<Script> c = p_current->get_script();
+	if (c == p_script) {
+		nodes.push_back(p_current);
+	}
+
+	for (int i = 0; i < p_current->get_child_count(); i++) {
+		Vector<Node *> found = _find_all_node_for_script(p_base, p_current->get_child(i), p_script);
+		nodes.append_array(found);
+	}
+
+	return nodes;
 }
 
 static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_script) {
@@ -719,6 +835,47 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 			} break;
 		}
 	}
+}
+
+void ScriptTextEditor::_update_connected_methods() {
+	TextEdit *text_edit = code_editor->get_text_edit();
+	text_edit->clear_info_icons();
+	missing_connections.clear();
+
+	Node *base = get_tree()->get_edited_scene_root();
+	if (!base) {
+		return;
+	}
+
+	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
+	for (int i = 0; i < nodes.size(); i++) {
+		List<Connection> connections;
+		nodes[i]->get_signals_connected_to_this(&connections);
+
+		for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
+			Connection connection = E->get();
+			if (!(connection.flags & CONNECT_PERSIST)) {
+				continue;
+			}
+
+			int line = script->get_language()->find_function(connection.method, text_edit->get_text());
+			if (line < 0) {
+				missing_connections.push_back(connection);
+				continue;
+			}
+			text_edit->set_line_info_icon(line - 1, get_parent_control()->get_icon("Slot", "EditorIcons"), connection.method);
+		}
+	}
+}
+
+void ScriptTextEditor::_lookup_connections(int p_row, String p_method) {
+	Node *base = get_tree()->get_edited_scene_root();
+	if (!base) {
+		return;
+	}
+
+	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
+	connection_info_dialog->popup_connections(p_method, nodes);
 }
 
 void ScriptTextEditor::_edit_option(int p_op) {
@@ -1040,6 +1197,8 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_validate_script", &ScriptTextEditor::_validate_script);
 	ClassDB::bind_method("_load_theme_settings", &ScriptTextEditor::_load_theme_settings);
 	ClassDB::bind_method("_breakpoint_toggled", &ScriptTextEditor::_breakpoint_toggled);
+	ClassDB::bind_method("_lookup_connections", &ScriptTextEditor::_lookup_connections);
+	ClassDB::bind_method("_update_connected_methods", &ScriptTextEditor::_update_connected_methods);
 	ClassDB::bind_method("_change_syntax_highlighter", &ScriptTextEditor::_change_syntax_highlighter);
 	ClassDB::bind_method("_edit_option", &ScriptTextEditor::_edit_option);
 	ClassDB::bind_method("_goto_line", &ScriptTextEditor::_goto_line);
@@ -1372,6 +1531,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->set_code_complete_func(_code_complete_scripts, this);
 	code_editor->get_text_edit()->connect("breakpoint_toggled", this, "_breakpoint_toggled");
 	code_editor->get_text_edit()->connect("symbol_lookup", this, "_lookup_symbol");
+	code_editor->get_text_edit()->connect("info_clicked", this, "_lookup_connections");
 	code_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	warnings_panel = memnew(RichTextLabel);
@@ -1491,6 +1651,9 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
+
+	connection_info_dialog = memnew(ConnectionInfoDialog);
+	add_child(connection_info_dialog);
 
 	code_editor->get_text_edit()->set_drag_forwarding(this);
 }
