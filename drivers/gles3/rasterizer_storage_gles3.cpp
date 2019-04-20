@@ -2107,8 +2107,11 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			p_shader->spatial.uses_screen_texture = false;
 			p_shader->spatial.uses_depth_texture = false;
 			p_shader->spatial.uses_vertex = false;
+			p_shader->spatial.uses_geometry = false;
 			p_shader->spatial.writes_modelview_or_projection = false;
 			p_shader->spatial.uses_world_coordinates = false;
+
+			shaders.actions_scene.render_mode_values["geometry_max_vertices"] = Pair<int *, int>(&p_shader->spatial.max_vertices, 0);
 
 			shaders.actions_scene.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_ADD);
 			shaders.actions_scene.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->spatial.blend_mode, Shader::Spatial::BLEND_MODE_MIX);
@@ -2143,6 +2146,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 			shaders.actions_scene.write_flag_pointers["MODELVIEW_MATRIX"] = &p_shader->spatial.writes_modelview_or_projection;
 			shaders.actions_scene.write_flag_pointers["PROJECTION_MATRIX"] = &p_shader->spatial.writes_modelview_or_projection;
 			shaders.actions_scene.write_flag_pointers["VERTEX"] = &p_shader->spatial.uses_vertex;
+			shaders.actions_scene.write_flag_pointers["OUT_VERTEX"] = &p_shader->spatial.uses_geometry;
 
 			actions = &shaders.actions_scene;
 			actions->uniforms = &p_shader->uniforms;
@@ -2161,7 +2165,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 
 	ERR_FAIL_COND(err != OK);
 
-	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines);
+	p_shader->shader->set_custom_shader_code(p_shader->custom_code_id, gen_code.vertex, gen_code.vertex_global, gen_code.geometry, gen_code.geometry_global, gen_code.fragment, gen_code.light, gen_code.fragment_global, gen_code.uniforms, gen_code.texture_uniforms, gen_code.defines);
 
 	p_shader->ubo_size = gen_code.uniform_total_size;
 	p_shader->ubo_offsets = gen_code.uniform_offsets;
@@ -2170,6 +2174,7 @@ void RasterizerStorageGLES3::_update_shader(Shader *p_shader) const {
 	p_shader->texture_types = gen_code.texture_types;
 
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
+	p_shader->uses_geometry_time = gen_code.uses_geometry_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
 
 	//all materials using this shader will have to be invalidated, unfortunately
@@ -2996,6 +3001,10 @@ void RasterizerStorageGLES3::_update_material(Material *material) {
 			}
 
 			if (material->shader->spatial.uses_discard && material->shader->uses_fragment_time) {
+				is_animated = true;
+			}
+
+			if (material->shader->spatial.uses_geometry && material->shader->uses_geometry_time) {
 				is_animated = true;
 			}
 

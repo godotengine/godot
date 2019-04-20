@@ -479,12 +479,14 @@ public:
 			};
 
 			int cull_mode;
+			int max_vertices;
 
 			bool uses_alpha;
 			bool uses_alpha_scissor;
 			bool unshaded;
 			bool no_depth_test;
 			bool uses_vertex;
+			bool uses_geometry;
 			bool uses_discard;
 			bool uses_sss;
 			bool uses_screen_texture;
@@ -501,6 +503,7 @@ public:
 		} particles;
 
 		bool uses_vertex_time;
+		bool uses_geometry_time;
 		bool uses_fragment_time;
 
 		Shader() :

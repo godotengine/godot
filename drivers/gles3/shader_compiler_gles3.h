@@ -41,6 +41,7 @@ public:
 	struct IdentifierActions {
 
 		Map<StringName, Pair<int *, int> > render_mode_values;
+		Map<StringName, int *> render_mode_ranges;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
 		Map<StringName, bool *> write_flag_pointers;
@@ -60,11 +61,14 @@ public:
 		String uniforms;
 		String vertex_global;
 		String vertex;
+		String geometry_global;
+		String geometry;
 		String fragment_global;
 		String fragment;
 		String light;
 
 		bool uses_fragment_time;
+		bool uses_geometry_time;
 		bool uses_vertex_time;
 	};
 
@@ -84,6 +88,7 @@ private:
 	StringName current_func_name;
 	StringName vertex_name;
 	StringName fragment_name;
+	StringName geometry_name;
 	StringName light_name;
 	StringName time_name;
 
@@ -91,6 +96,7 @@ private:
 	Set<StringName> used_flag_pointers;
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
+	Set<StringName> varyings;
 
 	DefaultIdentifierActions actions[VS::SHADER_MAX];
 

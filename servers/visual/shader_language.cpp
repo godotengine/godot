@@ -2034,6 +2034,18 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "fwidth", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
 	{ "fwidth", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
 
+	// geometry shader
+
+	{ "tpos", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "tpos", TYPE_VEC4, { TYPE_VEC2, TYPE_VOID } },
+	{ "tpos", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "tpos", TYPE_VEC4, { TYPE_VEC3, TYPE_VOID } },
+	{ "tpos", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "tpos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+
+	{ "EmitVertex", TYPE_VOID, { TYPE_VOID } },
+	{ "EndPrimitive", TYPE_VOID, { TYPE_VOID } },
+
 	{ NULL, TYPE_VOID, { TYPE_VOID } }
 
 };
@@ -4008,7 +4020,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 	return OK;
 }
 
-Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Vector<StringName> &p_ranges, const Set<String> &p_shader_types) {
 
 	Token tk = _get_token();
 
@@ -4067,19 +4079,47 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						return ERR_PARSE_ERROR;
 					}
 
-					if (p_render_modes.find(mode) == -1) {
+					if (p_render_modes.find(mode) == -1 && p_ranges.find(mode) == -1) {
 						_set_error("Invalid render mode: '" + String(mode) + "'");
 						return ERR_PARSE_ERROR;
 					}
 
-					if (shader->render_modes.find(mode) != -1) {
+					if (shader->render_modes.find(mode) != -1 || shader->render_ranges.has(mode)) {
 						_set_error("Duplicate render mode: '" + String(mode) + "'");
 						return ERR_PARSE_ERROR;
 					}
 
-					shader->render_modes.push_back(mode);
+					bool is_range = false;
+
+					if (p_ranges.find(mode) != -1) {
+						is_range = true;
+					} else {
+						shader->render_modes.push_back(mode);
+					}
 
 					tk = _get_token();
+					if (is_range) {
+						if (tk.type == TK_PARENTHESIS_OPEN) {
+							tk = _get_token();
+							if (tk.type == TK_INT_CONSTANT) {
+								shader->render_ranges[mode] = (int)tk.constant;
+							} else {
+								_set_error("Expected integer constant");
+								return ERR_PARSE_ERROR;
+							}
+
+							tk = _get_token();
+							if (tk.type != TK_PARENTHESIS_CLOSE) {
+								_set_error("Expected ')' after expression");
+								return ERR_PARSE_ERROR;
+							}
+							tk = _get_token();
+						} else {
+							_set_error("Expected '(' after range name");
+							return ERR_PARSE_ERROR;
+						}
+					}
+
 					if (tk.type == TK_COMMA) {
 						//all good, do nothing
 					} else if (tk.type == TK_SEMICOLON) {
@@ -4572,7 +4612,7 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	return String();
 }
 
-Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Vector<StringName> &p_ranges, const Set<String> &p_shader_types) {
 
 	clear();
 
@@ -4581,7 +4621,7 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	nodes = NULL;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	Error err = _parse_shader(p_functions, p_render_modes, p_ranges, p_shader_types);
 
 	if (err != OK) {
 		return err;
@@ -4589,7 +4629,7 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Vector<StringName> &p_ranges, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint) {
 
 	clear();
 
@@ -4598,7 +4638,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 	nodes = NULL;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
+	Error err = _parse_shader(p_functions, p_render_modes, p_ranges, p_shader_types);
 	if (err != OK)
 		ERR_PRINT("Failed to parse shader");
 
@@ -4612,6 +4652,10 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			for (int i = 0; i < p_render_modes.size(); i++) {
 
 				r_options->push_back(p_render_modes[i]);
+			}
+			for (int i = 0; i < p_ranges.size(); i++) {
+
+				r_options->push_back(p_ranges[i]);
 			}
 
 			return OK;

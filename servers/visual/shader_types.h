@@ -41,6 +41,7 @@ class ShaderTypes {
 
 		Map<StringName, ShaderLanguage::FunctionInfo> functions;
 		Vector<StringName> modes;
+		Vector<StringName> ranges;
 	};
 
 	Map<VS::ShaderMode, Type> shader_modes;
@@ -54,6 +55,7 @@ public:
 
 	const Map<StringName, ShaderLanguage::FunctionInfo> &get_functions(VS::ShaderMode p_mode);
 	const Vector<StringName> &get_modes(VS::ShaderMode p_mode);
+	const Vector<StringName> &get_ranges(VS::ShaderMode p_mode);
 	const Set<String> &get_types();
 
 	ShaderTypes();

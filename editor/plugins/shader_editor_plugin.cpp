@@ -134,6 +134,11 @@ void ShaderTextEditor::_load_theme_settings() {
 
 			keywords.push_back(ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode()))[i]);
 		}
+
+		for (int i = 0; i < ShaderTypes::get_singleton()->get_ranges(VisualServer::ShaderMode(shader->get_mode())).size(); i++) {
+
+			keywords.push_back(ShaderTypes::get_singleton()->get_ranges(VisualServer::ShaderMode(shader->get_mode()))[i]);
+		}
 	}
 
 	for (List<String>::Element *E = keywords.front(); E; E = E->next()) {
@@ -173,7 +178,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<String> 
 	ShaderLanguage sl;
 	String calltip;
 
-	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
+	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_ranges(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
 	if (err != OK)
 		ERR_PRINT("Shaderlang complete failed");
 
@@ -192,7 +197,7 @@ void ShaderTextEditor::_validate_script() {
 
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types());
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_ranges(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types());
 
 	if (err != OK) {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();

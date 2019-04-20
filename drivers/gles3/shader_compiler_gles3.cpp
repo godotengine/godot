@@ -343,6 +343,24 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				}
 			}
 
+			for (Map<StringName, int>::Element *E = pnode->render_ranges.front(); E; E = E->next()) {
+
+				if (p_default_actions.render_mode_defines.has(E->key()) && !used_rmode_defines.has(E->key())) {
+
+					r_gen_code.defines.push_back((p_default_actions.render_mode_defines[E->key()] + itos(E->get()) + String("\n")).utf8());
+					used_rmode_defines.insert(E->key());
+				}
+
+				if (p_actions.render_mode_flags.has(E->key())) {
+					*p_actions.render_mode_flags[E->key()] = true;
+				}
+
+				if (p_actions.render_mode_values.has(E->key())) {
+					Pair<int *, int> &p = p_actions.render_mode_values[E->key()];
+					*p.first = p.second;
+				}
+			}
+
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
@@ -379,6 +397,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				ucode += ";\n";
 				if (SL::is_sampler_type(E->get().type)) {
 					r_gen_code.vertex_global += ucode;
+					r_gen_code.geometry_global += ucode;
 					r_gen_code.fragment_global += ucode;
 					r_gen_code.texture_uniforms.write[E->get().texture_order] = _mkid(E->key());
 					r_gen_code.texture_hints.write[E->get().texture_order] = E->get().hint;
@@ -467,8 +486,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
 				vcode += " " + _mkid(E->key());
+				varyings.insert(E->key());
+				String gcode = vcode + "[];";
 				vcode += ";\n";
 				r_gen_code.vertex_global += interp_mode + "out " + vcode;
+				r_gen_code.geometry_global += interp_mode + "in " + gcode;
 				r_gen_code.fragment_global += interp_mode + "in " + vcode;
 			}
 
@@ -484,6 +506,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			//place functions in actual code
 
 			Set<StringName> added_vtx;
+			Set<StringName> added_geometry;
 			Set<StringName> added_fragment; //share for light
 
 			for (int i = 0; i < pnode->functions.size(); i++) {
@@ -496,6 +519,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.vertex_global, added_vtx);
 					r_gen_code.vertex = function_code[vertex_name];
+				}
+
+				if (fnode->name == geometry_name) {
+					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.geometry_global, added_geometry);
+					r_gen_code.geometry = function_code[geometry_name];
 				}
 
 				if (fnode->name == fragment_name) {
@@ -581,12 +609,18 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.renames.has(vnode->name))
 				code = p_default_actions.renames[vnode->name];
-			else
-				code = _mkid(vnode->name);
-
+			else {
+				if (current_func_name == geometry_name && varyings.has(vnode->name))
+					code = _mkid(vnode->name) + "[index]";
+				else
+					code = _mkid(vnode->name);
+			}
 			if (vnode->name == time_name) {
 				if (current_func_name == vertex_name) {
 					r_gen_code.uses_vertex_time = true;
+				}
+				if (current_func_name == geometry_name) {
+					r_gen_code.uses_geometry_time = true;
 				}
 				if (current_func_name == fragment_name || current_func_name == light_name) {
 					r_gen_code.uses_fragment_time = true;
@@ -742,7 +776,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderTypes::get_singleton()->get_types());
+	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderTypes::get_singleton()->get_ranges(p_mode), ShaderTypes::get_singleton()->get_types());
 
 	if (err != OK) {
 
@@ -758,15 +792,19 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 	r_gen_code.defines.clear();
 	r_gen_code.vertex = String();
 	r_gen_code.vertex_global = String();
+	r_gen_code.geometry = String();
+	r_gen_code.geometry_global = String();
 	r_gen_code.fragment = String();
 	r_gen_code.fragment_global = String();
 	r_gen_code.light = String();
 	r_gen_code.uses_fragment_time = false;
+	r_gen_code.uses_geometry_time = false;
 	r_gen_code.uses_vertex_time = false;
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
 	used_flag_pointers.clear();
+	varyings.clear();
 
 	_dump_node_code(parser.get_shader(), 1, r_gen_code, *p_actions, actions[p_mode], false);
 
@@ -795,6 +833,13 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].renames["TIME"] = "time";
 	actions[VS::SHADER_CANVAS_ITEM].renames["AT_LIGHT_PASS"] = "at_light_pass";
 	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
+
+	actions[VS::SHADER_CANVAS_ITEM].renames["LENGTH"] = "gl_in.length()";
+	actions[VS::SHADER_CANVAS_ITEM].renames["INDEX"] = "index";
+	actions[VS::SHADER_CANVAS_ITEM].renames["IN_VERTEX"] = "gl_in[index].gl_Position";
+	actions[VS::SHADER_CANVAS_ITEM].renames["OUT_VERTEX"] = "gl_Position";
+	actions[VS::SHADER_CANVAS_ITEM].renames["OUT_COLOR"] = "color_interp";
+	actions[VS::SHADER_CANVAS_ITEM].renames["OUT_UV"] = "uv_interp";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["COLOR"] = "color";
 	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL"] = "normal";
@@ -825,6 +870,15 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_max_vertices"] = "#define GEOMETRY_MAX_VERTICES ";
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_in_points"] = "#define GEOMETRY_IN_MODE 0\n";
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_in_lines"] = "#define GEOMETRY_IN_MODE 1\n";
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_in_triangles"] = "#define GEOMETRY_IN_MODE 2\n";
+
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_out_points"] = "#define GEOMETRY_OUT_MODE 0\n";
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_out_lines"] = "#define GEOMETRY_OUT_MODE 1\n";
+	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["geometry_out_triangles"] = "#define GEOMETRY_OUT_MODE 2\n";
+
 	/** SPATIAL SHADER **/
 
 	actions[VS::SHADER_SPATIAL].renames["WORLD_MATRIX"] = "world_transform";
@@ -844,6 +898,17 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "gl_InstanceID";
+
+	actions[VS::SHADER_SPATIAL].renames["LENGTH"] = "gl_in.length()";
+	actions[VS::SHADER_SPATIAL].renames["INDEX"] = "index";
+	actions[VS::SHADER_SPATIAL].renames["IN_VERTEX"] = "gl_in[index].gl_Position";
+	actions[VS::SHADER_SPATIAL].renames["OUT_VERTEX"] = "gl_Position";
+	actions[VS::SHADER_SPATIAL].renames["OUT_NORMAL"] = "normal_interp";
+	actions[VS::SHADER_SPATIAL].renames["OUT_COLOR"] = "color_interp";
+	actions[VS::SHADER_SPATIAL].renames["OUT_UV"] = "uv_interp";
+	actions[VS::SHADER_SPATIAL].renames["OUT_UV2"] = "uv2_interp";
+	actions[VS::SHADER_SPATIAL].renames["OUT_TANGENT"] = "tangent_interp";
+	actions[VS::SHADER_SPATIAL].renames["OUT_BINORMAL"] = "binormal_interp";
 
 	//builtins
 
@@ -888,7 +953,9 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["SPECULAR_LIGHT"] = "specular_light";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["TANGENT"] = "#define ENABLE_TANGENT_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["OUT_TANGENT"] = "#define ENABLE_TANGENT_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["BINORMAL"] = "@TANGENT";
+	actions[VS::SHADER_SPATIAL].usage_defines["OUT_BINORMAL"] = "@TANGENT";
 	actions[VS::SHADER_SPATIAL].usage_defines["RIM"] = "#define LIGHT_USE_RIM\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["RIM_TINT"] = "@RIM";
 	actions[VS::SHADER_SPATIAL].usage_defines["CLEARCOAT"] = "#define LIGHT_USE_CLEARCOAT\n";
@@ -898,10 +965,13 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].usage_defines["AO"] = "#define ENABLE_AO\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["AO_LIGHT_AFFECT"] = "#define ENABLE_AO\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["UV"] = "#define ENABLE_UV_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["OUT_UV"] = "#define ENABLE_UV_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["UV2"] = "#define ENABLE_UV2_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["OUT_UV2"] = "#define ENABLE_UV2_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP"] = "#define ENABLE_NORMALMAP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
 	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["OUT_COLOR"] = "#define ENABLE_COLOR_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
@@ -919,6 +989,15 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
+
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_max_vertices"] = "#define GEOMETRY_MAX_VERTICES ";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_in_points"] = "#define GEOMETRY_IN_MODE 0\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_in_lines"] = "#define GEOMETRY_IN_MODE 1\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_in_triangles"] = "#define GEOMETRY_IN_MODE 2\n";
+
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_out_points"] = "#define GEOMETRY_OUT_MODE 0\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_out_lines"] = "#define GEOMETRY_OUT_MODE 1\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["geometry_out_triangles"] = "#define GEOMETRY_OUT_MODE 2\n";
 
 	bool force_lambert = GLOBAL_GET("rendering/quality/shading/force_lambert_over_burley");
 
@@ -969,6 +1048,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";
+	geometry_name = "geometry";
 	light_name = "light";
 	time_name = "TIME";
 

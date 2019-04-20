@@ -249,6 +249,109 @@ VERTEX_SHADER_CODE
 }
 
 /* clang-format off */
+[geometry]
+
+/* geometry shader settings */
+
+#ifndef GEOMETRY_IN_MODE
+#define GEOMETRY_IN_MODE 2
+#endif
+
+#ifndef GEOMETRY_OUT_MODE
+#define GEOMETRY_OUT_MODE 2
+#endif
+
+#if GEOMETRY_IN_MODE == 0
+layout (points) in;
+#elif GEOMETRY_IN_MODE == 1
+layout (lines) in;
+#elif GEOMETRY_IN_MODE == 2
+layout (triangles) in;
+#endif
+
+#if GEOMETRY_OUT_MODE == 0
+layout (points) out;
+#elif GEOMETRY_OUT_MODE == 1
+layout (line_strip) out;
+#elif GEOMETRY_OUT_MODE == 2
+layout (triangle_strip) out;
+#endif
+
+#ifndef GEOMETRY_MAX_VERTICES
+#define GEOMETRY_MAX_VERTICES 0
+#endif
+
+layout (max_vertices = GEOMETRY_MAX_VERTICES) out;
+
+/* clang-format on */
+
+layout(std140) uniform CanvasItemData { //ubo:0
+
+	highp mat4 projection_matrix;
+	highp float time;
+};
+
+uniform highp mat4 modelview_matrix;
+uniform highp mat4 extra_matrix;
+
+out highp vec2 uv_interp;
+out mediump vec4 color_interp;
+
+#if defined(USE_MATERIAL)
+
+/* clang-format off */
+layout(std140) uniform UniformData { //ubo:1
+
+MATERIAL_UNIFORMS
+
+};
+/* clang-format on */
+
+#endif
+
+/* clang-format off */
+
+GEOMETRY_SHADER_GLOBALS
+
+/* clang-format on */
+
+vec4 tpos(float x, float y) {
+	return projection_matrix * modelview_matrix * vec4(x, y, 0, 0);
+}
+
+vec4 tpos(vec2 v) {
+	return projection_matrix * modelview_matrix * vec4(v.x, v.y, 0, 0);
+}
+
+vec4 tpos(float x, float y, float z) {
+	return projection_matrix * modelview_matrix * vec4(x, y, z, 0);
+}
+
+vec4 tpos(vec3 v) {
+	return projection_matrix * modelview_matrix * vec4(v.x, v.y, v.z, 0);
+}
+
+vec4 tpos(float x, float y, float z, float w) {
+	return projection_matrix * modelview_matrix * vec4(x, y, z, w);
+}
+
+vec4 tpos(vec4 v) {
+	return projection_matrix * modelview_matrix * vec4(v.x, v.y, v.z, v.w);
+}
+
+void main() {
+	int index = 0;
+
+	{
+		/* clang-format off */
+
+GEOMETRY_SHADER_CODE
+
+		/* clang-format on */
+	}
+}
+
+/* clang-format off */
 [fragment]
 
 uniform mediump sampler2D color_texture; // texunit:0

@@ -103,6 +103,7 @@ private:
 	int ubo_count;
 	int feedback_count;
 	int vertex_code_start;
+	int geometry_code_start;
 	int fragment_code_start;
 	int attribute_pair_count;
 
@@ -110,10 +111,13 @@ private:
 
 		String vertex;
 		String vertex_globals;
+		String geometry;
+		String geometry_globals;
 		String fragment;
 		String fragment_globals;
 		String light;
 		String uniforms;
+		bool has_geometry;
 		uint32_t version;
 		Vector<StringName> texture_uniforms;
 		Vector<CharString> custom_defines;
@@ -124,6 +128,7 @@ private:
 
 		GLuint id;
 		GLuint vert_id;
+		GLuint geom_id;
 		GLuint frag_id;
 		GLint *uniform_location;
 		Vector<GLint> texture_uniform_locations;
@@ -132,6 +137,7 @@ private:
 		Version() :
 				id(0),
 				vert_id(0),
+				geom_id(0),
 				frag_id(0),
 				uniform_location(NULL),
 				code_version(0),
@@ -174,6 +180,7 @@ private:
 	const UBOPair *ubo_pairs;
 	const Feedback *feedbacks;
 	const char *vertex_code;
+	const char *geometry_code;
 	const char *fragment_code;
 	CharString fragment_code0;
 	CharString fragment_code1;
@@ -185,6 +192,12 @@ private:
 	CharString vertex_code1;
 	CharString vertex_code2;
 	CharString vertex_code3;
+
+	CharString geometry_code0;
+	CharString geometry_code1;
+	CharString geometry_code2;
+	CharString geometry_code3;
+	bool has_geometry;
 
 	Vector<CharString> custom_defines;
 
@@ -303,6 +316,9 @@ protected:
 	_FORCE_INLINE_ void _set_conditional(int p_which, bool p_value);
 
 	void setup(const char **p_conditional_defines, int p_conditional_count, const char **p_uniform_names, int p_uniform_count, const AttributePair *p_attribute_pairs, int p_attribute_count, const TexUnitPair *p_texunit_pairs, int p_texunit_pair_count, const UBOPair *p_ubo_pairs, int p_ubo_pair_count, const Feedback *p_feedback, int p_feedback_count, const char *p_vertex_code, const char *p_fragment_code, int p_vertex_code_start, int p_fragment_code_start);
+	void setup_vertex(const char *p_vertex_code, int p_vertex_code_start);
+	void setup_geometry(const char *p_geometry_code, int p_geometry_code_start);
+	void setup_fragment(const char *p_fragment_code, int p_fragment_code_start);
 
 	ShaderGLES3();
 
@@ -324,7 +340,7 @@ public:
 	void clear_caches();
 
 	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines);
+	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_geometry, const String &p_geometry_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines);
 	void set_custom_shader(uint32_t p_code_id);
 	void free_custom_shader(uint32_t p_code_id);
 

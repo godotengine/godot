@@ -10,6 +10,7 @@ class LegacyGLHeaderStruct:
 
     def __init__(self):
         self.vertex_lines = []
+        self.geometry_lines = []
         self.fragment_lines = []
         self.uniforms = []
         self.attributes = []
@@ -28,6 +29,7 @@ class LegacyGLHeaderStruct:
         self.reading = ""
         self.line_offset = 0
         self.vertex_offset = 0
+        self.geometry_offset = 0
         self.fragment_offset = 0
 
 
@@ -42,6 +44,13 @@ def include_file_in_legacygl_header(filename, header_data, depth):
             line = fs.readline()
             header_data.line_offset += 1
             header_data.vertex_offset = header_data.line_offset
+            continue
+
+        if line.find("[geometry]") != -1:
+            header_data.reading = "geometry"
+            line = fs.readline()
+            header_data.line_offset += 1
+            header_data.geometry_offset = header_data.line_offset
             continue
 
         if line.find("[fragment]") != -1:
@@ -177,6 +186,8 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
         if header_data.reading == "vertex":
             header_data.vertex_lines += [line]
+        if header_data.reading == "geometry":
+            header_data.geometry_lines += [line]
         if header_data.reading == "fragment":
             header_data.fragment_lines += [line]
 
@@ -454,6 +465,17 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
 
     fd.write("\t\tstatic const int _vertex_code_start=" + str(header_data.vertex_offset) + ";\n")
 
+    if not gles2:
+        fd.write("\t\tstatic const char _geometry_code[]={\n")
+        for x in header_data.geometry_lines:
+            for c in x:
+                fd.write(str(ord(c)) + ",")
+
+            fd.write(str(ord('\n')) + ",")
+        fd.write("\t\t0};\n\n")
+
+        fd.write("\t\tstatic const int _geometry_code_start=" + str(header_data.geometry_offset) + ";\n")
+
     fd.write("\t\tstatic const char _fragment_code[]={\n")
     for x in header_data.fragment_lines:
         for c in x:
@@ -472,6 +494,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_attribute_pairs," + str(
                 len(header_data.attributes)) + ", _texunit_pairs," + str(len(header_data.texunits)) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(
                 feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+            fd.write("\t\tsetup_geometry(_geometry_code, _geometry_code_start);\n")
     else:
         if gles2:
             fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(
@@ -481,6 +504,7 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs, gles2
             fd.write("\t\tsetup(_conditional_strings," + str(len(header_data.conditionals)) + ",_uniform_strings," + str(len(header_data.uniforms)) + ",_texunit_pairs," + str(
                 len(header_data.texunits)) + ",_enums," + str(len(header_data.enums)) + ",_enum_values," + str(enum_value_count) + ",_ubo_pairs," + str(len(header_data.ubos)) + ",_feedbacks," + str(
                 feedback_count) + ",_vertex_code,_fragment_code,_vertex_code_start,_fragment_code_start);\n")
+            fd.write("\t\tsetup_geometry(_geometry_code, _geometry_code_start);\n")
 
     fd.write("\t}\n\n")
 

@@ -444,9 +444,10 @@ void main() {
 #endif
 
 	highp mat4 modelview = camera_inverse_matrix * world_matrix;
+
 	{
 		/* clang-format off */
-
+		
 VERTEX_SHADER_CODE
 
 		/* clang-format on */
@@ -575,6 +576,173 @@ VERTEX_SHADER_CODE
 #endif //USE_LIGHT_DIRECTIONAL
 
 #endif // USE_VERTEX_LIGHTING
+}
+
+/* clang-format off */
+[geometry]
+
+/* geometry shader settings */
+
+#ifndef GEOMETRY_IN_MODE
+#define GEOMETRY_IN_MODE 2
+#endif
+
+#ifndef GEOMETRY_OUT_MODE
+#define GEOMETRY_OUT_MODE 2
+#endif
+
+#if GEOMETRY_IN_MODE == 0
+layout (points) in;
+#elif GEOMETRY_IN_MODE == 1
+layout (lines) in;
+#elif GEOMETRY_IN_MODE == 2
+layout (triangles) in;
+#endif
+
+#if GEOMETRY_OUT_MODE == 0
+layout (points) out;
+#elif GEOMETRY_OUT_MODE == 1
+layout (line_strip) out;
+#elif GEOMETRY_OUT_MODE == 2
+layout (triangle_strip) out;
+#endif
+
+#ifndef GEOMETRY_MAX_VERTICES
+#define GEOMETRY_MAX_VERTICES 0
+#endif
+
+layout (max_vertices = GEOMETRY_MAX_VERTICES) out;
+
+/* clang-format on */
+
+layout(std140) uniform SceneData { // ubo:0
+
+	highp mat4 projection_matrix;
+	highp mat4 inv_projection_matrix;
+	highp mat4 camera_inverse_matrix;
+	highp mat4 camera_matrix;
+
+	mediump vec4 ambient_light_color;
+	mediump vec4 bg_color;
+
+	mediump vec4 fog_color_enabled;
+	mediump vec4 fog_sun_color_amount;
+
+	mediump float ambient_energy;
+	mediump float bg_energy;
+
+	mediump float z_offset;
+	mediump float z_slope_scale;
+	highp float shadow_dual_paraboloid_render_zfar;
+	highp float shadow_dual_paraboloid_render_side;
+
+	highp vec2 viewport_size;
+	highp vec2 screen_pixel_size;
+	highp vec2 shadow_atlas_pixel_size;
+	highp vec2 directional_shadow_pixel_size;
+
+	highp float time;
+	highp float z_far;
+	mediump float reflection_multiplier;
+	mediump float subsurface_scatter_width;
+	mediump float ambient_occlusion_affect_light;
+	mediump float ambient_occlusion_affect_ao_channel;
+	mediump float opaque_prepass_threshold;
+
+	bool fog_depth_enabled;
+	highp float fog_depth_begin;
+	highp float fog_depth_end;
+	mediump float fog_density;
+	highp float fog_depth_curve;
+	bool fog_transmit_enabled;
+	highp float fog_transmit_curve;
+	bool fog_height_enabled;
+	highp float fog_height_min;
+	highp float fog_height_max;
+	highp float fog_height_curve;
+};
+
+uniform highp mat4 world_transform;
+
+/* Varyings */
+
+out vec3 normal_interp;
+
+#if defined(ENABLE_COLOR_INTERP)
+out vec4 color_interp;
+#endif
+
+#if defined(ENABLE_UV_INTERP)
+out vec2 uv_interp;
+#endif
+
+#if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
+out vec2 uv2_interp;
+#endif
+
+#if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP) || defined(LIGHT_USE_ANISOTROPY)
+out vec3 tangent_interp;
+out vec3 binormal_interp;
+#endif
+
+/* Material Uniforms */
+
+#if defined(USE_MATERIAL)
+
+/* clang-format off */
+layout(std140) uniform UniformData { // ubo:1
+
+MATERIAL_UNIFORMS
+
+};
+/* clang-format on */
+
+#endif
+
+/* clang-format off */
+
+GEOMETRY_SHADER_GLOBALS
+
+/* clang-format on */
+
+vec4 tpos(float x, float y) {
+	return projection_matrix * (camera_inverse_matrix * world_transform) * vec4(x, y, 0, 0);
+}
+
+vec4 tpos(vec2 v) {
+	return projection_matrix * (camera_inverse_matrix * world_transform) * vec4(v.x, v.y, 0, 0);
+}
+
+vec4 tpos(float x, float y, float z) {
+	return projection_matrix * (camera_inverse_matrix * world_transform) * vec4(x, y, z, 0);
+}
+
+vec4 tpos(vec3 v) {
+	return projection_matrix * (camera_inverse_matrix * world_transform) * vec4(v.x, v.y, v.z, 0);
+}
+
+vec4 tpos(float x, float y, float z, float w) {
+	return projection_matrix * (camera_inverse_matrix * world_transform) * vec4(x, y, z, w);
+}
+
+vec4 tpos(vec4 v) {
+	return projection_matrix * (camera_inverse_matrix * world_transform) * vec4(v.x, v.y, v.z, v.w);
+}
+
+void main() {
+	int index = 0;
+
+	highp mat4 world_matrix = world_transform;
+
+	highp mat4 modelview = camera_inverse_matrix * world_matrix;
+
+	{
+		/* clang-format off */
+
+GEOMETRY_SHADER_CODE
+
+		/* clang-format on */
+	}
 }
 
 /* clang-format off */

@@ -328,8 +328,9 @@ MainLoop *test() {
 	rm.push_back("popo");
 	Set<String> types;
 	types.insert("spatial");
+	Vector<StringName> rr;
 
-	Error err = sl.compile(code, dt, rm, types);
+	Error err = sl.compile(code, dt, rm, rr, types);
 
 	if (err) {
 

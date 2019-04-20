@@ -193,6 +193,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		if (v.ok) {
 			//bye bye shaders
 			glDeleteShader(v.vert_id);
+#ifdef GLES_OVER_GL
+			if (has_geometry) {
+				glDeleteShader(v.geom_id);
+			}
+#endif
 			glDeleteShader(v.frag_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
@@ -344,6 +349,92 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 
 	//_display_error_with_code("pepo", strings);
 
+	has_geometry = false;
+
+#ifdef GLES_OVER_GL
+	/* GEOMETRY SHADER */
+
+	strings.resize(strings_base_size);
+	//vertex precision is high
+	strings.push_back("precision highp float;\n");
+	strings.push_back("precision highp int;\n");
+
+	strings.push_back(geometry_code0.get_data());
+
+	if (cc) {
+		material_string = cc->uniforms.ascii();
+		strings.push_back(material_string.get_data());
+	}
+
+	strings.push_back(geometry_code1.get_data());
+
+	if (cc) {
+		code_globals = cc->geometry_globals.ascii();
+		strings.push_back(code_globals.get_data());
+	}
+
+	strings.push_back(geometry_code2.get_data());
+
+	if (cc) {
+		code_string = cc->geometry.ascii();
+		strings.push_back(code_string.get_data());
+	}
+
+	has_geometry = !String(code_string.get_data()).empty();
+
+	strings.push_back(geometry_code3.get_data());
+#ifdef DEBUG_SHADER
+
+	DEBUG_PRINT("\Geometry Code:\n\n" + String(code_string.get_data()));
+	for (int i = 0; i < strings.size(); i++) {
+
+		//print_line("vert strings "+itos(i)+":"+String(strings[i]));
+	}
+#endif
+	if (has_geometry) {
+		v.geom_id = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(v.geom_id, strings.size(), &strings[0], NULL);
+		glCompileShader(v.geom_id);
+
+		glGetShaderiv(v.geom_id, GL_COMPILE_STATUS, &status);
+		if (status == GL_FALSE) {
+			// error compiling
+			GLsizei iloglen;
+			glGetShaderiv(v.geom_id, GL_INFO_LOG_LENGTH, &iloglen);
+
+			if (iloglen < 0) {
+
+				glDeleteShader(v.geom_id);
+				glDeleteProgram(v.id);
+				v.id = 0;
+
+				ERR_PRINT("Geometry shader compilation failed with empty log");
+			} else {
+
+				if (iloglen == 0) {
+
+					iloglen = 4096; //buggy driver (Adreno 220+....)
+				}
+
+				char *ilogmem = (char *)memalloc(iloglen + 1);
+				ilogmem[iloglen] = 0;
+				glGetShaderInfoLog(v.geom_id, iloglen, &iloglen, ilogmem);
+
+				String err_string = get_shader_name() + ": Geometry Program Compilation Failed:\n";
+
+				err_string += ilogmem;
+				_display_error_with_code(err_string, strings);
+				memfree(ilogmem);
+				glDeleteShader(v.geom_id);
+				glDeleteProgram(v.id);
+				v.id = 0;
+			}
+
+			ERR_FAIL_V(NULL);
+		}
+	}
+#endif
+
 	/* FRAGMENT SHADER */
 
 	strings.resize(strings_base_size);
@@ -407,6 +498,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		if (iloglen < 0) {
 
 			glDeleteShader(v.frag_id);
+#ifdef GLES_OVER_GL
+			if (has_geometry) {
+				glDeleteShader(v.geom_id);
+			}
+#endif
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
@@ -429,6 +525,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 			ERR_PRINT(err_string.ascii().get_data());
 			memfree(ilogmem);
 			glDeleteShader(v.frag_id);
+#ifdef GLES_OVER_GL
+			if (has_geometry) {
+				glDeleteShader(v.geom_id);
+			}
+#endif
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
@@ -438,6 +539,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 	}
 
 	glAttachShader(v.id, v.frag_id);
+#ifdef GLES_OVER_GL
+	if (has_geometry) {
+		glAttachShader(v.id, v.geom_id);
+	}
+#endif
 	glAttachShader(v.id, v.vert_id);
 
 	// bind attributes before linking
@@ -475,6 +581,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		if (iloglen < 0) {
 
 			glDeleteShader(v.frag_id);
+#ifdef GLES_OVER_GL
+			if (has_geometry) {
+				glDeleteShader(v.geom_id);
+			}
+#endif
 			glDeleteShader(v.vert_id);
 			glDeleteProgram(v.id);
 			v.id = 0;
@@ -497,6 +608,11 @@ ShaderGLES3::Version *ShaderGLES3::get_current_version() {
 		ERR_PRINT(err_string.ascii().get_data());
 		Memory::free_static(ilogmem);
 		glDeleteShader(v.frag_id);
+#ifdef GLES_OVER_GL
+		if (has_geometry) {
+			glDeleteShader(v.geom_id);
+		}
+#endif
 		glDeleteShader(v.vert_id);
 		glDeleteProgram(v.id);
 		v.id = 0;
@@ -572,12 +688,8 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 	conditional_count = p_conditional_count;
 	conditional_defines = p_conditional_defines;
 	uniform_names = p_uniform_names;
-	vertex_code = p_vertex_code;
-	fragment_code = p_fragment_code;
 	texunit_pairs = p_texunit_pairs;
 	texunit_pair_count = p_texunit_pair_count;
-	vertex_code_start = p_vertex_code_start;
-	fragment_code_start = p_fragment_code_start;
 	attribute_pairs = p_attribute_pairs;
 	attribute_pair_count = p_attribute_count;
 	ubo_pairs = p_ubo_pairs;
@@ -585,84 +697,138 @@ void ShaderGLES3::setup(const char **p_conditional_defines, int p_conditional_co
 	feedbacks = p_feedback;
 	feedback_count = p_feedback_count;
 
-	//split vertex and shader code (thank you, shader compiler programmers from you know what company).
-	{
-		String globals_tag = "\nVERTEX_SHADER_GLOBALS";
-		String material_tag = "\nMATERIAL_UNIFORMS";
-		String code_tag = "\nVERTEX_SHADER_CODE";
-		String code = vertex_code;
-		int cpos = code.find(material_tag);
+	setup_vertex(p_vertex_code, p_vertex_code_start);
+	setup_fragment(p_fragment_code, p_fragment_code_start);
+}
+
+void ShaderGLES3::setup_vertex(const char *p_vertex_code, int p_vertex_code_start) {
+
+	vertex_code = p_vertex_code;
+	vertex_code_start = p_vertex_code_start;
+
+	String globals_tag = "\nVERTEX_SHADER_GLOBALS";
+	String material_tag = "\nMATERIAL_UNIFORMS";
+	String code_tag = "\nVERTEX_SHADER_CODE";
+	String code = vertex_code;
+	int cpos = code.find(material_tag);
+	if (cpos == -1) {
+		vertex_code0 = code.ascii();
+	} else {
+		vertex_code0 = code.substr(0, cpos).ascii();
+		code = code.substr(cpos + material_tag.length(), code.length());
+
+		cpos = code.find(globals_tag);
+
 		if (cpos == -1) {
-			vertex_code0 = code.ascii();
+			vertex_code1 = code.ascii();
 		} else {
-			vertex_code0 = code.substr(0, cpos).ascii();
-			code = code.substr(cpos + material_tag.length(), code.length());
 
-			cpos = code.find(globals_tag);
+			vertex_code1 = code.substr(0, cpos).ascii();
+			String code2 = code.substr(cpos + globals_tag.length(), code.length());
 
+			cpos = code2.find(code_tag);
 			if (cpos == -1) {
-				vertex_code1 = code.ascii();
+				vertex_code2 = code2.ascii();
 			} else {
 
-				vertex_code1 = code.substr(0, cpos).ascii();
-				String code2 = code.substr(cpos + globals_tag.length(), code.length());
-
-				cpos = code2.find(code_tag);
-				if (cpos == -1) {
-					vertex_code2 = code2.ascii();
-				} else {
-
-					vertex_code2 = code2.substr(0, cpos).ascii();
-					vertex_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
-				}
+				vertex_code2 = code2.substr(0, cpos).ascii();
+				vertex_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
 			}
 		}
 	}
+}
 
-	{
-		String globals_tag = "\nFRAGMENT_SHADER_GLOBALS";
-		String material_tag = "\nMATERIAL_UNIFORMS";
-		String code_tag = "\nFRAGMENT_SHADER_CODE";
-		String light_code_tag = "\nLIGHT_SHADER_CODE";
-		String code = fragment_code;
-		int cpos = code.find(material_tag);
+void ShaderGLES3::setup_geometry(const char *p_geometry_code, int p_geometry_code_start) {
+
+	geometry_code = p_geometry_code;
+	geometry_code_start = p_geometry_code_start;
+
+	String globals_tag = "\nGEOMETRY_SHADER_GLOBALS";
+	String material_tag = "\nMATERIAL_UNIFORMS";
+	String code_tag = "\nGEOMETRY_SHADER_CODE";
+	String code = geometry_code;
+
+	int cpos = code.find(material_tag);
+	if (cpos == -1) {
+		geometry_code0 = code.ascii();
+	} else {
+		geometry_code0 = code.substr(0, cpos).ascii();
+		//print_line("CODE0:\n"+String(geometry_code0.get_data()));
+
+		code = code.substr(cpos + material_tag.length(), code.length());
+
+		cpos = code.find(globals_tag);
+
 		if (cpos == -1) {
-			fragment_code0 = code.ascii();
+			geometry_code1 = code.ascii();
 		} else {
-			fragment_code0 = code.substr(0, cpos).ascii();
-			//print_line("CODE0:\n"+String(fragment_code0.get_data()));
-			code = code.substr(cpos + material_tag.length(), code.length());
-			cpos = code.find(globals_tag);
+
+			geometry_code1 = code.substr(0, cpos).ascii();
+			//print_line("CODE1:\n"+String(geometry_code1.get_data()));
+
+			String code2 = code.substr(cpos + globals_tag.length(), code.length());
+			cpos = code2.find(code_tag);
 
 			if (cpos == -1) {
-				fragment_code1 = code.ascii();
+				geometry_code2 = code2.ascii();
+			} else {
+				geometry_code2 = code2.substr(0, cpos).ascii();
+				//print_line("CODE2:\n" + String(geometry_code2.get_data()));
+
+				geometry_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
+				//print_line("CODE3:\n" + String(geometry_code3.get_data()));
+			}
+		}
+	}
+}
+
+void ShaderGLES3::setup_fragment(const char *p_fragment_code, int p_fragment_code_start) {
+
+	fragment_code = p_fragment_code;
+	fragment_code_start = p_fragment_code_start;
+
+	String globals_tag = "\nFRAGMENT_SHADER_GLOBALS";
+	String material_tag = "\nMATERIAL_UNIFORMS";
+	String code_tag = "\nFRAGMENT_SHADER_CODE";
+	String light_code_tag = "\nLIGHT_SHADER_CODE";
+	String code = fragment_code;
+	int cpos = code.find(material_tag);
+	if (cpos == -1) {
+		fragment_code0 = code.ascii();
+	} else {
+		fragment_code0 = code.substr(0, cpos).ascii();
+		//print_line("CODE0:\n"+String(fragment_code0.get_data()));
+		code = code.substr(cpos + material_tag.length(), code.length());
+		cpos = code.find(globals_tag);
+
+		if (cpos == -1) {
+			fragment_code1 = code.ascii();
+		} else {
+
+			fragment_code1 = code.substr(0, cpos).ascii();
+			//print_line("CODE1:\n"+String(fragment_code1.get_data()));
+
+			String code2 = code.substr(cpos + globals_tag.length(), code.length());
+			cpos = code2.find(light_code_tag);
+
+			if (cpos == -1) {
+				fragment_code2 = code2.ascii();
 			} else {
 
-				fragment_code1 = code.substr(0, cpos).ascii();
-				//print_line("CODE1:\n"+String(fragment_code1.get_data()));
+				fragment_code2 = code2.substr(0, cpos).ascii();
+				//print_line("CODE2:\n"+String(fragment_code2.get_data()));
 
-				String code2 = code.substr(cpos + globals_tag.length(), code.length());
-				cpos = code2.find(light_code_tag);
+				String code3 = code2.substr(cpos + light_code_tag.length(), code2.length());
 
+				cpos = code3.find(code_tag);
 				if (cpos == -1) {
-					fragment_code2 = code2.ascii();
+					fragment_code3 = code3.ascii();
 				} else {
 
-					fragment_code2 = code2.substr(0, cpos).ascii();
-					//print_line("CODE2:\n"+String(fragment_code2.get_data()));
-
-					String code3 = code2.substr(cpos + light_code_tag.length(), code2.length());
-
-					cpos = code3.find(code_tag);
-					if (cpos == -1) {
-						fragment_code3 = code3.ascii();
-					} else {
-
-						fragment_code3 = code3.substr(0, cpos).ascii();
-						//print_line("CODE3:\n"+String(fragment_code3.get_data()));
-						fragment_code4 = code3.substr(cpos + code_tag.length(), code3.length()).ascii();
-						//print_line("CODE4:\n"+String(fragment_code4.get_data()));
-					}
+					fragment_code3 = code3.substr(0, cpos).ascii();
+					//print_line("CODE3:\n"+String(fragment_code3.get_data()));
+					fragment_code4 = code3.substr(cpos + code_tag.length(), code3.length()).ascii();
+					//print_line("CODE4:\n"+String(fragment_code4.get_data()));
 				}
 			}
 		}
@@ -678,6 +844,11 @@ void ShaderGLES3::finish() {
 
 		Version &v = version_map[*V];
 		glDeleteShader(v.vert_id);
+#ifdef GLES_OVER_GL
+		if (has_geometry) {
+			glDeleteShader(v.geom_id);
+		}
+#endif
 		glDeleteShader(v.frag_id);
 		glDeleteProgram(v.id);
 		memdelete_arr(v.uniform_location);
@@ -691,6 +862,11 @@ void ShaderGLES3::clear_caches() {
 
 		Version &v = version_map[*V];
 		glDeleteShader(v.vert_id);
+#ifdef GLES_OVER_GL
+		if (has_geometry) {
+			glDeleteShader(v.geom_id);
+		}
+#endif
 		glDeleteShader(v.frag_id);
 		glDeleteProgram(v.id);
 		memdelete_arr(v.uniform_location);
@@ -711,13 +887,15 @@ uint32_t ShaderGLES3::create_custom_shader() {
 	return last_custom_code++;
 }
 
-void ShaderGLES3::set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines) {
+void ShaderGLES3::set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_geometry, const String &p_geometry_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines) {
 
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	CustomCode *cc = &custom_code_map[p_code_id];
 
 	cc->vertex = p_vertex;
 	cc->vertex_globals = p_vertex_globals;
+	cc->geometry = p_geometry;
+	cc->geometry_globals = p_geometry_globals;
 	cc->fragment = p_fragment;
 	cc->fragment_globals = p_fragment_globals;
 	cc->light = p_light;
@@ -748,6 +926,11 @@ void ShaderGLES3::free_custom_shader(uint32_t p_code_id) {
 		Version &v = version_map[key];
 
 		glDeleteShader(v.vert_id);
+#ifdef GLES_OVER_GL
+		if (has_geometry) {
+			glDeleteShader(v.geom_id);
+		}
+#endif
 		glDeleteShader(v.frag_id);
 		glDeleteProgram(v.id);
 		memdelete_arr(v.uniform_location);
