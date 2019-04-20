@@ -1284,6 +1284,8 @@ void EditorNode::_dialog_action(String p_file) {
 			_run(false, ""); // automatically run the project
 		} break;
 		case FILE_CLOSE:
+		case FILE_CLOSE_ALL:
+		case FILE_CLOSE_ALL_OTHER:
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case SCENE_TAB_CLOSE:
@@ -1936,20 +1938,41 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			open_request(previous_scenes.back()->get());
 
 		} break;
+		case FILE_CLOSE_ALL_OTHER: {
+			if (editor_data.get_edited_scene_count() == 1) {
+				current_option = -1;
+				break;
+			}
+
+			if (tab_keep_open == -1) {
+				tab_keep_open = editor_data.get_edited_scene();
+			}
+			FALLTHROUGH;
+		}
+		case FILE_CLOSE_ALL:
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
 		case FILE_CLOSE: {
 
-			if (!p_confirmed && (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER)) {
-				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene(false);
-				String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
-				save_confirmation->get_ok()->set_text(TTR("Save & Close"));
-				save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
-				save_confirmation->popup_centered_minsize();
-				break;
+			if (!p_confirmed && (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || p_option == FILE_CLOSE_ALL_OTHER || p_option == FILE_CLOSE_ALL)) {
+				tab_closing = p_option == FILE_CLOSE ? editor_data.get_edited_scene() : _next_unsaved_scene(false, 0, tab_keep_open);
+				if (tab_closing != -1) {
+					String scene_filename = editor_data.get_edited_scene_root(tab_closing)->get_filename();
+					save_confirmation->get_ok()->set_text(TTR("Save & Close"));
+					save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), scene_filename != "" ? scene_filename : "unsaved scene"));
+					save_confirmation->popup_centered_minsize();
+					break;
+				} else {
+					tab_closing = editor_data.get_edited_scene();
+				}
 			} else {
 				tab_closing = editor_data.get_edited_scene();
 			}
+
+			if (tab_closing == tab_keep_open) {
+				tab_closing = (tab_closing + 1) % editor_data.get_edited_scene_count();
+			}
+
 			if (!editor_data.get_edited_scene_root(tab_closing)) {
 				// empty tab
 				_scene_tab_closed(tab_closing);
@@ -2502,14 +2525,14 @@ void EditorNode::_tool_menu_option(int p_idx) {
 	}
 }
 
-int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
+int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start, int except) {
 
 	for (int i = p_start; i < editor_data.get_edited_scene_count(); i++) {
 
 		if (!editor_data.get_edited_scene_root(i))
 			continue;
 		int current = editor_data.get_edited_scene();
-		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
+		bool unsaved = (i != except) && ((i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0);
 		if (unsaved) {
 			String scene_filename = editor_data.get_edited_scene_root(i)->get_filename();
 			if (p_valid_filename && scene_filename.length() == 0)
@@ -2532,6 +2555,8 @@ void EditorNode::_discard_changes(const String &p_str) {
 
 		case FILE_CLOSE_ALL_AND_QUIT:
 		case FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER:
+		case FILE_CLOSE_ALL:
+		case FILE_CLOSE_ALL_OTHER:
 		case FILE_CLOSE:
 		case SCENE_TAB_CLOSE: {
 
@@ -2542,6 +2567,14 @@ void EditorNode::_discard_changes(const String &p_str) {
 				if (_next_unsaved_scene(false) == -1) {
 					current_option = current_option == FILE_CLOSE_ALL_AND_QUIT ? FILE_QUIT : RUN_PROJECT_MANAGER;
 					_discard_changes();
+				} else {
+					_menu_option_confirm(current_option, false);
+				}
+			} else if (current_option == FILE_CLOSE_ALL || current_option == FILE_CLOSE_ALL_OTHER) {
+				if (editor_data.get_edited_scene_count() == ((current_option == FILE_CLOSE_ALL) ? 0 : 1)) {
+					tab_keep_open = -1;
+					current_option = -1;
+					save_confirmation->hide();
 				} else {
 					_menu_option_confirm(current_option, false);
 				}
@@ -4246,7 +4279,10 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
 				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
+				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_item(TTR("Close Tab"), FILE_CLOSE);
+				scene_tabs_context_menu->add_item(TTR("Close Other Tabs"), FILE_CLOSE_ALL_OTHER);
+				scene_tabs_context_menu->add_item(TTR("Close All Tabs"), FILE_CLOSE_ALL);
 			}
 			scene_tabs_context_menu->set_position(mb->get_global_position());
 			scene_tabs_context_menu->popup();
@@ -5047,6 +5083,7 @@ EditorNode::EditorNode() {
 	disable_progress_dialog = false;
 	scene_distraction = false;
 	script_distraction = false;
+	tab_keep_open = -1;
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
@@ -5533,6 +5570,8 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT("editor/save_all_scenes", TTR("Save All Scenes"), KEY_MASK_ALT + KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_S), FILE_SAVE_ALL_SCENES);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_W), FILE_CLOSE);
+	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close All Other Scenes"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_E), FILE_CLOSE_ALL_OTHER);
+	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close All Scenes"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_R), FILE_CLOSE_ALL);
 	p->add_separator();
 	p->add_submenu_item(TTR("Open Recent"), "RecentScenes", FILE_OPEN_RECENT);
 	p->add_separator();

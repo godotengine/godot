@@ -138,6 +138,8 @@ private:
 		FILE_QUICK_OPEN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
+		FILE_CLOSE_ALL,
+		FILE_CLOSE_ALL_OTHER,
 		FILE_CLOSE_ALL_AND_QUIT,
 		FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER,
 		FILE_QUIT,
@@ -234,6 +236,7 @@ private:
 	Panel *tab_preview_panel;
 	TextureRect *tab_preview;
 	int tab_closing;
+	int tab_keep_open;
 
 	bool exiting;
 
@@ -449,7 +452,7 @@ private:
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
-	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
+	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0, int except = -1);
 	void _discard_changes(const String &p_str = String());
 
 	void _instance_request(const Vector<String> &p_files);
