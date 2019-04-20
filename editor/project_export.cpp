@@ -571,9 +571,9 @@ void ProjectExportDialog::_duplicate_preset() {
 	Ref<EditorExportPreset> preset = current->get_platform()->create_preset();
 	ERR_FAIL_COND(!preset.is_valid());
 
-	String name = current->get_name() + "" + itos(1);
+	String name = current->get_name();
 	bool make_runnable = true;
-	int attempt = 2;
+	int attempt = 1;
 	while (true) {
 
 		bool valid = true;
@@ -593,7 +593,11 @@ void ProjectExportDialog::_duplicate_preset() {
 			break;
 
 		attempt++;
-		name = current->get_name() + " " + itos(attempt);
+		while (name.length() && name[name.length() - 1] >= '0' && name[name.length() - 1] <= '9') {
+			name = name.substr(0, name.length() - 1);
+		}
+
+		name += itos(attempt);
 	}
 
 	preset->set_name(name);
