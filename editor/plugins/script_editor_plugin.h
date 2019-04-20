@@ -333,6 +333,7 @@ class ScriptEditor : public PanelContainer {
 	void _update_members_overview();
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
 	void _update_script_names();
+	void _update_script_connections();
 	bool _sort_list_on_update;
 
 	void _members_overview_selected(int p_idx);
