@@ -29,8 +29,10 @@
 /*************************************************************************/
 
 #include "theme.h"
+#include "core/core_string_names.h"
 #include "core/os/file_access.h"
 #include "core/print_string.h"
+#include "scene/resources/dynamic_font.h"
 
 Ref<Theme> Theme::default_theme;
 
@@ -195,24 +197,49 @@ void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 
 	if (default_theme_font == p_default_font)
 		return;
-
-	if (default_theme_font.is_valid()) {
+	if (default_theme_font.is_valid())
 		default_theme_font->disconnect("changed", this, "_emit_theme_changed");
-	}
 
 	default_theme_font = p_default_font;
-
-	if (default_theme_font.is_valid()) {
+	if (default_theme_font.is_valid())
 		default_theme_font->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
-	}
 
 	_change_notify();
 	emit_changed();
 }
 
-Ref<Font> Theme::get_default_theme_font() const {
+Ref<Font> Theme::get_default_theme_font(const Control *p_context) const {
+	{
+		float dpi = 1.0;
+		Ref<DynamicFont> fnt = default_theme_font;
+		if (!fnt.is_valid())
+			return default_font;
 
-	return default_theme_font;
+		if (p_context) {
+			if (p_context->get_theme_in_use() != this)
+				dpi = p_context->get_theme_in_use()->get_dpi();
+			else
+				dpi = get_dpi();
+
+			if (dpi != 1) {
+				fnt = fnt->duplicate();
+				fnt->set_size(fnt->get_size() * dpi);
+				fnt->set_outline_size(fnt->get_outline_size() * dpi);
+				// fnt->set_spacing(fnt->get_spacing() * dpi); donno if needed or if that gets scaled with set_size
+			}
+		}
+		return fnt;
+	}
+}
+
+void Theme::set_dpi(float p_dpi) {
+	dpi_scale = p_dpi;
+
+	_change_notify();
+	emit_changed();
+}
+float Theme::get_dpi() const {
+	return dpi_scale;
 }
 
 void Theme::set_default(const Ref<Theme> &p_default) {
@@ -243,26 +270,28 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_type, const R
 
 	bool new_value = !icon_map.has(p_type) || !icon_map[p_type].has(p_name);
 
-	if (icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
+	if (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
 		icon_map[p_type][p_name]->disconnect("changed", this, "_emit_theme_changed");
 	}
-
 	icon_map[p_type][p_name] = p_icon;
-
-	if (p_icon.is_valid()) {
+	if (p_icon.is_valid())
 		icon_map[p_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
-	}
 
 	if (new_value) {
 		_change_notify();
 		emit_changed();
 	}
 }
-Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_type) const {
-
+Ref<Texture> Theme::get_icon(const StringName &p_name, const StringName &p_type, const Control *p_context) const {
 	if (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
-
-		return icon_map[p_type][p_name];
+		if (p_context) { // Get function is called from Control Node
+			Ref<ScaledThemeTexture> ic = memnew(ScaledThemeTexture);
+			ic->set_dpi_theme(p_context->get_theme_in_use()); // get_theme_in_use will can can often be the current theme.
+			ic->set_unscaled_texture(icon_map[p_type][p_name]);
+			return ic;
+		} else {
+			return icon_map[p_type][p_name]; // Get function is called from Control Editor Inspector
+		}
 	} else {
 		return default_icon;
 	}
@@ -366,14 +395,16 @@ void Theme::set_stylebox(const StringName &p_name, const StringName &p_type, con
 	emit_changed();
 }
 
-Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_type) const {
+Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_type, const Control *p_context) const {
+	Ref<ScaledThemeStylebox> ret = memnew(ScaledThemeStylebox);
 
-	if (style_map.has(p_type) && style_map[p_type].has(p_name) && style_map[p_type][p_name].is_valid()) {
-
-		return style_map[p_type][p_name];
+	if (has_stylebox(p_name, p_type)) {
+		ret->set_unscaled_stylebox(style_map[p_type][p_name]);
 	} else {
-		return default_style;
+		ret->set_unscaled_stylebox(default_style);
 	}
+	ret->set_context_control(p_context);
+	return ret;
 }
 
 bool Theme::has_stylebox(const StringName &p_name, const StringName &p_type) const {
@@ -428,7 +459,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_type, const R
 
 	font_map[p_type][p_name] = p_font;
 
-	if (p_font.is_valid()) {
+	if (font_map[p_type][p_name].is_valid()) {
 		font_map[p_type][p_name]->connect("changed", this, "_emit_theme_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	}
 
@@ -437,14 +468,30 @@ void Theme::set_font(const StringName &p_name, const StringName &p_type, const R
 		emit_changed();
 	}
 }
-Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_type) const {
-
+Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_type, const Control *p_context) const {
+	//adapt font
+	float dpi = 1.0;
+	Ref<DynamicFont> fnt;
 	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid())
-		return font_map[p_type][p_name];
-	else if (default_theme_font.is_valid())
-		return default_theme_font;
+		fnt = font_map[p_type][p_name];
 	else
-		return default_font;
+		fnt = default_font;
+	if (fnt.is_valid()) {
+		if (p_context) {
+			if (p_context->get_theme_in_use() != this)
+				dpi = p_context->get_theme_in_use()->get_dpi();
+			else
+				dpi = get_dpi();
+
+			if (dpi != 1) {
+				fnt = fnt->duplicate();
+				fnt->set_size(fnt->get_size() * dpi);
+				fnt->set_outline_size(fnt->get_outline_size() * dpi);
+			}
+		}
+		return fnt;
+	}
+	return default_font;
 }
 
 bool Theme::has_font(const StringName &p_name, const StringName &p_type) const {
@@ -538,10 +585,11 @@ void Theme::set_constant(const StringName &p_name, const StringName &p_type, int
 	}
 }
 
-int Theme::get_constant(const StringName &p_name, const StringName &p_type) const {
+int Theme::get_constant(const StringName &p_name, const StringName &p_type, const Control *p_context) const {
+	float dpi = p_context ? (p_context->get_theme_in_use()->get_dpi()) : get_dpi();
 
 	if (constant_map.has(p_type) && constant_map[p_type].has(p_name))
-		return constant_map[p_type][p_name];
+		return constant_map[p_type][p_name] * dpi;
 	else {
 		return 0;
 	}
@@ -668,49 +716,56 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	emit_changed();
 }
 
-void Theme::get_type_list(List<StringName> *p_list) const {
-
-	Set<StringName> types;
+void Theme::_get_type_set(Set<StringName> *p_set) const {
 
 	const StringName *key = NULL;
 
 	while ((key = icon_map.next(key))) {
 
-		types.insert(*key);
+		p_set->insert(*key);
 	}
 
 	key = NULL;
 
 	while ((key = style_map.next(key))) {
 
-		types.insert(*key);
+		p_set->insert(*key);
 	}
 
 	key = NULL;
 
 	while ((key = font_map.next(key))) {
 
-		types.insert(*key);
+		p_set->insert(*key);
 	}
 
 	key = NULL;
 
 	while ((key = color_map.next(key))) {
 
-		types.insert(*key);
+		p_set->insert(*key);
 	}
 
 	key = NULL;
 
 	while ((key = constant_map.next(key))) {
 
-		types.insert(*key);
+		p_set->insert(*key);
 	}
+}
+void Theme::get_type_list(List<StringName> *p_list) const {
 
-	for (Set<StringName>::Element *E = types.front(); E; E = E->next()) {
+	Set<StringName> types;
+	_get_type_set(&types);
 
+	for (Set<StringName>::Element *E = types.front(); E; E = E->next())
 		p_list->push_back(E->get());
-	}
+}
+
+bool Theme::has_type(StringName p_type) const {
+	Set<StringName> types;
+	_get_type_set(&types);
+	return types.has(p_type);
 }
 
 void Theme::_bind_methods() {
@@ -749,7 +804,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Theme::clear);
 
 	ClassDB::bind_method(D_METHOD("set_default_font", "font"), &Theme::set_default_theme_font);
-	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font);
+	ClassDB::bind_method(D_METHOD("get_default_font"), &Theme::get_default_theme_font, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_type_list", "type"), &Theme::_get_type_list);
 
@@ -758,11 +813,70 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
 	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
 
+	ClassDB::bind_method(D_METHOD("set_dpi", "dpi_scale"), &Theme::set_dpi);
+	ClassDB::bind_method("get_dpi", &Theme::get_dpi);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "dpi_scale", PROPERTY_HINT_RANGE, "0.1,10,0.1"), "set_dpi", "get_dpi");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 }
 
 Theme::Theme() {
+	dpi_scale = 1.0;
 }
 
 Theme::~Theme() {
 }
+
+//////////////////////////////////////
+void ScaledThemeTexture::set_size_override(const Size2 &p_size) {
+	icon_size = p_size;
+	emit_changed();
+};
+
+void ScaledThemeTexture::set_unscaled_texture(const Ref<Texture> p_texture) {
+	unscaled_texture = p_texture;
+	icon_size = p_texture->get_size();
+	emit_changed();
+}
+Ref<Texture> ScaledThemeTexture::get_unscaled_texture() const {
+	return unscaled_texture;
+}
+
+void ScaledThemeTexture::set_dpi_theme(const Ref<Theme> p_theme) {
+	theme = p_theme;
+	emit_changed();
+}
+Ref<Theme> ScaledThemeTexture::get_dpi_theme() const {
+	return theme;
+}
+
+void ScaledThemeTexture::set_modulate_color(const Color p_color) {
+	modulate_color = p_color;
+	emit_changed();
+}
+Color ScaledThemeTexture::get_modulate_color() const {
+	return modulate_color;
+}
+
+void ScaledThemeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
+
+	draw_rect(p_canvas_item, Rect2(p_pos, get_size()), false, p_modulate, p_transpose, p_normal_map);
+}
+void ScaledThemeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
+
+	Rect2 rect = p_rect;
+	Rect2 src_rect = Rect2(Point2(), unscaled_texture->get_size());
+	unscaled_texture->get_rect_region(rect, src_rect, rect, src_rect);
+	Color c_mod = (p_modulate == Color(1, 1, 1)) ? modulate_color : p_modulate;
+	draw_rect_region(p_canvas_item, rect, src_rect, c_mod, p_transpose, p_normal_map);
+}
+void ScaledThemeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
+
+	RID normal_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose, normal_rid, p_clip_uv);
+}
+ScaledThemeTexture::ScaledThemeTexture() {
+	icon_size = Size2i();
+	modulate_color = Color(1, 1, 1);
+};
+//////////////////////////////////////
