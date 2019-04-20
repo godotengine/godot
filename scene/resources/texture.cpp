@@ -127,9 +127,7 @@ bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
 			set_flags(p_value);
 	else if (p_name == "size") {
 		Size2 s = p_value;
-		w = s.width;
-		h = s.height;
-		VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+		set_size_override(s);
 	} else if (p_name == "_data") {
 		_set_data(p_value);
 	} else
@@ -185,6 +183,8 @@ void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uin
 	format = p_format;
 	w = p_width;
 	h = p_height;
+	original_w = p_width;
+	original_h = p_height;
 	_change_notify();
 }
 void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
@@ -193,6 +193,8 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags
 	flags = p_flags;
 	w = p_image->get_width();
 	h = p_image->get_height();
+	original_w = p_image->get_width();
+	original_h = p_image->get_height();
 	format = p_image->get_format();
 
 	VisualServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_flags);
@@ -273,6 +275,22 @@ int ImageTexture::get_height() const {
 
 	return h;
 }
+void ImageTexture::set_size_override(const Size2 &p_size) {
+
+	Size2 s = p_size;
+	if (s.x != 0)
+		w = s.x;
+	if (s.y != 0)
+		h = s.y;
+	VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+	emit_changed();
+}
+int ImageTexture::get_original_height() const {
+	return original_h;
+}
+int ImageTexture::get_original_width() const {
+	return original_w;
+}
 
 RID ImageTexture::get_rid() const {
 
@@ -341,16 +359,6 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void ImageTexture::set_size_override(const Size2 &p_size) {
-
-	Size2 s = p_size;
-	if (s.x != 0)
-		w = s.x;
-	if (s.y != 0)
-		h = s.y;
-	VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
-}
-
 void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 
 	if (texture.is_valid()) {
@@ -408,6 +416,8 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality", "quality"), &ImageTexture::set_lossy_storage_quality);
 	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"), &ImageTexture::get_lossy_storage_quality);
 
+	ClassDB::bind_method(D_METHOD("get_original_width"), &ImageTexture::get_original_width);
+	ClassDB::bind_method(D_METHOD("get_original_height"), &ImageTexture::get_original_height);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 	ClassDB::bind_method(D_METHOD("_reload_hook", "rid"), &ImageTexture::_reload_hook);
 
@@ -421,7 +431,7 @@ void ImageTexture::_bind_methods() {
 
 ImageTexture::ImageTexture() {
 
-	w = h = 0;
+	w = h = original_w = original_h = 0;
 	flags = FLAGS_DEFAULT;
 	texture = VisualServer::get_singleton()->texture_create();
 	storage = STORAGE_RAW;
@@ -730,6 +740,8 @@ Error StreamTexture::load(const String &p_path) {
 
 	w = lwc ? lwc : lw;
 	h = lhc ? lhc : lh;
+	original_w = w;
+	original_h = h;
 	flags = lflags;
 	path_to_file = p_path;
 	format = image->get_format();
@@ -749,6 +761,22 @@ int StreamTexture::get_width() const {
 int StreamTexture::get_height() const {
 
 	return h;
+}
+int StreamTexture::get_original_height() const {
+	return original_h;
+}
+int StreamTexture::get_original_width() const {
+	return original_w;
+}
+void StreamTexture::set_size_override(const Size2 &p_size) {
+
+	Size2 s = p_size;
+	if (s.x != 0)
+		w = s.x;
+	if (s.y != 0)
+		h = s.y;
+	VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+	emit_changed();
 }
 RID StreamTexture::get_rid() const {
 
@@ -852,7 +880,10 @@ void StreamTexture::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &StreamTexture::load);
 	ClassDB::bind_method(D_METHOD("get_load_path"), &StreamTexture::get_load_path);
-
+	ClassDB::bind_method(D_METHOD("get_original_width"), &StreamTexture::get_width);
+	ClassDB::bind_method(D_METHOD("get_original_height"), &StreamTexture::get_height);
+	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &StreamTexture::set_size_override);
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, ""), "set_size_override", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "load_path", PROPERTY_HINT_FILE, "*.stex"), "load", "get_load_path");
 }
 
@@ -860,9 +891,7 @@ StreamTexture::StreamTexture() {
 
 	format = Image::FORMAT_MAX;
 	flags = 0;
-	w = 0;
-	h = 0;
-
+	w = h = original_w = original_h = 0;
 	texture = VS::get_singleton()->texture_create();
 }
 
@@ -919,6 +948,21 @@ int AtlasTexture::get_height() const {
 	} else {
 		return region.size.height + margin.size.height;
 	}
+}
+void AtlasTexture::set_size_override(const Size2 &p_size) {
+	//TODO
+	// Size2 s = p_size;
+	// if (s.x != 0)
+	// 	w = s.x;
+	// if (s.y != 0)
+	// 	h = s.y;
+	// VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+}
+int AtlasTexture::get_original_height() const {
+	return get_width(); // original_h;
+}
+int AtlasTexture::get_original_width() const {
+	return get_width(); //original_w;
 }
 RID AtlasTexture::get_rid() const {
 
@@ -1142,6 +1186,21 @@ int LargeTexture::get_width() const {
 int LargeTexture::get_height() const {
 
 	return size.height;
+}
+void LargeTexture::set_size_override(const Size2 &p_size) {
+	//TODO
+	// Size2 s = p_size;
+	// if (s.x != 0)
+	// 	w = s.x;
+	// if (s.y != 0)
+	// 	h = s.y;
+	// VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+}
+int LargeTexture::get_original_height() const {
+	return size.width; // original_h;
+}
+int LargeTexture::get_original_width() const {
+	return size.height; //original_w;
 }
 RID LargeTexture::get_rid() const {
 
@@ -1386,7 +1445,21 @@ int CubeMap::get_height() const {
 
 	return h;
 }
-
+void CubeMap::set_size_override(const Size2 &p_size) {
+	//TODO
+	// Size2 s = p_size;
+	// if (s.x != 0)
+	// 	w = s.x;
+	// if (s.y != 0)
+	// 	h = s.y;
+	// VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+}
+int CubeMap::get_original_height() const {
+	return w; // original_h;
+}
+int CubeMap::get_original_width() const {
+	return h;
+}
 RID CubeMap::get_rid() const {
 
 	return cubemap;
@@ -1560,7 +1633,15 @@ void CurveTexture::set_width(int p_width) {
 	_width = p_width;
 	_update();
 }
-
+void CurveTexture::set_size_override(const Size2 &p_size) {
+	set_width(p_size.width);
+}
+int CurveTexture::get_original_height() const {
+	return _width; // original_h;
+}
+int CurveTexture::get_original_width() const {
+	return 1;
+}
 int CurveTexture::get_width() const {
 
 	return _width;
@@ -1742,12 +1823,26 @@ int GradientTexture::get_width() const {
 
 	return width;
 }
+void GradientTexture::set_size_override(const Size2 &p_size) {
+	set_width(p_size.width);
+	//TODO
+	// Size2 s = p_size;
+	// if (s.x != 0)
+	// 	w = s.x;
+	// if (s.y != 0)
+	// 	h = s.y;
+	// VisualServer::get_singleton()->texture_set_size_override(texture, w, h, 0);
+}
+int GradientTexture::get_original_height() const {
+	return width; // original_h;
+}
+int GradientTexture::get_original_width() const {
+	return 1;
+}
 
 Ref<Image> GradientTexture::get_data() const {
 	return VisualServer::get_singleton()->texture_get_data(texture);
 }
-
-//////////////////////////////////////
 
 void ProxyTexture::_bind_methods() {
 
@@ -1762,6 +1857,8 @@ void ProxyTexture::set_base(const Ref<Texture> &p_texture) {
 	ERR_FAIL_COND(p_texture == this);
 	base = p_texture;
 	if (base.is_valid()) {
+		proxy_w = base->get_width();
+		proxy_h = base->get_height();
 		VS::get_singleton()->texture_set_proxy(proxy, base->get_rid());
 	} else {
 		VS::get_singleton()->texture_set_proxy(proxy, RID());
@@ -1774,17 +1871,30 @@ Ref<Texture> ProxyTexture::get_base() const {
 }
 
 int ProxyTexture::get_width() const {
-
-	if (base.is_valid())
-		return base->get_width();
-	return 1;
+	return proxy_w;
 }
 int ProxyTexture::get_height() const {
-
+	return proxy_h;
+}
+void ProxyTexture::set_size_override(const Size2 &p_size) {
+	proxy_w = p_size.x;
+	proxy_h = p_size.y;
+	VisualServer::get_singleton()->texture_set_size_override(proxy, proxy_w, proxy_h, 0);
+	emit_changed();
+	// if (base.is_valid())
+	// 	base->set_size_override(p_size);
+}
+int ProxyTexture::get_original_height() const {
 	if (base.is_valid())
-		return base->get_height();
+		return base->get_original_height();
 	return 1;
 }
+int ProxyTexture::get_original_width() const {
+	if (base.is_valid())
+		return base->get_original_width();
+	return 1;
+}
+
 RID ProxyTexture::get_rid() const {
 
 	return proxy;
@@ -1933,6 +2043,14 @@ int AnimatedTexture::get_height() const {
 
 	return frames[current_frame].texture->get_height();
 }
+void AnimatedTexture::set_size_override(const Size2 &p_size) {
+}
+int AnimatedTexture::get_original_height() const {
+	return get_width();
+}
+int AnimatedTexture::get_original_width() const {
+	return get_height();
+}
 RID AnimatedTexture::get_rid() const {
 	return proxy;
 }
@@ -2060,14 +2178,21 @@ Image::Format TextureLayered::get_format() const {
 	return format;
 }
 
-uint32_t TextureLayered::get_width() const {
+int TextureLayered::get_width() const {
 	return width;
 }
 
-uint32_t TextureLayered::get_height() const {
+int TextureLayered::get_height() const {
 	return height;
 }
-
+void TextureLayered::set_size_override(const Size2 &p_size) {
+}
+int TextureLayered::get_original_height() const {
+	return get_width();
+}
+int TextureLayered::get_original_width() const {
+	return get_height();
+}
 uint32_t TextureLayered::get_depth() const {
 	return depth;
 }

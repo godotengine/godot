@@ -66,7 +66,11 @@ public:
 
 	virtual int get_width() const = 0;
 	virtual int get_height() const = 0;
+	virtual int get_original_width() const { return 0; };
+	virtual int get_original_height() const { return 0; };
 	virtual Size2 get_size() const;
+	virtual void set_size_override(const Size2 &p_size){};
+
 	virtual RID get_rid() const = 0;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
@@ -81,7 +85,9 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
-	virtual Ref<Image> get_data() const { return Ref<Image>(); }
+	virtual Ref<Image> get_data() const {
+		return Ref<Image>();
+	}
 
 	Texture();
 };
@@ -106,9 +112,8 @@ private:
 	RID texture;
 	Image::Format format;
 	uint32_t flags;
-	int w, h;
+	int w, h, original_w, original_h;
 	Storage storage;
-	Size2 size_override;
 	float lossy_storage_quality;
 	mutable Ref<BitMap> alpha_cache;
 	bool image_stored;
@@ -141,6 +146,9 @@ public:
 
 	int get_width() const;
 	int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
 
 	virtual RID get_rid() const;
 
@@ -155,8 +163,6 @@ public:
 
 	void set_lossy_storage_quality(float p_lossy_storage_quality);
 	float get_lossy_storage_quality() const;
-
-	void set_size_override(const Size2 &p_size);
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 
@@ -192,7 +198,7 @@ private:
 	RID texture;
 	Image::Format format;
 	uint32_t flags;
-	int w, h;
+	int w, h, original_w, original_h;
 	mutable Ref<BitMap> alpha_cache;
 
 	virtual void reload_from_file();
@@ -219,6 +225,10 @@ public:
 
 	int get_width() const;
 	int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
+
 	virtual RID get_rid() const;
 
 	virtual void set_path(const String &p_path, bool p_take_over);
@@ -264,6 +274,10 @@ protected:
 public:
 	virtual int get_width() const;
 	virtual int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
+
 	virtual RID get_rid() const;
 
 	virtual bool has_alpha() const;
@@ -315,6 +329,10 @@ protected:
 public:
 	virtual int get_width() const;
 	virtual int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
+
 	virtual RID get_rid() const;
 
 	virtual bool has_alpha() const;
@@ -403,8 +421,12 @@ public:
 	Ref<Image> get_side(Side p_side) const;
 
 	Image::Format get_format() const;
+
 	int get_width() const;
 	int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
 
 	virtual RID get_rid() const;
 
@@ -458,8 +480,11 @@ public:
 	uint32_t get_flags() const;
 
 	Image::Format get_format() const;
-	uint32_t get_width() const;
-	uint32_t get_height() const;
+	int get_width() const;
+	int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
 	uint32_t get_depth() const;
 
 	void create(uint32_t p_width, uint32_t p_height, uint32_t p_depth, Image::Format p_format, uint32_t p_flags = FLAGS_DEFAULT);
@@ -523,8 +548,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_width(int p_width);
 	int get_width() const;
+	void set_width(int p_width);
+	virtual int get_height() const { return 1; }
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
 
 	void ensure_default_setup(float p_min = 0, float p_max = 1);
 
@@ -533,7 +562,6 @@ public:
 
 	virtual RID get_rid() const;
 
-	virtual int get_height() const { return 1; }
 	virtual bool has_alpha() const { return false; }
 
 	virtual void set_flags(uint32_t p_flags) {}
@@ -587,6 +615,9 @@ public:
 
 	void set_width(int p_width);
 	int get_width() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
 
 	virtual RID get_rid() const { return texture; }
 	virtual int get_height() const { return 1; }
@@ -607,6 +638,7 @@ class ProxyTexture : public Texture {
 private:
 	RID proxy;
 	Ref<Texture> base;
+	int proxy_w, proxy_h;
 
 protected:
 	static void _bind_methods();
@@ -617,6 +649,9 @@ public:
 
 	virtual int get_width() const;
 	virtual int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
 	virtual RID get_rid() const;
 
 	virtual bool has_alpha() const;
@@ -682,6 +717,10 @@ public:
 
 	virtual int get_width() const;
 	virtual int get_height() const;
+	int get_original_width() const;
+	int get_original_height() const;
+	void set_size_override(const Size2 &p_size);
+
 	virtual RID get_rid() const;
 
 	virtual bool has_alpha() const;

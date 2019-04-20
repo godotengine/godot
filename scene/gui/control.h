@@ -45,6 +45,7 @@
 class Viewport;
 class Label;
 class Panel;
+class Theme;
 
 class Control : public CanvasItem {
 
@@ -184,8 +185,7 @@ private:
 		ObjectID drag_owner;
 		bool modal_exclusive;
 		uint64_t modal_frame; //frame used to put something as modal
-		Ref<Theme> theme;
-		Control *theme_owner;
+
 		String tooltip;
 		CursorShape default_cursor;
 
@@ -201,12 +201,23 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		Ref<Theme> theme;
+		Control *theme_owner;
+
 		HashMap<StringName, Ref<Texture> > icon_override;
 		HashMap<StringName, Ref<Shader> > shader_override;
 		HashMap<StringName, Ref<StyleBox> > style_override;
 		HashMap<StringName, Ref<Font> > font_override;
 		HashMap<StringName, Color> color_override;
 		HashMap<StringName, int> constant_override;
+
+		// StringName theme_class_name;
+		mutable HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_cache;
+		mutable HashMap<StringName, HashMap<StringName, Ref<Shader> > > shader_cache;
+		mutable HashMap<StringName, HashMap<StringName, Ref<StyleBox> > > style_cache;
+		mutable HashMap<StringName, HashMap<StringName, Ref<Font> > > font_cache;
+		mutable HashMap<StringName, HashMap<StringName, Color> > color_cache;
+		mutable HashMap<StringName, HashMap<StringName, int> > constant_cache;
 
 	} data;
 
@@ -235,6 +246,7 @@ private:
 
 	void _override_changed();
 
+	void _update_theme_cache();
 	void _update_canvas_item_transform();
 
 	Transform2D _get_internal_transform() const;
@@ -426,12 +438,12 @@ public:
 	void add_color_override(const StringName &p_name, const Color &p_color);
 	void add_constant_override(const StringName &p_name, int p_constant);
 
-	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Ref<Font> get_font(const StringName &p_name, const StringName &p_type = StringName()) const;
-	Color get_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	int get_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	Ref<Texture> get_icon(const StringName &p_name, const StringName &p_type = StringName(), bool p_force_without_cache = false) const;
+	Ref<Shader> get_shader(const StringName &p_name, const StringName &p_type = StringName(), bool p_force_without_cache = false) const;
+	Ref<StyleBox> get_stylebox(const StringName &p_name, const StringName &p_type = StringName(), bool p_force_without_cache = false) const;
+	Ref<Font> get_font(const StringName &p_name, const StringName &p_type = StringName(), bool p_force_without_cache = false) const;
+	Color get_color(const StringName &p_name, const StringName &p_type = StringName(), bool p_force_without_cache = false) const;
+	int get_constant(const StringName &p_name, const StringName &p_type = StringName(), bool p_force_without_cache = false) const;
 
 	bool has_icon_override(const StringName &p_name) const;
 	bool has_shader_override(const StringName &p_name) const;

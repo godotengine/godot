@@ -631,7 +631,8 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
+			// _update_theme_cache();
+			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_MODAL_CLOSE: {
@@ -803,7 +804,7 @@ Size2 Control::get_minimum_size() const {
 	return Size2();
 }
 
-Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
+Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type, bool p_force_without_cache) const {
 
 	if (p_type == StringName() || p_type == "") {
 
@@ -811,22 +812,26 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_typ
 		if (tex)
 			return *tex;
 	}
-
 	StringName type = p_type ? p_type : get_class_name();
+
+	// load from cache
+	if (!p_force_without_cache && data.icon_cache.has(type) && data.icon_cache.has(p_name))
+		return data.icon_cache[type][p_name];
 
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
-
 	while (theme_owner) {
 
-		StringName class_name = type;
-
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_icon(p_name, class_name)) {
-				return theme_owner->data.theme->get_icon(p_name, class_name);
+		StringName type_cascade = type;
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_icon(p_name, type_cascade)) {
+				Ref<Texture> ret_icon = theme_owner->data.theme->get_icon(p_name, type_cascade, this);
+				// cache the icon, and use the type that was in function properties (p_type) so it loads from cache .
+				data.icon_cache[type_cascade][p_name] = ret_icon;
+				return ret_icon;
 			}
 
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -837,10 +842,13 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_typ
 			theme_owner = NULL;
 	}
 
-	return Theme::get_default()->get_icon(p_name, type);
+	Ref<Texture> ret_icon = Theme::get_default()->get_icon(p_name, type, this);
+	// cache the icon, and use the type that was in function properties (p_type) so it loads from cache .
+	data.icon_cache[type][p_name] = ret_icon;
+	return ret_icon;
 }
 
-Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_type) const {
+Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_type, bool p_force_without_cache) const {
 	if (p_type == StringName() || p_type == "") {
 
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
@@ -850,19 +858,25 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_ty
 
 	StringName type = p_type ? p_type : get_class_name();
 
+	// load from cache
+	if (!p_force_without_cache && data.shader_cache.has(type) && data.shader_cache.has(p_name))
+		return data.shader_cache[type][p_name];
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_shader(p_name, class_name)) {
-				return theme_owner->data.theme->get_shader(p_name, class_name);
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_shader(p_name, type_cascade)) {
+				Ref<Shader> ret_shader = theme_owner->data.theme->get_shader(p_name, type_cascade);
+				data.shader_cache[type_cascade][p_name] = ret_shader;
+				return ret_shader;
 			}
 
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -873,10 +887,12 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_ty
 			theme_owner = NULL;
 	}
 
-	return Theme::get_default()->get_shader(p_name, type);
+	Ref<Shader> ret_shader = Theme::get_default()->get_shader(p_name, type);
+	data.shader_cache[type][p_name] = ret_shader;
+	return ret_shader;
 }
 
-Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_type) const {
+Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_type, bool p_force_without_cache) const {
 
 	if (p_type == StringName() || p_type == "") {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
@@ -886,22 +902,28 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 
 	StringName type = p_type ? p_type : get_class_name();
 
+	// load from cache
+	if (!p_force_without_cache && data.style_cache.has(type) && data.style_cache.has(p_name))
+		return data.style_cache[type][p_name];
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
-	StringName class_name = type;
+	StringName type_cascade = type;
 
 	while (theme_owner) {
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_stylebox(p_name, class_name)) {
-				return theme_owner->data.theme->get_stylebox(p_name, class_name);
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_stylebox(p_name, type_cascade)) {
+				Ref<StyleBox> ret_style = theme_owner->data.theme->get_stylebox(p_name, type_cascade);
+				data.style_cache[type][p_name] = ret_style;
+				return ret_style;
 			}
 
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
-		class_name = type;
+		type_cascade = type;
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
@@ -910,42 +932,57 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 		else
 			theme_owner = NULL;
 	}
+	type_cascade = type;
 
-	while (class_name != StringName()) {
-		if (Theme::get_default()->has_stylebox(p_name, class_name))
-			return Theme::get_default()->get_stylebox(p_name, class_name);
+	while (type_cascade != StringName()) {
+		if (Theme::get_default()->has_stylebox(p_name, type_cascade)) {
+			Ref<StyleBox> ret_style = Theme::get_default()->get_stylebox(p_name, type_cascade);
+			data.style_cache[type][p_name] = ret_style;
+			return ret_style;
+		}
 
-		class_name = ClassDB::get_parent_class_nocheck(class_name);
+		type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 	}
-	return Theme::get_default()->get_stylebox(p_name, type);
+	Ref<StyleBox> ret_style = Theme::get_default()->get_stylebox(p_name, type);
+	data.style_cache[type][p_name] = ret_style;
+	return ret_style;
 }
-Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) const {
+Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type, bool p_force_without_cache) const {
 
 	if (p_type == StringName() || p_type == "") {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
-		if (font)
-			return *font;
+		if (font) return *font;
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
 
+	// load from cache
+	if (!p_force_without_cache && data.font_cache.has(type) && data.font_cache.has(p_name))
+		return data.font_cache[type][p_name];
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_font(p_name, class_name)) {
-				return theme_owner->data.theme->get_font(p_name, class_name);
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_font(p_name, type_cascade)) {
+				Ref<Font> ret_font = theme_owner->data.theme->get_font(p_name, type_cascade, this);
+				data.font_cache[type][p_name] = ret_font;
+				return ret_font;
 			}
 
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
-		if (theme_owner->data.theme->get_default_theme_font().is_valid())
-			return theme_owner->data.theme->get_default_theme_font();
+		if (theme_owner->data.theme->get_default_theme_font(this).is_valid()) {
+			Ref<Font> ret_font = theme_owner->data.theme->get_default_theme_font(this);
+			data.font_cache[type][p_name] = ret_font;
+			return ret_font;
+		}
+
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
 
 		if (parent)
@@ -953,10 +990,11 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) 
 		else
 			theme_owner = NULL;
 	}
-
-	return Theme::get_default()->get_font(p_name, type);
+	Ref<Font> ret_font = Theme::get_default()->get_font(p_name, type, this);
+	data.font_cache[type][p_name] = ret_font;
+	return ret_font;
 }
-Color Control::get_color(const StringName &p_name, const StringName &p_type) const {
+Color Control::get_color(const StringName &p_name, const StringName &p_type, bool p_force_without_cache) const {
 
 	if (p_type == StringName() || p_type == "") {
 		const Color *color = data.color_override.getptr(p_name);
@@ -965,19 +1003,25 @@ Color Control::get_color(const StringName &p_name, const StringName &p_type) con
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
+
+	if (!p_force_without_cache && data.font_cache.has(type) && data.font_cache.has(p_name))
+		return data.color_cache[p_type][p_name];
 	// try with custom themes
+
 	Control *theme_owner = data.theme_owner;
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_color(p_name, class_name)) {
-				return theme_owner->data.theme->get_color(p_name, class_name);
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_color(p_name, type_cascade)) {
+				Color ret_color = theme_owner->data.theme->get_color(p_name, type_cascade);
+				data.color_cache[type][p_name] = ret_color;
+				return ret_color;
 			}
 
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -987,11 +1031,12 @@ Color Control::get_color(const StringName &p_name, const StringName &p_type) con
 		else
 			theme_owner = NULL;
 	}
-
-	return Theme::get_default()->get_color(p_name, type);
+	Color ret_color = Theme::get_default()->get_color(p_name, type);
+	data.color_cache[type][p_name] = ret_color;
+	return ret_color;
 }
 
-int Control::get_constant(const StringName &p_name, const StringName &p_type) const {
+int Control::get_constant(const StringName &p_name, const StringName &p_type, bool p_force_without_cache) const {
 
 	if (p_type == StringName() || p_type == "") {
 		const int *constant = data.constant_override.getptr(p_name);
@@ -1000,19 +1045,25 @@ int Control::get_constant(const StringName &p_name, const StringName &p_type) co
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
+
+	if (!p_force_without_cache && data.constant_cache.has(p_name))
+		return data.constant_cache[type][p_name];
+
 	// try with custom themes
 	Control *theme_owner = data.theme_owner;
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_constant(p_name, class_name)) {
-				return theme_owner->data.theme->get_constant(p_name, class_name);
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_constant(p_name, type_cascade)) {
+				int ret_const = theme_owner->data.theme->get_constant(p_name, type_cascade, this);
+				data.constant_cache[type][p_name] = ret_const;
+				return ret_const;
 			}
 
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -1022,8 +1073,9 @@ int Control::get_constant(const StringName &p_name, const StringName &p_type) co
 		else
 			theme_owner = NULL;
 	}
-
-	return Theme::get_default()->get_constant(p_name, type);
+	int ret_const = Theme::get_default()->get_constant(p_name, type, this);
+	data.constant_cache[type][p_name] = ret_const;
+	return ret_const;
 }
 
 bool Control::has_icon_override(const StringName &p_name) const {
@@ -1085,6 +1137,8 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_type) const
 	if (p_type == StringName() || p_type == "") {
 		if (has_icon_override(p_name))
 			return true;
+		else
+			return data.icon_cache.has(p_name);
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
@@ -1094,13 +1148,13 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_type) const
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_icon(p_name, class_name)) {
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_icon(p_name, type_cascade)) {
 				return true;
 			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -1119,6 +1173,8 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 	if (p_type == StringName() || p_type == "") {
 		if (has_shader_override(p_name))
 			return true;
+		else
+			return data.shader_cache.has(p_name);
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
@@ -1128,13 +1184,13 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_shader(p_name, class_name)) {
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_shader(p_name, type_cascade)) {
 				return true;
 			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -1152,6 +1208,8 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) c
 	if (p_type == StringName() || p_type == "") {
 		if (has_stylebox_override(p_name))
 			return true;
+		else
+			return data.style_cache.has(p_name);
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
@@ -1161,13 +1219,13 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) c
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_stylebox(p_name, class_name)) {
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_stylebox(p_name, type_cascade)) {
 				return true;
 			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -1185,6 +1243,8 @@ bool Control::has_font(const StringName &p_name, const StringName &p_type) const
 	if (p_type == StringName() || p_type == "") {
 		if (has_font_override(p_name))
 			return true;
+		else
+			return data.font_cache.has(p_name);
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
@@ -1194,13 +1254,13 @@ bool Control::has_font(const StringName &p_name, const StringName &p_type) const
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_font(p_name, class_name)) {
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_font(p_name, type_cascade)) {
 				return true;
 			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -1219,6 +1279,8 @@ bool Control::has_color(const StringName &p_name, const StringName &p_type) cons
 	if (p_type == StringName() || p_type == "") {
 		if (has_color_override(p_name))
 			return true;
+		else
+			return data.color_cache.has(p_name);
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
@@ -1228,13 +1290,13 @@ bool Control::has_color(const StringName &p_name, const StringName &p_type) cons
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_color(p_name, class_name)) {
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_color(p_name, type_cascade)) {
 				return true;
 			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -1253,6 +1315,8 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_type) c
 	if (p_type == StringName() || p_type == "") {
 		if (has_constant_override(p_name))
 			return true;
+		else
+			return data.constant_cache.has(p_name);
 	}
 
 	StringName type = p_type ? p_type : get_class_name();
@@ -1262,13 +1326,13 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_type) c
 
 	while (theme_owner) {
 
-		StringName class_name = type;
+		StringName type_cascade = type;
 
-		while (class_name != StringName()) {
-			if (theme_owner->data.theme->has_constant(p_name, class_name)) {
+		while (type_cascade != StringName()) {
+			if (theme_owner->data.theme->has_constant(p_name, type_cascade)) {
 				return true;
 			}
-			class_name = ClassDB::get_parent_class_nocheck(class_name);
+			type_cascade = ClassDB::get_parent_class_nocheck(type_cascade);
 		}
 
 		Control *parent = Object::cast_to<Control>(theme_owner->get_parent());
@@ -2568,6 +2632,79 @@ void Control::_override_changed() {
 
 	notification(NOTIFICATION_THEME_CHANGED);
 	minimum_size_changed(); // overrides are likely to affect minimum size
+}
+
+void Control::_update_theme_cache() {
+	//Plan
+	// give this function a property to choose between update all, update new
+	// update new only updates if is_valide == false
+	// update all updates everything
+	//icon
+	List<StringName> t_keys = List<StringName>();
+	List<StringName> n_keys = List<StringName>();
+	data.icon_cache.get_key_list(&t_keys);
+	for (List<StringName>::Element *E_type = t_keys.front(); E_type; E_type = E_type->next()) {
+
+		data.icon_cache[E_type->get()].get_key_list(&n_keys);
+		for (List<StringName>::Element *E_name = n_keys.front(); E_name; E_name = E_name->next()) {
+			data.icon_cache[E_type->get()][E_name->get()] = get_icon(E_type->get(), E_name->get(), true);
+		}
+	}
+	t_keys = List<StringName>();
+	n_keys = List<StringName>();
+	//stylebox
+	data.style_cache.get_key_list(&t_keys);
+	for (List<StringName>::Element *E_type = t_keys.front(); E_type; E_type = E_type->next()) {
+
+		data.style_cache[E_type->get()].get_key_list(&n_keys);
+		for (List<StringName>::Element *E_name = n_keys.front(); E_name; E_name = E_name->next()) {
+			data.style_cache[E_type->get()][E_name->get()] = get_stylebox(E_type->get(), E_name->get(), true);
+		}
+	}
+	t_keys = List<StringName>();
+	n_keys = List<StringName>();
+	//shader
+	data.shader_cache.get_key_list(&t_keys);
+	for (List<StringName>::Element *E_type = t_keys.front(); E_type; E_type = E_type->next()) {
+
+		data.shader_cache[E_type->get()].get_key_list(&n_keys);
+		for (List<StringName>::Element *E_name = n_keys.front(); E_name; E_name = E_name->next()) {
+			data.shader_cache[E_type->get()][E_name->get()] = get_shader(E_type->get(), E_name->get(), true);
+		}
+	}
+	t_keys = List<StringName>();
+	n_keys = List<StringName>();
+	//font
+	data.shader_cache.get_key_list(&t_keys);
+	for (List<StringName>::Element *E_type = t_keys.front(); E_type; E_type = E_type->next()) {
+
+		data.shader_cache[E_type->get()].get_key_list(&n_keys);
+		for (List<StringName>::Element *E_name = n_keys.front(); E_name; E_name = E_name->next()) {
+			data.shader_cache[E_type->get()][E_name->get()] = get_shader(E_type->get(), E_name->get(), true);
+		}
+	}
+	t_keys = List<StringName>();
+	n_keys = List<StringName>();
+	//color
+	data.color_cache.get_key_list(&t_keys);
+	for (List<StringName>::Element *E_type = t_keys.front(); E_type; E_type = E_type->next()) {
+
+		data.color_cache[E_type->get()].get_key_list(&n_keys);
+		for (List<StringName>::Element *E_name = n_keys.front(); E_name; E_name = E_name->next()) {
+			data.color_cache[E_type->get()][E_name->get()] = get_color(E_type->get(), E_name->get(), true);
+		}
+	}
+	t_keys = List<StringName>();
+	n_keys = List<StringName>();
+	//constant
+	data.constant_cache.get_key_list(&t_keys);
+	for (List<StringName>::Element *E_type = t_keys.front(); E_type; E_type = E_type->next()) {
+
+		data.constant_cache[E_type->get()].get_key_list(&n_keys);
+		for (List<StringName>::Element *E_name = n_keys.front(); E_name; E_name = E_name->next()) {
+			data.constant_cache[E_type->get()][E_name->get()] = get_constant(E_type->get(), E_name->get(), true);
+		}
+	}
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {

@@ -522,10 +522,10 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 		cpos.x += c->h_align;
 		cpos.y -= ascent;
 		cpos.y += c->v_align;
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size /* *dpi */), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), false);
 	}
 
-	return get_char_size(p_char, p_next).width;
+	return get_char_size(p_char, p_next).width; //* dpi
 }
 
 Size2 BitmapFont::get_char_size(CharType p_char, CharType p_next) const {
