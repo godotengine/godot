@@ -1165,6 +1165,32 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			tx->end_complex_operation();
 		} break;
+		case EDIT_AUTO_FORMAT: {
+
+			String text = tx->get_text();
+			Ref<Script> scr = script;
+			if (scr.is_null())
+				return;
+
+			tx->begin_complex_operation();
+
+			// first auto-indent
+			int begin = 0;
+			int end = tx->get_line_count() - 1;
+
+			scr->get_language()->auto_indent_code(text, begin, end);
+
+			Vector<String> lines = text.split("\n");
+			for (int i = begin; i <= end; ++i) {
+				tx->set_line(i, lines[i]);
+			}
+
+			// then auto-format
+			scr->get_language()->auto_format_code(text);
+			tx->set_text(text);
+
+			tx->end_complex_operation();
+		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 
 			trim_trailing_whitespace();
@@ -1831,6 +1857,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_format"), EDIT_AUTO_FORMAT);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 	edit_menu->get_popup()->add_separator();
 
@@ -1957,6 +1984,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_I);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
+	ED_SHORTCUT("script_text_editor/auto_format", TTR("Auto Format File"), 0);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F);
 #ifdef OSX_ENABLED
