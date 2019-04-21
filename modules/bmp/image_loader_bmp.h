@@ -37,6 +37,9 @@ class ImageLoaderBMP : public ImageFormatLoader {
 protected:
 	static const unsigned BITMAP_SIGNATURE = 0x4d42;
 
+	static const unsigned BITMAP_FILE_HEADER_SIZE = 14; // bmp_file_header_s
+	static const unsigned BITMAP_INFO_HEADER_MIN_SIZE = 40; // bmp_info_header_s
+
 	enum bmp_compression_s {
 		BI_RGB = 0x00,
 		BI_RLE8 = 0x01,
@@ -76,6 +79,7 @@ protected:
 	static Error convert_to_image(Ref<Image> p_image,
 			const uint8_t *p_buffer,
 			const uint8_t *p_color_buffer,
+			const uint32_t color_table_size,
 			const bmp_header_s &p_header);
 
 public:
