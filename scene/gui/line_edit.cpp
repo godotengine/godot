@@ -920,6 +920,10 @@ void LineEdit::undo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	set_cursor_position(op.cursor_pos);
+
+	if (expand_to_text_length)
+		minimum_size_changed();
+
 	_emit_text_change();
 }
 
@@ -934,6 +938,10 @@ void LineEdit::redo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	set_cursor_position(op.cursor_pos);
+
+	if (expand_to_text_length)
+		minimum_size_changed();
+
 	_emit_text_change();
 }
 
