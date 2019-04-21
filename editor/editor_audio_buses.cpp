@@ -756,7 +756,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	add_child(vb);
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
-	set_custom_minimum_size(Size2(100, 0) * EDSCALE);
+	set_custom_minimum_size(Size2(110, 0) * EDSCALE);
 
 	track_name = memnew(LineEdit);
 	track_name->connect("text_entered", this, "_name_changed");
@@ -1394,7 +1394,7 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 }
 
 void EditorAudioMeterNotches::_draw_audio_notches() {
-	Ref<Font> font = get_font("source", "EditorFonts");
+	Ref<Font> font = get_font("font", "Label");
 	float font_height = font->get_height();
 
 	for (uint8_t i = 0; i < notches.size(); i++) {
