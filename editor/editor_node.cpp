@@ -2523,6 +2523,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 void EditorNode::_exit_editor() {
 	exiting = true;
 	resource_preview->stop(); //stop early to avoid crashes
+	_save_docks();
 	get_tree()->quit();
 }
 
