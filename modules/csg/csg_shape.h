@@ -38,8 +38,8 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "thirdparty/misc/mikktspace.h"
 
-class CSGShape : public VisualInstance {
-	GDCLASS(CSGShape, VisualInstance);
+class CSGShape : public GeometryInstance {
+	GDCLASS(CSGShape, GeometryInstance);
 
 public:
 	enum Operation {
@@ -187,6 +187,7 @@ class CSGMesh : public CSGPrimitive {
 	virtual CSGBrush *_build_brush();
 
 	Ref<Mesh> mesh;
+	Ref<Material> material;
 
 	void _mesh_changed();
 
@@ -196,6 +197,9 @@ protected:
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh();
+
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 };
 
 class CSGSphere : public CSGPrimitive {
