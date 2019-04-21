@@ -351,6 +351,7 @@ private:
 	Button *key_rot_button;
 	Button *key_scale_button;
 	Button *key_insert_button;
+	Button *key_auto_insert_button;
 
 	PopupMenu *selection_menu;
 
@@ -421,6 +422,8 @@ private:
 	Rect2 _get_encompassing_rect(const Node *p_node);
 
 	Object *_get_editor_data(Object *p_what);
+
+	void _insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing);
 
 	void _keying_changed();
 

@@ -65,6 +65,7 @@
 #include "editor/import/resource_importer_obj.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/import/resource_importer_texture.h"
+#include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
 #include "editor/plugins/animation_blend_space_1d_editor.h"
 #include "editor/plugins/animation_blend_space_2d_editor.h"
@@ -1306,6 +1307,7 @@ void EditorNode::_dialog_action(String p_file) {
 				_save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
+				save_layout();
 
 				if (scene_idx != -1)
 					_discard_changes();
@@ -2521,6 +2523,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 void EditorNode::_exit_editor() {
 	exiting = true;
 	resource_preview->stop(); //stop early to avoid crashes
+	_save_docks();
 	get_tree()->quit();
 }
 
@@ -4069,6 +4072,7 @@ void EditorNode::_load_open_scenes_from_config(Ref<ConfigFile> p_layout, const S
 	for (int i = 0; i < scenes.size(); i++) {
 		load_scene(scenes[i]);
 	}
+	save_layout();
 
 	restoring_scenes = false;
 }
@@ -5118,6 +5122,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_image);
+
+		Ref<ResourceImporterTextureAtlas> import_texture_atlas;
+		import_texture_atlas.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_texture_atlas);
 
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instance();

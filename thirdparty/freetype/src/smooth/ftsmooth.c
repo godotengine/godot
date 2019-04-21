@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftsmooth.c                                                             */
-/*                                                                         */
-/*    Anti-aliasing renderer interface (body).                             */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftsmooth.c
+ *
+ *   Anti-aliasing renderer interface (body).
+ *
+ * Copyright (C) 2000-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -22,7 +22,6 @@
 #include FT_OUTLINE_H
 #include "ftsmooth.h"
 #include "ftgrays.h"
-#include "ftspic.h"
 
 #include "ftsmerrs.h"
 
@@ -31,6 +30,26 @@
   static FT_Error
   ft_smooth_init( FT_Renderer  render )
   {
+
+#ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
+
+    FT_Vector*  sub = render->root.library->lcd_geometry;
+
+
+    /* set up default subpixel geometry for striped RGB panels. */
+    sub[0].x = -21;
+    sub[0].y = 0;
+    sub[1].x = 0;
+    sub[1].y = 0;
+    sub[2].x = 21;
+    sub[2].y = 0;
+
+#elif 0   /* or else, once ClearType patents expire */
+
+    FT_Library_SetLcdFilter( render->root.library, FT_LCD_FILTER_DEFAULT );
+
+#endif
+
     render->clazz->raster_class->raster_reset( render->raster, NULL, 0 );
 
     return 0;
@@ -130,7 +149,11 @@
       slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
     }
 
-    ft_glyphslot_preset_bitmap( slot, mode, origin );
+    if ( ft_glyphslot_preset_bitmap( slot, mode, origin ) )
+    {
+      error = FT_THROW( Raster_Overflow );
+      goto Exit;
+    }
 
     /* allocate new one */
     if ( FT_ALLOC_MULT( bitmap->buffer, bitmap->rows, bitmap->pitch ) )
@@ -235,32 +258,39 @@
       unsigned int  width  = bitmap->width;
       int           pitch  = bitmap->pitch;
 
+      FT_Vector*  sub = slot->library->lcd_geometry;
 
-      /* Render 3 separate monochrome bitmaps, shifting the outline  */
-      /* by 1/3 pixel.                                               */
+
+      /* Render 3 separate monochrome bitmaps, shifting the outline.  */
       width /= 3;
 
-      bitmap->buffer += width;
-
+      FT_Outline_Translate( outline,
+                            -sub[0].x,
+                            -sub[0].y );
       error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
 
-      FT_Outline_Translate( outline, -21, 0 );
-      x_shift        -= 21;
       bitmap->buffer += width;
-
+      FT_Outline_Translate( outline,
+                            sub[0].x - sub[1].x,
+                            sub[0].y - sub[1].y );
       error = render->raster_render( render->raster, &params );
+      bitmap->buffer -= width;
       if ( error )
         goto Exit;
 
-      FT_Outline_Translate( outline,  42, 0 );
-      x_shift        += 42;
+      bitmap->buffer += 2 * width;
+      FT_Outline_Translate( outline,
+                            sub[1].x - sub[2].x,
+                            sub[1].y - sub[2].y );
+      error = render->raster_render( render->raster, &params );
       bitmap->buffer -= 2 * width;
-
-      error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
+
+      x_shift -= sub[2].x;
+      y_shift -= sub[2].y;
 
       /* XXX: Rearrange the bytes according to FT_PIXEL_MODE_LCD.    */
       /* XXX: It is more efficient to render every third byte above. */
@@ -286,33 +316,42 @@
     {
       int  pitch  = bitmap->pitch;
 
+      FT_Vector*  sub = slot->library->lcd_geometry;
 
-      /* Render 3 separate monochrome bitmaps, shifting the outline  */
-      /* by 1/3 pixel. Triple the pitch to render on each third row. */
+
+      /* Render 3 separate monochrome bitmaps, shifting the outline. */
+      /* Notice that the subpixel geometry vectors are rotated.      */
+      /* Triple the pitch to render on each third row.               */
       bitmap->pitch *= 3;
       bitmap->rows  /= 3;
 
-      bitmap->buffer += pitch;
-
+      FT_Outline_Translate( outline,
+                            -sub[0].y,
+                            sub[0].x );
       error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
 
-      FT_Outline_Translate( outline, 0,  21 );
-      y_shift        += 21;
       bitmap->buffer += pitch;
-
+      FT_Outline_Translate( outline,
+                            sub[0].y - sub[1].y,
+                            sub[1].x - sub[0].x );
       error = render->raster_render( render->raster, &params );
+      bitmap->buffer -= pitch;
       if ( error )
         goto Exit;
 
-      FT_Outline_Translate( outline, 0, -42 );
-      y_shift        -= 42;
+      bitmap->buffer += 2 * pitch;
+      FT_Outline_Translate( outline,
+                            sub[1].y - sub[2].y,
+                            sub[2].x - sub[1].x );
+      error = render->raster_render( render->raster, &params );
       bitmap->buffer -= 2 * pitch;
-
-      error = render->raster_render( render->raster, &params );
       if ( error )
         goto Exit;
+
+      x_shift -= sub[2].y;
+      y_shift += sub[2].x;
 
       bitmap->pitch /= 3;
       bitmap->rows  *= 3;
@@ -403,7 +442,7 @@
     (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,   /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,   /* set_mode        */
 
-    (FT_Raster_Funcs*)&FT_GRAYS_RASTER_GET           /* raster_class    */
+    (FT_Raster_Funcs*)&ft_grays_raster               /* raster_class    */
   )
 
 
@@ -430,7 +469,7 @@
     (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,    /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,    /* set_mode        */
 
-    (FT_Raster_Funcs*)&FT_GRAYS_RASTER_GET            /* raster_class    */
+    (FT_Raster_Funcs*)&ft_grays_raster                /* raster_class    */
   )
 
 
@@ -457,7 +496,7 @@
     (FT_Renderer_GetCBoxFunc)  ft_smooth_get_cbox,      /* get_glyph_cbox  */
     (FT_Renderer_SetModeFunc)  ft_smooth_set_mode,      /* set_mode        */
 
-    (FT_Raster_Funcs*)&FT_GRAYS_RASTER_GET              /* raster_class    */
+    (FT_Raster_Funcs*)&ft_grays_raster                  /* raster_class    */
   )
 
 

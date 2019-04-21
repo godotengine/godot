@@ -5189,6 +5189,17 @@ bool TextEdit::is_folded(int p_line) const {
 	return false;
 }
 
+Vector<int> TextEdit::get_folded_lines() const {
+	Vector<int> folded_lines;
+
+	for (int i = 0; i < text.size(); i++) {
+		if (is_folded(i)) {
+			folded_lines.push_back(i);
+		}
+	}
+	return folded_lines;
+}
+
 void TextEdit::fold_line(int p_line) {
 
 	ERR_FAIL_INDEX(p_line, text.size());

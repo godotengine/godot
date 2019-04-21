@@ -86,7 +86,7 @@ void _err_print_index_error(const char *p_function, const char *p_file, int p_li
 
 #define _FNL __FILE__ ":"
 
-/** An index has failed if m_index<0 or m_index >=m_size, the function exists */
+/** An index has failed if m_index<0 or m_index >=m_size, the function exits */
 
 extern bool _err_error_exists;
 
@@ -140,7 +140,7 @@ extern bool _err_error_exists;
 			_err_error_exists = false;                                                                              \
 	} while (0); // (*)
 
-/** An index has failed if m_index<0 or m_index >=m_size, the function exists.
+/** An index has failed if m_index<0 or m_index >=m_size, the function exits.
 * This function returns an error value, if returning Error, please select the most
 * appropriate error condition from error_macros.h
 */
@@ -154,7 +154,7 @@ extern bool _err_error_exists;
 			_err_error_exists = false;                                                                              \
 	} while (0); // (*)
 
-/** An index has failed if m_index >=m_size, the function exists.
+/** An index has failed if m_index >=m_size, the function exits.
 * This function returns an error value, if returning Error, please select the most
 * appropriate error condition from error_macros.h
 */

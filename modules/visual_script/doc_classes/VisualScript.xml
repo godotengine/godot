@@ -11,8 +11,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/visual_script/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_custom_signal">
 			<return type="void">

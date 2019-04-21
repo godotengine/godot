@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="edit_resource">
 			<return type="void">
@@ -46,6 +44,12 @@
 			</return>
 			<description>
 				Returns the editor [Viewport].
+			</description>
+		</method>
+		<method name="get_inspector" qualifiers="const">
+			<return type="EditorInspector">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">

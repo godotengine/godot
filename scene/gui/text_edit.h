@@ -490,6 +490,7 @@ public:
 
 	bool can_fold(int p_line) const;
 	bool is_folded(int p_line) const;
+	Vector<int> get_folded_lines() const;
 	void fold_line(int p_line);
 	void unfold_line(int p_line);
 	void toggle_fold_line(int p_line);

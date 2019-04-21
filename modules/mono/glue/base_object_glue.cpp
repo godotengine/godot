@@ -218,11 +218,16 @@ MonoBoolean godot_icall_DynamicGodotObject_SetMember(Object *p_ptr, MonoString *
 	return valid;
 }
 
+MonoString *godot_icall_Object_ToString(Object *p_ptr) {
+	return GDMonoMarshal::mono_string_from_godot(Variant(p_ptr).operator String());
+}
+
 void godot_register_object_icalls() {
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Ctor", (void *)godot_icall_Object_Ctor);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_Disposed", (void *)godot_icall_Object_Disposed);
 	mono_add_internal_call("Godot.Object::godot_icall_Reference_Disposed", (void *)godot_icall_Reference_Disposed);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_ClassDB_get_method", (void *)godot_icall_Object_ClassDB_get_method);
+	mono_add_internal_call("Godot.Object::godot_icall_Object_ToString", (void *)godot_icall_Object_ToString);
 	mono_add_internal_call("Godot.Object::godot_icall_Object_weakref", (void *)godot_icall_Object_weakref);
 	mono_add_internal_call("Godot.SignalAwaiter::godot_icall_SignalAwaiter_connect", (void *)godot_icall_SignalAwaiter_connect);
 	mono_add_internal_call("Godot.DynamicGodotObject::godot_icall_DynamicGodotObject_SetMemberList", (void *)godot_icall_DynamicGodotObject_SetMemberList);

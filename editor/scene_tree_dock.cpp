@@ -986,6 +986,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			SpatialEditorPlugin *spatial_editor_plugin = Object::cast_to<SpatialEditorPlugin>(editor_data->get_editor("3D"));
 			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
 
 			button_add->set_icon(get_icon("Add", "EditorIcons"));
 			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
@@ -1741,7 +1742,7 @@ void SceneTreeDock::_update_script_button() {
 			button_clear_script->show();
 		}
 	} else {
-		button_create_script->show();
+		button_create_script->hide();
 		Array selection = editor_selection->get_selected_nodes();
 		for (int i = 0; i < selection.size(); i++) {
 			Node *n = Object::cast_to<Node>(selection[i]);
@@ -2208,17 +2209,20 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 	if (profile_allow_script_editing) {
 
-		if (!existing_script.is_valid()) {
-			menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+		if (selection.size() == 1) {
+			if (!existing_script.is_valid()) {
+				menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+			} else {
+				menu->add_icon_shortcut(get_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_ATTACH_SCRIPT);
+			}
 		}
 		if (selection.size() > 1 || existing_script.is_valid()) {
 			menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
-			menu->add_icon_shortcut(get_icon("ScriptExtend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_ATTACH_SCRIPT);
 		}
+		menu->add_separator();
 	}
 
 	if (profile_allow_editing) {
-		menu->add_separator();
 		if (selection.size() == 1) {
 			menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
 		}
@@ -2230,12 +2234,12 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			menu->add_icon_shortcut(get_icon("MoveDown", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
 			menu->add_icon_shortcut(get_icon("Duplicate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
 			menu->add_icon_shortcut(get_icon("Reparent", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
+			menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
 		}
 	}
 	if (selection.size() == 1) {
 
 		if (profile_allow_editing) {
-			menu->add_icon_shortcut(get_icon("NewRoot", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/make_root"), TOOL_MAKE_ROOT);
 			menu->add_separator();
 			menu->add_icon_shortcut(get_icon("Blend", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
 			menu->add_icon_shortcut(get_icon("CreateNewSceneFrom", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
@@ -2277,7 +2281,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("Rename", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 	}
 	menu->add_separator();
-	menu->add_icon_item(get_icon("Help", "EditorIcons"), TTR("Open documentation"), TOOL_OPEN_DOCUMENTATION);
+	menu->add_icon_item(get_icon("Help", "EditorIcons"), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
 
 	if (profile_allow_editing) {
 		menu->add_separator();
@@ -2508,7 +2512,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
 	filter_hbc->add_constant_override("separate", 0);
-	ToolButton *tb;
 
 	ED_SHORTCUT("scene_tree/rename", TTR("Rename"));
 	ED_SHORTCUT("scene_tree/batch_rename", TTR("Batch Rename"), KEY_MASK_CMD | KEY_F2);
@@ -2529,19 +2532,17 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 
-	tb = memnew(ToolButton);
-	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
-	tb->set_tooltip(TTR("Add/Create a New Node"));
-	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/add_child_node"));
-	filter_hbc->add_child(tb);
-	button_add = tb;
+	button_add = memnew(ToolButton);
+	button_add->connect("pressed", this, "_tool_selected", make_binds(TOOL_NEW, false));
+	button_add->set_tooltip(TTR("Add/Create a New Node"));
+	button_add->set_shortcut(ED_GET_SHORTCUT("scene_tree/add_child_node"));
+	filter_hbc->add_child(button_add);
 
-	tb = memnew(ToolButton);
-	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_INSTANCE, false));
-	tb->set_tooltip(TTR("Instance a scene file as a Node. Creates an inherited scene if no root node exists."));
-	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/instance_scene"));
-	filter_hbc->add_child(tb);
-	button_instance = tb;
+	button_instance = memnew(ToolButton);
+	button_instance->connect("pressed", this, "_tool_selected", make_binds(TOOL_INSTANCE, false));
+	button_instance->set_tooltip(TTR("Instance a scene file as a Node. Creates an inherited scene if no root node exists."));
+	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instance_scene"));
+	filter_hbc->add_child(button_instance);
 
 	vbc->add_child(filter_hbc);
 	filter = memnew(LineEdit);
@@ -2551,21 +2552,19 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter->add_constant_override("minimum_spaces", 0);
 	filter->connect("text_changed", this, "_filter_changed");
 
-	tb = memnew(ToolButton);
-	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_ATTACH_SCRIPT, false));
-	tb->set_tooltip(TTR("Attach a new or existing script for the selected node."));
-	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
-	filter_hbc->add_child(tb);
-	tb->hide();
-	button_create_script = tb;
+	button_create_script = memnew(ToolButton);
+	button_create_script->connect("pressed", this, "_tool_selected", make_binds(TOOL_ATTACH_SCRIPT, false));
+	button_create_script->set_tooltip(TTR("Attach a new or existing script for the selected node."));
+	button_create_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
+	filter_hbc->add_child(button_create_script);
+	button_create_script->hide();
 
-	tb = memnew(ToolButton);
-	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_CLEAR_SCRIPT, false));
-	tb->set_tooltip(TTR("Clear a script for the selected node."));
-	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/clear_script"));
-	filter_hbc->add_child(tb);
-	button_clear_script = tb;
-	tb->hide();
+	button_clear_script = memnew(ToolButton);
+	button_clear_script->connect("pressed", this, "_tool_selected", make_binds(TOOL_CLEAR_SCRIPT, false));
+	button_clear_script->set_tooltip(TTR("Clear a script for the selected node."));
+	button_clear_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/clear_script"));
+	filter_hbc->add_child(button_clear_script);
+	button_clear_script->hide();
 
 	button_hb = memnew(HBoxContainer);
 	vbc->add_child(button_hb);

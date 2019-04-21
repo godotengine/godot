@@ -1,5 +1,9 @@
 // This code is in the public domain -- castanyo@yahoo.es
-#include "xatlas.h"
+#include <algorithm>
+#include <cmath>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 #include <assert.h>
 #include <float.h>
 #include <math.h>
@@ -8,29 +12,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <algorithm>
-#include <cmath>
-#include <memory>
-#include <unordered_map>
-#include <vector>
+#include "xatlas.h"
 
 #undef min
 #undef max
 
 #ifndef xaAssert
-#define xaAssert(exp)                                    \
-	if (!(exp)) {                                        \
-		xaPrint("%s %s %s\n", #exp, __FILE__, __LINE__); \
-	}
+#define xaAssert(exp) if (!(exp)) { xaPrint("%s %s %s\n", #exp, __FILE__, __LINE__); }
 #endif
 #ifndef xaDebugAssert
 #define xaDebugAssert(exp) assert(exp)
 #endif
 #ifndef xaPrint
-#define xaPrint(...)                            \
-	if (xatlas::internal::s_print) {            \
-		xatlas::internal::s_print(__VA_ARGS__); \
-	}
+#define xaPrint(...) if (xatlas::internal::s_print) { xatlas::internal::s_print(__VA_ARGS__); }
 #endif
 
 #ifdef _MSC_VER
@@ -43,87 +37,101 @@
 #define NV_FORCEINLINE __forceinline
 #else
 #define restrict __restrict__
-#define NV_FORCEINLINE __attribute__((always_inline)) inline
+#define NV_FORCEINLINE  __attribute__((always_inline)) inline
 #endif
 
-#define NV_UINT32_MAX 0xffffffff
-#define NV_FLOAT_MAX 3.402823466e+38F
+#define NV_UINT32_MAX   0xffffffff
+#define NV_FLOAT_MAX    3.402823466e+38F
 
 #ifndef PI
-#define PI float(3.1415926535897932384626433833)
+#define PI                  float(3.1415926535897932384626433833)
 #endif
 
-#define NV_EPSILON (0.0001f)
-#define NV_NORMAL_EPSILON (0.001f)
+#define NV_EPSILON          (0.0001f)
+#define NV_NORMAL_EPSILON   (0.001f)
 
 namespace xatlas {
 namespace internal {
 
 static PrintFunc s_print = NULL;
 
-static int align(int x, int a) {
+static int align(int x, int a)
+{
 	return (x + a - 1) & ~(a - 1);
 }
 
-static bool isAligned(int x, int a) {
+static bool isAligned(int x, int a)
+{
 	return (x & (a - 1)) == 0;
 }
 
 /// Return the maximum of the three arguments.
 template <typename T>
-static T max3(const T &a, const T &b, const T &c) {
+static T max3(const T &a, const T &b, const T &c)
+{
 	return std::max(a, std::max(b, c));
 }
 
 /// Return the maximum of the three arguments.
 template <typename T>
-static T min3(const T &a, const T &b, const T &c) {
+static T min3(const T &a, const T &b, const T &c)
+{
 	return std::min(a, std::min(b, c));
 }
 
 /// Clamp between two values.
 template <typename T>
-static T clamp(const T &x, const T &a, const T &b) {
+static T clamp(const T &x, const T &a, const T &b)
+{
 	return std::min(std::max(x, a), b);
 }
 
-static float saturate(float f) {
+static float saturate(float f)
+{
 	return clamp(f, 0.0f, 1.0f);
 }
 
 // Robust floating point comparisons:
 // http://realtimecollisiondetection.net/blog/?p=89
-static bool equal(const float f0, const float f1, const float epsilon = NV_EPSILON) {
+static bool equal(const float f0, const float f1, const float epsilon = NV_EPSILON)
+{
 	//return fabs(f0-f1) <= epsilon;
 	return fabs(f0 - f1) <= epsilon * max3(1.0f, fabsf(f0), fabsf(f1));
 }
 
-NV_FORCEINLINE static int ftoi_floor(float val) {
+NV_FORCEINLINE static int ftoi_floor(float val)
+{
 	return (int)val;
 }
 
-NV_FORCEINLINE static int ftoi_ceil(float val) {
+NV_FORCEINLINE static int ftoi_ceil(float val)
+{
 	return (int)ceilf(val);
 }
 
-NV_FORCEINLINE static int ftoi_round(float f) {
+NV_FORCEINLINE static int ftoi_round(float f)
+{
 	return int(floorf(f + 0.5f));
 }
 
-static bool isZero(const float f, const float epsilon = NV_EPSILON) {
+static bool isZero(const float f, const float epsilon = NV_EPSILON)
+{
 	return fabs(f) <= epsilon;
 }
 
-static float lerp(float f0, float f1, float t) {
+static float lerp(float f0, float f1, float t)
+{
 	const float s = 1.0f - t;
 	return f0 * s + f1 * t;
 }
 
-static float square(float f) {
+static float square(float f)
+{
 	return f * f;
 }
 
-static int square(int i) {
+static int square(int i)
+{
 	return i * i;
 }
 
@@ -133,8 +141,9 @@ static int square(int i) {
 * @note isPowerOfTwo(x) == true -> nextPowerOfTwo(x) == x
 * @note nextPowerOfTwo(x) = 2 << log2(x-1)
 */
-static uint32_t nextPowerOfTwo(uint32_t x) {
-	xaDebugAssert(x != 0);
+static uint32_t nextPowerOfTwo(uint32_t x)
+{
+	xaDebugAssert( x != 0 );
 	// On modern CPUs this is supposed to be as fast as using the bsr instruction.
 	x--;
 	x |= x >> 1;
@@ -145,7 +154,8 @@ static uint32_t nextPowerOfTwo(uint32_t x) {
 	return x + 1;
 }
 
-static uint64_t nextPowerOfTwo(uint64_t x) {
+static uint64_t nextPowerOfTwo(uint64_t x)
+{
 	xaDebugAssert(x != 0);
 	uint32_t p = 1;
 	while (x > p) {
@@ -154,17 +164,19 @@ static uint64_t nextPowerOfTwo(uint64_t x) {
 	return p;
 }
 
-static uint32_t sdbmHash(const void *data_in, uint32_t size, uint32_t h = 5381) {
-	const uint8_t *data = (const uint8_t *)data_in;
+static uint32_t sdbmHash(const void *data_in, uint32_t size, uint32_t h = 5381)
+{
+	const uint8_t *data = (const uint8_t *) data_in;
 	uint32_t i = 0;
 	while (i < size) {
-		h = (h << 16) + (h << 6) - h + (uint32_t)data[i++];
+		h = (h << 16) + (h << 6) - h + (uint32_t ) data[i++];
 	}
 	return h;
 }
 
 // Note that this hash does not handle NaN properly.
-static uint32_t sdbmFloatHash(const float *f, uint32_t count, uint32_t h = 5381) {
+static uint32_t sdbmFloatHash(const float *f, uint32_t count, uint32_t h = 5381)
+{
 	for (uint32_t i = 0; i < count; i++) {
 		union {
 			float f;
@@ -177,85 +189,93 @@ static uint32_t sdbmFloatHash(const float *f, uint32_t count, uint32_t h = 5381)
 }
 
 template <typename T>
-static uint32_t hash(const T &t, uint32_t h = 5381) {
+static uint32_t hash(const T &t, uint32_t h = 5381)
+{
 	return sdbmHash(&t, sizeof(T), h);
 }
 
-static uint32_t hash(const float &f, uint32_t h) {
+static uint32_t hash(const float &f, uint32_t h)
+{
 	return sdbmFloatHash(&f, 1, h);
 }
 
 // Functors for hash table:
-template <typename Key>
-struct Hash {
+template <typename Key> struct Hash
+{
 	uint32_t operator()(const Key &k) const { return hash(k); }
 };
 
-template <typename Key>
-struct Equal {
+template <typename Key> struct Equal
+{
 	bool operator()(const Key &k0, const Key &k1) const { return k0 == k1; }
 };
 
-class Vector2 {
+class Vector2
+{
 public:
 	typedef Vector2 const &Arg;
 
 	Vector2() {}
-	explicit Vector2(float f) :
-			x(f),
-			y(f) {}
-	Vector2(float x, float y) :
-			x(x),
-			y(y) {}
-	Vector2(Vector2::Arg v) :
-			x(v.x),
-			y(v.y) {}
+	explicit Vector2(float f) : x(f), y(f) {}
+	Vector2(float x, float y): x(x), y(y) {}
+	Vector2(Vector2::Arg v) : x(v.x), y(v.y) {}
 
-	const Vector2 &operator=(Vector2::Arg v) {
+	const Vector2 &operator=(Vector2::Arg v)
+	{
 		x = v.x;
 		y = v.y;
-		return *this;
+		return
+			*this;
 	}
 	const float *ptr() const { return &x; }
 
-	void set(float _x, float _y) {
+	void set(float _x, float _y)
+	{
 		x = _x;
 		y = _y;
 	}
 
-	Vector2 operator-() const {
+	Vector2 operator-() const
+	{
 		return Vector2(-x, -y);
 	}
 
-	void operator+=(Vector2::Arg v) {
+	void operator+=(Vector2::Arg v)
+	{
 		x += v.x;
 		y += v.y;
 	}
 
-	void operator-=(Vector2::Arg v) {
+	void operator-=(Vector2::Arg v)
+	{
 		x -= v.x;
 		y -= v.y;
 	}
 
-	void operator*=(float s) {
+	void operator*=(float s)
+	{
 		x *= s;
 		y *= s;
 	}
 
-	void operator*=(Vector2::Arg v) {
+	void operator*=(Vector2::Arg v)
+	{
 		x *= v.x;
 		y *= v.y;
 	}
 
-	friend bool operator==(Vector2::Arg a, Vector2::Arg b) {
+	friend bool operator==(Vector2::Arg a, Vector2::Arg b)
+	{
 		return a.x == b.x && a.y == b.y;
 	}
 
-	friend bool operator!=(Vector2::Arg a, Vector2::Arg b) {
+	friend bool operator!=(Vector2::Arg a, Vector2::Arg b)
+	{
 		return a.x != b.x || a.y != b.y;
 	}
 
-	union {
+	union
+	{
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4201)
@@ -272,52 +292,64 @@ public:
 	};
 };
 
-Vector2 operator+(Vector2::Arg a, Vector2::Arg b) {
+Vector2 operator+(Vector2::Arg a, Vector2::Arg b)
+{
 	return Vector2(a.x + b.x, a.y + b.y);
 }
 
-Vector2 operator-(Vector2::Arg a, Vector2::Arg b) {
+Vector2 operator-(Vector2::Arg a, Vector2::Arg b)
+{
 	return Vector2(a.x - b.x, a.y - b.y);
 }
 
-Vector2 operator*(Vector2::Arg v, float s) {
+Vector2 operator*(Vector2::Arg v, float s)
+{
 	return Vector2(v.x * s, v.y * s);
 }
 
-Vector2 operator*(Vector2::Arg v1, Vector2::Arg v2) {
+Vector2 operator*(Vector2::Arg v1, Vector2::Arg v2)
+{
 	return Vector2(v1.x * v2.x, v1.y * v2.y);
 }
 
-Vector2 operator/(Vector2::Arg v, float s) {
+Vector2 operator/(Vector2::Arg v, float s)
+{
 	return Vector2(v.x / s, v.y / s);
 }
 
-Vector2 lerp(Vector2::Arg v1, Vector2::Arg v2, float t) {
+Vector2 lerp(Vector2::Arg v1, Vector2::Arg v2, float t)
+{
 	const float s = 1.0f - t;
 	return Vector2(v1.x * s + t * v2.x, v1.y * s + t * v2.y);
 }
 
-float dot(Vector2::Arg a, Vector2::Arg b) {
+float dot(Vector2::Arg a, Vector2::Arg b)
+{
 	return a.x * b.x + a.y * b.y;
 }
 
-float lengthSquared(Vector2::Arg v) {
+float lengthSquared(Vector2::Arg v)
+{
 	return v.x * v.x + v.y * v.y;
 }
 
-float length(Vector2::Arg v) {
+float length(Vector2::Arg v)
+{
 	return sqrtf(lengthSquared(v));
 }
 
-float distance(Vector2::Arg a, Vector2::Arg b) {
+float distance(Vector2::Arg a, Vector2::Arg b)
+{
 	return length(a - b);
 }
 
-bool isNormalized(Vector2::Arg v, float epsilon = NV_NORMAL_EPSILON) {
+bool isNormalized(Vector2::Arg v, float epsilon = NV_NORMAL_EPSILON)
+{
 	return equal(length(v), 1, epsilon);
 }
 
-Vector2 normalize(Vector2::Arg v, float epsilon = NV_EPSILON) {
+Vector2 normalize(Vector2::Arg v, float epsilon = NV_EPSILON)
+{
 	float l = length(v);
 	xaDebugAssert(!isZero(l, epsilon));
 #ifdef NDEBUG
@@ -328,7 +360,8 @@ Vector2 normalize(Vector2::Arg v, float epsilon = NV_EPSILON) {
 	return n;
 }
 
-Vector2 normalizeSafe(Vector2::Arg v, Vector2::Arg fallback, float epsilon = NV_EPSILON) {
+Vector2 normalizeSafe(Vector2::Arg v, Vector2::Arg fallback, float epsilon = NV_EPSILON)
+{
 	float l = length(v);
 	if (isZero(l, epsilon)) {
 		return fallback;
@@ -336,23 +369,28 @@ Vector2 normalizeSafe(Vector2::Arg v, Vector2::Arg fallback, float epsilon = NV_
 	return v * (1.0f / l);
 }
 
-bool equal(Vector2::Arg v1, Vector2::Arg v2, float epsilon = NV_EPSILON) {
+bool equal(Vector2::Arg v1, Vector2::Arg v2, float epsilon = NV_EPSILON)
+{
 	return equal(v1.x, v2.x, epsilon) && equal(v1.y, v2.y, epsilon);
 }
 
-Vector2 max(Vector2::Arg a, Vector2::Arg b) {
+Vector2 max(Vector2::Arg a, Vector2::Arg b)
+{
 	return Vector2(std::max(a.x, b.x), std::max(a.y, b.y));
 }
 
-bool isFinite(Vector2::Arg v) {
+bool isFinite(Vector2::Arg v)
+{
 	return std::isfinite(v.x) && std::isfinite(v.y);
 }
 
 // Note, this is the area scaled by 2!
-float triangleArea(Vector2::Arg v0, Vector2::Arg v1) {
+float triangleArea(Vector2::Arg v0, Vector2::Arg v1)
+{
 	return (v0.x * v1.y - v0.y * v1.x); // * 0.5f;
 }
-float triangleArea(Vector2::Arg a, Vector2::Arg b, Vector2::Arg c) {
+float triangleArea(Vector2::Arg a, Vector2::Arg b, Vector2::Arg c)
+{
 	// IC: While it may be appealing to use the following expression:
 	//return (c.x * a.y + a.x * b.y + b.x * c.y - b.x * a.y - c.x * b.y - a.x * c.y); // * 0.5f;
 	// That's actually a terrible idea. Small triangles far from the origin can end up producing fairly large floating point
@@ -364,105 +402,109 @@ float triangleArea(Vector2::Arg a, Vector2::Arg b, Vector2::Arg c) {
 	return triangleArea(a - c, b - c);
 }
 
-float triangleArea2(Vector2::Arg v1, Vector2::Arg v2, Vector2::Arg v3) {
+float triangleArea2(Vector2::Arg v1, Vector2::Arg v2, Vector2::Arg v3)
+{
 	return 0.5f * (v3.x * v1.y + v1.x * v2.y + v2.x * v3.y - v2.x * v1.y - v3.x * v2.y - v1.x * v3.y);
 }
 
-static uint32_t hash(const Vector2 &v, uint32_t h) {
+static uint32_t hash(const Vector2 &v, uint32_t h)
+{
 	return sdbmFloatHash(v.component, 2, h);
 }
 
-class Vector3 {
+class Vector3
+{
 public:
 	typedef Vector3 const &Arg;
 
 	Vector3() {}
-	explicit Vector3(float f) :
-			x(f),
-			y(f),
-			z(f) {}
-	Vector3(float x, float y, float z) :
-			x(x),
-			y(y),
-			z(z) {}
-	Vector3(Vector2::Arg v, float z) :
-			x(v.x),
-			y(v.y),
-			z(z) {}
-	Vector3(Vector3::Arg v) :
-			x(v.x),
-			y(v.y),
-			z(v.z) {}
+	explicit Vector3(float f) : x(f), y(f), z(f) {}
+	Vector3(float x, float y, float z) : x(x), y(y), z(z) {}
+	Vector3(Vector2::Arg v, float z) : x(v.x), y(v.y), z(z) {}
+	Vector3(Vector3::Arg v) : x(v.x), y(v.y), z(v.z) {}
 
-	const Vector3 &operator=(Vector3::Arg v) {
+	const Vector3 &operator=(Vector3::Arg v)
+	{
 		x = v.x;
 		y = v.y;
 		z = v.z;
 		return *this;
 	}
 
-	Vector2 xy() const {
+	Vector2 xy() const
+	{
 		return Vector2(x, y);
 	}
 
 	const float *ptr() const { return &x; }
 
-	void set(float _x, float _y, float _z) {
+	void set(float _x, float _y, float _z)
+	{
 		x = _x;
 		y = _y;
 		z = _z;
 	}
 
-	Vector3 operator-() const {
+	Vector3 operator-() const
+	{
 		return Vector3(-x, -y, -z);
 	}
 
-	void operator+=(Vector3::Arg v) {
+	void operator+=(Vector3::Arg v)
+	{
 		x += v.x;
 		y += v.y;
 		z += v.z;
 	}
 
-	void operator-=(Vector3::Arg v) {
+	void operator-=(Vector3::Arg v)
+	{
 		x -= v.x;
 		y -= v.y;
 		z -= v.z;
 	}
 
-	void operator*=(float s) {
+	void operator*=(float s)
+	{
 		x *= s;
 		y *= s;
 		z *= s;
 	}
 
-	void operator/=(float s) {
+	void operator/=(float s)
+	{
 		float is = 1.0f / s;
 		x *= is;
 		y *= is;
 		z *= is;
 	}
 
-	void operator*=(Vector3::Arg v) {
+	void operator*=(Vector3::Arg v)
+	{
 		x *= v.x;
 		y *= v.y;
 		z *= v.z;
 	}
 
-	void operator/=(Vector3::Arg v) {
+	void operator/=(Vector3::Arg v)
+	{
 		x /= v.x;
 		y /= v.y;
 		z /= v.z;
 	}
 
-	friend bool operator==(Vector3::Arg a, Vector3::Arg b) {
+	friend bool operator==(Vector3::Arg a, Vector3::Arg b)
+	{
 		return a.x == b.x && a.y == b.y && a.z == b.z;
 	}
 
-	friend bool operator!=(Vector3::Arg a, Vector3::Arg b) {
+	friend bool operator!=(Vector3::Arg a, Vector3::Arg b)
+	{
 		return a.x != b.x || a.y != b.y || a.z != b.z;
 	}
 
-	union {
+	union
+	{
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4201)
@@ -479,85 +521,106 @@ public:
 	};
 };
 
-Vector3 add(Vector3::Arg a, Vector3::Arg b) {
+Vector3 add(Vector3::Arg a, Vector3::Arg b)
+{
 	return Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
-Vector3 add(Vector3::Arg a, float b) {
+Vector3 add(Vector3::Arg a, float b)
+{
 	return Vector3(a.x + b, a.y + b, a.z + b);
 }
-Vector3 operator+(Vector3::Arg a, Vector3::Arg b) {
+Vector3 operator+(Vector3::Arg a, Vector3::Arg b)
+{
 	return add(a, b);
 }
-Vector3 operator+(Vector3::Arg a, float b) {
+Vector3 operator+(Vector3::Arg a, float b)
+{
 	return add(a, b);
 }
 
-Vector3 sub(Vector3::Arg a, Vector3::Arg b) {
+Vector3 sub(Vector3::Arg a, Vector3::Arg b)
+{
 	return Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
-Vector3 sub(Vector3::Arg a, float b) {
+Vector3 sub(Vector3::Arg a, float b)
+{
 	return Vector3(a.x - b, a.y - b, a.z - b);
 }
 
-Vector3 operator-(Vector3::Arg a, Vector3::Arg b) {
+Vector3 operator-(Vector3::Arg a, Vector3::Arg b)
+{
 	return sub(a, b);
 }
 
-Vector3 operator-(Vector3::Arg a, float b) {
+Vector3 operator-(Vector3::Arg a, float b)
+{
 	return sub(a, b);
 }
 
-Vector3 cross(Vector3::Arg a, Vector3::Arg b) {
+Vector3 cross(Vector3::Arg a, Vector3::Arg b)
+{
 	return Vector3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 }
 
-Vector3 operator*(Vector3::Arg v, float s) {
+Vector3 operator*(Vector3::Arg v, float s)
+{
 	return Vector3(v.x * s, v.y * s, v.z * s);
 }
 
-Vector3 operator*(float s, Vector3::Arg v) {
+Vector3 operator*(float s, Vector3::Arg v)
+{
 	return Vector3(v.x * s, v.y * s, v.z * s);
 }
 
-Vector3 operator*(Vector3::Arg v, Vector3::Arg s) {
+Vector3 operator*(Vector3::Arg v, Vector3::Arg s)
+{
 	return Vector3(v.x * s.x, v.y * s.y, v.z * s.z);
 }
 
-Vector3 operator/(Vector3::Arg v, float s) {
+Vector3 operator/(Vector3::Arg v, float s)
+{
 	return v * (1.0f / s);
 }
 
-Vector3 lerp(Vector3::Arg v1, Vector3::Arg v2, float t) {
+Vector3 lerp(Vector3::Arg v1, Vector3::Arg v2, float t)
+{
 	const float s = 1.0f - t;
 	return Vector3(v1.x * s + t * v2.x, v1.y * s + t * v2.y, v1.z * s + t * v2.z);
 }
 
-float dot(Vector3::Arg a, Vector3::Arg b) {
+float dot(Vector3::Arg a, Vector3::Arg b)
+{
 	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-float lengthSquared(Vector3::Arg v) {
+float lengthSquared(Vector3::Arg v)
+{
 	return v.x * v.x + v.y * v.y + v.z * v.z;
 }
 
-float length(Vector3::Arg v) {
+float length(Vector3::Arg v)
+{
 	return sqrtf(lengthSquared(v));
 }
 
-float distance(Vector3::Arg a, Vector3::Arg b) {
+float distance(Vector3::Arg a, Vector3::Arg b)
+{
 	return length(a - b);
 }
 
-float distanceSquared(Vector3::Arg a, Vector3::Arg b) {
+float distanceSquared(Vector3::Arg a, Vector3::Arg b)
+{
 	return lengthSquared(a - b);
 }
 
-bool isNormalized(Vector3::Arg v, float epsilon = NV_NORMAL_EPSILON) {
+bool isNormalized(Vector3::Arg v, float epsilon = NV_NORMAL_EPSILON)
+{
 	return equal(length(v), 1, epsilon);
 }
 
-Vector3 normalize(Vector3::Arg v, float epsilon = NV_EPSILON) {
+Vector3 normalize(Vector3::Arg v, float epsilon = NV_EPSILON)
+{
 	float l = length(v);
 	xaDebugAssert(!isZero(l, epsilon));
 #ifdef NDEBUG
@@ -568,7 +631,8 @@ Vector3 normalize(Vector3::Arg v, float epsilon = NV_EPSILON) {
 	return n;
 }
 
-Vector3 normalizeSafe(Vector3::Arg v, Vector3::Arg fallback, float epsilon = NV_EPSILON) {
+Vector3 normalizeSafe(Vector3::Arg v, Vector3::Arg fallback, float epsilon = NV_EPSILON)
+{
 	float l = length(v);
 	if (isZero(l, epsilon)) {
 		return fallback;
@@ -576,49 +640,56 @@ Vector3 normalizeSafe(Vector3::Arg v, Vector3::Arg fallback, float epsilon = NV_
 	return v * (1.0f / l);
 }
 
-bool equal(Vector3::Arg v1, Vector3::Arg v2, float epsilon = NV_EPSILON) {
+bool equal(Vector3::Arg v1, Vector3::Arg v2, float epsilon = NV_EPSILON)
+{
 	return equal(v1.x, v2.x, epsilon) && equal(v1.y, v2.y, epsilon) && equal(v1.z, v2.z, epsilon);
 }
 
-Vector3 min(Vector3::Arg a, Vector3::Arg b) {
+Vector3 min(Vector3::Arg a, Vector3::Arg b)
+{
 	return Vector3(std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z));
 }
 
-Vector3 max(Vector3::Arg a, Vector3::Arg b) {
+Vector3 max(Vector3::Arg a, Vector3::Arg b)
+{
 	return Vector3(std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z));
 }
 
-Vector3 clamp(Vector3::Arg v, float min, float max) {
+Vector3 clamp(Vector3::Arg v, float min, float max)
+{
 	return Vector3(clamp(v.x, min, max), clamp(v.y, min, max), clamp(v.z, min, max));
 }
 
-Vector3 saturate(Vector3::Arg v) {
+Vector3 saturate(Vector3::Arg v)
+{
 	return Vector3(saturate(v.x), saturate(v.y), saturate(v.z));
 }
 
-Vector3 floor(Vector3::Arg v) {
+Vector3 floor(Vector3::Arg v)
+{
 	return Vector3(floorf(v.x), floorf(v.y), floorf(v.z));
 }
 
-bool isFinite(Vector3::Arg v) {
+bool isFinite(Vector3::Arg v)
+{
 	return std::isfinite(v.x) && std::isfinite(v.y) && std::isfinite(v.z);
 }
 
-static uint32_t hash(const Vector3 &v, uint32_t h) {
+static uint32_t hash(const Vector3 &v, uint32_t h)
+{
 	return sdbmFloatHash(v.component, 3, h);
 }
 
 /// Basis class to compute tangent space basis, ortogonalizations and to
 /// transform vectors from one space to another.
-class Basis {
+class Basis
+{
 public:
 	/// Create a null basis.
-	Basis() :
-			tangent(0, 0, 0),
-			bitangent(0, 0, 0),
-			normal(0, 0, 0) {}
+	Basis() : tangent(0, 0, 0), bitangent(0, 0, 0), normal(0, 0, 0) {}
 
-	void buildFrameForDirection(Vector3::Arg d, float angle = 0) {
+	void buildFrameForDirection(Vector3::Arg d, float angle = 0)
+	{
 		xaAssert(isNormalized(d));
 		normal = d;
 		// Choose minimum axis.
@@ -649,65 +720,76 @@ public:
 };
 
 // Simple bit array.
-class BitArray {
+class BitArray
+{
 public:
-	BitArray() :
-			m_size(0) {}
-	BitArray(uint32_t sz) {
+	BitArray() : m_size(0) {}
+	BitArray(uint32_t sz)
+	{
 		resize(sz);
 	}
 
-	uint32_t size() const {
+	uint32_t size() const
+	{
 		return m_size;
 	}
 
-	void clear() {
+	void clear()
+	{
 		resize(0);
 	}
 
-	void resize(uint32_t new_size) {
+	void resize(uint32_t new_size)
+	{
 		m_size = new_size;
-		m_wordArray.resize((m_size + 31) >> 5);
+		m_wordArray.resize( (m_size + 31) >> 5 );
 	}
 
 	/// Get bit.
-	bool bitAt(uint32_t b) const {
-		xaDebugAssert(b < m_size);
+	bool bitAt(uint32_t b) const
+	{
+		xaDebugAssert( b < m_size );
 		return (m_wordArray[b >> 5] & (1 << (b & 31))) != 0;
 	}
 
 	// Set a bit.
-	void setBitAt(uint32_t idx) {
+	void setBitAt(uint32_t idx)
+	{
 		xaDebugAssert(idx < m_size);
-		m_wordArray[idx >> 5] |= (1 << (idx & 31));
+		m_wordArray[idx >> 5] |=  (1 << (idx & 31));
 	}
 
 	// Toggle a bit.
-	void toggleBitAt(uint32_t idx) {
+	void toggleBitAt(uint32_t idx)
+	{
 		xaDebugAssert(idx < m_size);
 		m_wordArray[idx >> 5] ^= (1 << (idx & 31));
 	}
 
 	// Set a bit to the given value. @@ Rename modifyBitAt?
-	void setBitAt(uint32_t idx, bool b) {
+	void setBitAt(uint32_t idx, bool b)
+	{
 		xaDebugAssert(idx < m_size);
 		m_wordArray[idx >> 5] = setBits(m_wordArray[idx >> 5], 1 << (idx & 31), b);
 		xaDebugAssert(bitAt(idx) == b);
 	}
 
 	// Clear all the bits.
-	void clearAll() {
-		memset(m_wordArray.data(), 0, m_wordArray.size() * sizeof(uint32_t));
+	void clearAll()
+	{
+		memset(m_wordArray.data(), 0, m_wordArray.size() * sizeof(uint32_t ));
 	}
 
 	// Set all the bits.
-	void setAll() {
-		memset(m_wordArray.data(), 0xFF, m_wordArray.size() * sizeof(uint32_t));
+	void setAll()
+	{
+		memset(m_wordArray.data(), 0xFF, m_wordArray.size() * sizeof(uint32_t ));
 	}
 
 private:
 	// See "Conditionally set or clear bits without branching" at http://graphics.stanford.edu/~seander/bithacks.html
-	uint32_t setBits(uint32_t w, uint32_t m, bool b) {
+	uint32_t setBits(uint32_t w, uint32_t m, bool b)
+	{
 		return (w & ~m) | (-int(b) & m);
 	}
 
@@ -719,29 +801,26 @@ private:
 };
 
 /// Bit map. This should probably be called BitImage.
-class BitMap {
+class BitMap
+{
 public:
-	BitMap() :
-			m_width(0),
-			m_height(0) {}
-	BitMap(uint32_t w, uint32_t h) :
-			m_width(w),
-			m_height(h),
-			m_bitArray(w * h) {}
+	BitMap() : m_width(0), m_height(0) {}
+	BitMap(uint32_t w, uint32_t h) : m_width(w), m_height(h), m_bitArray(w * h) {}
 
-	uint32_t width() const {
+	uint32_t width() const
+	{
 		return m_width;
 	}
-	uint32_t height() const {
+	uint32_t height() const
+	{
 		return m_height;
 	}
 
-	void resize(uint32_t w, uint32_t h, bool initValue) {
+	void resize(uint32_t w, uint32_t h, bool initValue)
+	{
 		BitArray tmp(w * h);
-		if (initValue)
-			tmp.setAll();
-		else
-			tmp.clearAll();
+		if (initValue) tmp.setAll();
+		else tmp.clearAll();
 		// @@ Copying one bit at a time. This could be much faster.
 		for (uint32_t y = 0; y < m_height; y++) {
 			for (uint32_t x = 0; x < m_width; x++) {
@@ -754,17 +833,20 @@ public:
 		m_height = h;
 	}
 
-	bool bitAt(uint32_t x, uint32_t y) const {
+	bool bitAt(uint32_t x, uint32_t y) const
+	{
 		xaDebugAssert(x < m_width && y < m_height);
 		return m_bitArray.bitAt(y * m_width + x);
 	}
 
-	void setBitAt(uint32_t x, uint32_t y) {
+	void setBitAt(uint32_t x, uint32_t y)
+	{
 		xaDebugAssert(x < m_width && y < m_height);
 		m_bitArray.setBitAt(y * m_width + x);
 	}
 
-	void clearAll() {
+	void clearAll()
+	{
 		m_bitArray.clearAll();
 	}
 
@@ -775,39 +857,41 @@ private:
 };
 
 // Axis Aligned Bounding Box.
-class Box {
+class Box
+{
 public:
 	Box() {}
-	Box(const Box &b) :
-			minCorner(b.minCorner),
-			maxCorner(b.maxCorner) {}
-	Box(const Vector3 &mins, const Vector3 &maxs) :
-			minCorner(mins),
-			maxCorner(maxs) {}
+	Box(const Box &b) : minCorner(b.minCorner), maxCorner(b.maxCorner) {}
+	Box(const Vector3 &mins, const Vector3 &maxs) : minCorner(mins), maxCorner(maxs) {}
 
-	operator const float *() const {
+	operator const float *() const
+	{
 		return reinterpret_cast<const float *>(this);
 	}
 
 	// Clear the bounds.
-	void clearBounds() {
+	void clearBounds()
+	{
 		minCorner.set(FLT_MAX, FLT_MAX, FLT_MAX);
 		maxCorner.set(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	}
 
 	// Return extents of the box.
-	Vector3 extents() const {
+	Vector3 extents() const
+	{
 		return (maxCorner - minCorner) * 0.5f;
 	}
 
 	// Add a point to this box.
-	void addPointToBounds(const Vector3 &p) {
+	void addPointToBounds(const Vector3 &p)
+	{
 		minCorner = min(minCorner, p);
 		maxCorner = max(maxCorner, p);
 	}
 
 	// Get the volume of the box.
-	float volume() const {
+	float volume() const
+	{
 		Vector3 d = extents();
 		return 8.0f * (d.x * d.y * d.z);
 	}
@@ -816,9 +900,11 @@ public:
 	Vector3 maxCorner;
 };
 
-class Fit {
+class Fit
+{
 public:
-	static Vector3 computeCentroid(int n, const Vector3 *__restrict points) {
+	static Vector3 computeCentroid(int n, const Vector3 *__restrict points)
+	{
 		Vector3 centroid(0.0f);
 		for (int i = 0; i < n; i++) {
 			centroid += points[i];
@@ -827,7 +913,8 @@ public:
 		return centroid;
 	}
 
-	static Vector3 computeCovariance(int n, const Vector3 *__restrict points, float *__restrict covariance) {
+	static Vector3 computeCovariance(int n, const Vector3 *__restrict points, float *__restrict covariance)
+	{
 		// compute the centroid
 		Vector3 centroid = computeCentroid(n, points);
 		// compute covariance matrix
@@ -846,7 +933,8 @@ public:
 		return centroid;
 	}
 
-	static bool isPlanar(int n, const Vector3 *points, float epsilon = NV_EPSILON) {
+	static bool isPlanar(int n, const Vector3 *points, float epsilon = NV_EPSILON)
+	{
 		// compute the centroid and covariance
 		float matrix[6];
 		computeCovariance(n, points, matrix);
@@ -861,7 +949,8 @@ public:
 	// Tridiagonal solver from Charles Bloom.
 	// Householder transforms followed by QL decomposition.
 	// Seems to be based on the code from Numerical Recipes in C.
-	static bool eigenSolveSymmetric3(const float matrix[6], float eigenValues[3], Vector3 eigenVectors[3]) {
+	static bool eigenSolveSymmetric3(const float matrix[6], float eigenValues[3], Vector3 eigenVectors[3])
+	{
 		xaDebugAssert(matrix != NULL && eigenValues != NULL && eigenVectors != NULL);
 		float subd[3];
 		float diag[3];
@@ -886,7 +975,7 @@ public:
 		// eigenvectors are the columns; make them the rows :
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				eigenVectors[j].component[i] = (float)work[i][j];
+				eigenVectors[j].component[i] = (float) work[i][j];
 			}
 		}
 		// shuffle to sort by singular value :
@@ -908,7 +997,8 @@ public:
 	}
 
 private:
-	static void EigenSolver3_Tridiagonal(float mat[3][3], float *diag, float *subd) {
+	static void EigenSolver3_Tridiagonal(float mat[3][3], float *diag, float *subd)
+	{
 		// Householder reduction T = Q^t M Q
 		//   Input:
 		//     mat, symmetric 3x3 matrix M
@@ -960,7 +1050,8 @@ private:
 		}
 	}
 
-	static bool EigenSolver3_QLAlgorithm(float mat[3][3], float *diag, float *subd) {
+	static bool EigenSolver3_QLAlgorithm(float mat[3][3], float *diag, float *subd)
+	{
 		// QL iteration with implicit shifting to reduce matrix from tridiagonal
 		// to diagonal
 		const int maxiter = 32;
@@ -970,21 +1061,21 @@ private:
 				int m;
 				for (m = ell; m <= 1; m++) {
 					float dd = fabsf(diag[m]) + fabsf(diag[m + 1]);
-					if (fabsf(subd[m]) + dd == dd)
+					if ( fabsf(subd[m]) + dd == dd )
 						break;
 				}
-				if (m == ell)
+				if ( m == ell )
 					break;
 				float g = (diag[ell + 1] - diag[ell]) / (2 * subd[ell]);
 				float r = sqrtf(g * g + 1);
-				if (g < 0)
+				if ( g < 0 )
 					g = diag[m] - diag[ell] + subd[ell] / (g - r);
 				else
 					g = diag[m] - diag[ell] + subd[ell] / (g + r);
 				float s = 1, c = 1, p = 0;
 				for (int i = m - 1; i >= ell; i--) {
 					float f = s * subd[i], b = c * subd[i];
-					if (fabsf(f) >= fabsf(g)) {
+					if ( fabsf(f) >= fabsf(g) ) {
 						c = g / f;
 						r = sqrtf(c * c + 1);
 						subd[i + 1] = f * r;
@@ -1010,7 +1101,7 @@ private:
 				subd[ell] = g;
 				subd[m] = 0;
 			}
-			if (iter == maxiter)
+			if ( iter == maxiter )
 				// should not get here under normal circumstances
 				return false;
 		}
@@ -1019,30 +1110,33 @@ private:
 };
 
 /// Fixed size vector class.
-class FullVector {
+class FullVector
+{
 public:
 	FullVector(uint32_t dim) { m_array.resize(dim); }
-	FullVector(const FullVector &v) :
-			m_array(v.m_array) {}
+	FullVector(const FullVector &v) : m_array(v.m_array) {}
 
-	const FullVector &operator=(const FullVector &v) {
+	const FullVector &operator=(const FullVector &v)
+	{
 		xaAssert(dimension() == v.dimension());
 		m_array = v.m_array;
 		return *this;
 	}
 
 	uint32_t dimension() const { return m_array.size(); }
-	const float &operator[](uint32_t index) const { return m_array[index]; }
-	float &operator[](uint32_t index) { return m_array[index]; }
+	const float &operator[]( uint32_t index ) const { return m_array[index]; }
+	float &operator[] ( uint32_t index ) { return m_array[index]; }
 
-	void fill(float f) {
+	void fill(float f)
+	{
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
 			m_array[i] = f;
 		}
 	}
 
-	void operator+=(const FullVector &v) {
+	void operator+=(const FullVector &v)
+	{
 		xaDebugAssert(dimension() == v.dimension());
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
@@ -1050,7 +1144,8 @@ public:
 		}
 	}
 
-	void operator-=(const FullVector &v) {
+	void operator-=(const FullVector &v)
+	{
 		xaDebugAssert(dimension() == v.dimension());
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
@@ -1058,7 +1153,8 @@ public:
 		}
 	}
 
-	void operator*=(const FullVector &v) {
+	void operator*=(const FullVector &v)
+	{
 		xaDebugAssert(dimension() == v.dimension());
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
@@ -1066,21 +1162,24 @@ public:
 		}
 	}
 
-	void operator+=(float f) {
+	void operator+=(float f)
+	{
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
 			m_array[i] += f;
 		}
 	}
 
-	void operator-=(float f) {
+	void operator-=(float f)
+	{
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
 			m_array[i] -= f;
 		}
 	}
 
-	void operator*=(float f) {
+	void operator*=(float f)
+	{
 		const uint32_t dim = dimension();
 		for (uint32_t i = 0; i < dim; i++) {
 			m_array[i] *= f;
@@ -1095,66 +1194,70 @@ namespace halfedge {
 class Face;
 class Vertex;
 
-class Edge {
+class Edge
+{
 public:
 	uint32_t id;
 	Edge *next;
-	Edge *prev; // This is not strictly half-edge, but makes algorithms easier and faster.
+	Edge *prev;	// This is not strictly half-edge, but makes algorithms easier and faster.
 	Edge *pair;
 	Vertex *vertex;
 	Face *face;
 
 	// Default constructor.
-	Edge(uint32_t id) :
-			id(id),
-			next(NULL),
-			prev(NULL),
-			pair(NULL),
-			vertex(NULL),
-			face(NULL) {}
+	Edge(uint32_t id) : id(id), next(NULL), prev(NULL), pair(NULL), vertex(NULL), face(NULL) {}
 
 	// Vertex queries.
-	const Vertex *from() const {
+	const Vertex *from() const
+	{
 		return vertex;
 	}
 
-	Vertex *from() {
+	Vertex *from()
+	{
 		return vertex;
 	}
 
-	const Vertex *to() const {
-		return pair->vertex; // This used to be 'next->vertex', but that changed often when the connectivity of the mesh changes.
+	const Vertex *to() const
+	{
+		return pair->vertex;    // This used to be 'next->vertex', but that changed often when the connectivity of the mesh changes.
 	}
 
-	Vertex *to() {
+	Vertex *to()
+	{
 		return pair->vertex;
 	}
 
 	// Edge queries.
-	void setNext(Edge *e) {
+	void setNext(Edge *e)
+	{
 		next = e;
 		if (e != NULL) e->prev = this;
 	}
-	void setPrev(Edge *e) {
+	void setPrev(Edge *e)
+	{
 		prev = e;
 		if (e != NULL) e->next = this;
 	}
 
 	// @@ It would be more simple to only check m_pair == NULL
 	// Face queries.
-	bool isBoundary() const {
+	bool isBoundary() const
+	{
 		return !(face && pair->face);
 	}
 
 	// @@ This is not exactly accurate, we should compare the texture coordinates...
-	bool isSeam() const {
+	bool isSeam() const
+	{
 		return vertex != pair->next->vertex || next->vertex != pair->vertex;
 	}
 
 	bool isNormalSeam() const;
 	bool isTextureSeam() const;
 
-	bool isValid() const {
+	bool isValid() const
+	{
 		// null face is OK.
 		if (next == NULL || prev == NULL || pair == NULL || vertex == NULL) return false;
 		if (next->prev != this) return false;
@@ -1169,10 +1272,13 @@ public:
 	float angle() const;
 };
 
-class Vertex {
+class Vertex
+{
 public:
 	uint32_t id;
+	// -- GODOT start --
 	uint32_t original_id;
+	// -- GODOT end --
 	Edge *edge;
 	Vertex *next;
 	Vertex *prev;
@@ -1180,36 +1286,38 @@ public:
 	Vector3 nor;
 	Vector2 tex;
 
-	Vertex(uint32_t id) :
-			id(id),
-			original_id(id),
-			edge(NULL),
-			pos(0.0f),
-			nor(0.0f),
-			tex(0.0f) {
+	// -- GODOT start --
+	//Vertex(uint32_t id) : id(id), edge(NULL), pos(0.0f), nor(0.0f), tex(0.0f)
+	Vertex(uint32_t id) : id(id), original_id(id), edge(NULL), pos(0.0f), nor(0.0f), tex(0.0f)
+	// -- GODOT end --
+	{
 		next = this;
 		prev = this;
 	}
 
 	// Set first edge of all colocals.
-	void setEdge(Edge *e) {
+	void setEdge(Edge *e)
+	{
 		for (VertexIterator it(colocals()); !it.isDone(); it.advance()) {
 			it.current()->edge = e;
 		}
 	}
 
 	// Update position of all colocals.
-	void setPos(const Vector3 &p) {
+	void setPos(const Vector3 &p)
+	{
 		for (VertexIterator it(colocals()); !it.isDone(); it.advance()) {
 			it.current()->pos = p;
 		}
 	}
 
-	bool isFirstColocal() const {
+	bool isFirstColocal() const
+	{
 		return firstColocal() == this;
 	}
 
-	const Vertex *firstColocal() const {
+	const Vertex *firstColocal() const
+	{
 		uint32_t firstId = id;
 		const Vertex *vertex = this;
 		for (ConstVertexIterator it(colocals()); !it.isDone(); it.advance()) {
@@ -1221,7 +1329,8 @@ public:
 		return vertex;
 	}
 
-	Vertex *firstColocal() {
+	Vertex *firstColocal()
+	{
 		Vertex *vertex = this;
 		uint32_t firstId = id;
 		for (VertexIterator it(colocals()); !it.isDone(); it.advance()) {
@@ -1233,7 +1342,8 @@ public:
 		return vertex;
 	}
 
-	bool isColocal(const Vertex *v) const {
+	bool isColocal(const Vertex *v) const
+	{
 		if (this == v) return true;
 		if (pos != v->pos) return false;
 		for (ConstVertexIterator it(colocals()); !it.isDone(); it.advance()) {
@@ -1244,13 +1354,15 @@ public:
 		return false;
 	}
 
-	void linkColocal(Vertex *v) {
+	void linkColocal(Vertex *v)
+	{
 		next->prev = v;
 		v->next = next;
 		next = v;
 		v->prev = this;
 	}
-	void unlinkColocal() {
+	void unlinkColocal()
+	{
 		next->prev = prev;
 		prev->next = next;
 		next = this;
@@ -1258,7 +1370,8 @@ public:
 	}
 
 	// @@ Note: This only works if linkBoundary has been called.
-	bool isBoundary() const {
+	bool isBoundary() const
+	{
 		return (edge && !edge->face);
 	}
 
@@ -1266,23 +1379,25 @@ public:
 	class EdgeIterator //: public Iterator<Edge *>
 	{
 	public:
-		EdgeIterator(Edge *e) :
-				m_end(NULL),
-				m_current(e) {}
+		EdgeIterator(Edge *e) : m_end(NULL), m_current(e) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			if (m_end == NULL) m_end = m_current;
 			m_current = m_current->pair->next;
 			//m_current = m_current->prev->pair;
 		}
 
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_end == m_current;
 		}
-		virtual Edge *current() const {
+		virtual Edge *current() const
+		{
 			return m_current;
 		}
-		Vertex *vertex() const {
+		Vertex *vertex() const
+		{
 			return m_current->vertex;
 		}
 
@@ -1291,10 +1406,12 @@ public:
 		Edge *m_current;
 	};
 
-	EdgeIterator edges() {
+	EdgeIterator edges()
+	{
 		return EdgeIterator(edge);
 	}
-	EdgeIterator edges(Edge *e) {
+	EdgeIterator edges(Edge *e)
+	{
 		return EdgeIterator(e);
 	}
 
@@ -1302,26 +1419,26 @@ public:
 	class ConstEdgeIterator //: public Iterator<Edge *>
 	{
 	public:
-		ConstEdgeIterator(const Edge *e) :
-				m_end(NULL),
-				m_current(e) {}
-		ConstEdgeIterator(EdgeIterator it) :
-				m_end(NULL),
-				m_current(it.current()) {}
+		ConstEdgeIterator(const Edge *e) : m_end(NULL), m_current(e) { }
+		ConstEdgeIterator(EdgeIterator it) : m_end(NULL), m_current(it.current()) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			if (m_end == NULL) m_end = m_current;
 			m_current = m_current->pair->next;
 			//m_current = m_current->prev->pair;
 		}
 
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_end == m_current;
 		}
-		virtual const Edge *current() const {
+		virtual const Edge *current() const
+		{
 			return m_current;
 		}
-		const Vertex *vertex() const {
+		const Vertex *vertex() const
+		{
 			return m_current->to();
 		}
 
@@ -1330,10 +1447,12 @@ public:
 		const Edge *m_current;
 	};
 
-	ConstEdgeIterator edges() const {
+	ConstEdgeIterator edges() const
+	{
 		return ConstEdgeIterator(edge);
 	}
-	ConstEdgeIterator edges(const Edge *e) const {
+	ConstEdgeIterator edges(const Edge *e) const
+	{
 		return ConstEdgeIterator(e);
 	}
 
@@ -1341,19 +1460,20 @@ public:
 	class VertexIterator //: public Iterator<Edge *>
 	{
 	public:
-		VertexIterator(Vertex *v) :
-				m_end(NULL),
-				m_current(v) {}
+		VertexIterator(Vertex *v) : m_end(NULL), m_current(v) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			if (m_end == NULL) m_end = m_current;
 			m_current = m_current->next;
 		}
 
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_end == m_current;
 		}
-		virtual Vertex *current() const {
+		virtual Vertex *current() const
+		{
 			return m_current;
 		}
 
@@ -1362,7 +1482,8 @@ public:
 		Vertex *m_current;
 	};
 
-	VertexIterator colocals() {
+	VertexIterator colocals()
+	{
 		return VertexIterator(this);
 	}
 
@@ -1370,19 +1491,20 @@ public:
 	class ConstVertexIterator //: public Iterator<Edge *>
 	{
 	public:
-		ConstVertexIterator(const Vertex *v) :
-				m_end(NULL),
-				m_current(v) {}
+		ConstVertexIterator(const Vertex *v) : m_end(NULL), m_current(v) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			if (m_end == NULL) m_end = m_current;
 			m_current = m_current->next;
 		}
 
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_end == m_current;
 		}
-		virtual const Vertex *current() const {
+		virtual const Vertex *current() const
+		{
 			return m_current;
 		}
 
@@ -1391,24 +1513,29 @@ public:
 		const Vertex *m_current;
 	};
 
-	ConstVertexIterator colocals() const {
+	ConstVertexIterator colocals() const
+	{
 		return ConstVertexIterator(this);
 	}
 };
 
-bool Edge::isNormalSeam() const {
+bool Edge::isNormalSeam() const
+{
 	return (vertex->nor != pair->next->vertex->nor || next->vertex->nor != pair->vertex->nor);
 }
 
-bool Edge::isTextureSeam() const {
+bool Edge::isTextureSeam() const
+{
 	return (vertex->tex != pair->next->vertex->tex || next->vertex->tex != pair->vertex->tex);
 }
 
-float Edge::length() const {
+float Edge::length() const
+{
 	return internal::length(to()->pos - from()->pos);
 }
 
-float Edge::angle() const {
+float Edge::angle() const
+{
 	Vector3 p = vertex->pos;
 	Vector3 a = prev->vertex->pos;
 	Vector3 b = next->vertex->pos;
@@ -1417,20 +1544,18 @@ float Edge::angle() const {
 	return acosf(dot(v0, v1) / (internal::length(v0) * internal::length(v1)));
 }
 
-class Face {
+class Face
+{
 public:
 	uint32_t id;
 	uint16_t group;
 	uint16_t material;
 	Edge *edge;
 
-	Face(uint32_t id) :
-			id(id),
-			group(uint16_t(~0)),
-			material(uint16_t(~0)),
-			edge(NULL) {}
+	Face(uint32_t id) : id(id), group(uint16_t(~0)), material(uint16_t(~0)), edge(NULL) {}
 
-	float area() const {
+	float area() const
+	{
 		float area = 0;
 		const Vector3 &v0 = edge->from()->pos;
 		for (ConstEdgeIterator it(edges(edge->next)); it.current() != edge->prev; it.advance()) {
@@ -1442,7 +1567,8 @@ public:
 		return area * 0.5f;
 	}
 
-	float parametricArea() const {
+	float parametricArea() const
+	{
 		float area = 0;
 		const Vector2 &v0 = edge->from()->tex;
 		for (ConstEdgeIterator it(edges(edge->next)); it.current() != edge->prev; it.advance()) {
@@ -1454,7 +1580,8 @@ public:
 		return area * 0.5f;
 	}
 
-	Vector3 normal() const {
+	Vector3 normal() const
+	{
 		Vector3 n(0);
 		const Vertex *vertex0 = NULL;
 		for (ConstEdgeIterator it(edges()); !it.isDone(); it.advance()) {
@@ -1476,7 +1603,8 @@ public:
 		return normalizeSafe(n, Vector3(0, 0, 1), 0.0f);
 	}
 
-	Vector3 centroid() const {
+	Vector3 centroid() const
+	{
 		Vector3 sum(0.0f);
 		uint32_t count = 0;
 		for (ConstEdgeIterator it(edges()); !it.isDone(); it.advance()) {
@@ -1488,7 +1616,8 @@ public:
 	}
 
 	// Unnormalized face normal assuming it's a triangle.
-	Vector3 triangleNormal() const {
+	Vector3 triangleNormal() const
+	{
 		Vector3 p0 = edge->vertex->pos;
 		Vector3 p1 = edge->next->vertex->pos;
 		Vector3 p2 = edge->next->next->vertex->pos;
@@ -1497,7 +1626,8 @@ public:
 		return normalizeSafe(cross(e0, e1), Vector3(0), 0.0f);
 	}
 
-	Vector3 triangleNormalAreaScaled() const {
+	Vector3 triangleNormalAreaScaled() const
+	{
 		Vector3 p0 = edge->vertex->pos;
 		Vector3 p1 = edge->next->vertex->pos;
 		Vector3 p2 = edge->next->next->vertex->pos;
@@ -1508,7 +1638,8 @@ public:
 
 	// Average of the edge midpoints weighted by the edge length.
 	// I want a point inside the triangle, but closer to the cirumcenter.
-	Vector3 triangleCenter() const {
+	Vector3 triangleCenter() const
+	{
 		Vector3 p0 = edge->vertex->pos;
 		Vector3 p1 = edge->next->vertex->pos;
 		Vector3 p2 = edge->next->next->vertex->pos;
@@ -1521,7 +1652,8 @@ public:
 		return m0 + m1 + m2;
 	}
 
-	bool isValid() const {
+	bool isValid() const
+	{
 		uint32_t count = 0;
 		for (ConstEdgeIterator it(edges()); !it.isDone(); it.advance()) {
 			const Edge *e = it.current();
@@ -1534,14 +1666,16 @@ public:
 		return true;
 	}
 
-	bool contains(const Edge *e) const {
+	bool contains(const Edge *e) const
+	{
 		for (ConstEdgeIterator it(edges()); !it.isDone(); it.advance()) {
 			if (it.current() == e) return true;
 		}
 		return false;
 	}
 
-	uint32_t edgeCount() const {
+	uint32_t edgeCount() const
+	{
 		uint32_t count = 0;
 		for (ConstEdgeIterator it(edges()); !it.isDone(); it.advance()) {
 			++count;
@@ -1553,22 +1687,24 @@ public:
 	class EdgeIterator //: public Iterator<Edge *>
 	{
 	public:
-		EdgeIterator(Edge *e) :
-				m_end(NULL),
-				m_current(e) {}
+		EdgeIterator(Edge *e) : m_end(NULL), m_current(e) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			if (m_end == NULL) m_end = m_current;
 			m_current = m_current->next;
 		}
 
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_end == m_current;
 		}
-		virtual Edge *current() const {
+		virtual Edge *current() const
+		{
 			return m_current;
 		}
-		Vertex *vertex() const {
+		Vertex *vertex() const
+		{
 			return m_current->vertex;
 		}
 
@@ -1577,10 +1713,12 @@ public:
 		Edge *m_current;
 	};
 
-	EdgeIterator edges() {
+	EdgeIterator edges()
+	{
 		return EdgeIterator(edge);
 	}
-	EdgeIterator edges(Edge *e) {
+	EdgeIterator edges(Edge *e)
+	{
 		xaDebugAssert(contains(e));
 		return EdgeIterator(e);
 	}
@@ -1589,25 +1727,25 @@ public:
 	class ConstEdgeIterator //: public Iterator<const Edge *>
 	{
 	public:
-		ConstEdgeIterator(const Edge *e) :
-				m_end(NULL),
-				m_current(e) {}
-		ConstEdgeIterator(const EdgeIterator &it) :
-				m_end(NULL),
-				m_current(it.current()) {}
+		ConstEdgeIterator(const Edge *e) : m_end(NULL), m_current(e) { }
+		ConstEdgeIterator(const EdgeIterator &it) : m_end(NULL), m_current(it.current()) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			if (m_end == NULL) m_end = m_current;
 			m_current = m_current->next;
 		}
 
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_end == m_current;
 		}
-		virtual const Edge *current() const {
+		virtual const Edge *current() const
+		{
 			return m_current;
 		}
-		const Vertex *vertex() const {
+		const Vertex *vertex() const
+		{
 			return m_current->vertex;
 		}
 
@@ -1616,22 +1754,25 @@ public:
 		const Edge *m_current;
 	};
 
-	ConstEdgeIterator edges() const {
+	ConstEdgeIterator edges() const
+	{
 		return ConstEdgeIterator(edge);
 	}
-	ConstEdgeIterator edges(const Edge *e) const {
+	ConstEdgeIterator edges(const Edge *e) const
+	{
 		xaDebugAssert(contains(e));
 		return ConstEdgeIterator(e);
 	}
 };
 
 /// Simple half edge mesh designed for dynamic mesh manipulation.
-class Mesh {
+class Mesh
+{
 public:
-	Mesh() :
-			m_colocalVertexCount(0) {}
+	Mesh() : m_colocalVertexCount(0) {}
 
-	Mesh(const Mesh *mesh) {
+	Mesh(const Mesh *mesh)
+	{
 		// Copy mesh vertices.
 		const uint32_t vertexCount = mesh->vertexCount();
 		m_vertexArray.resize(vertexCount);
@@ -1659,11 +1800,13 @@ public:
 		}
 	}
 
-	~Mesh() {
+	~Mesh()
+	{
 		clear();
 	}
 
-	void clear() {
+	void clear()
+	{
 		for (size_t i = 0; i < m_vertexArray.size(); i++)
 			delete m_vertexArray[i];
 		m_vertexArray.clear();
@@ -1676,7 +1819,8 @@ public:
 		m_faceArray.clear();
 	}
 
-	Vertex *addVertex(const Vector3 &pos) {
+	Vertex *addVertex(const Vector3 &pos)
+	{
 		xaDebugAssert(isFinite(pos));
 		Vertex *v = new Vertex(m_vertexArray.size());
 		v->pos = pos;
@@ -1685,7 +1829,8 @@ public:
 	}
 
 	/// Link colocal vertices based on geometric location only.
-	void linkColocals() {
+	void linkColocals()
+	{
 		xaPrint("--- Linking colocals:\n");
 		const uint32_t vertexCount = this->vertexCount();
 		std::unordered_map<Vector3, Vertex *, Hash<Vector3>, Equal<Vector3> > vertexMap;
@@ -1704,7 +1849,8 @@ public:
 		// @@ Remove duplicated vertices? or just leave them as colocals?
 	}
 
-	void linkColocalsWithCanonicalMap(const std::vector<uint32_t> &canonicalMap) {
+	void linkColocalsWithCanonicalMap(const std::vector<uint32_t> &canonicalMap)
+	{
 		xaPrint("--- Linking colocals:\n");
 		uint32_t vertexMapSize = 0;
 		for (uint32_t i = 0; i < canonicalMap.size(); i++) {
@@ -1728,13 +1874,15 @@ public:
 		xaPrint("---   %d vertex positions.\n", m_colocalVertexCount);
 	}
 
-	Face *addFace() {
+	Face *addFace()
+	{
 		Face *f = new Face(m_faceArray.size());
 		m_faceArray.push_back(f);
 		return f;
 	}
 
-	Face *addFace(uint32_t v0, uint32_t v1, uint32_t v2) {
+	Face *addFace(uint32_t v0, uint32_t v1, uint32_t v2)
+	{
 		uint32_t indexArray[3];
 		indexArray[0] = v0;
 		indexArray[1] = v1;
@@ -1742,6 +1890,57 @@ public:
 		return addFace(indexArray, 3, 0, 3);
 	}
 
+	Face *addFace(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3)
+	{
+		uint32_t indexArray[4];
+		indexArray[0] = v0;
+		indexArray[1] = v1;
+		indexArray[2] = v2;
+		indexArray[3] = v3;
+		return addFace(indexArray, 4, 0, 4);
+	}
+
+	Face *addFace(const std::vector<uint32_t> &indexArray)
+	{
+		return addFace(indexArray, 0, indexArray.size());
+	}
+
+	Face *addFace(const std::vector<uint32_t> &indexArray, uint32_t first, uint32_t num)
+	{
+		return addFace(indexArray.data(), (uint32_t)indexArray.size(), first, num);
+	}
+
+	Face *addFace(const uint32_t *indexArray, uint32_t indexCount, uint32_t first, uint32_t num)
+	{
+		xaDebugAssert(first < indexCount);
+		xaDebugAssert(num <= indexCount - first);
+		xaDebugAssert(num > 2);
+		if (!canAddFace(indexArray, first, num)) {
+			return NULL;
+		}
+		Face *f = new Face(m_faceArray.size());
+		Edge *firstEdge = NULL;
+		Edge *last = NULL;
+		Edge *current = NULL;
+		for (uint32_t i = 0; i < num - 1; i++) {
+			current = addEdge(indexArray[first + i], indexArray[first + i + 1]);
+			xaAssert(current != NULL && current->face == NULL);
+			current->face = f;
+			if (last != NULL) last->setNext(current);
+			else firstEdge = current;
+			last = current;
+		}
+		current = addEdge(indexArray[first + num - 1], indexArray[first]);
+		xaAssert(current != NULL && current->face == NULL);
+		current->face = f;
+		last->setNext(current);
+		current->setNext(firstEdge);
+		f->edge = firstEdge;
+		m_faceArray.push_back(f);
+		return f;
+	}
+
+	// -- GODOT start --
 	Face *addUniqueFace(uint32_t v0, uint32_t v1, uint32_t v2) {
 
 		int base_vertex = m_vertexArray.size();
@@ -1797,59 +1996,13 @@ public:
 		indexArray[2] = base_vertex + 2;
 		return addFace(indexArray, 3, 0, 3);
 	}
-
-	Face *addFace(uint32_t v0, uint32_t v1, uint32_t v2, uint32_t v3) {
-		uint32_t indexArray[4];
-		indexArray[0] = v0;
-		indexArray[1] = v1;
-		indexArray[2] = v2;
-		indexArray[3] = v3;
-		return addFace(indexArray, 4, 0, 4);
-	}
-
-	Face *addFace(const std::vector<uint32_t> &indexArray) {
-		return addFace(indexArray, 0, indexArray.size());
-	}
-
-	Face *addFace(const std::vector<uint32_t> &indexArray, uint32_t first, uint32_t num) {
-		return addFace(indexArray.data(), (uint32_t)indexArray.size(), first, num);
-	}
-
-	Face *addFace(const uint32_t *indexArray, uint32_t indexCount, uint32_t first, uint32_t num) {
-		xaDebugAssert(first < indexCount);
-		xaDebugAssert(num <= indexCount - first);
-		xaDebugAssert(num > 2);
-		if (!canAddFace(indexArray, first, num)) {
-			return NULL;
-		}
-		Face *f = new Face(m_faceArray.size());
-		Edge *firstEdge = NULL;
-		Edge *last = NULL;
-		Edge *current = NULL;
-		for (uint32_t i = 0; i < num - 1; i++) {
-			current = addEdge(indexArray[first + i], indexArray[first + i + 1]);
-			xaAssert(current != NULL && current->face == NULL);
-			current->face = f;
-			if (last != NULL)
-				last->setNext(current);
-			else
-				firstEdge = current;
-			last = current;
-		}
-		current = addEdge(indexArray[first + num - 1], indexArray[first]);
-		xaAssert(current != NULL && current->face == NULL);
-		current->face = f;
-		last->setNext(current);
-		current->setNext(firstEdge);
-		f->edge = firstEdge;
-		m_faceArray.push_back(f);
-		return f;
-	}
+	// -- GODOT end --
 
 	// These functions disconnect the given element from the mesh and delete it.
 
 	// @@ We must always disconnect edge pairs simultaneously.
-	void disconnect(Edge *edge) {
+	void disconnect(Edge *edge)
+	{
 		xaDebugAssert(edge != NULL);
 		// Remove from edge list.
 		if ((edge->id & 1) == 0) {
@@ -1905,13 +2058,15 @@ public:
 		}
 	}
 
-	void remove(Edge *edge) {
+	void remove(Edge *edge)
+	{
 		xaDebugAssert(edge != NULL);
 		disconnect(edge);
 		delete edge;
 	}
 
-	void remove(Vertex *vertex) {
+	void remove(Vertex *vertex)
+	{
 		xaDebugAssert(vertex != NULL);
 		// Remove from vertex list.
 		m_vertexArray[vertex->id] = NULL;
@@ -1929,7 +2084,8 @@ public:
 		delete vertex;
 	}
 
-	void remove(Face *face) {
+	void remove(Face *face)
+	{
 		xaDebugAssert(face != NULL);
 		// Remove from face list.
 		m_faceArray[face->id] = NULL;
@@ -1943,7 +2099,8 @@ public:
 	}
 
 	// Triangulate in place.
-	void triangulate() {
+	void triangulate()
+	{
 		bool all_triangles = true;
 		const uint32_t faceCount = m_faceArray.size();
 		for (uint32_t f = 0; f < faceCount; f++) {
@@ -1984,7 +2141,8 @@ public:
 	}
 
 	/// Link boundary edges once the mesh has been created.
-	void linkBoundary() {
+	void linkBoundary()
+	{
 		xaPrint("--- Linking boundaries:\n");
 		int num = 0;
 		// Create boundary edges.
@@ -2058,7 +2216,7 @@ public:
 						if (t > 0.0f + NV_EPSILON && t < 1.0f - NV_EPSILON) {
 							xaDebugAssert(equal(lerp(x1, x2, t), x0));
 							Vertex *splitVertex = splitBoundaryEdge(edge, t, x0);
-							vertex->linkColocal(splitVertex); // @@ Should we do this here?
+							vertex->linkColocal(splitVertex);   // @@ Should we do this here?
 							splitCount++;
 						}
 					}
@@ -2071,59 +2229,70 @@ public:
 	}
 
 	// Vertices
-	uint32_t vertexCount() const {
+	uint32_t vertexCount() const
+	{
 		return m_vertexArray.size();
 	}
-	const Vertex *vertexAt(int i) const {
+	const Vertex *vertexAt(int i) const
+	{
 		return m_vertexArray[i];
 	}
-	Vertex *vertexAt(int i) {
+	Vertex *vertexAt(int i)
+	{
 		return m_vertexArray[i];
 	}
 
-	uint32_t colocalVertexCount() const {
+	uint32_t colocalVertexCount() const
+	{
 		return m_colocalVertexCount;
 	}
 
 	// Faces
-	uint32_t faceCount() const {
+	uint32_t faceCount() const
+	{
 		return m_faceArray.size();
 	}
-	const Face *faceAt(int i) const {
+	const Face *faceAt(int i) const
+	{
 		return m_faceArray[i];
 	}
-	Face *faceAt(int i) {
+	Face *faceAt(int i)
+	{
 		return m_faceArray[i];
 	}
 
 	// Edges
-	uint32_t edgeCount() const {
+	uint32_t edgeCount() const
+	{
 		return m_edgeArray.size();
 	}
-	const Edge *edgeAt(int i) const {
+	const Edge *edgeAt(int i) const
+	{
 		return m_edgeArray[i];
 	}
-	Edge *edgeAt(int i) {
+	Edge *edgeAt(int i)
+	{
 		return m_edgeArray[i];
 	}
 
 	class ConstVertexIterator;
 
-	class VertexIterator {
+	class VertexIterator
+	{
 		friend class ConstVertexIterator;
-
 	public:
-		VertexIterator(Mesh *mesh) :
-				m_mesh(mesh),
-				m_current(0) {}
+		VertexIterator(Mesh *mesh) : m_mesh(mesh), m_current(0) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			m_current++;
 		}
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_current == m_mesh->vertexCount();
 		}
-		virtual Vertex *current() const {
+		virtual Vertex *current() const
+		{
 			return m_mesh->vertexAt(m_current);
 		}
 
@@ -2131,26 +2300,27 @@ public:
 		halfedge::Mesh *m_mesh;
 		uint32_t m_current;
 	};
-	VertexIterator vertices() {
+	VertexIterator vertices()
+	{
 		return VertexIterator(this);
 	}
 
-	class ConstVertexIterator {
+	class ConstVertexIterator
+	{
 	public:
-		ConstVertexIterator(const Mesh *mesh) :
-				m_mesh(mesh),
-				m_current(0) {}
-		ConstVertexIterator(class VertexIterator &it) :
-				m_mesh(it.m_mesh),
-				m_current(it.m_current) {}
+		ConstVertexIterator(const Mesh *mesh) : m_mesh(mesh), m_current(0) { }
+		ConstVertexIterator(class VertexIterator &it) : m_mesh(it.m_mesh), m_current(it.m_current) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			m_current++;
 		}
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_current == m_mesh->vertexCount();
 		}
-		virtual const Vertex *current() const {
+		virtual const Vertex *current() const
+		{
 			return m_mesh->vertexAt(m_current);
 		}
 
@@ -2158,27 +2328,29 @@ public:
 		const halfedge::Mesh *m_mesh;
 		uint32_t m_current;
 	};
-	ConstVertexIterator vertices() const {
+	ConstVertexIterator vertices() const
+	{
 		return ConstVertexIterator(this);
 	}
 
 	class ConstFaceIterator;
 
-	class FaceIterator {
+	class FaceIterator
+	{
 		friend class ConstFaceIterator;
-
 	public:
-		FaceIterator(Mesh *mesh) :
-				m_mesh(mesh),
-				m_current(0) {}
+		FaceIterator(Mesh *mesh) : m_mesh(mesh), m_current(0) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			m_current++;
 		}
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_current == m_mesh->faceCount();
 		}
-		virtual Face *current() const {
+		virtual Face *current() const
+		{
 			return m_mesh->faceAt(m_current);
 		}
 
@@ -2186,26 +2358,27 @@ public:
 		halfedge::Mesh *m_mesh;
 		uint32_t m_current;
 	};
-	FaceIterator faces() {
+	FaceIterator faces()
+	{
 		return FaceIterator(this);
 	}
 
-	class ConstFaceIterator {
+	class ConstFaceIterator
+	{
 	public:
-		ConstFaceIterator(const Mesh *mesh) :
-				m_mesh(mesh),
-				m_current(0) {}
-		ConstFaceIterator(const FaceIterator &it) :
-				m_mesh(it.m_mesh),
-				m_current(it.m_current) {}
+		ConstFaceIterator(const Mesh *mesh) : m_mesh(mesh), m_current(0) { }
+		ConstFaceIterator(const FaceIterator &it) : m_mesh(it.m_mesh), m_current(it.m_current) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			m_current++;
 		}
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_current == m_mesh->faceCount();
 		}
-		virtual const Face *current() const {
+		virtual const Face *current() const
+		{
 			return m_mesh->faceAt(m_current);
 		}
 
@@ -2213,27 +2386,29 @@ public:
 		const halfedge::Mesh *m_mesh;
 		uint32_t m_current;
 	};
-	ConstFaceIterator faces() const {
+	ConstFaceIterator faces() const
+	{
 		return ConstFaceIterator(this);
 	}
 
 	class ConstEdgeIterator;
 
-	class EdgeIterator {
+	class EdgeIterator
+	{
 		friend class ConstEdgeIterator;
-
 	public:
-		EdgeIterator(Mesh *mesh) :
-				m_mesh(mesh),
-				m_current(0) {}
+		EdgeIterator(Mesh *mesh) : m_mesh(mesh), m_current(0) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			m_current++;
 		}
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_current == m_mesh->edgeCount();
 		}
-		virtual Edge *current() const {
+		virtual Edge *current() const
+		{
 			return m_mesh->edgeAt(m_current);
 		}
 
@@ -2241,26 +2416,27 @@ public:
 		halfedge::Mesh *m_mesh;
 		uint32_t m_current;
 	};
-	EdgeIterator edges() {
+	EdgeIterator edges()
+	{
 		return EdgeIterator(this);
 	}
 
-	class ConstEdgeIterator {
+	class ConstEdgeIterator
+	{
 	public:
-		ConstEdgeIterator(const Mesh *mesh) :
-				m_mesh(mesh),
-				m_current(0) {}
-		ConstEdgeIterator(const EdgeIterator &it) :
-				m_mesh(it.m_mesh),
-				m_current(it.m_current) {}
+		ConstEdgeIterator(const Mesh *mesh) : m_mesh(mesh), m_current(0) { }
+		ConstEdgeIterator(const EdgeIterator &it) : m_mesh(it.m_mesh), m_current(it.m_current) { }
 
-		virtual void advance() {
+		virtual void advance()
+		{
 			m_current++;
 		}
-		virtual bool isDone() const {
+		virtual bool isDone() const
+		{
 			return m_current == m_mesh->edgeCount();
 		}
-		virtual const Edge *current() const {
+		virtual const Edge *current() const
+		{
 			return m_mesh->edgeAt(m_current);
 		}
 
@@ -2268,13 +2444,15 @@ public:
 		const halfedge::Mesh *m_mesh;
 		uint32_t m_current;
 	};
-	ConstEdgeIterator edges() const {
+	ConstEdgeIterator edges() const
+	{
 		return ConstEdgeIterator(this);
 	}
 
 	// @@ Add half-edge iterator.
 
-	bool isValid() const {
+	bool isValid() const
+	{
 		// Make sure all edges are valid.
 		const uint32_t edgeCount = m_edgeArray.size();
 		for (uint32_t e = 0; e < edgeCount; e++) {
@@ -2300,9 +2478,11 @@ public:
 	}
 
 	// Error status:
-
-	struct ErrorCode {
-		enum Enum {
+	
+	struct ErrorCode
+	{
+		enum Enum
+		{
 			AlreadyAddedEdge,
 			DegenerateColocalEdge,
 			DegenerateEdge,
@@ -2316,11 +2496,13 @@ public:
 
 private:
 	// Return true if the face can be added to the manifold mesh.
-	bool canAddFace(const std::vector<uint32_t> &indexArray, uint32_t first, uint32_t num) const {
+	bool canAddFace(const std::vector<uint32_t> &indexArray, uint32_t first, uint32_t num) const
+	{
 		return canAddFace(indexArray.data(), first, num);
 	}
 
-	bool canAddFace(const uint32_t *indexArray, uint32_t first, uint32_t num) const {
+	bool canAddFace(const uint32_t *indexArray, uint32_t first, uint32_t num) const
+	{
 		for (uint32_t j = num - 1, i = 0; i < num; j = i++) {
 			if (!canAddEdge(indexArray[first + j], indexArray[first + i])) {
 				errorIndex0 = indexArray[first + j];
@@ -2347,7 +2529,8 @@ private:
 	}
 
 	// Return true if the edge doesn't exist or doesn't have any adjacent face.
-	bool canAddEdge(uint32_t i, uint32_t j) const {
+	bool canAddEdge(uint32_t i, uint32_t j) const
+	{
 		if (i == j) {
 			// Skip degenerate edges.
 			errorCode = ErrorCode::DegenerateEdge;
@@ -2373,7 +2556,8 @@ private:
 		return true;
 	}
 
-	Edge *addEdge(uint32_t i, uint32_t j) {
+	Edge *addEdge(uint32_t i, uint32_t j)
+	{
 		xaAssert(i != j);
 		Edge *edge = findEdge(i, j);
 		if (edge != NULL) {
@@ -2406,7 +2590,8 @@ private:
 	}
 
 	/// Find edge, test all colocals.
-	Edge *findEdge(uint32_t i, uint32_t j) const {
+	Edge *findEdge(uint32_t i, uint32_t j) const
+	{
 		Edge *edge = NULL;
 		const Vertex *v0 = vertexAt(i);
 		const Vertex *v1 = vertexAt(j);
@@ -2418,9 +2603,9 @@ private:
 					auto edgeIt = m_edgeMap.find(key);
 					if (edgeIt != m_edgeMap.end())
 						edge = (*edgeIt).second;
-#if !defined(_DEBUG)
+	#if !defined(_DEBUG)
 					if (edge != NULL) return edge;
-#endif
+	#endif
 				} else {
 					// Make sure that only one edge is found.
 					xaDebugAssert(m_edgeMap.find(key) == m_edgeMap.end());
@@ -2431,7 +2616,8 @@ private:
 	}
 
 	/// Link this boundary edge.
-	void linkBoundaryEdge(Edge *edge) {
+	void linkBoundaryEdge(Edge *edge)
+	{
 		xaAssert(edge->face == NULL);
 		// Make sure next pointer has not been set. @@ We want to be able to relink boundary edges after mesh changes.
 		Edge *next = edge;
@@ -2451,7 +2637,8 @@ private:
 		}
 	}
 
-	Vertex *splitBoundaryEdge(Edge *edge, float t, const Vector3 &pos) {
+	Vertex *splitBoundaryEdge(Edge *edge, float t, const Vector3 &pos)
+	{
 		/*
 		  We want to go from this configuration:
 
@@ -2521,19 +2708,18 @@ private:
 	std::vector<Edge *> m_edgeArray;
 	std::vector<Face *> m_faceArray;
 
-	struct Key {
+	struct Key
+	{
 		Key() {}
-		Key(const Key &k) :
-				p0(k.p0),
-				p1(k.p1) {}
-		Key(uint32_t v0, uint32_t v1) :
-				p0(v0),
-				p1(v1) {}
-		void operator=(const Key &k) {
+		Key(const Key &k) : p0(k.p0), p1(k.p1) {}
+		Key(uint32_t v0, uint32_t v1) : p0(v0), p1(v1) {}
+		void operator=(const Key &k)
+		{
 			p0 = k.p0;
 			p1 = k.p1;
 		}
-		bool operator==(const Key &k) const {
+		bool operator==(const Key &k) const
+		{
 			return p0 == k.p0 && p1 == k.p1;
 		}
 
@@ -2546,48 +2732,54 @@ private:
 	uint32_t m_colocalVertexCount;
 };
 
-class MeshTopology {
+class MeshTopology
+{
 public:
-	MeshTopology(const Mesh *mesh) {
+	MeshTopology(const Mesh *mesh)
+	{
 		buildTopologyInfo(mesh);
 	}
 
 	/// Determine if the mesh is connected.
-	bool isConnected() const {
+	bool isConnected() const
+	{
 		return m_connectedCount == 1;
 	}
 
 	/// Determine if the mesh is closed. (Each edge is shared by two faces)
-	bool isClosed() const {
+	bool isClosed() const
+	{
 		return m_boundaryCount == 0;
 	}
 
 	/// Return true if the mesh has the topology of a disk.
-	bool isDisk() const {
-		return isConnected() && m_boundaryCount == 1 /* && m_eulerNumber == 1*/;
+	bool isDisk() const
+	{
+		return isConnected() && m_boundaryCount == 1/* && m_eulerNumber == 1*/;
 	}
 
 private:
-	void buildTopologyInfo(const Mesh *mesh) {
+	void buildTopologyInfo(const Mesh *mesh)
+	{
 		const uint32_t vertexCount = mesh->colocalVertexCount();
 		const uint32_t faceCount = mesh->faceCount();
 		const uint32_t edgeCount = mesh->edgeCount();
-		xaPrint("--- Building mesh topology:\n");
+		xaPrint( "--- Building mesh topology:\n" );
 		std::vector<uint32_t> stack(faceCount);
 		BitArray bitFlags(faceCount);
 		bitFlags.clearAll();
 		// Compute connectivity.
-		xaPrint("---   Computing connectivity.\n");
+		xaPrint( "---   Computing connectivity.\n" );
 		m_connectedCount = 0;
-		for (uint32_t f = 0; f < faceCount; f++) {
-			if (bitFlags.bitAt(f) == false) {
+		for (uint32_t f = 0; f < faceCount; f++ ) {
+			if ( bitFlags.bitAt(f) == false ) {
 				m_connectedCount++;
-				stack.push_back(f);
-				while (!stack.empty()) {
+				stack.push_back( f );
+				while ( !stack.empty() ) {
 					const uint32_t top = stack.back();
 					xaAssert(top != uint32_t(~0));
 					stack.pop_back();
-					if (bitFlags.bitAt(top) == false) {
+					if ( bitFlags.bitAt(top) == false ) {
 						bitFlags.setBitAt(top);
 						const Face *face = mesh->faceAt(top);
 						const Edge *firstEdge = face->edge;
@@ -2604,9 +2796,9 @@ private:
 			}
 		}
 		xaAssert(stack.empty());
-		xaPrint("---   %d connected components.\n", m_connectedCount);
+		xaPrint( "---   %d connected components.\n", m_connectedCount );
 		// Count boundary loops.
-		xaPrint("---   Counting boundary loops.\n");
+		xaPrint( "---   Counting boundary loops.\n" );
 		m_boundaryCount = 0;
 		bitFlags.resize(edgeCount);
 		bitFlags.clearAll();
@@ -2625,13 +2817,13 @@ private:
 				} while (startEdge != edge);
 			}
 		}
-		xaPrint("---   %d boundary loops found.\n", m_boundaryCount);
+		xaPrint("---   %d boundary loops found.\n", m_boundaryCount );
 		// Compute euler number.
 		m_eulerNumber = vertexCount - edgeCount + faceCount;
 		xaPrint("---   Euler number: %d.\n", m_eulerNumber);
 		// Compute genus. (only valid on closed connected surfaces)
 		m_genus = -1;
-		if (isClosed() && isConnected()) {
+		if ( isClosed() && isConnected() ) {
 			m_genus = (2 - m_eulerNumber) / 2;
 			xaPrint("---   Genus: %d.\n", m_genus);
 		}
@@ -2651,7 +2843,8 @@ private:
 	int m_genus;
 };
 
-float computeSurfaceArea(const halfedge::Mesh *mesh) {
+float computeSurfaceArea(const halfedge::Mesh *mesh)
+{
 	float area = 0;
 	for (halfedge::Mesh::ConstFaceIterator it(mesh->faces()); !it.isDone(); it.advance()) {
 		const halfedge::Face *face = it.current();
@@ -2661,7 +2854,8 @@ float computeSurfaceArea(const halfedge::Mesh *mesh) {
 	return area;
 }
 
-float computeParametricArea(const halfedge::Mesh *mesh) {
+float computeParametricArea(const halfedge::Mesh *mesh)
+{
 	float area = 0;
 	for (halfedge::Mesh::ConstFaceIterator it(mesh->faces()); !it.isDone(); it.advance()) {
 		const halfedge::Face *face = it.current();
@@ -2670,7 +2864,8 @@ float computeParametricArea(const halfedge::Mesh *mesh) {
 	return area;
 }
 
-uint32_t countMeshTriangles(const Mesh *mesh) {
+uint32_t countMeshTriangles(const Mesh *mesh)
+{
 	const uint32_t faceCount = mesh->faceCount();
 	uint32_t triangleCount = 0;
 	for (uint32_t f = 0; f < faceCount; f++) {
@@ -2682,7 +2877,8 @@ uint32_t countMeshTriangles(const Mesh *mesh) {
 	return triangleCount;
 }
 
-Mesh *unifyVertices(const Mesh *inputMesh) {
+Mesh *unifyVertices(const Mesh *inputMesh)
+{
 	Mesh *mesh = new Mesh;
 	// Only add the first colocal.
 	const uint32_t vertexCount = inputMesh->vertexCount();
@@ -2709,15 +2905,17 @@ Mesh *unifyVertices(const Mesh *inputMesh) {
 	return mesh;
 }
 
-static bool pointInTriangle(const Vector2 &p, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
+static bool pointInTriangle(const Vector2 &p, const Vector2 &a, const Vector2 &b, const Vector2 &c)
+{
 	return triangleArea(a, b, p) >= 0.00001f &&
-		   triangleArea(b, c, p) >= 0.00001f &&
-		   triangleArea(c, a, p) >= 0.00001f;
+	       triangleArea(b, c, p) >= 0.00001f &&
+	       triangleArea(c, a, p) >= 0.00001f;
 }
 
 // This is doing a simple ear-clipping algorithm that skips invalid triangles. Ideally, we should
 // also sort the ears by angle, start with the ones that have the smallest angle and proceed in order.
-Mesh *triangulate(const Mesh *inputMesh) {
+Mesh *triangulate(const Mesh *inputMesh)
+{
 	Mesh *mesh = new Mesh;
 	// Add all vertices.
 	const uint32_t vertexCount = inputMesh->vertexCount();
@@ -2782,10 +2980,12 @@ Mesh *triangulate(const Mesh *inputMesh) {
 					Vector2 p1 = polygonPoints[i1];
 					Vector2 p2 = polygonPoints[i2];
 
+					// -- GODOT start --
 					bool degenerate = distance(p0, p1) < NV_EPSILON || distance(p0, p2) < NV_EPSILON || distance(p1, p2) < NV_EPSILON;
 					if (degenerate) {
 						continue;
 					}
+					// -- GODOT end --
 
 					float d = clamp(dot(p0 - p1, p2 - p1) / (length(p0 - p1) * length(p2 - p1)), -1.0f, 1.0f);
 					float angle = acosf(d);
@@ -2810,8 +3010,10 @@ Mesh *triangulate(const Mesh *inputMesh) {
 						}
 					}
 				}
+				// -- GODOT start --
 				if (!bestIsValid)
 					break;
+				// -- GODOT end --
 
 				xaDebugAssert(minAngle <= 2 * PI);
 				// Clip best ear:
@@ -2835,59 +3037,66 @@ Mesh *triangulate(const Mesh *inputMesh) {
 } //  namespace halfedge
 
 /// Mersenne twister random number generator.
-class MTRand {
+class MTRand
+{
 public:
 	enum time_e { Time };
-	enum { N = 624 }; // length of state vector
+	enum { N = 624 };       // length of state vector
 	enum { M = 397 };
 
 	/// Constructor that uses the current time as the seed.
-	MTRand(time_e) {
-		seed((uint32_t)time(NULL));
+	MTRand( time_e )
+	{
+		seed((uint32_t )time(NULL));
 	}
 
 	/// Constructor that uses the given seed.
-	MTRand(uint32_t s = 0) {
+	MTRand( uint32_t s = 0 )
+	{
 		seed(s);
 	}
 
 	/// Provide a new seed.
-	void seed(uint32_t s) {
+	void seed( uint32_t s )
+	{
 		initialize(s);
 		reload();
 	}
 
 	/// Get a random number between 0 - 65536.
-	uint32_t get() {
+	uint32_t get()
+	{
 		// Pull a 32-bit integer from the generator state
 		// Every other access function simply transforms the numbers extracted here
-		if (left == 0) {
+		if ( left == 0 ) {
 			reload();
 		}
 		left--;
 		uint32_t s1;
 		s1 = *next++;
 		s1 ^= (s1 >> 11);
-		s1 ^= (s1 << 7) & 0x9d2c5680U;
+		s1 ^= (s1 <<  7) & 0x9d2c5680U;
 		s1 ^= (s1 << 15) & 0xefc60000U;
-		return (s1 ^ (s1 >> 18));
+		return ( s1 ^ (s1 >> 18) );
 	};
 
 	/// Get a random number on [0, max] interval.
-	uint32_t getRange(uint32_t max) {
+	uint32_t getRange( uint32_t max )
+	{
 		if (max == 0) return 0;
 		if (max == NV_UINT32_MAX) return get();
-		const uint32_t np2 = nextPowerOfTwo(max + 1); // @@ This fails if max == NV_UINT32_MAX
+		const uint32_t np2 = nextPowerOfTwo( max + 1 ); // @@ This fails if max == NV_UINT32_MAX
 		const uint32_t mask = np2 - 1;
 		uint32_t n;
 		do {
 			n = get() & mask;
-		} while (n > max);
+		} while ( n > max );
 		return n;
 	}
 
 private:
-	void initialize(uint32_t seed) {
+	void initialize( uint32_t seed )
+	{
 		// Initialize generator state with seed
 		// See Knuth TAOCP Vol 2, 3rd Ed, p.106 for multiplier.
 		// In previous versions, most significant bits (MSBs) of the seed affect
@@ -2896,44 +3105,50 @@ private:
 		uint32_t *r = state;
 		int i = 1;
 		*s++ = seed & 0xffffffffUL;
-		for (; i < N; ++i) {
-			*s++ = (1812433253UL * (*r ^ (*r >> 30)) + i) & 0xffffffffUL;
+		for ( ; i < N; ++i ) {
+			*s++ = ( 1812433253UL * ( *r ^ (*r >> 30) ) + i ) & 0xffffffffUL;
 			r++;
 		}
 	}
 
-	void reload() {
+	void reload()
+	{
 		// Generate N new values in state
 		// Made clearer and faster by Matthew Bellew (matthew.bellew@home.com)
 		uint32_t *p = state;
 		int i;
-		for (i = N - M; i--; ++p)
-			*p = twist(p[M], p[0], p[1]);
-		for (i = M; --i; ++p)
-			*p = twist(p[M - N], p[0], p[1]);
-		*p = twist(p[M - N], p[0], state[0]);
+		for ( i = N - M; i--; ++p )
+			*p = twist( p[M], p[0], p[1] );
+		for ( i = M; --i; ++p )
+			*p = twist( p[M - N], p[0], p[1] );
+		*p = twist( p[M - N], p[0], state[0] );
 		left = N, next = state;
 	}
 
-	uint32_t hiBit(uint32_t u) const {
+	uint32_t hiBit( uint32_t u ) const
+	{
 		return u & 0x80000000U;
 	}
-	uint32_t loBit(uint32_t u) const {
+	uint32_t loBit( uint32_t u ) const
+	{
 		return u & 0x00000001U;
 	}
-	uint32_t loBits(uint32_t u) const {
+	uint32_t loBits( uint32_t u ) const
+	{
 		return u & 0x7fffffffU;
 	}
-	uint32_t mixBits(uint32_t u, uint32_t v) const {
+	uint32_t mixBits( uint32_t u, uint32_t v ) const
+	{
 		return hiBit(u) | loBits(v);
 	}
-	uint32_t twist(uint32_t m, uint32_t s0, uint32_t s1) const {
+	uint32_t twist( uint32_t m, uint32_t s0, uint32_t s1 ) const
+	{
 		return m ^ (mixBits(s0, s1) >> 1) ^ ((~loBit(s1) + 1) & 0x9908b0dfU);
 	}
 
-	uint32_t state[N]; // internal state
-	uint32_t *next; // next value to get from state
-	int left; // number of values left before reload needed
+	uint32_t state[N];	// internal state
+	uint32_t *next;	// next value to get from state
+	int left;		// number of values left before reload needed
 };
 
 namespace morton {
@@ -2941,50 +3156,59 @@ namespace morton {
 // http://fgiesen.wordpress.com/2009/12/13/decoding-morton-codes/
 
 // Inverse of part1By1 - "delete" all odd-indexed bits
-uint32_t compact1By1(uint32_t x) {
-	x &= 0x55555555; // x = -f-e -d-c -b-a -9-8 -7-6 -5-4 -3-2 -1-0
-	x = (x ^ (x >> 1)) & 0x33333333; // x = --fe --dc --ba --98 --76 --54 --32 --10
-	x = (x ^ (x >> 2)) & 0x0f0f0f0f; // x = ---- fedc ---- ba98 ---- 7654 ---- 3210
-	x = (x ^ (x >> 4)) & 0x00ff00ff; // x = ---- ---- fedc ba98 ---- ---- 7654 3210
-	x = (x ^ (x >> 8)) & 0x0000ffff; // x = ---- ---- ---- ---- fedc ba98 7654 3210
+uint32_t compact1By1(uint32_t x)
+{
+	x &= 0x55555555;                  // x = -f-e -d-c -b-a -9-8 -7-6 -5-4 -3-2 -1-0
+	x = (x ^ (x >>  1)) & 0x33333333; // x = --fe --dc --ba --98 --76 --54 --32 --10
+	x = (x ^ (x >>  2)) & 0x0f0f0f0f; // x = ---- fedc ---- ba98 ---- 7654 ---- 3210
+	x = (x ^ (x >>  4)) & 0x00ff00ff; // x = ---- ---- fedc ba98 ---- ---- 7654 3210
+	x = (x ^ (x >>  8)) & 0x0000ffff; // x = ---- ---- ---- ---- fedc ba98 7654 3210
 	return x;
 }
 
 // Inverse of part1By2 - "delete" all bits not at positions divisible by 3
-uint32_t compact1By2(uint32_t x) {
-	x &= 0x09249249; // x = ---- 9--8 --7- -6-- 5--4 --3- -2-- 1--0
-	x = (x ^ (x >> 2)) & 0x030c30c3; // x = ---- --98 ---- 76-- --54 ---- 32-- --10
-	x = (x ^ (x >> 4)) & 0x0300f00f; // x = ---- --98 ---- ---- 7654 ---- ---- 3210
-	x = (x ^ (x >> 8)) & 0xff0000ff; // x = ---- --98 ---- ---- ---- ---- 7654 3210
+uint32_t compact1By2(uint32_t x)
+{
+	x &= 0x09249249;                  // x = ---- 9--8 --7- -6-- 5--4 --3- -2-- 1--0
+	x = (x ^ (x >>  2)) & 0x030c30c3; // x = ---- --98 ---- 76-- --54 ---- 32-- --10
+	x = (x ^ (x >>  4)) & 0x0300f00f; // x = ---- --98 ---- ---- 7654 ---- ---- 3210
+	x = (x ^ (x >>  8)) & 0xff0000ff; // x = ---- --98 ---- ---- ---- ---- 7654 3210
 	x = (x ^ (x >> 16)) & 0x000003ff; // x = ---- ---- ---- ---- ---- --98 7654 3210
 	return x;
 }
 
-uint32_t decodeMorton2X(uint32_t code) {
+uint32_t decodeMorton2X(uint32_t code)
+{
 	return compact1By1(code >> 0);
 }
 
-uint32_t decodeMorton2Y(uint32_t code) {
+uint32_t decodeMorton2Y(uint32_t code)
+{
 	return compact1By1(code >> 1);
 }
 
-uint32_t decodeMorton3X(uint32_t code) {
+uint32_t decodeMorton3X(uint32_t code)
+{
 	return compact1By2(code >> 0);
 }
 
-uint32_t decodeMorton3Y(uint32_t code) {
+uint32_t decodeMorton3Y(uint32_t code)
+{
 	return compact1By2(code >> 1);
 }
 
-uint32_t decodeMorton3Z(uint32_t code) {
+uint32_t decodeMorton3Z(uint32_t code)
+{
 	return compact1By2(code >> 2);
 }
 } // namespace morton
 
 // A simple, dynamic proximity grid based on Jon's code.
 // Instead of storing pointers here I store indices.
-struct ProximityGrid {
-	void init(const Box &box, uint32_t count) {
+struct ProximityGrid 
+{
+	void init(const Box &box, uint32_t count)
+	{
 		cellArray.clear();
 		// Determine grid size.
 		float cellWidth;
@@ -3021,19 +3245,23 @@ struct ProximityGrid {
 		corner = box.minCorner; // @@ Align grid better?
 	}
 
-	int index_x(float x) const {
-		return clamp(ftoi_floor((x - corner.x) * invCellSize.x), 0, sx - 1);
+	int index_x(float x) const
+	{
+		return clamp(ftoi_floor((x - corner.x) * invCellSize.x),  0, sx - 1);
 	}
 
-	int index_y(float y) const {
-		return clamp(ftoi_floor((y - corner.y) * invCellSize.y), 0, sy - 1);
+	int index_y(float y) const
+	{
+		return clamp(ftoi_floor((y - corner.y) * invCellSize.y),  0, sy - 1);
 	}
 
-	int index_z(float z) const {
-		return clamp(ftoi_floor((z - corner.z) * invCellSize.z), 0, sz - 1);
+	int index_z(float z) const
+	{
+		return clamp(ftoi_floor((z - corner.z) * invCellSize.z),  0, sz - 1);
 	}
 
-	int index(int x, int y, int z) const {
+	int index(int x, int y, int z) const
+	{
 		xaDebugAssert(x >= 0 && x < sx);
 		xaDebugAssert(y >= 0 && y < sy);
 		xaDebugAssert(z >= 0 && z < sz);
@@ -3042,7 +3270,8 @@ struct ProximityGrid {
 		return idx;
 	}
 
-	uint32_t mortonCount() const {
+	uint32_t mortonCount() const
+	{
 		uint64_t s = uint64_t(max3(sx, sy, sz));
 		s = nextPowerOfTwo(s);
 		if (s > 1024) {
@@ -3051,7 +3280,8 @@ struct ProximityGrid {
 		return uint32_t(s * s * s);
 	}
 
-	int mortonIndex(uint32_t code) const {
+	int mortonIndex(uint32_t code) const
+	{
 		uint32_t x, y, z;
 		uint32_t s = uint32_t(max3(sx, sy, sz));
 		if (s > 1024) {
@@ -3084,7 +3314,8 @@ struct ProximityGrid {
 		return index(x, y, z);
 	}
 
-	void add(const Vector3 &pos, uint32_t key) {
+	void add(const Vector3 &pos, uint32_t key)
+	{
 		int x = index_x(pos.x);
 		int y = index_y(pos.y);
 		int z = index_z(pos.z);
@@ -3094,7 +3325,8 @@ struct ProximityGrid {
 
 	// Gather all points inside the given sphere.
 	// Radius is assumed to be small, so we don't bother culling the cells.
-	void gather(const Vector3 &position, float radius, std::vector<uint32_t> &indexArray) {
+	void gather(const Vector3 &position, float radius, std::vector<uint32_t> &indexArray)
+	{
 		int x0 = index_x(position.x - radius);
 		int x1 = index_x(position.x + radius);
 		int y0 = index_y(position.y - radius);
@@ -3125,26 +3357,25 @@ struct ProximityGrid {
 // Based on Pierre Terdiman's and Michael Herf's source code.
 // http://www.codercorner.com/RadixSortRevisited.htm
 // http://www.stereopsis.com/radix.html
-class RadixSort {
+class RadixSort
+{
 public:
-	RadixSort() :
-			m_size(0),
-			m_ranks(NULL),
-			m_ranks2(NULL),
-			m_validRanks(false) {}
-	~RadixSort() {
+	RadixSort() : m_size(0), m_ranks(NULL), m_ranks2(NULL), m_validRanks(false) {}
+	~RadixSort()
+	{
 		// Release everything
 		free(m_ranks2);
 		free(m_ranks);
 	}
 
-	RadixSort &sort(const float *input, uint32_t count) {
+	RadixSort &sort(const float *input, uint32_t count)
+	{
 		if (input == NULL || count == 0) return *this;
 		// Resize lists if needed
 		if (count != m_size) {
 			if (count > m_size) {
-				m_ranks2 = (uint32_t *)realloc(m_ranks2, sizeof(uint32_t) * count);
-				m_ranks = (uint32_t *)realloc(m_ranks, sizeof(uint32_t) * count);
+				m_ranks2 = (uint32_t *)realloc(m_ranks2, sizeof(uint32_t ) * count);
+				m_ranks = (uint32_t *)realloc(m_ranks, sizeof(uint32_t ) * count);
 			}
 			m_size = count;
 			m_validRanks = false;
@@ -3164,16 +3395,19 @@ public:
 		return *this;
 	}
 
-	RadixSort &sort(const std::vector<float> &input) {
+	RadixSort &sort(const std::vector<float> &input)
+	{
 		return sort(input.data(), input.size());
 	}
 
 	// Access to results. m_ranks is a list of indices in sorted order, i.e. in the order you may further process your data
-	const uint32_t *ranks() const {
+	const uint32_t *ranks() const
+	{
 		xaDebugAssert(m_validRanks);
 		return m_ranks;
 	}
-	uint32_t *ranks() {
+	uint32_t *ranks()
+	{
 		xaDebugAssert(m_validRanks);
 		return m_ranks;
 	}
@@ -3184,18 +3418,21 @@ private:
 	uint32_t *m_ranks2;
 	bool m_validRanks;
 
-	void FloatFlip(uint32_t &f) {
+	void FloatFlip(uint32_t &f)
+	{
 		int32_t mask = (int32_t(f) >> 31) | 0x80000000; // Warren Hunt, Manchor Ko.
 		f ^= mask;
 	}
 
-	void IFloatFlip(uint32_t &f) {
+	void IFloatFlip(uint32_t &f)
+	{
 		uint32_t mask = ((f >> 31) - 1) | 0x80000000; // Michael Herf.
 		f ^= mask;
 	}
 
-	template <typename T>
-	void createHistograms(const T *buffer, uint32_t count, uint32_t *histogram) {
+	template<typename T>
+	void createHistograms(const T *buffer, uint32_t count, uint32_t *histogram)
+	{
 		const uint32_t bucketCount = sizeof(T); // (8 * sizeof(T)) / log2(radix)
 		// Init bucket pointers.
 		uint32_t *h[bucketCount];
@@ -3203,10 +3440,10 @@ private:
 			h[i] = histogram + 256 * i;
 		}
 		// Clear histograms.
-		memset(histogram, 0, 256 * bucketCount * sizeof(uint32_t));
+		memset(histogram, 0, 256 * bucketCount * sizeof(uint32_t ));
 		// @@ Add support for signed integers.
 		// Build histograms.
-		const uint8_t *p = (const uint8_t *)buffer; // @@ Does this break aliasing rules?
+		const uint8_t *p = (const uint8_t *)buffer;  // @@ Does this break aliasing rules?
 		const uint8_t *pe = p + count * sizeof(T);
 		while (p != pe) {
 			h[0][*p++]++, h[1][*p++]++, h[2][*p++]++, h[3][*p++]++;
@@ -3221,8 +3458,8 @@ private:
 		}
 	}
 
-	template <typename T>
-	void insertionSort(const T *input, uint32_t count) {
+	template <typename T> void insertionSort(const T *input, uint32_t count)
+	{
 		if (!m_validRanks) {
 			m_ranks[0] = 0;
 			for (uint32_t i = 1; i != count; ++i) {
@@ -3252,8 +3489,8 @@ private:
 		}
 	}
 
-	template <typename T>
-	void radixSort(const T *input, uint32_t count) {
+	template <typename T> void radixSort(const T *input, uint32_t count)
+	{
 		const uint32_t P = sizeof(T); // pass count
 		// Allocate histograms & offsets on the stack
 		uint32_t histogram[256 * P];
@@ -3271,8 +3508,7 @@ private:
 			}
 			// Create offsets
 			link[0] = m_ranks2;
-			for (uint32_t i = 1; i < 256; i++)
-				link[i] = link[i - 1] + h[i - 1];
+			for (uint32_t i = 1; i < 256; i++) link[i] = link[i - 1] + h[i - 1];
 			// Perform Radix Sort
 			if (!m_validRanks) {
 				for (uint32_t i = 0; i < count; i++) {
@@ -3299,9 +3535,11 @@ private:
 };
 
 namespace raster {
-class ClippedTriangle {
+class ClippedTriangle
+{
 public:
-	ClippedTriangle(Vector2::Arg a, Vector2::Arg b, Vector2::Arg c) {
+	ClippedTriangle(Vector2::Arg a, Vector2::Arg b, Vector2::Arg c)
+	{
 		m_numVertices = 3;
 		m_activeVertexBuffer = 0;
 		m_verticesA[0] = a;
@@ -3311,27 +3549,30 @@ public:
 		m_vertexBuffers[1] = m_verticesB;
 	}
 
-	uint32_t vertexCount() {
+	uint32_t vertexCount()
+	{
 		return m_numVertices;
 	}
 
-	const Vector2 *vertices() {
+	const Vector2 *vertices()
+	{
 		return m_vertexBuffers[m_activeVertexBuffer];
 	}
 
-	void clipHorizontalPlane(float offset, float clipdirection) {
-		Vector2 *v = m_vertexBuffers[m_activeVertexBuffer];
+	void clipHorizontalPlane(float offset, float clipdirection)
+	{
+		Vector2 *v  = m_vertexBuffers[m_activeVertexBuffer];
 		m_activeVertexBuffer ^= 1;
 		Vector2 *v2 = m_vertexBuffers[m_activeVertexBuffer];
 		v[m_numVertices] = v[0];
-		float dy2, dy1 = offset - v[0].y;
-		int dy2in, dy1in = clipdirection * dy1 >= 0;
-		uint32_t p = 0;
+		float dy2,   dy1 = offset - v[0].y;
+		int   dy2in, dy1in = clipdirection * dy1 >= 0;
+		uint32_t  p = 0;
 		for (uint32_t k = 0; k < m_numVertices; k++) {
-			dy2 = offset - v[k + 1].y;
+			dy2   = offset - v[k + 1].y;
 			dy2in = clipdirection * dy2 >= 0;
 			if (dy1in) v2[p++] = v[k];
-			if (dy1in + dy2in == 1) { // not both in/out
+			if ( dy1in + dy2in == 1 ) { // not both in/out
 				float dx = v[k + 1].x - v[k].x;
 				float dy = v[k + 1].y - v[k].y;
 				v2[p++] = Vector2(v[k].x + dy1 * (dx / dy), offset);
@@ -3343,19 +3584,20 @@ public:
 		//for (uint32_t k=0; k<m_numVertices; k++) printf("(%f, %f)\n", v2[k].x, v2[k].y); printf("\n");
 	}
 
-	void clipVerticalPlane(float offset, float clipdirection) {
-		Vector2 *v = m_vertexBuffers[m_activeVertexBuffer];
+	void clipVerticalPlane(float offset, float clipdirection )
+	{
+		Vector2 *v  = m_vertexBuffers[m_activeVertexBuffer];
 		m_activeVertexBuffer ^= 1;
 		Vector2 *v2 = m_vertexBuffers[m_activeVertexBuffer];
 		v[m_numVertices] = v[0];
-		float dx2, dx1 = offset - v[0].x;
-		int dx2in, dx1in = clipdirection * dx1 >= 0;
-		uint32_t p = 0;
+		float dx2,   dx1   = offset - v[0].x;
+		int   dx2in, dx1in = clipdirection * dx1 >= 0;
+		uint32_t  p = 0;
 		for (uint32_t k = 0; k < m_numVertices; k++) {
 			dx2 = offset - v[k + 1].x;
 			dx2in = clipdirection * dx2 >= 0;
 			if (dx1in) v2[p++] = v[k];
-			if (dx1in + dx2in == 1) { // not both in/out
+			if ( dx1in + dx2in == 1 ) { // not both in/out
 				float dx = v[k + 1].x - v[k].x;
 				float dy = v[k + 1].y - v[k].y;
 				v2[p++] = Vector2(offset, v[k].y + dx1 * (dy / dx));
@@ -3366,8 +3608,9 @@ public:
 		m_numVertices = p;
 	}
 
-	void computeAreaCentroid() {
-		Vector2 *v = m_vertexBuffers[m_activeVertexBuffer];
+	void computeAreaCentroid()
+	{
+		Vector2 *v  = m_vertexBuffers[m_activeVertexBuffer];
 		v[m_numVertices] = v[0];
 		m_area = 0;
 		float centroidx = 0, centroidy = 0;
@@ -3386,19 +3629,22 @@ public:
 		}
 	}
 
-	void clipAABox(float x0, float y0, float x1, float y1) {
-		clipVerticalPlane(x0, -1);
-		clipHorizontalPlane(y0, -1);
-		clipVerticalPlane(x1, 1);
-		clipHorizontalPlane(y1, 1);
+	void clipAABox(float x0, float y0, float x1, float y1)
+	{
+		clipVerticalPlane  ( x0, -1);
+		clipHorizontalPlane( y0, -1);
+		clipVerticalPlane  ( x1,  1);
+		clipHorizontalPlane( y1,  1);
 		computeAreaCentroid();
 	}
 
-	Vector2 centroid() {
+	Vector2 centroid()
+	{
 		return m_centroid;
 	}
 
-	float area() {
+	float area()
+	{
 		return m_area;
 	}
 
@@ -3406,18 +3652,20 @@ private:
 	Vector2 m_verticesA[7 + 1];
 	Vector2 m_verticesB[7 + 1];
 	Vector2 *m_vertexBuffers[2];
-	uint32_t m_numVertices;
-	uint32_t m_activeVertexBuffer;
-	float m_area;
+	uint32_t    m_numVertices;
+	uint32_t    m_activeVertexBuffer;
+	float   m_area;
 	Vector2 m_centroid;
 };
 
 /// A callback to sample the environment. Return false to terminate rasterization.
-typedef bool (*SamplingCallback)(void *param, int x, int y, Vector3::Arg bar, Vector3::Arg dx, Vector3::Arg dy, float coverage);
+typedef bool (* SamplingCallback)(void *param, int x, int y, Vector3::Arg bar, Vector3::Arg dx, Vector3::Arg dy, float coverage);
 
 /// A triangle for rasterization.
-struct Triangle {
-	Triangle(Vector2::Arg v0, Vector2::Arg v1, Vector2::Arg v2, Vector3::Arg t0, Vector3::Arg t1, Vector3::Arg t2) {
+struct Triangle
+{
+	Triangle(Vector2::Arg v0, Vector2::Arg v1, Vector2::Arg v2, Vector3::Arg t0, Vector3::Arg t1, Vector3::Arg t2)
+	{
 		// Init vertices.
 		this->v1 = v0;
 		this->v2 = v2;
@@ -3437,7 +3685,8 @@ struct Triangle {
 	/// This method takes two edge vectors that form a basis, determines the
 	/// coordinates of the canonic vectors in that basis, and computes the
 	/// texture gradient that corresponds to those vectors.
-	bool computeDeltas() {
+	bool computeDeltas()
+	{
 		Vector2 e0 = v3 - v1;
 		Vector2 e1 = v2 - v1;
 		Vector3 de0 = t3 - t1;
@@ -3446,16 +3695,17 @@ struct Triangle {
 		if (!std::isfinite(denom)) {
 			return false;
 		}
-		float lambda1 = -e1.y * denom;
+		float lambda1 = - e1.y * denom;
 		float lambda2 = e0.y * denom;
 		float lambda3 = e1.x * denom;
-		float lambda4 = -e0.x * denom;
+		float lambda4 = - e0.x * denom;
 		dx = de0 * lambda1 + de1 * lambda2;
 		dy = de0 * lambda3 + de1 * lambda4;
 		return true;
 	}
 
-	bool draw(const Vector2 &extents, bool enableScissors, SamplingCallback cb, void *param) {
+	bool draw(const Vector2 &extents, bool enableScissors, SamplingCallback cb, void *param)
+	{
 		// 28.4 fixed-point coordinates
 		const int Y1 = ftoi_round(16.0f * v1.y);
 		const int Y2 = ftoi_round(16.0f * v2.y);
@@ -3479,10 +3729,10 @@ struct Triangle {
 		const int FDY31 = DY31 << 4;
 		int minx, miny, maxx, maxy;
 		if (enableScissors) {
-			int frustumX0 = 0 << 4;
-			int frustumY0 = 0 << 4;
-			int frustumX1 = (int)extents.x << 4;
-			int frustumY1 = (int)extents.y << 4;
+			int frustumX0 =  0 << 4;
+			int frustumY0 =  0 << 4;
+			int frustumX1 =  (int)extents.x << 4;
+			int frustumY1 =  (int)extents.y << 4;
 			// Bounding rectangle
 			minx = (std::max(min3(X1, X2, X3), frustumX0) + 0xF) >> 4;
 			miny = (std::max(min3(Y1, Y2, Y3), frustumY0) + 0xF) >> 4;
@@ -3586,26 +3836,27 @@ struct Triangle {
 	}
 
 	// extents has to be multiple of BK_SIZE!!
-	bool drawAA(const Vector2 &extents, bool enableScissors, SamplingCallback cb, void *param) {
-		const float PX_INSIDE = 1.0f / sqrt(2.0f);
-		const float PX_OUTSIDE = -1.0f / sqrt(2.0f);
+	bool drawAA(const Vector2 &extents, bool enableScissors, SamplingCallback cb, void *param)
+	{
+		const float PX_INSIDE = 1.0f/sqrt(2.0f);
+		const float PX_OUTSIDE = -1.0f/sqrt(2.0f);
 		const float BK_SIZE = 8;
-		const float BK_INSIDE = sqrt(BK_SIZE * BK_SIZE / 2.0f);
-		const float BK_OUTSIDE = -sqrt(BK_SIZE * BK_SIZE / 2.0f);
+		const float BK_INSIDE = sqrt(BK_SIZE*BK_SIZE/2.0f);
+		const float BK_OUTSIDE = -sqrt(BK_SIZE*BK_SIZE/2.0f);
 
 		float minx, miny, maxx, maxy;
 		if (enableScissors) {
 			// Bounding rectangle
 			minx = floorf(std::max(min3(v1.x, v2.x, v3.x), 0.0f));
 			miny = floorf(std::max(min3(v1.y, v2.y, v3.y), 0.0f));
-			maxx = ceilf(std::min(max3(v1.x, v2.x, v3.x), extents.x - 1.0f));
-			maxy = ceilf(std::min(max3(v1.y, v2.y, v3.y), extents.y - 1.0f));
+			maxx = ceilf( std::min(max3(v1.x, v2.x, v3.x), extents.x - 1.0f));
+			maxy = ceilf( std::min(max3(v1.y, v2.y, v3.y), extents.y - 1.0f));
 		} else {
 			// Bounding rectangle
 			minx = floorf(min3(v1.x, v2.x, v3.x));
 			miny = floorf(min3(v1.y, v2.y, v3.y));
-			maxx = ceilf(max3(v1.x, v2.x, v3.x));
-			maxy = ceilf(max3(v1.y, v2.y, v3.y));
+			maxx = ceilf( max3(v1.x, v2.x, v3.x));
+			maxy = ceilf( max3(v1.y, v2.y, v3.y));
 		}
 		// There's no reason to align the blocks to the viewport, instead we align them to the origin of the triangle bounds.
 		minx = floorf(minx);
@@ -3631,9 +3882,9 @@ struct Triangle {
 				float bC = C2 + n2.x * xc + n2.y * yc;
 				float cC = C3 + n3.x * xc + n3.y * yc;
 				// Skip block when outside an edge
-				if ((aC <= BK_OUTSIDE) || (bC <= BK_OUTSIDE) || (cC <= BK_OUTSIDE)) continue;
+				if ( (aC <= BK_OUTSIDE) || (bC <= BK_OUTSIDE) || (cC <= BK_OUTSIDE) ) continue;
 				// Accept whole block when totally covered
-				if ((aC >= BK_INSIDE) && (bC >= BK_INSIDE) && (cC >= BK_INSIDE)) {
+				if ( (aC >= BK_INSIDE) && (bC >= BK_INSIDE) && (cC >= BK_INSIDE) ) {
 					Vector3 texRow = t1 + dy * (y0 - v1.y) + dx * (x0 - v1.x);
 					for (float y = y0; y < y0 + BK_SIZE; y++) {
 						Vector3 tex = texRow;
@@ -3695,9 +3946,10 @@ struct Triangle {
 		return true;
 	}
 
-	void flipBackface() {
+	void flipBackface()
+	{
 		// check if triangle is backfacing, if so, swap two vertices
-		if (((v3.x - v1.x) * (v2.y - v1.y) - (v3.y - v1.y) * (v2.x - v1.x)) < 0) {
+		if ( ((v3.x - v1.x) * (v2.y - v1.y) - (v3.y - v1.y) * (v2.x - v1.x)) < 0 ) {
 			Vector2 hv = v1;
 			v1 = v2;
 			v2 = hv; // swap pos
@@ -3708,7 +3960,8 @@ struct Triangle {
 	}
 
 	// compute unit inward normals for each edge.
-	void computeUnitInwardNormals() {
+	void computeUnitInwardNormals()
+	{
 		n1 = v1 - v2;
 		n1 = Vector2(-n1.y, n1.x);
 		n1 = n1 * (1.0f / sqrtf(n1.x * n1.x + n1.y * n1.y));
@@ -3732,13 +3985,15 @@ struct Triangle {
 	bool valid;
 };
 
-enum Mode {
+enum Mode
+{
 	Mode_Nearest,
 	Mode_Antialiased
 };
 
 // Process the given triangle. Returns false if rasterization was interrupted by the callback.
-static bool drawTriangle(Mode mode, Vector2::Arg extents, bool enableScissors, const Vector2 v[3], SamplingCallback cb, void *param) {
+static bool drawTriangle(Mode mode, Vector2::Arg extents, bool enableScissors, const Vector2 v[3], SamplingCallback cb, void *param)
+{
 	Triangle tri(v[0], v[1], v[2], Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1));
 	// @@ It would be nice to have a conservative drawing mode that enlarges the triangle extents by one texel and is able to handle degenerate triangles.
 	// @@ Maybe the simplest thing to do would be raster triangle edges.
@@ -3754,7 +4009,8 @@ static bool drawTriangle(Mode mode, Vector2::Arg extents, bool enableScissors, c
 }
 
 // Process the given quad. Returns false if rasterization was interrupted by the callback.
-static bool drawQuad(Mode mode, Vector2::Arg extents, bool enableScissors, const Vector2 v[4], SamplingCallback cb, void *param) {
+static bool drawQuad(Mode mode, Vector2::Arg extents, bool enableScissors, const Vector2 v[4], SamplingCallback cb, void *param)
+{
 	bool sign0 = triangleArea2(v[0], v[1], v[2]) > 0.0f;
 	bool sign1 = triangleArea2(v[0], v[2], v[3]) > 0.0f;
 	// Divide the quad into two non overlapping triangles.
@@ -3786,7 +4042,8 @@ static bool drawQuad(Mode mode, Vector2::Arg extents, bool enableScissors, const
 // Full and sparse vector and matrix classes. BLAS subset.
 // Pseudo-BLAS interface.
 namespace sparse {
-enum Transpose {
+enum Transpose
+{
 	NoTransposed = 0,
 	Transposed = 1
 };
@@ -3799,22 +4056,22 @@ enum Transpose {
 * elements for each row of the matrix. As with the FullVector the
 * dimension of the matrix is constant.
 **/
-class Matrix {
+class Matrix
+{
 public:
 	// An element of the sparse array.
-	struct Coefficient {
-		uint32_t x; // column
+	struct Coefficient
+	{
+		uint32_t x;  // column
 		float v; // value
 	};
 
-	Matrix(uint32_t d) :
-			m_width(d) { m_array.resize(d); }
-	Matrix(uint32_t w, uint32_t h) :
-			m_width(w) { m_array.resize(h); }
-	Matrix(const Matrix &m) :
-			m_width(m.m_width) { m_array = m.m_array; }
+	Matrix(uint32_t d) : m_width(d) { m_array.resize(d); }
+	Matrix(uint32_t w, uint32_t h) : m_width(w) { m_array.resize(h); }
+	Matrix(const Matrix &m) : m_width(m.m_width) { m_array = m.m_array; }
 
-	const Matrix &operator=(const Matrix &m) {
+	const Matrix &operator=(const Matrix &m)
+	{
 		xaAssert(width() == m.width());
 		xaAssert(height() == m.height());
 		m_array = m.m_array;
@@ -3826,9 +4083,10 @@ public:
 	bool isSquare() const { return width() == height(); }
 
 	// x is column, y is row
-	float getCoefficient(uint32_t x, uint32_t y) const {
-		xaDebugAssert(x < width());
-		xaDebugAssert(y < height());
+	float getCoefficient(uint32_t x, uint32_t y) const
+	{
+		xaDebugAssert( x < width() );
+		xaDebugAssert( y < height() );
 		const uint32_t count = m_array[y].size();
 		for (uint32_t i = 0; i < count; i++) {
 			if (m_array[y][i].x == x) return m_array[y][i].v;
@@ -3836,9 +4094,10 @@ public:
 		return 0.0f;
 	}
 
-	void setCoefficient(uint32_t x, uint32_t y, float f) {
-		xaDebugAssert(x < width());
-		xaDebugAssert(y < height());
+	void setCoefficient(uint32_t x, uint32_t y, float f)
+	{
+		xaDebugAssert( x < width() );
+		xaDebugAssert( y < height() );
 		const uint32_t count = m_array[y].size();
 		for (uint32_t i = 0; i < count; i++) {
 			if (m_array[y][i].x == x) {
@@ -3848,12 +4107,13 @@ public:
 		}
 		if (f != 0.0f) {
 			Coefficient c = { x, f };
-			m_array[y].push_back(c);
+			m_array[y].push_back( c );
 		}
 	}
 
-	float dotRow(uint32_t y, const FullVector &v) const {
-		xaDebugAssert(y < height());
+	float dotRow(uint32_t y, const FullVector &v) const
+	{
+		xaDebugAssert( y < height() );
 		const uint32_t count = m_array[y].size();
 		float sum = 0;
 		for (uint32_t i = 0; i < count; i++) {
@@ -3862,7 +4122,8 @@ public:
 		return sum;
 	}
 
-	void madRow(uint32_t y, float alpha, FullVector &v) const {
+	void madRow(uint32_t y, float alpha, FullVector &v) const
+	{
 		xaDebugAssert(y < height());
 		const uint32_t count = m_array[y].size();
 		for (uint32_t i = 0; i < count; i++) {
@@ -3870,13 +4131,15 @@ public:
 		}
 	}
 
-	void clearRow(uint32_t y) {
-		xaDebugAssert(y < height());
+	void clearRow(uint32_t y)
+	{
+		xaDebugAssert( y < height() );
 		m_array[y].clear();
 	}
 
-	void scaleRow(uint32_t y, float f) {
-		xaDebugAssert(y < height());
+	void scaleRow(uint32_t y, float f)
+	{
+		xaDebugAssert( y < height() );
 		const uint32_t count = m_array[y].size();
 		for (uint32_t i = 0; i < count; i++) {
 			m_array[y][i].v *= f;
@@ -3890,11 +4153,12 @@ private:
 	const uint32_t m_width;
 
 	/// Array of matrix elements.
-	std::vector<std::vector<Coefficient> > m_array;
+	std::vector< std::vector<Coefficient> > m_array;
 };
 
 // y = a * x + y
-static void saxpy(float a, const FullVector &x, FullVector &y) {
+static void saxpy(float a, const FullVector &x, FullVector &y)
+{
 	xaDebugAssert(x.dimension() == y.dimension());
 	const uint32_t dim = x.dimension();
 	for (uint32_t i = 0; i < dim; i++) {
@@ -3902,7 +4166,8 @@ static void saxpy(float a, const FullVector &x, FullVector &y) {
 	}
 }
 
-static void copy(const FullVector &x, FullVector &y) {
+static void copy(const FullVector &x, FullVector &y)
+{
 	xaDebugAssert(x.dimension() == y.dimension());
 	const uint32_t dim = x.dimension();
 	for (uint32_t i = 0; i < dim; i++) {
@@ -3910,14 +4175,16 @@ static void copy(const FullVector &x, FullVector &y) {
 	}
 }
 
-static void scal(float a, FullVector &x) {
+static void scal(float a, FullVector &x)
+{
 	const uint32_t dim = x.dimension();
 	for (uint32_t i = 0; i < dim; i++) {
 		x[i] *= a;
 	}
 }
 
-static float dot(const FullVector &x, const FullVector &y) {
+static float dot(const FullVector &x, const FullVector &y)
+{
 	xaDebugAssert(x.dimension() == y.dimension());
 	const uint32_t dim = x.dimension();
 	float sum = 0;
@@ -3927,19 +4194,20 @@ static float dot(const FullVector &x, const FullVector &y) {
 	return sum;
 }
 
-static void mult(Transpose TM, const Matrix &M, const FullVector &x, FullVector &y) {
+static void mult(Transpose TM, const Matrix &M, const FullVector &x, FullVector &y)
+{
 	const uint32_t w = M.width();
 	const uint32_t h = M.height();
 	if (TM == Transposed) {
-		xaDebugAssert(h == x.dimension());
-		xaDebugAssert(w == y.dimension());
+		xaDebugAssert( h == x.dimension() );
+		xaDebugAssert( w == y.dimension() );
 		y.fill(0.0f);
 		for (uint32_t i = 0; i < h; i++) {
 			M.madRow(i, x[i], y);
 		}
 	} else {
-		xaDebugAssert(w == x.dimension());
-		xaDebugAssert(h == y.dimension());
+		xaDebugAssert( w == x.dimension() );
+		xaDebugAssert( h == y.dimension() );
 		for (uint32_t i = 0; i < h; i++) {
 			y[i] = M.dotRow(i, x);
 		}
@@ -3947,22 +4215,24 @@ static void mult(Transpose TM, const Matrix &M, const FullVector &x, FullVector 
 }
 
 // y = M * x
-static void mult(const Matrix &M, const FullVector &x, FullVector &y) {
+static void mult(const Matrix &M, const FullVector &x, FullVector &y)
+{
 	mult(NoTransposed, M, x, y);
 }
 
-static void sgemv(float alpha, Transpose TA, const Matrix &A, const FullVector &x, float beta, FullVector &y) {
+static void sgemv(float alpha, Transpose TA, const Matrix &A, const FullVector &x, float beta, FullVector &y)
+{
 	const uint32_t w = A.width();
 	const uint32_t h = A.height();
 	if (TA == Transposed) {
-		xaDebugAssert(h == x.dimension());
-		xaDebugAssert(w == y.dimension());
+		xaDebugAssert( h == x.dimension() );
+		xaDebugAssert( w == y.dimension() );
 		for (uint32_t i = 0; i < h; i++) {
 			A.madRow(i, alpha * x[i], y);
 		}
 	} else {
-		xaDebugAssert(w == x.dimension());
-		xaDebugAssert(h == y.dimension());
+		xaDebugAssert( w == x.dimension() );
+		xaDebugAssert( h == y.dimension() );
 		for (uint32_t i = 0; i < h; i++) {
 			y[i] = alpha * A.dotRow(i, x) + beta * y[i];
 		}
@@ -3970,12 +4240,14 @@ static void sgemv(float alpha, Transpose TA, const Matrix &A, const FullVector &
 }
 
 // y = alpha*A*x + beta*y
-static void sgemv(float alpha, const Matrix &A, const FullVector &x, float beta, FullVector &y) {
+static void sgemv(float alpha, const Matrix &A, const FullVector &x, float beta, FullVector &y)
+{
 	sgemv(alpha, NoTransposed, A, x, beta, y);
 }
 
 // dot y-row of A by x-column of B
-static float dotRowColumn(int y, const Matrix &A, int x, const Matrix &B) {
+static float dotRowColumn(int y, const Matrix &A, int x, const Matrix &B)
+{
 	const std::vector<Matrix::Coefficient> &row = A.getRow(y);
 	const uint32_t count = row.size();
 	float sum = 0.0f;
@@ -3987,7 +4259,8 @@ static float dotRowColumn(int y, const Matrix &A, int x, const Matrix &B) {
 }
 
 // dot y-row of A by x-row of B
-static float dotRowRow(int y, const Matrix &A, int x, const Matrix &B) {
+static float dotRowRow(int y, const Matrix &A, int x, const Matrix &B)
+{
 	const std::vector<Matrix::Coefficient> &row = A.getRow(y);
 	const uint32_t count = row.size();
 	float sum = 0.0f;
@@ -3999,7 +4272,8 @@ static float dotRowRow(int y, const Matrix &A, int x, const Matrix &B) {
 }
 
 // dot y-column of A by x-column of B
-static float dotColumnColumn(int y, const Matrix &A, int x, const Matrix &B) {
+static float dotColumnColumn(int y, const Matrix &A, int x, const Matrix &B)
+{
 	xaDebugAssert(A.height() == B.height());
 	const uint32_t h = A.height();
 	float sum = 0.0f;
@@ -4009,7 +4283,8 @@ static float dotColumnColumn(int y, const Matrix &A, int x, const Matrix &B) {
 	return sum;
 }
 
-static void transpose(const Matrix &A, Matrix &B) {
+static void transpose(const Matrix &A, Matrix &B)
+{
 	xaDebugAssert(A.width() == B.height());
 	xaDebugAssert(B.width() == A.height());
 	const uint32_t w = A.width();
@@ -4028,7 +4303,8 @@ static void transpose(const Matrix &A, Matrix &B) {
 	}
 }
 
-static void sgemm(float alpha, Transpose TA, const Matrix &A, Transpose TB, const Matrix &B, float beta, Matrix &C) {
+static void sgemm(float alpha, Transpose TA, const Matrix &A, Transpose TB, const Matrix &B, float beta, Matrix &C)
+{
 	const uint32_t w = C.width();
 	const uint32_t h = C.height();
 	uint32_t aw = (TA == NoTransposed) ? A.width() : A.height();
@@ -4063,21 +4339,24 @@ static void sgemm(float alpha, Transpose TA, const Matrix &A, Transpose TB, cons
 	}
 }
 
-static void mult(Transpose TA, const Matrix &A, Transpose TB, const Matrix &B, Matrix &C) {
+static void mult(Transpose TA, const Matrix &A, Transpose TB, const Matrix &B, Matrix &C)
+{
 	sgemm(1.0f, TA, A, TB, B, 0.0f, C);
 }
 
 // C = A * B
-static void mult(const Matrix &A, const Matrix &B, Matrix &C) {
+static void mult(const Matrix &A, const Matrix &B, Matrix &C)
+{
 	mult(NoTransposed, A, NoTransposed, B, C);
 }
 
 } // namespace sparse
 
-class JacobiPreconditioner {
+class JacobiPreconditioner
+{
 public:
-	JacobiPreconditioner(const sparse::Matrix &M, bool symmetric) :
-			m_inverseDiagonal(M.width()) {
+	JacobiPreconditioner(const sparse::Matrix &M, bool symmetric) : m_inverseDiagonal(M.width())
+	{
 		xaAssert(M.isSquare());
 		for (uint32_t x = 0; x < M.width(); x++) {
 			float elem = M.getCoefficient(x, x);
@@ -4090,7 +4369,8 @@ public:
 		}
 	}
 
-	void apply(const FullVector &x, FullVector &y) const {
+	void apply(const FullVector &x, FullVector &y) const
+	{
 		xaDebugAssert(x.dimension() == m_inverseDiagonal.dimension());
 		xaDebugAssert(y.dimension() == m_inverseDiagonal.dimension());
 		// @@ Wrap vector component-wise product into a separate function.
@@ -4105,10 +4385,12 @@ private:
 };
 
 // Linear solvers.
-class Solver {
+class Solver
+{
 public:
 	// Solve the symmetric system: At·A·x = At·b
-	static bool LeastSquaresSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon = 1e-5f) {
+	static bool LeastSquaresSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon = 1e-5f)
+	{
 		xaDebugAssert(A.width() == x.dimension());
 		xaDebugAssert(A.height() == b.dimension());
 		xaDebugAssert(A.height() >= A.width()); // @@ If height == width we could solve it directly...
@@ -4123,7 +4405,8 @@ public:
 	}
 
 	// See section 10.4.3 in: Mesh Parameterization: Theory and Practice, Siggraph Course Notes, August 2007
-	static bool LeastSquaresSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, const uint32_t *lockedParameters, uint32_t lockedCount, float epsilon = 1e-5f) {
+	static bool LeastSquaresSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, const uint32_t *lockedParameters, uint32_t lockedCount, float epsilon = 1e-5f)
+	{
 		xaDebugAssert(A.width() == x.dimension());
 		xaDebugAssert(A.height() == b.dimension());
 		xaDebugAssert(A.height() >= A.width() - lockedCount);
@@ -4221,16 +4504,17 @@ private:
 	* Jonhathan Richard Shewchuk.
 	*
 	**/
-	static bool ConjugateGradientSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon) {
-		xaDebugAssert(A.isSquare());
-		xaDebugAssert(A.width() == b.dimension());
-		xaDebugAssert(A.width() == x.dimension());
+	static bool ConjugateGradientSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon)
+	{
+		xaDebugAssert( A.isSquare() );
+		xaDebugAssert( A.width() == b.dimension() );
+		xaDebugAssert( A.width() == x.dimension() );
 		int i = 0;
 		const int D = A.width();
-		const int i_max = 4 * D; // Convergence should be linear, but in some cases, it's not.
-		FullVector r(D); // residual
-		FullVector p(D); // search direction
-		FullVector q(D); //
+		const int i_max = 4 * D;   // Convergence should be linear, but in some cases, it's not.
+		FullVector r(D);   // residual
+		FullVector p(D);   // search direction
+		FullVector q(D);   //
 		float delta_0;
 		float delta_old;
 		float delta_new;
@@ -4241,14 +4525,14 @@ private:
 		sparse::sgemv(-1, A, x, 1, r);
 		// p = r;
 		sparse::copy(r, p);
-		delta_new = sparse::dot(r, r);
+		delta_new = sparse::dot( r, r );
 		delta_0 = delta_new;
 		while (i < i_max && delta_new > epsilon * epsilon * delta_0) {
 			i++;
 			// q = A·p
 			mult(A, p, q);
 			// alpha = delta_new / p·q
-			alpha = delta_new / sparse::dot(p, q);
+			alpha = delta_new / sparse::dot( p, q );
 			// x = alfa·p + x
 			sparse::saxpy(alpha, p, x);
 			if ((i & 31) == 0) { // recompute r after 32 steps
@@ -4260,7 +4544,7 @@ private:
 				sparse::saxpy(-alpha, q, r);
 			}
 			delta_old = delta_new;
-			delta_new = sparse::dot(r, r);
+			delta_new = sparse::dot( r, r );
 			beta = delta_new / delta_old;
 			// p = beta·p + r
 			sparse::scal(beta, p);
@@ -4269,18 +4553,20 @@ private:
 		return delta_new <= epsilon * epsilon * delta_0;
 	}
 
+
 	// Conjugate gradient with preconditioner.
-	static bool ConjugateGradientSolver(const JacobiPreconditioner &preconditioner, const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon) {
-		xaDebugAssert(A.isSquare());
-		xaDebugAssert(A.width() == b.dimension());
-		xaDebugAssert(A.width() == x.dimension());
+	static bool ConjugateGradientSolver(const JacobiPreconditioner &preconditioner, const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon)
+	{
+		xaDebugAssert( A.isSquare() );
+		xaDebugAssert( A.width() == b.dimension() );
+		xaDebugAssert( A.width() == x.dimension() );
 		int i = 0;
 		const int D = A.width();
-		const int i_max = 4 * D; // Convergence should be linear, but in some cases, it's not.
-		FullVector r(D); // residual
-		FullVector p(D); // search direction
-		FullVector q(D); //
-		FullVector s(D); // preconditioned
+		const int i_max = 4 * D;   // Convergence should be linear, but in some cases, it's not.
+		FullVector r(D);    // residual
+		FullVector p(D);    // search direction
+		FullVector q(D);    //
+		FullVector s(D);    // preconditioned
 		float delta_0;
 		float delta_old;
 		float delta_new;
@@ -4312,7 +4598,7 @@ private:
 			// s = M^-1 · r
 			preconditioner.apply(r, s);
 			delta_old = delta_new;
-			delta_new = sparse::dot(r, s);
+			delta_new = sparse::dot( r, s );
 			beta = delta_new / delta_old;
 			// p = s + beta·p
 			sparse::scal(beta, p);
@@ -4321,7 +4607,8 @@ private:
 		return delta_new <= epsilon * epsilon * delta_0;
 	}
 
-	static bool SymmetricSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon = 1e-5f) {
+	static bool SymmetricSolver(const sparse::Matrix &A, const FullVector &b, FullVector &x, float epsilon = 1e-5f)
+	{
 		xaDebugAssert(A.height() == A.width());
 		xaDebugAssert(A.height() == b.dimension());
 		xaDebugAssert(b.dimension() == x.dimension());
@@ -4335,7 +4622,8 @@ class Atlas;
 class Chart;
 
 // Fast sweep in 3 directions
-static bool findApproximateDiameterVertices(halfedge::Mesh *mesh, halfedge::Vertex **a, halfedge::Vertex **b) {
+static bool findApproximateDiameterVertices(halfedge::Mesh *mesh, halfedge::Vertex **a, halfedge::Vertex **b)
+{
 	xaDebugAssert(mesh != NULL);
 	xaDebugAssert(a != NULL);
 	xaDebugAssert(b != NULL);
@@ -4364,18 +4652,12 @@ static bool findApproximateDiameterVertices(halfedge::Mesh *mesh, halfedge::Vert
 			// Skip interior vertices.
 			continue;
 		}
-		if (vertex->pos.x < minVertex[0]->pos.x)
-			minVertex[0] = vertex;
-		else if (vertex->pos.x > maxVertex[0]->pos.x)
-			maxVertex[0] = vertex;
-		if (vertex->pos.y < minVertex[1]->pos.y)
-			minVertex[1] = vertex;
-		else if (vertex->pos.y > maxVertex[1]->pos.y)
-			maxVertex[1] = vertex;
-		if (vertex->pos.z < minVertex[2]->pos.z)
-			minVertex[2] = vertex;
-		else if (vertex->pos.z > maxVertex[2]->pos.z)
-			maxVertex[2] = vertex;
+		if (vertex->pos.x < minVertex[0]->pos.x) minVertex[0] = vertex;
+		else if (vertex->pos.x > maxVertex[0]->pos.x) maxVertex[0] = vertex;
+		if (vertex->pos.y < minVertex[1]->pos.y) minVertex[1] = vertex;
+		else if (vertex->pos.y > maxVertex[1]->pos.y) maxVertex[1] = vertex;
+		if (vertex->pos.z < minVertex[2]->pos.z) minVertex[2] = vertex;
+		else if (vertex->pos.z > maxVertex[2]->pos.z) maxVertex[2] = vertex;
 	}
 	float lengths[3];
 	for (int i = 0; i < 3; i++) {
@@ -4396,24 +4678,28 @@ static bool findApproximateDiameterVertices(halfedge::Mesh *mesh, halfedge::Vert
 
 // Conformal relations from Brecht Van Lommel (based on ABF):
 
-static float vec_angle_cos(Vector3::Arg v1, Vector3::Arg v2, Vector3::Arg v3) {
+static float vec_angle_cos(Vector3::Arg v1, Vector3::Arg v2, Vector3::Arg v3)
+{
 	Vector3 d1 = v1 - v2;
 	Vector3 d2 = v3 - v2;
 	return clamp(dot(d1, d2) / (length(d1) * length(d2)), -1.0f, 1.0f);
 }
 
-static float vec_angle(Vector3::Arg v1, Vector3::Arg v2, Vector3::Arg v3) {
+static float vec_angle(Vector3::Arg v1, Vector3::Arg v2, Vector3::Arg v3)
+{
 	float dot = vec_angle_cos(v1, v2, v3);
 	return acosf(dot);
 }
 
-static void triangle_angles(Vector3::Arg v1, Vector3::Arg v2, Vector3::Arg v3, float *a1, float *a2, float *a3) {
+static void triangle_angles(Vector3::Arg v1, Vector3::Arg v2, Vector3::Arg v3, float *a1, float *a2, float *a3)
+{
 	*a1 = vec_angle(v3, v1, v2);
 	*a2 = vec_angle(v1, v2, v3);
 	*a3 = PI - *a2 - *a1;
 }
 
-static void setup_abf_relations(sparse::Matrix &A, int row, const halfedge::Vertex *v0, const halfedge::Vertex *v1, const halfedge::Vertex *v2) {
+static void setup_abf_relations(sparse::Matrix &A, int row, const halfedge::Vertex *v0, const halfedge::Vertex *v1, const halfedge::Vertex *v2)
+{
 	int id0 = v0->id;
 	int id1 = v1->id;
 	int id2 = v2->id;
@@ -4469,7 +4755,8 @@ static void setup_abf_relations(sparse::Matrix &A, int row, const halfedge::Vert
 	A.setCoefficient(v2_id, 2 * row + 1, 1);
 }
 
-bool computeLeastSquaresConformalMap(halfedge::Mesh *mesh) {
+bool computeLeastSquaresConformalMap(halfedge::Mesh *mesh)
+{
 	xaDebugAssert(mesh != NULL);
 	// For this to work properly, mesh should not have colocals that have the same
 	// attributes, unless you want the vertices to actually have different texcoords.
@@ -4542,7 +4829,8 @@ bool computeLeastSquaresConformalMap(halfedge::Mesh *mesh) {
 	return true;
 }
 
-bool computeOrthogonalProjectionMap(halfedge::Mesh *mesh) {
+bool computeOrthogonalProjectionMap(halfedge::Mesh *mesh)
+{
 	Vector3 axis[2];
 	uint32_t vertexCount = mesh->vertexCount();
 	std::vector<Vector3> points(vertexCount);
@@ -4572,7 +4860,8 @@ bool computeOrthogonalProjectionMap(halfedge::Mesh *mesh) {
 	return true;
 }
 
-void computeSingleFaceMap(halfedge::Mesh *mesh) {
+void computeSingleFaceMap(halfedge::Mesh *mesh)
+{
 	xaDebugAssert(mesh != NULL);
 	xaDebugAssert(mesh->faceCount() == 1);
 	halfedge::Face *face = mesh->faceAt(0);
@@ -4603,11 +4892,12 @@ void computeSingleFaceMap(halfedge::Mesh *mesh) {
 // - Resorting is n*log(n)
 // @@ Number of elements in the queue is usually small, and we'd have to rebalance often. I'm not sure it's worth implementing a heap.
 // @@ Searcing at removal would remove the need for sorting when priorities change.
-struct PriorityQueue {
-	PriorityQueue(uint32_t size = UINT_MAX) :
-			maxSize(size) {}
+struct PriorityQueue
+{
+	PriorityQueue(uint32_t size = UINT_MAX) : maxSize(size) {}
 
-	void push(float priority, uint32_t face) {
+	void push(float priority, uint32_t face)
+	{
 		uint32_t i = 0;
 		const uint32_t count = pairs.size();
 		for (; i < count; i++) {
@@ -4621,39 +4911,47 @@ struct PriorityQueue {
 	}
 
 	// push face out of order, to be sorted later.
-	void push(uint32_t face) {
+	void push(uint32_t face)
+	{
 		Pair p = { 0.0f, face };
 		pairs.push_back(p);
 	}
 
-	uint32_t pop() {
+	uint32_t pop()
+	{
 		uint32_t f = pairs.back().face;
 		pairs.pop_back();
 		return f;
 	}
 
-	void sort() {
+	void sort()
+	{
 		//sort(pairs); // @@ My intro sort appears to be much slower than it should!
 		std::sort(pairs.begin(), pairs.end());
 	}
 
-	void clear() {
+	void clear()
+	{
 		pairs.clear();
 	}
 
-	uint32_t count() const {
+	uint32_t count() const
+	{
 		return pairs.size();
 	}
 
-	float firstPriority() const {
+	float firstPriority() const
+	{
 		return pairs.back().priority;
 	}
 
 	const uint32_t maxSize;
 
-	struct Pair {
-		bool operator<(const Pair &p) const {
-			return priority > p.priority; // !! Sort in inverse priority order!
+	struct Pair
+	{
+		bool operator <(const Pair &p) const
+		{
+			return priority > p.priority;    // !! Sort in inverse priority order!
 		}
 
 		float priority;
@@ -4663,9 +4961,10 @@ struct PriorityQueue {
 	std::vector<Pair> pairs;
 };
 
-struct ChartBuildData {
-	ChartBuildData(int p_id) :
-			id(p_id) {
+struct ChartBuildData
+{
+	ChartBuildData(int id) : id(id)
+	{
 		planeNormal = Vector3(0);
 		centroid = Vector3(0);
 		coneAxis = Vector3(0);
@@ -4689,15 +4988,15 @@ struct ChartBuildData {
 	Vector3 normalSum;
 	Vector3 centroidSum;
 
-	std::vector<uint32_t> seeds; // @@ These could be a pointers to the halfedge faces directly.
+	std::vector<uint32_t> seeds;  // @@ These could be a pointers to the halfedge faces directly.
 	std::vector<uint32_t> faces;
 	PriorityQueue candidates;
 };
 
-struct AtlasBuilder {
-	AtlasBuilder(const halfedge::Mesh *m) :
-			mesh(m),
-			facesLeft(m->faceCount()) {
+struct AtlasBuilder
+{
+	AtlasBuilder(const halfedge::Mesh *m) : mesh(m), facesLeft(m->faceCount())
+	{
 		const uint32_t faceCount = m->faceCount();
 		faceChartArray.resize(faceCount, -1);
 		faceCandidateArray.resize(faceCount, (uint32_t)-1);
@@ -4720,14 +5019,16 @@ struct AtlasBuilder {
 		}
 	}
 
-	~AtlasBuilder() {
+	~AtlasBuilder()
+	{
 		const uint32_t chartCount = chartArray.size();
 		for (uint32_t i = 0; i < chartCount; i++) {
 			delete chartArray[i];
 		}
 	}
 
-	void markUnchartedFaces(const std::vector<uint32_t> &unchartedFaces) {
+	void markUnchartedFaces(const std::vector<uint32_t> &unchartedFaces)
+	{
 		const uint32_t unchartedFaceCount = unchartedFaces.size();
 		for (uint32_t i = 0; i < unchartedFaceCount; i++) {
 			uint32_t f = unchartedFaces[i];
@@ -4739,7 +5040,8 @@ struct AtlasBuilder {
 		facesLeft -= unchartedFaceCount;
 	}
 
-	void computeShortestPaths() {
+	void computeShortestPaths()
+	{
 		const uint32_t faceCount = mesh->faceCount();
 		shortestPaths.resize(faceCount * faceCount, FLT_MAX);
 		// Fill edges:
@@ -4767,7 +5069,8 @@ struct AtlasBuilder {
 		}
 	}
 
-	void placeSeeds(float threshold, uint32_t maxSeedCount) {
+	void placeSeeds(float threshold, uint32_t maxSeedCount)
+	{
 		// Instead of using a predefiened number of seeds:
 		// - Add seeds one by one, growing chart until a certain treshold.
 		// - Undo charts and restart growing process.
@@ -4783,18 +5086,17 @@ struct AtlasBuilder {
 		}
 	}
 
-	void createRandomChart(float threshold) {
+	void createRandomChart(float threshold)
+	{
 		ChartBuildData *chart = new ChartBuildData(chartArray.size());
 		chartArray.push_back(chart);
 		// Pick random face that is not used by any chart yet.
 		uint32_t randomFaceIdx = rand.getRange(facesLeft - 1);
 		uint32_t i = 0;
 		for (uint32_t f = 0; f != randomFaceIdx; f++, i++) {
-			while (faceChartArray[i] != -1)
-				i++;
+			while (faceChartArray[i] != -1) i++;
 		}
-		while (faceChartArray[i] != -1)
-			i++;
+		while (faceChartArray[i] != -1) i++;
 		chart->seeds.push_back(i);
 		addFaceToChart(chart, i, true);
 		// Grow the chart as much as possible within the given threshold.
@@ -4802,7 +5104,8 @@ struct AtlasBuilder {
 		//growCharts(threshold - threshold * 0.75f / chartCount(), facesLeft);
 	}
 
-	void addFaceToChart(ChartBuildData *chart, uint32_t f, bool recomputeProxy = false) {
+	void addFaceToChart(ChartBuildData *chart, uint32_t f, bool recomputeProxy = false)
+	{
 		// Add face to chart.
 		chart->faces.push_back(f);
 		xaDebugAssert(faceChartArray[f] == -1);
@@ -4824,7 +5127,8 @@ struct AtlasBuilder {
 	}
 
 	// Returns true if any of the charts can grow more.
-	bool growCharts(float threshold, uint32_t faceCount) {
+	bool growCharts(float threshold, uint32_t faceCount)
+	{
 		// Using one global list.
 		faceCount = std::min(faceCount, facesLeft);
 		for (uint32_t i = 0; i < faceCount; i++) {
@@ -4837,9 +5141,10 @@ struct AtlasBuilder {
 		return facesLeft != 0; // Can continue growing.
 	}
 
-	bool growChart(ChartBuildData *chart, float threshold, uint32_t faceCount) {
+	bool growChart(ChartBuildData *chart, float threshold, uint32_t faceCount)
+	{
 		// Try to add faceCount faces within threshold to chart.
-		for (uint32_t i = 0; i < faceCount;) {
+		for (uint32_t i = 0; i < faceCount; ) {
 			if (chart->candidates.count() == 0 || chart->candidates.firstPriority() > threshold) {
 				return false;
 			}
@@ -4855,7 +5160,8 @@ struct AtlasBuilder {
 		return true;
 	}
 
-	void resetCharts() {
+	void resetCharts()
+	{
 		const uint32_t faceCount = mesh->faceCount();
 		for (uint32_t i = 0; i < faceCount; i++) {
 			faceChartArray[i] = -1;
@@ -4877,7 +5183,8 @@ struct AtlasBuilder {
 		}
 	}
 
-	void updateCandidates(ChartBuildData *chart, uint32_t f) {
+	void updateCandidates(ChartBuildData *chart, uint32_t f)
+	{
 		const halfedge::Face *face = mesh->faceAt(f);
 		// Traverse neighboring faces, add the ones that do not belong to any chart yet.
 		for (halfedge::Face::ConstEdgeIterator it(face->edges()); !it.isDone(); it.advance()) {
@@ -4891,20 +5198,23 @@ struct AtlasBuilder {
 		}
 	}
 
-	void updateProxies() {
+	void updateProxies()
+	{
 		const uint32_t chartCount = chartArray.size();
 		for (uint32_t i = 0; i < chartCount; i++) {
 			updateProxy(chartArray[i]);
 		}
 	}
 
-	void updateProxy(ChartBuildData *chart) {
+	void updateProxy(ChartBuildData *chart)
+	{
 		//#pragma message(NV_FILE_LINE "TODO: Use best fit plane instead of average normal.")
 		chart->planeNormal = normalizeSafe(chart->normalSum, Vector3(0), 0.0f);
 		chart->centroid = chart->centroidSum / float(chart->faces.size());
 	}
 
-	bool relocateSeeds() {
+	bool relocateSeeds()
+	{
 		bool anySeedChanged = false;
 		const uint32_t chartCount = chartArray.size();
 		for (uint32_t i = 0; i < chartCount; i++) {
@@ -4915,9 +5225,10 @@ struct AtlasBuilder {
 		return anySeedChanged;
 	}
 
-	bool relocateSeed(ChartBuildData *chart) {
+	bool relocateSeed(ChartBuildData *chart)
+	{
 		Vector3 centroid = computeChartCentroid(chart);
-		const uint32_t N = 10; // @@ Hardcoded to 10?
+		const uint32_t N = 10;  // @@ Hardcoded to 10?
 		PriorityQueue bestTriangles(N);
 		// Find the first N triangles that fit the proxy best.
 		const uint32_t faceCount = chart->faces.size();
@@ -4953,7 +5264,8 @@ struct AtlasBuilder {
 		}
 	}
 
-	void updatePriorities(ChartBuildData *chart) {
+	void updatePriorities(ChartBuildData *chart)
+	{
 		// Re-evaluate candidate priorities.
 		uint32_t candidateCount = chart->candidates.count();
 		for (uint32_t i = 0; i < candidateCount; i++) {
@@ -4967,7 +5279,8 @@ struct AtlasBuilder {
 	}
 
 	// Evaluate combined metric.
-	float evaluatePriority(ChartBuildData *chart, uint32_t face) {
+	float evaluatePriority(ChartBuildData *chart, uint32_t face)
+	{
 		// Estimate boundary length and area:
 		float newBoundaryLength = evaluateBoundaryLength(chart, face);
 		float newChartArea = evaluateChartArea(chart, face);
@@ -4984,11 +5297,11 @@ struct AtlasBuilder {
 		// - Cause more impedance. Never cross 90 degree edges.
 		// -
 		float cost = float(
-				options.proxyFitMetricWeight * F +
-				options.roundnessMetricWeight * C +
-				options.straightnessMetricWeight * P +
-				options.normalSeamMetricWeight * N +
-				options.textureSeamMetricWeight * T);
+						 options.proxyFitMetricWeight * F +
+						 options.roundnessMetricWeight * C +
+						 options.straightnessMetricWeight * P +
+						 options.normalSeamMetricWeight * N +
+						 options.textureSeamMetricWeight * T);
 		// Enforce limits strictly:
 		if (newChartArea > options.maxChartArea) cost = FLT_MAX;
 		if (newBoundaryLength > options.maxBoundaryLength) cost = FLT_MAX;
@@ -4999,14 +5312,16 @@ struct AtlasBuilder {
 	}
 
 	// Returns a value in [0-1].
-	float evaluateProxyFitMetric(ChartBuildData *chart, uint32_t f) {
+	float evaluateProxyFitMetric(ChartBuildData *chart, uint32_t f)
+	{
 		const halfedge::Face *face = mesh->faceAt(f);
 		Vector3 faceNormal = face->triangleNormal();
 		// Use plane fitting metric for now:
 		return 1 - dot(faceNormal, chart->planeNormal); // @@ normal deviations should be weighted by face area
 	}
 
-	float evaluateRoundnessMetric(ChartBuildData *chart, uint32_t /*face*/, float newBoundaryLength, float newChartArea) {
+	float evaluateRoundnessMetric(ChartBuildData *chart, uint32_t /*face*/, float newBoundaryLength, float newChartArea)
+	{
 		float roundness = square(chart->boundaryLength) / chart->area;
 		float newRoundness = square(newBoundaryLength) / newChartArea;
 		if (newRoundness > roundness) {
@@ -5017,7 +5332,8 @@ struct AtlasBuilder {
 		}
 	}
 
-	float evaluateStraightnessMetric(ChartBuildData *chart, uint32_t f) {
+	float evaluateStraightnessMetric(ChartBuildData *chart, uint32_t f)
+	{
 		float l_out = 0.0f;
 		float l_in = 0.0f;
 		const halfedge::Face *face = mesh->faceAt(f);
@@ -5040,7 +5356,8 @@ struct AtlasBuilder {
 		return std::min(ratio, 0.0f); // Only use the straightness metric to close gaps.
 	}
 
-	float evaluateNormalSeamMetric(ChartBuildData *chart, uint32_t f) {
+	float evaluateNormalSeamMetric(ChartBuildData *chart, uint32_t f)
+	{
 		float seamFactor = 0.0f;
 		float totalLength = 0.0f;
 		const halfedge::Face *face = mesh->faceAt(f);
@@ -5071,7 +5388,8 @@ struct AtlasBuilder {
 		return seamFactor / totalLength;
 	}
 
-	float evaluateTextureSeamMetric(ChartBuildData *chart, uint32_t f) {
+	float evaluateTextureSeamMetric(ChartBuildData *chart, uint32_t f)
+	{
 		float seamLength = 0.0f;
 		float totalLength = 0.0f;
 		const halfedge::Face *face = mesh->faceAt(f);
@@ -5101,12 +5419,14 @@ struct AtlasBuilder {
 		return seamLength / totalLength;
 	}
 
-	float evaluateChartArea(ChartBuildData *chart, uint32_t f) {
+	float evaluateChartArea(ChartBuildData *chart, uint32_t f)
+	{
 		const halfedge::Face *face = mesh->faceAt(f);
 		return chart->area + faceAreas[face->id];
 	}
 
-	float evaluateBoundaryLength(ChartBuildData *chart, uint32_t f) {
+	float evaluateBoundaryLength(ChartBuildData *chart, uint32_t f)
+	{
 		float boundaryLength = chart->boundaryLength;
 		// Add new edges, subtract edges shared with the chart.
 		const halfedge::Face *face = mesh->faceAt(f);
@@ -5125,20 +5445,23 @@ struct AtlasBuilder {
 				}
 			}
 		}
-		return std::max(0.0f, boundaryLength); // @@ Hack!
+		return std::max(0.0f, boundaryLength);  // @@ Hack!
 	}
 
-	Vector3 evaluateChartNormalSum(ChartBuildData *chart, uint32_t f) {
+	Vector3 evaluateChartNormalSum(ChartBuildData *chart, uint32_t f)
+	{
 		const halfedge::Face *face = mesh->faceAt(f);
 		return chart->normalSum + face->triangleNormalAreaScaled();
 	}
 
-	Vector3 evaluateChartCentroidSum(ChartBuildData *chart, uint32_t f) {
+	Vector3 evaluateChartCentroidSum(ChartBuildData *chart, uint32_t f)
+	{
 		const halfedge::Face *face = mesh->faceAt(f);
 		return chart->centroidSum + face->centroid();
 	}
 
-	Vector3 computeChartCentroid(const ChartBuildData *chart) {
+	Vector3 computeChartCentroid(const ChartBuildData *chart)
+	{
 		Vector3 centroid(0);
 		const uint32_t faceCount = chart->faces.size();
 		for (uint32_t i = 0; i < faceCount; i++) {
@@ -5148,12 +5471,14 @@ struct AtlasBuilder {
 		return centroid / float(faceCount);
 	}
 
-	void fillHoles(float threshold) {
+	void fillHoles(float threshold)
+	{
 		while (facesLeft > 0)
 			createRandomChart(threshold);
 	}
 
-	void mergeCharts() {
+	void mergeCharts()
+	{
 		std::vector<float> sharedBoundaryLengths;
 		const uint32_t chartCount = chartArray.size();
 		for (int c = chartCount - 1; c >= 0; c--) {
@@ -5219,9 +5544,9 @@ struct AtlasBuilder {
 				// Update faceChartArray.
 				const uint32_t faceCount = faceChartArray.size();
 				for (uint32_t i = 0; i < faceCount; i++) {
-					xaDebugAssert(faceChartArray[i] != -1);
-					xaDebugAssert(faceChartArray[i] != c);
-					xaDebugAssert(faceChartArray[i] <= int32_t(chartArray.size()));
+					xaDebugAssert (faceChartArray[i] != -1);
+					xaDebugAssert (faceChartArray[i] != c);
+					xaDebugAssert (faceChartArray[i] <= int32_t(chartArray.size()));
 					if (faceChartArray[i] > c) {
 						faceChartArray[i]--;
 					}
@@ -5241,7 +5566,8 @@ struct AtlasBuilder {
 	};
 
 	// @@ Get N best candidates in one pass.
-	const Candidate &getBestCandidate() const {
+	const Candidate &getBestCandidate() const
+	{
 		uint32_t best = 0;
 		float bestCandidateMetric = FLT_MAX;
 		const uint32_t candidateCount = candidateArray.size();
@@ -5256,7 +5582,8 @@ struct AtlasBuilder {
 		return candidateArray[best];
 	}
 
-	void removeCandidate(uint32_t f) {
+	void removeCandidate(uint32_t f)
+	{
 		int c = faceCandidateArray[f];
 		if (c != -1) {
 			faceCandidateArray[f] = (uint32_t)-1;
@@ -5271,7 +5598,8 @@ struct AtlasBuilder {
 		}
 	}
 
-	void updateCandidate(ChartBuildData *chart, uint32_t f, float metric) {
+	void updateCandidate(ChartBuildData *chart, uint32_t f, float metric)
+	{
 		if (faceCandidateArray[f] == -1) {
 			const uint32_t index = candidateArray.size();
 			faceCandidateArray[f] = index;
@@ -5291,7 +5619,8 @@ struct AtlasBuilder {
 		}
 	}
 
-	void mergeChart(ChartBuildData *owner, ChartBuildData *chart, float sharedBoundaryLength) {
+	void mergeChart(ChartBuildData *owner, ChartBuildData *chart, float sharedBoundaryLength)
+	{
 		const uint32_t faceCount = chart->faces.size();
 		for (uint32_t i = 0; i < faceCount; i++) {
 			uint32_t f = chart->faces[i];
@@ -5306,6 +5635,7 @@ struct AtlasBuilder {
 		owner->centroidSum += chart->centroidSum;
 		updateProxy(owner);
 	}
+
 
 	uint32_t chartCount() const { return chartArray.size(); }
 	const std::vector<uint32_t> &chartFaces(uint32_t i) const { return chartArray[i]->faces; }
@@ -5324,13 +5654,13 @@ struct AtlasBuilder {
 };
 
 /// A chart is a connected set of faces with a certain topology (usually a disk).
-class Chart {
+class Chart
+{
 public:
-	Chart() :
-			m_isDisk(false),
-			m_isVertexMapped(false) {}
+	Chart() : m_isDisk(false), m_isVertexMapped(false) {}
 
-	void build(const halfedge::Mesh *originalMesh, const std::vector<uint32_t> &faceArray) {
+	void build(const halfedge::Mesh *originalMesh, const std::vector<uint32_t> &faceArray)
+	{
 		// Copy face indices.
 		m_faceArray = faceArray;
 		const uint32_t meshVertexCount = originalMesh->vertexCount();
@@ -5353,7 +5683,10 @@ public:
 				}
 				if (chartMeshIndices[vertex->id] == ~0) {
 					chartMeshIndices[vertex->id] = m_chartMesh->vertexCount();
+					// -- GODOT start --
+					//m_chartToOriginalMap.push_back(vertex->id);
 					m_chartToOriginalMap.push_back(vertex->original_id);
+					// -- GODOT end --
 					m_chartToUnifiedMap.push_back(unifiedMeshIndices[unifiedVertex->id]);
 					halfedge::Vertex *v = m_chartMesh->addVertex(vertex->pos);
 					v->nor = vertex->nor;
@@ -5417,7 +5750,8 @@ public:
 		m_isDisk = topology.isDisk();
 	}
 
-	void buildVertexMap(const halfedge::Mesh *originalMesh, const std::vector<uint32_t> &unchartedMaterialArray) {
+	void buildVertexMap(const halfedge::Mesh *originalMesh, const std::vector<uint32_t> &unchartedMaterialArray)
+	{
 		xaAssert(m_chartMesh.get() == NULL && m_unifiedMesh.get() == NULL);
 		m_isVertexMapped = true;
 		// Build face indices.
@@ -5445,7 +5779,10 @@ public:
 				const halfedge::Vertex *vertex = it.current()->vertex;
 				if (chartMeshIndices[vertex->id] == ~0) {
 					chartMeshIndices[vertex->id] = m_chartMesh->vertexCount();
+					// -- GODOT start --
+					//m_chartToOriginalMap.push_back(vertex->id);
 					m_chartToOriginalMap.push_back(vertex->original_id);
+					// -- GODOT end --
 					halfedge::Vertex *v = m_chartMesh->addVertex(vertex->pos);
 					v->nor = vertex->nor;
 					v->tex = vertex->tex; // @@ Not necessary.
@@ -5505,7 +5842,7 @@ public:
 				halfedge::Vertex *vertex = m_chartMesh->vertexAt(idx);
 				xaDebugAssert(vertexIndexArray[idx] == -1);
 				std::vector<uint32_t> neighbors;
-				grid.gather(vertex->pos, positionThreshold, /*ref*/ neighbors);
+				grid.gather(vertex->pos, positionThreshold, /*ref*/neighbors);
 				// Compare against all nearby vertices, cluster greedily.
 				for (uint32_t j = 0; j < neighbors.size(); j++) {
 					uint32_t otherIdx = neighbors[j];
@@ -5528,7 +5865,7 @@ public:
 		xaDebugAssert(cellsVisited == grid.cellArray.size());
 		xaDebugAssert(verticesVisited == chartVertexCount);
 		vertexMapWidth = ftoi_ceil(sqrtf(float(texelCount)));
-		vertexMapWidth = (vertexMapWidth + 3) & ~3; // Width aligned to 4.
+		vertexMapWidth = (vertexMapWidth + 3) & ~3;                             // Width aligned to 4.
 		vertexMapHeight = vertexMapWidth == 0 ? 0 : (texelCount + vertexMapWidth - 1) / vertexMapWidth;
 		//vertexMapHeight = (vertexMapHeight + 3) & ~3;                           // Height aligned to 4.
 		xaDebugAssert(vertexMapWidth >= vertexMapHeight);
@@ -5559,7 +5896,8 @@ public:
 		}
 	}
 
-	bool closeHoles() {
+	bool closeHoles()
+	{
 		xaDebugAssert(!m_isVertexMapped);
 		std::vector<halfedge::Edge *> boundaryEdges;
 		getBoundaryEdges(m_unifiedMesh.get(), boundaryEdges);
@@ -5610,7 +5948,7 @@ public:
 			std::vector<halfedge::Edge *> edgeLoop;
 			halfedge::Edge *edge = startEdge;
 			do {
-				halfedge::Vertex *vertex = edge->next->vertex; // edge->to()
+				halfedge::Vertex *vertex = edge->next->vertex;  // edge->to()
 				uint32_t j;
 				for (j = 0; j < vertexLoop.size(); j++) {
 					if (vertex->isColocal(vertexLoop[j])) {
@@ -5619,8 +5957,8 @@ public:
 				}
 				bool isCrossing = (j != vertexLoop.size());
 				if (isCrossing) {
-					halfedge::Edge *prev = edgeLoop[j]; // Previous edge before the loop.
-					halfedge::Edge *next = edge->next; // Next edge after the loop.
+					halfedge::Edge *prev = edgeLoop[j];     // Previous edge before the loop.
+					halfedge::Edge *next = edge->next;    // Next edge after the loop.
 					xaDebugAssert(prev->to()->isColocal(next->from()));
 					// Close loop.
 					edgeLoop.push_back(edge);
@@ -5646,55 +5984,69 @@ public:
 		return boundaryCount == 1;
 	}
 
-	bool isDisk() const {
+	bool isDisk() const
+	{
 		return m_isDisk;
 	}
-	bool isVertexMapped() const {
+	bool isVertexMapped() const
+	{
 		return m_isVertexMapped;
 	}
 
-	uint32_t vertexCount() const {
+	uint32_t vertexCount() const
+	{
 		return m_chartMesh->vertexCount();
 	}
-	uint32_t colocalVertexCount() const {
+	uint32_t colocalVertexCount() const
+	{
 		return m_unifiedMesh->vertexCount();
 	}
 
-	uint32_t faceCount() const {
+	uint32_t faceCount() const
+	{
 		return m_faceArray.size();
 	}
-	uint32_t faceAt(uint32_t i) const {
+	uint32_t faceAt(uint32_t i) const
+	{
 		return m_faceArray[i];
 	}
 
-	const halfedge::Mesh *chartMesh() const {
+	const halfedge::Mesh *chartMesh() const
+	{
 		return m_chartMesh.get();
 	}
-	halfedge::Mesh *chartMesh() {
+	halfedge::Mesh *chartMesh()
+	{
 		return m_chartMesh.get();
 	}
-	const halfedge::Mesh *unifiedMesh() const {
+	const halfedge::Mesh *unifiedMesh() const
+	{
 		return m_unifiedMesh.get();
 	}
-	halfedge::Mesh *unifiedMesh() {
+	halfedge::Mesh *unifiedMesh()
+	{
 		return m_unifiedMesh.get();
 	}
 
 	//uint32_t vertexIndex(uint32_t i) const { return m_vertexIndexArray[i]; }
 
-	uint32_t mapChartVertexToOriginalVertex(uint32_t i) const {
+	uint32_t mapChartVertexToOriginalVertex(uint32_t i) const
+	{
 		return m_chartToOriginalMap[i];
 	}
-	uint32_t mapChartVertexToUnifiedVertex(uint32_t i) const {
+	uint32_t mapChartVertexToUnifiedVertex(uint32_t i) const
+	{
 		return m_chartToUnifiedMap[i];
 	}
 
-	const std::vector<uint32_t> &faceArray() const {
+	const std::vector<uint32_t> &faceArray() const
+	{
 		return m_faceArray;
 	}
 
 	// Transfer parameterization from unified mesh to chart mesh.
-	void transferParameterization() {
+	void transferParameterization()
+	{
 		xaDebugAssert(!m_isVertexMapped);
 		uint32_t vertexCount = m_chartMesh->vertexCount();
 		for (uint32_t v = 0; v < vertexCount; v++) {
@@ -5704,18 +6056,21 @@ public:
 		}
 	}
 
-	float computeSurfaceArea() const {
+	float computeSurfaceArea() const
+	{
 		return halfedge::computeSurfaceArea(m_chartMesh.get()) * scale;
 	}
 
-	float computeParametricArea() const {
+	float computeParametricArea() const
+	{
 		// This only makes sense in parameterized meshes.
 		xaDebugAssert(m_isDisk);
 		xaDebugAssert(!m_isVertexMapped);
 		return halfedge::computeParametricArea(m_chartMesh.get());
 	}
 
-	Vector2 computeParametricBounds() const {
+	Vector2 computeParametricBounds() const
+	{
 		// This only makes sense in parameterized meshes.
 		xaDebugAssert(m_isDisk);
 		xaDebugAssert(!m_isVertexMapped);
@@ -5735,7 +6090,8 @@ public:
 	bool blockAligned = true;
 
 private:
-	bool closeLoop(uint32_t start, const std::vector<halfedge::Edge *> &loop) {
+	bool closeLoop(uint32_t start, const std::vector<halfedge::Edge *> &loop)
+	{
 		const uint32_t vertexCount = loop.size() - start;
 		xaDebugAssert(vertexCount >= 3);
 		if (vertexCount < 3) return false;
@@ -5779,7 +6135,8 @@ private:
 		return true;
 	}
 
-	static void getBoundaryEdges(halfedge::Mesh *mesh, std::vector<halfedge::Edge *> &boundaryEdges) {
+	static void getBoundaryEdges(halfedge::Mesh *mesh, std::vector<halfedge::Edge *> &boundaryEdges)
+	{
 		xaDebugAssert(mesh != NULL);
 		const uint32_t edgeCount = mesh->edgeCount();
 		BitArray bitFlags(edgeCount);
@@ -5810,7 +6167,7 @@ private:
 	std::auto_ptr<halfedge::Mesh> m_unifiedMesh;
 	bool m_isDisk;
 	bool m_isVertexMapped;
-
+	
 	// List of faces of the original mesh that belong to this chart.
 	std::vector<uint32_t> m_faceArray;
 
@@ -5821,9 +6178,11 @@ private:
 };
 
 // Estimate quality of existing parameterization.
-class ParameterizationQuality {
+class ParameterizationQuality
+{
 public:
-	ParameterizationQuality() {
+	ParameterizationQuality()
+	{
 		m_totalTriangleCount = 0;
 		m_flippedTriangleCount = 0;
 		m_zeroAreaTriangleCount = 0;
@@ -5835,7 +6194,8 @@ public:
 		m_authalicMetric = 0.0f;
 	}
 
-	ParameterizationQuality(const halfedge::Mesh *mesh) {
+	ParameterizationQuality(const halfedge::Mesh *mesh)
+	{
 		xaDebugAssert(mesh != NULL);
 		m_totalTriangleCount = 0;
 		m_flippedTriangleCount = 0;
@@ -5879,33 +6239,39 @@ public:
 		xaDebugAssert(std::isfinite(m_authalicMetric));
 	}
 
-	bool isValid() const {
+	bool isValid() const
+	{
 		return m_flippedTriangleCount == 0; // @@ Does not test for self-overlaps.
 	}
 
-	float rmsStretchMetric() const {
+	float rmsStretchMetric() const
+	{
 		if (m_geometricArea == 0) return 0.0f;
 		float normFactor = sqrtf(m_parametricArea / m_geometricArea);
 		return sqrtf(m_stretchMetric / m_geometricArea) * normFactor;
 	}
 
-	float maxStretchMetric() const {
+	float maxStretchMetric() const
+	{
 		if (m_geometricArea == 0) return 0.0f;
 		float normFactor = sqrtf(m_parametricArea / m_geometricArea);
 		return m_maxStretchMetric * normFactor;
 	}
 
-	float rmsConformalMetric() const {
+	float rmsConformalMetric() const
+	{
 		if (m_geometricArea == 0) return 0.0f;
 		return sqrtf(m_conformalMetric / m_geometricArea);
 	}
 
-	float maxAuthalicMetric() const {
+	float maxAuthalicMetric() const
+	{
 		if (m_geometricArea == 0) return 0.0f;
 		return sqrtf(m_authalicMetric / m_geometricArea);
 	}
 
-	void operator+=(const ParameterizationQuality &pq) {
+	void operator+=(const ParameterizationQuality &pq)
+	{
 		m_totalTriangleCount += pq.m_totalTriangleCount;
 		m_flippedTriangleCount += pq.m_flippedTriangleCount;
 		m_zeroAreaTriangleCount += pq.m_zeroAreaTriangleCount;
@@ -5918,7 +6284,8 @@ public:
 	}
 
 private:
-	void processTriangle(Vector3 q[3], Vector2 p[3]) {
+	void processTriangle(Vector3 q[3], Vector2 p[3])
+	{
 		m_totalTriangleCount++;
 		// Evaluate texture stretch metric. See:
 		// - "Texture Mapping Progressive Meshes", Sander, Snyder, Gortler & Hoppe
@@ -5983,32 +6350,38 @@ private:
 };
 
 // Set of charts corresponding to a single mesh.
-class MeshCharts {
+class MeshCharts
+{
 public:
-	MeshCharts(const halfedge::Mesh *mesh) :
-			m_mesh(mesh) {}
+	MeshCharts(const halfedge::Mesh *mesh) : m_mesh(mesh) {}
 
-	~MeshCharts() {
+	~MeshCharts()
+	{
 		for (size_t i = 0; i < m_chartArray.size(); i++)
 			delete m_chartArray[i];
 	}
 
-	uint32_t chartCount() const {
+	uint32_t chartCount() const
+	{
 		return m_chartArray.size();
 	}
-	uint32_t vertexCount() const {
+	uint32_t vertexCount () const
+	{
 		return m_totalVertexCount;
 	}
 
-	const Chart *chartAt(uint32_t i) const {
+	const Chart *chartAt(uint32_t i) const
+	{
 		return m_chartArray[i];
 	}
-	Chart *chartAt(uint32_t i) {
+	Chart *chartAt(uint32_t i)
+	{
 		return m_chartArray[i];
 	}
 
 	// Extract the charts of the input mesh.
-	void extractCharts() {
+	void extractCharts()
+	{
 		const uint32_t faceCount = m_mesh->faceCount();
 		int first = 0;
 		std::vector<uint32_t> queue;
@@ -6108,7 +6481,8 @@ public:
 		  - emphasize roundness metrics to prevent those cases.
 	  - If interior self-overlaps: preserve boundary parameterization and use mean-value map.
 	*/
-	void computeCharts(const CharterOptions &options, const std::vector<uint32_t> &unchartedMaterialArray) {
+	void computeCharts(const CharterOptions &options, const std::vector<uint32_t> &unchartedMaterialArray)
+	{
 		Chart *vertexMap = NULL;
 		if (unchartedMaterialArray.size() != 0) {
 			vertexMap = new Chart();
@@ -6141,7 +6515,7 @@ public:
 			xaPrint("###   Placed %d seeds (max = %d)\n", builder.chartCount(), maxSeedCount);
 			builder.updateProxies();
 			builder.mergeCharts();
-#if 1
+	#if 1
 			xaPrint("### Relocating seeds\n");
 			builder.relocateSeeds();
 			xaPrint("### Reset charts\n");
@@ -6183,7 +6557,7 @@ public:
 					xaPrint("### Growing charts\n");
 				}
 			};
-#endif
+	#endif
 			// Make sure no holes are left!
 			xaDebugAssert(builder.facesLeft == 0);
 			const uint32_t chartCount = builder.chartArray.size();
@@ -6220,21 +6594,25 @@ public:
 		}
 	}
 
-	void parameterizeCharts() {
+	void parameterizeCharts()
+	{
 		ParameterizationQuality globalParameterizationQuality;
 		// Parameterize the charts.
 		uint32_t diskCount = 0;
 		const uint32_t chartCount = m_chartArray.size();
-		for (uint32_t i = 0; i < chartCount; i++) {
+		for (uint32_t i = 0; i < chartCount; i++)
+		{
 			Chart *chart = m_chartArray[i];
 
 			bool isValid = false;
 
-			if (chart->isVertexMapped()) {
+			if (chart->isVertexMapped())
+			{
 				continue;
 			}
 
-			if (chart->isDisk()) {
+			if (chart->isDisk())
+			{
 				diskCount++;
 				ParameterizationQuality chartParameterizationQuality;
 				if (chart->faceCount() == 1) {
@@ -6258,6 +6636,7 @@ public:
 
 			// Transfer parameterization from unified mesh to chart mesh.
 			chart->transferParameterization();
+
 		}
 		xaPrint("  Parameterized %d/%d charts.\n", diskCount, chartCount);
 		xaPrint("  RMS stretch metric: %f\n", globalParameterizationQuality.rmsStretchMetric());
@@ -6266,18 +6645,22 @@ public:
 		xaPrint("  RMS authalic metric: %f\n", globalParameterizationQuality.maxAuthalicMetric());
 	}
 
-	uint32_t faceChartAt(uint32_t i) const {
+	uint32_t faceChartAt(uint32_t i) const
+	{
 		return m_faceChart[i];
 	}
-	uint32_t faceIndexWithinChartAt(uint32_t i) const {
+	uint32_t faceIndexWithinChartAt(uint32_t i) const
+	{
 		return m_faceIndex[i];
 	}
 
-	uint32_t vertexCountBeforeChartAt(uint32_t i) const {
+	uint32_t vertexCountBeforeChartAt(uint32_t i) const
+	{
 		return m_chartVertexCountPrefixSum[i];
 	}
 
 private:
+
 	const halfedge::Mesh *m_mesh;
 
 	std::vector<Chart *> m_chartArray;
@@ -6290,26 +6673,32 @@ private:
 };
 
 /// An atlas is a set of charts.
-class Atlas {
+class Atlas
+{
 public:
-	~Atlas() {
+	~Atlas()
+	{
 		for (size_t i = 0; i < m_meshChartsArray.size(); i++)
 			delete m_meshChartsArray[i];
 	}
 
-	uint32_t meshCount() const {
+	uint32_t meshCount() const
+	{
 		return m_meshChartsArray.size();
 	}
 
-	const MeshCharts *meshAt(uint32_t i) const {
+	const MeshCharts *meshAt(uint32_t i) const
+	{
 		return m_meshChartsArray[i];
 	}
 
-	MeshCharts *meshAt(uint32_t i) {
+	MeshCharts *meshAt(uint32_t i)
+	{
 		return m_meshChartsArray[i];
 	}
 
-	uint32_t chartCount() const {
+	uint32_t chartCount() const
+	{
 		uint32_t count = 0;
 		for (uint32_t c = 0; c < m_meshChartsArray.size(); c++) {
 			count += m_meshChartsArray[c]->chartCount();
@@ -6317,7 +6706,8 @@ public:
 		return count;
 	}
 
-	const Chart *chartAt(uint32_t i) const {
+	const Chart *chartAt(uint32_t i) const
+	{
 		for (uint32_t c = 0; c < m_meshChartsArray.size(); c++) {
 			uint32_t count = m_meshChartsArray[c]->chartCount();
 			if (i < count) {
@@ -6328,7 +6718,8 @@ public:
 		return NULL;
 	}
 
-	Chart *chartAt(uint32_t i) {
+	Chart *chartAt(uint32_t i)
+	{
 		for (uint32_t c = 0; c < m_meshChartsArray.size(); c++) {
 			uint32_t count = m_meshChartsArray[c]->chartCount();
 			if (i < count) {
@@ -6341,23 +6732,27 @@ public:
 
 	// Add mesh charts and takes ownership.
 	// Extract the charts and add to this atlas.
-	void addMeshCharts(MeshCharts *meshCharts) {
+	void addMeshCharts(MeshCharts *meshCharts)
+	{
 		m_meshChartsArray.push_back(meshCharts);
 	}
 
-	void extractCharts(const halfedge::Mesh *mesh) {
+	void extractCharts(const halfedge::Mesh *mesh)
+	{
 		MeshCharts *meshCharts = new MeshCharts(mesh);
 		meshCharts->extractCharts();
 		addMeshCharts(meshCharts);
 	}
 
-	void computeCharts(const halfedge::Mesh *mesh, const CharterOptions &options, const std::vector<uint32_t> &unchartedMaterialArray) {
+	void computeCharts(const halfedge::Mesh *mesh, const CharterOptions &options, const std::vector<uint32_t> &unchartedMaterialArray)
+	{
 		MeshCharts *meshCharts = new MeshCharts(mesh);
 		meshCharts->computeCharts(options, unchartedMaterialArray);
 		addMeshCharts(meshCharts);
 	}
 
-	void parameterizeCharts() {
+	void parameterizeCharts()
+	{
 		for (uint32_t i = 0; i < m_meshChartsArray.size(); i++) {
 			m_meshChartsArray[i]->parameterizeCharts();
 		}
@@ -6367,11 +6762,10 @@ private:
 	std::vector<MeshCharts *> m_meshChartsArray;
 };
 
-struct AtlasPacker {
-	AtlasPacker(Atlas *atlas) :
-			m_atlas(atlas),
-			m_width(0),
-			m_height(0) {
+struct AtlasPacker
+{
+	AtlasPacker(Atlas *atlas) : m_atlas(atlas), m_width(0), m_height(0)
+	{
 		// Save the original uvs.
 		m_originalChartUvs.resize(m_atlas->chartCount());
 		for (uint32_t i = 0; i < m_atlas->chartCount(); i++) {
@@ -6386,7 +6780,8 @@ struct AtlasPacker {
 	uint32_t getHeight() const { return m_height; }
 
 	// Pack charts in the smallest possible rectangle.
-	void packCharts(const PackerOptions &options) {
+	void packCharts(const PackerOptions &options)
+	{
 		const uint32_t chartCount = m_atlas->chartCount();
 		if (chartCount == 0) return;
 		float texelsPerUnit = 1;
@@ -6415,7 +6810,7 @@ struct AtlasPacker {
 					meshArea += chartArea;
 					//chartOrderArray[c] = chartArea;
 					// Compute chart scale
-					float parametricArea = fabsf(chart->computeParametricArea()); // @@ There doesn't seem to be anything preventing parametric area to be negative.
+					float parametricArea = fabsf(chart->computeParametricArea());    // @@ There doesn't seem to be anything preventing parametric area to be negative.
 					if (parametricArea < NV_EPSILON) {
 						// When the parametric area is too small we use a rough approximation to prevent divisions by very small numbers.
 						Vector2 bounds = chart->computeParametricBounds();
@@ -6564,18 +6959,18 @@ struct AtlasPacker {
 					//    0   1   2
 					if (options.conservative) {
 						// Init all bits to 0.
-						chart_bitmap.resize(ftoi_ceil(chartExtents[c].x) + 1 + options.padding, ftoi_ceil(chartExtents[c].y) + 1 + options.padding, /*initValue=*/false); // + 2 to add padding on both sides.
+						chart_bitmap.resize(ftoi_ceil(chartExtents[c].x) + 1 + options.padding, ftoi_ceil(chartExtents[c].y) + 1 + options.padding, /*initValue=*/false);  // + 2 to add padding on both sides.
 						// Rasterize chart and dilate.
 						drawChartBitmapDilate(chart, &chart_bitmap, options.padding);
 					} else {
 						// Init all bits to 0.
-						chart_bitmap.resize(ftoi_ceil(chartExtents[c].x) + 1, ftoi_ceil(chartExtents[c].y) + 1, /*initValue=*/false); // Add half a texels on each side.
+						chart_bitmap.resize(ftoi_ceil(chartExtents[c].x) + 1, ftoi_ceil(chartExtents[c].y) + 1, /*initValue=*/false);  // Add half a texels on each side.
 						// Rasterize chart and dilate.
 						drawChartBitmap(chart, &chart_bitmap, Vector2(1), Vector2(0.5));
 					}
 				}
 				int best_x, best_y;
-				int best_cw, best_ch; // Includes padding now.
+				int best_cw, best_ch;   // Includes padding now.
 				int best_r;
 				findChartLocation(options.quality, &chart_bitmap, chartExtents[c], w, h, &best_x, &best_y, &best_cw, &best_ch, &best_r, chart->blockAligned);
 				/*if (w < best_x + best_cw || h < best_y + best_ch)
@@ -6629,7 +7024,8 @@ struct AtlasPacker {
 		}
 	}
 
-	float computeAtlasUtilization() const {
+	float computeAtlasUtilization() const
+	{
 		const uint32_t w = m_width;
 		const uint32_t h = m_height;
 		xaDebugAssert(w <= m_bitmap.width());
@@ -6644,7 +7040,8 @@ struct AtlasPacker {
 	}
 
 private:
-	void resetUvs() {
+	void resetUvs()
+	{
 		for (uint32_t i = 0; i < m_atlas->chartCount(); i++) {
 			halfedge::Mesh *mesh = m_atlas->chartAt(i)->chartMesh();
 			for (uint32_t j = 0; j < mesh->vertexCount(); j++)
@@ -6656,7 +7053,8 @@ private:
 	// is occupied at this point. At the end we have many small charts and a large atlas with sparse holes. Finding those holes randomly is slow. A better approach would be to
 	// start stacking large charts as if they were tetris pieces. Once charts get small try to place them randomly. It may be interesting to try a intermediate strategy, first try
 	// along one axis and then try exhaustively along that axis.
-	void findChartLocation(int quality, const BitMap *bitmap, Vector2::Arg extents, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, bool blockAligned) {
+	void findChartLocation(int quality, const BitMap *bitmap, Vector2::Arg extents, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, bool blockAligned)
+	{
 		int attempts = 256;
 		if (quality == 1) attempts = 4096;
 		if (quality == 2) attempts = 2048;
@@ -6669,7 +7067,8 @@ private:
 		}
 	}
 
-	void findChartLocation_bruteForce(const BitMap *bitmap, Vector2::Arg /*extents*/, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, bool blockAligned) {
+	void findChartLocation_bruteForce(const BitMap *bitmap, Vector2::Arg /*extents*/, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, bool blockAligned)
+	{
 		const int BLOCK_SIZE = 4;
 		int best_metric = INT_MAX;
 		int step_size = blockAligned ? BLOCK_SIZE : 1;
@@ -6708,10 +7107,11 @@ private:
 			}
 		}
 	done:
-		xaDebugAssert(best_metric != INT_MAX);
+		xaDebugAssert (best_metric != INT_MAX);
 	}
 
-	void findChartLocation_random(const BitMap *bitmap, Vector2::Arg /*extents*/, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, int minTrialCount, bool blockAligned) {
+	void findChartLocation_random(const BitMap *bitmap, Vector2::Arg /*extents*/, int w, int h, int *best_x, int *best_y, int *best_w, int *best_h, int *best_r, int minTrialCount, bool blockAligned)
+	{
 		const int BLOCK_SIZE = 4;
 		int best_metric = INT_MAX;
 		for (int i = 0; i < minTrialCount || best_metric == INT_MAX; i++) {
@@ -6752,7 +7152,8 @@ private:
 		}
 	}
 
-	void drawChartBitmapDilate(const Chart *chart, BitMap *bitmap, int padding) {
+	void drawChartBitmapDilate(const Chart *chart, BitMap *bitmap, int padding)
+	{
 		const int w = bitmap->width();
 		const int h = bitmap->height();
 		const Vector2 extents = Vector2(float(w), float(h));
@@ -6802,7 +7203,8 @@ private:
 		}
 	}
 
-	void drawChartBitmap(const Chart *chart, BitMap *bitmap, const Vector2 &scale, const Vector2 &offset) {
+	void drawChartBitmap(const Chart *chart, BitMap *bitmap, const Vector2 &scale, const Vector2 &offset)
+	{
 		const int w = bitmap->width();
 		const int h = bitmap->height();
 		const Vector2 extents = Vector2(float(w), float(h));
@@ -6863,7 +7265,8 @@ private:
 		std::swap(tmp, *bitmap);
 	}
 
-	bool canAddChart(const BitMap *bitmap, int atlas_w, int atlas_h, int offset_x, int offset_y, int r) {
+	bool canAddChart(const BitMap *bitmap, int atlas_w, int atlas_h, int offset_x, int offset_y, int r)
+	{
 		xaDebugAssert(r == 0 || r == 1);
 		// Check whether the two bitmaps overlap.
 		const int w = bitmap->width();
@@ -6904,7 +7307,8 @@ private:
 		return true;
 	}
 
-	void addChart(const BitMap *bitmap, int atlas_w, int atlas_h, int offset_x, int offset_y, int r) {
+	void addChart(const BitMap *bitmap, int atlas_w, int atlas_h, int offset_x, int offset_y, int r)
+	{
 		xaDebugAssert(r == 0 || r == 1);
 		// Check whether the two bitmaps overlap.
 		const int w = bitmap->width();
@@ -6946,8 +7350,9 @@ private:
 		}
 	}
 
-	static bool setBitsCallback(void *param, int x, int y, Vector3::Arg, Vector3::Arg, Vector3::Arg, float area) {
-		BitMap *bitmap = (BitMap *)param;
+	static bool setBitsCallback(void *param, int x, int y, Vector3::Arg, Vector3::Arg, Vector3::Arg, float area)
+	{
+		BitMap *bitmap = (BitMap * )param;
 		if (area > 0.0) {
 			bitmap->setBitAt(x, y);
 		}
@@ -6955,7 +7360,8 @@ private:
 	}
 
 	// Compute the convex hull using Graham Scan.
-	static void convexHull(const std::vector<Vector2> &input, std::vector<Vector2> &output, float epsilon) {
+	static void convexHull(const std::vector<Vector2> &input, std::vector<Vector2> &output, float epsilon)
+	{
 		const uint32_t inputCount = input.size();
 		std::vector<float> coords(inputCount);
 		for (uint32_t i = 0; i < inputCount; i++) {
@@ -6984,7 +7390,7 @@ private:
 		output.clear();
 		output.push_back(top[0]);
 		output.push_back(top[1]);
-		for (uint32_t i = 2; i < top.size();) {
+		for (uint32_t i = 2; i < top.size(); ) {
 			Vector2 a = output[output.size() - 2];
 			Vector2 b = output[output.size() - 1];
 			Vector2 c = top[i];
@@ -7000,7 +7406,7 @@ private:
 		uint32_t top_count = output.size();
 		output.push_back(bottom[1]);
 		// Filter bottom list.
-		for (uint32_t i = 2; i < bottom.size();) {
+		for (uint32_t i = 2; i < bottom.size(); ) {
 			Vector2 a = output[output.size() - 2];
 			Vector2 b = output[output.size() - 1];
 			Vector2 c = bottom[i];
@@ -7019,7 +7425,8 @@ private:
 	}
 
 	// This should compute convex hull and use rotating calipers to find the best box. Currently it uses a brute force method.
-	static void computeBoundingBox(Chart *chart, Vector2 *majorAxis, Vector2 *minorAxis, Vector2 *minCorner, Vector2 *maxCorner) {
+	static void computeBoundingBox(Chart *chart, Vector2 *majorAxis, Vector2 *minorAxis, Vector2 *minCorner, Vector2 *maxCorner)
+	{
 		// Compute list of boundary points.
 		std::vector<Vector2> points;
 		points.reserve(16);
@@ -7096,7 +7503,8 @@ private:
 } // namespace param
 } // namespace internal
 
-struct Atlas {
+struct Atlas
+{
 	internal::param::Atlas atlas;
 	std::vector<internal::halfedge::Mesh *> heMeshes;
 	uint32_t width = 0;
@@ -7104,65 +7512,75 @@ struct Atlas {
 	OutputMesh **outputMeshes = NULL;
 };
 
-void SetPrint(PrintFunc print) {
+void SetPrint(PrintFunc print)
+{
 	internal::s_print = print;
 }
 
-Atlas *Create() {
+Atlas *Create()
+{
 	Atlas *atlas = new Atlas();
 	return atlas;
 }
 
-void Destroy(Atlas *atlas) {
+void Destroy(Atlas *atlas)
+{
 	xaAssert(atlas);
 	for (int i = 0; i < (int)atlas->heMeshes.size(); i++) {
 		delete atlas->heMeshes[i];
 		if (atlas->outputMeshes) {
 			OutputMesh *outputMesh = atlas->outputMeshes[i];
 			for (uint32_t j = 0; j < outputMesh->chartCount; j++)
-				delete[] outputMesh->chartArray[j].indexArray;
-			delete[] outputMesh->chartArray;
-			delete[] outputMesh->vertexArray;
-			delete[] outputMesh->indexArray;
+				delete [] outputMesh->chartArray[j].indexArray;
+			delete [] outputMesh->chartArray;
+			delete [] outputMesh->vertexArray;
+			delete [] outputMesh->indexArray;
 			delete outputMesh;
 		}
 	}
-	delete[] atlas->outputMeshes;
+	delete [] atlas->outputMeshes;
 	delete atlas;
 }
 
-static internal::Vector3 DecodePosition(const InputMesh &mesh, uint32_t index) {
+static internal::Vector3 DecodePosition(const InputMesh &mesh, uint32_t index)
+{
 	xaAssert(mesh.vertexPositionData);
 	return *((const internal::Vector3 *)&((const uint8_t *)mesh.vertexPositionData)[mesh.vertexPositionStride * index]);
 }
 
-static internal::Vector3 DecodeNormal(const InputMesh &mesh, uint32_t index) {
+static internal::Vector3 DecodeNormal(const InputMesh &mesh, uint32_t index)
+{
 	xaAssert(mesh.vertexNormalData);
 	return *((const internal::Vector3 *)&((const uint8_t *)mesh.vertexNormalData)[mesh.vertexNormalStride * index]);
 }
 
-static internal::Vector2 DecodeUv(const InputMesh &mesh, uint32_t index) {
+static internal::Vector2 DecodeUv(const InputMesh &mesh, uint32_t index)
+{
 	xaAssert(mesh.vertexUvData);
 	return *((const internal::Vector2 *)&((const uint8_t *)mesh.vertexUvData)[mesh.vertexUvStride * index]);
 }
 
-static uint32_t DecodeIndex(IndexFormat::Enum format, const void *indexData, uint32_t i) {
+static uint32_t DecodeIndex(IndexFormat::Enum format, const void *indexData, uint32_t i)
+{
 	if (format == IndexFormat::HalfFloat)
 		return (uint32_t)((const uint16_t *)indexData)[i];
 	return ((const uint32_t *)indexData)[i];
 }
 
-static float EdgeLength(internal::Vector3 pos1, internal::Vector3 pos2) {
+static float EdgeLength(internal::Vector3 pos1, internal::Vector3 pos2)
+{
 	return internal::length(pos2 - pos1);
 }
 
-AddMeshError AddMesh(Atlas *atlas, const InputMesh &mesh, bool useColocalVertices) {
+AddMeshError AddMesh(Atlas *atlas, const InputMesh &mesh, bool useColocalVertices)
+{
 	xaAssert(atlas);
 	AddMeshError error;
 	error.code = AddMeshErrorCode::Success;
 	error.face = error.index0 = error.index1 = UINT32_MAX;
 	// Expecting triangle faces.
-	if ((mesh.indexCount % 3) != 0) {
+	if ((mesh.indexCount % 3) != 0)
+	{
 		error.code = AddMeshErrorCode::InvalidIndexCount;
 		return error;
 	}
@@ -7239,23 +7657,22 @@ AddMeshError AddMesh(Atlas *atlas, const InputMesh &mesh, bool useColocalVertice
 		}
 		internal::halfedge::Face *face = heMesh->addFace(tri[0], tri[1], tri[2]);
 
+		// -- GODOT start --
 		if (!face && heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::AlreadyAddedEdge) {
 			//there is still hope for this, no reason to not add, at least add as separate
 			face = heMesh->addUniqueFace(tri[0], tri[1], tri[2]);
 		}
+		// -- GODOT end --
 
 		if (!face) {
-			//continue;
-
-			if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::AlreadyAddedEdge) {
+			if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::AlreadyAddedEdge)
 				error.code = AddMeshErrorCode::AlreadyAddedEdge;
-			} else if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::DegenerateColocalEdge) {
+			else if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::DegenerateColocalEdge)
 				error.code = AddMeshErrorCode::DegenerateColocalEdge;
-			} else if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::DegenerateEdge) {
+			else if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::DegenerateEdge)
 				error.code = AddMeshErrorCode::DegenerateEdge;
-			} else if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::DuplicateEdge) {
+			else if (heMesh->errorCode == internal::halfedge::Mesh::ErrorCode::DuplicateEdge)
 				error.code = AddMeshErrorCode::DuplicateEdge;
-			}
 			error.face = i;
 			error.index0 = heMesh->errorIndex0;
 			error.index1 = heMesh->errorIndex1;
@@ -7270,7 +7687,8 @@ AddMeshError AddMesh(Atlas *atlas, const InputMesh &mesh, bool useColocalVertice
 	return error;
 }
 
-void Generate(Atlas *atlas, CharterOptions charterOptions, PackerOptions packerOptions) {
+void Generate(Atlas *atlas, CharterOptions charterOptions, PackerOptions packerOptions)
+{
 	xaAssert(atlas);
 	xaAssert(packerOptions.texelArea > 0);
 	// Chart meshes.
@@ -7285,7 +7703,7 @@ void Generate(Atlas *atlas, CharterOptions charterOptions, PackerOptions packerO
 	atlas->width = packer.getWidth();
 	atlas->height = packer.getHeight();
 	// Build output meshes.
-	atlas->outputMeshes = new OutputMesh *[atlas->heMeshes.size()];
+	atlas->outputMeshes = new OutputMesh*[atlas->heMeshes.size()];
 	for (int i = 0; i < (int)atlas->heMeshes.size(); i++) {
 		const internal::halfedge::Mesh *heMesh = atlas->heMeshes[i];
 		OutputMesh *outputMesh = atlas->outputMeshes[i] = new OutputMesh;
@@ -7341,27 +7759,32 @@ void Generate(Atlas *atlas, CharterOptions charterOptions, PackerOptions packerO
 	}
 }
 
-uint32_t GetWidth(const Atlas *atlas) {
+uint32_t GetWidth(const Atlas *atlas)
+{
 	xaAssert(atlas);
 	return atlas->width;
 }
 
-uint32_t GetHeight(const Atlas *atlas) {
+uint32_t GetHeight(const Atlas *atlas)
+{
 	xaAssert(atlas);
 	return atlas->height;
 }
 
-uint32_t GetNumCharts(const Atlas *atlas) {
+uint32_t GetNumCharts(const Atlas *atlas)
+{
 	xaAssert(atlas);
 	return atlas->atlas.chartCount();
 }
 
-const OutputMesh *const *GetOutputMeshes(const Atlas *atlas) {
+const OutputMesh * const *GetOutputMeshes(const Atlas *atlas)
+{
 	xaAssert(atlas);
 	return atlas->outputMeshes;
 }
 
-const char *StringForEnum(AddMeshErrorCode::Enum error) {
+const char *StringForEnum(AddMeshErrorCode::Enum error)
+{
 	if (error == AddMeshErrorCode::AlreadyAddedEdge)
 		return "already added edge";
 	if (error == AddMeshErrorCode::DegenerateColocalEdge)

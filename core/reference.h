@@ -197,6 +197,19 @@ public:
 		r.reference = NULL;
 	}
 
+	template <class T_Other>
+	void reference_ptr(T_Other *p_ptr) {
+		if (reference == p_ptr) {
+			return;
+		}
+		unref();
+
+		T *r = Object::cast_to<T>(p_ptr);
+		if (r) {
+			ref_pointer(r);
+		}
+	}
+
 	Ref(const Ref &p_from) {
 
 		reference = NULL;

@@ -1,39 +1,39 @@
-/***************************************************************************/
-/*                                                                         */
-/*  psft.c                                                                 */
-/*                                                                         */
-/*    FreeType Glue Component to Adobe's Interpreter (body).               */
-/*                                                                         */
-/*  Copyright 2013-2014 Adobe Systems Incorporated.                        */
-/*                                                                         */
-/*  This software, and all works of authorship, whether in source or       */
-/*  object code form as indicated by the copyright notice(s) included      */
-/*  herein (collectively, the "Work") is made available, and may only be   */
-/*  used, modified, and distributed under the FreeType Project License,    */
-/*  LICENSE.TXT.  Additionally, subject to the terms and conditions of the */
-/*  FreeType Project License, each contributor to the Work hereby grants   */
-/*  to any individual or legal entity exercising permissions granted by    */
-/*  the FreeType Project License and this section (hereafter, "You" or     */
-/*  "Your") a perpetual, worldwide, non-exclusive, no-charge,              */
-/*  royalty-free, irrevocable (except as stated in this section) patent    */
-/*  license to make, have made, use, offer to sell, sell, import, and      */
-/*  otherwise transfer the Work, where such license applies only to those  */
-/*  patent claims licensable by such contributor that are necessarily      */
-/*  infringed by their contribution(s) alone or by combination of their    */
-/*  contribution(s) with the Work to which such contribution(s) was        */
-/*  submitted.  If You institute patent litigation against any entity      */
-/*  (including a cross-claim or counterclaim in a lawsuit) alleging that   */
-/*  the Work or a contribution incorporated within the Work constitutes    */
-/*  direct or contributory patent infringement, then any patent licenses   */
-/*  granted to You under this License for that Work shall terminate as of  */
-/*  the date such litigation is filed.                                     */
-/*                                                                         */
-/*  By using, modifying, or distributing the Work you indicate that you    */
-/*  have read and understood the terms and conditions of the               */
-/*  FreeType Project License as well as those provided in this section,    */
-/*  and you accept them fully.                                             */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * psft.c
+ *
+ *   FreeType Glue Component to Adobe's Interpreter (body).
+ *
+ * Copyright 2013-2014 Adobe Systems Incorporated.
+ *
+ * This software, and all works of authorship, whether in source or
+ * object code form as indicated by the copyright notice(s) included
+ * herein (collectively, the "Work") is made available, and may only be
+ * used, modified, and distributed under the FreeType Project License,
+ * LICENSE.TXT.  Additionally, subject to the terms and conditions of the
+ * FreeType Project License, each contributor to the Work hereby grants
+ * to any individual or legal entity exercising permissions granted by
+ * the FreeType Project License and this section (hereafter, "You" or
+ * "Your") a perpetual, worldwide, non-exclusive, no-charge,
+ * royalty-free, irrevocable (except as stated in this section) patent
+ * license to make, have made, use, offer to sell, sell, import, and
+ * otherwise transfer the Work, where such license applies only to those
+ * patent claims licensable by such contributor that are necessarily
+ * infringed by their contribution(s) alone or by combination of their
+ * contribution(s) with the Work to which such contribution(s) was
+ * submitted.  If You institute patent litigation against any entity
+ * (including a cross-claim or counterclaim in a lawsuit) alleging that
+ * the Work or a contribution incorporated within the Work constitutes
+ * direct or contributory patent infringement, then any patent licenses
+ * granted to You under this License for that Work shall terminate as of
+ * the date such litigation is filed.
+ *
+ * By using, modifying, or distributing the Work you indicate that you
+ * have read and understood the terms and conditions of the
+ * FreeType Project License as well as those provided in this section,
+ * and you accept them fully.
+ *
+ */
 
 
 #include "psft.h"
@@ -120,12 +120,12 @@
   }
 
 
-  /********************************************/
-  /*                                          */
-  /* functions for handling client outline;   */
-  /* FreeType uses coordinates in 26.6 format */
-  /*                                          */
-  /********************************************/
+  /*********************************************
+   *
+   * functions for handling client outline;
+   * FreeType uses coordinates in 26.6 format
+   *
+   */
 
   static void
   cf2_builder_moveTo( CF2_OutlineCallbacks      callbacks,
@@ -767,13 +767,14 @@
   cf2_freeT1SeacComponent( PS_Decoder*  decoder,
                            CF2_Buffer   buf )
   {
+#ifdef FT_CONFIG_OPTION_INCREMENTAL
+
     T1_Face  face;
     FT_Data  data;
 
 
     FT_ASSERT( decoder );
 
-#ifdef FT_CONFIG_OPTION_INCREMENTAL
     face = (T1_Face)decoder->builder.face;
 
     data.pointer = buf->start;
@@ -783,7 +784,13 @@
       face->root.internal->incremental_interface->funcs->free_glyph_data(
         face->root.internal->incremental_interface->object,
         &data );
-#endif /* FT_CONFIG_OPTION_INCREMENTAL */
+
+#else /* !FT_CONFIG_OPTION_INCREMENTAL */
+
+    FT_UNUSED( decoder );
+    FT_UNUSED( buf );
+
+#endif /* !FT_CONFIG_OPTION_INCREMENTAL */
   }
 
 

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="String">
 			<return type="String">
@@ -437,7 +435,7 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if this string is free from characters that aren't allowed in file names, those being:
-				[code]: / \ ? * " | % < >[/code]
+				[code]: / \ ? * " | % &lt; &gt;[/code]
 			</description>
 		</method>
 		<method name="is_valid_float">

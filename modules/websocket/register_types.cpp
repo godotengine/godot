@@ -60,25 +60,6 @@ void register_websocket_types() {
 	_SET_HINT(WSS_OUT_PKT, 1024, 16384);
 
 #ifdef JAVASCRIPT_ENABLED
-	EM_ASM({
-		var IDHandler = {};
-		IDHandler["ids"] = {};
-		IDHandler["has"] = function(id) {
-			return IDHandler.ids.hasOwnProperty(id);
-		};
-		IDHandler["add"] = function(obj) {
-			var id = crypto.getRandomValues(new Int32Array(32))[0];
-			IDHandler.ids[id] = obj;
-			return id;
-		};
-		IDHandler["get"] = function(id) {
-			return IDHandler.ids[id];
-		};
-		IDHandler["remove"] = function(id) {
-			delete IDHandler.ids[id];
-		};
-		Module["IDHandler"] = IDHandler;
-	});
 	EMWSPeer::make_default();
 	EMWSClient::make_default();
 	EMWSServer::make_default();

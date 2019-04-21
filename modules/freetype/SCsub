@@ -12,7 +12,6 @@ if env['builtin_freetype']:
     thirdparty_dir = "#thirdparty/freetype/"
     thirdparty_sources = [
         "src/autofit/autofit.c",
-        "src/base/ftapi.c",
         "src/base/ftbase.c",
         "src/base/ftbbox.c",
         "src/base/ftbdf.c",

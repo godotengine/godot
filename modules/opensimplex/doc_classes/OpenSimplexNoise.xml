@@ -23,8 +23,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_image">
 			<return type="Image">
@@ -35,6 +33,14 @@
 			</argument>
 			<description>
 				Generate a noise image with the requested [code]width[/code] and [code]height[/code], based on the current noise parameters.
+			</description>
+		</method>
+		<method name="get_noise_1d">
+			<return type="float">
+			</return>
+			<argument index="0" name="x" type="float">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_noise_2d">

@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/introduction_to_3d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="force_update_transform">
 			<return type="void">
@@ -329,7 +327,7 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			Spatial nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
 			In order for [code]NOTIFICATION_TRANSFORM_CHANGED[/code] to work, users first need to ask for it, with [method set_notify_transform].
 		</constant>

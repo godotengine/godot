@@ -193,6 +193,11 @@ namespace Godot.Collections
             }
         }
 
+        public override string ToString()
+        {
+            return godot_icall_Dictionary_ToString(GetPtr());
+        }
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static IntPtr godot_icall_Dictionary_Ctor();
 
@@ -243,6 +248,9 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Dictionary_Generic_GetValueTypeInfo(Type valueType, out int valTypeEncoding, out IntPtr valTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_Dictionary_ToString(IntPtr ptr);
     }
 
     public class Dictionary<TKey, TValue> :
@@ -442,5 +450,7 @@ namespace Godot.Collections
         {
             return GetEnumerator();
         }
+
+        public override string ToString() => objectDict.ToString();
     }
 }

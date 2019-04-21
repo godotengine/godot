@@ -29,8 +29,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="can_instance" qualifiers="const">
 			<return type="bool">

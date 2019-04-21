@@ -10,8 +10,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Transform">
 			<return type="Transform">
@@ -172,9 +170,9 @@
 		</constant>
 		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</constant>
-		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
 		</constant>
-		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
 		</constant>
 	</constants>
 </class>

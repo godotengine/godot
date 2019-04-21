@@ -53,8 +53,50 @@ extern "C" {
 #undef MAX
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
-#define CHECK_F(f) { size_t const errcod = f; if (ERR_isError(errcod)) return errcod; }  /* check and Forward error code */
-#define CHECK_E(f, e) { size_t const errcod = f; if (ERR_isError(errcod)) return ERROR(e); }  /* check and send Error code */
+
+/**
+ * Return the specified error if the condition evaluates to true.
+ *
+ * In debug modes, prints additional information. In order to do that
+ * (particularly, printing the conditional that failed), this can't just wrap
+ * RETURN_ERROR().
+ */
+#define RETURN_ERROR_IF(cond, err, ...) \
+  if (cond) { \
+    RAWLOG(3, "%s:%d: ERROR!: check %s failed, returning %s", __FILE__, __LINE__, ZSTD_QUOTE(cond), ZSTD_QUOTE(ERROR(err))); \
+    RAWLOG(3, ": " __VA_ARGS__); \
+    RAWLOG(3, "\n"); \
+    return ERROR(err); \
+  }
+
+/**
+ * Unconditionally return the specified error.
+ *
+ * In debug modes, prints additional information.
+ */
+#define RETURN_ERROR(err, ...) \
+  do { \
+    RAWLOG(3, "%s:%d: ERROR!: unconditional check failed, returning %s", __FILE__, __LINE__, ZSTD_QUOTE(ERROR(err))); \
+    RAWLOG(3, ": " __VA_ARGS__); \
+    RAWLOG(3, "\n"); \
+    return ERROR(err); \
+  } while(0);
+
+/**
+ * If the provided expression evaluates to an error code, returns that error code.
+ *
+ * In debug modes, prints additional information.
+ */
+#define FORWARD_IF_ERROR(err, ...) \
+  do { \
+    size_t const err_code = (err); \
+    if (ERR_isError(err_code)) { \
+      RAWLOG(3, "%s:%d: ERROR!: forwarding error in %s: %s", __FILE__, __LINE__, ZSTD_QUOTE(err), ERR_getErrorName(err_code)); \
+      RAWLOG(3, ": " __VA_ARGS__); \
+      RAWLOG(3, "\n"); \
+      return err_code; \
+    } \
+  } while(0);
 
 
 /*-*************************************
@@ -199,6 +241,17 @@ typedef struct {
     U32   longLengthID;   /* 0 == no longLength; 1 == Lit.longLength; 2 == Match.longLength; */
     U32   longLengthPos;
 } seqStore_t;
+
+/**
+ * Contains the compressed frame size and an upper-bound for the decompressed frame size.
+ * Note: before using `compressedSize`, check for errors using ZSTD_isError().
+ *       similarly, before using `decompressedBound`, check for errors using:
+ *          `decompressedBound != ZSTD_CONTENTSIZE_ERROR`
+ */
+typedef struct {
+    size_t compressedSize;
+    unsigned long long decompressedBound;
+} ZSTD_frameSizeInfo;   /* decompress & legacy */
 
 const seqStore_t* ZSTD_getSeqStore(const ZSTD_CCtx* ctx);   /* compress & dictBuilder */
 void ZSTD_seqToCodes(const seqStore_t* seqStorePtr);   /* compress, dictBuilder, decodeCorpus (shouldn't get its definition from here) */

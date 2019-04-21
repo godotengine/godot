@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_recognized_extensions">
 			<return type="PoolStringArray">
@@ -27,7 +25,7 @@
 			</argument>
 			<argument index="1" name="resource" type="Resource">
 			</argument>
-			<argument index="2" name="flags" type="int" default="0">
+			<argument index="2" name="flags" type="int" enum="ResourceSaver.SaverFlags" default="0">
 			</argument>
 			<description>
 				Saves a resource to disk.

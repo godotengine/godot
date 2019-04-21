@@ -1,10 +1,10 @@
-/***************************************************************************/
-/*                                                                         */
-/*  fthash.h                                                               */
-/*                                                                         */
-/*    Hashing functions (specification).                                   */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * fthash.h
+ *
+ *   Hashing functions (specification).
+ *
+ */
 
 /*
  * Copyright 2000 Computing Research Labs, New Mexico State University
@@ -30,13 +30,13 @@
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*  This file is based on code from bdf.c,v 1.22 2000/03/16 20:08:50     */
-  /*                                                                       */
-  /*  taken from Mark Leisher's xmbdfed package                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This file is based on code from bdf.c,v 1.22 2000/03/16 20:08:50
+   *
+   * taken from Mark Leisher's xmbdfed package
+   *
+   */
 
 
 #ifndef FTHASH_H_

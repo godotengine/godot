@@ -99,6 +99,7 @@ struct Vector2 {
 	Vector2 operator/(const real_t &rvalue) const;
 
 	void operator/=(const real_t &rvalue);
+	void operator/=(const Vector2 &rvalue) { *this = *this / rvalue; }
 
 	Vector2 operator-() const;
 

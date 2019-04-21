@@ -470,10 +470,12 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 
 	if (!has_revert && !p_object->get_script().is_null()) {
 		Ref<Script> scr = p_object->get_script();
-		Variant orig_value;
-		if (scr->get_property_default_value(p_property, orig_value)) {
-			if (orig_value != p_object->get(p_property)) {
-				has_revert = true;
+		if (scr.is_valid()) {
+			Variant orig_value;
+			if (scr->get_property_default_value(p_property, orig_value)) {
+				if (orig_value != p_object->get(p_property)) {
+					has_revert = true;
+				}
 			}
 		}
 	}
@@ -668,11 +670,13 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (!object->get_script().is_null()) {
 				Ref<Script> scr = object->get_script();
-				Variant orig_value;
-				if (scr->get_property_default_value(property, orig_value)) {
-					emit_changed(property, orig_value);
-					update_property();
-					return;
+				if (scr.is_valid()) {
+					Variant orig_value;
+					if (scr->get_property_default_value(property, orig_value)) {
+						emit_changed(property, orig_value);
+						update_property();
+						return;
+					}
 				}
 			}
 
@@ -1523,7 +1527,7 @@ void EditorInspector::update_tree() {
 					if (E) {
 						descr = E->get().brief_description;
 					}
-					class_descr_cache[type2] = descr.word_wrap(80);
+					class_descr_cache[type2] = descr;
 				}
 
 				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
@@ -1675,7 +1679,7 @@ void EditorInspector::update_tree() {
 				while (F && descr == String()) {
 					for (int i = 0; i < F->get().properties.size(); i++) {
 						if (F->get().properties[i].name == propname.operator String()) {
-							descr = F->get().properties[i].description.strip_edges().word_wrap(80);
+							descr = F->get().properties[i].description.strip_edges();
 							break;
 						}
 					}
