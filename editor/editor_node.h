@@ -138,6 +138,9 @@ private:
 		FILE_QUICK_OPEN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
+		FILE_CLOSE_OTHERS,
+		FILE_CLOSE_RIGHT,
+		FILE_CLOSE_ALL,
 		FILE_CLOSE_ALL_AND_QUIT,
 		FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER,
 		FILE_QUIT,
@@ -543,7 +546,7 @@ private:
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
 	void _scene_tab_changed(int p_tab);
-	void _scene_tab_closed(int p_tab);
+	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
 	void _scene_tab_hover(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
