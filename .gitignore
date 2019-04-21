@@ -7,6 +7,8 @@ doc/_build/
 # Javascript specific
 *.bc
 
+*env
+
 # Android specific
 platform/android/java/build.gradle
 platform/android/java/.gradle
