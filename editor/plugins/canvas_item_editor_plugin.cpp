@@ -84,7 +84,6 @@ public:
 
 		container = memnew(VBoxContainer);
 		add_child(container);
-		//set_child_rect(container);
 
 		child_container = memnew(GridContainer);
 		child_container->set_columns(3);
@@ -99,12 +98,14 @@ public:
 		grid_offset_x->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_offset_x->set_suffix("px");
+		grid_offset_x->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_x);
 
 		grid_offset_y = memnew(SpinBox);
 		grid_offset_y->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_offset_y->set_suffix("px");
+		grid_offset_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_y);
 
 		label = memnew(Label);
@@ -116,12 +117,14 @@ public:
 		grid_step_x->set_min(0.01);
 		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_x->set_suffix("px");
+		grid_step_x->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_x);
 
 		grid_step_y = memnew(SpinBox);
 		grid_step_y->set_min(0.01);
 		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_y->set_suffix("px");
+		grid_step_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_y);
 
 		container->add_child(memnew(HSeparator));
@@ -139,6 +142,7 @@ public:
 		rotation_offset->set_min(-SPIN_BOX_ROTATION_RANGE);
 		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
 		rotation_offset->set_suffix("deg");
+		rotation_offset->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(rotation_offset);
 
 		label = memnew(Label);
@@ -150,6 +154,7 @@ public:
 		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
 		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
 		rotation_step->set_suffix("deg");
+		rotation_step->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(rotation_step);
 	}
 
