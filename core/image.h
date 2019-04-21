@@ -256,6 +256,7 @@ public:
 	bool empty() const;
 
 	PoolVector<uint8_t> get_data() const;
+	PoolVector<uint8_t> &get_data_ref();
 
 	Error load(const String &p_path);
 	Error save_png(const String &p_path) const;
@@ -291,6 +292,8 @@ public:
 	static int get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
+
+	static void scale_nearest_raw(int p_pixel_size, const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height);
 
 	enum CompressMode {
 		COMPRESS_S3TC,

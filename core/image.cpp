@@ -700,28 +700,64 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 	}
 }
 
-template <int CC, class T>
+template <int N>
+_FORCE_INLINE_ static void _scale_nearest_row_bytewise(const uint8_t *__restrict p_src, uint32_t p_src_w, uint8_t *__restrict p_dst, uint32_t p_dst_w) {
+	for (uint32_t off = 0; off < p_dst_w * 3; off += 3) {
+		uint32_t src_off = off * p_src_w / p_dst_w;
+		for (int i = N - 1; i >= 0; --i) {
+			p_dst[off + i] = p_src[src_off - i];
+		}
+	}
+}
+
+template <typename T, int N = 1>
+_FORCE_INLINE_ static void _scale_nearest_row_opt(const uint8_t *__restrict p_src, uint32_t p_src_w, uint8_t *__restrict p_dst, uint32_t p_dst_w) {
+	const T *__restrict src_opt = (const T *)p_src;
+	T *__restrict dst_opt = (T *)p_dst;
+	for (uint32_t x = 0; x < p_dst_w; ++x) {
+		uint32_t src_idx = N * x * p_src_w / p_dst_w;
+		for (int i = N - 1; i >= 0; --i) {
+			*dst_opt++ = src_opt[src_idx - i];
+		}
+	}
+}
+
+template <int N>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 
-	for (uint32_t i = 0; i < p_dst_height; i++) {
+	uint8_t *__restrict dst_row = p_dst;
+	int dst_row_inc = p_dst_width * N;
 
-		uint32_t src_yofs = i * p_src_height / p_dst_height;
-		uint32_t y_ofs = src_yofs * p_src_width * CC;
+	for (uint32_t y = 0; y < p_dst_height; ++y) {
+		const uint8_t *__restrict src_row = p_src + (y * p_src_height / p_dst_height) * p_src_width * N;
 
-		for (uint32_t j = 0; j < p_dst_width; j++) {
-
-			uint32_t src_xofs = j * p_src_width / p_dst_width;
-			src_xofs *= CC;
-
-			for (uint32_t l = 0; l < CC; l++) {
-
-				const T *src = ((const T *)p_src);
-				T *dst = ((T *)p_dst);
-
-				T p = src[y_ofs + src_xofs + l];
-				dst[i * p_dst_width * CC + j * CC + l] = p;
-			}
+		switch (N) {
+			case 1: _scale_nearest_row_opt<uint8_t>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 2: _scale_nearest_row_opt<uint16_t>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 3: _scale_nearest_row_bytewise<3>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 4: _scale_nearest_row_opt<uint32_t>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 6: _scale_nearest_row_bytewise<6>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 8: _scale_nearest_row_opt<uint64_t>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 12: _scale_nearest_row_opt<uint32_t, 3>(src_row, p_src_width, dst_row, p_dst_width); break;
+			case 16: _scale_nearest_row_opt<uint64_t, 2>(src_row, p_src_width, dst_row, p_dst_width); break;
 		}
+
+		dst_row += dst_row_inc;
+	}
+}
+
+void Image::scale_nearest_raw(int p_pixel_size, const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
+
+	switch (p_pixel_size) {
+		case 1: _scale_nearest<1>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 2: _scale_nearest<2>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 3: _scale_nearest<3>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 4: _scale_nearest<4>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 6: _scale_nearest<6>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 8: _scale_nearest<8>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 12: _scale_nearest<12>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		case 16: _scale_nearest<16>(p_src, p_dst, p_src_width, p_src_height, p_dst_width, p_dst_height); break;
+		default: ERR_FAIL_MSG("Unsupported pixel size");
 	}
 }
 
@@ -932,29 +968,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 		case INTERPOLATE_NEAREST: {
 
-			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
-				switch (get_format_pixel_size(format)) {
-					case 1: _scale_nearest<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 2: _scale_nearest<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 3: _scale_nearest<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_nearest<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				}
-			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
-				switch (get_format_pixel_size(format)) {
-					case 4: _scale_nearest<1, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_nearest<2, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 12: _scale_nearest<3, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 16: _scale_nearest<4, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				}
-
-			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
-				switch (get_format_pixel_size(format)) {
-					case 2: _scale_nearest<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_nearest<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 6: _scale_nearest<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_nearest<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-				}
-			}
+			scale_nearest_raw(get_format_pixel_size(format), r_ptr, w_ptr, width, height, p_width, p_height);
 
 		} break;
 		case INTERPOLATE_BILINEAR:
@@ -1563,6 +1577,11 @@ bool Image::empty() const {
 }
 
 PoolVector<uint8_t> Image::get_data() const {
+
+	return data;
+}
+
+PoolVector<uint8_t> &Image::get_data_ref() {
 
 	return data;
 }
