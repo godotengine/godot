@@ -482,7 +482,7 @@ MainLoop *test() {
 		float gb = (rgbe >> 9) & 0x1ff;
 		float bb = (rgbe >> 18) & 0x1ff;
 		float eb = (rgbe >> 27);
-		float mb = Math::pow(2, eb - 15.0 - 9.0);
+		float mb = Math::pow(2.0, eb - 15.0 - 9.0);
 		float rd = rb * mb;
 		float gd = gb * mb;
 		float bd = bb * mb;
