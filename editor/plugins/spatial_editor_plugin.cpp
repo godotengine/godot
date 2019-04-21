@@ -1850,7 +1850,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				if (!sp)
 					continue;
 
-				emit_signal("transform_key_request", sp, "", sp->get_transform());
+				spatial_editor->emit_signal("transform_key_request", sp, "", sp->get_transform());
 			}
 
 			set_message(TTR("Animation Key Inserted."));
@@ -5902,7 +5902,7 @@ SpatialEditorPlugin::SpatialEditorPlugin(EditorNode *p_node) {
 	editor->get_viewport()->add_child(spatial_editor);
 
 	spatial_editor->hide();
-	spatial_editor->connect("transform_key_request", editor, "_transform_keyed");
+	spatial_editor->connect("transform_key_request", editor->get_inspector_dock(), "_transform_keyed");
 }
 
 SpatialEditorPlugin::~SpatialEditorPlugin() {
