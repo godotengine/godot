@@ -110,6 +110,10 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
+	} else if (ED_IS_SHORTCUT("scene_tree/collapse_all", p_event)) {
+		_tool_selected(TOOL_COLLAPSE_ALL);
+	} else if (ED_IS_SHORTCUT("scene_tree/expand_all", p_event)) {
+		_tool_selected(TOOL_EXPAND_ALL);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	}
@@ -281,6 +285,20 @@ bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_pat
 	}
 
 	return false;
+}
+
+void _set_fold_recursive(Node *root, TreeItem *p_item, bool p_collapsed) {
+	TreeItem *child = p_item->get_children();
+	if (child != nullptr) {
+		NodePath np = p_item->get_metadata(0);
+		Node *n = root->get_node(np);
+		p_item->set_collapsed(p_collapsed);
+		n->set_display_folded(p_collapsed);
+
+		for (; child != nullptr; child = child->get_next()) {
+			_set_fold_recursive(root, child, p_collapsed);
+		}
+	}
 }
 
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
@@ -768,6 +786,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					Node *root = EditorNode::get_singleton()->get_edited_scene();
 					NodePath path = root->get_path().rel_path_to(node->get_path());
 					OS::get_singleton()->set_clipboard(path);
+				}
+			}
+		} break;
+		case TOOL_COLLAPSE_ALL:
+		case TOOL_EXPAND_ALL: {
+			Tree *tree = scene_tree->get_scene_tree();
+			if (tree->is_anything_selected()) {
+				Node* root = EditorNode::get_singleton()->get_edited_scene();
+				TreeItem *item = tree->get_selected();
+				while (item != nullptr) {
+					_set_fold_recursive(root, item, p_tool == TOOL_COLLAPSE_ALL);
+					item = tree->get_next_selected(item);
 				}
 			}
 		} break;
@@ -2274,6 +2304,15 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		}
 	}
 
+	for (int i = 0; i < selection.size(); ++i) {
+		if (selection[i]->get_child_count() > 0) {
+			menu->add_separator();
+			menu->add_icon_shortcut(get_icon("Collapse", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/collapse_all"), TOOL_COLLAPSE_ALL);
+			menu->add_icon_shortcut(get_icon("Expand", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/expand_all"), TOOL_EXPAND_ALL);
+			break;
+		}
+	}
+
 	if (profile_allow_editing && selection.size() > 1) {
 		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
 		menu->add_separator();
@@ -2528,6 +2567,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("scene_tree/collapse_all", TTR("Collapse All"), KEY_MASK_CMD | KEY_N);
+	ED_SHORTCUT("scene_tree/expand_all", TTR("Expand All"), KEY_MASK_CMD | KEY_M);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 
