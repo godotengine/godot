@@ -1466,7 +1466,7 @@ void EditorNode::edit_item(Object *p_object) {
 			same = false;
 		}
 		if (!same) {
-			_display_top_editors(false);
+			//_display_top_editors(false);
 			_set_top_editors(sub_plugins);
 		}
 		_set_editing_top_editors(p_object);
