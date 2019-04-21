@@ -722,6 +722,8 @@ void LineEdit::_notification(int p_what) {
 				} else {
 					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - r_icon->get_width() - style->get_margin(MARGIN_RIGHT));
 				}
+
+				ofs_max -= r_icon->get_width();
 			}
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
