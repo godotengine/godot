@@ -35,6 +35,7 @@
 #include "core/os/file_access.h"
 #include "core/script_language.h"
 #include "scene/main/node.h" //only so casting works
+//#include "editor/plugins/resource_editor_plugin.h"
 
 #include <stdio.h>
 
@@ -417,6 +418,13 @@ Resource::Resource() :
 	subindex = 0;
 	local_to_scene = false;
 	local_scene = NULL;
+	//Create the editor plugin here
+	//ResourceEditorPlugin editorPlugin = ResourceEditorPlugin(EditorNode::get_singleton());
+
+	//For all resource object created, it adds itself to the resource preview list
+	//Displaying it is handled by editor_file_system.cpp
+	//EditorResourcePreview::get_singleton()->add_preview_generator(new EditorResourcePreviewGenerator);
+
 }
 
 Resource::~Resource() {
