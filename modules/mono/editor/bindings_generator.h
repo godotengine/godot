@@ -32,6 +32,7 @@
 #define BINDINGS_GENERATOR_H
 
 #include "core/class_db.h"
+#include "core/string_builder.h"
 #include "dotnet_solution.h"
 #include "editor/doc/doc_data.h"
 #include "editor/editor_help.h"
@@ -568,14 +569,14 @@ class BindingsGenerator {
 
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
-	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, List<String> &p_output);
-	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, List<String> &p_output);
+	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);
+	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
 
-	void _generate_global_constants(List<String> &p_output);
+	void _generate_global_constants(StringBuilder &p_output);
 
-	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, List<String> &p_output);
+	Error _generate_glue_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, StringBuilder &p_output);
 
-	Error _save_file(const String &p_path, const List<String> &p_content);
+	Error _save_file(const String &p_path, const StringBuilder &p_content);
 
 	BindingsGenerator() {}
 
