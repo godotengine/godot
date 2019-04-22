@@ -37,7 +37,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if this is a root shape and is thus the object that is rendered.
+				Returns [code]true[/code] if this is a root shape and is thus the object that is rendered.
 			</description>
 		</method>
 		<method name="set_collision_layer_bit">
