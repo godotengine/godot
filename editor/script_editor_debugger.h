@@ -205,6 +205,8 @@ class ScriptEditorDebugger : public Control {
 
 	void _export_csv();
 
+	void _clear_execution();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

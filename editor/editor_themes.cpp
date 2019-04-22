@@ -1114,6 +1114,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color member_variable_color = main_color.linear_interpolate(mono_color, 0.6);
 	const Color mark_color = Color(error_color.r, error_color.g, error_color.b, 0.3);
 	const Color breakpoint_color = error_color;
+	const Color executing_line_color = Color(0.2, 0.8, 0.2, 0.4);
 	const Color code_folding_color = alpha3;
 	const Color search_result_color = alpha1;
 	const Color search_result_border_color = alpha3;
@@ -1149,6 +1150,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/member_variable_color", member_variable_color, true);
 		setting->set_initial_value("text_editor/highlighting/mark_color", mark_color, true);
 		setting->set_initial_value("text_editor/highlighting/breakpoint_color", breakpoint_color, true);
+		setting->set_initial_value("text_editor/highlighting/executing_line_color", executing_line_color, true);
 		setting->set_initial_value("text_editor/highlighting/code_folding_color", code_folding_color, true);
 		setting->set_initial_value("text_editor/highlighting/search_result_color", search_result_color, true);
 		setting->set_initial_value("text_editor/highlighting/search_result_border_color", search_result_border_color, true);

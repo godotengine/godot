@@ -312,6 +312,38 @@ void ScriptEditor::_goto_script_line(REF p_script, int p_line) {
 	}
 }
 
+void ScriptEditor::_set_execution(REF p_script, int p_line) {
+	Ref<Script> script = Object::cast_to<Script>(*p_script);
+	if (script.is_valid() && (script->has_source_code() || script->get_path().is_resource_file())) {
+		for (int i = 0; i < tab_container->get_child_count(); i++) {
+
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+			if (!se)
+				continue;
+
+			if ((script != NULL && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
+				se->set_executing_line(p_line);
+			}
+		}
+	}
+}
+
+void ScriptEditor::_clear_execution(REF p_script) {
+	Ref<Script> script = Object::cast_to<Script>(*p_script);
+	if (script.is_valid() && (script->has_source_code() || script->get_path().is_resource_file())) {
+		for (int i = 0; i < tab_container->get_child_count(); i++) {
+
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+			if (!se)
+				continue;
+
+			if ((script != NULL && se->get_edited_resource() == p_script) || se->get_edited_resource()->get_path() == script->get_path()) {
+				se->clear_executing_line();
+			}
+		}
+	}
+}
+
 ScriptEditorBase *ScriptEditor::_get_current_editor() const {
 
 	int selected = tab_container->get_current_tab();
@@ -2872,6 +2904,8 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_res_saved_callback", &ScriptEditor::_res_saved_callback);
 	ClassDB::bind_method("_goto_script_line", &ScriptEditor::_goto_script_line);
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
+	ClassDB::bind_method("_set_execution", &ScriptEditor::_set_execution);
+	ClassDB::bind_method("_clear_execution", &ScriptEditor::_clear_execution);
 	ClassDB::bind_method("_help_search", &ScriptEditor::_help_search);
 	ClassDB::bind_method("_save_history", &ScriptEditor::_save_history);
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
@@ -3162,6 +3196,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	debugger = memnew(ScriptEditorDebugger(editor));
 	debugger->connect("goto_script_line", this, "_goto_script_line");
+	debugger->connect("set_execution", this, "_set_execution");
+	debugger->connect("clear_execution", this, "_clear_execution");
 	debugger->connect("show_debugger", this, "_show_debugger");
 
 	disk_changed = memnew(ConfirmationDialog);

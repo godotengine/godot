@@ -2101,6 +2101,14 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 	}
 }
 
+void VisualScriptEditor::set_executing_line(int p_line) {
+	// todo: add a way to show which node is executing right now.
+}
+
+void VisualScriptEditor::clear_executing_line() {
+	// todo: add a way to show which node is executing right now.
+}
+
 void VisualScriptEditor::trim_trailing_whitespace() {
 }
 
