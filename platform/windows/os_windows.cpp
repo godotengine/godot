@@ -53,6 +53,7 @@
 
 #include <avrt.h>
 #include <direct.h>
+#include <knownfolders.h>
 #include <process.h>
 #include <regstr.h>
 #include <shlobj.h>
