@@ -664,8 +664,10 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		}
 
 		if (mb->is_pressed()) {
-
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			SpatialEditorViewport::NavigationScheme nav_scheme = (SpatialEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == SpatialEditorViewport::NAVIGATION_MAYA || nav_scheme == SpatialEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
+				input_action = INPUT_NONE;
+			} else if (mb->get_button_index() == BUTTON_LEFT) {
 
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
