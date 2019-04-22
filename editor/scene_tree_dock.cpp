@@ -1942,7 +1942,13 @@ void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 
 void SceneTreeDock::import_subscene() {
 
-	import_subscene_dialog->popup_centered_ratio();
+	Size2 popup_size = Size2(500, 800) * editor_get_scale();
+	Size2 window_size = get_viewport_rect().size;
+
+	popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+	popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+	import_subscene_dialog->popup_centered(popup_size);
 }
 
 void SceneTreeDock::_import_subscene() {
