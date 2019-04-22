@@ -40,7 +40,7 @@ class MessageQueue {
 
 	enum {
 
-		DEFAULT_QUEUE_SIZE_KB = 1024
+		DEFAULT_QUEUE_SIZE_KB = 4096
 	};
 
 	enum {
