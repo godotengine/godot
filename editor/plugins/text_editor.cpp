@@ -94,6 +94,7 @@ void TextEditor::_load_theme_settings() {
 	Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
 	Color mark_color = EDITOR_GET("text_editor/highlighting/mark_color");
 	Color breakpoint_color = EDITOR_GET("text_editor/highlighting/breakpoint_color");
+	Color executing_line_color = EDITOR_GET("text_editor/highlighting/executing_line_color");
 	Color code_folding_color = EDITOR_GET("text_editor/highlighting/code_folding_color");
 	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
@@ -124,6 +125,7 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_color_override("function_color", function_color);
 	text_edit->add_color_override("member_variable_color", member_variable_color);
 	text_edit->add_color_override("breakpoint_color", breakpoint_color);
+	text_edit->add_color_override("executing_line_color", executing_line_color);
 	text_edit->add_color_override("mark_color", mark_color);
 	text_edit->add_color_override("code_folding_color", code_folding_color);
 	text_edit->add_color_override("search_result_color", search_result_color);
@@ -266,6 +268,15 @@ void TextEditor::tag_saved_version() {
 void TextEditor::goto_line(int p_line, bool p_with_error) {
 
 	code_editor->goto_line(p_line);
+}
+
+void TextEditor::set_executing_line(int p_line) {
+
+	code_editor->set_executing_line(p_line);
+}
+
+void TextEditor::clear_executing_line() {
+	code_editor->clear_executing_line();
 }
 
 void TextEditor::ensure_focus() {

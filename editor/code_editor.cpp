@@ -1177,6 +1177,14 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->select(p_line, p_begin, p_line, p_end);
 }
 
+void CodeTextEditor::set_executing_line(int p_line) {
+	text_editor->set_executing_line(p_line);
+}
+
+void CodeTextEditor::clear_executing_line() {
+	text_editor->clear_executing_line();
+}
+
 Variant CodeTextEditor::get_edit_state() {
 	Dictionary state;
 
