@@ -162,6 +162,16 @@ int MultiMesh::get_instance_count() const {
 	return instance_count;
 }
 
+void MultiMesh::set_visible_instance_count(int p_count) {
+	ERR_FAIL_COND(p_count < -1);
+	VisualServer::get_singleton()->multimesh_set_visible_instances(multimesh, p_count);
+	visible_instance_count = p_count;
+}
+int MultiMesh::get_visible_instance_count() const {
+
+	return visible_instance_count;
+}
+
 void MultiMesh::set_instance_transform(int p_instance, const Transform &p_transform) {
 
 	VisualServer::get_singleton()->multimesh_instance_set_transform(multimesh, p_instance, p_transform);
@@ -255,6 +265,8 @@ void MultiMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_instance_count", "count"), &MultiMesh::set_instance_count);
 	ClassDB::bind_method(D_METHOD("get_instance_count"), &MultiMesh::get_instance_count);
+	ClassDB::bind_method(D_METHOD("set_visible_instance_count", "count"), &MultiMesh::set_visible_instance_count);
+	ClassDB::bind_method(D_METHOD("get_visible_instance_count"), &MultiMesh::get_visible_instance_count);
 	ClassDB::bind_method(D_METHOD("set_instance_transform", "instance", "transform"), &MultiMesh::set_instance_transform);
 	ClassDB::bind_method(D_METHOD("set_instance_transform_2d", "instance", "transform"), &MultiMesh::set_instance_transform_2d);
 	ClassDB::bind_method(D_METHOD("get_instance_transform", "instance"), &MultiMesh::get_instance_transform);
@@ -276,6 +288,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transform_format", PROPERTY_HINT_ENUM, "2D,3D"), "set_transform_format", "get_transform_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "custom_data_format", PROPERTY_HINT_ENUM, "None,Byte,Float"), "set_custom_data_format", "get_custom_data_format");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "instance_count", PROPERTY_HINT_RANGE, "0,16384,1,or_greater"), "set_instance_count", "get_instance_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_instance_count", PROPERTY_HINT_RANGE, "-1,16384,1,or_greater"), "set_visible_instance_count_count", "get_visible_instance_count_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "transform_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_transform_array", "_get_transform_array");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_color_array", "_get_color_array");
@@ -299,6 +312,7 @@ MultiMesh::MultiMesh() {
 	color_format = COLOR_NONE;
 	custom_data_format = CUSTOM_DATA_NONE;
 	transform_format = TRANSFORM_2D;
+	visible_instance_count = -1;
 	instance_count = 0;
 }
 
