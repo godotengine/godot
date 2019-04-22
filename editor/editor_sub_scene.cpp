@@ -73,8 +73,8 @@ void EditorSubScene::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (!is_visible_in_tree()) {
-		}
+		if (is_visible() && scene == NULL)
+			_path_browse();
 	}
 }
 
@@ -232,7 +232,7 @@ EditorSubScene::EditorSubScene() {
 	hb->add_child(path);
 	path->set_h_size_flags(SIZE_EXPAND_FILL);
 	Button *b = memnew(Button);
-	b->set_text(" .. ");
+	b->set_text(TTR("Browse"));
 	hb->add_child(b);
 	b->connect("pressed", this, "_path_browse");
 	vb->add_margin_child(TTR("Scene Path:"), hb);
