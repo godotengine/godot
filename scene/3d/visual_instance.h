@@ -43,6 +43,7 @@ class VisualInstance : public Spatial {
 	GDCLASS(VisualInstance, Spatial);
 	OBJ_CATEGORY("3D Visual Nodes");
 
+	RID base;
 	RID instance;
 	uint32_t layers;
 
@@ -69,6 +70,7 @@ public:
 	virtual AABB get_transformed_aabb() const; // helper
 
 	void set_base(const RID &p_base);
+	RID get_base() const;
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
