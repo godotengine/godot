@@ -201,10 +201,8 @@ void AudioRBResampler::clear() {
 		return;
 
 	//should be stopped at this point but just in case
-	if (rb) {
-		memdelete_arr(rb);
-		memdelete_arr(read_buf);
-	}
+	memdelete_arr(rb);
+	memdelete_arr(read_buf);
 	rb = NULL;
 	offset = 0;
 	rb_read_pos = 0;

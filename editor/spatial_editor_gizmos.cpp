@@ -324,7 +324,6 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref
 
 	ERR_FAIL_COND(!spatial_node);
 
-	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
