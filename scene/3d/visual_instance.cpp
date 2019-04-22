@@ -123,6 +123,8 @@ void VisualInstance::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_get_visual_instance_rid"), &VisualInstance::_get_visual_instance_rid);
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance::set_base);
+	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance::get_base);
+	ClassDB::bind_method(D_METHOD("get_instance"), &VisualInstance::get_instance);
 	ClassDB::bind_method(D_METHOD("set_layer_mask", "mask"), &VisualInstance::set_layer_mask);
 	ClassDB::bind_method(D_METHOD("get_layer_mask"), &VisualInstance::get_layer_mask);
 	ClassDB::bind_method(D_METHOD("set_layer_mask_bit", "layer", "enabled"), &VisualInstance::set_layer_mask_bit);
@@ -136,6 +138,12 @@ void VisualInstance::_bind_methods() {
 void VisualInstance::set_base(const RID &p_base) {
 
 	VisualServer::get_singleton()->instance_set_base(instance, p_base);
+	base = p_base;
+}
+
+RID VisualInstance::get_base() const {
+
+	return base;
 }
 
 VisualInstance::VisualInstance() {
