@@ -33,11 +33,9 @@
 #include "visual_server_raster.h"
 #include "visual_server_viewport.h"
 
-void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
+static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
 
-	static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
-	RasterizerCanvas::Item *z_list[z_range];
-	RasterizerCanvas::Item *z_last_list[z_range];
+void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
 
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
@@ -1434,4 +1432,13 @@ bool VisualServerCanvas::free(RID p_rid) {
 }
 
 VisualServerCanvas::VisualServerCanvas() {
+
+	z_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
+	z_last_list = (RasterizerCanvas::Item **)memalloc(z_range * sizeof(RasterizerCanvas::Item *));
+}
+
+VisualServerCanvas::~VisualServerCanvas() {
+
+	memfree(z_list);
+	memfree(z_last_list);
 }
