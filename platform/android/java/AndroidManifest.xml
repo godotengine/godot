@@ -11,11 +11,20 @@
                       android:largeScreens="true"
                       android:xlargeScreens="true"/>
 
+<!--glEsVersion is modified by the exporter, changing this value here has no effect-->
     <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+<!--Adding custom text to manifest is fine, but do it outside the custom user and application BEGIN/ENDregions, as that gets rewritten-->
 
-$$ADD_PERMISSION_CHUNKS$$
+<!--Custom permissions XML added by add-ons. It's recommended to add them from the export preset, though-->
+<!--CHUNK_USER_PERMISSIONS_BEGIN-->
+<!--CHUNK_USER_PERMISSIONS_END-->
 
-    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" tools:ignore="GoogleAppIndexingWarning" $$ADD_APPATTRIBUTE_CHUNKS$$ >
+<!--Anything in this line after the icon will be erased when doing custom build. If you want to add tags manually, do before it.-->
+    <application android:label="@string/godot_project_name_string" android:allowBackup="false" tools:ignore="GoogleAppIndexingWarning" android:icon="@drawable/icon">
+
+<!--The following values are replaced when Godot exports, modifying them here has no effect. Do theses changes in the-->
+<!--export preset. Adding new ones is fine.-->
+
         <activity android:name="org.godotengine.godot.Godot"
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
@@ -32,13 +41,22 @@ $$ADD_PERMISSION_CHUNKS$$
         </activity>
     <service android:name="org.godotengine.godot.GodotDownloaderService" />
 
-$$ADD_APPLICATION_CHUNKS$$
+<!--Custom application XML added by add-ons-->
+<!--CHUNK_APPLICATION_BEGIN-->
+<activity android:name="com.google.android.gms.ads.AdActivity"
+	android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+<meta-data android:name="com.google.android.gms.version"
+	android:value="@integer/google_play_services_version" />
+<meta-data
+        android:name="com.google.android.gms.ads.AD_MANAGER_APP"
+        android:value="true"/>
+<!--CHUNK_APPLICATION_END-->
 
     </application>
 
     <instrumentation android:icon="@drawable/icon"
                      android:label="@string/godot_project_name_string"
                      android:name="org.godotengine.godot.GodotInstrumentation"
-                     android:targetPackage="com.godot.game" />
+                     android:targetPackage="org.godotengine.game" />
 
 </manifest>
