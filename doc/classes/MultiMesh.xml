@@ -116,6 +116,8 @@
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat">
 			Format of transform used to transform mesh, either 2D or 3D.
 		</member>
+		<member name="visible_instance_count" type="int" setter="set_visible_instance_count" getter="get_visible_instance_count">
+		</member>
 	</members>
 	<constants>
 		<constant name="TRANSFORM_2D" value="0" enum="TransformFormat">
