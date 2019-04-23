@@ -758,23 +758,27 @@ void ColorPickerButton::_modal_closed() {
 void ColorPickerButton::pressed() {
 
 	_update_picker();
-	popup->set_position(get_global_position() - picker->get_combined_minimum_size());
+	popup->set_position(get_global_position() - picker->get_combined_minimum_size() * get_global_transform().get_scale());
+	popup->set_scale(get_global_transform().get_scale());
 	popup->popup();
 	picker->set_focus_on_line_edit();
 }
 
 void ColorPickerButton::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
 
-		Ref<StyleBox> normal = get_stylebox("normal");
-		Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
-		draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
-		draw_rect(r, color);
-	}
+			Ref<StyleBox> normal = get_stylebox("normal");
+			Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
+			draw_texture_rect(Control::get_icon("bg", "ColorPickerButton"), r, true);
+			draw_rect(r, color);
+		} break;
+		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST && popup) {
-		popup->hide();
+			if (popup)
+				popup->hide();
+		} break;
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {

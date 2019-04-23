@@ -109,9 +109,9 @@ void OptionButton::_selected(int p_which) {
 void OptionButton::pressed() {
 
 	Size2 size = get_size();
-	popup->set_global_position(get_global_position() + Size2(0, size.height));
+	popup->set_global_position(get_global_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
-
+	popup->set_scale(get_global_transform().get_scale());
 	popup->popup();
 }
 
@@ -352,8 +352,8 @@ OptionButton::OptionButton() {
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	popup->set_as_toplevel(true);
 	popup->set_pass_on_modal_close_click(false);
+	popup->set_notify_transform(true);
 	popup->connect("id_pressed", this, "_selected");
 	popup->connect("id_focused", this, "_focused");
 	popup->connect("popup_hide", this, "set_pressed", varray(false));

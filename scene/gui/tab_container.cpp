@@ -86,8 +86,8 @@ void TabContainer::_gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal("pre_popup_pressed");
 
 			Vector2 popup_pos = get_global_position();
-			popup_pos.x += size.width - popup->get_size().width;
-			popup_pos.y += menu->get_height();
+			popup_pos.x += size.width * get_global_transform().get_scale().x - popup->get_size().width * popup->get_global_transform().get_scale().x;
+			popup_pos.y += menu->get_height() * get_global_transform().get_scale().y;
 
 			popup->set_global_position(popup_pos);
 			popup->popup();
@@ -350,6 +350,7 @@ void TabContainer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+
 			minimum_size_changed();
 			call_deferred("_on_theme_changed"); //wait until all changed theme
 		} break;

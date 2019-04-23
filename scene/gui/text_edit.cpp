@@ -2009,6 +2009,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 				menu->set_size(Vector2(1, 1));
+				menu->set_scale(get_global_transform().get_scale());
 				menu->popup();
 				grab_focus();
 			}
