@@ -72,6 +72,9 @@ protected:
 	void _set_transform_array(const PoolVector<Vector3> &p_array);
 	PoolVector<Vector3> _get_transform_array() const;
 
+	void _set_transform_2d_array(const PoolVector<Vector2> &p_array);
+	PoolVector<Vector2> _get_transform_2d_array() const;
+
 	void _set_color_array(const PoolVector<Color> &p_array);
 	PoolVector<Color> _get_color_array() const;
 
@@ -107,6 +110,8 @@ public:
 
 	void set_instance_custom_data(int p_instance, const Color &p_custom_data);
 	Color get_instance_custom_data(int p_instance) const;
+
+	void set_as_bulk_array(const PoolVector<float> &p_array);
 
 	virtual AABB get_aabb() const;
 
