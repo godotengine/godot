@@ -101,6 +101,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_frustum">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="float">
+			</argument>
+			<argument index="1" name="offset" type="Vector2">
+			</argument>
+			<argument index="2" name="z_near" type="float">
+			</argument>
+			<argument index="3" name="z_far" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_orthogonal">
 			<return type="void">
 			</return>
@@ -156,6 +170,8 @@
 		<member name="fov" type="float" setter="set_fov" getter="get_fov">
 			The camera's field of view angle (in degrees). Only applicable in perspective mode. Since [member keep_aspect] locks one axis, [code]fov[/code] sets the other axis' field of view angle.
 		</member>
+		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset">
+		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset">
 			The horizontal (X) offset of the Camera viewport.
 		</member>
@@ -181,6 +197,8 @@
 		</constant>
 		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="Projection">
 			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
+		</constant>
+		<constant name="PROJECTION_FRUSTUM" value="2" enum="Projection">
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Preserves the horizontal aspect ratio.

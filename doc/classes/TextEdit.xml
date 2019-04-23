@@ -418,6 +418,14 @@
 				Emitted when the cursor changes.
 			</description>
 		</signal>
+		<signal name="info_clicked">
+			<argument index="0" name="row" type="int">
+			</argument>
+			<argument index="1" name="info" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="request_completion">
 			<description>
 			</description>

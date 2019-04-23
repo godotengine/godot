@@ -66,6 +66,22 @@
 			<description>
 			</description>
 		</method>
+		<method name="camera_set_frustum">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="size" type="float">
+			</argument>
+			<argument index="2" name="offset" type="Vector2">
+			</argument>
+			<argument index="3" name="z_near" type="float">
+			</argument>
+			<argument index="4" name="z_far" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="camera_set_orthogonal">
 			<return type="void">
 			</return>
@@ -173,12 +189,15 @@
 			</argument>
 			<argument index="1" name="mesh" type="RID">
 			</argument>
-			<argument index="2" name="texture" type="RID">
+			<argument index="2" name="texture" type="Transform2D">
 			</argument>
-			<argument index="3" name="normal_map" type="RID">
+			<argument index="3" name="normal_map" type="Color">
+			</argument>
+			<argument index="4" name="arg4" type="RID">
+			</argument>
+			<argument index="5" name="arg5" type="RID">
 			</argument>
 			<description>
-				Adds a [Mesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">

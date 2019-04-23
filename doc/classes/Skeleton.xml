@@ -134,6 +134,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="localize_rests">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="physical_bones_add_collision_exception">
 			<return type="void">
 			</return>

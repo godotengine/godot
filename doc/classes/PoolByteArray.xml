@@ -113,6 +113,8 @@
 			</description>
 		</method>
 		<method name="sha256_string">
+			<return type="String">
+			</return>
 			<description>
 				Return SHA256 string of the PoolByteArray.
 			</description>

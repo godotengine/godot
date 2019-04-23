@@ -14,6 +14,18 @@
 				Returns the [AABB] (also known as the bounding box) for this VisualInstance.
 			</description>
 		</method>
+		<method name="get_base" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_instance" qualifiers="const">
+			<return type="RID">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_layer_mask_bit" qualifiers="const">
 			<return type="bool">
 			</return>
