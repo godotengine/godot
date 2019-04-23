@@ -2507,19 +2507,25 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			if (!scr.is_valid()) {
 				continue;
 			}
-			edit(scr);
+			if (!edit(scr)) {
+				continue;
+			}
 		} else {
 			Error error;
 			Ref<TextFile> text_file = _load_text_file(path, &error);
 			if (error != OK || !text_file.is_valid()) {
 				continue;
 			}
-			edit(text_file);
+			if (!edit(text_file)) {
+				continue;
+			}
 		}
 
 		if (!script_info.empty()) {
-			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
-			se->set_edit_state(script_info["state"]);
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_tab_count() - 1));
+			if (se) {
+				se->set_edit_state(script_info["state"]);
+			}
 		}
 	}
 
