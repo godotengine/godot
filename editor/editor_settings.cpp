@@ -424,6 +424,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/indent/auto_indent", true);
 	_initial_set("text_editor/indent/convert_indent_on_save", false);
 	_initial_set("text_editor/indent/draw_tabs", true);
+	_initial_set("text_editor/indent/draw_spaces", false);
 
 	// Line numbers
 	_initial_set("text_editor/line_numbers/show_line_numbers", true);

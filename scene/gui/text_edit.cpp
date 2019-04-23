@@ -1252,6 +1252,11 @@ void TextEdit::_notification(int p_what) {
 							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
 						}
 
+						if (draw_spaces && str[j] == ' ') {
+							int yofs = (get_row_height() - cache.space_icon->get_height()) / 2;
+							cache.space_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_selected_color : color);
+						}
+
 						char_ofs += char_w;
 
 						if (line_wrap_index == line_wrap_amount && j == str.length() - 1 && is_folded(line)) {
@@ -4468,6 +4473,7 @@ void TextEdit::_update_caches() {
 #endif
 	cache.row_height = cache.font->get_height() + cache.line_spacing;
 	cache.tab_icon = get_icon("tab");
+	cache.space_icon = get_icon("space");
 	cache.folded_icon = get_icon("folded");
 	cache.can_fold_icon = get_icon("fold");
 	cache.folded_eol_icon = get_icon("GuiEllipsis", "EditorIcons");
@@ -5604,6 +5610,16 @@ bool TextEdit::is_drawing_tabs() const {
 	return draw_tabs;
 }
 
+void TextEdit::set_draw_spaces(bool p_draw) {
+
+	draw_spaces = p_draw;
+}
+
+bool TextEdit::is_drawing_spaces() const {
+
+	return draw_spaces;
+}
+
 void TextEdit::set_override_selected_font_color(bool p_override_selected_font_color) {
 	override_selected_font_color = p_override_selected_font_color;
 }
@@ -6429,6 +6445,7 @@ TextEdit::TextEdit() {
 
 	setting_row = false;
 	draw_tabs = false;
+	draw_spaces = false;
 	override_selected_font_color = false;
 	draw_caret = true;
 	max_chars = 0;
