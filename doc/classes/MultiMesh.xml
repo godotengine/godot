@@ -44,7 +44,7 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
-				Return the transform of a specific instance.
+				Return the [Transform] of a specific instance.
 			</description>
 		</method>
 		<method name="get_instance_transform_2d" qualifiers="const">
@@ -53,6 +53,18 @@
 			<argument index="0" name="instance" type="int">
 			</argument>
 			<description>
+				Return the [Transform2D] of a specific instance.
+			</description>
+		</method>
+		<method name="set_as_bulk_array">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="PoolRealArray">
+			</argument>
+			<description>
+				Set all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.
+				All data is packed in one large float array. An array may look like this: Transform for instance 1, color data for instance 1, custom data for instance 1, transform for instance 2, color data for instance 2, etc...
+				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, COLOR_8BIT / CUSTOM_DATA_8BIT is stored as 1 float (4 bytes as is) and COLOR_FLOAT / CUSTOM_DATA_FLOAT is stored as 4 floats.
 			</description>
 		</method>
 		<method name="set_instance_color">
@@ -86,7 +98,7 @@
 			<argument index="1" name="transform" type="Transform">
 			</argument>
 			<description>
-				Set the transform for a specific instance.
+				Set the [Transform] for a specific instance.
 			</description>
 		</method>
 		<method name="set_instance_transform_2d">
@@ -97,6 +109,7 @@
 			<argument index="1" name="transform" type="Transform2D">
 			</argument>
 			<description>
+				Set the [Transform2D] for a specific instance.
 			</description>
 		</method>
 	</methods>
@@ -108,7 +121,7 @@
 			Format of custom data in custom data array that gets passed to shader.
 		</member>
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count">
-			Number of instances that will get drawn.
+			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default all instances are drawn but you can limit this with [member visible_instance_count].
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.
@@ -117,6 +130,7 @@
 			Format of transform used to transform mesh, either 2D or 3D.
 		</member>
 		<member name="visible_instance_count" type="int" setter="set_visible_instance_count" getter="get_visible_instance_count">
+			Limits the number of instances drawn, -1 draws all instances. Changing this does not change the sizes of the buffers.
 		</member>
 	</members>
 	<constants>
