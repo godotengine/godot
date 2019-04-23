@@ -3036,34 +3036,40 @@ bool OS_X11::is_vsync_enabled() const {
 */
 void OS_X11::set_context(int p_context) {
 
-	char *config_name = NULL;
 	XClassHint *classHint = XAllocClassHint();
 
 	if (classHint) {
 
-		char *wm_class = (char *)"Godot";
-		if (p_context == CONTEXT_EDITOR)
-			classHint->res_name = (char *)"Godot_Editor";
-		if (p_context == CONTEXT_PROJECTMAN)
-			classHint->res_name = (char *)"Godot_ProjectList";
-
-		if (p_context == CONTEXT_ENGINE) {
-			classHint->res_name = (char *)"Godot_Engine";
-			String config_name_tmp = GLOBAL_GET("application/config/name");
-			if (config_name_tmp.length() > 0) {
-				config_name = strdup(config_name_tmp.utf8().get_data());
-			} else {
-				config_name = strdup("Godot Engine");
-			}
-
-			wm_class = config_name;
+		CharString name_str;
+		switch (p_context) {
+			case CONTEXT_EDITOR:
+				name_str = "Godot_Editor";
+				break;
+			case CONTEXT_PROJECTMAN:
+				name_str = "Godot_ProjectList";
+				break;
+			case CONTEXT_ENGINE:
+				name_str = "Godot_Engine";
+				break;
 		}
 
-		classHint->res_class = wm_class;
+		CharString class_str;
+		if (p_context == CONTEXT_ENGINE) {
+			String config_name = GLOBAL_GET("application/config/name");
+			if (config_name.length() == 0) {
+				class_str = "Godot_Engine";
+			} else {
+				class_str = config_name.utf8();
+			}
+		} else {
+			class_str = "Godot";
+		}
+
+		classHint->res_class = class_str.ptrw();
+		classHint->res_name = name_str.ptrw();
 
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
-		free(config_name);
 	}
 }
 
