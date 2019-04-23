@@ -211,12 +211,14 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		int ofs = 0;
+		int text_limit = text_size;
+
 		if (checkable) {
 			Ref<Texture> checkbox;
 			if (checked)
-				checkbox = get_icon("checked", "CheckBox");
+				checkbox = get_icon("GuiChecked", "EditorIcons");
 			else
-				checkbox = get_icon("unchecked", "CheckBox");
+				checkbox = get_icon("GuiUnchecked", "EditorIcons");
 
 			Color color2(1, 1, 1);
 			if (check_hover) {
@@ -228,11 +230,10 @@ void EditorProperty::_notification(int p_what) {
 			draw_texture(checkbox, check_rect.position, color2);
 			ofs += get_constant("hseparator", "Tree");
 			ofs += checkbox->get_width();
+			text_limit -= ofs;
 		} else {
 			check_rect = Rect2();
 		}
-
-		int text_limit = text_size;
 
 		if (can_revert) {
 			Ref<Texture> reload_icon = get_icon("ReloadSmall", "EditorIcons");
