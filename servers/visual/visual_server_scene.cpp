@@ -3117,6 +3117,9 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 
 	for (List<Instance *>::Element *E = p_gi_probe->scenario->directional_lights.front(); E; E = E->next()) {
 
+		if (!VSG::storage->light_get_use_gi(E->get()->base))
+			continue;
+
 		InstanceGIProbeData::LightCache lc;
 		lc.type = VSG::storage->light_get_type(E->get()->base);
 		lc.color = VSG::storage->light_get_color(E->get()->base);
@@ -3136,6 +3139,9 @@ bool VisualServerScene::_check_gi_probe(Instance *p_gi_probe) {
 	}
 
 	for (Set<Instance *>::Element *E = probe_data->lights.front(); E; E = E->next()) {
+
+		if (!VSG::storage->light_get_use_gi(E->get()->base))
+			continue;
 
 		InstanceGIProbeData::LightCache lc;
 		lc.type = VSG::storage->light_get_type(E->get()->base);
