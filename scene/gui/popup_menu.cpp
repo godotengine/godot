@@ -159,13 +159,14 @@ void PopupMenu::_activate_submenu(int over) {
 	Rect2 pr(p, get_size());
 	Ref<StyleBox> style = get_stylebox("panel");
 
-	Point2 pos = p + Point2(get_size().width, items[over]._ofs_cache - style->get_offset().y);
+	Point2 pos = p + Point2(get_size().width, items[over]._ofs_cache - style->get_offset().y) * get_global_transform().get_scale();
 	Size2 size = pm->get_size();
 	// fix pos
 	if (pos.x + size.width > get_viewport_rect().size.width)
 		pos.x = p.x - size.width;
 
 	pm->set_position(pos);
+	pm->set_scale(get_global_transform().get_scale());
 	pm->popup();
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
@@ -196,11 +197,11 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 	int vseparation = get_constant("vseparation");
 	Ref<Font> font = get_font("font");
 
-	float dy = (vseparation + font->get_height()) * 3 * p_factor;
+	float dy = (vseparation + font->get_height()) * 3 * p_factor * get_global_transform().get_scale().y;
 	if (dy > 0 && global_y < 0)
 		dy = MIN(dy, -global_y - 1);
-	else if (dy < 0 && global_y + get_size().y > get_viewport_rect().size.y)
-		dy = -MIN(-dy, global_y + get_size().y - get_viewport_rect().size.y - 1);
+	else if (dy < 0 && global_y + get_size().y * get_global_transform().get_scale().y > get_viewport_rect().size.y)
+		dy = -MIN(-dy, global_y + get_size().y * get_global_transform().get_scale().y - get_viewport_rect().size.y - 1);
 	set_position(get_position() + Vector2(0, dy));
 
 	Ref<InputEventMouseMotion> ie;
@@ -289,7 +290,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 			case BUTTON_WHEEL_DOWN: {
 
-				if (get_global_position().y + get_size().y > get_viewport_rect().size.y) {
+				if (get_global_position().y + get_size().y * get_global_transform().get_scale().y > get_viewport_rect().size.y) {
 					_scroll(-b->get_factor(), b->get_position());
 				}
 			} break;
@@ -415,7 +416,6 @@ void PopupMenu::_notification(int p_what) {
 
 			minimum_size_changed();
 			update();
-
 		} break;
 		case NOTIFICATION_DRAW: {
 
@@ -528,7 +528,6 @@ void PopupMenu::_notification(int p_what) {
 
 				ofs.y += h;
 			}
-
 		} break;
 		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
 

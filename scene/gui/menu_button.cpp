@@ -55,8 +55,9 @@ void MenuButton::pressed() {
 	Size2 size = get_size();
 
 	Point2 gp = get_global_position();
-	popup->set_global_position(gp + Size2(0, size.height));
+	popup->set_global_position(gp + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
+	popup->set_scale(get_global_transform().get_scale());
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
 	popup->popup();
 }
@@ -135,7 +136,6 @@ MenuButton::MenuButton() {
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	popup->set_as_toplevel(true);
 	popup->set_pass_on_modal_close_click(false);
 	popup->connect("about_to_show", this, "set_pressed", varray(true)); // For when switching from another MenuButton.
 	popup->connect("popup_hide", this, "set_pressed", varray(false));
