@@ -1853,7 +1853,7 @@ void SceneTreeDock::_create() {
 	scene_tree->get_scene_tree()->call_deferred("grab_focus");
 }
 
-void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties) {
+void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {
 
 	Node *n = p_node;
 	Node *newnode = p_by_node;
@@ -1917,16 +1917,20 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 		Node *c = newnode->get_child(i);
 		c->call("set_transform", c->call("get_transform"));
 	}
-	editor_data->get_undo_redo().clear_history();
+	//p_remove_old was added to support undo
+	if (p_remove_old)
+		editor_data->get_undo_redo().clear_history();
 	newnode->set_name(newname);
 
 	editor->push_item(newnode);
 
-	memdelete(n);
+	if (p_remove_old) {
+		memdelete(n);
 
-	while (to_erase.front()) {
-		memdelete(to_erase.front()->get());
-		to_erase.pop_front();
+		while (to_erase.front()) {
+			memdelete(to_erase.front()->get());
+			to_erase.pop_front();
+		}
 	}
 }
 
@@ -2495,6 +2499,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_feature_profile_changed"), &SceneTreeDock::_feature_profile_changed);
 
 	ClassDB::bind_method(D_METHOD("instance"), &SceneTreeDock::instance);
+	ClassDB::bind_method(D_METHOD("replace_node"), &SceneTreeDock::replace_node);
 
 	ADD_SIGNAL(MethodInfo("remote_tree_selected"));
 }
