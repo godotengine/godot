@@ -299,7 +299,7 @@ StringName EditorProperty::get_edited_property() {
 
 void EditorProperty::update_property() {
 	if (get_script_instance())
-		get_script_instance()->call("_update_property");
+		get_script_instance()->call("update_property");
 }
 
 void EditorProperty::set_read_only(bool p_read_only) {
@@ -646,7 +646,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (use_keying_next()) {
 				call_deferred("emit_changed", property, object->get(property).operator int64_t() + 1, "", false);
-				call_deferred("_update_property");
+				call_deferred("update_property");
 			}
 		}
 
@@ -823,7 +823,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
 	MethodInfo vm;
-	vm.name = "_update_property";
+	vm.name = "update_property";
 	BIND_VMETHOD(vm);
 }
 
