@@ -434,6 +434,7 @@ public:
 	virtual void light_set_negative(RID p_light, bool p_enable) = 0;
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
+	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
 
 	// omni light
 	enum LightOmniShadowMode {
