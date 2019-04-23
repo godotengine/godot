@@ -664,12 +664,17 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 	ERR_FAIL_COND(!n);
 	AnimationPlayer *anim = Object::cast_to<AnimationPlayer>(n);
 	ERR_FAIL_COND(!anim);
-
-	if (!anim->has_animation("default"))
+	List<StringName> animations;
+	anim->get_animation_list(&animations);
+	String default_track = "default";
+	if (animations.size() != 1 && !anim->has_animation(default_track)) {
 		return;
+	}
 
-	Ref<Animation> default_anim = anim->get_animation("default");
-
+	Ref<Animation> default_anim = anim->get_animation(animations[0]);
+	if (anim->has_animation(default_track)) {
+		default_anim = anim->get_animation(default_track);
+	}
 	for (int i = 0; i < p_clips.size(); i += 4) {
 
 		String name = p_clips[i];
@@ -769,8 +774,11 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 		new_anim->set_length(to - from);
 		anim->add_animation(name, new_anim);
 	}
-
-	anim->remove_animation("default"); //remove default (no longer needed)
+	if (anim->has_animation(default_track)) {
+		anim->remove_animation(default_track); //remove default (no longer needed)
+	} else {
+		anim->remove_animation(animations[0]);
+	}
 }
 
 void ResourceImporterScene::_filter_anim_tracks(Ref<Animation> anim, Set<String> &keep) {
