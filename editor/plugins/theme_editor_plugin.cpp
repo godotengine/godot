@@ -86,7 +86,7 @@ void ThemeEditor::_name_menu_about_to_show() {
 	}
 
 	name_menu->get_popup()->clear();
-
+	name_menu->get_popup()->set_size(Size2());
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 
 		name_menu->get_popup()->add_item(E->get());
