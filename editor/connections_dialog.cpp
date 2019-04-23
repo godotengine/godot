@@ -141,6 +141,9 @@ void ConnectDialog::_tree_node_selected() {
 
 	Node *current = tree->get_selected();
 
+	if (!current)
+		return;
+
 	dst_path = source->get_path_to(current);
 	get_ok()->set_disabled(false);
 }
@@ -309,6 +312,7 @@ void ConnectDialog::popup_dialog(const String &p_for_signal, bool p_advanced) {
 	advanced->set_pressed(p_advanced);
 	from_signal->set_text(p_for_signal);
 	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+	vbc_right->set_visible(p_advanced);
 
 	if (p_advanced) {
 
@@ -330,7 +334,7 @@ void ConnectDialog::popup_dialog(const String &p_for_signal, bool p_advanced) {
 }
 
 void ConnectDialog::_advanced_pressed() {
-	vbc_right->set_visible(advanced->is_pressed());
+
 	popup_dialog(from_signal->get_text(), advanced->is_pressed());
 }
 
@@ -414,7 +418,7 @@ ConnectDialog::ConnectDialog() {
 
 	advanced = memnew(CheckBox);
 	dstm_hb->add_child(advanced);
-	advanced->set_text(TTR("Advanced.."));
+	advanced->set_text(TTR("Advanced..."));
 	advanced->connect("pressed", this, "_advanced_pressed");
 
 	/*
