@@ -491,7 +491,7 @@ void VisualShaderEditor::_update_graph() {
 				}
 			}
 
-			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT) {
+			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM) {
 				TextureButton *preview = memnew(TextureButton);
 				preview->set_toggle_mode(true);
 				preview->set_normal_texture(get_icon("GuiVisibilityHidden", "EditorIcons"));
