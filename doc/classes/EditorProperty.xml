@@ -15,7 +15,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-			If any of the controls added can gain keyboard focus, add it here. This ensures that focus will be restored if the inspector is refreshed.
+				If any of the controls added can gain keyboard focus, add it here. This ensures that focus will be restored if the inspector is refreshed.
 			</description>
 		</method>
 		<method name="emit_changed">
@@ -60,7 +60,7 @@
 			<argument index="0" name="editor" type="Control">
 			</argument>
 			<description>
-			Add controls with this function if you want them on the bottom (below the label).
+				Add controls with this function if you want them on the bottom (below the label).
 			</description>
 		</method>
 		<method name="update_property" qualifiers="virtual">
