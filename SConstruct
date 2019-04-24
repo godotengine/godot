@@ -322,12 +322,13 @@ if selected_platform in platform_list:
             # FIXME: enable -Wlogical-op and -Wduplicated-branches once #27594 is merged
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
-            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter',
-                '-Wctor-dtor-privacy', '-Wnon-virtual-dtor']
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
                 + all_plus_warnings + shadow_local_warning)
+            env['CPPFLAGS'] += ['-Wctor-dtor-privacy', '-Wnon-virtual-dtor']
             if methods.using_gcc(env):
-                env['CCFLAGS'] += ['-Wno-clobbered', '-Walloc-zero', '-Wnoexcept',
-                    '-Wduplicated-cond', '-Wplacement-new=1', '-Wstringop-overflow=4']
+                env['CCFLAGS'] += ['-Wno-clobbered', '-Walloc-zero',
+                    '-Wduplicated-cond', '-Wstringop-overflow=4']
+                env['CPPFLAGS'] += ['-Wnoexcept', '-Wplacement-new=1']
                 version = methods.get_compiler_version(env)
                 if version != None and version[0] >= '9':
                     env['CCFLAGS'] += ['-Wattribute-alias=2']
