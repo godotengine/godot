@@ -10,8 +10,8 @@ buildscript {
 	}
 	dependencies {
 		classpath 'com.android.tools.build:gradle:3.2.1'
-//CHUNK_BUILD_DEPENDENCIES_BEGIN
-//CHUNK_BUILD_DEPENDENCIES_END
+//CHUNK_BUILDSCRIPT_DEPENDENCIES_BEGIN
+//CHUNK_BUILDSCRIPT_DEPENDENCIES_END
 	}
 }
 
