@@ -29,11 +29,11 @@ def disable_warnings(self):
         self.Append(CPPFLAGS=['/w'])
         self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
         self['CFLAGS'] = [x for x in self['CFLAGS'] if not x in warn_flags]
-        self['CPPFLAGS'] = [x for x in self['CPPFLAGS'] if not x in warn_flags]
+        self['CXXFLAGS'] = [x for x in self['CXXFLAGS'] if not x in warn_flags]
     else:
         self.Append(CCFLAGS=['-w'])
         self.Append(CFLAGS=['-w'])
-        self.Append(CPPFLAGS=['-w'])
+        self.Append(CXXFLAGS=['-w'])
 
 
 def add_module_version_string(self,s):

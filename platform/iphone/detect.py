@@ -45,20 +45,21 @@ def configure(env):
     if (env["target"].startswith("release")):
         env.Append(CPPFLAGS=['-DNDEBUG', '-DNS_BLOCK_ASSERTIONS=1'])
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer'])
+            env.Append(CCFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer'])
             env.Append(LINKFLAGS=['-O2'])
         else: #optimize for size
-            env.Append(CPPFLAGS=['-Os', '-ftree-vectorize'])
+            env.Append(CCFLAGS=['-Os', '-ftree-vectorize'])
             env.Append(LINKFLAGS=['-Os'])
 
         if env["target"] == "release_debug":
             env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
 
     elif (env["target"] == "debug"):
-        env.Append(CPPFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-O0', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Append(CCFLAGS=['-gdwarf-2', '-O0'])
+        env.Append(CPPFLAGS=['-D_DEBUG', '-DDEBUG=1', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     if (env["use_lto"]):
-        env.Append(CPPFLAGS=['-flto'])
+        env.Append(CCFLAGS=['-flto'])
         env.Append(LINKFLAGS=['-flto'])
 
     ## Architecture
@@ -104,7 +105,7 @@ def configure(env):
         detect_darwin_sdk_path('iphonesimulator', env)
         env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.9'
         arch_flag = "i386" if env["arch"] == "x86" else env["arch"]
-        env.Append(CCFLAGS=('-arch ' + arch_flag + ' -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=10.0 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"').split())
+        env.Append(CCFLAGS=('-arch ' + arch_flag + ' -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fblocks -fasm-blocks -isysroot $IPHONESDK -mios-simulator-version-min=10.0').split())
     elif (env["arch"] == "arm"):
         detect_darwin_sdk_path('iphone', env)
         env.Append(CCFLAGS='-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fblocks -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=10.0 -MMD -MT dependencies'.split())
@@ -115,9 +116,9 @@ def configure(env):
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
 
     if env['ios_exceptions']:
-        env.Append(CPPFLAGS=['-fexceptions'])
+        env.Append(CCFLAGS=['-fexceptions'])
     else:
-        env.Append(CPPFLAGS=['-fno-exceptions'])
+        env.Append(CCFLAGS=['-fno-exceptions'])
 
     ## Link flags
 

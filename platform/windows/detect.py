@@ -273,7 +273,8 @@ def configure_mingw(env):
            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "release_debug"):
-        env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-O2'])
+        env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
         if (env["debug_symbols"] == "yes"):
            env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
@@ -284,7 +285,8 @@ def configure_mingw(env):
            env.Prepend(CCFLAGS=['-Os'])
 
     elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Append(CCFLAGS=['-g3'])
+        env.Append(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     ## Compiler configuration
 
@@ -325,11 +327,12 @@ def configure_mingw(env):
 
     ## Compile flags
 
-    env.Append(CCFLAGS=['-DWINDOWS_ENABLED', '-mwindows'])
-    env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
-    env.Append(CCFLAGS=['-DWASAPI_ENABLED'])
-    env.Append(CCFLAGS=['-DWINMIDI_ENABLED'])
-    env.Append(CCFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
+    env.Append(CCFLAGS=['-mwindows'])
+    env.Append(CPPFLAGS=['-DWINDOWS_ENABLED'])
+    env.Append(CPPFLAGS=['-DOPENGL_ENABLED'])
+    env.Append(CPPFLAGS=['-DWASAPI_ENABLED'])
+    env.Append(CPPFLAGS=['-DWINMIDI_ENABLED'])
+    env.Append(CPPFLAGS=['-DWINVER=%s' % env['target_win_version'], '-D_WIN32_WINNT=%s' % env['target_win_version']])
     env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid'])
 
     env.Append(CPPFLAGS=['-DMINGW_ENABLED'])

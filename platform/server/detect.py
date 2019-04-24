@@ -63,9 +63,10 @@ def configure(env):
 
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-O2'])
         else: #optimize for size
-            env.Prepend(CCFLAGS=['-Os', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-Os'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED'])
 
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
@@ -73,7 +74,8 @@ def configure(env):
             env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
-        env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g3'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
         env.Append(LINKFLAGS=['-rdynamic'])
 
     ## Architecture
