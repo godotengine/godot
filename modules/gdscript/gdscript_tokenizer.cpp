@@ -890,8 +890,16 @@ void GDScriptTokenizerText::_advance() {
 
 					while (true) {
 						if (GETCHAR(i) == '.') {
-							if (period_found || exponent_found || bin_found) {
+							if (period_found || exponent_found) {
 								_make_error("Invalid numeric constant at '.'");
+								return;
+							}
+							else if (bin_found) {
+								_make_error("Invalid binary constant at '.'");
+								return;
+							}
+							else if (hexa_found) {
+								_make_error("Invalid hexadecimal constant at '.'");
 								return;
 							}
 							period_found = true;
@@ -902,7 +910,7 @@ void GDScriptTokenizerText::_advance() {
 							}
 							hexa_found = true;
 						} else if (GETCHAR(i) == 'b') {
-							if (hexa_found || bin_found || period_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
+							if (hexa_found || bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
 								_make_error("Invalid numeric constant at 'b'");
 								return;
 							}
