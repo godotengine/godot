@@ -240,6 +240,9 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	if (!g->nodes.has(p_from_node))
 		return false;
 
+	if (p_from_node == p_to_node)
+		return false;
+
 	if (p_from_port < 0 || p_from_port >= g->nodes[p_from_node].node->get_output_port_count())
 		return false;
 
