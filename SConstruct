@@ -161,8 +161,8 @@ opts.Add("CXX", "C++ compiler")
 opts.Add("CC", "C compiler")
 opts.Add("LINK", "Linker")
 opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
-opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
+opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 
 # add platform specific options
@@ -271,17 +271,18 @@ if selected_platform in platform_list:
 
     CCFLAGS = env.get('CCFLAGS', '')
     env['CCFLAGS'] = ''
-
     env.Append(CCFLAGS=str(CCFLAGS).split())
 
     CFLAGS = env.get('CFLAGS', '')
     env['CFLAGS'] = ''
-
     env.Append(CFLAGS=str(CFLAGS).split())
+
+    CXXFLAGS = env.get('CXXFLAGS', '')
+    env['CXXFLAGS'] = ''
+    env.Append(CXXFLAGS=str(CXXFLAGS).split())
 
     LINKFLAGS = env.get('LINKFLAGS', '')
     env['LINKFLAGS'] = ''
-
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
     flag_list = platform_flags[selected_platform]
@@ -322,15 +323,16 @@ if selected_platform in platform_list:
             # FIXME: enable -Wlogical-op and -Wduplicated-branches once #27594 is merged
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
-            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter',
-                '-Wctor-dtor-privacy', '-Wnon-virtual-dtor']
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
                 + all_plus_warnings + shadow_local_warning)
+            env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
             if methods.using_gcc(env):
-                env['CCFLAGS'] += ['-Wno-clobbered', '-Walloc-zero', '-Wnoexcept',
-                    '-Wduplicated-cond', '-Wplacement-new=1', '-Wstringop-overflow=4']
+                env.Append(CCFLAGS=['-Wno-clobbered', '-Walloc-zero',
+                    '-Wduplicated-cond', '-Wstringop-overflow=4'])
+                env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
                 version = methods.get_compiler_version(env)
                 if version != None and version[0] >= '9':
-                    env['CCFLAGS'] += ['-Wattribute-alias=2']
+                    env.Append(CCFLAGS=['-Wattribute-alias=2'])
         elif (env["warnings"] == 'all'):
             env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):

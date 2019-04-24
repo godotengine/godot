@@ -150,19 +150,21 @@ def configure(env):
     if (env["target"].startswith("release")):
         if (env["optimize"] == "speed"): #optimize for speed (default)
             env.Append(LINKFLAGS=['-O2'])
-            env.Append(CPPFLAGS=['-O2', '-DNDEBUG', '-fomit-frame-pointer'])
+            env.Append(CCFLAGS=['-O2', '-fomit-frame-pointer'])
+            env.Append(CPPFLAGS=['-DNDEBUG'])
         else: #optimize for size
-            env.Append(CPPFLAGS=['-Os', '-DNDEBUG'])
+            env.Append(CCFLAGS=['-Os'])
+            env.Append(CPPFLAGS=['-DNDEBUG'])
             env.Append(LINKFLAGS=['-Os'])
 
         if (can_vectorize):
-            env.Append(CPPFLAGS=['-ftree-vectorize'])
+            env.Append(CCFLAGS=['-ftree-vectorize'])
         if (env["target"] == "release_debug"):
             env.Append(CPPFLAGS=['-DDEBUG_ENABLED'])
     elif (env["target"] == "debug"):
         env.Append(LINKFLAGS=['-O0'])
-        env.Append(CPPFLAGS=['-O0', '-D_DEBUG', '-UNDEBUG', '-DDEBUG_ENABLED',
-                             '-DDEBUG_MEMORY_ENABLED', '-g', '-fno-limit-debug-info'])
+        env.Append(CCFLAGS=['-O0', '-g', '-fno-limit-debug-info'])
+        env.Append(CPPFLAGS=['-D_DEBUG', '-UNDEBUG', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     ## Compiler configuration
 
@@ -216,15 +218,16 @@ def configure(env):
     if env['android_stl']:
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
-        env.Append(CXXFLAGS=['-frtti',"-std=gnu++14"])
+        env.Append(CXXFLAGS=['-frtti', "-std=gnu++14"])
     else:
-        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions', '-DNO_SAFE_CAST'])
+        env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions'])
+        env.Append(CPPFLAGS=['-DNO_SAFE_CAST'])
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
         print("Using NDK unified headers")
         sysroot = env["ANDROID_NDK_ROOT"] + "/sysroot"
-        env.Append(CPPFLAGS=["--sysroot="+sysroot])
+        env.Append(CPPFLAGS=["--sysroot=" + sysroot])
         env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/android/support/include"])
         # For unified headers this define has to be set manually
@@ -233,48 +236,51 @@ def configure(env):
         print("Using NDK deprecated headers")
         env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
 
-    env.Append(CPPFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
+    env.Append(CCFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
     env.Append(CPPFLAGS='-DNO_STATVFS -DGLES_ENABLED'.split())
 
     env['neon_enabled'] = False
     if env['android_arch'] == 'x86':
         target_opts = ['-target', 'i686-none-linux-android']
         # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
-        env.Append(CPPFLAGS=['-mstackrealign'])
+        env.Append(CCFLAGS=['-mstackrealign'])
 
     elif env['android_arch'] == 'x86_64':
         target_opts = ['-target', 'x86_64-none-linux-android']
 
     elif env["android_arch"] == "armv6":
         target_opts = ['-target', 'armv6-none-linux-androideabi']
-        env.Append(CPPFLAGS='-D__ARM_ARCH_6__ -march=armv6 -mfpu=vfp -mfloat-abi=softfp'.split())
+        env.Append(CCFLAGS='-march=armv6 -mfpu=vfp -mfloat-abi=softfp'.split())
+        env.Append(CPPFLAGS=['-D__ARM_ARCH_6__'])
 
     elif env["android_arch"] == "armv7":
         target_opts = ['-target', 'armv7-none-linux-androideabi']
-        env.Append(CPPFLAGS='-D__ARM_ARCH_7__ -D__ARM_ARCH_7A__ -march=armv7-a -mfloat-abi=softfp'.split())
+        env.Append(CCFLAGS='-march=armv7-a -mfloat-abi=softfp'.split())
+        env.Append(CPPFLAGS='-D__ARM_ARCH_7__ -D__ARM_ARCH_7A__'.split())
         if env['android_neon']:
             env['neon_enabled'] = True
-            env.Append(CPPFLAGS=['-mfpu=neon', '-D__ARM_NEON__'])
+            env.Append(CCFLAGS=['-mfpu=neon'])
+            env.Append(CPPFLAGS=['-D__ARM_NEON__'])
         else:
-            env.Append(CPPFLAGS=['-mfpu=vfpv3-d16'])
+            env.Append(CCFLAGS=['-mfpu=vfpv3-d16'])
 
     elif env["android_arch"] == "arm64v8":
         target_opts = ['-target', 'aarch64-none-linux-android']
+        env.Append(CCFLAGS=['-mfix-cortex-a53-835769'])
         env.Append(CPPFLAGS=['-D__ARM_ARCH_8A__'])
-        env.Append(CPPFLAGS=['-mfix-cortex-a53-835769'])
 
-    env.Append(CPPFLAGS=target_opts)
-    env.Append(CPPFLAGS=common_opts)
+    env.Append(CCFLAGS=target_opts)
+    env.Append(CCFLAGS=common_opts)
 
     ## Link flags
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
         if LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
-            env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a','-Wl,--exclude-libs,libatomic.a','-nostdlib++'])
+            env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a', '-Wl,--exclude-libs,libatomic.a', '-nostdlib++'])
         else:
-            env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libandroid_support.a"])
+            env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libandroid_support.a"])
         env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
-        env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/"])
-        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libc++_shared.so"])
+        env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/"])
+        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libc++_shared.so"])
     else:
         env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
         if mt_link:
