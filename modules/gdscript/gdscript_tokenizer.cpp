@@ -915,8 +915,8 @@ void GDScriptTokenizerText::_advance() {
 								return;
 							}
 							bin_found = true;
-						} else if (!hexa_found && !bin_found && GETCHAR(i) == 'e') {
-							if (exponent_found) {
+						} else if (!hexa_found && GETCHAR(i) == 'e') {
+							if (exponent_found || bin_found) {
 								_make_error("Invalid numeric constant at 'e'");
 								return;
 							}
