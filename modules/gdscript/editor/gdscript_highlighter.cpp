@@ -75,7 +75,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 	bool in_function_args = false;
 	bool in_member_variable = false;
 	bool in_node_path = false;
-	bool is_hex_notation = false;
+	bool is_hex_binary_notation = false;
 	bool expect_type = false;
 	Color keyword_color;
 	Color color;
@@ -112,20 +112,20 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 		bool is_number = _is_number(str[j]);
 
 		// allow ABCDEF in hex notation
-		if (is_hex_notation && (_is_hex_symbol(str[j]) || is_number)) {
+		if (is_hex_binary_notation && (_is_hex_symbol(str[j]) || is_number)) {
 			is_number = true;
 		} else {
-			is_hex_notation = false;
+			is_hex_binary_notation = false;
 		}
 
 		// check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == '_' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
+		if ((str[j] == '.' || str[j] == 'x' || str[j] == 'b' || str[j] == '_' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
 			is_number = true;
 			is_symbol = false;
 			is_char = false;
 
-			if (str[j] == 'x' && str[j - 1] == '0') {
-				is_hex_notation = true;
+			if ((str[j] == 'x' || str[j] == 'b') && str[j - 1] == '0') {
+				is_hex_binary_notation = true;
 			}
 		}
 
@@ -133,7 +133,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			in_word = true;
 		}
 
-		if ((in_keyword || in_word) && !is_hex_notation) {
+		if ((in_keyword || in_word) && !is_hex_binary_notation) {
 			is_number = false;
 		}
 
