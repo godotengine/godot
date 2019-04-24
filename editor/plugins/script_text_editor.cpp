@@ -79,7 +79,6 @@ void ConnectionInfoDialog::popup_connections(String p_method, Vector<Node *> p_n
 
 ConnectionInfoDialog::ConnectionInfoDialog() {
 	set_title(TTR("Connections to method:"));
-	set_resizable(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 8 * EDSCALE);
@@ -89,7 +88,6 @@ ConnectionInfoDialog::ConnectionInfoDialog() {
 	add_child(vbc);
 
 	method = memnew(Label);
-	method->set_text("");
 	method->set_align(Label::ALIGN_CENTER);
 	vbc->add_child(method);
 
