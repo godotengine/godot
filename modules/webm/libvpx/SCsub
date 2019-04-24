@@ -323,7 +323,7 @@ if webm_cpu_x86:
     elif cpu_bits == '64':
         env_libvpx["ASCPU"] = 'X86_64'
 
-    env_libvpx.Append(CCFLAGS=['-DWEBM_X86ASM'])
+    env_libvpx.Append(CPPFLAGS=['-DWEBM_X86ASM'])
 
     webm_simd_optimizations = True
 
@@ -337,7 +337,7 @@ if webm_cpu_arm:
         env_libvpx["ASFLAGS"] = ''
         env_libvpx["ASCOM"] = '$AS $ASFLAGS -o $TARGET $SOURCES'
 
-    env_libvpx.Append(CCFLAGS=['-DWEBM_ARMASM'])
+    env_libvpx.Append(CPPFLAGS=['-DWEBM_ARMASM'])
 
     webm_simd_optimizations = True
 

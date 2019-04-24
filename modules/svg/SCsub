@@ -16,7 +16,7 @@ env_svg.Append(CPPPATH=[thirdparty_dir])
 # FIXME: Needed in editor/editor_themes.cpp for now, but ideally there
 # shouldn't be a dependency on modules/ and its own 3rd party deps.
 env.Append(CPPPATH=[thirdparty_dir])
-env.Append(CCFLAGS=["-DSVG_ENABLED"])
+env.Append(CPPFLAGS=["-DSVG_ENABLED"])
 
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()

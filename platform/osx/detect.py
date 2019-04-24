@@ -53,16 +53,18 @@ def configure(env):
 
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-O2'])
         else: #optimize for size
-            env.Prepend(CCFLAGS=['-Os', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-Os'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
             env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
-        env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g3'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     ## Architecture
 
@@ -88,10 +90,10 @@ def configure(env):
             env['AR'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
             env['RANLIB'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env['AS'] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
-            env.Append(CCFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+            env.Append(CPPFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
         detect_darwin_sdk_path('osx', env)
-        env.Append(CPPFLAGS=['-isysroot', '$MACOS_SDK_PATH'])
+        env.Append(CCFLAGS=['-isysroot', '$MACOS_SDK_PATH'])
         env.Append(LINKFLAGS=['-isysroot', '$MACOS_SDK_PATH'])
 
     else: # osxcross build
@@ -110,7 +112,7 @@ def configure(env):
         env['AR'] = basecmd + "ar"
         env['RANLIB'] = basecmd + "ranlib"
         env['AS'] = basecmd + "as"
-        env.Append(CCFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
+        env.Append(CPPFLAGS=['-D__MACPORTS__']) #hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     if (env["CXX"] == "clang++"):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
@@ -129,5 +131,5 @@ def configure(env):
     env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'CoreVideo'])
     env.Append(LIBS=['pthread'])
 
-    env.Append(CPPFLAGS=['-mmacosx-version-min=10.9'])
+    env.Append(CCFLAGS=['-mmacosx-version-min=10.9'])
     env.Append(LINKFLAGS=['-mmacosx-version-min=10.9'])
