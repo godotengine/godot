@@ -34,6 +34,11 @@
 
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 
+	if (base->simultaneously_limit > 0 && base->playing_instances >= base->simultaneously_limit) {
+		// Skip playback
+		return;
+	}
+
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
@@ -53,11 +58,15 @@ void AudioStreamPlaybackSample::start(float p_from_pos) {
 
 	sign = 1;
 	active = true;
+	base->playing_instances++;
 }
 
 void AudioStreamPlaybackSample::stop() {
 
-	active = false;
+	if (active) {
+		active = false;
+		base->playing_instances--;
+	}
 }
 
 bool AudioStreamPlaybackSample::is_playing() const {
@@ -305,7 +314,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 				/* check for sample not reaching beginning */
 				if (offset < 0) {
 
-					active = false;
+					stop();
 					break;
 				}
 			}
@@ -337,7 +346,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 				/* no loop, check for end of sample */
 				if (offset >= length_fp) {
 
-					active = false;
+					stop();
 					break;
 				}
 			}
@@ -354,7 +363,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 		/* check just in case */
 		if (target <= 0) {
-			active = false;
+			stop();
 			break;
 		}
 
@@ -601,6 +610,14 @@ String AudioStreamSample::get_stream_name() const {
 	return "";
 }
 
+void AudioStreamSample::set_simultaneously_limit(int limit) {
+	simultaneously_limit = limit;
+}
+
+int AudioStreamSample::get_simultaneously_limit() {
+	return simultaneously_limit;
+}
+
 void AudioStreamSample::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamSample::set_data);
@@ -624,6 +641,9 @@ void AudioStreamSample::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamSample::set_stereo);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamSample::is_stereo);
 
+	ClassDB::bind_method(D_METHOD("set_simultaneously_limit", "limit"), &AudioStreamSample::set_simultaneously_limit);
+	ClassDB::bind_method(D_METHOD("get_simultaneously_limit"), &AudioStreamSample::get_simultaneously_limit);
+
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
@@ -633,6 +653,7 @@ void AudioStreamSample::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "simultaneously_limit"), "set_simultaneously_limit", "get_simultaneously_limit");
 
 	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
 	BIND_ENUM_CONSTANT(FORMAT_16_BITS);
@@ -653,6 +674,8 @@ AudioStreamSample::AudioStreamSample() {
 	mix_rate = 44100;
 	data = NULL;
 	data_bytes = 0;
+	playing_instances = 0;
+	simultaneously_limit = 0;
 }
 AudioStreamSample::~AudioStreamSample() {
 

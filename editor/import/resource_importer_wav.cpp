@@ -80,6 +80,7 @@ void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/loop"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM)"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "playback/simultaneously_limit", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
 }
 
 Error ResourceImporterWAV::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -455,6 +456,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		is16 = false;
 	}
 
+	int simultaneously_limit = p_options["playback/simultaneously_limit"];
+
 	PoolVector<uint8_t> dst_data;
 	AudioStreamSample::Format dst_format;
 
@@ -527,6 +530,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	sample->set_loop_begin(loop_begin);
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
+	sample->set_simultaneously_limit(simultaneously_limit);
 
 	ResourceSaver::save(p_save_path + ".sample", sample);
 

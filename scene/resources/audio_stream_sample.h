@@ -113,6 +113,8 @@ private:
 	int mix_rate;
 	void *data;
 	uint32_t data_bytes;
+	int playing_instances;
+	int simultaneously_limit;
 
 protected:
 	static void _bind_methods();
@@ -145,6 +147,9 @@ public:
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
+
+	void set_simultaneously_limit(int limit);
+	int get_simultaneously_limit();
 
 	AudioStreamSample();
 	~AudioStreamSample();
