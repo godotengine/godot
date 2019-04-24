@@ -351,7 +351,6 @@ void VisualShaderEditor::_update_graph() {
 		Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, nodes[n_i]);
 
 		GraphNode *node = memnew(GraphNode);
-		graph->add_child(node);
 
 		/*if (!vsnode->is_connected("changed", this, "_node_changed")) {
 			vsnode->connect("changed", this, "_node_changed", varray(vsnode->get_instance_id()), CONNECT_DEFERRED);
@@ -374,6 +373,8 @@ void VisualShaderEditor::_update_graph() {
 
 		Ref<VisualShaderNodeUniform> uniform = vsnode;
 		if (uniform.is_valid()) {
+			graph->add_child(node);
+
 			LineEdit *uniform_name = memnew(LineEdit);
 			uniform_name->set_text(uniform->get_uniform_name());
 			node->add_child(uniform_name);
@@ -536,6 +537,10 @@ void VisualShaderEditor::_update_graph() {
 			error_label->add_color_override("font_color", get_color("error_color", "Editor"));
 			error_label->set_text(error);
 			node->add_child(error_label);
+		}
+
+		if (!uniform.is_valid()) {
+			graph->add_child(node);
 		}
 	}
 
