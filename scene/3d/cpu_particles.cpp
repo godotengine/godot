@@ -1394,6 +1394,7 @@ CPUParticles::CPUParticles() {
 	redraw = false;
 
 	multimesh = VisualServer::get_singleton()->multimesh_create();
+	VisualServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	set_base(multimesh);
 
 	set_emitting(true);
