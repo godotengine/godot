@@ -1761,7 +1761,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 		s++;
 	}
 
-	return hex * sign;
+	return binary * sign;
 }
 
 int String::to_int() const {
