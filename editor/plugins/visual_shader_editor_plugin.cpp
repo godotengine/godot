@@ -517,7 +517,6 @@ void VisualShaderEditor::_connection_request(const String &p_from, int p_from_in
 	int to = p_to.to_int();
 
 	if (!visual_shader->can_connect_nodes(type, from, p_from_index, to, p_to_index)) {
-		EditorNode::get_singleton()->show_warning(TTR("Unable to connect, port may be in use or connection may be invalid."));
 		return;
 	}
 
