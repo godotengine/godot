@@ -2485,7 +2485,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 			}
 			(*r_pipe) += buf;
 			if (p_pipe_mutex) {
-				p_pipe_mutex->lock();
+				p_pipe_mutex->unlock();
 			}
 		}
 

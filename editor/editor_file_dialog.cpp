@@ -233,8 +233,8 @@ void EditorFileDialog::_file_entered(const String &p_file) {
 void EditorFileDialog::_save_confirm_pressed() {
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
 	_save_to_recent();
-	emit_signal("file_selected", f);
 	hide();
+	emit_signal("file_selected", f);
 }
 
 void EditorFileDialog::_post_popup() {
@@ -343,8 +343,8 @@ void EditorFileDialog::_action_pressed() {
 
 		if (files.size()) {
 			_save_to_recent();
-			emit_signal("files_selected", files);
 			hide();
+			emit_signal("files_selected", files);
 		}
 
 		return;
@@ -354,8 +354,8 @@ void EditorFileDialog::_action_pressed() {
 
 	if ((mode == MODE_OPEN_ANY || mode == MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		_save_to_recent();
-		emit_signal("file_selected", f);
 		hide();
+		emit_signal("file_selected", f);
 	} else if (mode == MODE_OPEN_ANY || mode == MODE_OPEN_DIR) {
 
 		String path = dir_access->get_current_dir();
@@ -374,8 +374,8 @@ void EditorFileDialog::_action_pressed() {
 		}
 
 		_save_to_recent();
-		emit_signal("dir_selected", path);
 		hide();
+		emit_signal("dir_selected", path);
 	}
 
 	if (mode == MODE_SAVE_FILE) {
@@ -441,8 +441,8 @@ void EditorFileDialog::_action_pressed() {
 		} else {
 
 			_save_to_recent();
-			emit_signal("file_selected", f);
 			hide();
+			emit_signal("file_selected", f);
 		}
 	}
 }

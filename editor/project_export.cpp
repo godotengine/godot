@@ -931,7 +931,7 @@ void ProjectExportDialog::_export_project() {
 	Ref<EditorExportPlatform> platform = current->get_platform();
 	ERR_FAIL_COND(platform.is_null());
 
-	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
+	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	export_project->clear_filters();
 
 	List<String> extension_list = platform->get_binary_extensions(current);
@@ -955,7 +955,7 @@ void ProjectExportDialog::_export_project() {
 		export_project->get_line_edit()->connect("text_entered", export_project, "_file_entered");
 	}
 
-	export_project->set_mode(FileDialog::MODE_SAVE_FILE);
+	export_project->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	export_project->popup_centered_ratio();
 }
 
@@ -1184,9 +1184,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	patches_hb->add_child(patch_export);
 	patches_hb->add_spacer();
 
-	patch_dialog = memnew(FileDialog);
+	patch_dialog = memnew(EditorFileDialog);
 	patch_dialog->add_filter("*.pck ; Pack File");
-	patch_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	patch_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	patch_dialog->connect("file_selected", this, "_patch_selected");
 	add_child(patch_dialog);
 
@@ -1266,11 +1266,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_button->connect("pressed", this, "_export_all_dialog");
 	export_all_button->set_disabled(true);
 
-	export_pck_zip = memnew(FileDialog);
+	export_pck_zip = memnew(EditorFileDialog);
 	export_pck_zip->add_filter("*.zip ; ZIP File");
 	export_pck_zip->add_filter("*.pck ; Godot Game Pack");
-	export_pck_zip->set_access(FileDialog::ACCESS_FILESYSTEM);
-	export_pck_zip->set_mode(FileDialog::MODE_SAVE_FILE);
+	export_pck_zip->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	export_pck_zip->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	add_child(export_pck_zip);
 	export_pck_zip->connect("file_selected", this, "_export_pck_zip_selected");
 
@@ -1300,8 +1300,8 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_templates_error->add_child(download_templates);
 	download_templates->connect("pressed", this, "_open_export_template_manager");
 
-	export_project = memnew(FileDialog);
-	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
+	export_project = memnew(EditorFileDialog);
+	export_project->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(export_project);
 	export_project->connect("file_selected", this, "_export_project_to_path");
 	export_project->get_line_edit()->connect("text_changed", this, "_validate_export_path");
