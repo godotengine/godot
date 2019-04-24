@@ -172,7 +172,7 @@ void GDMonoLog::initialize() {
 		OS::Time time_now = OS::get_singleton()->get_time();
 		int pid = OS::get_singleton()->get_process_id();
 
-		String log_file_name = format("%d-%02d-%02d %02d:%02d:%02d (%d).txt",
+		String log_file_name = format("%d_%02d_%02d %02d.%02d.%02d (%d).txt",
 				date_now.year, date_now.month, date_now.day,
 				time_now.hour, time_now.min, time_now.sec, pid);
 
