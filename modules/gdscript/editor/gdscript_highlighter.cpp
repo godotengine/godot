@@ -141,8 +141,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 			if (str[j] == 'x' && str[j - 1] == '0') {
 				is_hex_notation = true;
-			}
-			else if (str[j] == 'b' && str[j - 1] == '0') {
+			} else if (str[j] == 'b' && str[j - 1] == '0') {
 				is_bin_notation = true;
 			}
 		}

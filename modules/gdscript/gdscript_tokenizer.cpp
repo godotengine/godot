@@ -893,12 +893,10 @@ void GDScriptTokenizerText::_advance() {
 							if (period_found || exponent_found) {
 								_make_error("Invalid numeric constant at '.'");
 								return;
-							}
-							else if (bin_found) {
+							} else if (bin_found) {
 								_make_error("Invalid binary constant at '.'");
 								return;
-							}
-							else if (hexa_found) {
+							} else if (hexa_found) {
 								_make_error("Invalid hexadecimal constant at '.'");
 								return;
 							}
