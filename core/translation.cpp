@@ -996,6 +996,22 @@ Vector<String> TranslationServer::get_all_locale_names() {
 	return locales;
 }
 
+Array TranslationServer::get_all_locales_with_translations() const {
+
+	Array locales;
+
+	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+
+		const Ref<Translation> &t = E->get();
+		String l = t->get_locale();
+
+		if (!locales.has(l))
+			locales.append(l);
+	}
+
+	return locales;
+}
+
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 
 	translations.insert(p_translation);
@@ -1166,6 +1182,8 @@ void TranslationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_translation", "translation"), &TranslationServer::add_translation);
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
+
+	ClassDB::bind_method(D_METHOD("get_all_locales_with_translation"), &TranslationServer::get_all_locales_with_translations);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 }

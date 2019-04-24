@@ -99,6 +99,8 @@ public:
 
 	StringName translate(const StringName &p_message) const;
 
+	Array get_all_locales_with_translations() const;
+
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
 	static bool is_locale_valid(const String &p_locale);
