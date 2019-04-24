@@ -4,7 +4,7 @@
 		Generic 2D Position hint for editing.
 	</brief_description>
 	<description>
-		Generic 2D Position hint for editing. It's just like a plain [Node2D] but displays as a cross in the 2D-Editor at all times.
+		Generic 2D Position hint for editing. It's just like a plain [Node2D] but displays as a cross in the 2D-Editor at all times. You can set visual size of the cross by changing Gizmo Extents in the inspector.
 	</description>
 	<tutorials>
 	</tutorials>
