@@ -523,7 +523,7 @@ void VisualShaderEditor::_update_graph() {
 			}
 		}
 
-		if (vsnode->get_output_port_for_preview() >= 0) {
+		if (vsnode->get_output_port_for_preview() >= 0 && vsnode->get_output_port_type(vsnode->get_output_port_for_preview()) != VisualShaderNode::PORT_TYPE_TRANSFORM) {
 			VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
 			port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
 			port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
