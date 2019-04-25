@@ -17,7 +17,7 @@
 # Rex_sa <asd1234567890m@gmail.com>, 2017, 2018, 2019.
 # Wajdi Feki <wajdi.feki@gmail.com>, 2017.
 # Omar Aglan <omar.aglan91@yahoo.com>, 2018, 2019.
-# Codes Otaku <ilyas.gamerz@gmail.com>, 2018.
+# Codes Otaku <ilyas.gamerz@gmail.com>, 2018, 2019.
 # Takai Eddine Kennouche <takai.kenn@gmail.com>, 2018.
 # Mohamed El-Baz <albaz2000eg@gmail.com>, 2018.
 # عاصم شكر - Aasem shokr <aasemshokr@gmail.com>, 2018.
@@ -28,8 +28,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-24 17:38+0000\n"
-"Last-Translator: spiderx0x <legendofdarks@gmail.com>\n"
+"PO-Revision-Date: 2019-04-17 10:02+0000\n"
+"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -53,7 +53,7 @@ msgstr "لا يوجد ما يكفي من البايتات من أجل فك ال�
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "مُدخل غير صالح \"i%\" (لم يتم تمريره) في السطر"
+msgstr "إدخال خاطيء i% (لم يتم تمريره) في التصريح"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -363,11 +363,11 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
-msgstr ""
+msgstr "مشغل الحركة لا يمكنه تحريك نفسه, فقط الاعبين الأخرين."
 
 #: editor/animation_track_editor.cpp
 msgid "Not possible to add a new track without a root"
-msgstr ""
+msgstr "لا يمكن إضافة مقطع جديد بدون جذر"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -376,34 +376,31 @@ msgstr "إضافة مسار"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr ""
+msgstr "مسار المقطع غير صالح, إذن لا يمكن إضافة مفتاح."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
-msgstr ""
+msgstr "المقطع ليس من نوع مكاني (Spatial), لا يمكن إضافة مفتاح."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "خط التحريك ثلاثي الأبعاد"
+msgstr "أضف مفتاح مقطع المتحول (Transform)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "إضافة مسار"
+msgstr "أضف مفتاح المقطع"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr ""
+msgstr "مسار المقطع غير صالح, إذن لا يمكن إضافة دالة المفتاح (Method key)."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "استدعاء أسلوب المسار"
+msgstr "أضف مفتاح مقطع الدالة"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
-msgstr ""
+msgstr "دالة لم توجد في شيئ: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -411,12 +408,11 @@ msgstr "مفتاح حركة التحريك"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
-msgstr ""
+msgstr "ذاكرة التخزين المؤقت (Clipboard) فارغة"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Paste Tracks"
-msgstr "لصق المُعامل"
+msgstr "لصق المقاطع"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Scale Keys"
@@ -425,25 +421,24 @@ msgstr "مفتاح تكبير حركة"
 #: editor/animation_track_editor.cpp
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
-msgstr ""
+msgstr "هذا الخيار لا يعمل لتعديل خط (Bezier), لأنه فقط مقطع واحد."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "فقط قم بتبين المقاطع من العقد (Nodes) المحددة في الشجرة."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
-msgstr ""
+msgstr "قم بتجميع المقاطع حسب العقد (Nodes) أو إظهارهم كقائمة بسيطة."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Snap (s): "
-msgstr "خطوة (ثانية):"
+msgstr "خطوة أو خطوات: "
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "شجرة الحركة صحيحة."
+msgstr "قيمة خطوة الحركة."
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -452,17 +447,15 @@ msgstr "شجرة الحركة صحيحة."
 #: editor/project_manager.cpp editor/project_settings_editor.cpp
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "تعديل"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation properties."
-msgstr "شجرة الحركة"
+msgstr "خاصيات الحركة."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Copy Tracks"
-msgstr "إنسخ المُعامل"
+msgstr "إنسخ المقاطع"
 
 #: editor/animation_track_editor.cpp
 msgid "Scale Selection"
@@ -481,17 +474,14 @@ msgid "Duplicate Transposed"
 msgstr "نسخ محمّل"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "نصف المُحدد"
+msgstr "إحدف المحدد (المجموعة المختارة)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
 msgstr "إذهب إلي الخطوة التالية"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
 msgstr "إذهب إلي الخطوة السابقة"
 
@@ -505,11 +495,12 @@ msgstr "تنظيف الحركة"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
-msgstr ""
+msgstr "إختار العقدة التي سوف يتم تحريكها:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Use Bezier Curves"
-msgstr ""
+msgstr "إستعمل خطوط أو منحنيات Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -557,7 +548,7 @@ msgstr "نسبة التكبير:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "حدد مقاطع لنسخ:"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -565,20 +556,19 @@ msgstr ""
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Copy"
-msgstr ""
+msgstr "أنسخ"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "مقاطع الصوت:"
+msgstr "أضف مقطع صوت"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "تغيير موضع بداية مقطع صوت"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "تغيير موضع نهاية مقطع صوت"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -646,11 +636,11 @@ msgstr "إرجاع التكبير"
 
 #: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "تحذيرات"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "أرقام الخط و العمود."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target Node must be specified!"
@@ -734,7 +724,6 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "قطع إتصال'%s' من '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
 msgstr "قطع إتصال'%s' من '%s'"
 
@@ -748,18 +737,16 @@ msgid "Disconnect"
 msgstr "قطع الاتصال"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect Signal: "
-msgstr "يوصل الإشارة:"
+msgstr "قم بوصل الإشارة: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection: "
-msgstr "خطأ في الإتصال"
+msgstr "قم بتعديل الإتصال: "
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr ""
+msgstr "هل أنت(ي) متأكد(ة) أنك تود إزالة كل الإتصالات من الإشارة \"%s\"؟"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -767,22 +754,19 @@ msgstr "إشارات"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
-msgstr ""
+msgstr "هل أنت(ي) متأكد(ة) أنك تود إزالة كل الإتصالات من هذه الإشارة؟"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect All"
-msgstr "قطع الاتصال"
+msgstr "قطع الاتصال على الكل"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
-msgstr "المُعدل"
+msgstr "تعديل..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go To Method"
-msgstr "قائمة الطرق"
+msgstr "إذهب إلى الدالة"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
@@ -915,7 +899,6 @@ msgid "Error loading:"
 msgstr "خطآ في التحميل:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Load failed due to missing dependencies:"
 msgstr "فشل في تحميل المشهد بسبب وجود تبعيات مفقودة يعتمد المشهد عليها:"
 
@@ -1068,9 +1051,8 @@ msgid "Uncompressing Assets"
 msgstr "يفكك الضغط عن الأصول"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Package installed successfully!"
-msgstr "الحزمة تم تثبيتها بنجاح!"
+msgstr "تم تتبيث الحزمة بنجاح!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -1216,9 +1198,8 @@ msgid "Add Bus"
 msgstr "أضف بيوس"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "إحفظ نسق بيوس الصوت كـ..."
+msgstr "أضف مسار صوت (Audio Bus) جديد إلى هذا التصميم."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1387,7 +1368,7 @@ msgstr "تخزين الملف:"
 
 #: editor/editor_export.cpp
 msgid "No export template found at the expected path:"
-msgstr ""
+msgstr "لم يوجد قالب التصدير في المسار المتوقع:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
@@ -1398,12 +1379,16 @@ msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"المنصة المستهدفة تحتاج لتشفير ملمس 'ETC' ل GLES2. قم بتمكين 'Import Etc' في "
+"إعدادات المشروع."
 
 #: editor/editor_export.cpp
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"المنصة المستهدفة تحتاج لتشفير ملمس \"ETC2\" ل GLES3. قم بتمكين 'Import Etc "
+"2' في إعدادات المشروع."
 
 #: editor/editor_export.cpp
 msgid ""
