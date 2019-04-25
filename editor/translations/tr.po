@@ -23,12 +23,14 @@
 # ege1212 <owlphp@gmail.com>, 2019.
 # Ömer YAZICIOĞLU <oyazicioglu@gmail.com>, 2019.
 # Mertcan Duman <mertcan.dmn16@gmail.com>, 2019.
+# Furkan Türkal <furkan.turkal@hotmail.com>, 2019.
+# Aiden Demir <dnm00110011@hotmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-19 15:04+0000\n"
-"Last-Translator: Mertcan Duman <mertcan.dmn16@gmail.com>\n"
+"PO-Revision-Date: 2019-04-14 13:04+0000\n"
+"Last-Translator: Aiden Demir <dnm00110011@hotmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -52,17 +54,16 @@ msgstr "Byte kodu çözmek için yetersiz byte, ya da Geçersiz format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Geçersiz girdi, ifadede %i (geçirilmedi)"
+msgstr "%i ifadesindeki girdi geçersiz"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
-"\"self\" ifadesi kullanılamaz çünkü örnekleme \"null\" yani tanımlanmadı."
+msgstr "\"self\" ifadesi kullanılamaz, çünkü nesne \"null\" (tanımlandı)."
 
 #: core/math/expression.cpp
 #, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "%s düğümünde geçersiz indeks özelliği ismi '%s'."
+msgstr "Geçersiz işlenen operatörler %s, %s ve %s"
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -90,33 +91,28 @@ msgid "Balanced"
 msgstr "Dengelenmiş"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "ayna"
+msgstr "Ayna"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
 msgstr "Anahtar Gir"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Seçimi Çoğalt"
+msgstr "Seçilen Tuşu/Tuşları Çoğalt"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Seçilenleri Sil"
+msgstr "Seçilen Tuşu/Tuşları Sil"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Nokta Ekle"
+msgstr "Bezier Noktası Ekle"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Noktayı Taşı"
+msgstr "Bezier Noktalarını Taşı"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -285,9 +281,8 @@ msgid "Duplicate Key(s)"
 msgstr "Düğüm(leri) Çoğalt"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Key(s)"
-msgstr "Düğümleri Sil"
+msgstr "Tuşları Sil"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
@@ -344,7 +339,6 @@ msgid "Anim Insert Key"
 msgstr "Animasyon Anahtar Gir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Step"
 msgstr "Animasyon Adımını Değiştir"
 
@@ -487,17 +481,14 @@ msgid "Duplicate Transposed"
 msgstr "Tersine Çevrilmişi Çoğalt"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
 msgstr "Seçilenleri Sil"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
 msgstr "Sonraki Adıma Git"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
 msgstr "Önceki Adıma Git"
 
@@ -752,12 +743,10 @@ msgid "Disconnect"
 msgstr "Bağlantıyı kes"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect Signal: "
 msgstr "Bağlantı Sinyali: "
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection: "
 msgstr "Bağlantıları Düzenle "
 
@@ -779,7 +768,6 @@ msgid "Disconnect All"
 msgstr "Tüm Bağlantıları Kes"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit..."
 msgstr "Düzenle"
 
@@ -918,9 +906,8 @@ msgid "Error loading:"
 msgstr "Yüklerken hata:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Load failed due to missing dependencies:"
-msgstr "Sahnedeki kayıp bağımlılıklar yüzünden sahneyi yükleme başarısız oldu:"
+msgstr "Yükleme eksik bağlamlar yüzünden başarısız oldu:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
@@ -1218,9 +1205,8 @@ msgid "Add Bus"
 msgstr "Bus ekle"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Add a new Audio Bus to this layout."
-msgstr "Audio Bus Yerleşim Düzenini Farklı Kaydet..."
+msgstr ""
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1388,27 +1374,30 @@ msgid "Storing File:"
 msgstr "Dosya Depolama:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No export template found at the expected path:"
 msgstr ""
-"Hiçbir dışa aktarım kalıbı bulunamadı.\n"
-"Dışa aktarım kalıplarını indirin ve yükleyin..."
 
 #: editor/editor_export.cpp
 msgid "Packing"
 msgstr "Çıkınla"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
 "Target platform requires 'ETC' texture compression for GLES2. Enable 'Import "
 "Etc' in Project Settings."
 msgstr ""
+"Hedef platform GLES2 için 'ETC' doku sıkıştırma gerektirir. Proje "
+"Ayarları'nda 'Import Etc' etkinleştirin."
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"Hedef platform GLES3 için 'ETC2' doku sıkıştırma gerektirir. Proje "
+"Ayarları'nda 'Import Etc 2' etkinleştirin."
 
 #: editor/editor_export.cpp
 msgid ""

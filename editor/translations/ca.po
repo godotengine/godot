@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-08 10:35+0000\n"
+"PO-Revision-Date: 2019-04-19 16:33+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -234,7 +234,7 @@ msgstr "Captura"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr "El de més a prop"
+msgstr "Més proper"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -3836,9 +3836,8 @@ msgstr "Nodes Connectats"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Nodes Disconnected"
-msgstr "Desconnectat"
+msgstr "Nodes Desconnectats"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
@@ -3847,9 +3846,8 @@ msgstr "Animació"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
-msgstr "Elimina els Nodes"
+msgstr "Eliminar Node"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
@@ -3857,9 +3855,8 @@ msgid "Toggle Filter On/Off"
 msgstr "Activa/Desactiva la Pista."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Change Filter"
-msgstr "S'ha Modificat el Filtre de Locale"
+msgstr "Canviar Filtre"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."

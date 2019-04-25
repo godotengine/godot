@@ -43,12 +43,13 @@
 # Song DongHui <14729626293@163.com>, 2019.
 # simano clio <sim2cle@gmail.com>, 2019.
 # ByonkoGalilei <byonko@qq.com>, 2019.
+# qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-04-08 10:35+0000\n"
-"Last-Translator: ByonkoGalilei <byonko@qq.com>\n"
+"PO-Revision-Date: 2019-04-23 15:48+0000\n"
+"Last-Translator: qjyqjyqjyqjy <qjyqjyqjyqjy@sina.com.cn>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -67,7 +68,7 @@ msgstr "convert函数参数类型非法，请传入以“TYPE_”打头的常量
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "没有足够的字节来解码或格式不正确。"
+msgstr "没有足够的字节来解码或无效的格式。"
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -75,27 +76,27 @@ msgstr "表达式中有非法的输入 %i （未通过）"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "自身无法使用因为实例为空"
+msgstr "self无法使用因为实例为空(不通过)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "运算符％s，％s和％s的操作数无效。"
+msgstr "操作符的操作数无效%s, %s and %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "无效内存地址类型 %s，基类 %s"
+msgstr "无效类型索引 %s，从基类 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "对基础类型 %s 非法的具名索引 '%s'"
+msgstr "从基类 %s 无效的名称索引 '%s'"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "：无效参数类型： '%s'"
+msgstr "构造的参数无效： '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "在对 '%s' 的调用中:"
+msgstr "对'%s'调用 :"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -132,7 +133,7 @@ msgstr "移动贝塞尔顶点"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "复制关键帧"
+msgstr "动画复制关键帧"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
@@ -140,7 +141,7 @@ msgstr "删除关键帧"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "修改动画关键帧的时间"
+msgstr "修改动画关键帧的时长"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -412,9 +413,8 @@ msgid "Track path is invalid, so can't add a method key."
 msgstr "跟踪路径无效，所以不能添加方法帧。"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "调用方法轨道"
+msgstr "添加方法轨道键"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -1299,7 +1299,7 @@ msgstr "不在资源路径下。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr "添加Autoload"
+msgstr "添加自动加载"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
@@ -2439,7 +2439,7 @@ msgstr "在线文档"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "问答"
+msgstr "常见问题与答案"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -3590,19 +3590,16 @@ msgstr "加载..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Move Node Point"
-msgstr "移动点"
+msgstr "移动节点"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Limits"
-msgstr "更改混合时间"
+msgstr "更改混合空间1D限制"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "更改混合时间"
+msgstr "更改混合空间1D标签"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3612,24 +3609,21 @@ msgstr "此类型的节点不能被使用。仅允许使用根节点。"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Node Point"
-msgstr "添加节点"
+msgstr "添加节点顶点"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Animation Point"
-msgstr "添加动画"
+msgstr "添加动画点"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace1D Point"
-msgstr "移除路径顶点"
+msgstr "移除混合空间1D顶点"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
-msgstr ""
+msgstr "移动混合空间1D节点顶点"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3678,24 +3672,20 @@ msgid "Add Triangle"
 msgstr "添加三角面"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Limits"
-msgstr "更改混合时间"
+msgstr "更改混合空间2D限制"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Labels"
-msgstr "更改混合时间"
+msgstr "更改混合空间2D标签"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Point"
-msgstr "移除路径顶点"
+msgstr "移除混合空间2D顶点"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Triangle"
-msgstr "删除变量"
+msgstr "移除混合空间2D三角形"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
@@ -3740,9 +3730,8 @@ msgid "Output node can't be added to the blend tree."
 msgstr "输出节点不能被添加到混合树。"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to BlendTree"
-msgstr "从树中添加节点"
+msgstr "在合成树中添加节点"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3770,7 +3759,6 @@ msgstr "设置动画"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Delete Node"
 msgstr "删除节点"
 
@@ -6198,9 +6186,8 @@ msgid "Rear"
 msgstr "后方"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align with View"
-msgstr "与视图对齐"
+msgstr "对齐视图"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6916,7 +6903,7 @@ msgstr "上一个坐标"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr ""
+msgstr "选择上一个形状，子砖块，或砖块。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7121,7 +7108,7 @@ msgstr "瓦片集"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
-msgstr ""
+msgstr "设置统一名称"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Input Default Port"
@@ -7137,7 +7124,7 @@ msgstr "复制节点"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr ""
+msgstr "可视着色器输入类型已更改"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -7180,6 +7167,8 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
+"无法导出平台'％s'的项目。\n"
+"导出模板似乎丢失或无效。"
 
 #: editor/project_export.cpp
 msgid ""
@@ -7187,6 +7176,8 @@ msgid ""
 "This might be due to a configuration issue in the export preset or your "
 "export settings."
 msgstr ""
+"无法导出平台'％s'的项目。\n"
+"可能由于导出预设或导出设置内的配置有问题。"
 
 #: editor/project_export.cpp
 msgid "Release"
@@ -9830,7 +9821,7 @@ msgstr ""
 msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
-msgstr ""
+msgstr "平面形状无法正常工作，未来版本将被删除。请勿使用。"
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -9851,6 +9842,8 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"GLES2视频驱动程序不支持全局光照探测器。\n"
+"请改用已烘焙灯光贴图。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10017,6 +10010,8 @@ msgid ""
 "If you dont't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
+"除非在脚本内配置其子项的放置行为，否则容器本身没有用处。\n"
+"如果您不打算添加脚本，请使用简单的“控件”节点。"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
