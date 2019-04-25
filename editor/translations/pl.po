@@ -37,8 +37,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-04-05 13:04+0000\n"
-"Last-Translator: Przemysław Pierzga <przemyslawpierzga@gmail.com>\n"
+"PO-Revision-Date: 2019-04-25 11:54+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -47,7 +47,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4861,7 +4861,7 @@ msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
-"Przeciągnij i upuść + Shift: dodaj węzeł równorzędny\n"
+"Przeciągnij i upuść + Shift: Dodaj węzeł równorzędny\n"
 "Przeciągnij i upuść + Alt: Zmień typ węzła"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
@@ -6035,7 +6035,7 @@ msgstr "Wcięcie w prawo"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
-msgstr "Ustaw komentarz"
+msgstr "Przełącz komentarz"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -7222,7 +7222,7 @@ msgstr "Typ wejścia shadera wizualnego zmieniony"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
-msgstr "Wierzchołek"
+msgstr "Wierzchołki"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Fragment"

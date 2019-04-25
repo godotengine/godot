@@ -31,12 +31,13 @@
 # Stijn Hinlopen <f.a.hinlopen@gmail.com>, 2019.
 # jef dered <themen098s@vivaldi.net>, 2019.
 # Alex H. <sandertjeh13@hotmail.com>, 2019.
+# edouardgr <edouard.gruyters@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-28 09:36+0000\n"
-"Last-Translator: Alex H. <sandertjeh13@hotmail.com>\n"
+"PO-Revision-Date: 2019-04-25 11:54+0000\n"
+"Last-Translator: edouardgr <edouard.gruyters@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.7-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -8534,7 +8535,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Scene(s)"
-msgstr ""
+msgstr "Instantie Scene(s)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
@@ -8542,7 +8543,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Script"
-msgstr ""
+msgstr "Script vrijmaken"
 
 #: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
@@ -8579,7 +8580,7 @@ msgstr "Klinkt logisch!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete Node(s)?"
-msgstr ""
+msgstr "Verwijder knooppunt(en)?"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -8664,8 +8665,9 @@ msgid ""
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Error saving scene."
-msgstr ""
+msgstr "Fout scene opslaan."
 
 #: editor/scene_tree_dock.cpp
 msgid "Error duplicating scene to save it."
@@ -8686,16 +8688,18 @@ msgid "Open documentation"
 msgstr "Open Godot online documentatie"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Delete Node(s)"
-msgstr ""
+msgstr "Verwijder knooppunt(en)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Change Type"
-msgstr ""
+msgstr "Verander Type"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8721,12 +8725,13 @@ msgid "Copy Node Path"
 msgstr "Kopiëer Nodes"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Delete (No Confirm)"
-msgstr ""
+msgstr "Verwijder (Geen bevestiging)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add/Create a New Node"
-msgstr ""
+msgstr "Voeg nieuwe knooppunt aan"
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -8740,7 +8745,7 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
-msgstr ""
+msgstr "Verwijder script van selecteerde knooppunt."
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -8748,8 +8753,9 @@ msgid "Remote"
 msgstr "Verwijderen"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Local"
-msgstr ""
+msgstr "Lokaal"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance? (No Undo!)"
@@ -8761,8 +8767,9 @@ msgid "Toggle Visible"
 msgstr "Toggle Verborgen Bestanden"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "Node configuration warning:"
-msgstr ""
+msgstr "Knooppunt configuratie waarschuwing:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
