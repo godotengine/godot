@@ -2482,11 +2482,7 @@ void Viewport::_gui_hid_control(Control *p_control) {
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
 	if (gui.tooltip == p_control)
-		gui.tooltip = NULL;
-	if (gui.tooltip == p_control) {
-		gui.tooltip = NULL;
 		_gui_cancel_tooltip();
-	}
 }
 
 void Viewport::_gui_remove_control(Control *p_control) {
