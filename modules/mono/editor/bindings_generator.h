@@ -164,7 +164,6 @@ class BindingsGenerator {
 		}
 
 		MethodInterface() {
-			return_type.cname = BindingsGenerator::get_singleton()->name_cache.type_void;
 			is_vararg = false;
 			is_virtual = false;
 			requires_object_call = false;
@@ -469,7 +468,7 @@ class BindingsGenerator {
 		}
 	};
 
-	static bool verbose_output;
+	bool log_print_enabled;
 
 	OrderedHashMap<StringName, TypeInterface> obj_types;
 
@@ -515,6 +514,7 @@ class BindingsGenerator {
 			enum_Error = StaticCString::create("Error");
 		}
 
+	private:
 		NameCache(const NameCache &);
 		NameCache &operator=(const NameCache &);
 	};
@@ -578,33 +578,26 @@ class BindingsGenerator {
 
 	Error _save_file(const String &p_path, const StringBuilder &p_content);
 
-	BindingsGenerator() {}
+	void _log(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	BindingsGenerator(const BindingsGenerator &);
-	BindingsGenerator &operator=(const BindingsGenerator &);
-
-	friend class CSharpLanguage;
-	static BindingsGenerator *singleton;
+	void _initialize();
 
 public:
-	Error generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output = true);
-	Error generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output = true);
-	Error generate_cs_api(const String &p_output_dir, bool p_verbose_output = true);
+	Error generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution);
+	Error generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution);
+	Error generate_cs_api(const String &p_output_dir);
 	Error generate_glue(const String &p_output_dir);
+
+	void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }
 
 	static uint32_t get_version();
 
-	void initialize();
-
-	_FORCE_INLINE_ static BindingsGenerator *get_singleton() {
-		if (!singleton) {
-			singleton = memnew(BindingsGenerator);
-			singleton->initialize();
-		}
-		return singleton;
-	}
-
 	static void handle_cmdline_args(const List<String> &p_cmdline_args);
+
+	BindingsGenerator() :
+			log_print_enabled(true) {
+		_initialize();
+	}
 };
 
 #endif

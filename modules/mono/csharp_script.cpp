@@ -131,14 +131,6 @@ void CSharpLanguage::finish() {
 
 	finalizing = true;
 
-#ifdef TOOLS_ENABLED
-	// Must be here, to avoid StringName leaks
-	if (BindingsGenerator::singleton) {
-		memdelete(BindingsGenerator::singleton);
-		BindingsGenerator::singleton = NULL;
-	}
-#endif
-
 	// Make sure all script binding gchandles are released before finalizing GDMono
 	for (Map<Object *, CSharpScriptBinding>::Element *E = script_bindings.front(); E; E = E->next()) {
 		CSharpScriptBinding &script_binding = E->value();

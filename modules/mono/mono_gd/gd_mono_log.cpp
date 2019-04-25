@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 
 #include "../godotsharp_dirs.h"
+#include "../utils/string_utils.h"
 
 static int log_level_get_id(const char *p_log_level) {
 
@@ -125,27 +126,6 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 	da->list_dir_end();
 }
 
-static String format(const char *p_fmt, ...) {
-	va_list args;
-
-	va_start(args, p_fmt);
-	int len = vsnprintf(NULL, 0, p_fmt, args);
-	va_end(args);
-
-	len += 1; // for the trailing '/0'
-
-	char *buffer(memnew_arr(char, len));
-
-	va_start(args, p_fmt);
-	vsnprintf(buffer, len, p_fmt, args);
-	va_end(args);
-
-	String res(buffer);
-	memdelete_arr(buffer);
-
-	return res;
-}
-
 void GDMonoLog::initialize() {
 
 	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
@@ -172,7 +152,7 @@ void GDMonoLog::initialize() {
 		OS::Time time_now = OS::get_singleton()->get_time();
 		int pid = OS::get_singleton()->get_process_id();
 
-		String log_file_name = format("%d_%02d_%02d %02d.%02d.%02d (%d).txt",
+		String log_file_name = str_format("%d_%02d_%02d %02d.%02d.%02d (%d).txt",
 				date_now.year, date_now.month, date_now.day,
 				time_now.hour, time_now.min, time_now.sec, pid);
 

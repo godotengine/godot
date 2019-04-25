@@ -101,10 +101,6 @@
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
-bool BindingsGenerator::verbose_output = false;
-
-BindingsGenerator *BindingsGenerator::singleton = NULL;
-
 static String fix_doc_description(const String &p_bbcode) {
 
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
@@ -816,9 +812,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			CRASH_COND(enum_class_name != "Variant"); // Hard-coded...
 
-			if (verbose_output) {
-				WARN_PRINTS("Declaring global enum `" + enum_proxy_name + "` inside static class `" + enum_class_name + "`");
-			}
+			_log("Declaring global enum `%s` inside static class `%s`\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\n" INDENT1 "public static partial class ");
 			p_output.append(enum_class_name);
@@ -867,9 +861,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
-Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output) {
-
-	verbose_output = p_verbose_output;
+Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution) {
 
 	String proj_dir = p_solution_dir.plus_file(CORE_API_ASSEMBLY_NAME);
 
@@ -1001,15 +993,12 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 
 	r_solution.add_new_project(CORE_API_ASSEMBLY_NAME, proj_info);
 
-	if (verbose_output)
-		OS::get_singleton()->print("The solution and C# project for the Core API was generated successfully\n");
+	_log("The solution and C# project for the Core API was generated successfully\n");
 
 	return OK;
 }
 
-Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output) {
-
-	verbose_output = p_verbose_output;
+Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution) {
 
 	String proj_dir = p_solution_dir.plus_file(EDITOR_API_ASSEMBLY_NAME);
 
@@ -1100,13 +1089,12 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir
 
 	r_solution.add_new_project(EDITOR_API_ASSEMBLY_NAME, proj_info);
 
-	if (verbose_output)
-		OS::get_singleton()->print("The solution and C# project for the Editor API was generated successfully\n");
+	_log("The solution and C# project for the Editor API was generated successfully\n");
 
 	return OK;
 }
 
-Error BindingsGenerator::generate_cs_api(const String &p_output_dir, bool p_verbose_output) {
+Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
@@ -1123,13 +1111,13 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir, bool p_verb
 
 	Error proj_err;
 
-	proj_err = generate_cs_core_project(p_output_dir, solution, p_verbose_output);
+	proj_err = generate_cs_core_project(p_output_dir, solution);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Core API C# project failed");
 		return proj_err;
 	}
 
-	proj_err = generate_cs_editor_project(p_output_dir, solution, p_verbose_output);
+	proj_err = generate_cs_editor_project(p_output_dir, solution);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Editor API C# project failed");
 		return proj_err;
@@ -1168,8 +1156,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
-	if (verbose_output)
-		OS::get_singleton()->print("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
+	_log("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
 
 	String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
@@ -1710,8 +1697,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
-	verbose_output = true;
-
 	bool dir_exists = DirAccess::exists(p_output_dir);
 	ERR_EXPLAIN("The output directory does not exist.");
 	ERR_FAIL_COND_V(!dir_exists, ERR_FILE_BAD_PATH);
@@ -2128,15 +2113,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
-			if (verbose_output)
-				WARN_PRINTS("Ignoring type " + type_cname.operator String() + " because it's not exposed");
+			_log("Ignoring type `%s` because it's not exposed\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
-			if (verbose_output)
-				WARN_PRINTS("Ignoring type " + type_cname.operator String() + " because it's not enabled");
+			_log("Ignoring type `%s` because it's not enabled\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
@@ -2186,12 +2169,10 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
 
-			// Prevent property and enclosing type from sharing the same name
+			// Prevent the property and its enclosing type from sharing the same name
 			if (iprop.proxy_name == itype.proxy_name) {
-				if (verbose_output) {
-					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
-								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
-				}
+				_log("Name of property `%s` is ambiguous with the name of its enclosing class `%s`. Renaming property to `%s_`\n",
+						iprop.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), iprop.proxy_name.utf8().get_data());
 
 				iprop.proxy_name += "_";
 			}
@@ -2258,14 +2239,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					// which could actually will return something different.
 					// Let's put this to notify us if that ever happens.
 					if (itype.cname != name_cache.type_Object || imethod.name != "free") {
-						if (verbose_output) {
-							WARN_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
-										"We only expected Object.free, but found " +
-										itype.name + "." + imethod.name);
-						}
+						ERR_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
+								   "We only expected Object.free, but found " +
+								   itype.name + "." + imethod.name);
 					}
 				} else {
-					ERR_PRINTS("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
+					ERR_EXPLAIN("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
+					ERR_FAIL();
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2319,12 +2299,10 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			imethod.proxy_name = escape_csharp_keyword(snake_to_pascal_case(imethod.name));
 
-			// Prevent naming the property and its enclosing type from sharing the same name
+			// Prevent the method and its enclosing type from sharing the same name
 			if (imethod.proxy_name == itype.proxy_name) {
-				if (verbose_output) {
-					WARN_PRINTS("Name of method `" + imethod.proxy_name + "` is ambiguous with the name of its class `" +
-								itype.proxy_name + "`. Renaming method to `" + imethod.proxy_name + "_`");
-				}
+				_log("Name of method `%s` is ambiguous with the name of its enclosing class `%s`. Renaming method to `%s_`\n",
+						imethod.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), imethod.proxy_name.utf8().get_data());
 
 				imethod.proxy_name += "_";
 			}
@@ -2858,7 +2836,18 @@ void BindingsGenerator::_populate_global_constants() {
 	}
 }
 
-void BindingsGenerator::initialize() {
+void BindingsGenerator::_log(const char *p_format, ...) {
+
+	if (log_print_enabled) {
+		va_list list;
+
+		va_start(list, p_format);
+		OS::get_singleton()->print("%s", str_format(p_format, list).utf8().get_data());
+		va_end(list);
+	}
+}
+
+void BindingsGenerator::_initialize() {
 
 	EditorHelp::generate_doc();
 
@@ -2881,12 +2870,13 @@ void BindingsGenerator::initialize() {
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 
 	const int NUM_OPTIONS = 2;
-	int options_left = NUM_OPTIONS;
-
 	String mono_glue_option = "--generate-mono-glue";
 	String cs_api_option = "--generate-cs-api";
 
-	verbose_output = true;
+	String mono_glue_path;
+	String cs_api_path;
+
+	int options_left = NUM_OPTIONS;
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
@@ -2895,8 +2885,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton()->generate_glue(path_elem->get()) != OK)
-					ERR_PRINTS(mono_glue_option + ": Failed to generate mono glue");
+				mono_glue_path = path_elem->get();
 				elem = elem->next();
 			} else {
 				ERR_PRINTS(mono_glue_option + ": No output directory specified");
@@ -2907,8 +2896,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton()->generate_cs_api(path_elem->get()) != OK)
-					ERR_PRINTS(cs_api_option + ": Failed to generate the C# API");
+				cs_api_path = path_elem->get();
 				elem = elem->next();
 			} else {
 				ERR_PRINTS(cs_api_option + ": No output directory specified");
@@ -2920,10 +2908,23 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 		elem = elem->next();
 	}
 
-	verbose_output = false;
+	if (mono_glue_path.length() || cs_api_path.length()) {
+		BindingsGenerator bindings_generator;
+		bindings_generator.set_log_print_enabled(true);
 
-	if (options_left != NUM_OPTIONS)
+		if (mono_glue_path.length()) {
+			if (bindings_generator.generate_glue(mono_glue_path) != OK)
+				ERR_PRINTS(mono_glue_option + ": Failed to generate mono glue");
+		}
+
+		if (cs_api_path.length()) {
+			if (bindings_generator.generate_cs_api(cs_api_path) != OK)
+				ERR_PRINTS(cs_api_option + ": Failed to generate the C# API");
+		}
+
+		// Exit once done
 		::exit(0);
+	}
 }
 
 #endif
