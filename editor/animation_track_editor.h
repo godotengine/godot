@@ -334,6 +334,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _new_track_node_selected(NodePath p_path);
 	void _new_track_property_selected(String p_name);
 
+	void _update_step_spinbox();
+
 	PropertySelectorDialog *prop_selector;
 	PropertySelectorDialog *method_selector;
 	SceneTreeDialog *pick_track;

@@ -109,7 +109,7 @@ public:
 		} else {
 			for (int i = 0; i < locked_params.size(); i++) {
 				if (locked_params[i].name == p_name) {
-					r_ret = locked_params[i].class_name != StringName() ? locked_params[i].class_name : Variant::get_type_name(locked_params[i].type);
+					r_ret = (locked_params[i].class_name != StringName()) ? locked_params[i].class_name : StringName(Variant::get_type_name(locked_params[i].type));
 
 					return true;
 				}
@@ -340,8 +340,9 @@ void ConnectDialog::_tree_node_selected() {
 
 	Node *current = tree->get_selected();
 
-	if (!current)
+	if (!current) {
 		return;
+	}
 
 	dst_path = source->get_path_to(current);
 
@@ -437,22 +438,30 @@ void ConnectDialog::_bind_arguments_pressed() {
 void ConnectDialog::_check_valid() {
 
 	bool show_error = false;
+	bool disable_ok = false;
+	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+
+	Node *target = tree->get_selected();
+	if (!target) {
+		return;
+	}
 
 	if (mode_list->get_selected_id() == Mode::EXISTING_METHOD) {
 
-		Node *target = tree->get_selected();
 		if (!target->has_method(dst_method->get_text())) {
 			error_label->set_text(TTR("Method not found in the selected node."));
 			show_error = true;
+			disable_ok = true;
 		}
 	} else if (mode_list->get_selected_id() == Mode::NEW_METHOD) {
 
-		Node *target = tree->get_selected();
 		if (!target && !_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root())) {
 			error_label->set_text(TTR("Scene does not contain any script."));
 			show_error = true;
+			disable_ok = true;
 		} else if (target->has_method(dst_method->get_text())) {
-			error_label->set_text(TTR("Method already defined in the selected node."));
+			error_label->set_text(TTR("Method already defined. No new method will be created."));
+			error_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 			show_error = true;
 		}
 	}
@@ -463,9 +472,12 @@ void ConnectDialog::_check_valid() {
 
 	if (show_error) {
 		error_label->show();
-		get_ok()->set_disabled(true);
 	} else {
 		error_label->hide();
+	}
+	if (disable_ok) {
+		get_ok()->set_disabled(true);
+	} else {
 		get_ok()->set_disabled(false);
 	}
 }
@@ -720,7 +732,9 @@ ConnectDialog::ConnectDialog() {
 	settings->set_h_size_flags(SIZE_FILL);
 	settings->get_popup()->set_hide_on_checkable_item_selection(false);
 	settings->get_popup()->add_check_item(TTR("Deferred"), CallMode::DEFERRED);
+	settings->get_popup()->set_item_tooltip(0, TTR("Connect the signal in deferred mode.") + "\n" + TTR("Signal emissions will be stored in a queue and fired at idle time."));
 	settings->get_popup()->add_check_item(TTR("Oneshot"), CallMode::ONESHOT);
+	settings->get_popup()->set_item_tooltip(1, TTR("Connect the signal in oneshot mode.") + "\n" + TTR("The signal will disconnect itself after first emission."));
 	settings->get_popup()->connect("index_pressed", this, "_settings_flags_changed");
 	dstm_hb->add_child(settings);
 
