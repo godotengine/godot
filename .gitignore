@@ -40,12 +40,14 @@ gmon.out
 *.swo
 *.swp
 
-# QT project files
+# Qt project files
 *.config
 *.creator
 *.creator.*
 *.files
 *.includes
+*.cflags
+*.cxxflags
 
 # Eclipse CDT files
 .cproject
