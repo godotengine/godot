@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MultiMesh" inherits="Resource" category="Core" version="3.1">
+<class name="MultiMesh" inherits="Resource" category="Core" version="3.1.1">
 	<brief_description>
 		Provides high performance mesh instancing.
 	</brief_description>
@@ -115,6 +115,8 @@
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat">
 			Format of transform used to transform mesh, either 2D or 3D.
+		</member>
+		<member name="visible_instance_count" type="int" setter="set_visible_instance_count" getter="get_visible_instance_count">
 		</member>
 	</members>
 	<constants>
