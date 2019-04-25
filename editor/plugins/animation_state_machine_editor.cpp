@@ -874,7 +874,7 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	}
 	to.y = from.y;
 
-	float len = MAX(0.0001, playback->get_current_length());
+	float len = MAX(0.0001, current_length);
 
 	float pos = CLAMP(play_pos, 0, len);
 	float c = pos / len;
@@ -1012,6 +1012,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 		StringName current_node;
 		StringName blend_from_node;
 		play_pos = 0;
+		current_length = 0;
 
 		if (playback.is_valid()) {
 			tp = playback->get_travel_path();
@@ -1019,6 +1020,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 			current_node = playback->get_current_node();
 			blend_from_node = playback->get_blend_from_node();
 			play_pos = playback->get_current_play_pos();
+			current_length = playback->get_current_length();
 		}
 
 		{
@@ -1060,8 +1062,10 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				}
 
 				// when current_node is a state machine, use playback of current_node to set play_pos
-				if (current_node_playback.is_valid())
+				if (current_node_playback.is_valid()) {
 					play_pos = current_node_playback->get_current_play_pos();
+					current_length = current_node_playback->get_current_length();
+				}
 			}
 		}
 
