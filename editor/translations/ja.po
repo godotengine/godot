@@ -26,8 +26,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-03-19 15:04+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2019-04-19 16:33+0000\n"
+"Last-Translator: Wataru Onuki <watonu@magadou.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -2329,7 +2329,7 @@ msgstr "プロジェクト"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr "プロジェクトの設定"
+msgstr "プロジェクト設定"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Export"
@@ -6392,9 +6392,8 @@ msgid "This operation requires a single selected node."
 msgstr "一つノードを指定しないと、この操作はできません"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock View Rotation"
-msgstr "情報を表示"
+msgstr "ビューの回転を固定"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Display Normal"
@@ -6602,7 +6601,7 @@ msgstr "トランスフォーム"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap object to floor"
-msgstr ""
+msgstr "オブジェクトを底面にスナップ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -7410,6 +7409,8 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
+"プラットフォーム '%s' へのプロジェクトのエクスポートに失敗しました。\n"
+"エクスポート用テンプレートが存在しないか、あるいは異常であるようです。"
 
 #: editor/project_export.cpp
 msgid ""
@@ -7417,6 +7418,9 @@ msgid ""
 "This might be due to a configuration issue in the export preset or your "
 "export settings."
 msgstr ""
+"プラットフォーム '%s' へのプロジェクトのエクスポートに失敗しました。\n"
+"エクスポート用プリセットあるいはエクスポート設定に問題がある可能性がありま"
+"す。"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -7724,9 +7728,8 @@ msgid "Unnamed Project"
 msgstr "名無しのプロジェクト"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "プロジェクトを開けません"
+msgstr "次の場所のプロジェクトを開けません '%s'。"
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -7771,7 +7774,6 @@ msgid ""
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in \"Project Settings\" under "
@@ -7779,7 +7781,7 @@ msgid ""
 msgstr ""
 "選択したシーン '%s' は、シーン ファイルではありません、有効なものを選択してい"
 "ますか？\n"
-"'アプリケーション' カテゴリの下の'プロジェクトの設定'で変更できます。"
+"'アプリケーション' カテゴリの下の'プロジェクト設定'で変更できます。"
 
 #: editor/project_manager.cpp
 msgid ""

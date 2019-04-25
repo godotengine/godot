@@ -56,12 +56,14 @@
 # Davi <wokep.ma.wavid@gmail.com>, 2019.
 # Endrick Gustavo <endrickgb@hotmail.com>, 2019.
 # Hans M. Boron <hansmateusboron@gmail.com>, 2019.
+# Gustavo Bolanho <jdmapas@gmail.com>, 2019.
+# Nilton Bendini Junior <almascelulas@bol.com.br>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-04-08 10:35+0000\n"
-"Last-Translator: Hans M. Boron <hansmateusboron@gmail.com>\n"
+"PO-Revision-Date: 2019-04-19 16:33+0000\n"
+"Last-Translator: Nilton Bendini Junior <almascelulas@bol.com.br>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -259,7 +261,7 @@ msgstr "Tempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Ligar/Desligar trilha"
+msgstr "Alternar Trilha Ativado"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -313,7 +315,7 @@ msgstr "Deletar Chave(s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Alterar Modo de Atualização da Animação:"
+msgstr "Alterar Modo de Atualização da Animação"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
@@ -369,9 +371,8 @@ msgid "Change Animation Step"
 msgstr "Alterar FPS da Animação"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rearrange Tracks"
-msgstr "Reordenar Faixas"
+msgstr "Reordenar Trilhas"
 
 #: editor/animation_track_editor.cpp
 msgid "Transform tracks only apply to Spatial-based nodes."
@@ -416,13 +417,12 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "Trilha não é do tipo Espacial,não pode inserir chave"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "Trilha de transformação 3D"
+msgstr "Adicionar Chave de Transformação de Trilha"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track Key"
-msgstr "Adicionar Trilha"
+msgstr "Adicionar Trilha Chave"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
@@ -430,9 +430,8 @@ msgstr ""
 "Caminho da trilha é inválido,então não pode adicionar uma chave de método."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Trilha de método de chamada"
+msgstr "Adiciona Método de Trilha Chave"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -594,17 +593,16 @@ msgid "Copy"
 msgstr "Copiar"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Clipes de Áudio:"
+msgstr "Adiciona Clipe de Trilha de Áudio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Alterar Deslocamento do Início de Clipe da Trilha de Áudio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Alterar deslocamento de fim do clipe de faixa de áudio"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -1236,7 +1234,7 @@ msgstr "Adicionar Canal"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add a new Audio Bus to this layout."
-msgstr "Adiciona um novo Canal de Áudio a esse layout."
+msgstr "Adicionar novo Canal de Áudio a esse layout."
 
 #: editor/editor_audio_buses.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp editor/property_editor.cpp
@@ -1427,6 +1425,8 @@ msgid ""
 "Target platform requires 'ETC2' texture compression for GLES3. Enable "
 "'Import Etc 2' in Project Settings."
 msgstr ""
+"A plataforma de destino requer compactação de textura 'ETC2' para GLES3. "
+"Ativar 'Importar Etc 2' nas Configurações do Projeto."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -1435,6 +1435,10 @@ msgid ""
 "Enable 'Import Etc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
+"A plataforma de destino requer compactação de textura 'ETC' para o driver "
+"retornar ao GLES2.\n"
+"Ativar 'Importar Etc' em Configurações do Projeto ou desabilitar 'Driver "
+"Fallback Enabled' (Recuperação de driver ativada)."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1557,23 +1561,20 @@ msgid "Move Favorite Down"
 msgstr "Mover Favorito Abaixo"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Previous Folder"
-msgstr "Chão Anterior"
+msgstr "Pasta Anterior"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Next Folder"
-msgstr "Próximo Chão"
+msgstr "Próxima Pasta"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go to parent folder"
 msgstr "Ir para pasta pai"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "Não foi possível criar a pasta."
+msgstr "(Des)favoritar pasta atual."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1806,9 +1807,8 @@ msgid "Project export failed with error code %d."
 msgstr "Falha na exportação do projeto com código de erro %d."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Imported resources can't be saved."
-msgstr "Recursos Importados"
+msgstr "Recursos Importados não podem ser salvos."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -3684,18 +3684,16 @@ msgstr "Carregar..."
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Move Node Point"
-msgstr "Mover pontos"
+msgstr "Mover o ponto do nó"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Change BlendSpace1D Limits"
 msgstr "Alterar limites do BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace1D Labels"
-msgstr "Alterar Tempo de Mistura"
+msgstr "Alterar rótulos BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3706,24 +3704,21 @@ msgstr ""
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Node Point"
-msgstr "Adicionar Nó"
+msgstr "Adicionar ponto de Nó"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Animation Point"
-msgstr "Adicionar Animação"
+msgstr "Adicionar ponto de Animação"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace1D Point"
-msgstr "Remover Ponto do Caminho"
+msgstr "Remover Ponto BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 msgid "Move BlendSpace1D Node Point"
-msgstr ""
+msgstr "Mover ponto de nó BlendSpace1D"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -3769,29 +3764,24 @@ msgid "Triangle already exists"
 msgstr "Triângulo já existe"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Add Triangle"
-msgstr "Adicionar Variável"
+msgstr "Adicionar Triângulo"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Limits"
-msgstr "Alterar Tempo de Mistura"
+msgstr "Alterar limites de BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Change BlendSpace2D Labels"
-msgstr "Alterar Tempo de Mistura"
+msgstr "Alterar rótulos de BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Point"
-msgstr "Remover Ponto do Caminho"
+msgstr "Remover Ponto do BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Remove BlendSpace2D Triangle"
-msgstr "Remover Variável"
+msgstr "Remover Triangulo do BlendSpace2D"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "BlendSpace2D does not belong to an AnimationTree node."
@@ -3802,9 +3792,8 @@ msgid "No triangles exist, so no blending can take place."
 msgstr "Não existem triângulos, então nenhuma mistura pode acontecer."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-#, fuzzy
 msgid "Toggle Auto Triangles"
-msgstr "Alternar Auto Carregamentos de Globais"
+msgstr "Alternar Triângulos Automáticos"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -3837,9 +3826,8 @@ msgid "Output node can't be added to the blend tree."
 msgstr "Nós de saída não pode ser adicionado à árvore de mistura."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to BlendTree"
-msgstr "Adicionar Nó(s) a Partir da Árvore"
+msgstr "Adicionar Nó(s) a Partir da Árvore (BlendTree)"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3863,9 +3851,8 @@ msgid "Nodes Disconnected"
 msgstr "Nós Desconectados"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Set Animation"
-msgstr "Nova animação"
+msgstr "Definir Animação"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3873,14 +3860,12 @@ msgid "Delete Node"
 msgstr "Excluir Nó"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Filter On/Off"
-msgstr "Ligar/desligar esta trilha."
+msgstr "Ligar/Desligar Filtro"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#, fuzzy
 msgid "Change Filter"
-msgstr "FIltro de Idiomas Alterado"
+msgstr "Alterar Filtro"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
@@ -3905,9 +3890,8 @@ msgstr ""
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Renamed"
-msgstr "Nome do nó"
+msgstr "Nó Renomeado"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4138,14 +4122,12 @@ msgid "Cross-Animation Blend Times"
 msgstr "Tempos de Mistura de Animação Cruzada"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Move Node"
-msgstr "Modo Mover"
+msgstr "Mover Nó"
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Add Transition"
-msgstr "Adicionar Tradução"
+msgstr "Adicionar Transição"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -4181,9 +4163,8 @@ msgid "No playback resource set at path: %s."
 msgstr "Sem recurso de playback definido no caminho: %s."
 
 #: editor/plugins/animation_state_machine_editor.cpp
-#, fuzzy
 msgid "Node Removed"
-msgstr "Removido:"
+msgstr "Nó Removido"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Transition Removed"
@@ -4626,7 +4607,8 @@ msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Filhos de contêineres tem sua âncora e margens sobrescritos pelos seus pais."
+"Filhos de contêineres tem suas ancoragens e valores de margem sobrescritos "
+"pelos seus pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5974,11 +5956,11 @@ msgstr "Abrir a documentação online da Godot"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
-msgstr ""
+msgstr "Solicitar documentos"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Help improve the Godot documentation by giving feedback"
-msgstr ""
+msgstr "Ajude a melhorar a documentação do Godot dando seu feedback"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -6176,14 +6158,12 @@ msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Este esqueleto não tem ossos, crie alguns nós filhos Bone2D."
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Create Rest Pose from Bones"
-msgstr "Faça Resto Pose (De Ossos)"
+msgstr "Criar postura de descanso para os Ossos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Set Rest Pose to Bones"
-msgstr "Faça Resto Pose (De Ossos)"
+msgstr "Definir a postura de repouso para os Ossos"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
 msgid "Skeleton2D"
@@ -6338,9 +6318,8 @@ msgid "Rear"
 msgstr "Traseira"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align with View"
-msgstr "Alinhar com Visão"
+msgstr "Alinhar com a Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6447,9 +6426,8 @@ msgid "XForm Dialog"
 msgstr "Diálogo XForm"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Snap Nodes To Floor"
-msgstr "Encaixar na grade"
+msgstr "Encaixar Nó(s) no Chão"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode (Q)"
@@ -7045,13 +7023,12 @@ msgid "Merge from Scene"
 msgstr "Fundir a partir de Cena"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Next Coordinate"
-msgstr "Próximo Chão"
+msgstr "Próxima Coordenada"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the next shape, subtile, or Tile."
-msgstr ""
+msgstr "Selecione a próxima forma, subtile ou Tile."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Previous Coordinate"
@@ -7059,7 +7036,7 @@ msgstr "Coordenada Anterior"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
-msgstr ""
+msgstr "Selecione a forma, subtile ou tile anterior."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7263,26 +7240,23 @@ msgstr "Conjunto de Telha"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
-msgstr ""
+msgstr "Definir Nome Uniforme"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Set Input Default Port"
-msgstr "Definir como Padrão para '%s'"
+msgstr "Definir Porta Padrão de Entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node to Visual Shader"
-msgstr "VisualShader"
+msgstr "Adicionar Nó ao Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Duplicar Nó(s)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr ""
+msgstr "Tipo de Entrada de Shader Visual Alterado"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -7301,14 +7275,12 @@ msgid "VisualShader"
 msgstr "VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property"
-msgstr "Editar prioridade da telha"
+msgstr "Editar Propriedade Visual"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Visual Shader Mode Changed"
-msgstr "Alterações de Shader"
+msgstr "Modo Visual Shader Alterado"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -7327,9 +7299,10 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
+"Falha ao exportar o projeto para a plataforma '% s'.\n"
+"Os modelos de exportação parecem estar ausentes ou inválidos."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid ""
 "Failed to export the project for platform '%s'.\n"
 "This might be due to a configuration issue in the export preset or your "
@@ -7349,7 +7322,7 @@ msgstr "Exportando tudo"
 
 #: editor/project_export.cpp
 msgid "The given export path doesn't exist:"
-msgstr "O caminho de exportação informado não existe."
+msgstr "O caminho de exportação informado não existe:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -9678,7 +9651,7 @@ msgstr "Identificador está ausente."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr "Os segmentos de identificador devem ter comprimento diferente de zero."
+msgstr "Segmentos identificadores devem ter comprimento diferente de zero."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
@@ -10097,6 +10070,8 @@ msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"GIProbes não são suportados pelo driver de vídeo GLES2.\n"
+"Use um BakedLightmap em vez disso."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10277,6 +10252,10 @@ msgid ""
 "If you dont't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
+"O contêiner por si só não serve para nada, a menos que um script configure "
+"seu comportamento de posicionamento de filhos.\n"
+"Se você não pretende adicionar um script, por favor use um nó simples "
+"'Control'."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -10288,7 +10267,7 @@ msgstr "Confirme Por Favor..."
 
 #: scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
-msgstr "Ir para diretório pai"
+msgstr "Ir para diretório (pasta) pai."
 
 #: scene/gui/popup.cpp
 msgid ""
