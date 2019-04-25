@@ -412,6 +412,7 @@ void MeshInstanceEditor::_bind_methods() {
 MeshInstanceEditor::MeshInstanceEditor() {
 
 	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Mesh"));
