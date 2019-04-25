@@ -965,6 +965,7 @@ void TextEdit::_notification(int p_what) {
 
 						// draw info icons
 						if (draw_info_gutter && text.has_info_icon(line)) {
+							int vertical_gap = (get_row_height() * 40) / 100;
 							int horizontal_gap = (cache.info_gutter_width * 30) / 100;
 							int gutter_left = cache.style_normal->get_margin(MARGIN_LEFT) + cache.breakpoint_gutter_width;
 
@@ -979,8 +980,8 @@ void TextEdit::_notification(int p_what) {
 							}
 
 							Size2i icon_pos;
-							int xofs = horizontal_gap - (info_icon->get_width()) / 2;
-							int yofs = (get_row_height() - info_icon->get_height()) / 2;
+							int xofs = horizontal_gap - (info_icon->get_width() / 4);
+							int yofs = vertical_gap - (info_icon->get_height() / 4);
 							icon_pos.x = gutter_left + xofs + ofs_x;
 							icon_pos.y = ofs_y + yofs;
 
