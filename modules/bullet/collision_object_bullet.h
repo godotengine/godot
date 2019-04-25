@@ -109,6 +109,7 @@ public:
 
 		void set_transform(const Transform &p_transform);
 		void set_transform(const btTransform &p_transform);
+		btTransform get_adjusted_transform() const;
 
 		void claim_bt_shape(const btVector3 &body_scale);
 	};

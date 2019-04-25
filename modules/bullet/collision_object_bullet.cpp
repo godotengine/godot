@@ -59,6 +59,25 @@ void CollisionObjectBullet::ShapeWrapper::set_transform(const btTransform &p_tra
 	transform = p_transform;
 }
 
+btTransform CollisionObjectBullet::ShapeWrapper::get_adjusted_transform() const {
+	if (shape->get_type() == PhysicsServer::SHAPE_HEIGHTMAP) {
+		const HeightMapShapeBullet *hm_shape = (const HeightMapShapeBullet *)shape; // should be safe to cast now
+		btTransform adjusted_transform;
+
+		// Bullet centers our heightmap:
+		// https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h#L33
+		// This is really counter intuitive so we're adjusting for it
+
+		adjusted_transform.setIdentity();
+		adjusted_transform.setOrigin(btVector3(0.0, hm_shape->min_height + ((hm_shape->max_height - hm_shape->min_height) * 0.5), 0.0));
+		adjusted_transform *= transform;
+
+		return adjusted_transform;
+	} else {
+		return transform;
+	}
+}
+
 void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_scale) {
 	if (!bt_shape) {
 		if (active)
@@ -345,7 +364,8 @@ void RigidCollisionObjectBullet::reload_shapes() {
 	// Try to optimize by not using compound
 	if (1 == shape_count) {
 		shpWrapper = &shapes.write[0];
-		if (shpWrapper->transform.getOrigin().isZero() && shpWrapper->transform.getBasis() == shpWrapper->transform.getBasis().getIdentity()) {
+		btTransform transform = shpWrapper->get_adjusted_transform();
+		if (transform.getOrigin().isZero() && transform.getBasis() == transform.getBasis().getIdentity()) {
 			shpWrapper->claim_bt_shape(body_scale);
 			mainShape = shpWrapper->bt_shape;
 			main_shape_changed();
@@ -359,7 +379,7 @@ void RigidCollisionObjectBullet::reload_shapes() {
 	for (int i(0); i < shape_count; ++i) {
 		shpWrapper = &shapes.write[i];
 		shpWrapper->claim_bt_shape(body_scale);
-		btTransform scaled_shape_transform(shpWrapper->transform);
+		btTransform scaled_shape_transform(shpWrapper->get_adjusted_transform());
 		scaled_shape_transform.getOrigin() *= body_scale;
 		compoundShape->addChildShape(scaled_shape_transform, shpWrapper->bt_shape);
 	}
