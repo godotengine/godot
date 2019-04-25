@@ -1548,6 +1548,11 @@ FRAGMENT_SHADER_CODE
 
 #ifdef BASE_PASS
 	//none
+
+#ifdef AMBIENT_LIGHT_DISABLED
+	ambient_light = vec3(0.0, 0.0, 0.0);
+#else
+
 #ifdef USE_RADIANCE_MAP
 
 	vec3 ref_vec = reflect(-eye_position, N);
@@ -1570,6 +1575,7 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#endif // AMBIENT_LIGHT_DISABLED
 	ambient_light *= ambient_energy;
 
 #if defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
