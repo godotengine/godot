@@ -451,13 +451,21 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Snap (s): "
-msgstr "স্ন্যাপ (পিক্সেলসমূহ):"
+msgid "Snap:"
+msgstr "স্ন্যাপ"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Animation step value."
 msgstr "অ্যানিমেশনের তালিকাটি কার্যকর।"
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "এফ পি এস"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -4062,6 +4070,11 @@ msgid "Delete Node"
 msgstr "নোড(সমূহ) অপসারণ করুন"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "নোড(সমূহ) অপসারণ করুন"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Filter On/Off"
 msgstr "বিক্ষেপ-হীন মোড"
@@ -5086,9 +5099,34 @@ msgid "Layout"
 msgstr "লেআউট/নকশা সংরক্ষণ করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Insert keys."
-msgstr "চাবিসমূহ সন্নিবেশ করুন"
+msgid "Insert keys (based on mask)."
+msgstr "চাবি সন্নিবেশ করুন (বিদ্যমান ট্র্যাক/পথসমূহ)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "অ্যানিমেশনে (Anim) চাবি যোগ করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5160,6 +5198,56 @@ msgstr "Poly সম্পাদন করুন (বিন্দু অপসা
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "হ্যান্ডেল স্থাপন করুন"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "ছবি লোডে সমস্যা হয়েছে:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "স্বচ্ছতাসহ কোনো পিক্সেল নেই > ছবিতে ১২৮..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "Emission Mask লোড করুন"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Emission Mask পরিস্কার করুন"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Particles"
+msgstr "ভারটেক্স"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "উৎপাদিত বিন্দুর সংখ্যা:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Mask"
+msgstr "Emission Mask স্থাপন করুন"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Capture from Pixel"
+msgstr "দৃশ্য হতে তৈরি করবেন"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Colors"
+msgstr "Emission-এর স্থানসমূহ:"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #, fuzzy
@@ -5528,22 +5616,6 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "শুধুমাত্র ParticlesMaterial প্রসেস ম্যাটেরিয়ালে বিন্দু স্থাপন সম্ভব"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "ছবি লোডে সমস্যা হয়েছে:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "স্বচ্ছতাসহ কোনো পিক্সেল নেই > ছবিতে ১২৮..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "Emission Mask লোড করুন"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Emission Mask পরিস্কার করুন"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Convert to CPUParticles"
@@ -5552,33 +5624,8 @@ msgstr "এতে রূপান্তর করুন..."
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
-msgid "Particles"
-msgstr "ভারটেক্স"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "উৎপাদিত বিন্দুর সংখ্যা:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Generation Time (sec):"
 msgstr "গড় সময় (সেঃ)"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Emission Mask"
-msgstr "Emission Mask স্থাপন করুন"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Capture from Pixel"
-msgstr "দৃশ্য হতে তৈরি করবেন"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Emission Colors"
-msgstr "Emission-এর স্থানসমূহ:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -6134,7 +6181,8 @@ msgid "Save Theme As..."
 msgstr "থিম এইরূপে সংরক্ষণ করুন..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " ক্লাস রেফারেন্স"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7014,6 +7062,26 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Create Mesh2D"
+msgstr "প্রান্তরেখা মেস তৈরি করুন"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Poly তৈরি করুন"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "Navigation Polygon তৈরি করুন"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "অকলুডার (occluder) পলিগন তৈরি করুন"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Sprite is empty!"
 msgstr "সংরক্ষণের পথটি খালি!"
 
@@ -7026,19 +7094,41 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
 msgid "Sprite"
 msgstr "ফ্রেমসমূহ স্তূপ করুন"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Convert to 2D Mesh"
+msgid "Convert to Mesh2D"
 msgstr "এতে রূপান্তর করুন..."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Create 2D Mesh"
-msgstr "প্রান্তরেখা মেস তৈরি করুন"
+msgid "Convert to Polygon2D"
+msgstr "পলিগন সরান"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Navigation Polygon তৈরি করুন"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "অকলুডার (occluder) পলিগন তৈরি করুন"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7672,6 +7762,11 @@ msgstr "শেডার"
 #, fuzzy
 msgid "Duplicate Nodes"
 msgstr "নোড(সমূহ) প্রতিলিপি করুন"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "নোড(সমূহ) অপসারণ করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8930,10 +9025,6 @@ msgstr "উত্তরাধিকারত্ব পরিস্কার ক�
 #, fuzzy
 msgid "Open documentation"
 msgstr "রেফারেন্সের ডকুমেন্টেশনে খুঁজুন।"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "নোড(সমূহ) অপসারণ করুন"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10861,11 +10952,16 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#, fuzzy
+#~ msgid "Snap (s): "
+#~ msgstr "স্ন্যাপ (পিক্সেলসমূহ):"
+
+#, fuzzy
+#~ msgid "Insert keys."
+#~ msgstr "চাবিসমূহ সন্নিবেশ করুন"
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "নির্বাচিত দৃশ্য(সমূহ)-কে নির্বাচিত নোডের অংশ হিসেবে ইনস্ট্যান্স করুন।"
-
-#~ msgid "FPS"
-#~ msgstr "এফ পি এস"
 
 #, fuzzy
 #~ msgid "Warnings:"
