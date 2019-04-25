@@ -74,6 +74,4 @@ void godot_register_glue_header_icalls() {
 	}                                                  \
 	Object *m_instance = ci->creation_func();
 
-#include "arguments_vector.h"
-
 #endif // MONO_GLUE_ENABLED
