@@ -1974,6 +1974,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 				if (scene_idx != -1)
 					_discard_changes();
+				save_layout();
 
 				break;
 			}
