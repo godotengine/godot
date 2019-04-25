@@ -375,6 +375,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
 	menu->set_text(TTR("Particles"));
+	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);
 
 	file = memnew(EditorFileDialog);
