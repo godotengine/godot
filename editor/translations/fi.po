@@ -416,12 +416,21 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Ryhmitä raidat solmujen mukaan tai näytä ne tavallisena luettelona."
 
 #: editor/animation_track_editor.cpp
-msgid "Snap (s): "
-msgstr "Askellus (s): "
+#, fuzzy
+msgid "Snap:"
+msgstr "Tartu"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "Animaation askelluksen arvo."
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3801,6 +3810,11 @@ msgid "Delete Node"
 msgstr "Poista solmu"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "Poista solmu(t)"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
 msgstr "Kytke suodin päälle/pois"
 
@@ -4777,8 +4791,34 @@ msgid "Layout"
 msgstr "Asettelu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "Lisää avainruutuja."
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Insert keys (based on mask)."
+msgstr "Lisää avainruutu (olemassa olevat raidat)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "Animaatio: Lisää avain"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4849,6 +4889,52 @@ msgstr "Muokkaa polygonia (poista piste)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Aseta kahva"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "Virhe ladattaessa kuvaa:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Kuvassa ei ole pikseleitä, joiden läpinäkyvyys on enemmän kuin 128…"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "Lataa emissiomaski"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Tyhjennä emissiomaski"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "Partikkelit"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "Luotujen pisteiden määrä:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "Emission maski"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "Nappaa pikselistä"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "Emission väri"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5203,51 +5289,14 @@ msgstr ""
 "Piste voidaan asettaa ainoastaan ParticlesMaterial käsittelyn materiaaliin"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Virhe ladattaessa kuvaa:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "Kuvassa ei ole pikseleitä, joiden läpinäkyvyys on enemmän kuin 128…"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "Lataa emissiomaski"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Tyhjennä emissiomaski"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr "Muunna CPUPartikkeleiksi"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "Partikkelit"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "Luotujen pisteiden määrä:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Luontiaika (s):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "Emission maski"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "Nappaa pikselistä"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "Emission väri"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5759,7 +5808,8 @@ msgid "Save Theme As..."
 msgstr "Tallenna teema nimellä..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " Luokan referenssi"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6584,6 +6634,26 @@ msgid "Nameless gizmo"
 msgstr "Nimetön muokkain"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Mesh2D"
+msgstr "Luo 2D-mesh"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Luo Polygon3D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "Luo törmäyspolygoni"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "Luo peittopolygoni"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Sprite on tyhjä!"
 
@@ -6596,16 +6666,43 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Virheellinen geometria, ei voida korvata meshillä."
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create polygon."
+msgstr "Virheellinen geometria, ei voida korvata meshillä."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "Virheellinen geometria, ei voida korvata meshillä."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create light occluder."
+msgstr "Virheellinen geometria, ei voida korvata meshillä."
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
+#, fuzzy
+msgid "Convert to Mesh2D"
 msgstr "Muunna 2D-meshiksi"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Create 2D Mesh"
-msgstr "Luo 2D-mesh"
+#, fuzzy
+msgid "Convert to Polygon2D"
+msgstr "Siirrä polygonia"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Luo törmäyspolygoni"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "Luo peittopolygoni"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7188,6 +7285,11 @@ msgstr "Lisää solmu Visual Shaderiin"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Kahdenna solmut"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "Poista solmu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8404,10 +8506,6 @@ msgstr "Poista perintä"
 #: editor/scene_tree_dock.cpp
 msgid "Open documentation"
 msgstr "Avaa dokumentaatio"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "Poista solmu(t)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10279,11 +10377,14 @@ msgstr "Sijoitus uniformille."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 
+#~ msgid "Snap (s): "
+#~ msgstr "Askellus (s): "
+
+#~ msgid "Insert keys."
+#~ msgstr "Lisää avainruutuja."
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "Luo valituista skeneistä ilmentymä valitun solmun alle."
-
-#~ msgid "FPS"
-#~ msgstr "FPS"
 
 #~ msgid "Warnings:"
 #~ msgstr "Varoitukset:"

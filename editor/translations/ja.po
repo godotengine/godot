@@ -445,12 +445,21 @@ msgstr ""
 "ノードごとにトラックをグループ化するか、プレーンなリストとして表示します。"
 
 #: editor/animation_track_editor.cpp
-msgid "Snap (s): "
-msgstr "スナップ (秒): "
+#, fuzzy
+msgid "Snap:"
+msgstr "スナップ"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "アニメーションステップの値。"
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "フレームレート"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3843,6 +3852,11 @@ msgid "Delete Node"
 msgstr "ノードを削除"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "ノードを削除"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Filter On/Off"
 msgstr "このトラックの オン/オフ を切り替え。"
@@ -4827,8 +4841,34 @@ msgid "Layout"
 msgstr "レイアウト"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "キーを挿入する。"
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Insert keys (based on mask)."
+msgstr "キーを (既存のトラックに) 挿入"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "アニメーションキーを挿入"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -4903,6 +4943,55 @@ msgstr "ポリゴンを編集（点を除去）"
 #, fuzzy
 msgid "Set Handle"
 msgstr "ハンドルを設定する"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "画像読み込みエラー:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "画像内に透明度が128以上のピクセルがありません..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Load Emission Mask"
+msgstr "発光(Emission)マスクを読み込む"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Emission Mask"
+msgstr "発光(Emission)マスクをクリア"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "パーティクル"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "生成したポイントの数:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "発光(Emission)マスク"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#, fuzzy
+msgid "Capture from Pixel"
+msgstr "ピクセルから取得"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "発光(Emission)色"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5281,54 +5370,14 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "画像読み込みエラー:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "画像内に透明度が128以上のピクセルがありません..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Load Emission Mask"
-msgstr "発光(Emission)マスクを読み込む"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Clear Emission Mask"
-msgstr "発光(Emission)マスクをクリア"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr "CPUパーティクルに変換"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "パーティクル"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "生成したポイントの数:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "生成時間 (秒):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "発光(Emission)マスク"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#, fuzzy
-msgid "Capture from Pixel"
-msgstr "ピクセルから取得"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "発光(Emission)色"
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -5870,7 +5919,8 @@ msgid "Save Theme As..."
 msgstr "テーマを名前をつけて保存..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " クラスリファレンス"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6718,6 +6768,26 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Create Mesh2D"
+msgstr "アウトラインメッシュを生成"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Polygon3Dを生成"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "コリジョン ポリゴンを生成"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "オクルーダーポリゴンを生成"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Sprite is empty!"
 msgstr "保存するパスがありません!"
 
@@ -6730,17 +6800,40 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "スプライト"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
+#, fuzzy
+msgid "Convert to Mesh2D"
 msgstr "2Dメッシュに変換"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Create 2D Mesh"
-msgstr "アウトラインメッシュを生成"
+msgid "Convert to Polygon2D"
+msgstr "ポリゴンを移動"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "コリジョン ポリゴンを生成"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "オクルーダーポリゴンを生成"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7358,6 +7451,11 @@ msgstr "シェーダー"
 #, fuzzy
 msgid "Duplicate Nodes"
 msgstr "ノードを複製"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "ノードを削除"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8609,10 +8707,6 @@ msgstr "継承をクリア"
 #: editor/scene_tree_dock.cpp
 msgid "Open documentation"
 msgstr "ドキュメントを開く"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "ノードを削除"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10553,11 +10647,14 @@ msgstr "uniform への割り当て。"
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 
+#~ msgid "Snap (s): "
+#~ msgstr "スナップ (秒): "
+
+#~ msgid "Insert keys."
+#~ msgstr "キーを挿入する。"
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "選択したシーンを選択したノードの子としてインスタンス化します。"
-
-#~ msgid "FPS"
-#~ msgstr "フレームレート"
 
 #~ msgid "Warnings:"
 #~ msgstr "警告:"

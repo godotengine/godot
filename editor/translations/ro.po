@@ -439,13 +439,21 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Snap (s): "
-msgstr "Pas (s):"
+msgid "Snap:"
+msgstr "Aliniere"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Animation step value."
 msgstr "Arborele Animației este valid."
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr ""
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3929,6 +3937,11 @@ msgid "Delete Node"
 msgstr "Creează Nod"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Filter On/Off"
 msgstr "Comutează modul fără distrageri."
@@ -4930,9 +4943,34 @@ msgid "Layout"
 msgstr "Schemă"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Insert keys."
-msgstr "Inserează Note"
+msgid "Insert keys (based on mask)."
+msgstr "Inserează Notă (Melodii existente)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "Anim Inserați Cheie"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5004,6 +5042,52 @@ msgstr "Editează Poligon (Elimină Punct)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Setează Mâner"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "Eroare la încărcarea imaginii:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Nici un pixel cu transparența > 128 în imagine..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "Încărcare Mască de Emisie"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Curăță Masca de Emisie"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "Particule"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "Număr de Puncte Generate:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "Mască de Emisie"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "Capturare din Pixel"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "Culori de Emisie"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #, fuzzy
@@ -5359,51 +5443,14 @@ msgstr ""
 "ParticlesMaterial"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Eroare la încărcarea imaginii:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "Nici un pixel cu transparența > 128 în imagine..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "Încărcare Mască de Emisie"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Curăță Masca de Emisie"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "Particule"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "Număr de Puncte Generate:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Timp de Generare (sec):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "Mască de Emisie"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "Capturare din Pixel"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "Culori de Emisie"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5942,7 +5989,7 @@ msgid "Save Theme As..."
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+msgid "%s Class Reference"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6782,6 +6829,26 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Create Mesh2D"
+msgstr "Creează Mesh de Contur"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Crează Poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "Creare Poligon de Navigare"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "Creează Poligon de Ocluziune"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Sprite is empty!"
 msgstr "Mesh-ul este gol!"
 
@@ -6794,17 +6861,40 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
-msgstr ""
+#, fuzzy
+msgid "Convert to Mesh2D"
+msgstr "Convertește În..."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Create 2D Mesh"
-msgstr "Creează Mesh de Contur"
+msgid "Convert to Polygon2D"
+msgstr "Deplasare poligon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Creare Poligon de Navigare"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "Creează Poligon de Ocluziune"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7414,6 +7504,11 @@ msgstr ""
 #, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Anim Clonare Chei"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "Creează Nod"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8598,10 +8693,6 @@ msgstr "Curăță Derivarea"
 #, fuzzy
 msgid "Open documentation"
 msgstr "Deschide Recente"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10358,6 +10449,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Snap (s): "
+#~ msgstr "Pas (s):"
+
+#, fuzzy
+#~ msgid "Insert keys."
+#~ msgstr "Inserează Note"
 
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "Instanțiază scena(ele) selectată ca un copil al nodului selectat."
