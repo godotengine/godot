@@ -97,7 +97,7 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(8)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(9)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
@@ -1464,7 +1464,13 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	p_output.append("\n" INDENT2 OPEN_BLOCK);
 
 	if (getter) {
-		p_output.append(INDENT3 "get\n" OPEN_BLOCK_L3);
+		p_output.append(INDENT3 "get\n"
+
+								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
+
+				OPEN_BLOCK_L3);
+
 		p_output.append("return ");
 		p_output.append(getter->proxy_name + "(");
 		if (p_iprop.index != -1) {
@@ -1478,11 +1484,22 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index));
 			}
 		}
-		p_output.append(");\n" CLOSE_BLOCK_L3);
+		p_output.append(");\n"
+
+				CLOSE_BLOCK_L3
+
+						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+						"#pragma warning restore CS0618\n");
 	}
 
 	if (setter) {
-		p_output.append(INDENT3 "set\n" OPEN_BLOCK_L3);
+		p_output.append(INDENT3 "set\n"
+
+								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
+
+				OPEN_BLOCK_L3);
+
 		p_output.append(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = setter->arguments.front()->get();
@@ -1495,7 +1512,12 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index) + ", ");
 			}
 		}
-		p_output.append("value);\n" CLOSE_BLOCK_L3);
+		p_output.append("value);\n"
+
+				CLOSE_BLOCK_L3
+
+						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+						"#pragma warning restore CS0618\n");
 	}
 
 	p_output.append(CLOSE_BLOCK_L2);
@@ -1620,6 +1642,15 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (!p_imethod.is_internal) {
 			p_output.append(MEMBER_BEGIN "[GodotMethod(\"");
 			p_output.append(p_imethod.name);
+			p_output.append("\")]");
+		}
+
+		if (p_imethod.is_deprecated) {
+			if (p_imethod.deprecation_message.empty())
+				WARN_PRINTS("An empty deprecation message is discouraged. Method: " + p_imethod.proxy_name);
+
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+			p_output.append(p_imethod.deprecation_message);
 			p_output.append("\")]");
 		}
 
@@ -2147,10 +2178,12 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.im_type_in = "IntPtr";
 		itype.im_type_out = itype.proxy_name;
 
+		// Populate properties
+
 		List<PropertyInfo> property_list;
 		ClassDB::get_property_list(type_cname, &property_list, true);
 
-		// Populate properties
+		Map<StringName, StringName> accessor_methods;
 
 		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
 			const PropertyInfo &property = E->get();
@@ -2162,6 +2195,11 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.cname = property.name;
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
+
+			if (iprop.setter != StringName())
+				accessor_methods[iprop.setter] = iprop.cname;
+			if (iprop.getter != StringName())
+				accessor_methods[iprop.getter] = iprop.cname;
 
 			bool valid = false;
 			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
@@ -2305,6 +2343,16 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 						imethod.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), imethod.proxy_name.utf8().get_data());
 
 				imethod.proxy_name += "_";
+			}
+
+			Map<StringName, StringName>::Element *accessor = accessor_methods.find(imethod.cname);
+			if (accessor) {
+				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value());
+
+				// We only deprecate an accessor method if it's in the same class as the property. It's easier this way, but also
+				// we don't know if an accessor method in a different class could have other purposes, so better leave those untouched.
+				imethod.is_deprecated = true;
+				imethod.deprecation_message = imethod.proxy_name + " is deprecated. Use the " + accessor_property->proxy_name + " property instead.";
 			}
 
 			if (itype.class_doc) {

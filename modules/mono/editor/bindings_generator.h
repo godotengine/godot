@@ -159,6 +159,9 @@ class BindingsGenerator {
 
 		const DocData::MethodDoc *method_doc;
 
+		bool is_deprecated;
+		String deprecation_message;
+
 		void add_argument(const ArgumentInterface &argument) {
 			arguments.push_back(argument);
 		}
@@ -169,6 +172,7 @@ class BindingsGenerator {
 			requires_object_call = false;
 			is_internal = false;
 			method_doc = NULL;
+			is_deprecated = false;
 		}
 	};
 
