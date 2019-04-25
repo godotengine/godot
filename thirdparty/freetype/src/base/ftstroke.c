@@ -1,19 +1,19 @@
-/****************************************************************************
- *
- * ftstroke.c
- *
- *   FreeType path stroker (body).
- *
- * Copyright (C) 2002-2019 by
- * David Turner, Robert Wilhelm, and Werner Lemberg.
- *
- * This file is part of the FreeType project, and may only be used,
- * modified, and distributed under the terms of the FreeType project
- * license, LICENSE.TXT.  By continuing to use, modify, or distribute
- * this file you indicate that you have read the license and
- * understand and accept it fully.
- *
- */
+/***************************************************************************/
+/*                                                                         */
+/*  ftstroke.c                                                             */
+/*                                                                         */
+/*    FreeType path stroker (body).                                        */
+/*                                                                         */
+/*  Copyright 2002-2018 by                                                 */
+/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
+/*                                                                         */
+/*  This file is part of the FreeType project, and may only be used,       */
+/*  modified, and distributed under the terms of the FreeType project      */
+/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
+/*  this file you indicate that you have read the license and              */
+/*  understand and accept it fully.                                        */
+/*                                                                         */
+/***************************************************************************/
 
 
 #include <ft2build.h>
@@ -24,10 +24,15 @@
 #include FT_INTERNAL_DEBUG_H
 #include FT_INTERNAL_OBJECTS_H
 
+#include "basepic.h"
 
-  /* declare an extern to access `ft_outline_glyph_class' globally */
-  /* allocated  in `ftglyph.c'                                     */
+
+  /* declare an extern to access `ft_outline_glyph_class' globally     */
+  /* allocated  in `ftglyph.c', and use the FT_OUTLINE_GLYPH_CLASS_GET */
+  /* macro to access it when FT_CONFIG_OPTION_PIC is defined           */
+#ifndef FT_CONFIG_OPTION_PIC
   FT_CALLBACK_TABLE const FT_Glyph_Class  ft_outline_glyph_class;
+#endif
 
 
   /* documentation is in ftstroke.h */
@@ -367,7 +372,6 @@
       /* it contains the `adjusted' starting coordinates          */
       border->num_points    = --count;
       border->points[start] = border->points[count];
-      border->tags[start]   = border->tags[count];
 
       if ( reverse )
       {
@@ -432,8 +436,8 @@
     }
     else
     {
-      /* don't add zero-length lineto, but always add moveto */
-      if ( border->num_points > (FT_UInt)border->start                     &&
+      /* don't add zero-length lineto */
+      if ( border->num_points > 0                                          &&
            FT_IS_SMALL( border->points[border->num_points - 1].x - to->x ) &&
            FT_IS_SMALL( border->points[border->num_points - 1].y - to->y ) )
         return error;
@@ -2083,8 +2087,8 @@
   /* documentation is in ftstroke.h */
 
   /*
-   * The following is very similar to FT_Outline_Decompose, except
-   * that we do support opened paths, and do not scale the outline.
+   *  The following is very similar to FT_Outline_Decompose, except
+   *  that we do support opened paths, and do not scale the outline.
    */
   FT_EXPORT_DEF( FT_Error )
   FT_Stroker_ParseOutline( FT_Stroker   stroker,
@@ -2302,12 +2306,17 @@
     FT_Error  error = FT_ERR( Invalid_Argument );
     FT_Glyph  glyph = NULL;
 
+    /* for FT_OUTLINE_GLYPH_CLASS_GET (in PIC mode) */
+    FT_Library  library = stroker->library;
+
+    FT_UNUSED( library );
+
 
     if ( !pglyph )
       goto Exit;
 
     glyph = *pglyph;
-    if ( !glyph || glyph->clazz != &ft_outline_glyph_class )
+    if ( !glyph || glyph->clazz != FT_OUTLINE_GLYPH_CLASS_GET )
       goto Exit;
 
     {
@@ -2377,12 +2386,17 @@
     FT_Error  error = FT_ERR( Invalid_Argument );
     FT_Glyph  glyph = NULL;
 
+    /* for FT_OUTLINE_GLYPH_CLASS_GET (in PIC mode) */
+    FT_Library  library = stroker->library;
+
+    FT_UNUSED( library );
+
 
     if ( !pglyph )
       goto Exit;
 
     glyph = *pglyph;
-    if ( !glyph || glyph->clazz != &ft_outline_glyph_class )
+    if ( !glyph || glyph->clazz != FT_OUTLINE_GLYPH_CLASS_GET )
       goto Exit;
 
     {

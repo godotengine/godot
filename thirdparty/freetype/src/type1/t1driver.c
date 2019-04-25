@@ -1,19 +1,19 @@
-/****************************************************************************
- *
- * t1driver.c
- *
- *   Type 1 driver interface (body).
- *
- * Copyright (C) 1996-2019 by
- * David Turner, Robert Wilhelm, and Werner Lemberg.
- *
- * This file is part of the FreeType project, and may only be used,
- * modified, and distributed under the terms of the FreeType project
- * license, LICENSE.TXT.  By continuing to use, modify, or distribute
- * this file you indicate that you have read the license and
- * understand and accept it fully.
- *
- */
+/***************************************************************************/
+/*                                                                         */
+/*  t1driver.c                                                             */
+/*                                                                         */
+/*    Type 1 driver interface (body).                                      */
+/*                                                                         */
+/*  Copyright 1996-2018 by                                                 */
+/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
+/*                                                                         */
+/*  This file is part of the FreeType project, and may only be used,       */
+/*  modified, and distributed under the terms of the FreeType project      */
+/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
+/*  this file you indicate that you have read the license and              */
+/*  understand and accept it fully.                                        */
+/*                                                                         */
+/***************************************************************************/
 
 
 #include <ft2build.h>
@@ -43,19 +43,19 @@
 #include FT_SERVICE_KERNING_H
 
 
-  /**************************************************************************
-   *
-   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
-   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
-   * messages during execution.
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
+  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
+  /* messages during execution.                                            */
+  /*                                                                       */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  t1driver
+#define FT_COMPONENT  trace_t1driver
 
-  /*
-   * GLYPH DICT SERVICE
-   *
-   */
+ /*
+  *  GLYPH DICT SERVICE
+  *
+  */
 
   static FT_Error
   t1_get_glyph_name( T1_Face     face,
@@ -97,7 +97,7 @@
 
 
   /*
-   * POSTSCRIPT NAME SERVICE
+   *  POSTSCRIPT NAME SERVICE
    *
    */
 
@@ -115,32 +115,30 @@
 
 
   /*
-   * MULTIPLE MASTERS SERVICE
+   *  MULTIPLE MASTERS SERVICE
    *
    */
 
 #ifndef T1_CONFIG_OPTION_NO_MM_SUPPORT
   static const FT_Service_MultiMastersRec  t1_service_multi_masters =
   {
-    (FT_Get_MM_Func)             T1_Get_Multi_Master,    /* get_mm              */
-    (FT_Set_MM_Design_Func)      T1_Set_MM_Design,       /* set_mm_design       */
-    (FT_Set_MM_Blend_Func)       T1_Set_MM_Blend,        /* set_mm_blend        */
-    (FT_Get_MM_Blend_Func)       T1_Get_MM_Blend,        /* get_mm_blend        */
-    (FT_Get_MM_Var_Func)         T1_Get_MM_Var,          /* get_mm_var          */
-    (FT_Set_Var_Design_Func)     T1_Set_Var_Design,      /* set_var_design      */
-    (FT_Get_Var_Design_Func)     T1_Get_Var_Design,      /* get_var_design      */
-    (FT_Set_Instance_Func)       T1_Reset_MM_Blend,      /* set_instance        */
-    (FT_Set_MM_WeightVector_Func)T1_Set_MM_WeightVector, /* set_mm_weightvector */
-    (FT_Get_MM_WeightVector_Func)T1_Get_MM_WeightVector, /* get_mm_weightvector */
+    (FT_Get_MM_Func)        T1_Get_Multi_Master,   /* get_mm         */
+    (FT_Set_MM_Design_Func) T1_Set_MM_Design,      /* set_mm_design  */
+    (FT_Set_MM_Blend_Func)  T1_Set_MM_Blend,       /* set_mm_blend   */
+    (FT_Get_MM_Blend_Func)  T1_Get_MM_Blend,       /* get_mm_blend   */
+    (FT_Get_MM_Var_Func)    T1_Get_MM_Var,         /* get_mm_var     */
+    (FT_Set_Var_Design_Func)T1_Set_Var_Design,     /* set_var_design */
+    (FT_Get_Var_Design_Func)T1_Get_Var_Design,     /* get_var_design */
+    (FT_Set_Instance_Func)  T1_Reset_MM_Blend,     /* set_instance   */
 
-    (FT_Get_Var_Blend_Func)      NULL,                   /* get_var_blend       */
-    (FT_Done_Blend_Func)         T1_Done_Blend           /* done_blend          */
+    (FT_Get_Var_Blend_Func) NULL,                  /* get_var_blend  */
+    (FT_Done_Blend_Func)    T1_Done_Blend          /* done_blend     */
   };
 #endif
 
 
   /*
-   * POSTSCRIPT INFO SERVICE
+   *  POSTSCRIPT INFO SERVICE
    *
    */
 
@@ -272,12 +270,9 @@
       break;
 
     case PS_DICT_FONT_NAME:
-      if ( type1->font_name )
-      {
-        retval = ft_strlen( type1->font_name ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_name ), retval );
-      }
+      retval = ft_strlen( type1->font_name ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_name ), retval );
       break;
 
     case PS_DICT_UNIQUE_ID:
@@ -367,7 +362,7 @@
             ok = 1;
         }
 
-        if ( ok && type1->subrs )
+        if ( ok )
         {
           retval = type1->subrs_len[idx] + 1;
           if ( value && value_len >= retval )
@@ -564,49 +559,33 @@
       break;
 
     case PS_DICT_VERSION:
-      if ( type1->font_info.version )
-      {
-        retval = ft_strlen( type1->font_info.version ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.version ), retval );
-      }
+      retval = ft_strlen( type1->font_info.version ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.version ), retval );
       break;
 
     case PS_DICT_NOTICE:
-      if ( type1->font_info.notice )
-      {
-        retval = ft_strlen( type1->font_info.notice ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.notice ), retval );
-      }
+      retval = ft_strlen( type1->font_info.notice ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.notice ), retval );
       break;
 
     case PS_DICT_FULL_NAME:
-      if ( type1->font_info.full_name )
-      {
-        retval = ft_strlen( type1->font_info.full_name ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.full_name ), retval );
-      }
+      retval = ft_strlen( type1->font_info.full_name ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.full_name ), retval );
       break;
 
     case PS_DICT_FAMILY_NAME:
-      if ( type1->font_info.family_name )
-      {
-        retval = ft_strlen( type1->font_info.family_name ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.family_name ),
-                     retval );
-      }
+      retval = ft_strlen( type1->font_info.family_name ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.family_name ), retval );
       break;
 
     case PS_DICT_WEIGHT:
-      if ( type1->font_info.weight )
-      {
-        retval = ft_strlen( type1->font_info.weight ) + 1;
-        if ( value && value_len >= retval )
-          ft_memcpy( value, (void *)( type1->font_info.weight ), retval );
-      }
+      retval = ft_strlen( type1->font_info.weight ) + 1;
+      if ( value && value_len >= retval )
+        ft_memcpy( value, (void *)( type1->font_info.weight ), retval );
       break;
 
     case PS_DICT_ITALIC_ANGLE:
@@ -639,7 +618,7 @@
 
 
   /*
-   * PROPERTY SERVICE
+   *  PROPERTY SERVICE
    *
    */
 
@@ -651,7 +630,7 @@
 
 
   /*
-   * SERVICE LIST
+   *  SERVICE LIST
    *
    */
 
@@ -686,42 +665,38 @@
 
 #ifndef T1_CONFIG_OPTION_NO_AFM
 
-  /**************************************************************************
-   *
-   * @Function:
-   *   Get_Kerning
-   *
-   * @Description:
-   *   A driver method used to return the kerning vector between two
-   *   glyphs of the same face.
-   *
-   * @Input:
-   *   face ::
-   *     A handle to the source face object.
-   *
-   *   left_glyph ::
-   *     The index of the left glyph in the kern pair.
-   *
-   *   right_glyph ::
-   *     The index of the right glyph in the kern pair.
-   *
-   * @Output:
-   *   kerning ::
-   *     The kerning vector.  This is in font units for
-   *     scalable formats, and in pixels for fixed-sizes
-   *     formats.
-   *
-   * @Return:
-   *   FreeType error code.  0 means success.
-   *
-   * @Note:
-   *   Only horizontal layouts (left-to-right & right-to-left) are
-   *   supported by this function.  Other layouts, or more sophisticated
-   *   kernings are out of scope of this method (the basic driver
-   *   interface is meant to be simple).
-   *
-   *   They can be implemented by format-specific interfaces.
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Function>                                                            */
+  /*    Get_Kerning                                                        */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    A driver method used to return the kerning vector between two      */
+  /*    glyphs of the same face.                                           */
+  /*                                                                       */
+  /* <Input>                                                               */
+  /*    face        :: A handle to the source face object.                 */
+  /*                                                                       */
+  /*    left_glyph  :: The index of the left glyph in the kern pair.       */
+  /*                                                                       */
+  /*    right_glyph :: The index of the right glyph in the kern pair.      */
+  /*                                                                       */
+  /* <Output>                                                              */
+  /*    kerning     :: The kerning vector.  This is in font units for      */
+  /*                   scalable formats, and in pixels for fixed-sizes     */
+  /*                   formats.                                            */
+  /*                                                                       */
+  /* <Return>                                                              */
+  /*    FreeType error code.  0 means success.                             */
+  /*                                                                       */
+  /* <Note>                                                                */
+  /*    Only horizontal layouts (left-to-right & right-to-left) are        */
+  /*    supported by this function.  Other layouts, or more sophisticated  */
+  /*    kernings are out of scope of this method (the basic driver         */
+  /*    interface is meant to be simple).                                  */
+  /*                                                                       */
+  /*    They can be implemented by format-specific interfaces.             */
+  /*                                                                       */
   static FT_Error
   Get_Kerning( FT_Face     t1face,        /* T1_Face */
                FT_UInt     left_glyph,

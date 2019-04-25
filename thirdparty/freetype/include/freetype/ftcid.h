@@ -1,19 +1,19 @@
-/****************************************************************************
- *
- * ftcid.h
- *
- *   FreeType API for accessing CID font information (specification).
- *
- * Copyright (C) 2007-2019 by
- * Dereg Clegg and Michael Toftdal.
- *
- * This file is part of the FreeType project, and may only be used,
- * modified, and distributed under the terms of the FreeType project
- * license, LICENSE.TXT.  By continuing to use, modify, or distribute
- * this file you indicate that you have read the license and
- * understand and accept it fully.
- *
- */
+/***************************************************************************/
+/*                                                                         */
+/*  ftcid.h                                                                */
+/*                                                                         */
+/*    FreeType API for accessing CID font information (specification).     */
+/*                                                                         */
+/*  Copyright 2007-2018 by                                                 */
+/*  Dereg Clegg and Michael Toftdal.                                       */
+/*                                                                         */
+/*  This file is part of the FreeType project, and may only be used,       */
+/*  modified, and distributed under the terms of the FreeType project      */
+/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
+/*  this file you indicate that you have read the license and              */
+/*  understand and accept it fully.                                        */
+/*                                                                         */
+/***************************************************************************/
 
 
 #ifndef FTCID_H_
@@ -32,25 +32,25 @@
 FT_BEGIN_HEADER
 
 
-  /**************************************************************************
-   *
-   * @section:
-   *   cid_fonts
-   *
-   * @title:
-   *   CID Fonts
-   *
-   * @abstract:
-   *   CID-keyed font-specific API.
-   *
-   * @description:
-   *   This section contains the declaration of CID-keyed font-specific
-   *   functions.
-   *
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Section>                                                             */
+  /*    cid_fonts                                                          */
+  /*                                                                       */
+  /* <Title>                                                               */
+  /*    CID Fonts                                                          */
+  /*                                                                       */
+  /* <Abstract>                                                            */
+  /*    CID-keyed font specific API.                                       */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*    This section contains the declaration of CID-keyed font specific   */
+  /*    functions.                                                         */
+  /*                                                                       */
+  /*************************************************************************/
 
 
-  /**************************************************************************
+  /**********************************************************************
    *
    * @function:
    *    FT_Get_CID_Registry_Ordering_Supplement
@@ -61,17 +61,17 @@ FT_BEGIN_HEADER
    *
    * @input:
    *    face ::
-   *      A handle to the input face.
+   *       A handle to the input face.
    *
    * @output:
    *    registry ::
-   *      The registry, as a C~string, owned by the face.
+   *       The registry, as a C~string, owned by the face.
    *
    *    ordering ::
-   *      The ordering, as a C~string, owned by the face.
+   *       The ordering, as a C~string, owned by the face.
    *
    *    supplement ::
-   *      The supplement.
+   *       The supplement.
    *
    * @return:
    *    FreeType error code.  0~means success.
@@ -90,30 +90,30 @@ FT_BEGIN_HEADER
                                            FT_Int       *supplement );
 
 
-  /**************************************************************************
+  /**********************************************************************
    *
    * @function:
    *    FT_Get_CID_Is_Internally_CID_Keyed
    *
    * @description:
-   *    Retrieve the type of the input face, CID keyed or not.  In contrast
-   *    to the @FT_IS_CID_KEYED macro this function returns successfully also
-   *    for CID-keyed fonts in an SFNT wrapper.
+   *    Retrieve the type of the input face, CID keyed or not.  In
+   *    contrast to the @FT_IS_CID_KEYED macro this function returns
+   *    successfully also for CID-keyed fonts in an SFNT wrapper.
    *
    * @input:
    *    face ::
-   *      A handle to the input face.
+   *       A handle to the input face.
    *
    * @output:
    *    is_cid ::
-   *      The type of the face as an @FT_Bool.
+   *       The type of the face as an @FT_Bool.
    *
    * @return:
    *    FreeType error code.  0~means success.
    *
    * @note:
-   *    This function only works with CID faces and OpenType fonts, returning
-   *    an error otherwise.
+   *    This function only works with CID faces and OpenType fonts,
+   *    returning an error otherwise.
    *
    * @since:
    *    2.3.9
@@ -123,7 +123,7 @@ FT_BEGIN_HEADER
                                       FT_Bool  *is_cid );
 
 
-  /**************************************************************************
+  /**********************************************************************
    *
    * @function:
    *    FT_Get_CID_From_Glyph_Index
@@ -133,21 +133,21 @@ FT_BEGIN_HEADER
    *
    * @input:
    *    face ::
-   *      A handle to the input face.
+   *       A handle to the input face.
    *
    *    glyph_index ::
-   *      The input glyph index.
+   *       The input glyph index.
    *
    * @output:
    *    cid ::
-   *      The CID as an @FT_UInt.
+   *       The CID as an @FT_UInt.
    *
    * @return:
    *    FreeType error code.  0~means success.
    *
    * @note:
-   *    This function only works with CID faces and OpenType fonts, returning
-   *    an error otherwise.
+   *    This function only works with CID faces and OpenType fonts,
+   *    returning an error otherwise.
    *
    * @since:
    *    2.3.9

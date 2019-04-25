@@ -1,19 +1,19 @@
-/****************************************************************************
- *
- * ftsystem.h
- *
- *   FreeType low-level system interface definition (specification).
- *
- * Copyright (C) 1996-2019 by
- * David Turner, Robert Wilhelm, and Werner Lemberg.
- *
- * This file is part of the FreeType project, and may only be used,
- * modified, and distributed under the terms of the FreeType project
- * license, LICENSE.TXT.  By continuing to use, modify, or distribute
- * this file you indicate that you have read the license and
- * understand and accept it fully.
- *
- */
+/***************************************************************************/
+/*                                                                         */
+/*  ftsystem.h                                                             */
+/*                                                                         */
+/*    FreeType low-level system interface definition (specification).      */
+/*                                                                         */
+/*  Copyright 1996-2018 by                                                 */
+/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
+/*                                                                         */
+/*  This file is part of the FreeType project, and may only be used,       */
+/*  modified, and distributed under the terms of the FreeType project      */
+/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
+/*  this file you indicate that you have read the license and              */
+/*  understand and accept it fully.                                        */
+/*                                                                         */
+/***************************************************************************/
 
 
 #ifndef FTSYSTEM_H_
@@ -26,33 +26,34 @@
 FT_BEGIN_HEADER
 
 
-  /**************************************************************************
-   *
-   * @section:
-   *  system_interface
-   *
-   * @title:
-   *  System Interface
-   *
-   * @abstract:
-   *  How FreeType manages memory and i/o.
-   *
-   * @description:
-   *  This section contains various definitions related to memory management
-   *  and i/o access.  You need to understand this information if you want to
-   *  use a custom memory manager or you own i/o streams.
-   *
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /* <Section>                                                             */
+  /*   system_interface                                                    */
+  /*                                                                       */
+  /* <Title>                                                               */
+  /*   System Interface                                                    */
+  /*                                                                       */
+  /* <Abstract>                                                            */
+  /*   How FreeType manages memory and i/o.                                */
+  /*                                                                       */
+  /* <Description>                                                         */
+  /*   This section contains various definitions related to memory         */
+  /*   management and i/o access.  You need to understand this             */
+  /*   information if you want to use a custom memory manager or you own   */
+  /*   i/o streams.                                                        */
+  /*                                                                       */
+  /*************************************************************************/
 
 
-  /**************************************************************************
-   *
-   *                 M E M O R Y   M A N A G E M E N T
-   *
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /*                  M E M O R Y   M A N A G E M E N T                    */
+  /*                                                                       */
+  /*************************************************************************/
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @type:
    *   FT_Memory
@@ -65,13 +66,13 @@ FT_BEGIN_HEADER
   typedef struct FT_MemoryRec_*  FT_Memory;
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @functype:
    *   FT_Alloc_Func
    *
    * @description:
-   *   A function used to allocate `size` bytes from `memory`.
+   *   A function used to allocate `size' bytes from `memory'.
    *
    * @input:
    *   memory ::
@@ -89,7 +90,7 @@ FT_BEGIN_HEADER
                     long       size );
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @functype:
    *   FT_Free_Func
@@ -110,7 +111,7 @@ FT_BEGIN_HEADER
                    void*      block );
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @functype:
    *   FT_Realloc_Func
@@ -145,7 +146,7 @@ FT_BEGIN_HEADER
                       void*      block );
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @struct:
    *   FT_MemoryRec
@@ -176,14 +177,14 @@ FT_BEGIN_HEADER
   };
 
 
-  /**************************************************************************
-   *
-   *                      I / O   M A N A G E M E N T
-   *
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /*                       I / O   M A N A G E M E N T                     */
+  /*                                                                       */
+  /*************************************************************************/
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @type:
    *   FT_Stream
@@ -192,21 +193,21 @@ FT_BEGIN_HEADER
    *   A handle to an input stream.
    *
    * @also:
-   *   See @FT_StreamRec for the publicly accessible fields of a given stream
-   *   object.
+   *   See @FT_StreamRec for the publicly accessible fields of a given
+   *   stream object.
    *
    */
   typedef struct FT_StreamRec_*  FT_Stream;
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @struct:
    *   FT_StreamDesc
    *
    * @description:
    *   A union type used to store either a long or a pointer.  This is used
-   *   to store a file descriptor or a `FILE*` in an input stream.
+   *   to store a file descriptor or a `FILE*' in an input stream.
    *
    */
   typedef union  FT_StreamDesc_
@@ -217,7 +218,7 @@ FT_BEGIN_HEADER
   } FT_StreamDesc;
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @functype:
    *   FT_Stream_IoFunc
@@ -242,8 +243,9 @@ FT_BEGIN_HEADER
    *   The number of bytes effectively read by the stream.
    *
    * @note:
-   *   This function might be called to perform a seek or skip operation with
-   *   a `count` of~0.  A non-zero return value then indicates an error.
+   *   This function might be called to perform a seek or skip operation
+   *   with a `count' of~0.  A non-zero return value then indicates an
+   *   error.
    *
    */
   typedef unsigned long
@@ -253,7 +255,7 @@ FT_BEGIN_HEADER
                        unsigned long   count );
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @functype:
    *   FT_Stream_CloseFunc
@@ -263,14 +265,14 @@ FT_BEGIN_HEADER
    *
    * @input:
    *  stream ::
-   *    A handle to the target stream.
+   *     A handle to the target stream.
    *
    */
   typedef void
   (*FT_Stream_CloseFunc)( FT_Stream  stream );
 
 
-  /**************************************************************************
+  /*************************************************************************
    *
    * @struct:
    *   FT_StreamRec
@@ -281,7 +283,7 @@ FT_BEGIN_HEADER
    * @input:
    *   base ::
    *     For memory-based streams, this is the address of the first stream
-   *     byte in memory.  This field should always be set to `NULL` for
+   *     byte in memory.  This field should always be set to NULL for
    *     disk-based streams.
    *
    *   size ::
@@ -297,7 +299,7 @@ FT_BEGIN_HEADER
    *
    *   descriptor ::
    *     This field is a union that can hold an integer or a pointer.  It is
-   *     used by stream implementations to store file descriptors or `FILE*`
+   *     used by stream implementations to store file descriptors or `FILE*'
    *     pointers.
    *
    *   pathname ::
@@ -312,13 +314,13 @@ FT_BEGIN_HEADER
    *     The stream's close function.
    *
    *   memory ::
-   *     The memory manager to use to preload frames.  This is set internally
-   *     by FreeType and shouldn't be touched by stream implementations.
+   *     The memory manager to use to preload frames.  This is set
+   *     internally by FreeType and shouldn't be touched by stream
+   *     implementations.
    *
    *   cursor ::
    *     This field is set and used internally by FreeType when parsing
-   *     frames.  In particular, the `FT_GET_XXX` macros use this instead of
-   *     the `pos` field.
+   *     frames.
    *
    *   limit ::
    *     This field is set and used internally by FreeType when parsing

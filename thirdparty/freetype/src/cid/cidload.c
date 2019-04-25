@@ -1,19 +1,19 @@
-/****************************************************************************
- *
- * cidload.c
- *
- *   CID-keyed Type1 font loader (body).
- *
- * Copyright (C) 1996-2019 by
- * David Turner, Robert Wilhelm, and Werner Lemberg.
- *
- * This file is part of the FreeType project, and may only be used,
- * modified, and distributed under the terms of the FreeType project
- * license, LICENSE.TXT.  By continuing to use, modify, or distribute
- * this file you indicate that you have read the license and
- * understand and accept it fully.
- *
- */
+/***************************************************************************/
+/*                                                                         */
+/*  cidload.c                                                              */
+/*                                                                         */
+/*    CID-keyed Type1 font loader (body).                                  */
+/*                                                                         */
+/*  Copyright 1996-2018 by                                                 */
+/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
+/*                                                                         */
+/*  This file is part of the FreeType project, and may only be used,       */
+/*  modified, and distributed under the terms of the FreeType project      */
+/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
+/*  this file you indicate that you have read the license and              */
+/*  understand and accept it fully.                                        */
+/*                                                                         */
+/***************************************************************************/
 
 
 #include <ft2build.h>
@@ -21,21 +21,20 @@
 #include FT_CONFIG_CONFIG_H
 #include FT_MULTIPLE_MASTERS_H
 #include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
 
 #include "cidload.h"
 
 #include "ciderrs.h"
 
 
-  /**************************************************************************
-   *
-   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
-   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
-   * messages during execution.
-   */
+  /*************************************************************************/
+  /*                                                                       */
+  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
+  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
+  /* messages during execution.                                            */
+  /*                                                                       */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  cidload
+#define FT_COMPONENT  trace_cidload
 
 
   /* read a single offset */
@@ -82,8 +81,6 @@
     /* if the keyword has a dedicated callback, call it */
     if ( keyword->type == T1_FIELD_TYPE_CALLBACK )
     {
-      FT_TRACE4(( "  %s", keyword->ident ));
-
       keyword->reader( (FT_Face)face, parser );
       error = parser->root.error;
       goto Exit;
@@ -134,8 +131,6 @@
       }
     }
 
-    FT_TRACE4(( "  %s", keyword->ident ));
-
     dummy_object = object;
 
     /* now, load the keyword data in the object's field(s) */
@@ -146,15 +141,12 @@
     else
       error = cid_parser_load_field( &loader->parser,
                                      keyword, &dummy_object );
-
-    FT_TRACE4(( "\n" ));
-
   Exit:
     return error;
   }
 
 
-  FT_CALLBACK_DEF( void )
+  FT_CALLBACK_DEF( FT_Error )
   cid_parse_font_matrix( CID_Face     face,
                          CID_Parser*  parser )
   {
@@ -179,25 +171,14 @@
       result = cid_parser_to_fixed_array( parser, 6, temp, 3 );
 
       if ( result < 6 )
-      {
-        FT_ERROR(( "cid_parse_font_matrix: not enough matrix elements\n" ));
-        goto Exit;
-      }
-
-      FT_TRACE4(( " [%f %f %f %f %f %f]\n",
-                  (double)temp[0] / 65536 / 1000,
-                  (double)temp[1] / 65536 / 1000,
-                  (double)temp[2] / 65536 / 1000,
-                  (double)temp[3] / 65536 / 1000,
-                  (double)temp[4] / 65536 / 1000,
-                  (double)temp[5] / 65536 / 1000 ));
+        return FT_THROW( Invalid_File_Format );
 
       temp_scale = FT_ABS( temp[3] );
 
       if ( temp_scale == 0 )
       {
         FT_ERROR(( "cid_parse_font_matrix: invalid font matrix\n" ));
-        goto Exit;
+        return FT_THROW( Invalid_File_Format );
       }
 
       /* atypical case */
@@ -219,24 +200,16 @@
       matrix->xy = temp[2];
       matrix->yy = temp[3];
 
-      if ( !FT_Matrix_Check( matrix ) )
-      {
-        FT_ERROR(( "t1_parse_font_matrix: invalid font matrix\n" ));
-        parser->root.error = FT_THROW( Invalid_File_Format );
-        goto Exit;
-      }
-
       /* note that the font offsets are expressed in integer font units */
       offset->x  = temp[4] >> 16;
       offset->y  = temp[5] >> 16;
     }
 
-  Exit:
-    return;
+    return FT_Err_Ok;
   }
 
 
-  FT_CALLBACK_DEF( void )
+  FT_CALLBACK_DEF( FT_Error )
   parse_fd_array( CID_Face     face,
                   CID_Parser*  parser )
   {
@@ -251,10 +224,9 @@
     if ( num_dicts < 0 )
     {
       FT_ERROR(( "parse_fd_array: invalid number of dictionaries\n" ));
+      error = FT_THROW( Invalid_File_Format );
       goto Exit;
     }
-
-    FT_TRACE4(( " %d\n", num_dicts ));
 
     /*
      * A single entry in the FDArray must (at least) contain the following
@@ -291,31 +263,27 @@
 
       cid->num_dicts = num_dicts;
 
-      /* set some default values (the same as for Type 1 fonts) */
+      /* don't forget to set a few defaults */
       for ( n = 0; n < cid->num_dicts; n++ )
       {
         CID_FaceDict  dict = cid->font_dicts + n;
 
 
-        dict->private_dict.blue_shift       = 7;
-        dict->private_dict.blue_fuzz        = 1;
-        dict->private_dict.lenIV            = 4;
-        dict->private_dict.expansion_factor = (FT_Fixed)( 0.06 * 0x10000L );
-        dict->private_dict.blue_scale       = (FT_Fixed)(
-                                                0.039625 * 0x10000L * 1000 );
+        /* default value for lenIV */
+        dict->private_dict.lenIV = 4;
       }
     }
 
   Exit:
-    return;
+    return error;
   }
 
 
-  /* By mistake, `expansion_factor' appears both in PS_PrivateRec */
+  /* by mistake, `expansion_factor' appears both in PS_PrivateRec */
   /* and CID_FaceDictRec (both are public header files and can't  */
-  /* changed).  We simply copy the value.                         */
+  /* changed); we simply copy the value                           */
 
-  FT_CALLBACK_DEF( void )
+  FT_CALLBACK_DEF( FT_Error )
   parse_expansion_factor( CID_Face     face,
                           CID_Parser*  parser )
   {
@@ -328,43 +296,9 @@
 
       dict->expansion_factor              = cid_parser_to_fixed( parser, 0 );
       dict->private_dict.expansion_factor = dict->expansion_factor;
-
-      FT_TRACE4(( "%d\n", dict->expansion_factor ));
     }
 
-    return;
-  }
-
-
-  /* By mistake, `CID_FaceDictRec' doesn't contain a field for the */
-  /* `FontName' keyword.  FreeType doesn't need it, but it is nice */
-  /* to catch it for producing better trace output.                */
-
-  FT_CALLBACK_DEF( void )
-  parse_font_name( CID_Face     face,
-                   CID_Parser*  parser )
-  {
-#ifdef FT_DEBUG_LEVEL_TRACE
-    if ( parser->num_dict >= 0 && parser->num_dict < face->cid.num_dicts )
-    {
-      T1_TokenRec  token;
-      FT_UInt      len;
-
-
-      cid_parser_to_token( parser, &token );
-
-      len = (FT_UInt)( token.limit - token.start );
-      if ( len )
-        FT_TRACE4(( " %.*s\n", len, token.start ));
-      else
-        FT_TRACE4(( " <no value>\n" ));
-    }
-#else
-    FT_UNUSED( face );
-    FT_UNUSED( parser );
-#endif
-
-    return;
+    return FT_Err_Ok;
   }
 
 
@@ -377,7 +311,6 @@
     T1_FIELD_CALLBACK( "FDArray",         parse_fd_array, 0 )
     T1_FIELD_CALLBACK( "FontMatrix",      cid_parse_font_matrix, 0 )
     T1_FIELD_CALLBACK( "ExpansionFactor", parse_expansion_factor, 0 )
-    T1_FIELD_CALLBACK( "FontName",        parse_font_name, 0 )
 
     { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0, 0 }
   };
@@ -423,16 +356,7 @@
             /* if /FDArray was found, then cid->num_dicts is > 0, and */
             /* we can start increasing parser->num_dict               */
             if ( face->cid.num_dicts > 0 )
-            {
               parser->num_dict++;
-
-#ifdef FT_DEBUG_LEVEL_TRACE
-              FT_TRACE4(( " FontDict %d", parser->num_dict ));
-              if ( parser->num_dict > face->cid.num_dicts )
-                FT_TRACE4(( " (ignored)" ));
-              FT_TRACE4(( "\n" ));
-#endif
-            }
           }
         }
 
@@ -833,7 +757,7 @@
 
     if ( cid->fd_bytes < 0 || cid->gd_bytes < 1 )
     {
-      FT_ERROR(( "cid_face_open:"
+      FT_ERROR(( "cid_parse_dict:"
                  " Invalid `FDBytes' or `GDBytes' value\n" ));
       error = FT_THROW( Invalid_File_Format );
       goto Exit;
@@ -842,7 +766,7 @@
     /* allow at most 32bit offsets */
     if ( cid->fd_bytes > 4 || cid->gd_bytes > 4 )
     {
-      FT_ERROR(( "cid_face_open:"
+      FT_ERROR(( "cid_parse_dict:"
                  " Values of `FDBytes' or `GDBytes' larger than 4\n"
                  "               "
                  " are not supported\n" ));
@@ -858,36 +782,17 @@
       CID_FaceDict  dict = cid->font_dicts + n;
 
 
-      /* the upper limits are ad-hoc values */
-      if ( dict->private_dict.blue_shift > 1000 ||
-           dict->private_dict.blue_shift < 0    )
-      {
-        FT_TRACE2(( "cid_face_open:"
-                    " setting unlikely BlueShift value %d to default (7)\n",
-                    dict->private_dict.blue_shift ));
-        dict->private_dict.blue_shift = 7;
-      }
-
-      if ( dict->private_dict.blue_fuzz > 1000 ||
-           dict->private_dict.blue_fuzz < 0    )
-      {
-        FT_TRACE2(( "cid_face_open:"
-                    " setting unlikely BlueFuzz value %d to default (1)\n",
-                    dict->private_dict.blue_fuzz ));
-        dict->private_dict.blue_fuzz = 1;
-      }
-
       if ( dict->sd_bytes < 0                        ||
            ( dict->num_subrs && dict->sd_bytes < 1 ) )
       {
-        FT_ERROR(( "cid_face_open: Invalid `SDBytes' value\n" ));
+        FT_ERROR(( "cid_parse_dict: Invalid `SDBytes' value\n" ));
         error = FT_THROW( Invalid_File_Format );
         goto Exit;
       }
 
       if ( dict->sd_bytes > 4 )
       {
-        FT_ERROR(( "cid_face_open:"
+        FT_ERROR(( "cid_parse_dict:"
                    " Values of `SDBytes' larger than 4"
                    " are not supported\n" ));
         error = FT_THROW( Invalid_File_Format );
@@ -896,7 +801,7 @@
 
       if ( dict->subrmap_offset > binary_length )
       {
-        FT_ERROR(( "cid_face_open: Invalid `SubrMapOffset' value\n" ));
+        FT_ERROR(( "cid_parse_dict: Invalid `SubrMapOffset' value\n" ));
         error = FT_THROW( Invalid_File_Format );
         goto Exit;
       }
@@ -907,7 +812,7 @@
              dict->num_subrs > ( binary_length - dict->subrmap_offset ) /
                                  (FT_UInt)dict->sd_bytes                 ) )
       {
-        FT_ERROR(( "cid_face_open: Invalid `SubrCount' value\n" ));
+        FT_ERROR(( "cid_parse_dict: Invalid `SubrCount' value\n" ));
         error = FT_THROW( Invalid_File_Format );
         goto Exit;
       }
@@ -915,7 +820,7 @@
 
     if ( cid->cidmap_offset > binary_length )
     {
-      FT_ERROR(( "cid_face_open: Invalid `CIDMapOffset' value\n" ));
+      FT_ERROR(( "cid_parse_dict: Invalid `CIDMapOffset' value\n" ));
       error = FT_THROW( Invalid_File_Format );
       goto Exit;
     }
@@ -924,7 +829,7 @@
          cid->cid_count >
            ( binary_length - cid->cidmap_offset ) / entry_len )
     {
-      FT_ERROR(( "cid_face_open: Invalid `CIDCount' value\n" ));
+      FT_ERROR(( "cid_parse_dict: Invalid `CIDCount' value\n" ));
       error = FT_THROW( Invalid_File_Format );
       goto Exit;
     }
