@@ -459,7 +459,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/cursor/right_click_moves_caret", true);
 
 	// Completion
-	_initial_set("text_editor/completion/idle_parse_delay", 2);
+	_initial_set("text_editor/completion/idle_parse_delay", 2.0);
+	hints["text_editor/completion/idle_parse_delay"] = PropertyInfo(Variant::REAL, "text_editor/completion/idle_parse_delay", PROPERTY_HINT_RANGE, "0.1, 10, 0.01");
 	_initial_set("text_editor/completion/auto_brace_complete", false);
 	_initial_set("text_editor/completion/put_callhint_tooltip_below_current_line", true);
 	_initial_set("text_editor/completion/callhint_tooltip_offset", Vector2());
