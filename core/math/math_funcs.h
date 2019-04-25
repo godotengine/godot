@@ -272,13 +272,20 @@ public:
 		return diff < epsilon;
 	}
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t epsilon = CMP_EPSILON) {
-		// TODO: Comparing floats for approximate-equality is non-trivial.
-		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
-		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
-		// See https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/ for details.
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+		real_t tolerance = CMP_EPSILON * abs(a);
+		if (tolerance < CMP_EPSILON) {
+			tolerance = CMP_EPSILON;
+		}
+		return abs(a - b) < tolerance;
+	}
 
-		return abs(a - b) < epsilon;
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_zero_approx(real_t s) {
+		return abs(s) < CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {
