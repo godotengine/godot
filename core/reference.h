@@ -375,7 +375,8 @@ struct PtrToArg<const RefPtr &> {
 
 template <class T>
 struct GetTypeInfo<Ref<T> > {
-	enum { VARIANT_TYPE = Variant::OBJECT };
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
@@ -384,7 +385,8 @@ struct GetTypeInfo<Ref<T> > {
 
 template <class T>
 struct GetTypeInfo<const Ref<T> &> {
-	enum { VARIANT_TYPE = Variant::OBJECT };
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());

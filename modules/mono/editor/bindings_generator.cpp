@@ -2125,6 +2125,58 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 	return &placeholder_types.insert(placeholder.cname, placeholder)->get();
 }
 
+StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
+
+	switch (p_meta) {
+		case GodotTypeInfo::METADATA_INT_IS_INT8:
+			return "sbyte";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_INT16:
+			return "short";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_INT32:
+			return "int";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_INT64:
+			return "long";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT8:
+			return "byte";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT16:
+			return "ushort";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT32:
+			return "uint";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT64:
+			return "ulong";
+			break;
+		default:
+			// Assume INT32
+			return "int";
+	}
+}
+
+StringName BindingsGenerator::_get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
+
+	switch (p_meta) {
+		case GodotTypeInfo::METADATA_REAL_IS_FLOAT:
+			return "float";
+			break;
+		case GodotTypeInfo::METADATA_REAL_IS_DOUBLE:
+			return "double";
+			break;
+		default:
+			// Assume real_t (float or double depending of REAL_T_IS_DOUBLE)
+#ifdef REAL_T_IS_DOUBLE
+			return "double";
+#else
+			return "float";
+#endif
+	}
+}
+
 void BindingsGenerator::_populate_object_type_interfaces() {
 
 	obj_types.clear();
@@ -2297,7 +2349,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			} else if (return_info.type == Variant::NIL) {
 				imethod.return_type.cname = name_cache.type_void;
 			} else {
-				imethod.return_type.cname = Variant::get_type_name(return_info.type);
+				if (return_info.type == Variant::INT) {
+					imethod.return_type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
+				} else if (return_info.type == Variant::REAL) {
+					imethod.return_type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
+				} else {
+					imethod.return_type.cname = Variant::get_type_name(return_info.type);
+				}
 			}
 
 			for (int i = 0; i < argc; i++) {
@@ -2316,7 +2374,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = Variant::get_type_name(arginfo.type);
+					if (arginfo.type == Variant::INT) {
+						iarg.type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
+					} else if (arginfo.type == Variant::REAL) {
+						iarg.type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
+					} else {
+						iarg.type.cname = Variant::get_type_name(arginfo.type);
+					}
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
@@ -2582,7 +2646,6 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
-
 	{
 		// MonoBoolean <---> bool
 		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
@@ -2596,45 +2659,73 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.im_type_out = itype.name;
 	builtin_types.insert(itype.cname, itype);
 
-	// int
-	// C interface is the same as that of enums. Remember to apply any
-	// changes done here to TypeInterface::postsetup_enum_type as well
-	itype = TypeInterface::create_value_type(String("int"));
-	itype.c_arg_in = "&%s_in";
+	// Integer types
 	{
-		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
-		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-		itype.c_out = "\treturn (%0)%1;\n";
-		itype.c_type = "int64_t";
+		// C interface for 'uint32_t' is the same as that of enums. Remember to apply
+		// any of the changes done here to 'TypeInterface::postsetup_enum_type' as well.
+#define INSERT_INT_TYPE(m_name, m_c_type_in_out, m_c_type)        \
+	{                                                             \
+		itype = TypeInterface::create_value_type(String(m_name)); \
+		{                                                         \
+			itype.c_in = "\t%0 %1_in = (%0)%1;\n";                \
+			itype.c_out = "\treturn (%0)%1;\n";                   \
+			itype.c_type = #m_c_type;                             \
+			itype.c_arg_in = "&%s_in";                            \
+		}                                                         \
+		itype.c_type_in = #m_c_type_in_out;                       \
+		itype.c_type_out = itype.c_type_in;                       \
+		itype.im_type_in = itype.name;                            \
+		itype.im_type_out = itype.name;                           \
+		builtin_types.insert(itype.cname, itype);                 \
 	}
-	itype.c_type_in = "int32_t";
-	itype.c_type_out = itype.c_type_in;
-	itype.im_type_in = itype.name;
-	itype.im_type_out = itype.name;
-	builtin_types.insert(itype.cname, itype);
 
-	// real_t
-	itype = TypeInterface();
-	itype.name = "float"; // The name is always "float" in Variant, even with REAL_T_IS_DOUBLE.
-	itype.cname = itype.name;
-#ifdef REAL_T_IS_DOUBLE
-	itype.proxy_name = "double";
-#else
-	itype.proxy_name = "float";
-#endif
-	{
-		// The expected type for parameters and return value in ptrcall is 'double'.
-		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-		itype.c_out = "\treturn (%0)%1;\n";
-		itype.c_type = "double";
-		itype.c_type_in = "real_t";
-		itype.c_type_out = "real_t";
-		itype.c_arg_in = "&%s_in";
+		// The expected type for all integers in ptrcall is 'int64_t', so that's what we use for 'c_type'
+
+		INSERT_INT_TYPE("sbyte", int8_t, int64_t);
+		INSERT_INT_TYPE("short", int16_t, int64_t);
+		INSERT_INT_TYPE("int", int32_t, int64_t);
+		INSERT_INT_TYPE("long", int64_t, int64_t);
+		INSERT_INT_TYPE("byte", uint8_t, int64_t);
+		INSERT_INT_TYPE("ushort", uint16_t, int64_t);
+		INSERT_INT_TYPE("uint", uint32_t, int64_t);
+		INSERT_INT_TYPE("ulong", uint64_t, int64_t);
 	}
-	itype.cs_type = itype.proxy_name;
-	itype.im_type_in = itype.proxy_name;
-	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.cname, itype);
+
+	// Floating point types
+	{
+		// float
+		itype = TypeInterface();
+		itype.name = "float";
+		itype.cname = itype.name;
+		itype.proxy_name = "float";
+		{
+			// The expected type for 'float' in ptrcall is 'double'
+			itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+			itype.c_out = "\treturn (%0)%1;\n";
+			itype.c_type = "double";
+			itype.c_type_in = "float";
+			itype.c_type_out = "float";
+			itype.c_arg_in = "&%s_in";
+		}
+		itype.cs_type = itype.proxy_name;
+		itype.im_type_in = itype.proxy_name;
+		itype.im_type_out = itype.proxy_name;
+		builtin_types.insert(itype.cname, itype);
+
+		// double
+		itype = TypeInterface();
+		itype.name = "double";
+		itype.cname = itype.name;
+		itype.proxy_name = "double";
+		itype.c_type = "double";
+		itype.c_type_in = "double";
+		itype.c_type_out = "double";
+		itype.c_arg_in = "&%s";
+		itype.cs_type = itype.proxy_name;
+		itype.im_type_in = itype.proxy_name;
+		itype.im_type_out = itype.proxy_name;
+		builtin_types.insert(itype.cname, itype);
+	}
 
 	// String
 	itype = TypeInterface();
