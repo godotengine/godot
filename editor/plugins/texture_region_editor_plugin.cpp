@@ -135,8 +135,7 @@ void TextureRegionEditor::_region_draw() {
 
 	Ref<Texture> select_handle = get_icon("EditorHandle", "EditorIcons");
 
-	Rect2 scroll_rect(Point2(), mtx.basis_xform(base_tex->get_size()));
-	scroll_rect.expand_to(mtx.basis_xform(edit_draw->get_size()));
+	Rect2 scroll_rect;
 
 	Vector2 endpoints[4] = {
 		mtx.basis_xform(rect.position),
@@ -167,7 +166,9 @@ void TextureRegionEditor::_region_draw() {
 		scroll_rect.expand_to(endpoints[i]);
 	}
 
-	scroll_rect = scroll_rect.grow(200);
+	scroll_rect.position -= edit_draw->get_size();
+	scroll_rect.size += edit_draw->get_size() * 2.0;
+
 	updating_scroll = true;
 	hscroll->set_min(scroll_rect.position.x);
 	hscroll->set_max(scroll_rect.position.x + scroll_rect.size.x);
