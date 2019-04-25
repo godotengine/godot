@@ -101,6 +101,7 @@ CPUParticlesEditor::CPUParticlesEditor() {
 	particles_editor_hb = memnew(HBoxContainer);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
 	particles_editor_hb->add_child(options);
 	particles_editor_hb->hide();
 
