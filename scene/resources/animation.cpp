@@ -1477,7 +1477,7 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 		middle = (low + high) / 2;
 
-		if (Math::abs(p_time - keys[middle].time) < CMP_EPSILON) { //match
+		if (Math::is_equal_approx(p_time, keys[middle].time)) { //match
 			return middle;
 		} else if (p_time < keys[middle].time)
 			high = middle - 1; //search low end of array
