@@ -158,7 +158,7 @@ Error generate_scripts_metadata(const String &p_project_path, const String &p_ou
 	PoolStringArray project_files = GDMonoMarshal::mono_array_to_PoolStringArray(ret);
 	PoolStringArray::Read r = project_files.read();
 
-	Dictionary old_dict = CSharpLanguage::get_singleton()->get_scripts_metadata();
+	Dictionary old_dict = CSharpLanguage::get_singleton()->get_scripts_metadata_or_nothing();
 	Dictionary new_dict;
 
 	for (int i = 0; i < project_files.size(); i++) {
