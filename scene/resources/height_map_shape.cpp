@@ -44,16 +44,6 @@ Vector<Vector3> HeightMapShape::_gen_debug_mesh_lines() {
 
 		PoolRealArray::Read r = map_data.read();
 
-		// Bullet centers our heightmap, this is really counter intuitive but for now we'll adjust our debug shape accordingly:
-		// https://github.com/bulletphysics/bullet3/blob/master/src/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h#L33
-		float min = r[0];
-		float max = r[0];
-		for (int i = 0; i < map_data.size(); i++) {
-			if (min > r[i]) min = r[i];
-			if (max < r[i]) max = r[i];
-		};
-		float center = min + ((max - min) * 0.5);
-
 		// reserve some memory for our points..
 		points.resize(((map_width - 1) * map_depth * 2) + (map_width * (map_depth - 1) * 2));
 
@@ -64,16 +54,16 @@ Vector<Vector3> HeightMapShape::_gen_debug_mesh_lines() {
 			Vector3 height(start.x, 0.0, start.y);
 
 			for (int w = 0; w < map_width; w++) {
-				height.y = r[r_offset++] - center;
+				height.y = r[r_offset++];
 
 				if (w != map_width - 1) {
 					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset] - center, height.z);
+					points.write[w_offset++] = Vector3(height.x + 1.0, r[r_offset], height.z);
 				}
 
 				if (d != map_depth - 1) {
 					points.write[w_offset++] = height;
-					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1] - center, height.z + 1.0);
+					points.write[w_offset++] = Vector3(height.x, r[r_offset + map_width - 1], height.z + 1.0);
 				}
 
 				height.x += 1.0;
