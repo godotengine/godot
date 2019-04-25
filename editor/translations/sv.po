@@ -432,13 +432,21 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Snap (s): "
+msgid "Snap:"
 msgstr "Steg (s):"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Animation step value."
 msgstr "Animation"
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -4159,6 +4167,12 @@ msgid "Delete Node"
 msgstr "Ta bort Nod(er)"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete Node(s)"
+msgstr "Ta bort Nod(er)"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Filter On/Off"
 msgstr "Växla distraktionsfritt läge."
@@ -5165,8 +5179,33 @@ msgid "Layout"
 msgstr "Layout"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Insert keys."
+msgid "Insert keys (based on mask)."
+msgstr "Anim Infoga Nyckel"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
 msgstr "Anim Infoga Nyckel"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5240,6 +5279,53 @@ msgstr "Redigera Polygon (ta bort punkt)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Particles"
+msgstr "Partiklar"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
 msgstr ""
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
@@ -5603,22 +5689,6 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Convert to CPUParticles"
@@ -5626,29 +5696,7 @@ msgstr "Konvertera till Versaler"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
-msgid "Particles"
-msgstr "Partiklar"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6185,7 +6233,7 @@ msgid "Save Theme As..."
 msgstr "Spara Tema Som..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+msgid "%s Class Reference"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -7077,6 +7125,26 @@ msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Create Mesh2D"
+msgstr "Skapa Ny"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Skapa Prenumeration"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "Skapa Prenumeration"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "Skapa Mapp"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Sprite is empty!"
 msgstr "Sökvägen är tom"
 
@@ -7089,18 +7157,39 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr ""
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Convert to 2D Mesh"
+msgid "Convert to Mesh2D"
 msgstr "Konvertera till %s"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Create 2D Mesh"
-msgstr "Skapa Ny"
+msgid "Convert to Polygon2D"
+msgstr "Konvertera till %s"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Skapa Prenumeration"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Create LightOccluder2D Sibling"
+msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7723,6 +7812,11 @@ msgstr ""
 #, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Duplicera Nod(er)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "Ta bort Nod(er)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8963,11 +9057,6 @@ msgstr ""
 #, fuzzy
 msgid "Open documentation"
 msgstr "Öppna Senaste"
-
-#: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Delete Node(s)"
-msgstr "Ta bort Nod(er)"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10841,9 +10930,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "Instansiera valda scen(er) som barn till vald Node."
-
-#~ msgid "FPS"
-#~ msgstr "FPS"
 
 #, fuzzy
 #~ msgid "Warnings:"

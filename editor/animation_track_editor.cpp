@@ -5021,7 +5021,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(ToolButton);
-	snap->set_text(TTR("Snap: "));
+	snap->set_text(TTR("Snap:") + " ");
 	bottom_hb->add_child(snap);
 	snap->set_disabled(true);
 	snap->set_toggle_mode(true);

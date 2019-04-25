@@ -451,12 +451,20 @@ msgstr "Sporen weergeven op basis van nodes of als lijst."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Snap (s): "
-msgstr "Stap(pen):"
+msgid "Snap:"
+msgstr "Snap"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "Animatie stap waarde."
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3896,6 +3904,12 @@ msgid "Delete Node"
 msgstr "Alles Selecteren"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete Node(s)"
+msgstr "Verwijder knooppunt(en)"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Filter On/Off"
 msgstr "Aan-uitschakelaar Track."
@@ -4888,9 +4902,34 @@ msgid "Layout"
 msgstr "Indeling"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Insert keys."
-msgstr "Voer Sleutels In"
+msgid "Insert keys (based on mask)."
+msgstr "Voeg Sleutel in (Bestaande Banen)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "Anim Key Invoegen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4962,6 +5001,52 @@ msgstr "Bewerk Poly (Verwijder punt)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Stel Handgreep In"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "Error bij het laden van afbeelding:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Geen pixels met transparantie > 128 in afbeelding..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "Laad Emissie Masker"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Leeg Emissie Masker"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "Partikels"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "Telling Gegenereerde Punten:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "Emissie Masker"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "Neem uit Pixel"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "Kleuren Emissie"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #, fuzzy
@@ -5325,22 +5410,6 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Kan punt alleen plaatsen in een PartikelsMateriaal proces materiaal"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Error bij het laden van afbeelding:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "Geen pixels met transparantie > 128 in afbeelding..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "Laad Emissie Masker"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Leeg Emissie Masker"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Convert to CPUParticles"
@@ -5348,29 +5417,8 @@ msgstr "Converteer Naar Hoofdletters"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "Partikels"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "Telling Gegenereerde Punten:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Genereer Tijd (sec):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "Emissie Masker"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "Neem uit Pixel"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "Kleuren Emissie"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5917,7 +5965,8 @@ msgid "Save Theme As..."
 msgstr "Thema Opslaan Als..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " Klasse Referentie"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6775,6 +6824,26 @@ msgstr "Naamloos apparaat"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Create Mesh2D"
+msgstr "Creëer Omlijning Mesh"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Creëer Poly"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "Creëer Navigatie Polygoon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "Creëer Occluder Polygon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Sprite is empty!"
 msgstr "Mesh is leeg!"
 
@@ -6788,18 +6857,43 @@ msgstr "Ongeldige geometrie, kan niet worden vervangen door Mesh."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
+msgid "Invalid geometry, can't create polygon."
+msgstr "Ongeldige geometrie, kan niet worden vervangen door Mesh."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "Ongeldige geometrie, kan niet worden vervangen door Mesh."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create light occluder."
+msgstr "Ongeldige geometrie, kan niet worden vervangen door Mesh."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
 msgid "Sprite"
 msgstr "Sprite-Frames"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Convert to 2D Mesh"
+msgid "Convert to Mesh2D"
 msgstr "Verbind Aan Node:"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 #, fuzzy
-msgid "Create 2D Mesh"
-msgstr "Creëer Omlijning Mesh"
+msgid "Convert to Polygon2D"
+msgstr "Beweeg Polygon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Creëer Navigatie Polygoon"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "Creëer Occluder Polygon"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7416,6 +7510,11 @@ msgstr "Shader"
 #, fuzzy
 msgid "Duplicate Nodes"
 msgstr "Dupliceer Graaf Knooppunt(en)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "Alles Selecteren"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8686,11 +8785,6 @@ msgstr ""
 #, fuzzy
 msgid "Open documentation"
 msgstr "Open Godot online documentatie"
-
-#: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Delete Node(s)"
-msgstr "Verwijder knooppunt(en)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10570,13 +10664,18 @@ msgstr ""
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
 
+#, fuzzy
+#~ msgid "Snap (s): "
+#~ msgstr "Stap(pen):"
+
+#, fuzzy
+#~ msgid "Insert keys."
+#~ msgstr "Voer Sleutels In"
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr ""
 #~ "Maak een nieuwe kopie van de geselecteerde scene(s) als kind van de "
 #~ "geselecteerde knoop."
-
-#~ msgid "FPS"
-#~ msgstr "FPS"
 
 #~ msgid "Warnings:"
 #~ msgstr "Waarschuwingen:"

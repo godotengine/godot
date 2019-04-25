@@ -438,13 +438,21 @@ msgstr "按節點對軌跡分組或將其顯示為普通清單。"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
-msgid "Snap (s): "
+msgid "Snap:"
 msgstr "步驟 :"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Animation step value."
 msgstr "動畫空間。"
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr ""
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3872,6 +3880,11 @@ msgid "Delete Node"
 msgstr "刪除"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr ""
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Filter On/Off"
 msgstr "切換最愛"
@@ -4856,8 +4869,34 @@ msgid "Layout"
 msgstr "佈局"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "插入幀."
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Insert keys (based on mask)."
+msgstr "插入幀 (現有軌道)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "新增關鍵畫格"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4926,6 +4965,52 @@ msgstr "編輯多邊形 (刪除頂點)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "設置控制程序"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "加載影像時出錯："
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "影像中沒有透明度大於128的點數…"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "粒子"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr ""
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr ""
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5283,22 +5368,6 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr ""
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "加載影像時出錯："
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "影像中沒有透明度大於128的點數…"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
 msgid "Convert to CPUParticles"
@@ -5306,29 +5375,8 @@ msgstr "轉換成..."
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "粒子"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "生成時間 (秒):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr ""
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5857,7 +5905,8 @@ msgid "Save Theme As..."
 msgstr "將主題另存為..。"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " 類引用"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6697,6 +6746,26 @@ msgid "Nameless gizmo"
 msgstr "未命名的gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Mesh2D"
+msgstr "創建2D網格"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "創建3D多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "創建碰撞多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "創建遮光多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Sprite 是空的！"
 
@@ -6709,16 +6778,43 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "無效的幾何圖形，無法用網格替換。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create polygon."
+msgstr "無效的幾何圖形，無法用網格替換。"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "無效的幾何圖形，無法用網格替換。"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create light occluder."
+msgstr "無效的幾何圖形，無法用網格替換。"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr ""
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
+#, fuzzy
+msgid "Convert to Mesh2D"
 msgstr "轉換為2D網格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Create 2D Mesh"
-msgstr "創建2D網格"
+#, fuzzy
+msgid "Convert to Polygon2D"
+msgstr "轉換為2D網格"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "創建碰撞多邊形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "創建遮光多邊形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7313,6 +7409,11 @@ msgstr "將節點添加到可視化著色器"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "複製節點"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "刪除"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8508,10 +8609,6 @@ msgstr ""
 #, fuzzy
 msgid "Open documentation"
 msgstr "開啟最近存取"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr ""
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10319,6 +10416,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr ""
+
+#~ msgid "Insert keys."
+#~ msgstr "插入幀."
 
 #~ msgid "Line:"
 #~ msgstr "行:"

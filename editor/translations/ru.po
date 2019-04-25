@@ -454,12 +454,21 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Группировать треки по узлам или показывать их как простой список."
 
 #: editor/animation_track_editor.cpp
-msgid "Snap (s): "
-msgstr "Привязка (сек): "
+#, fuzzy
+msgid "Snap:"
+msgstr "Привязка"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "Значение шага анимации."
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3843,6 +3852,11 @@ msgid "Delete Node"
 msgstr "Удалить узел"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "Удалить узел(узлы)"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
 msgstr "Переключить фильтр вкл/выкл"
 
@@ -4816,8 +4830,34 @@ msgid "Layout"
 msgstr "Макет"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "Вставить ключи."
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Insert keys (based on mask)."
+msgstr "Вставить ключи (Ins)"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "Вставить ключ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4888,6 +4928,52 @@ msgstr "Редактировать полигон (удалить точку)"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "Задать обработчик"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "Ошибка при загрузке изображения:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "Никаких пикселей с прозрачностью > 128 в изображении..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "Маска выброса загружена"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "Маска выброса очищена"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "Частицы"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "Количество создаваемых точек:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "Маска излучения"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "Из пикселя"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "Цвета излучения"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5239,51 +5325,14 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "Возможно установить точку только в ParticlesMaterial материал"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Ошибка при загрузке изображения:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "Никаких пикселей с прозрачностью > 128 в изображении..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "Маска выброса загружена"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "Маска выброса очищена"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr "Преобразовать в CPUParticles"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "Частицы"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "Количество создаваемых точек:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "Время генерации (сек):"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "Маска излучения"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "Из пикселя"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "Цвета излучения"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5795,7 +5844,8 @@ msgid "Save Theme As..."
 msgstr "Сохранить тему как..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " Ссылка на Класс"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6626,6 +6676,26 @@ msgid "Nameless gizmo"
 msgstr "Безымянный гизмо"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Mesh2D"
+msgstr "Создать 2D Mesh"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "Создать Polygon3D"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "Создать полигон столкновений"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "Создан затеняющий полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Спрайт пуст!"
 
@@ -6639,16 +6709,43 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Некорректная геометрия, не может быть заменена сеткой."
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create polygon."
+msgstr "Некорректная геометрия, не может быть заменена сеткой."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "Некорректная геометрия, не может быть заменена сеткой."
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create light occluder."
+msgstr "Некорректная геометрия, не может быть заменена сеткой."
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Спрайт"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
+#, fuzzy
+msgid "Convert to Mesh2D"
 msgstr "Преобразовать в 2D Mesh"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Create 2D Mesh"
-msgstr "Создать 2D Mesh"
+#, fuzzy
+msgid "Convert to Polygon2D"
+msgstr "Передвинуть полигон"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "Создать полигон столкновений"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "Создан затеняющий полигон"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7232,6 +7329,11 @@ msgstr "Добавить Узел в Визуальный Шейдер"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "Дублировать узлы"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "Удалить узел"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8455,10 +8557,6 @@ msgstr "Очистить наследование"
 #: editor/scene_tree_dock.cpp
 msgid "Open documentation"
 msgstr "Открыть документацию"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "Удалить узел(узлы)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10334,11 +10432,14 @@ msgstr "Назначить форму."
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Изменения могут быть назначены только в функции вершины."
 
+#~ msgid "Snap (s): "
+#~ msgstr "Привязка (сек): "
+
+#~ msgid "Insert keys."
+#~ msgstr "Вставить ключи."
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "Добавить выбранную сцену(ы), в качестве потомка выбранного узла."
-
-#~ msgid "FPS"
-#~ msgstr "FPS"
 
 #~ msgid "Warnings:"
 #~ msgstr "Предупреждения:"
@@ -11878,9 +11979,6 @@ msgstr "Изменения могут быть назначены только �
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Невозможно перейти в подпапку:"
-
-#~ msgid "Insert Keys (Ins)"
-#~ msgstr "Вставить ключи (Ins)"
 
 #~ msgid "Top (Num7)"
 #~ msgstr "Вид сверху (Num 7)"

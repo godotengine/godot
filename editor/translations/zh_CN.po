@@ -450,12 +450,21 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "按节点分组或将它们显示为普通列表。"
 
 #: editor/animation_track_editor.cpp
-msgid "Snap (s): "
-msgstr "吸附： "
+#, fuzzy
+msgid "Snap:"
+msgstr "吸附"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
 msgstr "动画步进值。"
+
+#: editor/animation_track_editor.cpp
+msgid "Seconds"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "FPS"
+msgstr "帧数"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -3763,6 +3772,11 @@ msgid "Delete Node"
 msgstr "删除节点"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
+#: editor/scene_tree_dock.cpp
+msgid "Delete Node(s)"
+msgstr "删除节点"
+
+#: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Toggle Filter On/Off"
 msgstr "打开/关闭过滤器"
 
@@ -4720,8 +4734,34 @@ msgid "Layout"
 msgstr "布局"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Insert keys."
-msgstr "插入帧。"
+msgid "Translation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Rotation mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Scale mask for inserting keys."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Insert keys (based on mask)."
+msgstr "插入关键帧（ 创建轨道）"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Auto insert keys when objects are translated, rotated on scaled (based on "
+"mask).\n"
+"Keys are only added to existing tracks, no new tracks will be created.\n"
+"Keys must be inserted manually for the first time."
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Insert Key"
+msgstr "插入关键帧"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -4792,6 +4832,52 @@ msgstr "编辑多边形（移除顶点）"
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "设置处理程序"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Error loading image:"
+msgstr "加载图片出错:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "No pixels with transparency > 128 in image..."
+msgstr "图片中没有透明度> 128的像素..."
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Load Emission Mask"
+msgstr "加载Emission Mask（发射屏蔽）"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Clear Emission Mask"
+msgstr "清除Emission Mask（发射屏蔽）"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Particles"
+msgstr "粒子"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Generated Point Count:"
+msgstr "生成顶点计数:"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Mask"
+msgstr "发光遮罩（mask）"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Capture from Pixel"
+msgstr "从像素捕捉"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+msgid "Emission Colors"
+msgstr "发光颜色"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5143,51 +5229,14 @@ msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "可以设置ParticlesMaterial 点的材质"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "加载图片出错:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "图片中没有透明度> 128的像素..."
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Load Emission Mask"
-msgstr "加载Emission Mask（发射屏蔽）"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Clear Emission Mask"
-msgstr "清除Emission Mask（发射屏蔽）"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Convert to CPUParticles"
 msgstr "转换为 CPU粒子"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Particles"
-msgstr "粒子"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Generated Point Count:"
-msgstr "生成顶点计数:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
 msgid "Generation Time (sec):"
 msgstr "生成时间（秒）:"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Mask"
-msgstr "发光遮罩（mask）"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Capture from Pixel"
-msgstr "从像素捕捉"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Emission Colors"
-msgstr "发光颜色"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
@@ -5692,7 +5741,8 @@ msgid "Save Theme As..."
 msgstr "主题另存为..."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid " Class Reference"
+#, fuzzy
+msgid "%s Class Reference"
 msgstr " 类引用"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6517,6 +6567,26 @@ msgid "Nameless gizmo"
 msgstr "未命名的Gizmo"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Mesh2D"
+msgstr "创建 2D 网格"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create Polygon2D"
+msgstr "创建3D多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D"
+msgstr "创建碰撞多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D"
+msgstr "添加遮光多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite is empty!"
 msgstr "Sprite 是空的！"
 
@@ -6529,16 +6599,43 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "无效的几何体，无法使用网格替换。"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create polygon."
+msgstr "无效的几何体，无法使用网格替换。"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "无效的几何体，无法使用网格替换。"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Invalid geometry, can't create light occluder."
+msgstr "无效的几何体，无法使用网格替换。"
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Sprite"
 msgstr "Sprite 精灵"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Convert to 2D Mesh"
+#, fuzzy
+msgid "Convert to Mesh2D"
 msgstr "转换为 2D 网格"
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Create 2D Mesh"
-msgstr "创建 2D 网格"
+#, fuzzy
+msgid "Convert to Polygon2D"
+msgstr "移动多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create CollisionPolygon2D Sibling"
+msgstr "创建碰撞多边形"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+#, fuzzy
+msgid "Create LightOccluder2D Sibling"
+msgstr "添加遮光多边形"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -7121,6 +7218,11 @@ msgstr "将节点添加到可视着色器"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Duplicate Nodes"
 msgstr "复制节点"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Nodes"
+msgstr "删除节点"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
@@ -8306,10 +8408,6 @@ msgstr "清除继承"
 #: editor/scene_tree_dock.cpp
 msgid "Open documentation"
 msgstr "打开Godot文档"
-
-#: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)"
-msgstr "删除节点"
 
 #: editor/scene_tree_dock.cpp
 msgid "Add Child Node"
@@ -10104,11 +10202,14 @@ msgstr "对uniform的赋值。"
 msgid "Varyings can only be assigned in vertex function."
 msgstr "变量只能在顶点函数中指定。"
 
+#~ msgid "Snap (s): "
+#~ msgstr "吸附： "
+
+#~ msgid "Insert keys."
+#~ msgstr "插入帧。"
+
 #~ msgid "Instance the selected scene(s) as child of the selected node."
 #~ msgstr "将选中的场景实例为选中节点的子节点。"
-
-#~ msgid "FPS"
-#~ msgstr "帧数"
 
 #~ msgid "Warnings:"
 #~ msgstr "警告："
@@ -11632,9 +11733,6 @@ msgstr "变量只能在顶点函数中指定。"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "无法打开目录:"
-
-#~ msgid "Insert Keys (Ins)"
-#~ msgstr "插入关键帧（ 创建轨道）"
 
 #~ msgid "Perspective (Num5)"
 #~ msgstr "透视（Num5）"
