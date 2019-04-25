@@ -510,18 +510,6 @@ void VisualShaderEditor::_update_graph() {
 			node->add_child(hb);
 
 			node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
-
-			if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-				Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
-				Color c = sb->get_border_color();
-				Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
-				mono_color.a = 0.85;
-				c = mono_color;
-
-				node->add_color_override("title_color", c);
-				c.a = 0.7;
-				node->add_color_override("close_color", c);
-			}
 		}
 
 		if (vsnode->get_output_port_for_preview() >= 0 && vsnode->get_output_port_type(vsnode->get_output_port_for_preview()) != VisualShaderNode::PORT_TYPE_TRANSFORM) {
@@ -541,6 +529,18 @@ void VisualShaderEditor::_update_graph() {
 
 		if (!uniform.is_valid()) {
 			graph->add_child(node);
+		}
+
+		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
+			Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
+			Color c = sb->get_border_color();
+			Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
+			mono_color.a = 0.85;
+			c = mono_color;
+
+			node->add_color_override("title_color", c);
+			c.a = 0.7;
+			node->add_color_override("close_color", c);
 		}
 	}
 
