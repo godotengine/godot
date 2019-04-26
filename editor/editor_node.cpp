@@ -2451,14 +2451,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SETTINGS_MANAGE_FEATURE_PROFILES: {
 
-			Size2 popup_size = Size2(900, 800) * editor_get_scale();
-			Size2 window_size = get_viewport()->get_size();
-
-			popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
-			popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
-
-			feature_profile_manager->popup_centered(popup_size);
-
+			feature_profile_manager->popup_centered_clamped(Size2(900, 800) * EDSCALE, 0.8);
 		} break;
 		case SETTINGS_TOGGLE_FULLSCREEN: {
 
