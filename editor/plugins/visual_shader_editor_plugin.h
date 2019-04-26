@@ -179,6 +179,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	bool _is_available(int p_flags);
+	void _update_created_node(GraphNode *node);
 
 protected:
 	void _notification(int p_what);
