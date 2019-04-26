@@ -865,6 +865,11 @@ png_handle_IHDR(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    filter_type = buf[11];
    interlace_type = buf[12];
 
+#ifdef PNG_READ_APNG_SUPPORTED
+   png_ptr->first_frame_width = width;
+   png_ptr->first_frame_height = height;
+#endif
+
    /* Set internal variables */
    png_ptr->width = width;
    png_ptr->height = height;
@@ -2857,6 +2862,179 @@ png_handle_iTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 }
 #endif
 
+#ifdef PNG_READ_APNG_SUPPORTED
+void /* PRIVATE */
+png_handle_acTL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
+{
+    png_byte data[8];
+    png_uint_32 num_frames;
+    png_uint_32 num_plays;
+    png_uint_32 didSet;
+
+    png_debug(1, "in png_handle_acTL");
+
+    if (!(png_ptr->mode & PNG_HAVE_IHDR))
+    {
+        png_error(png_ptr, "Missing IHDR before acTL");
+    }
+    else if (png_ptr->mode & PNG_HAVE_IDAT)
+    {
+        png_warning(png_ptr, "Invalid acTL after IDAT skipped");
+        png_crc_finish(png_ptr, length);
+        return;
+    }
+    else if (png_ptr->mode & PNG_HAVE_acTL)
+    {
+        png_warning(png_ptr, "Duplicate acTL skipped");
+        png_crc_finish(png_ptr, length);
+        return;
+    }
+    else if (length != 8)
+    {
+        png_warning(png_ptr, "acTL with invalid length skipped");
+        png_crc_finish(png_ptr, length);
+        return;
+    }
+
+    png_crc_read(png_ptr, data, 8);
+    png_crc_finish(png_ptr, 0);
+
+    num_frames = png_get_uint_31(png_ptr, data);
+    num_plays = png_get_uint_31(png_ptr, data + 4);
+
+    /* the set function will do error checking on num_frames */
+    didSet = png_set_acTL(png_ptr, info_ptr, num_frames, num_plays);
+    if(didSet)
+        png_ptr->mode |= PNG_HAVE_acTL;
+}
+
+void /* PRIVATE */
+png_handle_fcTL(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
+{
+    png_byte data[22];
+    png_uint_32 width;
+    png_uint_32 height;
+    png_uint_32 x_offset;
+    png_uint_32 y_offset;
+    png_uint_16 delay_num;
+    png_uint_16 delay_den;
+    png_byte dispose_op;
+    png_byte blend_op;
+
+    png_debug(1, "in png_handle_fcTL");
+
+    png_ensure_sequence_number(png_ptr, length);
+
+    if (!(png_ptr->mode & PNG_HAVE_IHDR))
+    {
+        png_error(png_ptr, "Missing IHDR before fcTL");
+    }
+    else if (png_ptr->mode & PNG_HAVE_IDAT)
+    {
+        /* for any frames other then the first this message may be misleading,
+        * but correct. PNG_HAVE_IDAT is unset before the frame head is read
+        * i can't think of a better message */
+        png_warning(png_ptr, "Invalid fcTL after IDAT skipped");
+        png_crc_finish(png_ptr, length-4);
+        return;
+    }
+    else if (png_ptr->mode & PNG_HAVE_fcTL)
+    {
+        png_warning(png_ptr, "Duplicate fcTL within one frame skipped");
+        png_crc_finish(png_ptr, length-4);
+        return;
+    }
+    else if (length != 26)
+    {
+        png_warning(png_ptr, "fcTL with invalid length skipped");
+        png_crc_finish(png_ptr, length-4);
+        return;
+    }
+
+    png_crc_read(png_ptr, data, 22);
+    png_crc_finish(png_ptr, 0);
+
+    width = png_get_uint_31(png_ptr, data);
+    height = png_get_uint_31(png_ptr, data + 4);
+    x_offset = png_get_uint_31(png_ptr, data + 8);
+    y_offset = png_get_uint_31(png_ptr, data + 12);
+    delay_num = png_get_uint_16(data + 16);
+    delay_den = png_get_uint_16(data + 18);
+    dispose_op = data[20];
+    blend_op = data[21];
+
+    if (png_ptr->num_frames_read == 0 && (x_offset != 0 || y_offset != 0))
+    {
+        png_warning(png_ptr, "fcTL for the first frame must have zero offset");
+        return;
+    }
+
+    if (info_ptr != NULL)
+    {
+        if (png_ptr->num_frames_read == 0 &&
+            (width != info_ptr->width || height != info_ptr->height))
+        {
+            png_warning(png_ptr, "size in first frame's fcTL must match "
+                               "the size in IHDR");
+            return;
+        }
+
+        /* The set function will do more error checking */
+        png_set_next_frame_fcTL(png_ptr, info_ptr, width, height,
+                                x_offset, y_offset, delay_num, delay_den,
+                                dispose_op, blend_op);
+
+        png_read_reinit(png_ptr, info_ptr);
+
+        png_ptr->mode |= PNG_HAVE_fcTL;
+    }
+}
+
+void /* PRIVATE */
+png_have_info(png_structp png_ptr, png_infop info_ptr)
+{
+    if((info_ptr->valid & PNG_INFO_acTL) && !(info_ptr->valid & PNG_INFO_fcTL))
+    {
+        png_ptr->apng_flags |= PNG_FIRST_FRAME_HIDDEN;
+        info_ptr->num_frames++;
+    }
+}
+
+void /* PRIVATE */
+png_handle_fdAT(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)
+{
+    png_ensure_sequence_number(png_ptr, length);
+
+    /* This function is only called from png_read_end(), png_read_info(),
+    * and png_push_read_chunk() which means that:
+    * - the user doesn't want to read this frame
+    * - or this is an out-of-place fdAT
+    * in either case it is safe to ignore the chunk with a warning */
+    png_warning(png_ptr, "ignoring fdAT chunk");
+    png_crc_finish(png_ptr, length - 4);
+    PNG_UNUSED(info_ptr)
+}
+
+void /* PRIVATE */
+png_ensure_sequence_number(png_structp png_ptr, png_uint_32 length)
+{
+    png_byte data[4];
+    png_uint_32 sequence_number;
+
+    if (length < 4)
+        png_error(png_ptr, "invalid fcTL or fdAT chunk found");
+
+    png_crc_read(png_ptr, data, 4);
+    sequence_number = png_get_uint_31(png_ptr, data);
+
+    if (sequence_number != png_ptr->next_seq_num)
+        png_error(png_ptr, "fcTL or fdAT chunk with out-of-order sequence "
+                           "number found");
+
+    png_ptr->next_seq_num++;
+}
+#endif /* PNG_READ_APNG_SUPPORTED */
+
 #ifdef PNG_READ_UNKNOWN_CHUNKS_SUPPORTED
 /* Utility function for png_handle_unknown; set up png_ptr::unknown_chunk */
 static int
@@ -4165,7 +4343,38 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
       {
          uInt avail_in;
          png_bytep buffer;
+#ifdef PNG_READ_APNG_SUPPORTED
+         png_uint_32 bytes_to_skip = 0;
 
+         while (png_ptr->idat_size == 0 || bytes_to_skip != 0)
+         {
+            png_crc_finish(png_ptr, bytes_to_skip);
+            bytes_to_skip = 0;
+
+            png_ptr->idat_size = png_read_chunk_header(png_ptr);
+            if (png_ptr->num_frames_read == 0)
+            {
+               if (png_ptr->chunk_name != png_IDAT)
+                  png_error(png_ptr, "Not enough image data");
+            }
+            else
+            {
+               if (png_ptr->chunk_name == png_IEND)
+                  png_error(png_ptr, "Not enough image data");
+               if (png_ptr->chunk_name != png_fdAT)
+               {
+                  png_warning(png_ptr, "Skipped (ignored) a chunk "
+                                       "between APNG chunks");
+                  bytes_to_skip = png_ptr->idat_size;
+                  continue;
+               }
+
+               png_ensure_sequence_number(png_ptr, png_ptr->idat_size);
+
+               png_ptr->idat_size -= 4;
+            }
+         }
+#else
          while (png_ptr->idat_size == 0)
          {
             png_crc_finish(png_ptr, 0);
@@ -4177,7 +4386,7 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
             if (png_ptr->chunk_name != png_IDAT)
                png_error(png_ptr, "Not enough image data");
          }
-
+#endif /* PNG_READ_APNG_SUPPORTED */
          avail_in = png_ptr->IDAT_read_size;
 
          if (avail_in > png_ptr->idat_size)
@@ -4240,6 +4449,9 @@ png_read_IDAT_data(png_structrp png_ptr, png_bytep output,
 
          png_ptr->mode |= PNG_AFTER_IDAT;
          png_ptr->flags |= PNG_FLAG_ZSTREAM_ENDED;
+#ifdef PNG_READ_APNG_SUPPORTED
+         png_ptr->num_frames_read++;
+#endif
 
          if (png_ptr->zstream.avail_in > 0 || png_ptr->idat_size > 0)
             png_chunk_benign_error(png_ptr, "Extra compressed data");
@@ -4678,4 +4890,80 @@ defined(PNG_USER_TRANSFORM_PTR_SUPPORTED)
 
    png_ptr->flags |= PNG_FLAG_ROW_INIT;
 }
+
+#ifdef PNG_READ_APNG_SUPPORTED
+/* This function is to be called after the main IDAT set has been read and
+ * before a new IDAT is read. It resets some parts of png_ptr
+ * to make them usable by the read functions again */
+void /* PRIVATE */
+png_read_reset(png_structp png_ptr)
+{
+    png_ptr->mode &= ~PNG_HAVE_IDAT;
+    png_ptr->mode &= ~PNG_AFTER_IDAT;
+    png_ptr->row_number = 0;
+    png_ptr->pass = 0;
+}
+
+void /* PRIVATE */
+png_read_reinit(png_structp png_ptr, png_infop info_ptr)
+{
+    png_ptr->width = info_ptr->next_frame_width;
+    png_ptr->height = info_ptr->next_frame_height;
+    png_ptr->rowbytes = PNG_ROWBYTES(png_ptr->pixel_depth,png_ptr->width);
+    png_ptr->info_rowbytes = PNG_ROWBYTES(info_ptr->pixel_depth,
+        png_ptr->width);
+    if (png_ptr->prev_row)
+        memset(png_ptr->prev_row, 0, png_ptr->rowbytes + 1);
+}
+
+#ifdef PNG_PROGRESSIVE_READ_SUPPORTED
+/* same as png_read_reset() but for the progressive reader */
+void /* PRIVATE */
+png_progressive_read_reset(png_structp png_ptr)
+{
+#ifdef PNG_READ_INTERLACING_SUPPORTED
+   /* Arrays to facilitate easy interlacing - use pass (0 - 6) as index */
+
+   /* Start of interlace block */
+    const int png_pass_start[] = {0, 4, 0, 2, 0, 1, 0};
+
+    /* Offset to next interlace block */
+    const int png_pass_inc[] = {8, 8, 4, 4, 2, 2, 1};
+
+    /* Start of interlace block in the y direction */
+    const int png_pass_ystart[] = {0, 0, 4, 0, 2, 0, 1};
+
+    /* Offset to next interlace block in the y direction */
+    const int png_pass_yinc[] = {8, 8, 8, 4, 4, 2, 2};
+
+    if (png_ptr->interlaced)
+    {
+        if (!(png_ptr->transformations & PNG_INTERLACE))
+            png_ptr->num_rows = (png_ptr->height + png_pass_yinc[0] - 1 -
+                                png_pass_ystart[0]) / png_pass_yinc[0];
+        else
+            png_ptr->num_rows = png_ptr->height;
+
+        png_ptr->iwidth = (png_ptr->width +
+                           png_pass_inc[png_ptr->pass] - 1 -
+                           png_pass_start[png_ptr->pass]) /
+                           png_pass_inc[png_ptr->pass];
+    }
+    else
+#endif /* PNG_READ_INTERLACING_SUPPORTED */
+    {
+        png_ptr->num_rows = png_ptr->height;
+        png_ptr->iwidth = png_ptr->width;
+    }
+    png_ptr->flags &= ~PNG_FLAG_ZSTREAM_ENDED;
+    if (inflateReset(&(png_ptr->zstream)) != Z_OK)
+        png_error(png_ptr, "inflateReset failed");
+    png_ptr->zstream.avail_in = 0;
+    png_ptr->zstream.next_in = 0;
+    png_ptr->zstream.next_out = png_ptr->row_buf;
+    png_ptr->zstream.avail_out = (uInt)PNG_ROWBYTES(png_ptr->pixel_depth,
+        png_ptr->iwidth) + 1;
+}
+#endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
+#endif /* PNG_READ_APNG_SUPPORTED */
 #endif /* READ */
