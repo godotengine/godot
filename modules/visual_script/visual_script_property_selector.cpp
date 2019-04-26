@@ -149,22 +149,6 @@ void VisualScriptPropertySelector::_update_search() {
 			Control::get_icon("PoolColorArray", "EditorIcons")
 		};
 
-		if (!seq_connect && !visual_script_generic) {
-			get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
-			get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
-			get_visual_node_names("functions/by_type/" + Variant::get_type_name(type), Set<String>(), found, root, search_box);
-			get_visual_node_names("operators/compare/", Set<String>(), found, root, search_box);
-			if (type == Variant::INT) {
-				get_visual_node_names("operators/bitwise/", Set<String>(), found, root, search_box);
-			}
-			if (type == Variant::BOOL) {
-				get_visual_node_names("operators/logic/", Set<String>(), found, root, search_box);
-			}
-			if (type == Variant::BOOL || type == Variant::INT || type == Variant::REAL || type == Variant::VECTOR2 || type == Variant::VECTOR3) {
-				get_visual_node_names("operators/math/", Set<String>(), found, root, search_box);
-			}
-		}
-
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
 				if (category && category->get_children() == NULL) {
@@ -228,22 +212,7 @@ void VisualScriptPropertySelector::_update_search() {
 		}
 	}
 
-	if (seq_connect && !visual_script_generic) {
-		String text = search_box->get_text();
-		create_visualscript_item(String("VisualScriptCondition"), root, text, String("Condition"));
-		create_visualscript_item(String("VisualScriptSwitch"), root, text, String("Switch"));
-		create_visualscript_item(String("VisualScriptSequence"), root, text, String("Sequence"));
-		create_visualscript_item(String("VisualScriptIterator"), root, text, String("Iterator"));
-		create_visualscript_item(String("VisualScriptWhile"), root, text, String("While"));
-		create_visualscript_item(String("VisualScriptReturn"), root, text, String("Return"));
-		get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
-		get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
-	}
-
-	if (visual_script_generic) {
-		get_visual_node_names("", Set<String>(), found, root, search_box);
-	}
-
+	
 	List<MethodInfo> methods;
 
 	if (type != Variant::NIL) {
@@ -349,6 +318,40 @@ void VisualScriptPropertySelector::_update_search() {
 		if (category && category->get_children() == NULL) {
 			memdelete(category); //old category was unused
 		}
+	}
+
+	if (properties) {
+		if (!seq_connect && !visual_script_generic) {
+			get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
+			get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
+			get_visual_node_names("functions/by_type/" + Variant::get_type_name(type), Set<String>(), found, root, search_box);
+			get_visual_node_names("operators/compare/", Set<String>(), found, root, search_box);
+			if (type == Variant::INT) {
+				get_visual_node_names("operators/bitwise/", Set<String>(), found, root, search_box);
+			}
+			if (type == Variant::BOOL) {
+				get_visual_node_names("operators/logic/", Set<String>(), found, root, search_box);
+			}
+			if (type == Variant::BOOL || type == Variant::INT || type == Variant::REAL || type == Variant::VECTOR2 || type == Variant::VECTOR3) {
+				get_visual_node_names("operators/math/", Set<String>(), found, root, search_box);
+			}
+		}
+	}
+
+	if (seq_connect && !visual_script_generic) {
+		String text = search_box->get_text();
+		create_visualscript_item(String("VisualScriptCondition"), root, text, String("Condition"));
+		create_visualscript_item(String("VisualScriptSwitch"), root, text, String("Switch"));
+		create_visualscript_item(String("VisualScriptSequence"), root, text, String("Sequence"));
+		create_visualscript_item(String("VisualScriptIterator"), root, text, String("Iterator"));
+		create_visualscript_item(String("VisualScriptWhile"), root, text, String("While"));
+		create_visualscript_item(String("VisualScriptReturn"), root, text, String("Return"));
+		get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
+		get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
+	}
+
+	if (visual_script_generic) {
+		get_visual_node_names("", Set<String>(), found, root, search_box);
 	}
 
 	TreeItem *selected_item = search_options->search_item_text(search_box->get_text());
