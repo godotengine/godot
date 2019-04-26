@@ -56,6 +56,7 @@ public:
 	StringName _meta;
 	StringName _script;
 	StringName script_changed;
+	StringName thread_finished;
 	StringName ___pdcdata;
 	StringName __getvar;
 	StringName _iter_init;

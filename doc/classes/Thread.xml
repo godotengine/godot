@@ -6,6 +6,13 @@
 	<description>
 		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex], [Semaphore] is advised if working with shared objects.
 	</description>
+	<signals>
+		<signal name="thread_finished">
+			<description>
+				Emitted when thread has finished.
+			</description>
+		</signal>
+	</signals>
 	<tutorials>
 	</tutorials>
 	<demos>

@@ -31,6 +31,7 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
+#include "core/core_string_names.h"
 #include "core/image.h"
 #include "core/io/compression.h"
 #include "core/io/resource_loader.h"

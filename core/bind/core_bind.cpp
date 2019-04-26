@@ -2393,6 +2393,7 @@ void _Thread::_start_func(void *ud) {
 	Thread::set_name(t->target_method);
 
 	t->ret = t->target_instance->call(t->target_method, arg, 1, ce);
+	t->emit_signal(CoreStringNames::get_singleton()->thread_finished);
 	if (ce.error != Variant::CallError::CALL_OK) {
 
 		String reason;
@@ -2483,6 +2484,8 @@ void _Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &_Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_active"), &_Thread::is_active);
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &_Thread::wait_to_finish);
+
+	ADD_SIGNAL(MethodInfo("thread_finished"));
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
