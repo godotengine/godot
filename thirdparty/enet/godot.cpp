@@ -95,7 +95,6 @@ ENetSocket enet_socket_create(ENetSocketType type) {
 	NetSocket *socket = NetSocket::create();
 	IP::Type ip_type = IP::TYPE_ANY;
 	socket->open(NetSocket::TYPE_UDP, ip_type);
-	socket->set_blocking_enabled(false);
 
 	return socket;
 }
