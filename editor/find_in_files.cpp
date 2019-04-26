@@ -244,7 +244,7 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
 		else {
 			String file_ext = file.get_extension();
-			if (_extension_filter.has(file_ext)) {
+			if (_extension_filter.has(file_ext) || _extension_filter.has("*")) {
 				_files_to_scan.push_back(path.plus_file(file));
 			}
 		}
@@ -378,11 +378,14 @@ FindInFilesDialog::FindInFilesDialog() {
 		if (Engine::get_singleton()->has_singleton("GodotSharp"))
 			exts.push_back("cs");
 		exts.push_back("shader");
+		exts.push_back("tscn");
+		exts.push_back("*");
 
 		for (int i = 0; i < exts.size(); ++i) {
 			CheckBox *cb = memnew(CheckBox);
 			cb->set_text(exts[i]);
-			cb->set_pressed(true);
+			if (exts[i] != "*")
+				cb->set_pressed(true);
 			hbc->add_child(cb);
 			_filters.push_back(cb);
 		}
