@@ -4515,6 +4515,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			snap_selected_nodes_to_floor();
 		} break;
 		case MENU_LOCK_SELECTED: {
+			undo_redo->create_action(TTR("Lock Selected"));
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4527,13 +4528,18 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 					continue;
 
-				spatial->set_meta("_edit_lock_", true);
-				emit_signal("item_lock_status_changed");
+				undo_redo->add_do_method(spatial, "set_meta", "_edit_lock_", true);
+				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_lock_");
+				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
 
-			_refresh_menu_icons();
+			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->commit_action();
 		} break;
 		case MENU_UNLOCK_SELECTED: {
+			undo_redo->create_action(TTR("Unlock Selected"));
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4546,13 +4552,18 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 					continue;
 
-				spatial->set_meta("_edit_lock_", Variant());
-				emit_signal("item_lock_status_changed");
+				undo_redo->add_do_method(spatial, "remove_meta", "_edit_lock_");
+				undo_redo->add_undo_method(spatial, "set_meta", "_edit_lock_", true);
+				undo_redo->add_do_method(this, "emit_signal", "item_lock_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_lock_status_changed");
 			}
 
-			_refresh_menu_icons();
+			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->commit_action();
 		} break;
 		case MENU_GROUP_SELECTED: {
+			undo_redo->create_action(TTR("Group Selected"));
 
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
@@ -4565,14 +4576,18 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 					continue;
 
-				spatial->set_meta("_edit_group_", true);
-				emit_signal("item_group_status_changed");
+				undo_redo->add_do_method(spatial, "set_meta", "_edit_group_", true);
+				undo_redo->add_undo_method(spatial, "remove_meta", "_edit_group_");
+				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
 
-			_refresh_menu_icons();
+			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->commit_action();
 		} break;
 		case MENU_UNGROUP_SELECTED: {
-
+			undo_redo->create_action(TTR("Ungroup Selected"));
 			List<Node *> &selection = editor_selection->get_selected_node_list();
 
 			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
@@ -4584,11 +4599,15 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				if (spatial->get_viewport() != EditorNode::get_singleton()->get_scene_root())
 					continue;
 
-				spatial->set_meta("_edit_group_", Variant());
-				emit_signal("item_group_status_changed");
+				undo_redo->add_do_method(spatial, "remove_meta", "_edit_group_");
+				undo_redo->add_undo_method(spatial, "set_meta", "_edit_group_", true);
+				undo_redo->add_do_method(this, "emit_signal", "item_group_status_changed");
+				undo_redo->add_undo_method(this, "emit_signal", "item_group_status_changed");
 			}
 
-			_refresh_menu_icons();
+			undo_redo->add_do_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->add_undo_method(this, "_refresh_menu_icons", Variant());
+			undo_redo->commit_action();
 		} break;
 	}
 }

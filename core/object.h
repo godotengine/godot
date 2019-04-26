@@ -673,6 +673,7 @@ public:
 
 	bool has_meta(const String &p_name) const;
 	void set_meta(const String &p_name, const Variant &p_value);
+	void remove_meta(const String &p_name);
 	Variant get_meta(const String &p_name) const;
 	void get_meta_list(List<String> *p_list) const;
 
