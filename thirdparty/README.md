@@ -170,7 +170,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.35
+- Version: 1.6.37
 - License: libpng/zlib
 
 Files extracted from upstream source:

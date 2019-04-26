@@ -1,7 +1,7 @@
 
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 2018-2019 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -1182,20 +1182,20 @@ png_init_palette_transformations(png_structrp png_ptr)
              png_ptr->palette[png_ptr->background.index].blue;
 
 #ifdef PNG_READ_INVERT_ALPHA_SUPPORTED
-        if ((png_ptr->transformations & PNG_INVERT_ALPHA) != 0)
-        {
-           if ((png_ptr->transformations & PNG_EXPAND_tRNS) == 0)
-           {
-              /* Invert the alpha channel (in tRNS) unless the pixels are
-               * going to be expanded, in which case leave it for later
-               */
-              int i, istop = png_ptr->num_trans;
+         if ((png_ptr->transformations & PNG_INVERT_ALPHA) != 0)
+         {
+            if ((png_ptr->transformations & PNG_EXPAND_tRNS) == 0)
+            {
+               /* Invert the alpha channel (in tRNS) unless the pixels are
+                * going to be expanded, in which case leave it for later
+                */
+               int i, istop = png_ptr->num_trans;
 
-              for (i=0; i<istop; i++)
-                 png_ptr->trans_alpha[i] = (png_byte)(255 -
-                    png_ptr->trans_alpha[i]);
-           }
-        }
+               for (i = 0; i < istop; i++)
+                  png_ptr->trans_alpha[i] =
+                      (png_byte)(255 - png_ptr->trans_alpha[i]);
+            }
+         }
 #endif /* READ_INVERT_ALPHA */
       }
    } /* background expand and (therefore) no alpha association. */
@@ -4320,9 +4320,11 @@ png_do_expand_palette(png_structrp png_ptr, png_row_infop row_info,
                    * but sometimes row_info->bit_depth has been changed to 8.
                    * In these cases, the palette hasn't been riffled.
                    */
-                  i = png_do_expand_palette_neon_rgba(png_ptr, row_info, row,
+                  i = png_do_expand_palette_rgba8_neon(png_ptr, row_info, row,
                       &sp, &dp);
                }
+#else
+               PNG_UNUSED(png_ptr)
 #endif
 
                for (; i < row_width; i++)
@@ -4349,8 +4351,10 @@ png_do_expand_palette(png_structrp png_ptr, png_row_infop row_info,
                dp = row + (size_t)(row_width * 3) - 1;
                i = 0;
 #ifdef PNG_ARM_NEON_INTRINSICS_AVAILABLE
-               i = png_do_expand_palette_neon_rgb(png_ptr, row_info, row,
+               i = png_do_expand_palette_rgb8_neon(png_ptr, row_info, row,
                    &sp, &dp);
+#else
+               PNG_UNUSED(png_ptr)
 #endif
 
                for (; i < row_width; i++)
@@ -4770,19 +4774,17 @@ png_do_read_transformations(png_structrp png_ptr, png_row_infop row_info)
 #ifdef PNG_ARM_NEON_INTRINSICS_AVAILABLE
          if ((png_ptr->num_trans > 0) && (png_ptr->bit_depth == 8))
          {
-            /* Allocate space for the decompressed full palette. */
             if (png_ptr->riffled_palette == NULL)
             {
-               png_ptr->riffled_palette = png_malloc(png_ptr, 256*4);
-               if (png_ptr->riffled_palette == NULL)
-                  png_error(png_ptr, "NULL row buffer");
-               /* Build the RGBA palette. */
-               png_riffle_palette_rgba(png_ptr, row_info);
+               /* Initialize the accelerated palette expansion. */
+               png_ptr->riffled_palette =
+                   (png_bytep)png_malloc(png_ptr, 256 * 4);
+               png_riffle_palette_neon(png_ptr);
             }
          }
 #endif
          png_do_expand_palette(png_ptr, row_info, png_ptr->row_buf + 1,
-            png_ptr->palette, png_ptr->trans_alpha, png_ptr->num_trans);
+             png_ptr->palette, png_ptr->trans_alpha, png_ptr->num_trans);
       }
 
       else

@@ -821,6 +821,11 @@ png_write_IHDR(png_structrp png_ptr, png_uint_32 width, png_uint_32 height,
    /* Write the chunk */
    png_write_complete_chunk(png_ptr, png_IHDR, buf, 13);
 
+#ifdef PNG_WRITE_APNG_SUPPORTED
+   png_ptr->first_frame_width = width;
+   png_ptr->first_frame_height = height;
+#endif
+
    if ((png_ptr->do_filter) == PNG_NO_FILTERS)
    {
       if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE ||
@@ -1002,8 +1007,17 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
                optimize_cmf(data, png_image_size(png_ptr));
 #endif
 
-         if (size > 0)
-            png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+            if (size > 0)
+#ifdef PNG_WRITE_APNG_SUPPORTED
+            {
+               if (png_ptr->num_frames_written == 0)
+#endif
+               png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+#ifdef PNG_WRITE_APNG_SUPPORTED
+               else
+                  png_write_fdAT(png_ptr, data, size);
+            }
+#endif /* PNG_WRITE_APNG_SUPPORTED */
          png_ptr->mode |= PNG_HAVE_IDAT;
 
          png_ptr->zstream.next_out = data;
@@ -1050,7 +1064,17 @@ png_compress_IDAT(png_structrp png_ptr, png_const_bytep input,
 #endif
 
          if (size > 0)
+#ifdef PNG_WRITE_APNG_SUPPORTED
+         {
+            if (png_ptr->num_frames_written == 0)
+#endif
             png_write_complete_chunk(png_ptr, png_IDAT, data, size);
+#ifdef PNG_WRITE_APNG_SUPPORTED
+            else
+               png_write_fdAT(png_ptr, data, size);
+         }
+#endif /* PNG_WRITE_APNG_SUPPORTED */
+
          png_ptr->zstream.avail_out = 0;
          png_ptr->zstream.next_out = NULL;
          png_ptr->mode |= PNG_HAVE_IDAT | PNG_AFTER_IDAT;
@@ -1884,6 +1908,82 @@ png_write_tIME(png_structrp png_ptr, png_const_timep mod_time)
    png_write_complete_chunk(png_ptr, png_tIME, buf, 7);
 }
 #endif
+
+#ifdef PNG_WRITE_APNG_SUPPORTED
+void /* PRIVATE */
+png_write_acTL(png_structp png_ptr,
+    png_uint_32 num_frames, png_uint_32 num_plays)
+{
+    png_byte buf[8];
+
+    png_debug(1, "in png_write_acTL");
+
+    png_ptr->num_frames_to_write = num_frames;
+
+    if (png_ptr->apng_flags & PNG_FIRST_FRAME_HIDDEN)
+        num_frames--;
+
+    png_save_uint_32(buf, num_frames);
+    png_save_uint_32(buf + 4, num_plays);
+
+    png_write_complete_chunk(png_ptr, png_acTL, buf, (png_size_t)8);
+}
+
+void /* PRIVATE */
+png_write_fcTL(png_structp png_ptr, png_uint_32 width, png_uint_32 height,
+    png_uint_32 x_offset, png_uint_32 y_offset,
+    png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
+    png_byte blend_op)
+{
+    png_byte buf[26];
+
+    png_debug(1, "in png_write_fcTL");
+
+    if (png_ptr->num_frames_written == 0 && (x_offset != 0 || y_offset != 0))
+        png_error(png_ptr, "x and/or y offset for the first frame aren't 0");
+    if (png_ptr->num_frames_written == 0 &&
+        (width != png_ptr->first_frame_width ||
+         height != png_ptr->first_frame_height))
+        png_error(png_ptr, "width and/or height in the first frame's fcTL "
+                           "don't match the ones in IHDR");
+
+    /* more error checking */
+    png_ensure_fcTL_is_valid(png_ptr, width, height, x_offset, y_offset,
+                             delay_num, delay_den, dispose_op, blend_op);
+
+    png_save_uint_32(buf, png_ptr->next_seq_num);
+    png_save_uint_32(buf + 4, width);
+    png_save_uint_32(buf + 8, height);
+    png_save_uint_32(buf + 12, x_offset);
+    png_save_uint_32(buf + 16, y_offset);
+    png_save_uint_16(buf + 20, delay_num);
+    png_save_uint_16(buf + 22, delay_den);
+    buf[24] = dispose_op;
+    buf[25] = blend_op;
+
+    png_write_complete_chunk(png_ptr, png_fcTL, buf, (png_size_t)26);
+
+    png_ptr->next_seq_num++;
+}
+
+void /* PRIVATE */
+png_write_fdAT(png_structp png_ptr,
+    png_const_bytep data, png_size_t length)
+{
+    png_byte buf[4];
+
+    png_write_chunk_header(png_ptr, png_fdAT, (png_uint_32)(4 + length));
+
+    png_save_uint_32(buf, png_ptr->next_seq_num);
+    png_write_chunk_data(png_ptr, buf, 4);
+
+    png_write_chunk_data(png_ptr, data, length);
+
+    png_write_chunk_end(png_ptr);
+
+    png_ptr->next_seq_num++;
+}
+#endif /* PNG_WRITE_APNG_SUPPORTED */
 
 /* Initializes the row writing capability of libpng */
 void /* PRIVATE */
@@ -2778,4 +2878,39 @@ png_write_filtered_row(png_structrp png_ptr, png_bytep filtered_row,
    }
 #endif /* WRITE_FLUSH */
 }
+
+#ifdef PNG_WRITE_APNG_SUPPORTED
+void /* PRIVATE */
+png_write_reset(png_structp png_ptr)
+{
+    png_ptr->row_number = 0;
+    png_ptr->pass = 0;
+    png_ptr->mode &= ~PNG_HAVE_IDAT;
+}
+
+void /* PRIVATE */
+png_write_reinit(png_structp png_ptr, png_infop info_ptr,
+                 png_uint_32 width, png_uint_32 height)
+{
+    if (png_ptr->num_frames_written == 0 &&
+        (width != png_ptr->first_frame_width ||
+         height != png_ptr->first_frame_height))
+        png_error(png_ptr, "width and/or height in the first frame's fcTL "
+                           "don't match the ones in IHDR");
+    if (width > png_ptr->first_frame_width ||
+        height > png_ptr->first_frame_height)
+        png_error(png_ptr, "width and/or height for a frame greater than"
+                           "the ones in IHDR");
+
+    png_set_IHDR(png_ptr, info_ptr, width, height,
+                 info_ptr->bit_depth, info_ptr->color_type,
+                 info_ptr->interlace_type, info_ptr->compression_type,
+                 info_ptr->filter_type);
+
+    png_ptr->width = width;
+    png_ptr->height = height;
+    png_ptr->rowbytes = PNG_ROWBYTES(png_ptr->pixel_depth, width);
+    png_ptr->usr_width = png_ptr->width;
+}
+#endif /* PNG_WRITE_APNG_SUPPORTED */
 #endif /* WRITE */

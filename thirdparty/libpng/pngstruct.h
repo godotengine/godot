@@ -1,7 +1,7 @@
 
 /* pngstruct.h - header file for PNG reference library
  *
- * Copyright (c) 2018 Cosmin Truta
+ * Copyright (c) 2018-2019 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -228,10 +228,6 @@ struct png_struct_def
                                * big_row_buf; while writing it is separately
                                * allocated.
                                */
-#ifdef PNG_READ_EXPAND_SUPPORTED
-   /* Buffer to accelerate palette transformations. */
-   png_bytep riffled_palette;
-#endif
 #ifdef PNG_WRITE_FILTER_SUPPORTED
    png_bytep try_row;    /* buffer to save trial row when filtering */
    png_bytep tst_row;    /* buffer to save best trial row when filtering */
@@ -396,6 +392,12 @@ struct png_struct_def
    /* deleted in 1.5.5: rgb_to_gray_blue_coeff; */
 #endif
 
+/* New member added in libpng-1.6.36 */
+#if defined(PNG_READ_EXPAND_SUPPORTED) && \
+    defined(PNG_ARM_NEON_IMPLEMENTATION)
+   png_bytep riffled_palette; /* buffer for accelerated palette expansion */
+#endif
+
 /* New member added in libpng-1.0.4 (renamed in 1.0.9) */
 #if defined(PNG_MNG_FEATURES_SUPPORTED)
 /* Changed from png_byte to png_uint_32 at version 1.2.0 */
@@ -406,6 +408,27 @@ struct png_struct_def
 #ifdef PNG_MNG_FEATURES_SUPPORTED
    png_byte filter_type;
 #endif
+
+#ifdef PNG_APNG_SUPPORTED
+   png_uint_32 apng_flags;
+   png_uint_32 next_seq_num;         /* next fcTL/fdAT chunk sequence number */
+   png_uint_32 first_frame_width;
+   png_uint_32 first_frame_height;
+
+#ifdef PNG_READ_APNG_SUPPORTED
+   png_uint_32 num_frames_read;      /* incremented after all image data of */
+                                     /* a frame is read */
+#ifdef PNG_PROGRESSIVE_READ_SUPPORTED
+   png_progressive_frame_ptr frame_info_fn; /* frame info read callback */
+   png_progressive_frame_ptr frame_end_fn;  /* frame data read callback */
+#endif
+#endif
+
+#ifdef PNG_WRITE_APNG_SUPPORTED
+   png_uint_32 num_frames_to_write;
+   png_uint_32 num_frames_written;
+#endif
+#endif /* PNG_APNG_SUPPORTED */
 
 /* New members added in libpng-1.2.0 */
 
