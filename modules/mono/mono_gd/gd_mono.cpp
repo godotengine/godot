@@ -658,8 +658,6 @@ bool GDMono::_load_project_assembly() {
 
 	if (success) {
 		mono_assembly_set_main(project_assembly->get_assembly());
-
-		CSharpLanguage::get_singleton()->project_assembly_loaded();
 	} else {
 		if (OS::get_singleton()->is_stdout_verbose())
 			print_error("Mono: Failed to load project assembly");
@@ -866,7 +864,7 @@ Error GDMono::reload_scripts_domain() {
 		}
 	}
 
-	CSharpLanguage::get_singleton()->_uninitialize_script_bindings();
+	CSharpLanguage::get_singleton()->_on_scripts_domain_unloaded();
 
 	Error err = _load_scripts_domain();
 	if (err != OK) {
