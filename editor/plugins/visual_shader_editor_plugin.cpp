@@ -310,6 +310,21 @@ static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_
 	return style;
 }
 
+void VisualShaderEditor::_update_created_node(GraphNode *node) {
+
+	if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
+		Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
+		Color c = sb->get_border_color();
+		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
+		mono_color.a = 0.85;
+		c = mono_color;
+
+		node->add_color_override("title_color", c);
+		c.a = 0.7;
+		node->add_color_override("close_color", c);
+	}
+}
+
 void VisualShaderEditor::_update_graph() {
 
 	if (updating)
@@ -374,6 +389,7 @@ void VisualShaderEditor::_update_graph() {
 		Ref<VisualShaderNodeUniform> uniform = vsnode;
 		if (uniform.is_valid()) {
 			graph->add_child(node);
+			_update_created_node(node);
 
 			LineEdit *uniform_name = memnew(LineEdit);
 			uniform_name->set_text(uniform->get_uniform_name());
@@ -529,18 +545,7 @@ void VisualShaderEditor::_update_graph() {
 
 		if (!uniform.is_valid()) {
 			graph->add_child(node);
-		}
-
-		if (EditorSettings::get_singleton()->get("interface/theme/use_graph_node_headers")) {
-			Ref<StyleBoxFlat> sb = node->get_stylebox("frame", "GraphNode");
-			Color c = sb->get_border_color();
-			Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
-			mono_color.a = 0.85;
-			c = mono_color;
-
-			node->add_color_override("title_color", c);
-			c.a = 0.7;
-			node->add_color_override("close_color", c);
+			_update_created_node(node);
 		}
 	}
 
