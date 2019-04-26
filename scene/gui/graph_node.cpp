@@ -208,10 +208,16 @@ void GraphNode::_notification(int p_what) {
 			//sb->call("set_modulate",modulate);
 			Ref<Texture> port = get_icon("port");
 			Ref<Texture> close = get_icon("close");
+			Ref<Texture> minimize = get_icon("minimize");
+			Ref<Texture> maximize = get_icon("maximize");
 			Ref<Texture> resizer = get_icon("resizer");
 			int close_offset = get_constant("close_offset");
 			int close_h_offset = get_constant("close_h_offset");
+			int minimize_offset = get_constant("minimize_offset");
+			int minimize_h_offset = get_constant("minimize_h_offset");
 			Color close_color = get_color("close_color");
+			Color minimize_color = get_color("minimize_color");
+			Color maximize_color = get_color("maximize_color");
 			Ref<Font> title_font = get_font("title_font");
 			int title_offset = get_constant("title_offset");
 			int title_h_offset = get_constant("title_h_offset");
@@ -235,13 +241,22 @@ void GraphNode::_notification(int p_what) {
 
 				} break;
 			}
+			int t = get_size().width - sb->get_minimum_size().x;
+			int w = t;
 
-			int w = get_size().width - sb->get_minimum_size().x;
+			if (show_minimize)
+				w -= minimize->get_width();
 
 			if (show_close)
 				w -= close->get_width();
 
 			draw_string(title_font, Point2(sb->get_margin(MARGIN_LEFT) + title_h_offset, -title_font->get_height() + title_font->get_ascent() + title_offset), title, title_color, w);
+
+			w = t;
+
+			if (show_close)
+				w -= close->get_width();
+
 			if (show_close) {
 				Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + close_h_offset, -close->get_height() + close_offset);
 				draw_texture(close, cpos, close_color);
@@ -249,6 +264,22 @@ void GraphNode::_notification(int p_what) {
 				close_rect.size = close->get_size();
 			} else {
 				close_rect = Rect2();
+			}
+
+			if (show_minimize)
+				w -= minimize->get_width();
+
+			if (show_minimize) {
+				Vector2 cpos = Point2(w + sb->get_margin(MARGIN_LEFT) + minimize_h_offset, -minimize->get_height() + minimize_offset);
+				if (!minimized) {
+					draw_texture(minimize, cpos, minimize_color);
+				} else {
+					draw_texture(maximize, cpos, maximize_color);
+				}
+				minimize_rect.position = cpos;
+				minimize_rect.size = minimize->get_size();
+			} else {
+				minimize_rect = Rect2();
 			}
 
 			for (Map<int, Slot>::Element *E = slot_info.front(); E; E = E->next()) {
@@ -275,7 +306,7 @@ void GraphNode::_notification(int p_what) {
 				}
 			}
 
-			if (resizable) {
+			if (!minimized && resizable) {
 				draw_texture(resizer, get_size() - resizer->get_size());
 			}
 		} break;
@@ -383,6 +414,10 @@ Size2 GraphNode::get_minimum_size() const {
 		Ref<Texture> close = get_icon("close");
 		minsize.x += sep + close->get_width();
 	}
+	if (show_minimize) {
+		Ref<Texture> minimize = get_icon("minimize");
+		minsize.x += sep + minimize->get_width();
+	}
 
 	for (int i = 0; i < get_child_count(); i++) {
 
@@ -433,6 +468,15 @@ Vector2 GraphNode::get_offset() const {
 	return offset;
 }
 
+void GraphNode::set_minimized(bool p_minimized) {
+	minimized = p_minimized;
+	update();
+}
+
+bool GraphNode::is_minimized() const {
+	return minimized;
+}
+
 void GraphNode::set_selected(bool p_selected) {
 	selected = p_selected;
 	update();
@@ -453,10 +497,19 @@ Vector2 GraphNode::get_drag_from() {
 	return drag_from;
 }
 
+void GraphNode::set_show_minimize_button(bool p_enable) {
+
+	show_minimize = p_enable;
+	update();
+}
 void GraphNode::set_show_close_button(bool p_enable) {
 
 	show_close = p_enable;
 	update();
+}
+bool GraphNode::is_minimize_button_visible() const {
+
+	return show_minimize;
 }
 bool GraphNode::is_close_button_visible() const {
 
@@ -534,6 +587,13 @@ Vector2 GraphNode::get_connection_input_position(int p_idx) {
 	if (connpos_dirty)
 		_connpos_update();
 
+	if (minimized) {
+		Vector2 p = Vector2(0, get_constant("title_offset") / 2.0);
+		p.x *= get_scale().x;
+		p.y *= get_scale().y;
+		return p;
+	}
+
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), Vector2());
 	Vector2 pos = conn_input_cache[p_idx].pos;
 	pos.x *= get_scale().x;
@@ -546,6 +606,10 @@ int GraphNode::get_connection_input_type(int p_idx) {
 	if (connpos_dirty)
 		_connpos_update();
 
+	if (minimized) {
+		return 0;
+	}
+
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), 0);
 	return conn_input_cache[p_idx].type;
 }
@@ -555,6 +619,10 @@ Color GraphNode::get_connection_input_color(int p_idx) {
 	if (connpos_dirty)
 		_connpos_update();
 
+	if (minimized) {
+		return Color(1.0, 1.0, 1.0, 0.3);
+	}
+
 	ERR_FAIL_INDEX_V(p_idx, conn_input_cache.size(), Color());
 	return conn_input_cache[p_idx].color;
 }
@@ -563,6 +631,13 @@ Vector2 GraphNode::get_connection_output_position(int p_idx) {
 
 	if (connpos_dirty)
 		_connpos_update();
+
+	if (minimized) {
+		Vector2 p = Vector2(get_size().width, get_constant("title_offset") / 2.0);
+		p.x *= get_scale().x;
+		p.y *= get_scale().y;
+		return p;
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), Vector2());
 	Vector2 pos = conn_output_cache[p_idx].pos;
@@ -576,6 +651,10 @@ int GraphNode::get_connection_output_type(int p_idx) {
 	if (connpos_dirty)
 		_connpos_update();
 
+	if (minimized) {
+		return 0;
+	}
+
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), 0);
 	return conn_output_cache[p_idx].type;
 }
@@ -584,6 +663,10 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 
 	if (connpos_dirty)
 		_connpos_update();
+
+	if (minimized) {
+		return Color(1.0, 1.0, 1.0, 0.3);
+	}
 
 	ERR_FAIL_INDEX_V(p_idx, conn_output_cache.size(), Color());
 	return conn_output_cache[p_idx].color;
@@ -600,15 +683,32 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
-			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
-				emit_signal("close_request");
-				accept_event();
-				return;
+
+			if (show_close) {
+				if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
+					emit_signal("close_request");
+					accept_event();
+					return;
+				}
+			}
+
+			if (show_minimize) {
+				if (minimize_rect.size != Size2() && minimize_rect.has_point(mpos)) {
+					minimized = !minimized;
+
+					if (minimized) {
+						emit_signal("minimize_request");
+					} else {
+						emit_signal("maximize_request");
+					}
+					accept_event();
+					return;
+				}
 			}
 
 			Ref<Texture> resizer = get_icon("resizer");
 
-			if (resizable && mpos.x > get_size().x - resizer->get_width() && mpos.y > get_size().y - resizer->get_height()) {
+			if (!minimized && resizable && mpos.x > get_size().x - resizer->get_width() && mpos.y > get_size().y - resizer->get_height()) {
 
 				resizing = true;
 				resizing_from = mpos;
@@ -695,6 +795,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &GraphNode::set_resizable);
 	ClassDB::bind_method(D_METHOD("is_resizable"), &GraphNode::is_resizable);
 
+	ClassDB::bind_method(D_METHOD("set_minimized", "minimized"), &GraphNode::set_minimized);
+	ClassDB::bind_method(D_METHOD("is_minimized"), &GraphNode::is_minimized);
+
 	ClassDB::bind_method(D_METHOD("set_selected", "selected"), &GraphNode::set_selected);
 	ClassDB::bind_method(D_METHOD("is_selected"), &GraphNode::is_selected);
 
@@ -708,6 +811,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_input_type", "idx"), &GraphNode::get_connection_input_type);
 	ClassDB::bind_method(D_METHOD("get_connection_input_color", "idx"), &GraphNode::get_connection_input_color);
 
+	ClassDB::bind_method(D_METHOD("set_show_minimize_button", "show"), &GraphNode::set_show_minimize_button);
+	ClassDB::bind_method(D_METHOD("is_minimize_button_visible"), &GraphNode::is_minimize_button_visible);
+
 	ClassDB::bind_method(D_METHOD("set_show_close_button", "show"), &GraphNode::set_show_close_button);
 	ClassDB::bind_method(D_METHOD("is_close_button_visible"), &GraphNode::is_close_button_visible);
 
@@ -717,7 +823,9 @@ void GraphNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_close"), "set_show_close_button", "is_close_button_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_minimize"), "set_show_minimize_button", "is_minimize_button_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimized"), "set_minimized", "is_minimized");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");
@@ -726,6 +834,8 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));
 	ADD_SIGNAL(MethodInfo("close_request"));
+	ADD_SIGNAL(MethodInfo("minimize_request"));
+	ADD_SIGNAL(MethodInfo("maximize_request"));
 	ADD_SIGNAL(MethodInfo("resize_request", PropertyInfo(Variant::VECTOR2, "new_minsize")));
 
 	BIND_ENUM_CONSTANT(OVERLAY_DISABLED);
@@ -737,10 +847,12 @@ GraphNode::GraphNode() {
 
 	overlay = OVERLAY_DISABLED;
 	show_close = false;
+	show_minimize = false;
 	connpos_dirty = true;
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	comment = false;
 	resizable = false;
 	resizing = false;
 	selected = false;
+	minimized = false;
 }

@@ -63,6 +63,7 @@ private:
 	struct Node {
 		Ref<VisualShaderNode> node;
 		Vector2 position;
+		bool minimized;
 	};
 
 	struct Graph {
@@ -120,9 +121,13 @@ public:
 	};
 
 	void add_node(Type p_type, const Ref<VisualShaderNode> &p_node, const Vector2 &p_position, int p_id);
-	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
 
+	void set_node_position(Type p_type, int p_id, const Vector2 &p_position);
 	Vector2 get_node_position(Type p_type, int p_id) const;
+
+	void set_node_minimized(Type p_type, int p_id, bool p_minimized);
+	bool is_node_minimized(Type p_type, int p_id) const;
+
 	Ref<VisualShaderNode> get_node(Type p_type, int p_id) const;
 
 	Vector<int> get_node_list(Type p_type) const;

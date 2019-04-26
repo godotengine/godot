@@ -720,7 +720,15 @@ void GraphEdit::_connections_layer_draw() {
 		Vector2 frompos = gfrom->get_connection_output_position(E->get().from_port) + gfrom->get_offset() * zoom;
 		Color color = gfrom->get_connection_output_color(E->get().from_port);
 		Vector2 topos = gto->get_connection_input_position(E->get().to_port) + gto->get_offset() * zoom;
-		Color tocolor = gto->get_connection_input_color(E->get().to_port);
+		Color tocolor;
+		if (gto->is_minimized()) {
+			tocolor = color;
+		} else {
+			tocolor = gto->get_connection_input_color(E->get().to_port);
+			if (gfrom->is_minimized()) {
+				color = tocolor;
+			}
+		}
 
 		if (E->get().activity > 0) {
 			color = color.linear_interpolate(activity_color, E->get().activity);

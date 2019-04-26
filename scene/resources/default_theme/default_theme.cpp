@@ -604,10 +604,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "GraphNode", 1 * scale);
 	theme->set_icon("port", "GraphNode", make_icon(graph_port_png));
 	theme->set_icon("close", "GraphNode", make_icon(graph_node_close_png));
+	theme->set_icon("minimize", "GraphNode", make_icon(graph_node_minimize_png));
+	theme->set_icon("maximize", "GraphNode", make_icon(graph_node_maximize_png));
 	theme->set_icon("resizer", "GraphNode", make_icon(window_resizer_png));
 	theme->set_font("title_font", "GraphNode", default_font);
 	theme->set_color("title_color", "GraphNode", Color(0, 0, 0, 1));
 	theme->set_color("close_color", "GraphNode", Color(0, 0, 0, 1));
+	theme->set_color("minimize_color", "GraphNode", Color(0, 0, 0, 1));
+	theme->set_color("maximize_color", "GraphNode", Color(0, 0, 0, 1));
 	theme->set_constant("title_offset", "GraphNode", 20 * scale);
 	theme->set_constant("close_offset", "GraphNode", 18 * scale);
 	theme->set_constant("port_offset", "GraphNode", 3 * scale);

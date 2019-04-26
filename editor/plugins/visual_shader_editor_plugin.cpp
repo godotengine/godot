@@ -339,6 +339,8 @@ void VisualShaderEditor::_update_created_node(GraphNode *node) {
 		node->add_color_override("title_color", c);
 		c.a = 0.7;
 		node->add_color_override("close_color", c);
+		node->add_color_override("minimize_color", c);
+		node->add_color_override("maximize_color", c);
 	}
 }
 
@@ -416,11 +418,21 @@ void VisualShaderEditor::_update_graph() {
 		node->set_name(itos(nodes[n_i]));
 
 		if (nodes[n_i] >= 2) {
+			node->set_show_minimize_button(true);
 			node->set_show_close_button(true);
 			node->connect("close_request", this, "_delete_request", varray(nodes[n_i]), CONNECT_DEFERRED);
+			node->connect("minimize_request", this, "_minimize_request", varray(nodes[n_i]), CONNECT_DEFERRED);
+			node->connect("maximize_request", this, "_maximize_request", varray(nodes[n_i]), CONNECT_DEFERRED);
 		}
 
 		node->connect("dragged", this, "_node_dragged", varray(nodes[n_i]));
+
+		if (visual_shader->is_node_minimized(type, nodes[n_i])) {
+			graph->add_child(node);
+			node->set_minimized(true);
+			_update_created_node(node);
+			continue;
+		}
 
 		Control *custom_editor = NULL;
 		int port_offset = 0;
@@ -1305,6 +1317,38 @@ void VisualShaderEditor::_disconnection_request(const String &p_from, int p_from
 void VisualShaderEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
 }
 
+void VisualShaderEditor::_minimize_request(int which) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNode> node = visual_shader->get_node(type, which);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Minimize VisualShader Node"));
+	undo_redo->add_do_method(visual_shader.ptr(), "set_node_minimized", type, which, true);
+	undo_redo->add_undo_method(visual_shader.ptr(), "set_node_minimized", type, which, false);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->commit_action();
+}
+
+void VisualShaderEditor::_maximize_request(int which) {
+
+	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	Ref<VisualShaderNode> node = visual_shader->get_node(type, which);
+	if (node.is_null()) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Maximize VisualShader Node"));
+	undo_redo->add_do_method(visual_shader.ptr(), "set_node_minimized", type, which, false);
+	undo_redo->add_undo_method(visual_shader.ptr(), "set_node_minimized", type, which, true);
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_delete_request(int which) {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
@@ -1800,6 +1844,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_node_selected", &VisualShaderEditor::_node_selected);
 	ClassDB::bind_method("_scroll_changed", &VisualShaderEditor::_scroll_changed);
 	ClassDB::bind_method("_delete_request", &VisualShaderEditor::_delete_request);
+	ClassDB::bind_method("_minimize_request", &VisualShaderEditor::_minimize_request);
+	ClassDB::bind_method("_maximize_request", &VisualShaderEditor::_maximize_request);
 	ClassDB::bind_method("_on_nodes_delete", &VisualShaderEditor::_on_nodes_delete);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_edit_port_default_input", &VisualShaderEditor::_edit_port_default_input);

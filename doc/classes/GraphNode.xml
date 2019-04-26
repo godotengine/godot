@@ -182,9 +182,15 @@
 		</member>
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable">
 		</member>
+		<member name="minimized" type="bool" setter="set_minimized" getter="is_minimized">
+			If [code]true[/code] shrink off the node to the minimal representation. [code]false[/code] by default.
+		</member>
 		<member name="selected" type="bool" setter="set_selected" getter="is_selected">
 		</member>
 		<member name="show_close" type="bool" setter="set_show_close_button" getter="is_close_button_visible">
+		</member>
+		<member name="show_minimize" type="bool" setter="set_show_minimize_button" getter="is_minimize_button_visible">
+			Shows minimize button in the title, to allows user to modify a minimized property.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title">
 		</member>
@@ -220,6 +226,16 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="maximize_request">
+			<description>
+				Signal sent when the GraphNode is maximized.
+			</description>
+		</signal>
+		<signal name="minimize_request">
+			<description>
+				Signal sent when the GraphNode is minimized.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="OVERLAY_DISABLED" value="0" enum="Overlay">
@@ -247,6 +263,10 @@
 		<theme_item name="defaultframe" type="StyleBox">
 		</theme_item>
 		<theme_item name="frame" type="StyleBox">
+		</theme_item>
+		<theme_item name="maximize_color" type="Color">
+		</theme_item>
+		<theme_item name="minimize_color" type="Color">
 		</theme_item>
 		<theme_item name="port" type="Texture">
 		</theme_item>

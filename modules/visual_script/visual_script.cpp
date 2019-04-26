@@ -349,6 +349,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	Function::NodeData nd;
 	nd.node = p_node;
 	nd.pos = p_pos;
+	nd.minimized = false;
 
 	Ref<VisualScriptNode> vsn = p_node;
 	vsn->connect("ports_changed", this, "_node_ports_changed", varray(p_id));
@@ -450,6 +451,24 @@ void VisualScript::get_node_list(const StringName &p_func, List<int> *r_nodes) c
 	for (const Map<int, Function::NodeData>::Element *E = func.nodes.front(); E; E = E->next()) {
 		r_nodes->push_back(E->key());
 	}
+}
+
+void VisualScript::set_node_minimized(const StringName &p_func, int p_id, bool p_minimized) {
+
+	ERR_FAIL_COND(instances.size());
+	ERR_FAIL_COND(!functions.has(p_func));
+	Function &func = functions[p_func];
+
+	ERR_FAIL_COND(!func.nodes.has(p_id));
+	func.nodes[p_id].minimized = p_minimized;
+}
+
+bool VisualScript::is_node_minimized(const StringName &p_func, int p_id) const {
+	ERR_FAIL_COND_V(!functions.has(p_func), false);
+	const Function &func = functions[p_func];
+
+	ERR_FAIL_COND_V(!func.nodes.has(p_id), false);
+	return func.nodes[p_id].minimized;
 }
 
 void VisualScript::sequence_connect(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node) {
@@ -1162,6 +1181,14 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 			add_node(name, nodes[j], nodes[j + 2], nodes[j + 1]);
 		}
 
+		Array nodes_minimized = func["nodes_minimized"];
+
+		for (int j = 0, t = 0; j < nodes_minimized.size(); j += 1) {
+
+			set_node_minimized(name, nodes[t], nodes_minimized[j]);
+			t += 3;
+		}
+
 		Array sequence_connections = func["sequence_connections"];
 
 		for (int j = 0; j < sequence_connections.size(); j += 3) {
@@ -1230,6 +1257,15 @@ Dictionary VisualScript::_get_data() const {
 
 		func["nodes"] = nodes;
 
+		Array nodes_minimized;
+
+		for (const Map<int, Function::NodeData>::Element *F = E->get().nodes.front(); F; F = F->next()) {
+
+			nodes_minimized.push_back(F->get().minimized);
+		}
+
+		func["nodes_minimized"] = nodes_minimized;
+
 		Array sequence_connections;
 
 		for (const Set<SequenceConnection>::Element *F = E->get().sequence_connections.front(); F; F = F->next()) {
@@ -1280,6 +1316,9 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_node", "func", "id"), &VisualScript::has_node);
 	ClassDB::bind_method(D_METHOD("set_node_position", "func", "id", "position"), &VisualScript::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "func", "id"), &VisualScript::get_node_position);
+
+	ClassDB::bind_method(D_METHOD("set_node_minimized", "func", "id", "minimized"), &VisualScript::set_node_minimized);
+	ClassDB::bind_method(D_METHOD("is_node_minimized", "func", "id"), &VisualScript::is_node_minimized);
 
 	ClassDB::bind_method(D_METHOD("sequence_connect", "func", "from_node", "from_output", "to_node"), &VisualScript::sequence_connect);
 	ClassDB::bind_method(D_METHOD("sequence_disconnect", "func", "from_node", "from_output", "to_node"), &VisualScript::sequence_disconnect);

@@ -193,6 +193,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _end_node_move();
 	void _move_node(String func, int p_id, const Vector2 &p_to);
 
+	void _minimize_node(int p_id);
+	void _maximize_node(int p_id);
+
 	void _node_moved(Vector2 p_from, Vector2 p_to, int p_id);
 	void _remove_node(int p_id);
 	void _graph_connected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot);

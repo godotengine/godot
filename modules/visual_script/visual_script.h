@@ -221,6 +221,7 @@ private:
 		struct NodeData {
 			Point2 pos;
 			Ref<VisualScriptNode> node;
+			bool minimized;
 		};
 
 		Map<int, NodeData> nodes;
@@ -282,6 +283,9 @@ public:
 	void set_node_position(const StringName &p_func, int p_id, const Point2 &p_pos);
 	Point2 get_node_position(const StringName &p_func, int p_id) const;
 	void get_node_list(const StringName &p_func, List<int> *r_nodes) const;
+
+	void set_node_minimized(const StringName &p_func, int p_id, bool p_minimized);
+	bool is_node_minimized(const StringName &p_func, int p_id) const;
 
 	void sequence_connect(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node);
 	void sequence_disconnect(const StringName &p_func, int p_from_node, int p_from_output, int p_to_node);

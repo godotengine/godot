@@ -541,29 +541,32 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		gnode->set_name(itos(E->get()));
 		gnode->connect("dragged", this, "_node_moved", varray(E->get()));
 		gnode->connect("close_request", this, "_remove_node", varray(E->get()), CONNECT_DEFERRED);
-
+		gnode->connect("minimize_request", this, "_minimize_node", varray(E->get()), CONNECT_DEFERRED);
+		gnode->connect("maximize_request", this, "_maximize_node", varray(E->get()), CONNECT_DEFERRED);
 		if (E->get() != script->get_function_node_id(edited_func)) {
 			//function can't be erased
 			gnode->set_show_close_button(true);
+			gnode->set_show_minimize_button(true);
 		}
 
 		bool has_gnode_text = false;
-
-		if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
-			has_gnode_text = true;
-			LineEdit *line_edit = memnew(LineEdit);
-			line_edit->set_text(node->get_text());
-			line_edit->set_expand_to_text_length(true);
-			line_edit->add_font_override("font", get_font("source", "EditorFonts"));
-			gnode->add_child(line_edit);
-			line_edit->connect("text_changed", this, "_expression_text_changed", varray(E->get()));
-		} else {
-			String text = node->get_text();
-			if (!text.empty()) {
+		if (!script->is_node_minimized(edited_func, E->get())) {
+			if (Object::cast_to<VisualScriptExpression>(node.ptr())) {
 				has_gnode_text = true;
-				Label *label = memnew(Label);
-				label->set_text(text);
-				gnode->add_child(label);
+				LineEdit *line_edit = memnew(LineEdit);
+				line_edit->set_text(node->get_text());
+				line_edit->set_expand_to_text_length(true);
+				line_edit->add_font_override("font", get_font("source", "EditorFonts"));
+				gnode->add_child(line_edit);
+				line_edit->connect("text_changed", this, "_expression_text_changed", varray(E->get()));
+			} else {
+				String text = node->get_text();
+				if (!text.empty()) {
+					has_gnode_text = true;
+					Label *label = memnew(Label);
+					label->set_text(text);
+					gnode->add_child(label);
+				}
 			}
 		}
 
@@ -591,7 +594,15 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->add_color_override("title_color", c);
 			c.a = 0.7;
 			gnode->add_color_override("close_color", c);
+			gnode->add_color_override("minimize_color", c);
+			gnode->add_color_override("maximize_color", c);
 			gnode->add_style_override("frame", sbf);
+		}
+
+		if (script->is_node_minimized(edited_func, E->get())) {
+			graph->add_child(gnode);
+			gnode->set_minimized(true);
+			continue;
 		}
 
 		const Color mono_color = get_color("mono_color", "Editor");
@@ -2303,6 +2314,32 @@ void VisualScriptEditor::_node_moved(Vector2 p_from, Vector2 p_to, int p_id) {
 	undo_redo->add_undo_method(this, "_move_node", String(edited_func), p_id, p_from);
 }
 
+void VisualScriptEditor::_minimize_node(int p_id) {
+
+	undo_redo->create_action(TTR("Minimize VisualScript Node"));
+
+	undo_redo->add_do_method(script.ptr(), "set_node_minimized", edited_func, p_id, true);
+	undo_redo->add_undo_method(script.ptr(), "set_node_minimized", edited_func, p_id, false);
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+
+	undo_redo->commit_action();
+}
+
+void VisualScriptEditor::_maximize_node(int p_id) {
+
+	undo_redo->create_action(TTR("Maximize VisualScript Node"));
+
+	undo_redo->add_do_method(script.ptr(), "set_node_minimized", edited_func, p_id, false);
+	undo_redo->add_undo_method(script.ptr(), "set_node_minimized", edited_func, p_id, true);
+
+	undo_redo->add_do_method(this, "_update_graph");
+	undo_redo->add_undo_method(this, "_update_graph");
+
+	undo_redo->commit_action();
+}
+
 void VisualScriptEditor::_remove_node(int p_id) {
 
 	undo_redo->create_action(TTR("Remove VisualScript Node"));
@@ -3448,6 +3485,8 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_begin_node_move", &VisualScriptEditor::_begin_node_move);
 	ClassDB::bind_method("_end_node_move", &VisualScriptEditor::_end_node_move);
 	ClassDB::bind_method("_remove_node", &VisualScriptEditor::_remove_node);
+	ClassDB::bind_method("_minimize_node", &VisualScriptEditor::_minimize_node);
+	ClassDB::bind_method("_maximize_node", &VisualScriptEditor::_maximize_node);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
 	ClassDB::bind_method("_node_ports_changed", &VisualScriptEditor::_node_ports_changed);
 	ClassDB::bind_method("_available_node_doubleclicked", &VisualScriptEditor::_available_node_doubleclicked);

@@ -1041,12 +1041,16 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("title_color", "GraphNode", default_node_color);
 	default_node_color.a = 0.7;
 	theme->set_color("close_color", "GraphNode", default_node_color);
+	theme->set_color("minimize_color", "GraphNode", default_node_color);
+	theme->set_color("maximize_color", "GraphNode", default_node_color);
 
 	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
 	theme->set_constant("title_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_h_offset", "GraphNode", 20 * EDSCALE);
 	theme->set_constant("close_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_constant("minimize_h_offset", "GraphNode", 20 * EDSCALE);
+	theme->set_constant("minimize_offset", "GraphNode", 18 * EDSCALE);
 	theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
 
 	theme->set_icon("close", "GraphNode", theme->get_icon("GuiCloseCustomizable", "EditorIcons"));

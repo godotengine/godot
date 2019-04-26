@@ -67,15 +67,18 @@ private:
 
 	String title;
 	bool show_close;
+	bool show_minimize;
 	Vector2 offset;
 	bool comment;
 	bool resizable;
+	bool minimized;
 
 	bool resizing;
 	Vector2 resizing_from;
 	Vector2 resizing_from_size;
 
 	Rect2 close_rect;
+	Rect2 minimize_rect;
 
 	Vector<int> cache_y;
 
@@ -84,7 +87,6 @@ private:
 		int type;
 		Color color;
 	};
-
 	Vector<ConnCache> conn_input_cache;
 	Vector<ConnCache> conn_output_cache;
 
@@ -122,6 +124,9 @@ public:
 	int get_slot_type_right(int p_idx) const;
 	Color get_slot_color_right(int p_idx) const;
 
+	void set_minimized(bool p_minimized);
+	bool is_minimized() const;
+
 	void set_title(const String &p_title);
 	String get_title() const;
 
@@ -133,6 +138,9 @@ public:
 
 	void set_drag(bool p_drag);
 	Vector2 get_drag_from();
+
+	void set_show_minimize_button(bool p_enable);
+	bool is_minimize_button_visible() const;
 
 	void set_show_close_button(bool p_enable);
 	bool is_close_button_visible() const;

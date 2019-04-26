@@ -125,6 +125,7 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 	Node n;
 	n.node = p_node;
 	n.position = p_position;
+	n.minimized = false;
 
 	Ref<VisualShaderNodeUniform> uniform = n.node;
 	if (uniform.is_valid()) {
@@ -144,6 +145,20 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 	g->nodes[p_id] = n;
 
 	_queue_update();
+}
+
+void VisualShader::set_node_minimized(Type p_type, int p_id, bool p_minimized) {
+	ERR_FAIL_INDEX(p_type, TYPE_MAX);
+	Graph *g = &graph[p_type];
+	ERR_FAIL_COND(!g->nodes.has(p_id));
+	g->nodes[p_id].minimized = p_minimized;
+}
+
+bool VisualShader::is_node_minimized(Type p_type, int p_id) const {
+	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, false);
+	const Graph *g = &graph[p_type];
+	ERR_FAIL_COND_V(!g->nodes.has(p_id), false);
+	return g->nodes[p_id].minimized;
 }
 
 void VisualShader::set_node_position(Type p_type, int p_id, const Vector2 &p_position) {
@@ -686,6 +701,9 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "expression") {
 			((VisualShaderNodeExpression *)get_node(type, id).ptr())->set_expression(p_value);
 			return true;
+		} else if (what == "minimized") {
+			set_node_minimized(type, id, p_value);
+			return true;
 		}
 	}
 	return false;
@@ -755,6 +773,9 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "expression") {
 			r_ret = ((VisualShaderNodeExpression *)get_node(type, id).ptr())->get_expression();
 			return true;
+		} else if (what == "minimized") {
+			r_ret = is_node_minimized(type, id);
+			return true;
 		}
 	}
 	return false;
@@ -823,6 +844,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != NULL) {
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
+			p_list->push_back(PropertyInfo(Variant::BOOL, prop_name + "/minimized", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		}
 		p_list->push_back(PropertyInfo(Variant::POOL_INT_ARRAY, "nodes/" + String(type_string[i]) + "/connections", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 	}
@@ -1104,6 +1126,9 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_node_position", "type", "id", "position"), &VisualShader::set_node_position);
 	ClassDB::bind_method(D_METHOD("get_node_position", "type", "id"), &VisualShader::get_node_position);
 
+	ClassDB::bind_method(D_METHOD("set_node_minimized", "type", "id", "minimized"), &VisualShader::set_node_minimized);
+	ClassDB::bind_method(D_METHOD("is_node_minimized", "type", "id"), &VisualShader::is_node_minimized);
+
 	ClassDB::bind_method(D_METHOD("get_node_list", "type"), &VisualShader::get_node_list);
 	ClassDB::bind_method(D_METHOD("get_valid_node_id", "type"), &VisualShader::get_valid_node_id);
 
@@ -1148,6 +1173,7 @@ VisualShader::VisualShader() {
 		output->shader_mode = shader_mode;
 		graph[i].nodes[NODE_ID_OUTPUT].node = output;
 		graph[i].nodes[NODE_ID_OUTPUT].position = Vector2(400, 150);
+		graph[i].nodes[NODE_ID_OUTPUT].minimized = false;
 	}
 
 	dirty = true;
