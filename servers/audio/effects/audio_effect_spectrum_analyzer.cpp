@@ -130,7 +130,7 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 	}
 	uint64_t time = OS::get_singleton()->get_ticks_usec();
 	float diff = double(time - last_fft_time) / 1000000.0 + base->get_tap_back_pos();
-	diff -= AudioServer::get_singleton()->get_output_delay();
+	diff -= AudioServer::get_singleton()->get_output_latency();
 	float fft_time_size = float(fft_size) / mix_rate;
 
 	int fft_index = fft_pos;
