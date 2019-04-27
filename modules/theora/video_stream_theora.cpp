@@ -365,7 +365,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 float VideoStreamPlaybackTheora::get_time() const {
 
-	return time - AudioServer::get_singleton()->get_output_delay() - delay_compensation; //-((get_total())/(float)vi.rate);
+	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
 };
 
 Ref<Texture> VideoStreamPlaybackTheora::get_texture() {

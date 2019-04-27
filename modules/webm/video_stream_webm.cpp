@@ -375,7 +375,7 @@ int VideoStreamPlaybackWebm::get_mix_rate() const {
 inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 	if (video_frames_pos > 0) {
 
-		const double audio_delay = AudioServer::get_singleton()->get_output_delay();
+		const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 		const double video_time = video_frames[video_frames_pos - 1]->time;
 		return video_time >= time + audio_delay + delay_compensation;
 	}
@@ -383,7 +383,7 @@ inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 }
 
 bool VideoStreamPlaybackWebm::should_process(WebMFrame &video_frame) {
-	const double audio_delay = AudioServer::get_singleton()->get_output_delay();
+	const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 	return video_frame.time >= time + audio_delay + delay_compensation;
 }
 
