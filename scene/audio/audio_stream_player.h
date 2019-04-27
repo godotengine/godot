@@ -52,11 +52,13 @@ private:
 	Vector<AudioFrame> fadeout_buffer;
 	bool use_fadeout;
 
+	double time_mixed;
 
 
 	volatile float setseek;
 	volatile bool active;
 	volatile bool setstop;
+	volatile bool stop_has_priority;
 
 	float mix_volume_db;
 	float pitch_scale;
@@ -98,6 +100,7 @@ public:
 	void stop();
 	bool is_playing() const;
 	float get_playback_position();
+	float get_mix_time() const;
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
