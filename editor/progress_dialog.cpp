@@ -220,9 +220,8 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	last_progress_tick = OS::get_singleton()->get_ticks_usec();
 	if (cancel_hb->is_visible()) {
 		OS::get_singleton()->force_process_input();
-	} else {
-		OS::get_singleton()->process_and_drop_events();
 	}
+
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 	return cancelled;
 }
