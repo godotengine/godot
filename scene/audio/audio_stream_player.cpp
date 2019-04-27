@@ -94,6 +94,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 	//set volume for next mix
 	mix_volume_db = target_volume;
 
+	time_mixed += double(buffer_size) / AudioServer::get_singleton()->get_mix_rate();
 	_mix_to_bus(buffer,buffer_size);
 
 }
@@ -122,16 +123,22 @@ void AudioStreamPlayer::_mix_audio() {
 		_mix_internal(true);
 		stream_playback->stop();
 		setstop=false;
-	} else if (setseek >= 0.0) {
+	}
+
+	if (setseek >= 0.0 && !stop_has_priority) {
 		if (stream_playback->is_playing()) {
 
 			//fade out to avoid pops
 			_mix_internal(true);
+		} else {
+			time_mixed=0;
 		}
 		stream_playback->start(setseek);
 		setseek = -1.0; //reset seek
 		mix_volume_db = volume_db; //reset ramp
 	}
+
+	stop_has_priority = false;
 
 	_mix_internal(false);
 }
@@ -247,7 +254,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_valid()) {
 		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
-		setstop = false;
+		stop_has_priority=false;
 		active = true;
 		set_process_internal(true);
 	}
@@ -264,6 +271,7 @@ void AudioStreamPlayer::stop() {
 
 	if (stream_playback.is_valid() && active) {
 		setstop=true;
+		stop_has_priority=true;
 	}
 }
 
@@ -283,6 +291,10 @@ float AudioStreamPlayer::get_playback_position() {
 	}
 
 	return 0;
+}
+
+float AudioStreamPlayer::get_mix_time() const {
+	return time_mixed;
 }
 
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
@@ -388,6 +400,7 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayer::is_playing);
 	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayer::get_playback_position);
+	ClassDB::bind_method(D_METHOD("get_mix_time"), &AudioStreamPlayer::get_mix_time);
 
 	ClassDB::bind_method(D_METHOD("set_bus", "bus"), &AudioStreamPlayer::set_bus);
 	ClassDB::bind_method(D_METHOD("get_bus"), &AudioStreamPlayer::get_bus);
@@ -438,6 +451,7 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	fadeout_buffer.resize(512);
 	setstop=false;
 	use_fadeout=false;
+	time_mixed = 0;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
 }

@@ -73,6 +73,11 @@ void AudioDriver::update_mix_time(int p_frames) {
 		_last_mix_time = OS::get_singleton()->get_ticks_usec();
 }
 
+double AudioDriver::get_time_since_last_mix() const {
+
+	return (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+}
+
 double AudioDriver::get_time_to_next_mix() const {
 
 	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
@@ -1110,6 +1115,11 @@ double AudioServer::get_time_to_next_mix() const {
 	return AudioDriver::get_singleton()->get_time_to_next_mix();
 }
 
+double AudioServer::get_time_since_last_mix() const {
+
+	return AudioDriver::get_singleton()->get_time_since_last_mix();
+}
+
 AudioServer *AudioServer::singleton = NULL;
 
 void *AudioServer::audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data) {
@@ -1352,6 +1362,7 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_device", "device"), &AudioServer::set_device);
 
 	ClassDB::bind_method(D_METHOD("get_time_to_next_mix"), &AudioServer::get_time_to_next_mix);
+	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
 	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
 
 	ClassDB::bind_method(D_METHOD("capture_get_device_list"), &AudioServer::capture_get_device_list);
