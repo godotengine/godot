@@ -1411,26 +1411,29 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 void OS_Windows::set_clipboard(const String &p_text) {
 
+	// Convert LF line endings to CRLF in clipboard content
+	// Otherwise, line endings won't be visible when pasted in other software
+	String text = p_text.replace("\n", "\r\n");
+
 	if (!OpenClipboard(hWnd)) {
 		ERR_EXPLAIN("Unable to open clipboard.");
 		ERR_FAIL();
 	};
 	EmptyClipboard();
 
-	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (p_text.length() + 1) * sizeof(CharType));
+	HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, (text.length() + 1) * sizeof(CharType));
 	if (mem == NULL) {
 		ERR_EXPLAIN("Unable to allocate memory for clipboard contents.");
 		ERR_FAIL();
 	};
 	LPWSTR lptstrCopy = (LPWSTR)GlobalLock(mem);
-	memcpy(lptstrCopy, p_text.c_str(), (p_text.length() + 1) * sizeof(CharType));
-	//memset((lptstrCopy + p_text.length()), 0, sizeof(CharType));
+	memcpy(lptstrCopy, text.c_str(), (text.length() + 1) * sizeof(CharType));
 	GlobalUnlock(mem);
 
 	SetClipboardData(CF_UNICODETEXT, mem);
 
 	// set the CF_TEXT version (not needed?)
-	CharString utf8 = p_text.utf8();
+	CharString utf8 = text.utf8();
 	mem = GlobalAlloc(GMEM_MOVEABLE, utf8.length() + 1);
 	if (mem == NULL) {
 		ERR_EXPLAIN("Unable to allocate memory for clipboard contents.");
