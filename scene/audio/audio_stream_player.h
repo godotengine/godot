@@ -49,9 +49,12 @@ private:
 	Ref<AudioStreamPlayback> stream_playback;
 	Ref<AudioStream> stream;
 	Vector<AudioFrame> mix_buffer;
+	Vector<AudioFrame> fadeout_buffer;
+	bool use_fadeout;
 
 	volatile float setseek;
 	volatile bool active;
+	volatile bool setstop;
 
 	float mix_volume_db;
 	float pitch_scale;
@@ -71,6 +74,7 @@ private:
 	bool _is_active() const;
 
 	void _bus_layout_changed();
+	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
 
 protected:
 	void _validate_property(PropertyInfo &property) const;
@@ -106,7 +110,6 @@ public:
 	bool get_stream_paused() const;
 
 	Ref<AudioStreamPlayback> get_stream_playback();
-
 
 	AudioStreamPlayer();
 	~AudioStreamPlayer();
