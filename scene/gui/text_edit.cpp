@@ -825,6 +825,9 @@ void TextEdit::_notification(int p_what) {
 			// get the highlighted words
 			String highlighted_text = get_selection_text();
 
+			// check if highlighted words contains only whitespaces (tabs or spaces)
+			bool only_whitespaces_highlighted = highlighted_text.strip_edges() == String();
+
 			String line_num_padding = line_numbers_zero_padded ? "0" : " ";
 
 			int cursor_wrap_index = get_cursor_wrap_index();
@@ -1105,7 +1108,7 @@ void TextEdit::_notification(int p_what) {
 								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2i(char_ofs + char_margin + char_w + ofs_x - 1, ofs_y), Size2i(1, get_row_height())), border_color);
 						}
 
-						if (highlight_all_occurrences) {
+						if (highlight_all_occurrences && !only_whitespaces_highlighted) {
 							if (highlighted_text_col != -1) {
 
 								// if we are at the end check for new word on same line
