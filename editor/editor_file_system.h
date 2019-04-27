@@ -234,7 +234,7 @@ class EditorFileSystem : public Node {
 
 	static Error _resource_import(const String &p_path);
 
-	bool using_fat_32; //workaround for projects in FAT32 filesystem (pendrives, most of the time)
+	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
 protected:
 	void _notification(int p_what);
