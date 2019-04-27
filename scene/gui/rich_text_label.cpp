@@ -753,6 +753,8 @@ void RichTextLabel::_scroll_changed(double) {
 	else
 		scroll_following = false;
 
+	scroll_updated = true;
+
 	update();
 }
 
@@ -778,7 +780,6 @@ void RichTextLabel::_update_scroll() {
 		main->first_invalid_line = 0; //invalidate ALL
 		_validate_line_caches(main);
 	}
-	scroll_updated = true;
 }
 
 void RichTextLabel::_notification(int p_what) {
