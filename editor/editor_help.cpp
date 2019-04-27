@@ -97,8 +97,10 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		emit_signal("go_to_help", "class_name:" + p_select.substr(1, p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
-		String tag = p_select.substr(1, 8).rstrip(" ");
-		String link = p_select.substr(9, p_select.length());
+		int tag_end = p_select.find(" ");
+
+		String tag = p_select.substr(1, tag_end - 1);
+		String link = p_select.substr(tag_end + 1, p_select.length()).lstrip(" ");
 
 		String topic;
 		Map<String, int> *table = NULL;
@@ -230,7 +232,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	if (p_overview && p_method.description != "") {
-		class_desc->push_meta("@method" + p_method.name);
+		class_desc->push_meta("@method " + p_method.name);
 	}
 
 	class_desc->push_color(headline_color);
@@ -468,7 +470,7 @@ void EditorHelp::_update_doc() {
 			}
 			class_desc->push_cell();
 			if (describe) {
-				class_desc->push_meta("@member" + cd.properties[i].name);
+				class_desc->push_meta("@member " + cd.properties[i].name);
 			}
 
 			class_desc->push_font(doc_code_font);
@@ -1192,10 +1194,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
 
-			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
-			String link_tag = tag.substr(0, tag.find(" ")).rpad(8);
+			int tag_end = tag.find(" ");
+
+			String link_tag = tag.substr(0, tag_end);
+			String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+
 			p_rt->push_color(link_color);
-			p_rt->push_meta("@" + link_tag + link_target);
+			p_rt->push_meta("@" + link_tag + " " + link_target);
 			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
