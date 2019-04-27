@@ -544,7 +544,7 @@ public:
 
 		if (use_fps && animation->get_step() > 0) {
 			float max_frame = animation->get_length() / animation->get_step();
-			p_list->push_back(PropertyInfo(Variant::REAL, "frame", PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",0.01"));
+			p_list->push_back(PropertyInfo(Variant::REAL, "frame", PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1"));
 		} else {
 			p_list->push_back(PropertyInfo(Variant::REAL, "time", PROPERTY_HINT_RANGE, "0," + rtos(animation->get_length()) + ",0.01"));
 		}
@@ -4122,6 +4122,7 @@ void AnimationTrackEditor::_update_key_edit() {
 	key_edit = memnew(AnimationTrackKeyEdit);
 	key_edit->animation = animation;
 	key_edit->track = selection.front()->key().track;
+	key_edit->use_fps = timeline->is_using_fps();
 
 	float ofs = animation->track_get_key_time(key_edit->track, selection.front()->key().key);
 	key_edit->key_ofs = ofs;
