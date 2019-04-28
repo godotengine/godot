@@ -115,6 +115,9 @@ void TileMapEditor::_update_button_tool() {
 		default:
 			break;
 	}
+
+	if (tool != TOOL_PICKING)
+		last_tool = tool;
 }
 
 void TileMapEditor::_button_tool_select(int p_tool) {
@@ -949,11 +952,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 					if (mb->get_shift()) {
 
-#ifdef APPLE_STYLE_KEYS
 						if (mb->get_command())
-#else
-						if (mb->get_control())
-#endif
 							tool = TOOL_RECTANGLE_PAINT;
 						else
 							tool = TOOL_LINE_PAINT;
@@ -964,11 +963,8 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						_update_button_tool();
 						return true;
 					}
-#ifdef APPLE_STYLE_KEYS
+
 					if (mb->get_command()) {
-#else
-					if (mb->get_control()) {
-#endif
 						tool = TOOL_PICKING;
 						_pick_tile(over_tile);
 						_update_button_tool();
@@ -1136,11 +1132,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 					_start_undo(TTR("Erase TileMap"));
 
 					if (mb->get_shift()) {
-#ifdef APPLE_STYLE_KEYS
 						if (mb->get_command())
-#else
-						if (mb->get_control())
-#endif
 							tool = TOOL_RECTANGLE_ERASE;
 						else
 							tool = TOOL_LINE_ERASE;
@@ -1344,6 +1336,14 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (k.is_valid() && k->is_pressed()) {
 
+		if (last_tool == TOOL_NONE && tool == TOOL_PICKING && k->get_scancode() == KEY_SHIFT && k->get_command()) {
+			// trying to draw a rectangle with the painting tool, so change to the correct tool
+			tool = last_tool;
+
+			CanvasItemEditor::get_singleton()->update_viewport();
+			_update_button_tool();
+		}
+
 		if (k->get_scancode() == KEY_ESCAPE) {
 
 			if (tool == TOOL_PASTING)
@@ -1448,8 +1448,30 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			CanvasItemEditor::get_singleton()->update_viewport();
 			return true;
 		}
-	}
+	} else if (k.is_valid()) { // release event
 
+		if (tool == TOOL_NONE) {
+
+			if (k->get_scancode() == KEY_SHIFT && k->get_command()) {
+
+				tool = TOOL_PICKING;
+				_update_button_tool();
+			}
+		} else if (tool == TOOL_PICKING) {
+
+#ifdef APPLE_STYLE_KEYS
+			if (k->get_scancode() == KEY_META) {
+#else
+			if (k->get_scancode() == KEY_CONTROL) {
+#endif
+				// go back to that last tool if KEY_CONTROL was released
+				tool = last_tool;
+
+				CanvasItemEditor::get_singleton()->update_viewport();
+				_update_button_tool();
+			}
+		}
+	}
 	return false;
 }
 
@@ -1923,6 +1945,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	// Tools
 	paint_button = memnew(ToolButton);
 	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
+	paint_button->set_tooltip(TTR("Shift+RMB: Line Draw\nShift+Ctrl+RMB: Rectangle Paint"));
 	paint_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_NONE));
 	paint_button->set_toggle_mode(true);
 	toolbar->add_child(paint_button);
