@@ -2588,9 +2588,22 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 #ifdef APPLE_STYLE_KEYS
 				if (k->get_command()) {
-					cursor_set_column(0);
+					// Start at first column (it's slightly faster that way) and look for the first non-whitespace character.
+					int new_cursor_pos = 0;
+					for (int i = 0; i < text[cursor.line].length(); ++i) {
+						if (!_is_whitespace(text[cursor.line][i])) {
+							new_cursor_pos = i;
+							break;
+						}
+					}
+					if (new_cursor_pos == cursor.column) {
+						// We're already at the first text character, so move to the very beginning of the line.
+						cursor_set_column(0);
+					} else {
+						// We're somewhere to the right of the first text character; move to the first one.
+						cursor_set_column(new_cursor_pos);
+					}
 				} else if (k->get_alt()) {
-
 #else
 				if (k->get_alt()) {
 					scancode_handled = false;
