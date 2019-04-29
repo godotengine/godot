@@ -74,6 +74,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	StringName edited_anim;
 
 	ConfirmationDialog *split_sheet_dialog;
+	ScrollContainer *splite_sheet_scroll;
 	TextureRect *split_sheet_preview;
 	SpinBox *split_sheet_h;
 	SpinBox *split_sheet_v;
@@ -115,6 +116,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_spin_changed(double);
 	void _sheet_preview_input(const Ref<InputEvent> &p_event);
 	void _sheet_add_frames();
+	void _sheet_select_clear_all_frames();
 
 protected:
 	void _notification(int p_what);
