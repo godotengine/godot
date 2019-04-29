@@ -360,7 +360,7 @@ void EditorPropertyMember::_property_selected(const String &p_selected) {
 void EditorPropertyMember::_property_select() {
 
 	if (!selector) {
-		selector = memnew(PropertySelector);
+		selector = memnew(PropertySelectorDialog);
 		selector->connect("selected", this, "_property_selected");
 		add_child(selector);
 	}

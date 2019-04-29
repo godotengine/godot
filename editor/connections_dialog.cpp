@@ -60,8 +60,27 @@ class ConnectDialogBinds : public Object {
 
 	GDCLASS(ConnectDialogBinds, Object);
 
-public:
+	Vector<PropertyInfo> locked_params;
 	Vector<Variant> params;
+
+public:
+
+	void init(Vector<PropertyInfo> p_properties, Vector<Variant> p_params) {
+		locked_params.clear();
+		params.clear();
+		locked_params = p_properties;
+		params = p_params;
+
+		notify_changed();
+	}
+
+	Vector<PropertyInfo> get_locked_params() {
+		return locked_params;
+	}
+
+	Vector<Variant> *get_params() {
+		return &params;
+	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 
@@ -85,13 +104,28 @@ public:
 			int which = name.get_slice("/", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			r_ret = params[which];
-		} else
-			return false;
 
-		return true;
+			return true;
+		} else {
+			for (int i = 0; i < locked_params.size(); i++) {
+				if (locked_params[i].name == p_name) {
+					r_ret = (locked_params[i].class_name != StringName()) ? locked_params[i].class_name : StringName(Variant::get_type_name(locked_params[i].type));
+
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	void _get_property_list(List<PropertyInfo> *p_list) const {
+
+		for (int i = 0; i < locked_params.size(); i++) {
+			PropertyInfo info = locked_params[i];
+
+			p_list->push_back(PropertyInfo(Variant::STRING, info.name, PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE, "", PROPERTY_USAGE_EDITOR));
+		}
 
 		for (int i = 0; i < params.size(); i++) {
 			p_list->push_back(PropertyInfo(params[i].get_type(), "bind/" + itos(i + 1)));
@@ -106,6 +140,171 @@ public:
 	ConnectDialogBinds() {
 	}
 };
+
+/*
+Adds a new parameter bind to connection.
+*/
+void ArgumentsBindsDialog::_add_bind() {
+
+	if (cdbinds->get_params()->size() >= VARIANT_ARG_MAX)
+		return;
+	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
+
+	Variant value;
+
+	switch (vt) {
+		case Variant::BOOL: value = false; break;
+		case Variant::INT: value = 0; break;
+		case Variant::REAL: value = 0.0; break;
+		case Variant::STRING: value = ""; break;
+		case Variant::VECTOR2: value = Vector2(); break;
+		case Variant::RECT2: value = Rect2(); break;
+		case Variant::VECTOR3: value = Vector3(); break;
+		case Variant::TRANSFORM2D: value = Transform2D(); break;
+		case Variant::PLANE: value = Plane(); break;
+		case Variant::QUAT: value = Quat(); break;
+		case Variant::AABB: value = AABB(); break;
+		case Variant::BASIS: value = Basis(); break;
+		case Variant::TRANSFORM: value = Transform(); break;
+		case Variant::COLOR: value = Color(); break;
+		case Variant::NODE_PATH: value = NodePath(); break;
+		case Variant::_RID: value = RID(); break;
+		case Variant::OBJECT: value = Ref<Reference>(memnew(Reference)); break;
+		case Variant::DICTIONARY: value = Dictionary(); break;
+		case Variant::ARRAY: value = Array(); break;
+		case Variant::POOL_BYTE_ARRAY: value = PoolByteArray(); break;
+		case Variant::POOL_INT_ARRAY: value = PoolIntArray(); break;
+		case Variant::POOL_REAL_ARRAY: value = PoolRealArray(); break;
+		case Variant::POOL_STRING_ARRAY: value = PoolStringArray(); break;
+		case Variant::POOL_VECTOR2_ARRAY: value = PoolVector2Array(); break;
+		case Variant::POOL_VECTOR3_ARRAY: value = PoolVector3Array(); break;
+		case Variant::POOL_COLOR_ARRAY: value = PoolColorArray(); break;
+		default: {
+			ERR_FAIL();
+		} break;
+	}
+
+	ERR_FAIL_COND(value.get_type() == Variant::NIL);
+
+	cdbinds->get_params()->push_back(value);
+	cdbinds->notify_changed();
+
+	emit_signal("bindings_changed");
+}
+
+/*
+Remove parameter bind from connection.
+*/
+void ArgumentsBindsDialog::_remove_bind() {
+
+	String st = bind_editor->get_selected_path();
+	if (st == "")
+		return;
+	int idx = st.get_slice("/", 1).to_int() - 1;
+
+	ERR_FAIL_INDEX(idx, cdbinds->get_params()->size());
+	cdbinds->get_params()->remove(idx);
+	cdbinds->notify_changed();
+
+	emit_signal("bindings_changed");
+}
+
+void ArgumentsBindsDialog::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		bind_editor->edit(cdbinds);
+	}
+}
+
+void ArgumentsBindsDialog::_bind_methods() {
+
+	ClassDB::bind_method("_add_bind", &ArgumentsBindsDialog::_add_bind);
+	ClassDB::bind_method("_remove_bind", &ArgumentsBindsDialog::_remove_bind);
+
+	ADD_SIGNAL(MethodInfo("bindings_changed"));
+}
+
+Vector<PropertyInfo> ArgumentsBindsDialog::get_params() const {
+
+	return cdbinds->get_locked_params();
+}
+
+Vector<Variant> ArgumentsBindsDialog::get_binds() const {
+
+	return *cdbinds->get_params();
+}
+
+void ArgumentsBindsDialog::init(Vector<PropertyInfo> p_arguments, Vector<Variant> p_binds) {
+
+	cdbinds->init(p_arguments, p_binds);
+}
+
+ArgumentsBindsDialog::ArgumentsBindsDialog() {
+
+	vb_container = memnew(VBoxContainer);
+	add_child(vb_container);
+	vb_container->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
+
+	type_list = memnew(OptionButton);
+	type_list->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_bind_hb->add_child(type_list);
+	type_list->add_item("bool", Variant::BOOL);
+	type_list->add_item("int", Variant::INT);
+	type_list->add_item("real", Variant::REAL);
+	type_list->add_item("string", Variant::STRING);
+	type_list->add_item("Vector2", Variant::VECTOR2);
+	type_list->add_item("Rect2", Variant::RECT2);
+	type_list->add_item("Vector3", Variant::VECTOR3);
+	type_list->add_item("Transform2D", Variant::TRANSFORM2D);
+	type_list->add_item("Plane", Variant::PLANE);
+	type_list->add_item("Quat", Variant::QUAT);
+	type_list->add_item("AABB", Variant::AABB);
+	type_list->add_item("Basis", Variant::BASIS);
+	type_list->add_item("Transform", Variant::TRANSFORM);
+	type_list->add_item("Color", Variant::COLOR);
+	type_list->add_item("NodePath", Variant::NODE_PATH);
+	type_list->add_item("RID", Variant::_RID);
+	type_list->add_item("Object", Variant::OBJECT);
+	type_list->add_item("Dictionary", Variant::DICTIONARY);
+	type_list->add_item("Array", Variant::ARRAY);
+	type_list->add_item("PoolByteArray", Variant::POOL_BYTE_ARRAY);
+	type_list->add_item("PoolIntArray", Variant::POOL_INT_ARRAY);
+	type_list->add_item("PoolRealArray", Variant::POOL_REAL_ARRAY);
+	type_list->add_item("PoolStringArray", Variant::POOL_STRING_ARRAY);
+	type_list->add_item("PoolVector2Array", Variant::POOL_VECTOR2_ARRAY);
+	type_list->add_item("PoolVector3Array", Variant::POOL_VECTOR3_ARRAY);
+	type_list->add_item("PoolColorArray", Variant::POOL_COLOR_ARRAY);
+	type_list->select(0);
+
+	Button *add_bind = memnew(Button);
+	add_bind->set_text(TTR("Add"));
+	add_bind_hb->add_child(add_bind);
+	add_bind->connect("pressed", this, "_add_bind");
+
+	Button *del_bind = memnew(Button);
+	del_bind->set_text(TTR("Remove"));
+	add_bind_hb->add_child(del_bind);
+	del_bind->connect("pressed", this, "_remove_bind");
+
+	vb_container->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
+
+	bind_editor = memnew(EditorInspector);
+
+	vb_container->add_margin_child(TTR("Call Arguments:"), bind_editor, true);
+
+	set_as_toplevel(true);
+
+	cdbinds = memnew(ConnectDialogBinds);
+}
+
+ArgumentsBindsDialog::~ArgumentsBindsDialog() {
+
+	memdelete(cdbinds);
+}
+
+//ConnectDialog ==========================
 
 /*
 Signal automatically called by parent dialog.
@@ -141,78 +340,167 @@ void ConnectDialog::_tree_node_selected() {
 
 	Node *current = tree->get_selected();
 
-	if (!current)
+	if (!current) {
 		return;
-
-	dst_path = source->get_path_to(current);
-	get_ok()->set_disabled(false);
-}
-
-/*
-Adds a new parameter bind to connection.
-*/
-void ConnectDialog::_add_bind() {
-
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
-		return;
-	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
-
-	Variant value;
-
-	switch (vt) {
-		case Variant::BOOL: value = false; break;
-		case Variant::INT: value = 0; break;
-		case Variant::REAL: value = 0.0; break;
-		case Variant::STRING: value = ""; break;
-		case Variant::VECTOR2: value = Vector2(); break;
-		case Variant::RECT2: value = Rect2(); break;
-		case Variant::VECTOR3: value = Vector3(); break;
-		case Variant::PLANE: value = Plane(); break;
-		case Variant::QUAT: value = Quat(); break;
-		case Variant::AABB: value = AABB(); break;
-		case Variant::BASIS: value = Basis(); break;
-		case Variant::TRANSFORM: value = Transform(); break;
-		case Variant::COLOR: value = Color(); break;
-		default: {
-			ERR_FAIL();
-		} break;
 	}
 
-	ERR_FAIL_COND(value.get_type() == Variant::NIL);
+	dst_path = source->get_path_to(current);
 
-	cdbinds->params.push_back(value);
-	cdbinds->notify_changed();
+	if (mode_list->get_selected() != Mode::NEW_METHOD && current) {
+		method_selector->select_method_from_instance(current);
+	}
+
+	_check_valid();
 }
 
-/*
-Remove parameter bind from connection.
-*/
-void ConnectDialog::_remove_bind() {
+void ConnectDialog::_mode_changed(int p_mode) {
 
-	String st = bind_editor->get_selected_path();
-	if (st == "")
+	bool show_methods = p_mode != 0;
+
+	right_container->set_visible(show_methods);
+	dst_method->set_editable(!show_methods);
+
+	//Rect2 new_rect;
+
+	if (show_methods) {
+		//new_rect.size = Size2(900, 500) * EDSCALE;
+		connect_to_label->set_text(TTR("Connect To Node:"));
+		tree->set_connect_mode(SceneTreeEditor::ConnectMode::CONNECT_TO_NODE);
+
+		if (tree->get_selected()) {
+			method_selector->select_method_from_instance(tree->get_selected());
+		}
+	} else {
+		//new_rect.size = Size2(700, 500) * EDSCALE;
+		connect_to_label->set_text(TTR("Connect To Script:"));
+		tree->set_connect_mode(SceneTreeEditor::ConnectMode::CONNECT_TO_SCRIPT);
+	}
+
+	_check_valid();
+	//set_position(((get_viewport_rect().size - new_rect.size) / 2.0 + get_position() + get_size() / 2.0 - get_viewport_rect().size / 2.0).floor());
+	//set_size(new_rect.size);
+}
+
+void ConnectDialog::_method_text_changed(String p_method_text) {
+
+	_check_valid();
+}
+
+void ConnectDialog::_method_selected(String p_method) {
+
+	set_dst_method(p_method);
+}
+
+void ConnectDialog::_settings_flags_changed(int p_setting_idx) {
+
+	settings->get_popup()->set_item_checked(p_setting_idx, !settings->get_popup()->is_item_checked(p_setting_idx));
+
+	_set_settings_flags(settings->get_popup()->is_item_checked(CallMode::DEFERRED), settings->get_popup()->is_item_checked(CallMode::ONESHOT));
+}
+
+void ConnectDialog::_set_settings_flags(bool p_deferred, bool p_oneshot) {
+
+	String menu_button_text = TTR("Default");
+
+	if (!p_deferred && !p_oneshot) {
+		settings->set_text(menu_button_text);
 		return;
-	int idx = st.get_slice("/", 1).to_int() - 1;
+	}
 
-	ERR_FAIL_INDEX(idx, cdbinds->params.size());
-	cdbinds->params.remove(idx);
-	cdbinds->notify_changed();
+	menu_button_text = "";
+
+	if (p_deferred) {
+		menu_button_text += settings->get_popup()->get_item_text(CallMode::DEFERRED) + ", ";
+	}
+	if (p_oneshot) {
+		menu_button_text += settings->get_popup()->get_item_text(CallMode::ONESHOT) + ", ";
+	}
+	menu_button_text = menu_button_text.substr(0, menu_button_text.length() - 2);
+	settings->set_text(menu_button_text);
+}
+
+void ConnectDialog::_edit_arguments_pressed() {
+
+	args_dialog->set_title(TTR("Edit Signal Arguments"));
+	args_dialog->popup_centered_ratio(0.5);
+}
+
+void ConnectDialog::_bindings_changed() {
+
+	args_info->set_text(vformat(TTR("Connection has %d argument(s)."), args_dialog->get_params().size() + args_dialog->get_binds().size()));
+}
+
+void ConnectDialog::_bind_arguments_pressed() {
+
+
+}
+
+void ConnectDialog::_check_valid() {
+
+	bool show_error = false;
+	bool disable_ok = false;
+	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+
+	Node *target = tree->get_selected();
+	if (!target) {
+		return;
+	}
+
+	if (mode_list->get_selected_id() == Mode::EXISTING_METHOD) {
+
+		if (!target->has_method(dst_method->get_text())) {
+			error_label->set_text(TTR("Method not found in the selected node."));
+			show_error = true;
+			disable_ok = true;
+		}
+	} else if (mode_list->get_selected_id() == Mode::NEW_METHOD) {
+
+		if (!target && !_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root())) {
+			error_label->set_text(TTR("Scene does not contain any script."));
+			show_error = true;
+			disable_ok = true;
+		} else if (target->has_method(dst_method->get_text())) {
+			error_label->set_text(TTR("Method already defined. No new method will be created."));
+			error_label->add_color_override("font_color", get_color("warning_color", "Editor"));
+			show_error = true;
+		}
+	}
+
+	// Todo: enable or disable bind arguments button.
+
+	// Todo: arguments check.
+
+	if (show_error) {
+		error_label->show();
+	} else {
+		error_label->hide();
+	}
+	if (disable_ok) {
+		get_ok()->set_disabled(true);
+	} else {
+		get_ok()->set_disabled(false);
+	}
 }
 
 void ConnectDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		bind_editor->edit(cdbinds);
+	if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_THEME_CHANGED) {
+		settings->set_icon(Control::get_icon("arrow", "OptionButton"));
+		edit_args->set_icon(Control::get_icon("Edit", "EditorIcons"));
 	}
 }
 
 void ConnectDialog::_bind_methods() {
 
-	ClassDB::bind_method("_advanced_pressed", &ConnectDialog::_advanced_pressed);
+	ClassDB::bind_method("_mode_changed", &ConnectDialog::_mode_changed);
+	ClassDB::bind_method("_method_text_changed", &ConnectDialog::_method_text_changed);
+	ClassDB::bind_method("_method_selected", &ConnectDialog::_method_selected);
+	ClassDB::bind_method("_settings_flags_changed", &ConnectDialog::_settings_flags_changed);
 	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
 	ClassDB::bind_method("_tree_node_selected", &ConnectDialog::_tree_node_selected);
-	ClassDB::bind_method("_add_bind", &ConnectDialog::_add_bind);
-	ClassDB::bind_method("_remove_bind", &ConnectDialog::_remove_bind);
+	ClassDB::bind_method("_edit_arguments_pressed", &ConnectDialog::_edit_arguments_pressed);
+	ClassDB::bind_method("_bindings_changed", &ConnectDialog::_bindings_changed);
+	ClassDB::bind_method("_bind_arguments_pressed", &ConnectDialog::_bind_arguments_pressed);
 
 	ADD_SIGNAL(MethodInfo("connected"));
 }
@@ -248,21 +536,23 @@ StringName ConnectDialog::get_dst_method_name() const {
 void ConnectDialog::set_dst_method(const StringName &p_method) {
 
 	dst_method->set_text(p_method);
+
+	_check_valid();
 }
 
 Vector<Variant> ConnectDialog::get_binds() const {
 
-	return cdbinds->params;
+	return args_dialog->get_binds();
 }
 
 bool ConnectDialog::get_deferred() const {
 
-	return deferred->is_pressed();
+	return settings->get_popup()->is_item_checked(CallMode::DEFERRED);
 }
 
 bool ConnectDialog::get_oneshot() const {
 
-	return oneshot->is_pressed();
+	return settings->get_popup()->is_item_checked(CallMode::ONESHOT);
 }
 
 /*
@@ -278,67 +568,91 @@ Initialize ConnectDialog and populate fields with expected data.
 If creating a connection from scratch, sensible defaults are used.
 If editing an existing connection, previous data is retained.
 */
-void ConnectDialog::init(Connection c, bool bEdit) {
+void ConnectDialog::init(const String &p_for_signal, Connection c, int p_mode, bool bEdit) {
+
+	from_signal->set_text(p_for_signal);
+	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
+
+	int active_mode = p_mode;
+	mode_list->set_item_disabled(Mode::NEW_METHOD, false);
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (!profile.is_null()) {
+
+		if (profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT)) {
+
+			active_mode = Mode::EXISTING_METHOD;
+			mode_list->set_item_disabled(Mode::NEW_METHOD, true);
+		}
+	}
 
 	source = static_cast<Node *>(c.source);
 	signal = c.signal;
 
-	tree->set_selected(NULL);
-	tree->set_marked(source, true);
+	// Retrieve signal arguments and bindings.
+	Vector<PropertyInfo> arguments;
+	List<MethodInfo> signal_list;
+	c.source->get_signal_list(&signal_list);
 
-	if (c.target) {
-		get_ok()->set_disabled(false);
-		set_dst_node(static_cast<Node *>(c.target));
-		set_dst_method(c.method);
-	} else {
-		get_ok()->set_disabled(true);
+	for (List<MethodInfo>::Element *E = signal_list.front(); E; E = E->next()) {
+		if (E->get().name == signal) {
+			for (List<PropertyInfo>::Element *A = E->get().arguments.front(); A; A = A->next()) {
+				arguments.push_back(A->get());
+			}
+			break;
+		}
 	}
+
+	args_dialog->init(arguments, c.binds);
+	_bindings_changed();
+
+	if (!c.target) {
+		// Creating a brand new connection, selecting initial target node and method.
+		if (active_mode == Mode::NEW_METHOD) {
+			// Select first node found with a script.
+			Node *dst_node = static_cast<Node *>(c.source);
+			dst_node = dst_node->get_owner() ? dst_node->get_owner() : dst_node;
+
+			if (!dst_node || dst_node->get_script().is_null()) {
+				dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
+			}
+			c.target = dst_node;
+		} else if (active_mode == Mode::EXISTING_METHOD) {
+			// Select itself and the its first method found.
+			c.target = c.source;
+			method_selector->select_method_from_instance(c.source);
+
+			// First method in the PropertySelector is the root's grandchild.
+			TreeItem *item = method_selector->get_search_options()->get_root()->get_children()->get_children();
+			if (item) {
+				c.method = item->get_metadata(0);
+			}
+		}
+	}
+	set_dst_node(static_cast<Node *>(c.target));
+	set_dst_method(c.method);
+
+	// Index and IDs are the same in this case.
+	mode_list->select(active_mode);
+	_mode_changed(active_mode);
+
+	//_check_valid();
+
+	tree->set_marked(source, true);
 
 	bool bDeferred = (c.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
 	bool bOneshot = (c.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
 
-	deferred->set_pressed(bDeferred);
-	oneshot->set_pressed(bOneshot);
-
-	cdbinds->params.clear();
-	cdbinds->params = c.binds;
-	cdbinds->notify_changed();
+	settings->get_popup()->set_item_checked(CallMode::DEFERRED, bDeferred);
+	settings->get_popup()->set_item_checked(CallMode::ONESHOT, bOneshot);
+	_set_settings_flags(bDeferred, bOneshot);
 
 	bEditMode = bEdit;
 }
 
-void ConnectDialog::popup_dialog(const String &p_for_signal, bool p_advanced) {
-
-	advanced->set_pressed(p_advanced);
-	from_signal->set_text(p_for_signal);
-	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
-	vbc_right->set_visible(p_advanced);
-
-	if (p_advanced) {
-
-		popup_centered(Size2(900, 500) * EDSCALE);
-		connect_to_label->set_text("Connect to Node:");
-		tree->set_connect_to_script_mode(false);
-		error_label->hide();
-	} else {
-		popup_centered(Size2(700, 500) * EDSCALE);
-		connect_to_label->set_text("Connect to Script:");
-		tree->set_connect_to_script_mode(true);
-
-		if (!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root())) {
-			error_label->show();
-		} else {
-			error_label->hide();
-		}
-	}
-}
-
-void ConnectDialog::_advanced_pressed() {
-
-	popup_dialog(from_signal->get_text(), advanced->is_pressed());
-}
-
 ConnectDialog::ConnectDialog() {
+
+	set_h_grow_direction(GrowDirection::GROW_DIRECTION_BOTH);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -358,7 +672,8 @@ ConnectDialog::ConnectDialog() {
 	tree = memnew(SceneTreeEditor(false));
 	tree->get_scene_tree()->connect("item_activated", this, "_ok");
 	tree->connect("node_selected", this, "_tree_node_selected");
-	tree->set_connect_to_script_mode(true);
+	tree->set_show_enabled_subscene(true);
+	tree->set_connect_mode(SceneTreeEditor::ConnectMode::CONNECT_TO_SCRIPT);
 
 	Node *mc = vbc_left->add_margin_child(TTR("Connect To Script:"), tree, true);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
@@ -368,81 +683,83 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_child(error_label);
 	error_label->hide();
 
-	vbc_right = memnew(VBoxContainer);
-	main_hb->add_child(vbc_right);
-	vbc_right->set_h_size_flags(SIZE_EXPAND_FILL);
-	vbc_right->hide();
+	right_container = memnew(VBoxContainer);
+	main_hb->add_child(right_container);
+	right_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	right_container->hide();
 
-	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
+	method_selector = memnew(PropertySelector);
+	right_container->add_child(method_selector);
+	method_selector->set_h_size_flags(SIZE_EXPAND_FILL);
+	method_selector->set_v_size_flags(SIZE_EXPAND_FILL);
+	method_selector->connect("item_selected", this, "_method_selected");
+	method_selector->connect("request_hide", this, "_closed");
 
-	type_list = memnew(OptionButton);
-	type_list->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_bind_hb->add_child(type_list);
-	type_list->add_item("bool", Variant::BOOL);
-	type_list->add_item("int", Variant::INT);
-	type_list->add_item("real", Variant::REAL);
-	type_list->add_item("string", Variant::STRING);
-	type_list->add_item("Vector2", Variant::VECTOR2);
-	type_list->add_item("Rect2", Variant::RECT2);
-	type_list->add_item("Vector3", Variant::VECTOR3);
-	type_list->add_item("Plane", Variant::PLANE);
-	type_list->add_item("Quat", Variant::QUAT);
-	type_list->add_item("AABB", Variant::AABB);
-	type_list->add_item("Basis", Variant::BASIS);
-	type_list->add_item("Transform", Variant::TRANSFORM);
-	type_list->add_item("Color", Variant::COLOR);
-	type_list->select(0);
+	HBoxContainer *rbottom_hb = memnew(HBoxContainer);
+	right_container->add_child(rbottom_hb);
 
-	Button *add_bind = memnew(Button);
-	add_bind->set_text(TTR("Add"));
-	add_bind_hb->add_child(add_bind);
-	add_bind->connect("pressed", this, "_add_bind");
+	Button *bind_arguments = memnew(Button);
+	bind_arguments->set_text(TTR("Bind Arguments (Dummy)"));
+	rbottom_hb->add_child(bind_arguments);
+	bind_arguments->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
+	bind_arguments->connect("pressed", this, "_bind_arguments_pressed");
 
-	Button *del_bind = memnew(Button);
-	del_bind->set_text(TTR("Remove"));
-	add_bind_hb->add_child(del_bind);
-	del_bind->connect("pressed", this, "_remove_bind");
-
-	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
-
-	bind_editor = memnew(EditorInspector);
-
-	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
+	/*
+	bind_info = memnew(Label);
+	bind_info->set_text(TTR("Bindings will be added."));
+	bind_info->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("disabled_font_color", "Editor"));
+	bind_info->set_h_size_flags(SIZE_EXPAND);
+	rbottom_hb->add_child(bind_info);
+	*/
 
 	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child("Method to Create:", dstm_hb);
+	vbc_left->add_margin_child("Connect To:", dstm_hb);
+
+	mode_list = memnew(OptionButton);
+	mode_list->set_h_size_flags(SIZE_FILL);
+	dstm_hb->add_child(mode_list);
+	mode_list->add_item(TTR("New Method"), Mode::NEW_METHOD);
+	mode_list->add_item(TTR("Existing Method"), Mode::EXISTING_METHOD);
+	mode_list->select(0);
+	mode_list->connect("item_selected", this, "_mode_changed");
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(SIZE_EXPAND_FILL);
+	dst_method->connect("text_changed", this, "_method_text_changed");
 	dstm_hb->add_child(dst_method);
 
-	advanced = memnew(CheckBox);
-	dstm_hb->add_child(advanced);
-	advanced->set_text(TTR("Advanced..."));
-	advanced->connect("pressed", this, "_advanced_pressed");
+	settings = memnew(MenuButton);
+	settings->set_h_size_flags(SIZE_FILL);
+	settings->get_popup()->set_hide_on_checkable_item_selection(false);
+	settings->get_popup()->add_check_item(TTR("Deferred"), CallMode::DEFERRED);
+	settings->get_popup()->set_item_tooltip(0, TTR("Connect the signal in deferred mode.") + "\n" + TTR("Signal emissions will be stored in a queue and fired at idle time."));
+	settings->get_popup()->add_check_item(TTR("Oneshot"), CallMode::ONESHOT);
+	settings->get_popup()->set_item_tooltip(1, TTR("Connect the signal in oneshot mode.") + "\n" + TTR("The signal will disconnect itself after first emission."));
+	settings->get_popup()->connect("index_pressed", this, "_settings_flags_changed");
+	dstm_hb->add_child(settings);
 
-	/*
-	dst_method_list = memnew( MenuButton );
-	dst_method_list->set_text("List...");
-	dst_method_list->set_anchor( MARGIN_RIGHT, ANCHOR_END );
-	dst_method_list->set_anchor( MARGIN_LEFT, ANCHOR_END );
-	dst_method_list->set_anchor( MARGIN_TOP, ANCHOR_END );
-	dst_method_list->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
-	dst_method_list->set_begin( Point2( 70,59) );
-	dst_method_list->set_end( Point2( 15,39  ) );
-	*/
+	HBoxContainer *args_hb = memnew(HBoxContainer);
+	args_hb->set_alignment(BoxContainer::AlignMode::ALIGN_END);
+	vbc_left->add_child(args_hb);
 
-	deferred = memnew(CheckButton);
-	deferred->set_text(TTR("Deferred"));
-	vbc_right->add_child(deferred);
+	args_info = memnew(Label);
+	args_info->set_text("");
+	args_info->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("disabled_font_color", "Editor"));
+	args_info->set_h_size_flags(SIZE_EXPAND);
+	args_hb->add_child(args_info);
 
-	oneshot = memnew(CheckButton);
-	oneshot->set_text(TTR("Oneshot"));
-	vbc_right->add_child(oneshot);
+	edit_args = memnew(ToolButton);
+	edit_args->set_text(TTR("Edit Arguments..."));
+	edit_args->set_h_size_flags(SIZE_FILL);
+	edit_args->connect("pressed", this, "_edit_arguments_pressed");
+	args_hb->add_child(edit_args);
+
+	args_dialog = memnew(ArgumentsBindsDialog);
+	args_dialog->set_as_toplevel(true);
+	args_dialog->connect("bindings_changed", this, "_bindings_changed");
+	add_child(args_dialog);
 
 	set_as_toplevel(true);
-
-	cdbinds = memnew(ConnectDialogBinds);
 
 	error = memnew(ConfirmationDialog);
 	add_child(error);
@@ -450,10 +767,7 @@ ConnectDialog::ConnectDialog() {
 	get_ok()->set_text(TTR("Connect"));
 }
 
-ConnectDialog::~ConnectDialog() {
-
-	memdelete(cdbinds);
-}
+ConnectDialog::~ConnectDialog() { }
 
 //ConnectionsDock ==========================
 
@@ -649,23 +963,25 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 		midname[i] = c;
 	}
 
+	/*
 	Node *dst_node = selectedNode->get_owner() ? selectedNode->get_owner() : selectedNode;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
 	}
+	*/
 
 	StringName dst_method = "_on_" + midname + "_" + signal;
 
 	Connection c;
 	c.source = selectedNode;
 	c.signal = StringName(signalname);
-	c.target = dst_node;
+	c.target = NULL;
 	c.method = dst_method;
-
-	//connect_dialog->set_title(TTR("Connect Signal: ") + signalname);
-	connect_dialog->popup_dialog(signalname, false);
-	connect_dialog->init(c);
+	
+	connect_dialog->init(signalname, c, ConnectDialog::Mode::NEW_METHOD, false);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
+
+	connect_dialog->popup_centered_ratio();
 }
 
 /*
@@ -677,9 +993,10 @@ void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 	Node *dst = static_cast<Node *>(cToEdit.target);
 
 	if (src && dst) {
+		connect_dialog->init(cToEdit.signal, cToEdit, ConnectDialog::Mode::EXISTING_METHOD, true);
 		connect_dialog->set_title(TTR("Edit Connection:") + cToEdit.signal);
+
 		connect_dialog->popup_centered_ratio();
-		connect_dialog->init(cToEdit, true);
 	}
 }
 
