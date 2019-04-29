@@ -32,27 +32,23 @@
 #define EDITOR_PATH_H
 
 #include "editor_data.h"
-#include "scene/gui/control.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/menu_button.h"
 
-class EditorPath : public Control {
+class EditorPath : public MenuButton {
 
-	GDCLASS(EditorPath, Control);
+	GDCLASS(EditorPath, MenuButton);
 
 	EditorHistory *history;
 
 	Vector<ObjectID> objects;
-	PopupMenu *popup;
-	bool mouse_over;
 	EditorPath();
 
-	void _popup_select(int p_idx);
-	void _gui_input(const Ref<InputEvent> &p_event);
+	void _id_pressed(int p_idx);
+	void _about_to_show();
 	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 
 public:
 	void update_path();
