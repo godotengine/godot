@@ -301,7 +301,7 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/android'])
     env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL'])
-    env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z', 'dl'])
+    env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'GLESv2', 'android', 'log', 'z', 'dl'])
 
 # Return NDK version string in source.properties (adapted from the Chromium project).
 def get_ndk_version(path):

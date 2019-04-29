@@ -202,6 +202,10 @@ Error RasterizerGLES2::is_viable() {
 			return ERR_UNAVAILABLE;
 		}
 	}
+
+	if (GLAD_GL_EXT_framebuffer_multisample) {
+		glRenderbufferStorageMultisample = glRenderbufferStorageMultisampleEXT;
+	}
 #endif // GLES_OVER_GL
 
 #endif // GLAD_ENABLED

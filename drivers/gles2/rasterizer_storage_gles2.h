@@ -92,6 +92,8 @@ public:
 
 		bool support_shadow_cubemaps;
 
+		bool multisample_supported;
+
 		GLuint depth_internalformat;
 		GLuint depth_type;
 
@@ -1129,9 +1131,13 @@ public:
 
 	struct RenderTarget : public RID_Data {
 		GLuint fbo;
-
 		GLuint color;
 		GLuint depth;
+
+		GLuint multisample_fbo;
+		GLuint multisample_color;
+		GLuint multisample_depth;
+		bool multisample_active;
 
 		// TODO post processing effects?
 
@@ -1179,6 +1185,10 @@ public:
 				fbo(0),
 				color(0),
 				depth(0),
+				multisample_fbo(0),
+				multisample_color(0),
+				multisample_depth(0),
+				multisample_active(false),
 				width(0),
 				height(0),
 				used_in_frame(false),
