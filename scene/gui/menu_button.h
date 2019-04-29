@@ -52,6 +52,7 @@ class MenuButton : public Button {
 	void _gui_input(Ref<InputEvent> p_event);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

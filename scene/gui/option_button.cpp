@@ -72,6 +72,11 @@ void OptionButton::_notification(int p_what) {
 
 		Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
 		arrow->draw(ci, ofs, clr);
+	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (!is_visible_in_tree()) {
+			popup->hide();
+		}
 	}
 }
 
