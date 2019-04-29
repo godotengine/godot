@@ -64,7 +64,7 @@ class ConnectDialog : public ConfirmationDialog {
 	VBoxContainer *vbc_right;
 
 	SceneTreeEditor *tree;
-	ConfirmationDialog *error;
+	AcceptDialog *error;
 	EditorInspector *bind_editor;
 	OptionButton *type_list;
 	CheckButton *deferred;
