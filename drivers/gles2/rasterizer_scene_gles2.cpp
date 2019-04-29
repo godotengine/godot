@@ -42,6 +42,16 @@
 #define glClearDepth glClearDepthf
 #endif
 
+#ifndef GLES_OVER_GL
+#ifdef IPHONE_ENABLED
+#include <OpenGLES/ES2/glext.h>
+//void *glResolveMultisampleFramebufferAPPLE;
+
+#define GL_READ_FRAMEBUFFER 0x8CA8
+#define GL_DRAW_FRAMEBUFFER 0x8CA9
+#endif
+#endif
+
 static const GLenum _cube_side_enum[6] = {
 
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -1146,6 +1156,30 @@ void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::G
 	if (p_material->shader->spatial.uses_time) {
 		VisualServerRaster::redraw_request();
 	}
+}
+
+void RasterizerSceneGLES2::_copy_texture_to_front_buffer(GLuint p_texture) {
+
+	//copy to front buffer
+	glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
+
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glDepthFunc(GL_LEQUAL);
+	glColorMask(1, 1, 1, 1);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, p_texture);
+
+	glViewport(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height);
+
+	storage->shaders.copy.bind();
+
+	storage->bind_quad_array();
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void RasterizerSceneGLES2::_fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_depth_pass, bool p_shadow_pass) {
@@ -2689,7 +2723,11 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		if (storage->frame.current_rt->external.fbo != 0) {
 			current_fb = storage->frame.current_rt->external.fbo;
 		} else {
-			current_fb = storage->frame.current_rt->fbo;
+			if (storage->frame.current_rt->multisample_active) {
+				current_fb = storage->frame.current_rt->multisample_fbo;
+			} else {
+				current_fb = storage->frame.current_rt->fbo;
+			}
 		}
 		env = environment_owner.getornull(p_environment);
 
@@ -2838,7 +2876,38 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	if (storage->frame.current_rt && state.used_screen_texture) {
 		//copy screen texture
+
+		if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
+			// Resolve framebuffer to front buffer before copying
+#ifdef GLES_OVER_GL
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+			glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#elif IPHONE_ENABLED
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+			glResolveMultisampleFramebufferAPPLE();
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#else
+			// In GLES2 Blit is not available, so just copy color texture manually
+			_copy_texture_to_front_buffer(storage->frame.current_rt->multisample_color);
+#endif
+		}
+
 		storage->canvas->_copy_screen(Rect2());
+
+		if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
+			// Rebind the current framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, current_fb);
+			glViewport(0, 0, viewport_width, viewport_height);
+		}
 	}
 	// alpha pass
 
@@ -2850,6 +2919,22 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, true, false);
 
 	glDisable(GL_DEPTH_TEST);
+
+	if (storage->frame.current_rt && storage->frame.current_rt->multisample_active) {
+#ifdef GLES_OVER_GL
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->multisample_fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+		glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+#else
+		// In GLES2 Blit is not available, so just copy color texture manually
+		_copy_texture_to_front_buffer(storage->frame.current_rt->multisample_color);
+#endif
+	}
 
 	//#define GLES2_SHADOW_ATLAS_DEBUG_VIEW
 
