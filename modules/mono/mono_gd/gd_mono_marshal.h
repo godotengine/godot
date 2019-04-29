@@ -61,13 +61,16 @@ T unbox(MonoObject *p_obj) {
 struct ExportInfo {
 	struct ArrayInfo {
 		Variant::Type element_type;
+		String element_native_name;
 
 		ArrayInfo() :
 				element_type(Variant::NIL) {}
 	} array;
 	struct DictionaryInfo {
 		Variant::Type key_type;
+		String key_native_name;
 		Variant::Type value_type;
+		String value_native_name;
 
 		DictionaryInfo() :
 				key_type(Variant::NIL),
