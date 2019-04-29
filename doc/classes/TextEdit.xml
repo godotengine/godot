@@ -41,6 +41,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns if the given line is foldable, that is, it has indented lines right below it.
 			</description>
 		</method>
 		<method name="clear_colors">
@@ -120,6 +121,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Folds all lines that are possible to be folded (see [method can_fold]).
 			</description>
 		</method>
 		<method name="fold_line">
@@ -128,6 +130,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Folds the given line, if possible (see [method can_fold]).
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="const">
@@ -165,6 +168,7 @@
 			<return type="PopupMenu">
 			</return>
 			<description>
+				Returns the [PopupMenu] of this [TextEdit]. By default, this menu is displayed when right-clicking on the [TextEdit].
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
@@ -231,6 +235,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Returns if the given line is folded.
 			</description>
 		</method>
 		<method name="is_line_hidden" qualifiers="const">
@@ -346,6 +351,7 @@
 			<argument index="0" name="line" type="int">
 			</argument>
 			<description>
+				Unfolds the given line, if folded.
 			</description>
 		</method>
 		<method name="unhide_all_lines">
@@ -375,6 +381,12 @@
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code], a right click displays the context menu.
+		</member>
+		<member name="draw_tabs" type="bool" setter="set_draw_tabs" getter="is_drawing_tabs">
+			If [code]true[/code], the "tab" character will have a visible representation.
+		</member>
+		<member name="fold_gutter" type="bool" setter="set_fold_gutter_enabled" getter="is_fold_gutter_enabled">
+			If [code]true[/code], the fold gutter is visible. This enables folding groups of indented lines.
 		</member>
 		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
