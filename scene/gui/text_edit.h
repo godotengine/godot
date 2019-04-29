@@ -166,6 +166,7 @@ private:
 		Ref<Texture> can_fold_icon;
 		Ref<Texture> folded_icon;
 		Ref<Texture> folded_eol_icon;
+		Ref<Texture> executing_icon;
 		Ref<StyleBox> style_normal;
 		Ref<StyleBox> style_focus;
 		Ref<StyleBox> style_readonly;
@@ -187,6 +188,7 @@ private:
 		Color selection_color;
 		Color mark_color;
 		Color breakpoint_color;
+		Color executing_line_color;
 		Color code_folding_color;
 		Color current_line_color;
 		Color line_length_guideline_color;
@@ -345,6 +347,8 @@ private:
 
 	bool context_menu_enabled;
 
+	int executing_line;
+
 	int get_visible_rows() const;
 	int get_total_visible_rows() const;
 
@@ -486,6 +490,8 @@ public:
 	void set_line_as_marked(int p_line, bool p_marked);
 	void set_line_as_breakpoint(int p_line, bool p_breakpoint);
 	bool is_line_set_as_breakpoint(int p_line) const;
+	void set_executing_line(int p_line);
+	void clear_executing_line();
 	void set_line_as_safe(int p_line, bool p_safe);
 	bool is_line_set_as_safe(int p_line) const;
 	void get_breakpoints(List<int> *p_breakpoints) const;

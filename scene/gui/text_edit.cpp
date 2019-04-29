@@ -988,6 +988,24 @@ void TextEdit::_notification(int p_what) {
 							draw_texture_rect(info_icon, Rect2(icon_pos, icon_size));
 						}
 
+						// draw execution marker
+						if (executing_line == line) {
+							if (draw_breakpoint_gutter) {
+								int icon_extra_size = 4;
+								int vertical_gap = (get_row_height() * 40) / 100;
+								int horizontal_gap = (cache.breakpoint_gutter_width * 30) / 100;
+								int marker_height = get_row_height() - (vertical_gap * 2) + icon_extra_size;
+								int marker_width = cache.breakpoint_gutter_width - (horizontal_gap * 2) + icon_extra_size;
+								cache.executing_icon->draw_rect(ci, Rect2(cache.style_normal->get_margin(MARGIN_LEFT) + horizontal_gap - 2 - icon_extra_size / 2, ofs_y + vertical_gap - icon_extra_size / 2, marker_width, marker_height), false, Color(cache.executing_line_color.r, cache.executing_line_color.g, cache.executing_line_color.b));
+							} else {
+#ifdef TOOLS_ENABLED
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y + get_row_height() - EDSCALE, xmargin_end - xmargin_beg, EDSCALE), cache.executing_line_color);
+#else
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(xmargin_beg + ofs_x, ofs_y, xmargin_end - xmargin_beg, get_row_height()), cache.executing_line_color);
+#endif
+							}
+						}
+
 						// draw fold markers
 						if (draw_fold_gutter) {
 							int horizontal_gap = (cache.fold_gutter_width * 30) / 100;
@@ -4414,6 +4432,7 @@ void TextEdit::_update_caches() {
 	cache.current_line_color = get_color("current_line_color");
 	cache.line_length_guideline_color = get_color("line_length_guideline_color");
 	cache.breakpoint_color = get_color("breakpoint_color");
+	cache.executing_line_color = get_color("executing_line_color");
 	cache.code_folding_color = get_color("code_folding_color");
 	cache.brace_mismatch_color = get_color("brace_mismatch_color");
 	cache.word_highlighted_color = get_color("word_highlighted_color");
@@ -4431,6 +4450,7 @@ void TextEdit::_update_caches() {
 	cache.folded_icon = get_icon("folded");
 	cache.can_fold_icon = get_icon("fold");
 	cache.folded_eol_icon = get_icon("GuiEllipsis", "EditorIcons");
+	cache.executing_icon = get_icon("MainPlay", "EditorIcons");
 	text.set_font(cache.font);
 
 	if (syntax_highlighter) {
@@ -4994,6 +5014,17 @@ void TextEdit::set_line_as_safe(int p_line, bool p_safe) {
 bool TextEdit::is_line_set_as_safe(int p_line) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), false);
 	return text.is_safe(p_line);
+}
+
+void TextEdit::set_executing_line(int p_line) {
+	ERR_FAIL_INDEX(p_line, text.size());
+	executing_line = p_line;
+	update();
+}
+
+void TextEdit::clear_executing_line() {
+	executing_line = -1;
+	update();
 }
 
 bool TextEdit::is_line_set_as_breakpoint(int p_line) const {
@@ -6481,6 +6512,8 @@ TextEdit::TextEdit() {
 	menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
 	menu->connect("id_pressed", this, "menu_option");
 	first_draw = true;
+
+	executing_line = -1;
 }
 
 TextEdit::~TextEdit() {
