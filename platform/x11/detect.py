@@ -1,7 +1,7 @@
 import os
 import platform
 import sys
-from methods import get_compiler_version, using_gcc
+from methods import get_compiler_version, using_gcc, using_clang
 
 
 def is_active():
@@ -182,6 +182,12 @@ def configure(env):
     if using_gcc(env):
         version = get_compiler_version(env)
         if version != None and version[0] >= '6':
+            env.Append(CCFLAGS=['-fpie'])
+            env.Append(LINKFLAGS=['-no-pie'])
+    # Do the same for clang should be fine with Clang 4 and higher
+    if using_clang(env):
+        version = get_compiler_version(env)
+        if version != None and version[0] >= '4':
             env.Append(CCFLAGS=['-fpie'])
             env.Append(LINKFLAGS=['-no-pie'])
 
