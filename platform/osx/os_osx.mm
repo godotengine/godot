@@ -337,6 +337,11 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
+
+	if (OS_OSX::singleton->get_main_loop()) {
+		OS_OSX::singleton->input->release_pressed_events();
+	}
+
 	/*
 	[window->nsgl.context update];
 
