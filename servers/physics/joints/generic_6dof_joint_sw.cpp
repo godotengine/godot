@@ -107,7 +107,7 @@ real_t G6DOFRotationalLimitMotorSW::solveAngularLimits(
 	// correction velocity
 	real_t motor_relvel = m_limitSoftness * (target_velocity - m_damping * rel_vel);
 
-	if (motor_relvel < CMP_EPSILON && motor_relvel > -CMP_EPSILON) {
+	if (Math::is_zero_approx(motor_relvel)) {
 		return 0.0f; //no need for applying force
 	}
 

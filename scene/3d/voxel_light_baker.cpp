@@ -835,7 +835,7 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 
 	for (int i = 0; i < 3; i++) {
 
-		if (ABS(light_axis[i]) < CMP_EPSILON)
+		if (Math::is_zero_approx(light_axis[i]))
 			continue;
 		clip[clip_planes].normal[i] = 1.0;
 
@@ -978,7 +978,7 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 
 		for (int c = 0; c < 3; c++) {
 
-			if (ABS(light_axis[c]) < CMP_EPSILON)
+			if (Math::is_zero_approx(light_axis[c]))
 				continue;
 			clip[clip_planes].normal[c] = 1.0;
 
@@ -1113,7 +1113,7 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 
 		for (int c = 0; c < 3; c++) {
 
-			if (ABS(light_axis[c]) < CMP_EPSILON)
+			if (Math::is_zero_approx(light_axis[c]))
 				continue;
 			clip[clip_planes].normal[c] = 1.0;
 

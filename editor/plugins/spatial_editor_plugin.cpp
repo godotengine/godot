@@ -2473,7 +2473,7 @@ void SpatialEditorViewport::_draw() {
 				real_t max_speed = camera->get_zfar();
 				real_t scale_length = (max_speed - min_speed);
 
-				if (Math::abs(scale_length) > CMP_EPSILON) {
+				if (!Math::is_zero_approx(scale_length)) {
 					real_t logscale_t = 1.0 - Math::log(1 + freelook_speed - min_speed) / Math::log(1 + scale_length);
 
 					// There is no real maximum speed so that factor can become negative,
@@ -2491,7 +2491,7 @@ void SpatialEditorViewport::_draw() {
 				real_t max_distance = camera->get_zfar();
 				real_t scale_length = (max_distance - min_distance);
 
-				if (Math::abs(scale_length) > CMP_EPSILON) {
+				if (!Math::is_zero_approx(scale_length)) {
 					real_t logscale_t = 1.0 - Math::log(1 + cursor.distance - min_distance) / Math::log(1 + scale_length);
 
 					// There is no real maximum distance so that factor can become negative,
