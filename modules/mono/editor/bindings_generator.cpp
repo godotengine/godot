@@ -97,13 +97,9 @@
 #define C_METHOD_MONOARRAY_TO(m_type) C_NS_MONOMARSHAL "::mono_array_to_" #m_type
 #define C_METHOD_MONOARRAY_FROM(m_type) C_NS_MONOMARSHAL "::" #m_type "_to_mono_array"
 
-#define BINDINGS_GENERATOR_VERSION UINT32_C(8)
+#define BINDINGS_GENERATOR_VERSION UINT32_C(9)
 
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
-
-bool BindingsGenerator::verbose_output = false;
-
-BindingsGenerator *BindingsGenerator::singleton = NULL;
 
 static String fix_doc_description(const String &p_bbcode) {
 
@@ -816,9 +812,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			CRASH_COND(enum_class_name != "Variant"); // Hard-coded...
 
-			if (verbose_output) {
-				WARN_PRINTS("Declaring global enum `" + enum_proxy_name + "` inside static class `" + enum_class_name + "`");
-			}
+			_log("Declaring global enum `%s` inside static class `%s`\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\n" INDENT1 "public static partial class ");
 			p_output.append(enum_class_name);
@@ -867,9 +861,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 	p_output.append("\n#pragma warning restore CS1591\n");
 }
 
-Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output) {
-
-	verbose_output = p_verbose_output;
+Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution) {
 
 	String proj_dir = p_solution_dir.plus_file(CORE_API_ASSEMBLY_NAME);
 
@@ -1001,15 +993,12 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_solution_dir, 
 
 	r_solution.add_new_project(CORE_API_ASSEMBLY_NAME, proj_info);
 
-	if (verbose_output)
-		OS::get_singleton()->print("The solution and C# project for the Core API was generated successfully\n");
+	_log("The solution and C# project for the Core API was generated successfully\n");
 
 	return OK;
 }
 
-Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output) {
-
-	verbose_output = p_verbose_output;
+Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution) {
 
 	String proj_dir = p_solution_dir.plus_file(EDITOR_API_ASSEMBLY_NAME);
 
@@ -1100,13 +1089,12 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_solution_dir
 
 	r_solution.add_new_project(EDITOR_API_ASSEMBLY_NAME, proj_info);
 
-	if (verbose_output)
-		OS::get_singleton()->print("The solution and C# project for the Editor API was generated successfully\n");
+	_log("The solution and C# project for the Editor API was generated successfully\n");
 
 	return OK;
 }
 
-Error BindingsGenerator::generate_cs_api(const String &p_output_dir, bool p_verbose_output) {
+Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
@@ -1123,13 +1111,13 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir, bool p_verb
 
 	Error proj_err;
 
-	proj_err = generate_cs_core_project(p_output_dir, solution, p_verbose_output);
+	proj_err = generate_cs_core_project(p_output_dir, solution);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Core API C# project failed");
 		return proj_err;
 	}
 
-	proj_err = generate_cs_editor_project(p_output_dir, solution, p_verbose_output);
+	proj_err = generate_cs_editor_project(p_output_dir, solution);
 	if (proj_err != OK) {
 		ERR_PRINT("Generation of the Editor API C# project failed");
 		return proj_err;
@@ -1168,8 +1156,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 	List<InternalCall> &custom_icalls = itype.api_type == ClassDB::API_EDITOR ? editor_custom_icalls : core_custom_icalls;
 
-	if (verbose_output)
-		OS::get_singleton()->print("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
+	_log("Generating %s.cs...\n", itype.proxy_name.utf8().get_data());
 
 	String ctor_method(ICALL_PREFIX + itype.proxy_name + "_Ctor"); // Used only for derived types
 
@@ -1477,7 +1464,13 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	p_output.append("\n" INDENT2 OPEN_BLOCK);
 
 	if (getter) {
-		p_output.append(INDENT3 "get\n" OPEN_BLOCK_L3);
+		p_output.append(INDENT3 "get\n"
+
+								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
+
+				OPEN_BLOCK_L3);
+
 		p_output.append("return ");
 		p_output.append(getter->proxy_name + "(");
 		if (p_iprop.index != -1) {
@@ -1491,11 +1484,22 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index));
 			}
 		}
-		p_output.append(");\n" CLOSE_BLOCK_L3);
+		p_output.append(");\n"
+
+				CLOSE_BLOCK_L3
+
+						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+						"#pragma warning restore CS0618\n");
 	}
 
 	if (setter) {
-		p_output.append(INDENT3 "set\n" OPEN_BLOCK_L3);
+		p_output.append(INDENT3 "set\n"
+
+								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
+
+				OPEN_BLOCK_L3);
+
 		p_output.append(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
 			const ArgumentInterface &idx_arg = setter->arguments.front()->get();
@@ -1508,7 +1512,12 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index) + ", ");
 			}
 		}
-		p_output.append("value);\n" CLOSE_BLOCK_L3);
+		p_output.append("value);\n"
+
+				CLOSE_BLOCK_L3
+
+						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
+						"#pragma warning restore CS0618\n");
 	}
 
 	p_output.append(CLOSE_BLOCK_L2);
@@ -1636,6 +1645,15 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("\")]");
 		}
 
+		if (p_imethod.is_deprecated) {
+			if (p_imethod.deprecation_message.empty())
+				WARN_PRINTS("An empty deprecation message is discouraged. Method: " + p_imethod.proxy_name);
+
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+			p_output.append(p_imethod.deprecation_message);
+			p_output.append("\")]");
+		}
+
 		p_output.append(MEMBER_BEGIN);
 		p_output.append(p_imethod.is_internal ? "internal " : "public ");
 
@@ -1709,8 +1727,6 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 }
 
 Error BindingsGenerator::generate_glue(const String &p_output_dir) {
-
-	verbose_output = true;
 
 	bool dir_exists = DirAccess::exists(p_output_dir);
 	ERR_EXPLAIN("The output directory does not exist.");
@@ -2109,6 +2125,58 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 	return &placeholder_types.insert(placeholder.cname, placeholder)->get();
 }
 
+StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
+
+	switch (p_meta) {
+		case GodotTypeInfo::METADATA_INT_IS_INT8:
+			return "sbyte";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_INT16:
+			return "short";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_INT32:
+			return "int";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_INT64:
+			return "long";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT8:
+			return "byte";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT16:
+			return "ushort";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT32:
+			return "uint";
+			break;
+		case GodotTypeInfo::METADATA_INT_IS_UINT64:
+			return "ulong";
+			break;
+		default:
+			// Assume INT32
+			return "int";
+	}
+}
+
+StringName BindingsGenerator::_get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
+
+	switch (p_meta) {
+		case GodotTypeInfo::METADATA_REAL_IS_FLOAT:
+			return "float";
+			break;
+		case GodotTypeInfo::METADATA_REAL_IS_DOUBLE:
+			return "double";
+			break;
+		default:
+			// Assume real_t (float or double depending of REAL_T_IS_DOUBLE)
+#ifdef REAL_T_IS_DOUBLE
+			return "double";
+#else
+			return "float";
+#endif
+	}
+}
+
 void BindingsGenerator::_populate_object_type_interfaces() {
 
 	obj_types.clear();
@@ -2128,15 +2196,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
-			if (verbose_output)
-				WARN_PRINTS("Ignoring type " + type_cname.operator String() + " because it's not exposed");
+			_log("Ignoring type `%s` because it's not exposed\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
-			if (verbose_output)
-				WARN_PRINTS("Ignoring type " + type_cname.operator String() + " because it's not enabled");
+			_log("Ignoring type `%s` because it's not enabled\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
@@ -2164,10 +2230,12 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		itype.im_type_in = "IntPtr";
 		itype.im_type_out = itype.proxy_name;
 
+		// Populate properties
+
 		List<PropertyInfo> property_list;
 		ClassDB::get_property_list(type_cname, &property_list, true);
 
-		// Populate properties
+		Map<StringName, StringName> accessor_methods;
 
 		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
 			const PropertyInfo &property = E->get();
@@ -2180,18 +2248,21 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
 			iprop.getter = ClassDB::get_property_getter(type_cname, iprop.cname);
 
+			if (iprop.setter != StringName())
+				accessor_methods[iprop.setter] = iprop.cname;
+			if (iprop.getter != StringName())
+				accessor_methods[iprop.getter] = iprop.cname;
+
 			bool valid = false;
 			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
 			ERR_FAIL_COND(!valid);
 
 			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
 
-			// Prevent property and enclosing type from sharing the same name
+			// Prevent the property and its enclosing type from sharing the same name
 			if (iprop.proxy_name == itype.proxy_name) {
-				if (verbose_output) {
-					WARN_PRINTS("Name of property `" + iprop.proxy_name + "` is ambiguous with the name of its class `" +
-								itype.proxy_name + "`. Renaming property to `" + iprop.proxy_name + "_`");
-				}
+				_log("Name of property `%s` is ambiguous with the name of its enclosing class `%s`. Renaming property to `%s_`\n",
+						iprop.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), iprop.proxy_name.utf8().get_data());
 
 				iprop.proxy_name += "_";
 			}
@@ -2258,14 +2329,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					// which could actually will return something different.
 					// Let's put this to notify us if that ever happens.
 					if (itype.cname != name_cache.type_Object || imethod.name != "free") {
-						if (verbose_output) {
-							WARN_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
-										"We only expected Object.free, but found " +
-										itype.name + "." + imethod.name);
-						}
+						ERR_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
+								   "We only expected Object.free, but found " +
+								   itype.name + "." + imethod.name);
 					}
 				} else {
-					ERR_PRINTS("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
+					ERR_EXPLAIN("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
+					ERR_FAIL();
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2279,7 +2349,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			} else if (return_info.type == Variant::NIL) {
 				imethod.return_type.cname = name_cache.type_void;
 			} else {
-				imethod.return_type.cname = Variant::get_type_name(return_info.type);
+				if (return_info.type == Variant::INT) {
+					imethod.return_type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
+				} else if (return_info.type == Variant::REAL) {
+					imethod.return_type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
+				} else {
+					imethod.return_type.cname = Variant::get_type_name(return_info.type);
+				}
 			}
 
 			for (int i = 0; i < argc; i++) {
@@ -2298,7 +2374,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					iarg.type.cname = Variant::get_type_name(arginfo.type);
+					if (arginfo.type == Variant::INT) {
+						iarg.type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
+					} else if (arginfo.type == Variant::REAL) {
+						iarg.type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
+					} else {
+						iarg.type.cname = Variant::get_type_name(arginfo.type);
+					}
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
@@ -2319,14 +2401,22 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			imethod.proxy_name = escape_csharp_keyword(snake_to_pascal_case(imethod.name));
 
-			// Prevent naming the property and its enclosing type from sharing the same name
+			// Prevent the method and its enclosing type from sharing the same name
 			if (imethod.proxy_name == itype.proxy_name) {
-				if (verbose_output) {
-					WARN_PRINTS("Name of method `" + imethod.proxy_name + "` is ambiguous with the name of its class `" +
-								itype.proxy_name + "`. Renaming method to `" + imethod.proxy_name + "_`");
-				}
+				_log("Name of method `%s` is ambiguous with the name of its enclosing class `%s`. Renaming method to `%s_`\n",
+						imethod.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), imethod.proxy_name.utf8().get_data());
 
 				imethod.proxy_name += "_";
+			}
+
+			Map<StringName, StringName>::Element *accessor = accessor_methods.find(imethod.cname);
+			if (accessor) {
+				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value());
+
+				// We only deprecate an accessor method if it's in the same class as the property. It's easier this way, but also
+				// we don't know if an accessor method in a different class could have other purposes, so better leave those untouched.
+				imethod.is_deprecated = true;
+				imethod.deprecation_message = imethod.proxy_name + " is deprecated. Use the " + accessor_property->proxy_name + " property instead.";
 			}
 
 			if (itype.class_doc) {
@@ -2556,7 +2646,6 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	// bool
 	itype = TypeInterface::create_value_type(String("bool"));
-
 	{
 		// MonoBoolean <---> bool
 		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
@@ -2570,45 +2659,73 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype.im_type_out = itype.name;
 	builtin_types.insert(itype.cname, itype);
 
-	// int
-	// C interface is the same as that of enums. Remember to apply any
-	// changes done here to TypeInterface::postsetup_enum_type as well
-	itype = TypeInterface::create_value_type(String("int"));
-	itype.c_arg_in = "&%s_in";
+	// Integer types
 	{
-		// The expected types for parameters and return value in ptrcall are 'int64_t' or 'uint64_t'.
-		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-		itype.c_out = "\treturn (%0)%1;\n";
-		itype.c_type = "int64_t";
+		// C interface for 'uint32_t' is the same as that of enums. Remember to apply
+		// any of the changes done here to 'TypeInterface::postsetup_enum_type' as well.
+#define INSERT_INT_TYPE(m_name, m_c_type_in_out, m_c_type)        \
+	{                                                             \
+		itype = TypeInterface::create_value_type(String(m_name)); \
+		{                                                         \
+			itype.c_in = "\t%0 %1_in = (%0)%1;\n";                \
+			itype.c_out = "\treturn (%0)%1;\n";                   \
+			itype.c_type = #m_c_type;                             \
+			itype.c_arg_in = "&%s_in";                            \
+		}                                                         \
+		itype.c_type_in = #m_c_type_in_out;                       \
+		itype.c_type_out = itype.c_type_in;                       \
+		itype.im_type_in = itype.name;                            \
+		itype.im_type_out = itype.name;                           \
+		builtin_types.insert(itype.cname, itype);                 \
 	}
-	itype.c_type_in = "int32_t";
-	itype.c_type_out = itype.c_type_in;
-	itype.im_type_in = itype.name;
-	itype.im_type_out = itype.name;
-	builtin_types.insert(itype.cname, itype);
 
-	// real_t
-	itype = TypeInterface();
-	itype.name = "float"; // The name is always "float" in Variant, even with REAL_T_IS_DOUBLE.
-	itype.cname = itype.name;
-#ifdef REAL_T_IS_DOUBLE
-	itype.proxy_name = "double";
-#else
-	itype.proxy_name = "float";
-#endif
-	{
-		// The expected type for parameters and return value in ptrcall is 'double'.
-		itype.c_in = "\t%0 %1_in = (%0)%1;\n";
-		itype.c_out = "\treturn (%0)%1;\n";
-		itype.c_type = "double";
-		itype.c_type_in = "real_t";
-		itype.c_type_out = "real_t";
-		itype.c_arg_in = "&%s_in";
+		// The expected type for all integers in ptrcall is 'int64_t', so that's what we use for 'c_type'
+
+		INSERT_INT_TYPE("sbyte", int8_t, int64_t);
+		INSERT_INT_TYPE("short", int16_t, int64_t);
+		INSERT_INT_TYPE("int", int32_t, int64_t);
+		INSERT_INT_TYPE("long", int64_t, int64_t);
+		INSERT_INT_TYPE("byte", uint8_t, int64_t);
+		INSERT_INT_TYPE("ushort", uint16_t, int64_t);
+		INSERT_INT_TYPE("uint", uint32_t, int64_t);
+		INSERT_INT_TYPE("ulong", uint64_t, int64_t);
 	}
-	itype.cs_type = itype.proxy_name;
-	itype.im_type_in = itype.proxy_name;
-	itype.im_type_out = itype.proxy_name;
-	builtin_types.insert(itype.cname, itype);
+
+	// Floating point types
+	{
+		// float
+		itype = TypeInterface();
+		itype.name = "float";
+		itype.cname = itype.name;
+		itype.proxy_name = "float";
+		{
+			// The expected type for 'float' in ptrcall is 'double'
+			itype.c_in = "\t%0 %1_in = (%0)%1;\n";
+			itype.c_out = "\treturn (%0)%1;\n";
+			itype.c_type = "double";
+			itype.c_type_in = "float";
+			itype.c_type_out = "float";
+			itype.c_arg_in = "&%s_in";
+		}
+		itype.cs_type = itype.proxy_name;
+		itype.im_type_in = itype.proxy_name;
+		itype.im_type_out = itype.proxy_name;
+		builtin_types.insert(itype.cname, itype);
+
+		// double
+		itype = TypeInterface();
+		itype.name = "double";
+		itype.cname = itype.name;
+		itype.proxy_name = "double";
+		itype.c_type = "double";
+		itype.c_type_in = "double";
+		itype.c_type_out = "double";
+		itype.c_arg_in = "&%s";
+		itype.cs_type = itype.proxy_name;
+		itype.im_type_in = itype.proxy_name;
+		itype.im_type_out = itype.proxy_name;
+		builtin_types.insert(itype.cname, itype);
+	}
 
 	// String
 	itype = TypeInterface();
@@ -2858,7 +2975,18 @@ void BindingsGenerator::_populate_global_constants() {
 	}
 }
 
-void BindingsGenerator::initialize() {
+void BindingsGenerator::_log(const char *p_format, ...) {
+
+	if (log_print_enabled) {
+		va_list list;
+
+		va_start(list, p_format);
+		OS::get_singleton()->print("%s", str_format(p_format, list).utf8().get_data());
+		va_end(list);
+	}
+}
+
+void BindingsGenerator::_initialize() {
 
 	EditorHelp::generate_doc();
 
@@ -2881,12 +3009,13 @@ void BindingsGenerator::initialize() {
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
 
 	const int NUM_OPTIONS = 2;
-	int options_left = NUM_OPTIONS;
-
 	String mono_glue_option = "--generate-mono-glue";
 	String cs_api_option = "--generate-cs-api";
 
-	verbose_output = true;
+	String mono_glue_path;
+	String cs_api_path;
+
+	int options_left = NUM_OPTIONS;
 
 	const List<String>::Element *elem = p_cmdline_args.front();
 
@@ -2895,8 +3024,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton()->generate_glue(path_elem->get()) != OK)
-					ERR_PRINTS(mono_glue_option + ": Failed to generate mono glue");
+				mono_glue_path = path_elem->get();
 				elem = elem->next();
 			} else {
 				ERR_PRINTS(mono_glue_option + ": No output directory specified");
@@ -2907,8 +3035,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 			const List<String>::Element *path_elem = elem->next();
 
 			if (path_elem) {
-				if (get_singleton()->generate_cs_api(path_elem->get()) != OK)
-					ERR_PRINTS(cs_api_option + ": Failed to generate the C# API");
+				cs_api_path = path_elem->get();
 				elem = elem->next();
 			} else {
 				ERR_PRINTS(cs_api_option + ": No output directory specified");
@@ -2920,10 +3047,23 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 		elem = elem->next();
 	}
 
-	verbose_output = false;
+	if (mono_glue_path.length() || cs_api_path.length()) {
+		BindingsGenerator bindings_generator;
+		bindings_generator.set_log_print_enabled(true);
 
-	if (options_left != NUM_OPTIONS)
+		if (mono_glue_path.length()) {
+			if (bindings_generator.generate_glue(mono_glue_path) != OK)
+				ERR_PRINTS(mono_glue_option + ": Failed to generate mono glue");
+		}
+
+		if (cs_api_path.length()) {
+			if (bindings_generator.generate_cs_api(cs_api_path) != OK)
+				ERR_PRINTS(cs_api_option + ": Failed to generate the C# API");
+		}
+
+		// Exit once done
 		::exit(0);
+	}
 }
 
 #endif

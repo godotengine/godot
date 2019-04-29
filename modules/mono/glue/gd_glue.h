@@ -53,7 +53,7 @@ void godot_icall_GD_prints(MonoArray *p_what);
 
 void godot_icall_GD_printt(MonoArray *p_what);
 
-double godot_icall_GD_randf();
+float godot_icall_GD_randf();
 
 uint32_t godot_icall_GD_randi();
 

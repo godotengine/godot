@@ -323,10 +323,13 @@ bool GodotSharpBuilds::make_api_assembly(APIAssembly::Type p_api_type) {
 	String api_sln_file = api_sln_dir.plus_file(API_SOLUTION_NAME ".sln");
 
 	if (!DirAccess::exists(api_sln_dir) || !FileAccess::exists(api_sln_file)) {
-		BindingsGenerator *gen = BindingsGenerator::get_singleton();
-		bool gen_verbose = OS::get_singleton()->is_stdout_verbose();
+		BindingsGenerator bindings_generator;
 
-		Error err = gen->generate_cs_api(api_sln_dir, gen_verbose);
+		if (!OS::get_singleton()->is_stdout_verbose()) {
+			bindings_generator.set_log_print_enabled(false);
+		}
+
+		Error err = bindings_generator.generate_cs_api(api_sln_dir);
 		if (err != OK) {
 			show_build_error_dialog("Failed to generate " API_SOLUTION_NAME " solution. Error: " + itos(err));
 			return false;

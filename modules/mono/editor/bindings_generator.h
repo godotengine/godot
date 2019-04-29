@@ -159,17 +159,20 @@ class BindingsGenerator {
 
 		const DocData::MethodDoc *method_doc;
 
+		bool is_deprecated;
+		String deprecation_message;
+
 		void add_argument(const ArgumentInterface &argument) {
 			arguments.push_back(argument);
 		}
 
 		MethodInterface() {
-			return_type.cname = BindingsGenerator::get_singleton()->name_cache.type_void;
 			is_vararg = false;
 			is_virtual = false;
 			requires_object_call = false;
 			is_internal = false;
 			method_doc = NULL;
+			is_deprecated = false;
 		}
 	};
 
@@ -400,8 +403,8 @@ class BindingsGenerator {
 		}
 
 		static void postsetup_enum_type(TypeInterface &r_enum_itype) {
-			// C interface is the same as that of 'int'. Remember to apply any
-			// changes done here to the 'int' type interface as well
+			// C interface for enums is the same as that of 'uint32_t'. Remember to apply
+			// any of the changes done here to the 'uint32_t' type interface as well.
 
 			r_enum_itype.c_arg_in = "&%s_in";
 			{
@@ -469,7 +472,7 @@ class BindingsGenerator {
 		}
 	};
 
-	static bool verbose_output;
+	bool log_print_enabled;
 
 	OrderedHashMap<StringName, TypeInterface> obj_types;
 
@@ -490,7 +493,6 @@ class BindingsGenerator {
 
 	struct NameCache {
 		StringName type_void;
-		StringName type_int;
 		StringName type_Array;
 		StringName type_Dictionary;
 		StringName type_Variant;
@@ -501,9 +503,19 @@ class BindingsGenerator {
 		StringName type_at_GlobalScope;
 		StringName enum_Error;
 
+		StringName type_sbyte;
+		StringName type_short;
+		StringName type_int;
+		StringName type_long;
+		StringName type_byte;
+		StringName type_ushort;
+		StringName type_uint;
+		StringName type_ulong;
+		StringName type_float;
+		StringName type_double;
+
 		NameCache() {
 			type_void = StaticCString::create("void");
-			type_int = StaticCString::create("int");
 			type_Array = StaticCString::create("Array");
 			type_Dictionary = StaticCString::create("Dictionary");
 			type_Variant = StaticCString::create("Variant");
@@ -513,8 +525,20 @@ class BindingsGenerator {
 			type_String = StaticCString::create("String");
 			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
+
+			type_sbyte = StaticCString::create("sbyte");
+			type_short = StaticCString::create("short");
+			type_int = StaticCString::create("int");
+			type_long = StaticCString::create("long");
+			type_byte = StaticCString::create("byte");
+			type_ushort = StaticCString::create("ushort");
+			type_uint = StaticCString::create("uint");
+			type_ulong = StaticCString::create("ulong");
+			type_float = StaticCString::create("float");
+			type_double = StaticCString::create("double");
 		}
 
+	private:
 		NameCache(const NameCache &);
 		NameCache &operator=(const NameCache &);
 	};
@@ -560,6 +584,9 @@ class BindingsGenerator {
 	const TypeInterface *_get_type_or_null(const TypeReference &p_typeref);
 	const TypeInterface *_get_type_or_placeholder(const TypeReference &p_typeref);
 
+	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
+	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
+
 	void _default_argument_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
 
 	void _populate_object_type_interfaces();
@@ -578,33 +605,26 @@ class BindingsGenerator {
 
 	Error _save_file(const String &p_path, const StringBuilder &p_content);
 
-	BindingsGenerator() {}
+	void _log(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	BindingsGenerator(const BindingsGenerator &);
-	BindingsGenerator &operator=(const BindingsGenerator &);
-
-	friend class CSharpLanguage;
-	static BindingsGenerator *singleton;
+	void _initialize();
 
 public:
-	Error generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output = true);
-	Error generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution, bool p_verbose_output = true);
-	Error generate_cs_api(const String &p_output_dir, bool p_verbose_output = true);
+	Error generate_cs_core_project(const String &p_solution_dir, DotNetSolution &r_solution);
+	Error generate_cs_editor_project(const String &p_solution_dir, DotNetSolution &r_solution);
+	Error generate_cs_api(const String &p_output_dir);
 	Error generate_glue(const String &p_output_dir);
+
+	void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }
 
 	static uint32_t get_version();
 
-	void initialize();
-
-	_FORCE_INLINE_ static BindingsGenerator *get_singleton() {
-		if (!singleton) {
-			singleton = memnew(BindingsGenerator);
-			singleton->initialize();
-		}
-		return singleton;
-	}
-
 	static void handle_cmdline_args(const List<String> &p_cmdline_args);
+
+	BindingsGenerator() :
+			log_print_enabled(true) {
+		_initialize();
+	}
 };
 
 #endif
