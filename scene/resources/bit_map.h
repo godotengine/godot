@@ -64,8 +64,12 @@ public:
 	int get_true_bit_count() const;
 
 	Size2 get_size() const;
+	void resize(const Size2& p_new_size);
 
 	void grow_mask(int p_pixels, const Rect2 &p_rect);
+
+	void blit(const Vector2& p_pos,const Ref<BitMap>& p_bitmap);
+	Ref<Image> convert_to_image() const;
 
 	Vector<Vector<Vector2> > clip_opaque_to_polygons(const Rect2 &p_rect, float p_epsilon = 2.0) const;
 

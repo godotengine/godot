@@ -58,11 +58,13 @@ def get_opts():
 
     return [
         BoolVariable('use_llvm', 'Use the LLVM compiler', False),
+        BoolVariable('use_lld', 'Use the LLD linker', False),
+        BoolVariable('use_thinlto', 'Use ThinLTO', False),
         BoolVariable('use_static_cpp', 'Link libgcc and libstdc++ statically for better portability', False),
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
-        BoolVariable('pulseaudio', 'Detect & use pulseaudio', True),
+        BoolVariable('pulseaudio', 'Detect and use PulseAudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
         BoolVariable('separate_debug_symbols', 'Create a separate file containing debugging symbols', False),
@@ -97,9 +99,10 @@ def configure(env):
 
     elif (env["target"] == "release_debug"):
         if (env["optimize"] == "speed"): #optimize for speed (default)
-            env.Prepend(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-O2'])
         else: #optimize for size
-            env.Prepend(CCFLAGS=['-Os', '-DDEBUG_ENABLED'])
+            env.Prepend(CCFLAGS=['-Os'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED'])
 
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
@@ -107,7 +110,8 @@ def configure(env):
             env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
-        env.Prepend(CCFLAGS=['-g3', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g3'])
+        env.Prepend(CPPFLAGS=['-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
         env.Append(LINKFLAGS=['-rdynamic'])
 
     ## Architecture
@@ -130,6 +134,15 @@ def configure(env):
         env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
+    if env['use_lld']:
+        if env['use_llvm']:
+            env.Append(LINKFLAGS=['-fuse-ld=lld'])
+            if env['use_thinlto']:
+                # A convenience so you don't need to write use_lto too when using SCons
+                env['use_lto'] = True
+        else:
+            print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
+            sys.exit(255)
 
     if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
         env.extra_suffix += "s"
@@ -147,11 +160,17 @@ def configure(env):
             env.Append(LINKFLAGS=['-fsanitize=leak'])
 
     if env['use_lto']:
-        env.Append(CCFLAGS=['-flto'])
         if not env['use_llvm'] and env.GetOption("num_jobs") > 1:
+            env.Append(CCFLAGS=['-flto'])
             env.Append(LINKFLAGS=['-flto=' + str(env.GetOption("num_jobs"))])
         else:
-            env.Append(LINKFLAGS=['-flto'])
+            if env['use_lld'] and env['use_thinlto']:
+                env.Append(CCFLAGS=['-flto=thin'])
+                env.Append(LINKFLAGS=['-flto=thin'])
+            else:
+                env.Append(CCFLAGS=['-flto'])
+                env.Append(LINKFLAGS=['-flto'])
+        
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -307,10 +326,10 @@ def configure(env):
     ## Cross-compilation
 
     if (is64 and env["bits"] == "32"):
-        env.Append(CPPFLAGS=['-m32'])
+        env.Append(CCFLAGS=['-m32'])
         env.Append(LINKFLAGS=['-m32', '-L/usr/lib/i386-linux-gnu'])
     elif (not is64 and env["bits"] == "64"):
-        env.Append(CPPFLAGS=['-m64'])
+        env.Append(CCFLAGS=['-m64'])
         env.Append(LINKFLAGS=['-m64', '-L/usr/lib/i686-linux-gnu'])
 
     # Link those statically for portability

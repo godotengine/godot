@@ -130,7 +130,7 @@ Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(f
 	}
 	uint64_t time = OS::get_singleton()->get_ticks_usec();
 	float diff = double(time - last_fft_time) / 1000000.0 + base->get_tap_back_pos();
-	diff -= AudioServer::get_singleton()->get_output_delay();
+	diff -= AudioServer::get_singleton()->get_output_latency();
 	float fft_time_size = float(fft_size) / mix_rate;
 
 	int fft_index = fft_pos;
@@ -240,6 +240,13 @@ void AudioEffectSpectrumAnalyzer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "buffer_length", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_buffer_length", "get_buffer_length");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "tap_back_pos", PROPERTY_HINT_RANGE, "0.1,4,0.1"), "set_tap_back_pos", "get_tap_back_pos");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fft_size", PROPERTY_HINT_ENUM, "256,512,1024,2048,4096"), "set_fft_size", "get_fft_size");
+
+	BIND_ENUM_CONSTANT(FFT_SIZE_256);
+	BIND_ENUM_CONSTANT(FFT_SIZE_512);
+	BIND_ENUM_CONSTANT(FFT_SIZE_1024);
+	BIND_ENUM_CONSTANT(FFT_SIZE_2048);
+	BIND_ENUM_CONSTANT(FFT_SIZE_4096);
+	BIND_ENUM_CONSTANT(FFT_SIZE_MAX);
 }
 
 AudioEffectSpectrumAnalyzer::AudioEffectSpectrumAnalyzer() {

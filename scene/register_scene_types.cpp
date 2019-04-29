@@ -635,6 +635,7 @@ void register_scene_types() {
 	ClassDB::register_class<StreamTexture>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
+	ClassDB::register_class<MeshTexture>();
 	ClassDB::register_class<LargeTexture>();
 	ClassDB::register_class<CurveTexture>();
 	ClassDB::register_class<GradientTexture>();
@@ -781,7 +782,11 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_bmfont);
 	resource_loader_bmfont.unref();
 
+	//SpatialMaterial is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+#ifndef _3D_DISABLED
 	SpatialMaterial::finish_shaders();
+#endif // _3D_DISABLED
+
 	ParticlesMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	SceneStringNames::free();

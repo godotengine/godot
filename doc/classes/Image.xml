@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="blend_rect">
 			<return type="void">
@@ -125,7 +123,7 @@
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is true then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
+				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
 			</description>
 		</method>
 		<method name="create_from_data">
@@ -142,7 +140,7 @@
 			<argument index="4" name="data" type="PoolByteArray">
 			</argument>
 			<description>
-				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is true then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
+				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
 			</description>
 		</method>
 		<method name="crop">

@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_anchor_name" qualifiers="const">
 			<return type="String">
@@ -24,7 +22,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the anchor is being tracked and false if no anchor with this id is currently known.
+				Returns [code]true[/code] if the anchor is being tracked and [code]false[/code] if no anchor with this id is currently known.
 			</description>
 		</method>
 		<method name="get_mesh" qualifiers="const">

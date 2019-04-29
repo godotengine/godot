@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/inputevent.html#inputmap</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="action_add_event">
 			<return type="void">

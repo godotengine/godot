@@ -41,7 +41,6 @@ class GDMonoLog {
 	String log_file_path;
 
 	bool _try_create_logs_dir(const String &p_logs_dir);
-	void _open_log_file(const String &p_file_path);
 	void _delete_old_log_files(const String &p_logs_dir);
 
 	static GDMonoLog *singleton;

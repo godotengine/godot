@@ -391,9 +391,11 @@ void Viewport::_notification(int p_what) {
 
 			if (physics_object_picking && (to_screen_rect == Rect2() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
 
+#ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
 				CollisionObject *last_object = NULL;
 				ObjectID last_id = 0;
+#endif
 				PhysicsDirectSpaceState::RayResult result;
 				Physics2DDirectSpaceState *ss2d = Physics2DServer::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
@@ -2480,11 +2482,7 @@ void Viewport::_gui_hid_control(Control *p_control) {
 	if (gui.mouse_over == p_control)
 		gui.mouse_over = NULL;
 	if (gui.tooltip == p_control)
-		gui.tooltip = NULL;
-	if (gui.tooltip == p_control) {
-		gui.tooltip = NULL;
 		_gui_cancel_tooltip();
-	}
 }
 
 void Viewport::_gui_remove_control(Control *p_control) {

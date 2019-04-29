@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttsubpix.c                                                             */
-/*                                                                         */
-/*    TrueType Subpixel Hinting.                                           */
-/*                                                                         */
-/*  Copyright 2010-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttsubpix.c
+ *
+ *   TrueType Subpixel Hinting.
+ *
+ * Copyright (C) 2010-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 #include <ft2build.h>
 #include FT_INTERNAL_DEBUG_H
@@ -30,35 +30,35 @@
 #if defined( TT_USE_BYTECODE_INTERPRETER )            && \
     defined( TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY )
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* These rules affect how the TT Interpreter does hinting, with the      */
-  /* goal of doing subpixel hinting by (in general) ignoring x moves.      */
-  /* Some of these rules are fixes that go above and beyond the            */
-  /* stated techniques in the MS whitepaper on Cleartype, due to           */
-  /* artifacts in many glyphs.  So, these rules make some glyphs render    */
-  /* better than they do in the MS rasterizer.                             */
-  /*                                                                       */
-  /* "" string or 0 int/char indicates to apply to all glyphs.             */
-  /* "-" used as dummy placeholders, but any non-matching string works.    */
-  /*                                                                       */
-  /* Some of this could arguably be implemented in fontconfig, however:    */
-  /*                                                                       */
-  /*  - Fontconfig can't set things on a glyph-by-glyph basis.             */
-  /*  - The tweaks that happen here are very low-level, from an average    */
-  /*    user's point of view and are best implemented in the hinter.       */
-  /*                                                                       */
-  /* The goal is to make the subpixel hinting techniques as generalized    */
-  /* as possible across all fonts to prevent the need for extra rules such */
-  /* as these.                                                             */
-  /*                                                                       */
-  /* The rule structure is designed so that entirely new rules can easily  */
-  /* be added when a new compatibility feature is discovered.              */
-  /*                                                                       */
-  /* The rule structures could also use some enhancement to handle ranges. */
-  /*                                                                       */
-  /*     ****************** WORK IN PROGRESS *******************           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * These rules affect how the TT Interpreter does hinting, with the
+   * goal of doing subpixel hinting by (in general) ignoring x moves.
+   * Some of these rules are fixes that go above and beyond the
+   * stated techniques in the MS whitepaper on Cleartype, due to
+   * artifacts in many glyphs.  So, these rules make some glyphs render
+   * better than they do in the MS rasterizer.
+   *
+   * "" string or 0 int/char indicates to apply to all glyphs.
+   * "-" used as dummy placeholders, but any non-matching string works.
+   *
+   * Some of this could arguably be implemented in fontconfig, however:
+   *
+   * - Fontconfig can't set things on a glyph-by-glyph basis.
+   * - The tweaks that happen here are very low-level, from an average
+   *   user's point of view and are best implemented in the hinter.
+   *
+   * The goal is to make the subpixel hinting techniques as generalized
+   * as possible across all fonts to prevent the need for extra rules such
+   * as these.
+   *
+   * The rule structure is designed so that entirely new rules can easily
+   * be added when a new compatibility feature is discovered.
+   *
+   * The rule structures could also use some enhancement to handle ranges.
+   *
+   *     ****************** WORK IN PROGRESS *******************
+   */
 
   /* These are `classes' of fonts that can be grouped together and used in */
   /* rules below.  A blank entry "" is required at the end of these!       */

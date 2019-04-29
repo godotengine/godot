@@ -82,7 +82,7 @@ public:
 
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
 
-			if (Math::abs(p_left->ysort_pos.y - p_right->ysort_pos.y) < CMP_EPSILON)
+			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y))
 				return p_left->ysort_pos.x < p_right->ysort_pos.x;
 			else
 				return p_left->ysort_pos.y < p_right->ysort_pos.y;
@@ -160,6 +160,9 @@ private:
 	void _render_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
 	void _light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights);
 
+	RasterizerCanvas::Item **z_list;
+	RasterizerCanvas::Item **z_last_list;
+
 public:
 	void render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect);
 
@@ -197,7 +200,7 @@ public:
 	void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0, RID p_normal_map = RID());
 	void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID(), RID p_normal_map = RID(), bool p_antialiased = false);
 	void canvas_item_add_triangle_array(RID p_item, const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), RID p_texture = RID(), int p_count = -1, RID p_normal_map = RID());
-	void canvas_item_add_mesh(RID p_item, const RID &p_mesh, RID p_texture = RID(), RID p_normal_map = RID());
+	void canvas_item_add_mesh(RID p_item, const RID &p_mesh, const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), RID p_texture = RID(), RID p_normal_map = RID());
 	void canvas_item_add_multimesh(RID p_item, RID p_mesh, RID p_texture = RID(), RID p_normal_map = RID());
 	void canvas_item_add_particles(RID p_item, RID p_particles, RID p_texture, RID p_normal);
 	void canvas_item_add_set_transform(RID p_item, const Transform2D &p_transform);
@@ -254,6 +257,7 @@ public:
 
 	bool free(RID p_rid);
 	VisualServerCanvas();
+	~VisualServerCanvas();
 };
 
 #endif // VISUALSERVERCANVAS_H

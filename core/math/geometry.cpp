@@ -836,7 +836,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 					Vector3 rel = edge1_A - edge0_A;
 
 					real_t den = clip.normal.dot(rel);
-					if (Math::abs(den) < CMP_EPSILON)
+					if (Math::is_zero_approx(den))
 						continue; // point too short
 
 					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;

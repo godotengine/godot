@@ -13,8 +13,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_get" qualifiers="virtual">
 			<return type="Variant">
@@ -346,7 +344,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				If set to true, signal emission is blocked.
+				If set to [code]true[/code], signal emission is blocked.
 			</description>
 		</method>
 		<method name="set_deferred">
@@ -375,7 +373,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Define whether the object can translate strings (with calls to [method tr]). Default is true.
+				Define whether the object can translate strings (with calls to [method tr]). Default is [code]true[/code].
 			</description>
 		</method>
 		<method name="set_meta">

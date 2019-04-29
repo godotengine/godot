@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="NodePath">
 			<return type="NodePath">
@@ -70,14 +68,14 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the node path is absolute (not relative).
+				Return [code]true[/code] if the node path is absolute (not relative).
 			</description>
 		</method>
 		<method name="is_empty">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the node path is empty.
+				Return [code]true[/code] if the node path is empty.
 			</description>
 		</method>
 	</methods>

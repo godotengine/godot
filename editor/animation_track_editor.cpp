@@ -936,7 +936,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 					if (frame != prev_frame && i >= prev_frame_ofs) {
 
-						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor);
+						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
 						draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height()) / 2 + font->get_ascent()).floor(), itos(frame), sub ? color_time_dec : color_time_sec, zoomw - i);
 						prev_frame_ofs = i + font->get_string_size(itos(frame)).x + 5 * EDSCALE;
@@ -957,13 +957,13 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
 
 					int scd = sc < 0 ? prev_sc : sc;
-					draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor);
+					draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 					draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height()) / 2 + font->get_ascent()).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), sub ? color_time_dec : color_time_sec, zoomw - i);
 				}
 			}
 		}
 
-		draw_line(Vector2(0, get_size().height), get_size(), linecolor);
+		draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 	}
 }
 
@@ -1022,8 +1022,14 @@ void AnimationTimelineEdit::update_values() {
 	editing = true;
 	if (use_fps && animation->get_step() > 0) {
 		length->set_value(animation->get_length() / animation->get_step());
+		length->set_step(1);
+		length->set_tooltip(TTR("Animation length (frames)"));
+		time_icon->set_tooltip(TTR("Animation length (frames)"));
 	} else {
 		length->set_value(animation->get_length());
+		length->set_step(0.01);
+		length->set_tooltip(TTR("Animation length (seconds)"));
+		time_icon->set_tooltip(TTR("Animation length (seconds)"));
 	}
 	loop->set_pressed(animation->has_loop());
 	editing = false;
@@ -1041,7 +1047,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color);
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(EDSCALE));
 	}
 }
 
@@ -1168,7 +1174,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb->add_child(expander);
 	time_icon = memnew(TextureRect);
 	time_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
-	time_icon->set_tooltip(TTR("Animation Length Time (seconds)"));
+	time_icon->set_tooltip(TTR("Animation length (seconds)"));
 	len_hb->add_child(time_icon);
 	length = memnew(EditorSpinSlider);
 	length->set_min(0.001);
@@ -1177,7 +1183,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
-	length->set_tooltip(TTR("Animation Length Time (seconds)"));
+	length->set_tooltip(TTR("Animation length (seconds)"));
 	length->connect("value_changed", this, "_anim_length_changed");
 	len_hb->add_child(length);
 	loop = memnew(ToolButton);
@@ -1310,7 +1316,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 			string_pos = string_pos.floor();
 			draw_string(font, string_pos, text, text_color, limit - ofs - hsep);
 
-			draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor);
+			draw_line(Point2(limit, 0), Point2(limit, get_size().height), linecolor, Math::round(EDSCALE));
 		}
 
 		// KEYFAMES //
@@ -1370,7 +1376,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			Ref<Texture> down_icon = get_icon("select_arrow", "Tree");
 
-			draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor);
+			draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
 
 			ofs += hsep;
 			{
@@ -1417,7 +1423,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 
 				ofs += down_icon->get_width();
-				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor);
+				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
 				ofs += hsep;
 			}
 
@@ -1450,7 +1456,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 
 				ofs += down_icon->get_width();
-				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor);
+				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
 				ofs += hsep;
 			}
 
@@ -1483,7 +1489,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 
 				ofs += down_icon->get_width();
-				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor);
+				draw_line(Point2(ofs + hsep * 0.5, 0), Point2(ofs + hsep * 0.5, get_size().height), linecolor, Math::round(EDSCALE));
 				ofs += hsep;
 			}
 
@@ -1501,17 +1507,17 @@ void AnimationTrackEdit::_notification(int p_what) {
 		}
 
 		if (in_group) {
-			draw_line(Vector2(timeline->get_name_limit(), get_size().height), get_size(), linecolor);
+			draw_line(Vector2(timeline->get_name_limit(), get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 		} else {
-			draw_line(Vector2(0, get_size().height), get_size(), linecolor);
+			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 		}
 
 		if (dropping_at != 0) {
 			Color drop_color = get_color("accent_color", "Editor");
 			if (dropping_at < 0) {
-				draw_line(Vector2(0, 0), Vector2(get_size().width, 0), drop_color);
+				draw_line(Vector2(0, 0), Vector2(get_size().width, 0), drop_color, Math::round(EDSCALE));
 			} else {
-				draw_line(Vector2(0, get_size().height), get_size(), drop_color);
+				draw_line(Vector2(0, get_size().height), get_size(), drop_color, Math::round(EDSCALE));
 			}
 		}
 	}
@@ -1560,7 +1566,7 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 	int from_x = MAX(p_x, p_clip_left);
 	int to_x = MIN(p_next_x, p_clip_right);
 
-	draw_line(Point2(from_x + 1, get_size().height / 2), Point2(to_x, get_size().height / 2), color, 2);
+	draw_line(Point2(from_x + 1, get_size().height / 2), Point2(to_x, get_size().height / 2), color, Math::round(2 * EDSCALE));
 }
 
 void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
@@ -1740,7 +1746,7 @@ void AnimationTrackEdit::_play_position_draw() {
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color);
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(EDSCALE));
 	}
 }
 
@@ -2443,9 +2449,9 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 		Color linecolor = color;
 		linecolor.a = 0.2;
 
-		draw_line(Point2(), Point2(get_size().width, 0), linecolor);
-		draw_line(Point2(timeline->get_name_limit(), 0), Point2(timeline->get_name_limit(), get_size().height), linecolor);
-		draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), linecolor);
+		draw_line(Point2(), Point2(get_size().width, 0), linecolor, Math::round(EDSCALE));
+		draw_line(Point2(timeline->get_name_limit(), 0), Point2(timeline->get_name_limit(), get_size().height), linecolor, Math::round(EDSCALE));
+		draw_line(Point2(get_size().width - timeline->get_buttons_width(), 0), Point2(get_size().width - timeline->get_buttons_width(), get_size().height), linecolor, Math::round(EDSCALE));
 
 		int ofs = 0;
 		draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
@@ -2456,7 +2462,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 		if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 			Color accent = get_color("accent_color", "Editor");
-			draw_line(Point2(px, 0), Point2(px, get_size().height), accent);
+			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(EDSCALE));
 		}
 	}
 }
@@ -2540,7 +2546,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 		step->set_block_signals(false);
 		step->set_read_only(false);
 		snap->set_disabled(false);
-		snap_mode->set_disabled(true);
+		snap_mode->set_disabled(false);
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -2549,7 +2555,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 		step->set_block_signals(false);
 		step->set_read_only(true);
 		snap->set_disabled(true);
-		snap_mode->set_disabled(false);
+		snap_mode->set_disabled(true);
 	}
 }
 
@@ -3857,7 +3863,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 
 	if (snap->is_pressed() && step->get_value() != 0) {
-		p_ofs = Math::stepify(p_ofs, step->get_value());
+		p_ofs = snap_time(p_ofs);
 	}
 	while (animation->track_find_key(p_track, p_ofs, true) != -1) { //make sure insertion point is valid
 		p_ofs += 0.001;
@@ -4889,7 +4895,14 @@ void AnimationTrackEditor::_selection_changed() {
 float AnimationTrackEditor::snap_time(float p_value) {
 
 	if (snap->is_pressed()) {
-		p_value = Math::stepify(p_value, step->get_value());
+
+		double snap_increment;
+		if (timeline->is_using_fps() && step->get_value() > 0)
+			snap_increment = 1.0 / step->get_value();
+		else
+			snap_increment = step->get_value();
+
+		p_value = Math::stepify(p_value, snap_increment);
 	}
 
 	return p_value;
@@ -5021,7 +5034,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bottom_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(ToolButton);
-	snap->set_text(TTR("Snap: "));
+	snap->set_text(TTR("Snap:") + " ");
 	bottom_hb->add_child(snap);
 	snap->set_disabled(true);
 	snap->set_toggle_mode(true);

@@ -102,7 +102,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 
 	} else if (p_id == BUTTON_GROUP) {
-		if (n->is_class("CanvasItem")) {
+		if (n->is_class("CanvasItem") || n->is_class("Spatial")) {
 			n->set_meta("_edit_group_", Variant());
 			_update_tree();
 			emit_signal("node_changed");
@@ -302,6 +302,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			bool is_locked = p_node->has_meta("_edit_lock_");
 			if (is_locked)
 				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK, false, TTR("Node is locked.\nClick to unlock it."));
+
+			bool is_grouped = p_node->has_meta("_edit_group_");
+			if (is_grouped)
+				item->add_button(0, get_icon("Group", "EditorIcons"), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make selectable."));
 
 			bool v = p_node->call("is_visible");
 			if (v)
@@ -1121,22 +1125,17 @@ SceneTreeEditor::~SceneTreeEditor() {
 
 void SceneTreeDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", this, "_select");
-	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", this, "_select");
-	}
-	if (p_what == NOTIFICATION_DRAW) {
-
-		RID ci = get_canvas_item();
-		get_stylebox("panel", "PopupMenu")->draw(ci, Rect2(Point2(), get_size()));
-	}
-
-	if (p_what == NOTIFICATION_VISIBILITY_CHANGED && is_visible_in_tree()) {
-
-		tree->update_tree();
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", this, "_select");
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			disconnect("confirmed", this, "_select");
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree())
+				tree->update_tree();
+		} break;
 	}
 }
 
@@ -1165,8 +1164,6 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	tree = memnew(SceneTreeEditor(false, false, true));
 	add_child(tree);
-	//set_child_rect(tree);
-
 	tree->get_scene_tree()->connect("item_activated", this, "_select");
 }
 

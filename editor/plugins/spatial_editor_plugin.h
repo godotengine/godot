@@ -485,6 +485,8 @@ public:
 		TOOL_MODE_LIST_SELECT,
 		TOOL_LOCK_SELECTED,
 		TOOL_UNLOCK_SELECTED,
+		TOOL_GROUP_SELECTED,
+		TOOL_UNGROUP_SELECTED,
 		TOOL_MAX
 	};
 
@@ -570,6 +572,8 @@ private:
 		MENU_VIEW_CAMERA_SETTINGS,
 		MENU_LOCK_SELECTED,
 		MENU_UNLOCK_SELECTED,
+		MENU_GROUP_SELECTED,
+		MENU_UNGROUP_SELECTED,
 		MENU_SNAP_TO_FLOOR
 	};
 
@@ -673,9 +677,9 @@ public:
 	ToolMode get_tool_mode() const { return tool_mode; }
 	bool are_local_coords_enabled() const { return tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
-	float get_translate_snap() const { return snap_translate->get_text().to_double(); }
-	float get_rotate_snap() const { return snap_rotate->get_text().to_double(); }
-	float get_scale_snap() const { return snap_scale->get_text().to_double(); }
+	float get_translate_snap() const;
+	float get_rotate_snap() const;
+	float get_scale_snap() const;
 
 	Ref<ArrayMesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
 	Ref<ArrayMesh> get_move_plane_gizmo(int idx) const { return move_plane_gizmo[idx]; }

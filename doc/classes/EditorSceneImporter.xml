@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_get_extensions" qualifiers="virtual">
 			<return type="Array">

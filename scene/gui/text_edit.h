@@ -79,6 +79,8 @@ public:
 			bool safe : 1;
 			int wrap_amount_cache : 24;
 			Map<int, ColorRegionInfo> region_info;
+			Ref<Texture> info_icon;
+			String info;
 			String data;
 		};
 
@@ -109,6 +111,13 @@ public:
 		bool is_hidden(int p_line) const { return text[p_line].hidden; }
 		void set_safe(int p_line, bool p_safe) { text.write[p_line].safe = p_safe; }
 		bool is_safe(int p_line) const { return text[p_line].safe; }
+		void set_info_icon(int p_line, Ref<Texture> p_icon, String p_info) {
+			text.write[p_line].info_icon = p_icon;
+			text.write[p_line].info = p_info;
+		}
+		bool has_info_icon(int p_line) const { return text[p_line].info_icon.is_valid(); }
+		const Ref<Texture> &get_info_icon(int p_line) const { return text[p_line].info_icon; }
+		const String &get_info(int p_line) const { return text[p_line].info; }
 		void insert(int p_at, const String &p_text);
 		void remove(int p_at);
 		int size() const { return text.size(); }
@@ -193,6 +202,7 @@ private:
 		int line_number_w;
 		int breakpoint_gutter_width;
 		int fold_gutter_width;
+		int info_gutter_width;
 	} cache;
 
 	Map<int, int> color_region_cache;
@@ -291,6 +301,8 @@ private:
 	bool draw_fold_gutter;
 	int fold_gutter_width;
 	bool hiding_enabled;
+	bool draw_info_gutter;
+	int info_gutter_width;
 
 	bool highlight_all_occurrences;
 	bool scroll_past_end_of_file_enabled;
@@ -480,6 +492,9 @@ public:
 	Array get_breakpoints_array() const;
 	void remove_breakpoints();
 
+	void set_line_info_icon(int p_line, Ref<Texture> p_icon, String p_info = "");
+	void clear_info_icons();
+
 	void set_line_as_hidden(int p_line, bool p_hidden);
 	bool is_line_hidden(int p_line) const;
 	void fold_all_lines();
@@ -490,6 +505,7 @@ public:
 
 	bool can_fold(int p_line) const;
 	bool is_folded(int p_line) const;
+	Vector<int> get_folded_lines() const;
 	void fold_line(int p_line);
 	void unfold_line(int p_line);
 	void toggle_fold_line(int p_line);
@@ -649,6 +665,12 @@ public:
 
 	void set_fold_gutter_width(int p_gutter_width);
 	int get_fold_gutter_width() const;
+
+	void set_draw_info_gutter(bool p_draw);
+	bool is_drawing_info_gutter() const;
+
+	void set_info_gutter_width(int p_gutter_width);
+	int get_info_gutter_width() const;
 
 	void set_hiding_enabled(int p_enabled);
 	int is_hiding_enabled() const;

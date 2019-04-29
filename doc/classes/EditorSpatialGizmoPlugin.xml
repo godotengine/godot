@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/spatial_gizmos.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_material">
 			<return type="void">
@@ -27,7 +25,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Override this method to define whether the gizmo can be hidden or not. Defaults to true.
+				Override this method to define whether the gizmo can be hidden or not. Defaults to [code]true[/code].
 			</description>
 		</method>
 		<method name="commit_handle" qualifiers="virtual">

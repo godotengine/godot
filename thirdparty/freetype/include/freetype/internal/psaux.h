@@ -1,20 +1,20 @@
-/***************************************************************************/
-/*                                                                         */
-/*  psaux.h                                                                */
-/*                                                                         */
-/*    Auxiliary functions and data structures related to PostScript fonts  */
-/*    (specification).                                                     */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * psaux.h
+ *
+ *   Auxiliary functions and data structures related to PostScript fonts
+ *   (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef PSAUX_H_
@@ -35,10 +35,10 @@
 FT_BEGIN_HEADER
 
 
-  /***********************************************************************/
-  /*                                                                     */
-  /* PostScript modules driver class.                                    */
-  /*                                                                     */
+  /**************************************************************************
+   *
+   * PostScript modules driver class.
+   */
   typedef struct  PS_DriverRec_
   {
     FT_DriverRec  root;
@@ -64,23 +64,27 @@ FT_BEGIN_HEADER
   typedef const struct PS_Table_FuncsRec_*  PS_Table_Funcs;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    PS_Table_FuncsRec                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A set of function pointers to manage PS_Table objects.             */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    table_init    :: Used to initialize a table.                       */
-  /*                                                                       */
-  /*    table_done    :: Finalizes resp. destroy a given table.            */
-  /*                                                                       */
-  /*    table_add     :: Adds a new object to a table.                     */
-  /*                                                                       */
-  /*    table_release :: Releases table data, then finalizes it.           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   PS_Table_FuncsRec
+   *
+   * @description:
+   *   A set of function pointers to manage PS_Table objects.
+   *
+   * @fields:
+   *   table_init ::
+   *     Used to initialize a table.
+   *
+   *   table_done ::
+   *     Finalizes resp. destroy a given table.
+   *
+   *   table_add ::
+   *     Adds a new object to a table.
+   *
+   *   table_release ::
+   *     Releases table data, then finalizes it.
+   */
   typedef struct  PS_Table_FuncsRec_
   {
     FT_Error
@@ -103,41 +107,47 @@ FT_BEGIN_HEADER
   } PS_Table_FuncsRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    PS_TableRec                                                        */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A PS_Table is a simple object used to store an array of objects in */
-  /*    a single memory block.                                             */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    block     :: The address in memory of the growheap's block.  This  */
-  /*                 can change between two object adds, due to            */
-  /*                 reallocation.                                         */
-  /*                                                                       */
-  /*    cursor    :: The current top of the grow heap within its block.    */
-  /*                                                                       */
-  /*    capacity  :: The current size of the heap block.  Increments by    */
-  /*                 1kByte chunks.                                        */
-  /*                                                                       */
-  /*    init      :: Set to 0xDEADBEEF if `elements' and `lengths' have    */
-  /*                 been allocated.                                       */
-  /*                                                                       */
-  /*    max_elems :: The maximum number of elements in table.              */
-  /*                                                                       */
-  /*    num_elems :: The current number of elements in table.              */
-  /*                                                                       */
-  /*    elements  :: A table of element addresses within the block.        */
-  /*                                                                       */
-  /*    lengths   :: A table of element sizes within the block.            */
-  /*                                                                       */
-  /*    memory    :: The object used for memory operations                 */
-  /*                 (alloc/realloc).                                      */
-  /*                                                                       */
-  /*    funcs     :: A table of method pointers for this object.           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   PS_TableRec
+   *
+   * @description:
+   *   A PS_Table is a simple object used to store an array of objects in a
+   *   single memory block.
+   *
+   * @fields:
+   *   block ::
+   *     The address in memory of the growheap's block.  This can change
+   *     between two object adds, due to reallocation.
+   *
+   *   cursor ::
+   *     The current top of the grow heap within its block.
+   *
+   *   capacity ::
+   *     The current size of the heap block.  Increments by 1kByte chunks.
+   *
+   *   init ::
+   *     Set to 0xDEADBEEF if 'elements' and 'lengths' have been allocated.
+   *
+   *   max_elems ::
+   *     The maximum number of elements in table.
+   *
+   *   num_elems ::
+   *     The current number of elements in table.
+   *
+   *   elements ::
+   *     A table of element addresses within the block.
+   *
+   *   lengths ::
+   *     A table of element sizes within the block.
+   *
+   *   memory ::
+   *     The object used for memory operations (alloc/realloc).
+   *
+   *   funcs ::
+   *     A table of method pointers for this object.
+   */
   typedef struct  PS_TableRec_
   {
     FT_Byte*           block;          /* current memory block           */
@@ -425,27 +435,33 @@ FT_BEGIN_HEADER
   } PS_Parser_FuncsRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    PS_ParserRec                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A PS_Parser is an object used to parse a Type 1 font very quickly. */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    cursor :: The current position in the text.                        */
-  /*                                                                       */
-  /*    base   :: Start of the processed text.                             */
-  /*                                                                       */
-  /*    limit  :: End of the processed text.                               */
-  /*                                                                       */
-  /*    error  :: The last error returned.                                 */
-  /*                                                                       */
-  /*    memory :: The object used for memory operations (alloc/realloc).   */
-  /*                                                                       */
-  /*    funcs  :: A table of functions for the parser.                     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   PS_ParserRec
+   *
+   * @description:
+   *   A PS_Parser is an object used to parse a Type 1 font very quickly.
+   *
+   * @fields:
+   *   cursor ::
+   *     The current position in the text.
+   *
+   *   base ::
+   *     Start of the processed text.
+   *
+   *   limit ::
+   *     End of the processed text.
+   *
+   *   error ::
+   *     The last error returned.
+   *
+   *   memory ::
+   *     The object used for memory operations (alloc/realloc).
+   *
+   *   funcs ::
+   *     A table of functions for the parser.
+   */
   typedef struct  PS_ParserRec_
   {
     FT_Byte*   cursor;
@@ -484,51 +500,67 @@ FT_BEGIN_HEADER
   } PS_Builder_FuncsRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Structure>                                                           */
-  /*    PS_Builder                                                         */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*     A structure used during glyph loading to store its outline.       */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    memory       :: The current memory object.                         */
-  /*                                                                       */
-  /*    face         :: The current face object.                           */
-  /*                                                                       */
-  /*    glyph        :: The current glyph slot.                            */
-  /*                                                                       */
-  /*    loader       :: XXX                                                */
-  /*                                                                       */
-  /*    base         :: The base glyph outline.                            */
-  /*                                                                       */
-  /*    current      :: The current glyph outline.                         */
-  /*                                                                       */
-  /*    pos_x        :: The horizontal translation (if composite glyph).   */
-  /*                                                                       */
-  /*    pos_y        :: The vertical translation (if composite glyph).     */
-  /*                                                                       */
-  /*    left_bearing :: The left side bearing point.                       */
-  /*                                                                       */
-  /*    advance      :: The horizontal advance vector.                     */
-  /*                                                                       */
-  /*    bbox         :: Unused.                                            */
-  /*                                                                       */
-  /*    path_begun   :: A flag which indicates that a new path has begun.  */
-  /*                                                                       */
-  /*    load_points  :: If this flag is not set, no points are loaded.     */
-  /*                                                                       */
-  /*    no_recurse   :: Set but not used.                                  */
-  /*                                                                       */
-  /*    metrics_only :: A boolean indicating that we only want to compute  */
-  /*                    the metrics of a given glyph, not load all of its  */
-  /*                    points.                                            */
-  /*                                                                       */
-  /*    is_t1        :: Set if current font type is Type 1.                */
-  /*                                                                       */
-  /*    funcs        :: An array of function pointers for the builder.     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   PS_Builder
+   *
+   * @description:
+   *    A structure used during glyph loading to store its outline.
+   *
+   * @fields:
+   *   memory ::
+   *     The current memory object.
+   *
+   *   face ::
+   *     The current face object.
+   *
+   *   glyph ::
+   *     The current glyph slot.
+   *
+   *   loader ::
+   *     XXX
+   *
+   *   base ::
+   *     The base glyph outline.
+   *
+   *   current ::
+   *     The current glyph outline.
+   *
+   *   pos_x ::
+   *     The horizontal translation (if composite glyph).
+   *
+   *   pos_y ::
+   *     The vertical translation (if composite glyph).
+   *
+   *   left_bearing ::
+   *     The left side bearing point.
+   *
+   *   advance ::
+   *     The horizontal advance vector.
+   *
+   *   bbox ::
+   *     Unused.
+   *
+   *   path_begun ::
+   *     A flag which indicates that a new path has begun.
+   *
+   *   load_points ::
+   *     If this flag is not set, no points are loaded.
+   *
+   *   no_recurse ::
+   *     Set but not used.
+   *
+   *   metrics_only ::
+   *     A boolean indicating that we only want to compute the metrics of a
+   *     given glyph, not load all of its points.
+   *
+   *   is_t1 ::
+   *     Set if current font type is Type 1.
+   *
+   *   funcs ::
+   *     An array of function pointers for the builder.
+   */
   struct  PS_Builder_
   {
     FT_Memory       memory;
@@ -729,54 +761,70 @@ FT_BEGIN_HEADER
   } T1_ParseState;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Structure>                                                           */
-  /*    T1_BuilderRec                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*     A structure used during glyph loading to store its outline.       */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    memory       :: The current memory object.                         */
-  /*                                                                       */
-  /*    face         :: The current face object.                           */
-  /*                                                                       */
-  /*    glyph        :: The current glyph slot.                            */
-  /*                                                                       */
-  /*    loader       :: XXX                                                */
-  /*                                                                       */
-  /*    base         :: The base glyph outline.                            */
-  /*                                                                       */
-  /*    current      :: The current glyph outline.                         */
-  /*                                                                       */
-  /*    max_points   :: maximum points in builder outline                  */
-  /*                                                                       */
-  /*    max_contours :: Maximum number of contours in builder outline.     */
-  /*                                                                       */
-  /*    pos_x        :: The horizontal translation (if composite glyph).   */
-  /*                                                                       */
-  /*    pos_y        :: The vertical translation (if composite glyph).     */
-  /*                                                                       */
-  /*    left_bearing :: The left side bearing point.                       */
-  /*                                                                       */
-  /*    advance      :: The horizontal advance vector.                     */
-  /*                                                                       */
-  /*    bbox         :: Unused.                                            */
-  /*                                                                       */
-  /*    parse_state  :: An enumeration which controls the charstring       */
-  /*                    parsing state.                                     */
-  /*                                                                       */
-  /*    load_points  :: If this flag is not set, no points are loaded.     */
-  /*                                                                       */
-  /*    no_recurse   :: Set but not used.                                  */
-  /*                                                                       */
-  /*    metrics_only :: A boolean indicating that we only want to compute  */
-  /*                    the metrics of a given glyph, not load all of its  */
-  /*                    points.                                            */
-  /*                                                                       */
-  /*    funcs        :: An array of function pointers for the builder.     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   T1_BuilderRec
+   *
+   * @description:
+   *    A structure used during glyph loading to store its outline.
+   *
+   * @fields:
+   *   memory ::
+   *     The current memory object.
+   *
+   *   face ::
+   *     The current face object.
+   *
+   *   glyph ::
+   *     The current glyph slot.
+   *
+   *   loader ::
+   *     XXX
+   *
+   *   base ::
+   *     The base glyph outline.
+   *
+   *   current ::
+   *     The current glyph outline.
+   *
+   *   max_points ::
+   *     maximum points in builder outline
+   *
+   *   max_contours ::
+   *     Maximum number of contours in builder outline.
+   *
+   *   pos_x ::
+   *     The horizontal translation (if composite glyph).
+   *
+   *   pos_y ::
+   *     The vertical translation (if composite glyph).
+   *
+   *   left_bearing ::
+   *     The left side bearing point.
+   *
+   *   advance ::
+   *     The horizontal advance vector.
+   *
+   *   bbox ::
+   *     Unused.
+   *
+   *   parse_state ::
+   *     An enumeration which controls the charstring parsing state.
+   *
+   *   load_points ::
+   *     If this flag is not set, no points are loaded.
+   *
+   *   no_recurse ::
+   *     Set but not used.
+   *
+   *   metrics_only ::
+   *     A boolean indicating that we only want to compute the metrics of a
+   *     given glyph, not load all of its points.
+   *
+   *   funcs ::
+   *     An array of function pointers for the builder.
+   */
   typedef struct  T1_BuilderRec_
   {
     FT_Memory       memory;
@@ -817,19 +865,19 @@ FT_BEGIN_HEADER
 
 #if 0
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* T1_MAX_SUBRS_CALLS details the maximum number of nested sub-routine   */
-  /* calls during glyph loading.                                           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * T1_MAX_SUBRS_CALLS details the maximum number of nested sub-routine
+   * calls during glyph loading.
+   */
 #define T1_MAX_SUBRS_CALLS  8
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* T1_MAX_CHARSTRING_OPERANDS is the charstring stack's capacity.  A     */
-  /* minimum of 16 is required.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * T1_MAX_CHARSTRING_OPERANDS is the charstring stack's capacity.  A
+   * minimum of 16 is required.
+   */
 #define T1_MAX_CHARSTRINGS_OPERANDS  32
 
 #endif /* 0 */
@@ -993,53 +1041,70 @@ FT_BEGIN_HEADER
   } CFF_Builder_FuncsRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Structure>                                                           */
-  /*    CFF_Builder                                                        */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*     A structure used during glyph loading to store its outline.       */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    memory        :: The current memory object.                        */
-  /*                                                                       */
-  /*    face          :: The current face object.                          */
-  /*                                                                       */
-  /*    glyph         :: The current glyph slot.                           */
-  /*                                                                       */
-  /*    loader        :: The current glyph loader.                         */
-  /*                                                                       */
-  /*    base          :: The base glyph outline.                           */
-  /*                                                                       */
-  /*    current       :: The current glyph outline.                        */
-  /*                                                                       */
-  /*    pos_x         :: The horizontal translation (if composite glyph).  */
-  /*                                                                       */
-  /*    pos_y         :: The vertical translation (if composite glyph).    */
-  /*                                                                       */
-  /*    left_bearing  :: The left side bearing point.                      */
-  /*                                                                       */
-  /*    advance       :: The horizontal advance vector.                    */
-  /*                                                                       */
-  /*    bbox          :: Unused.                                           */
-  /*                                                                       */
-  /*    path_begun    :: A flag which indicates that a new path has begun. */
-  /*                                                                       */
-  /*    load_points   :: If this flag is not set, no points are loaded.    */
-  /*                                                                       */
-  /*    no_recurse    :: Set but not used.                                 */
-  /*                                                                       */
-  /*    metrics_only  :: A boolean indicating that we only want to compute */
-  /*                     the metrics of a given glyph, not load all of its */
-  /*                     points.                                           */
-  /*                                                                       */
-  /*    hints_funcs   :: Auxiliary pointer for hinting.                    */
-  /*                                                                       */
-  /*    hints_globals :: Auxiliary pointer for hinting.                    */
-  /*                                                                       */
-  /*    funcs         :: A table of method pointers for this object.       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   CFF_Builder
+   *
+   * @description:
+   *    A structure used during glyph loading to store its outline.
+   *
+   * @fields:
+   *   memory ::
+   *     The current memory object.
+   *
+   *   face ::
+   *     The current face object.
+   *
+   *   glyph ::
+   *     The current glyph slot.
+   *
+   *   loader ::
+   *     The current glyph loader.
+   *
+   *   base ::
+   *     The base glyph outline.
+   *
+   *   current ::
+   *     The current glyph outline.
+   *
+   *   pos_x ::
+   *     The horizontal translation (if composite glyph).
+   *
+   *   pos_y ::
+   *     The vertical translation (if composite glyph).
+   *
+   *   left_bearing ::
+   *     The left side bearing point.
+   *
+   *   advance ::
+   *     The horizontal advance vector.
+   *
+   *   bbox ::
+   *     Unused.
+   *
+   *   path_begun ::
+   *     A flag which indicates that a new path has begun.
+   *
+   *   load_points ::
+   *     If this flag is not set, no points are loaded.
+   *
+   *   no_recurse ::
+   *     Set but not used.
+   *
+   *   metrics_only ::
+   *     A boolean indicating that we only want to compute the metrics of a
+   *     given glyph, not load all of its points.
+   *
+   *   hints_funcs ::
+   *     Auxiliary pointer for hinting.
+   *
+   *   hints_globals ::
+   *     Auxiliary pointer for hinting.
+   *
+   *   funcs ::
+   *     A table of method pointers for this object.
+   */
   struct  CFF_Builder_
   {
     FT_Memory       memory;
@@ -1211,25 +1276,27 @@ FT_BEGIN_HEADER
   typedef struct AFM_StreamRec_*  AFM_Stream;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    AFM_ParserRec                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    An AFM_Parser is a parser for the AFM files.                       */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    memory    :: The object used for memory operations (alloc and      */
-  /*                 realloc).                                             */
-  /*                                                                       */
-  /*    stream    :: This is an opaque object.                             */
-  /*                                                                       */
-  /*    FontInfo  :: The result will be stored here.                       */
-  /*                                                                       */
-  /*    get_index :: A user provided function to get a glyph index by its  */
-  /*                 name.                                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   AFM_ParserRec
+   *
+   * @description:
+   *   An AFM_Parser is a parser for the AFM files.
+   *
+   * @fields:
+   *   memory ::
+   *     The object used for memory operations (alloc and realloc).
+   *
+   *   stream ::
+   *     This is an opaque object.
+   *
+   *   FontInfo ::
+   *     The result will be stored here.
+   *
+   *   get_index ::
+   *     A user provided function to get a glyph index by its name.
+   */
   typedef struct  AFM_ParserRec_
   {
     FT_Memory     memory;

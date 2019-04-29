@@ -11,8 +11,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_current_tab_control" qualifiers="const">
 			<return type="Control">
@@ -102,7 +100,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]disabled[/code] is false, hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">

@@ -15,8 +15,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/environment_and_post_processing.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/high_dynamic_range.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -30,7 +28,7 @@
 			Global contrast value of the rendered scene (default value is 1).
 		</member>
 		<member name="adjustment_enabled" type="bool" setter="set_adjustment_enable" getter="is_adjustment_enabled">
-			Enables the adjustment_* options provided by this resource. If false, adjustments modifications will have no effect on the rendered scene.
+			Enables the adjustment_* options provided by this resource. If [code]false[/code], adjustments modifications will have no effect on the rendered scene.
 		</member>
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation">
 			Global color saturation value of the rendered scene (default value is 1).

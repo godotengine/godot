@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_valid_connection_type">
 			<return type="void">
@@ -103,7 +101,7 @@
 			<argument index="3" name="to_port" type="int">
 			</argument>
 			<description>
-				Return true if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
+				Return [code]true[/code] if the 'from_port' slot of 'from' GraphNode is connected to the 'to_port' slot of 'to' GraphNode.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">

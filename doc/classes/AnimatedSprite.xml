@@ -8,14 +8,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="is_playing" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if an animation if currently being played.
+				Return [code]true[/code] if an animation if currently being played.
 			</description>
 		</method>
 		<method name="play">

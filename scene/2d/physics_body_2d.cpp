@@ -1275,9 +1275,6 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 
 			if (collided) {
 				found_collision = true;
-			}
-
-			if (collided) {
 
 				colliders.push_back(collision);
 				motion = collision.remainder;

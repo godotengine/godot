@@ -1477,7 +1477,7 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 		middle = (low + high) / 2;
 
-		if (Math::abs(p_time - keys[middle].time) < CMP_EPSILON) { //match
+		if (Math::is_equal_approx(p_time, keys[middle].time)) { //match
 			return middle;
 		} else if (p_time < keys[middle].time)
 			high = middle - 1; //search low end of array
@@ -1680,10 +1680,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				float delta = p_keys[next].time - p_keys[idx].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::absf(delta) > CMP_EPSILON)
-					c = from / delta;
-				else
+				if (Math::is_zero_approx(delta))
 					c = 0;
+				else
+					c = from / delta;
 
 			} else {
 
@@ -1691,10 +1691,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				float delta = (length - p_keys[idx].time) + p_keys[next].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::absf(delta) > CMP_EPSILON)
-					c = from / delta;
-				else
+				if (Math::is_zero_approx(delta))
 					c = 0;
+				else
+					c = from / delta;
 			}
 
 		} else {
@@ -1707,10 +1707,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 			float delta = endtime + p_keys[next].time;
 			float from = endtime + p_time;
 
-			if (Math::absf(delta) > CMP_EPSILON)
-				c = from / delta;
-			else
+			if (Math::is_zero_approx(delta))
 				c = 0;
+			else
+				c = from / delta;
 		}
 
 	} else { // no loop
@@ -1723,10 +1723,10 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				float delta = p_keys[next].time - p_keys[idx].time;
 				float from = p_time - p_keys[idx].time;
 
-				if (Math::absf(delta) > CMP_EPSILON)
-					c = from / delta;
-				else
+				if (Math::is_zero_approx(delta))
 					c = 0;
+				else
+					c = from / delta;
 
 			} else {
 
@@ -2774,9 +2774,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		const Vector3 &v1 = t1.value.loc;
 		const Vector3 &v2 = t2.value.loc;
 
-		if (v0.distance_to(v2) < CMP_EPSILON) {
+		if (Math::is_zero_approx(v0.distance_to(v2))) {
 			//0 and 2 are close, let's see if 1 is close
-			if (v0.distance_to(v1) > CMP_EPSILON) {
+			if (!Math::is_zero_approx(v0.distance_to(v1))) {
 				//not close, not optimizable
 				return false;
 			}
@@ -2813,9 +2813,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 
 		//localize both to rotation from q0
 
-		if ((q0 - q2).length() < CMP_EPSILON) {
+		if (Math::is_zero_approx((q0 - q2).length())) {
 
-			if ((q0 - q1).length() > CMP_EPSILON)
+			if (!Math::is_zero_approx((q0 - q1).length()))
 				return false;
 
 		} else {
@@ -2863,9 +2863,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		const Vector3 &v1 = t1.value.scale;
 		const Vector3 &v2 = t2.value.scale;
 
-		if (v0.distance_to(v2) < CMP_EPSILON) {
+		if (Math::is_zero_approx(v0.distance_to(v2))) {
 			//0 and 2 are close, let's see if 1 is close
-			if (v0.distance_to(v1) > CMP_EPSILON) {
+			if (!Math::is_zero_approx(v0.distance_to(v1))) {
 				//not close, not optimizable
 				return false;
 			}

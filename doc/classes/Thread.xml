@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_id" qualifiers="const">
 			<return type="String">
@@ -22,7 +20,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if this [Thread] is currently active. An active [Thread] cannot start work on a new method but can be joined with [method wait_to_finish].
+				Returns [code]true[/code] if this [Thread] is currently active. An active [Thread] cannot start work on a new method but can be joined with [method wait_to_finish].
 			</description>
 		</method>
 		<method name="start">

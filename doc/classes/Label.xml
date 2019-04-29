@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int">
@@ -46,7 +44,7 @@
 			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [code]ALIGN_*[/code] constants.
 		</member>
 		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap">
-			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. Default: false.
+			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. Default: [code]false[/code].
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.

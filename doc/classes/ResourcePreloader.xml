@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_resource">
 			<return type="void">
@@ -44,7 +42,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns true if the preloader contains a resource associated to [code]name[/code].
+				Returns [code]true[/code] if the preloader contains a resource associated to [code]name[/code].
 			</description>
 		</method>
 		<method name="remove_resource">

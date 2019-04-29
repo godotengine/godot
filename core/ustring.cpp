@@ -123,6 +123,31 @@ const char *CharString::get_data() const {
 		return "";
 }
 
+CharString &CharString::operator=(const char *p_cstr) {
+
+	copy_from(p_cstr);
+	return *this;
+}
+
+void CharString::copy_from(const char *p_cstr) {
+
+	if (!p_cstr) {
+		resize(0);
+		return;
+	}
+
+	size_t len = strlen(p_cstr);
+
+	if (len == 0) {
+		resize(0);
+		return;
+	}
+
+	resize(len + 1); // include terminating null char
+
+	strcpy(ptrw(), p_cstr);
+}
+
 void String::copy_from(const char *p_cstr) {
 
 	if (!p_cstr) {

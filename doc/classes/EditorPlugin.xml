@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/editor/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_autoload_singleton">
 			<return type="void">
@@ -294,14 +292,14 @@
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return true, then you will get the functions [method EditorPlugin.edit] and [method EditorPlugin.make_visible] called when the editor requests them. If you have declared the methods [method forward_canvas_gui_input] and [method forward_spatial_gui_input] these will be called too.
+				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method EditorPlugin.edit] and [method EditorPlugin.make_visible] called when the editor requests them. If you have declared the methods [method forward_canvas_gui_input] and [method forward_spatial_gui_input] these will be called too.
 			</description>
 		</method>
 		<method name="has_main_screen" qualifiers="virtual">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if this is a main screen editor plugin (it goes in the workspaces selector together with '2D', '3D', and 'Script').
+				Return [code]true[/code] if this is a main screen editor plugin (it goes in the workspaces selector together with '2D', '3D', and 'Script').
 			</description>
 		</method>
 		<method name="hide_bottom_panel">

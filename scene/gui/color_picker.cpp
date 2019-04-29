@@ -825,6 +825,8 @@ void ColorPickerButton::_update_picker() {
 		add_child(popup);
 		picker->connect("color_changed", this, "_color_changed");
 		popup->connect("modal_closed", this, "_modal_closed");
+		popup->connect("about_to_show", this, "set_pressed", varray(true));
+		popup->connect("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
 	}
@@ -855,4 +857,6 @@ ColorPickerButton::ColorPickerButton() {
 	picker = NULL;
 	popup = NULL;
 	edit_alpha = true;
+
+	set_toggle_mode(true);
 }

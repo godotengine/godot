@@ -66,10 +66,10 @@
 /* #define XXH_ACCEPT_NULL_INPUT_POINTER 1 */
 
 /*!XXH_FORCE_NATIVE_FORMAT :
- * By default, xxHash library provides endian-independant Hash values, based on little-endian convention.
+ * By default, xxHash library provides endian-independent Hash values, based on little-endian convention.
  * Results are therefore identical for little-endian and big-endian CPU.
  * This comes at a performance cost for big-endian CPU, since some swapping is required to emulate little-endian format.
- * Should endian-independance be of no importance for your application, you may set the #define below to 1,
+ * Should endian-independence be of no importance for your application, you may set the #define below to 1,
  * to improve speed for Big-endian CPU.
  * This option has no impact on Little_Endian CPU.
  */

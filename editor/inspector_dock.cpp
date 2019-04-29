@@ -130,8 +130,7 @@ void InspectorDock::_menu_option(int p_option) {
 				ERR_FAIL_INDEX(idx, methods.size());
 				String name = methods[idx].name;
 
-				if (current)
-					current->call(name);
+				current->call(name);
 			}
 		}
 	}

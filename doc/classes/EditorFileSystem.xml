@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_file_type" qualifiers="const">
 			<return type="String">
@@ -47,7 +45,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true of the filesystem is being scanned.
+				Return [code]true[/code] of the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">

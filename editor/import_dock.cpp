@@ -438,6 +438,8 @@ void ImportDock::_reimport() {
 		Error err = config->load(params->paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
+		String importer_name = params->importer->get_importer_name();
+
 		if (params->checking) {
 			//update only what edited (checkboxes)
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
@@ -447,12 +449,25 @@ void ImportDock::_reimport() {
 			}
 		} else {
 			//override entirely
-			config->set_value("remap", "importer", params->importer->get_importer_name());
+			config->set_value("remap", "importer", importer_name);
 			config->erase_section("params");
 
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
 				config->set_value("params", E->get().name, params->values[E->get().name]);
 			}
+		}
+
+		//handle group file
+		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+		ERR_CONTINUE(!importer.is_valid());
+		String group_file_property = importer->get_option_group_file();
+		if (group_file_property != String()) {
+			//can import from a group (as in, atlas)
+			ERR_CONTINUE(!params->values.has(group_file_property));
+			String group_file = params->values[group_file_property];
+			config->set_value("remap", "group_file", group_file);
+		} else {
+			config->set_value("remap", "group_file", Variant()); //clear group file if unused
 		}
 
 		config->save(params->paths[i] + ".import");

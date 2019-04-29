@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="action_press">
 			<return type="void">
@@ -66,6 +64,12 @@
 			</return>
 			<description>
 				Returns an [Array] containing the device IDs of all currently connected joypads.
+			</description>
+		</method>
+		<method name="get_current_cursor_shape" qualifiers="const">
+			<return type="int" enum="Input.CursorShape">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
@@ -199,7 +203,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] when the user starts pressing the action event, meaning it's true only on the frame that the user pressed down the button.
+				Returns [code]true[/code] when the user starts pressing the action event, meaning it's [code]true[/code] only on the frame that the user pressed down the button.
 				This is useful for code that needs to run only once when an action is pressed, instead of every frame while it's pressed.
 			</description>
 		</method>
@@ -209,7 +213,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] when the user stops pressing the action event, meaning it's true only on the frame that the user released the button.
+				Returns [code]true[/code] when the user stops pressing the action event, meaning it's [code]true[/code] only on the frame that the user released the button.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">

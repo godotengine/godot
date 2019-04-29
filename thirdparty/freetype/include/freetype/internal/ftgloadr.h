@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftgloadr.h                                                             */
-/*                                                                         */
-/*    The FreeType glyph loader (specification).                           */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg                       */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftgloadr.h
+ *
+ *   The FreeType glyph loader (specification).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTGLOADR_H_
@@ -27,15 +27,15 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_GlyphLoader                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The glyph loader is an internal object used to load several glyphs */
-  /*    together (for example, in the case of composites).                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_GlyphLoader
+   *
+   * @description:
+   *   The glyph loader is an internal object used to load several glyphs
+   *   together (for example, in the case of composites).
+   */
   typedef struct  FT_SubGlyphRec_
   {
     FT_Int     index;
@@ -137,11 +137,6 @@ FT_BEGIN_HEADER
   /* add the current glyph to the base glyph */
   FT_BASE( void )
   FT_GlyphLoader_Add( FT_GlyphLoader  loader );
-
-  /* copy points from one glyph loader to another */
-  FT_BASE( FT_Error )
-  FT_GlyphLoader_CopyPoints( FT_GlyphLoader  target,
-                             FT_GlyphLoader  source );
 
  /* */
 

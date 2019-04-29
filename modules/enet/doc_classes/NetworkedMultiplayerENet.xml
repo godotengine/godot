@@ -10,8 +10,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/high_level_multiplayer.html</link>
 		<link>http://enet.bespin.org/usergroup0.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="close_connection">
 			<return type="void">
@@ -62,7 +60,7 @@
 			<argument index="1" name="now" type="bool" default="false">
 			</argument>
 			<description>
-				Disconnect the given peer. If "now" is set to true, the connection will be closed immediately without flushing queued messages.
+				Disconnect the given peer. If "now" is set to [code]true[/code], the connection will be closed immediately without flushing queued messages.
 			</description>
 		</method>
 		<method name="get_last_packet_channel" qualifiers="const">

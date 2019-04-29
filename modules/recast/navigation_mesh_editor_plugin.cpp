@@ -67,9 +67,7 @@ void NavigationMeshEditor::_bake_pressed() {
 	NavigationMeshGenerator::clear(node->get_navigation_mesh());
 	NavigationMeshGenerator::bake(node->get_navigation_mesh(), node);
 
-	if (node) {
-		node->update_gizmo();
-	}
+	node->update_gizmo();
 }
 
 void NavigationMeshEditor::_clear_pressed() {

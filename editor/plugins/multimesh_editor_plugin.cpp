@@ -293,6 +293,7 @@ void MultiMeshEditor::_bind_methods() {
 MultiMeshEditor::MultiMeshEditor() {
 
 	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");

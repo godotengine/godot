@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -23,16 +21,16 @@
 			Extrusion mode.
 		</member>
 		<member name="path_continuous_u" type="bool" setter="set_path_continuous_u" getter="is_path_continuous_u">
-			If true the u component of our uv will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
+			If [code]true[/code] the u component of our uv will continuously increase in unison with the distance traveled along our path when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_interval" type="float" setter="set_path_interval" getter="get_path_interval">
 			Interval at which a new extrusion slice is added along the path when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_joined" type="bool" setter="set_path_joined" getter="is_path_joined">
-			If true the start and end of our path are joined together ensuring there is no seam when [member mode] is [constant MODE_PATH].
+			If [code]true[/code] the start and end of our path are joined together ensuring there is no seam when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_local" type="bool" setter="set_path_local" getter="is_path_local">
-			If false we extrude centered on our path, if true we extrude in relation to the position of our CSGPolygon when [member mode] is [constant MODE_PATH].
+			If [code]false[/code] we extrude centered on our path, if [code]true[/code] we extrude in relation to the position of our CSGPolygon when [member mode] is [constant MODE_PATH].
 		</member>
 		<member name="path_node" type="NodePath" setter="set_path_node" getter="get_path_node">
 			The [Shape] object containing the path along which we extrude when [member mode] is [constant MODE_PATH].

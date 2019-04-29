@@ -9,13 +9,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
 		<member name="as_normalmap" type="bool" setter="set_as_normalmap" getter="is_normalmap">
-			If true, the resulting texture contains a normal map created from the original noise interpreted as a bump map.
+			If [code]true[/code], the resulting texture contains a normal map created from the original noise interpreted as a bump map.
 		</member>
 		<member name="bump_strength" type="float" setter="set_bump_strength" getter="get_bump_strength">
 		</member>

@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_icon_item">
 			<return type="void">
@@ -34,7 +32,7 @@
 			</argument>
 			<description>
 				Adds an item to the item list with specified text. Specify an icon of null for a list item with no icon.
-				If selectable is true the list item will be selectable.
+				If selectable is [code]true[/code] the list item will be selectable.
 			</description>
 		</method>
 		<method name="clear">

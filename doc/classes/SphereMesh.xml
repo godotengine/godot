@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -17,7 +15,7 @@
 			Full height of the sphere. Defaults to 2.0.
 		</member>
 		<member name="is_hemisphere" type="bool" setter="set_is_hemisphere" getter="get_is_hemisphere">
-			Determines whether a full sphere or a hemisphere is created. Attention: To get a regular hemisphere the height and radius of the sphere have to equal. Defaults to false.
+			Determines whether a full sphere or a hemisphere is created. Attention: To get a regular hemisphere the height and radius of the sphere have to equal. Defaults to [code]false[/code].
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments">
 			Number of radial segments on the sphere. Defaults to 64.

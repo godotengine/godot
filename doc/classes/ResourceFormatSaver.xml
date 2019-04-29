@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_recognized_extensions" qualifiers="virtual">
 			<return type="PoolStringArray">
@@ -27,7 +25,7 @@
 			<argument index="0" name="resource" type="Resource">
 			</argument>
 			<description>
-				Returns true if the given resource object can be saved by this saver.
+				Returns [code]true[/code] if the given resource object can be saved by this saver.
 			</description>
 		</method>
 		<method name="save" qualifiers="virtual">

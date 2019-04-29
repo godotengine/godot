@@ -82,6 +82,8 @@ public:
 
 	Dictionary duplicate(bool p_deep = false) const;
 
+	const void *id() const;
+
 	Dictionary(const Dictionary &p_from);
 	Dictionary();
 	~Dictionary();

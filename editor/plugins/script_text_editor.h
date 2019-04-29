@@ -32,7 +32,24 @@
 #define SCRIPT_TEXT_EDITOR_H
 
 #include "scene/gui/color_picker.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tree.h"
 #include "script_editor_plugin.h"
+
+class ConnectionInfoDialog : public AcceptDialog {
+
+	GDCLASS(ConnectionInfoDialog, AcceptDialog);
+
+	Label *method;
+	Tree *tree;
+
+	virtual void ok_pressed();
+
+public:
+	void popup_connections(String p_method, Vector<Node *> p_nodes);
+
+	ConnectionInfoDialog();
+};
 
 class ScriptTextEditor : public ScriptEditorBase {
 
@@ -45,6 +62,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	Vector<String> functions;
 
+	List<Connection> missing_connections;
+
 	Vector<String> member_keywords;
 
 	HBoxContainer *edit_hb;
@@ -56,6 +75,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
+	ConnectionInfoDialog *connection_info_dialog;
 
 	PopupPanel *color_panel;
 	ColorPicker *color_picker;
@@ -144,6 +164,8 @@ protected:
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 
+	void _lookup_connections(int p_row, String p_method);
+
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
@@ -151,6 +173,8 @@ protected:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
+	void _update_connected_methods();
+
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 

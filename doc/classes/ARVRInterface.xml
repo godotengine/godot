@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_capabilities" qualifiers="const">
 			<return type="int">
@@ -55,7 +53,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if the current output of this interface is in stereo.
+				Returns [code]true[/code] if the current output of this interface is in stereo.
 			</description>
 		</method>
 		<method name="uninitialize">

@@ -51,6 +51,7 @@ Vector<Vector3> BoxShape::_gen_debug_mesh_lines() {
 void BoxShape::_update_shape() {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(), extents);
+	Shape::_update_shape();
 }
 
 void BoxShape::set_extents(const Vector3 &p_extents) {

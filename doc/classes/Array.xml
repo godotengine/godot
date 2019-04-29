@@ -17,8 +17,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Array">
 			<return type="Array">
@@ -105,7 +103,7 @@
 			<argument index="1" name="before" type="bool" default="True">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a before specifier can be passed. If false, the returned index comes after all existing entries of the value in the array. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a before specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. Note that calling bsearch on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="bsearch_custom">
@@ -120,7 +118,7 @@
 			<argument index="3" name="before" type="bool" default="True">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a before specifier can be passed. If false, the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return true if the first argument is less than the second, and return false otherwise. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a before specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise. Note that calling bsearch on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">
@@ -314,7 +312,7 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
-				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise.
+				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
 				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:

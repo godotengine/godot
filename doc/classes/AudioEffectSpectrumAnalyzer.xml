@@ -6,8 +6,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
@@ -19,5 +17,17 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="FFT_SIZE_256" value="0" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_512" value="1" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_1024" value="2" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_2048" value="3" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_4096" value="4" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_MAX" value="5" enum="FFT_Size">
+		</constant>
 	</constants>
 </class>

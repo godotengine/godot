@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_skidinfo" qualifiers="const">
 			<return type="float">
@@ -22,7 +20,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns true if this wheel is in contact with a surface.
+				Returns [code]true[/code] if this wheel is in contact with a surface.
 			</description>
 		</method>
 	</methods>
@@ -43,10 +41,10 @@
 			This is the distance the suspension can travel. As Godot measures are in meters keep this setting relatively low. Try a value between 0.1 and 0.3 depending on the type of car .
 		</member>
 		<member name="use_as_steering" type="bool" setter="set_use_as_steering" getter="is_used_as_steering">
-			If true this wheel will be turned when the car steers.
+			If [code]true[/code] this wheel will be turned when the car steers.
 		</member>
 		<member name="use_as_traction" type="bool" setter="set_use_as_traction" getter="is_used_as_traction">
-			If true this wheel transfers engine force to the ground to propel the vehicle forward.
+			If [code]true[/code] this wheel transfers engine force to the ground to propel the vehicle forward.
 		</member>
 		<member name="wheel_friction_slip" type="float" setter="set_friction_slip" getter="get_friction_slip">
 			This determines how much grip this wheel has. It is combined with the friction setting of the surface the wheel is in contact with. 0.0 means no grip, 1.0 is normal grip. For a drift car setup, try setting the grip of the rear wheels slightly lower than the front wheels, or use a lower value to simulate tire wear.

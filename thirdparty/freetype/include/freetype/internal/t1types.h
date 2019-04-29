@@ -1,20 +1,20 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1types.h                                                              */
-/*                                                                         */
-/*    Basic Type1/Type2 type definitions and interface (specification      */
-/*    only).                                                               */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1types.h
+ *
+ *   Basic Type1/Type2 type definitions and interface (specification
+ *   only).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef T1TYPES_H_
@@ -45,28 +45,31 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    T1_EncodingRec                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A structure modeling a custom encoding.                            */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    num_chars  :: The number of character codes in the encoding.       */
-  /*                  Usually 256.                                         */
-  /*                                                                       */
-  /*    code_first :: The lowest valid character code in the encoding.     */
-  /*                                                                       */
-  /*    code_last  :: The highest valid character code in the encoding     */
-  /*                  + 1. When equal to code_first there are no valid     */
-  /*                  character codes.                                     */
-  /*                                                                       */
-  /*    char_index :: An array of corresponding glyph indices.             */
-  /*                                                                       */
-  /*    char_name  :: An array of corresponding glyph names.               */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   T1_EncodingRec
+   *
+   * @description:
+   *   A structure modeling a custom encoding.
+   *
+   * @fields:
+   *   num_chars ::
+   *     The number of character codes in the encoding.  Usually 256.
+   *
+   *   code_first ::
+   *     The lowest valid character code in the encoding.
+   *
+   *   code_last ::
+   *     The highest valid character code in the encoding + 1. When equal to
+   *     code_first there are no valid character codes.
+   *
+   *   char_index ::
+   *     An array of corresponding glyph indices.
+   *
+   *   char_name ::
+   *     An array of corresponding glyph names.
+   */
   typedef struct  T1_EncodingRecRec_
   {
     FT_Int       num_chars;

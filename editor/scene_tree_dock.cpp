@@ -892,10 +892,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
-				if (node) {
-					if (node && node->get_scene_inherited_state().is_valid()) {
-						scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
-					}
+				if (node && node->get_scene_inherited_state().is_valid()) {
+					scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
 				}
 			}
 		} break;
@@ -986,6 +984,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			SpatialEditorPlugin *spatial_editor_plugin = Object::cast_to<SpatialEditorPlugin>(editor_data->get_editor("3D"));
 			spatial_editor_plugin->get_spatial_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
 
 			button_add->set_icon(get_icon("Add", "EditorIcons"));
 			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
@@ -1941,7 +1940,13 @@ void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 
 void SceneTreeDock::import_subscene() {
 
-	import_subscene_dialog->popup_centered_ratio();
+	Size2 popup_size = Size2(500, 800) * editor_get_scale();
+	Size2 window_size = get_viewport_rect().size;
+
+	popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+	popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+	import_subscene_dialog->popup_centered(popup_size);
 }
 
 void SceneTreeDock::_import_subscene() {

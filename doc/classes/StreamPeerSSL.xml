@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="accept_stream">
 			<return type="int" enum="Error">
@@ -30,7 +28,7 @@
 			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is true, [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
+				Connect to a peer using an underlying [StreamPeer] "stream", when "validate_certs" is [code]true[/code], [StreamPeerSSL] will validate that the certificate presented by the peer matches the "for_hostname".
 			</description>
 		</method>
 		<method name="disconnect_from_stream">

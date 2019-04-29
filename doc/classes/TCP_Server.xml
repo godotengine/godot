@@ -8,14 +8,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="is_connection_available" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if a connection is available for taking.
+				Return [code]true[/code] if a connection is available for taking.
 			</description>
 		</method>
 		<method name="listen">

@@ -54,7 +54,6 @@ void DocData::merge_from(const DocData &p_data) {
 		c.description = cf.description;
 		c.brief_description = cf.brief_description;
 		c.tutorials = cf.tutorials;
-		c.demos = cf.demos;
 
 		for (int i = 0; i < c.methods.size(); i++) {
 
@@ -837,10 +836,6 @@ Error DocData::_load(Ref<XMLParser> parser) {
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "tutorials")
 							break; //end of <tutorials>
 					}
-				} else if (name2 == "demos") {
-					parser->read();
-					if (parser->get_node_type() == XMLParser::NODE_TEXT)
-						c.demos = parser->get_node_data();
 				} else if (name2 == "methods") {
 
 					Error err2 = _parse_methods(parser, c.methods);
@@ -987,8 +982,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 		if (err) {
 			ERR_EXPLAIN("Can't write doc file: " + save_file);
-
-			ERR_FAIL_V(err);
+			ERR_CONTINUE(err);
 		}
 
 		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
@@ -1015,9 +1009,6 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 			_write_string(f, 2, "<link>" + c.tutorials.get(i).xml_escape() + "</link>");
 		}
 		_write_string(f, 1, "</tutorials>");
-		_write_string(f, 1, "<demos>");
-		_write_string(f, 2, c.demos.strip_edges().xml_escape());
-		_write_string(f, 1, "</demos>");
 		_write_string(f, 1, "<methods>");
 
 		c.methods.sort();

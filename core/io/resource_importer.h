@@ -43,6 +43,7 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		String path;
 		String type;
 		String importer;
+		String group_file;
 		Variant metadata;
 	};
 
@@ -69,6 +70,7 @@ public:
 	virtual bool is_import_valid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual bool is_imported(const String &p_path) const { return recognize_path(p_path); }
+	virtual String get_import_group_file(const String &p_path) const;
 	virtual bool exists(const String &p_path) const;
 
 	virtual bool can_be_imported(const String &p_path) const;
@@ -120,8 +122,11 @@ public:
 
 	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const = 0;
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const = 0;
+	virtual String get_option_group_file() const { return String(); }
 
 	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL) = 0;
+
+	virtual Error import_group_file(const String& p_group_file,const Map<String,Map<StringName, Variant> >&p_source_file_options, const Map<String,String>& p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
 };

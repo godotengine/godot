@@ -175,7 +175,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
 						thumbnail = thumbnail->duplicate();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
 
 						// Overlay and thumbnail need the same format for `blend_rect` to work.
 						thumbnail->convert(Image::FORMAT_RGBA8);
@@ -310,15 +310,20 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
+	description->set_custom_minimum_size(Size2(440 * EDSCALE, 300 * EDSCALE));
 	desc_bg->add_child(description);
+
+	VBoxContainer *previews_vbox = memnew(VBoxContainer);
+	hbox->add_child(previews_vbox);
+	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
-	hbox->add_child(preview);
+	previews_vbox->add_child(preview);
 
 	previews_bg = memnew(PanelContainer);
-	vbox->add_child(previews_bg);
-	previews_bg->set_custom_minimum_size(Size2(0, 101 * EDSCALE));
+	previews_vbox->add_child(previews_bg);
+	previews_bg->set_custom_minimum_size(Size2(640 * EDSCALE, 101 * EDSCALE));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);

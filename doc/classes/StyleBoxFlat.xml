@@ -23,8 +23,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_border_width_min" qualifiers="const">
 			<return type="int">
@@ -96,7 +94,7 @@
 			The background color of the stylebox.
 		</member>
 		<member name="border_blend" type="bool" setter="set_border_blend" getter="get_border_blend">
-			When set to true, the border will fade into the background color.
+			When set to [code]true[/code], the border will fade into the background color.
 		</member>
 		<member name="border_color" type="Color" setter="set_border_color" getter="get_border_color">
 			Sets the color of the border.

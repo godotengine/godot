@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="apply_scale">
 			<return type="void">
@@ -65,7 +63,7 @@
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
-				Applies a local translation on the node's X axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is false, normalizes the movement.
+				Applies a local translation on the node's X axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
 		<method name="move_local_y">
@@ -76,7 +74,7 @@
 			<argument index="1" name="scaled" type="bool" default="false">
 			</argument>
 			<description>
-				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is false, normalizes the movement.
+				Applies a local translation on the node's Y axis based on the [method Node._process]'s [code]delta[/code]. If [code]scaled[/code] is [code]false[/code], normalizes the movement.
 			</description>
 		</method>
 		<method name="rotate">

@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_collision_segments">
 			<return type="void">
@@ -99,7 +97,7 @@
 			</argument>
 			<description>
 				Commit a handle being edited (handles must have been previously added by [method add_handles]).
-				If the cancel parameter is true, an option to restore the edited value to the original is provided.
+				If the cancel parameter is [code]true[/code], an option to restore the edited value to the original is provided.
 			</description>
 		</method>
 		<method name="get_handle_name" qualifiers="virtual">

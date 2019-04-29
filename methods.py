@@ -24,10 +24,16 @@ def disable_warnings(self):
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
         warn_flags = ['/Wall', '/W4', '/W3', '/W2', '/W1', '/WX']
-        self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
         self.Append(CCFLAGS=['/w'])
+        self.Append(CFLAGS=['/w'])
+        self.Append(CPPFLAGS=['/w'])
+        self['CCFLAGS'] = [x for x in self['CCFLAGS'] if not x in warn_flags]
+        self['CFLAGS'] = [x for x in self['CFLAGS'] if not x in warn_flags]
+        self['CXXFLAGS'] = [x for x in self['CXXFLAGS'] if not x in warn_flags]
     else:
         self.Append(CCFLAGS=['-w'])
+        self.Append(CFLAGS=['-w'])
+        self.Append(CXXFLAGS=['-w'])
 
 
 def add_module_version_string(self,s):
@@ -210,70 +216,6 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 		win32file.CloseHandle(hThread);
 	return exit_code
 """
-
-def android_add_flat_dir(self, dir):
-    if (dir not in self.android_flat_dirs):
-        self.android_flat_dirs.append(dir)
-
-def android_add_maven_repository(self, url):
-    if (url not in self.android_maven_repos):
-        self.android_maven_repos.append(url)
-
-def android_add_dependency(self, depline):
-    if (depline not in self.android_dependencies):
-        self.android_dependencies.append(depline)
-
-def android_add_java_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_java_dirs):
-        self.android_java_dirs.append(base_path)
-
-def android_add_res_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_res_dirs):
-        self.android_res_dirs.append(base_path)
-
-def android_add_asset_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_asset_dirs):
-        self.android_asset_dirs.append(base_path)
-
-def android_add_aidl_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_aidl_dirs):
-        self.android_aidl_dirs.append(base_path)
-
-def android_add_jni_dir(self, subpath):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    if (base_path not in self.android_jni_dirs):
-        self.android_jni_dirs.append(base_path)
-
-def android_add_gradle_plugin(self, plugin):
-    if (plugin not in self.android_gradle_plugins):
-        self.android_gradle_plugins.append(plugin)
-
-def android_add_gradle_classpath(self, classpath):
-    if (classpath not in self.android_gradle_classpath):
-        self.android_gradle_classpath.append(classpath)
-
-def android_add_default_config(self, config):
-    if (config not in self.android_default_config):
-        self.android_default_config.append(config)
-
-def android_add_to_manifest(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_manifest_chunk += f.read()
-
-def android_add_to_permissions(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_permission_chunk += f.read()
-
-def android_add_to_attributes(self, file):
-    base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
-    with open(base_path, "r") as f:
-        self.android_appattributes_chunk += f.read()
 
 def disable_module(self):
     self.disabled_modules.append(self.current_module)

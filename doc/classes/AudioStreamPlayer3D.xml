@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_playback_position">
 			<return type="float">
@@ -62,7 +60,7 @@
 			Amount how much the filter affects the loudness, in dB.
 		</member>
 		<member name="attenuation_model" type="int" setter="set_attenuation_model" getter="get_attenuation_model" enum="AudioStreamPlayer3D.AttenuationModel">
-			Decides if audio should get quieter with distance linearly, quadratically or logarithmically.
+			Decides if audio should get quieter with distance linearly, quadratically, logarithmically, or not be affected by distance, effectively disabling attenuation.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled">
 			If [code]true[/code], audio plays when added to scene tree. Default value: [code]false[/code].
@@ -125,6 +123,9 @@
 		</constant>
 		<constant name="ATTENUATION_LOGARITHMIC" value="2" enum="AttenuationModel">
 			Logarithmic dampening of loudness according to distance.
+		</constant>
+		<constant name="ATTENUATION_DISABLED" value="3" enum="AttenuationModel">
+			No dampening of loudness according to distance.
 		</constant>
 		<constant name="OUT_OF_RANGE_MIX" value="0" enum="OutOfRangeMode">
 			Mix this audio in, even when it's out of range.

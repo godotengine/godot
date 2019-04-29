@@ -786,6 +786,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	grid->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(grid);
 	button = memnew(Button);
+	button->set_toggle_mode(true);
 	button->set_text("..");
 	button->connect("pressed", this, "_button_pressed");
 	hb->add_child(button);
@@ -794,6 +795,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	add_child(layers);
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
+	layers->connect("popup_hide", button, "set_pressed", varray(false));
 }
 
 ///////////////////// INT /////////////////////////
@@ -2598,6 +2600,7 @@ void EditorPropertyResource::_resource_selected() {
 	RES res = get_edited_object()->get(get_edited_property());
 
 	if (res.is_null()) {
+		edit->set_pressed(true);
 		_update_menu();
 		return;
 	}
@@ -2818,7 +2821,9 @@ EditorPropertyResource::EditorPropertyResource() {
 	add_child(menu);
 	edit = memnew(Button);
 	edit->set_flat(true);
+	edit->set_toggle_mode(true);
 	menu->connect("id_pressed", this, "_menu_option");
+	menu->connect("popup_hide", edit, "set_pressed", varray(false));
 	edit->connect("pressed", this, "_update_menu");
 	hbc->add_child(edit);
 	edit->connect("gui_input", this, "_button_input");
@@ -2993,13 +2998,17 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				EditorPropertyClassName *editor = memnew(EditorPropertyClassName);
 				editor->setup("Object", p_hint_text);
 				add_property_editor(p_path, editor);
-			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
+			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 
 				Vector<String> extensions = p_hint_text.split(",");
 				bool global = p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE;
 				bool folder = p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_GLOBAL_DIR;
+				bool save = p_hint == PROPERTY_HINT_SAVE_FILE;
 				EditorPropertyPath *editor = memnew(EditorPropertyPath);
 				editor->setup(extensions, folder, global);
+				if (save) {
+					editor->set_save_mode();
+				}
 				add_property_editor(p_path, editor);
 			} else if (p_hint == PROPERTY_HINT_METHOD_OF_VARIANT_TYPE ||
 					   p_hint == PROPERTY_HINT_METHOD_OF_BASE_TYPE ||

@@ -900,6 +900,7 @@ extern "C" {
 #define AI_MATKEY_ENABLE_WIREFRAME "$mat.wireframe",0,0
 #define AI_MATKEY_BLEND_FUNC "$mat.blend",0,0
 #define AI_MATKEY_OPACITY "$mat.opacity",0,0
+#define AI_MATKEY_TRANSPARENCYFACTOR "$mat.transparencyfactor",0,0
 #define AI_MATKEY_BUMPSCALING "$mat.bumpscaling",0,0
 #define AI_MATKEY_SHININESS "$mat.shininess",0,0
 #define AI_MATKEY_REFLECTIVITY "$mat.reflectivity",0,0

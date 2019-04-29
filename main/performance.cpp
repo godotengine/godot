@@ -32,6 +32,7 @@
 
 #include "core/message_queue.h"
 #include "core/os/os.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d_server.h"
@@ -55,6 +56,7 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(OBJECT_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_RESOURCE_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_NODE_COUNT);
+	BIND_ENUM_CONSTANT(OBJECT_ORPHAN_NODE_COUNT);
 	BIND_ENUM_CONSTANT(RENDER_OBJECTS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_VERTICES_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_MATERIAL_CHANGES_IN_FRAME);
@@ -76,6 +78,14 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
+float Performance::_get_node_count() const {
+	MainLoop *ml = OS::get_singleton()->get_main_loop();
+	SceneTree *sml = Object::cast_to<SceneTree>(ml);
+	if (!sml)
+		return 0;
+	return sml->get_node_count();
+}
+
 String Performance::get_monitor_name(Monitor p_monitor) const {
 
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
@@ -92,6 +102,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"object/objects",
 		"object/resources",
 		"object/nodes",
+		"object/orphan_nodes",
 		"raster/objects_drawn",
 		"raster/vertices_drawn",
 		"raster/mat_changes",
@@ -128,14 +139,8 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT: return ObjectDB::get_object_count();
 		case OBJECT_RESOURCE_COUNT: return ResourceCache::get_cached_resource_count();
-		case OBJECT_NODE_COUNT: {
-
-			MainLoop *ml = OS::get_singleton()->get_main_loop();
-			SceneTree *sml = Object::cast_to<SceneTree>(ml);
-			if (!sml)
-				return 0;
-			return sml->get_node_count();
-		};
+		case OBJECT_NODE_COUNT: return _get_node_count();
+		case OBJECT_ORPHAN_NODE_COUNT: return Node::orphan_node_count;
 		case RENDER_OBJECTS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
 		case RENDER_VERTICES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
 		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
@@ -174,6 +179,7 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,

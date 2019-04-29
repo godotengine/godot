@@ -1160,7 +1160,7 @@ void SceneTree::_update_root_rect() {
 		WARN_PRINT("Font oversampling only works with the resize modes 'Keep Width', 'Keep Height', and 'Expand'.");
 	}
 
-	if (stretch_aspect == STRETCH_ASPECT_IGNORE || ABS(viewport_aspect - video_mode_aspect) < CMP_EPSILON) {
+	if (stretch_aspect == STRETCH_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
 		//same aspect or ignore aspect
 		viewport_size = desired_res;
 		screen_size = video_mode;

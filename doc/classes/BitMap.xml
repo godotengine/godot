@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="create">
 			<return type="void">
@@ -17,7 +15,7 @@
 			<argument index="0" name="size" type="Vector2">
 			</argument>
 			<description>
-				Creates a bitmap with the specified size, filled with false.
+				Creates a bitmap with the specified size, filled with [code]false[/code].
 			</description>
 		</method>
 		<method name="create_from_image_alpha">
@@ -28,7 +26,7 @@
 			<argument index="1" name="threshold" type="float" default="0.1">
 			</argument>
 			<description>
-				Creates a bitmap that matches the given image dimensions, every element of the bitmap is set to false if the alpha value of the image at that position is equal to [code]threshold[/code] or less, and true in other case.
+				Creates a bitmap that matches the given image dimensions, every element of the bitmap is set to [code]false[/code] if the alpha value of the image at that position is equal to [code]threshold[/code] or less, and [code]true[/code] in other case.
 			</description>
 		</method>
 		<method name="get_bit" qualifiers="const">
@@ -51,7 +49,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of bitmap elements that are set to true.
+				Returns the amount of bitmap elements that are set to [code]true[/code].
 			</description>
 		</method>
 		<method name="grow_mask">

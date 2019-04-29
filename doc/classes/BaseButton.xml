@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_pressed" qualifiers="virtual">
 			<return type="void">
@@ -38,7 +36,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the mouse has entered the button and has not left it yet.
+				Return [code]true[/code] if the mouse has entered the button and has not left it yet.
 			</description>
 		</method>
 	</methods>

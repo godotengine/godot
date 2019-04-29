@@ -1,26 +1,26 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftobjs.h                                                               */
-/*                                                                         */
-/*    The FreeType private base classes (specification).                   */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftobjs.h
+ *
+ *   The FreeType private base classes (specification).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*  This file contains the definition of all internal FreeType classes.  */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This file contains the definition of all internal FreeType classes.
+   *
+   */
 
 
 #ifndef FTOBJS_H_
@@ -35,7 +35,6 @@
 #include FT_INTERNAL_DRIVER_H
 #include FT_INTERNAL_AUTOHINT_H
 #include FT_INTERNAL_SERVICE_H
-#include FT_INTERNAL_PIC_H
 #include FT_INTERNAL_CALC_H
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
@@ -46,10 +45,10 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Some generic definitions.                                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Some generic definitions.
+   */
 #ifndef TRUE
 #define TRUE  1
 #endif
@@ -63,20 +62,20 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The min and max functions missing in C.  As usual, be careful not to  */
-  /* write things like FT_MIN( a++, b++ ) to avoid side effects.           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The min and max functions missing in C.  As usual, be careful not to
+   * write things like FT_MIN( a++, b++ ) to avoid side effects.
+   */
 #define FT_MIN( a, b )  ( (a) < (b) ? (a) : (b) )
 #define FT_MAX( a, b )  ( (a) > (b) ? (a) : (b) )
 
 #define FT_ABS( a )     ( (a) < 0 ? -(a) : (a) )
 
   /*
-   *  Approximate sqrt(x*x+y*y) using the `alpha max plus beta min'
-   *  algorithm.  We use alpha = 1, beta = 3/8, giving us results with a
-   *  largest error less than 7% compared to the exact value.
+   * Approximate sqrt(x*x+y*y) using the `alpha max plus beta min' algorithm.
+   * We use alpha = 1, beta = 3/8, giving us results with a largest error
+   * less than 7% compared to the exact value.
    */
 #define FT_HYPOT( x, y )                 \
           ( x = FT_ABS( x ),             \
@@ -111,9 +110,8 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  character classification functions -- since these are used to parse
-   *  font files, we must not use those in <ctypes.h> which are
-   *  locale-dependent
+   * character classification functions -- since these are used to parse font
+   * files, we must not use those in <ctypes.h> which are locale-dependent
    */
 #define  ft_isdigit( x )   ( ( (unsigned)(x) - '0' ) < 10U )
 
@@ -187,7 +185,7 @@ FT_BEGIN_HEADER
                                FT_UInt32  char_code,
                                FT_UInt32  variant_selector );
 
-  typedef FT_Bool
+  typedef FT_Int
   (*FT_CMap_CharVarIsDefaultFunc)( FT_CMap    cmap,
                                    FT_UInt32  char_code,
                                    FT_UInt32  variant_selector );
@@ -228,8 +226,6 @@ FT_BEGIN_HEADER
   } FT_CMap_ClassRec;
 
 
-#ifndef FT_CONFIG_OPTION_PIC
-
 #define FT_DECLARE_CMAP_CLASS( class_ )              \
   FT_CALLBACK_TABLE const  FT_CMap_ClassRec class_;
 
@@ -260,45 +256,6 @@ FT_BEGIN_HEADER
     variantchar_list_               \
   };
 
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DECLARE_CMAP_CLASS( class_ )                  \
-  void                                                   \
-  FT_Init_Class_ ## class_( FT_Library         library,  \
-                            FT_CMap_ClassRec*  clazz );
-
-#define FT_DEFINE_CMAP_CLASS(                            \
-          class_,                                        \
-          size_,                                         \
-          init_,                                         \
-          done_,                                         \
-          char_index_,                                   \
-          char_next_,                                    \
-          char_var_index_,                               \
-          char_var_default_,                             \
-          variant_list_,                                 \
-          charvariant_list_,                             \
-          variantchar_list_ )                            \
-  void                                                   \
-  FT_Init_Class_ ## class_( FT_Library         library,  \
-                            FT_CMap_ClassRec*  clazz )   \
-  {                                                      \
-    FT_UNUSED( library );                                \
-                                                         \
-    clazz->size             = size_;                     \
-    clazz->init             = init_;                     \
-    clazz->done             = done_;                     \
-    clazz->char_index       = char_index_;               \
-    clazz->char_next        = char_next_;                \
-    clazz->char_var_index   = char_var_index_;           \
-    clazz->char_var_default = char_var_default_;         \
-    clazz->variant_list     = variant_list_;             \
-    clazz->charvariant_list = charvariant_list_;         \
-    clazz->variantchar_list = variantchar_list_;         \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
-
 
   /* create a new charmap and add it to charmap->face */
   FT_BASE( FT_Error )
@@ -312,11 +269,11 @@ FT_BEGIN_HEADER
   FT_CMap_Done( FT_CMap  cmap );
 
 
-  /* adds LCD padding to Min and Max boundaries */
+  /* add LCD padding to CBox */
   FT_BASE( void )
-  ft_lcd_padding( FT_Pos*       Min,
-                  FT_Pos*       Max,
-                  FT_GlyphSlot  slot );
+  ft_lcd_padding( FT_BBox*        cbox,
+                  FT_GlyphSlot    slot,
+                  FT_Render_Mode  mode );
 
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 
@@ -333,74 +290,72 @@ FT_BEGIN_HEADER
 
 #endif /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_Face_InternalRec                                                */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This structure contains the internal fields of each FT_Face        */
-  /*    object.  These fields may change between different releases of     */
-  /*    FreeType.                                                          */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    max_points ::                                                      */
-  /*      The maximum number of points used to store the vectorial outline */
-  /*      of any glyph in this face.  If this value cannot be known in     */
-  /*      advance, or if the face isn't scalable, this should be set to 0. */
-  /*      Only relevant for scalable formats.                              */
-  /*                                                                       */
-  /*    max_contours ::                                                    */
-  /*      The maximum number of contours used to store the vectorial       */
-  /*      outline of any glyph in this face.  If this value cannot be      */
-  /*      known in advance, or if the face isn't scalable, this should be  */
-  /*      set to 0.  Only relevant for scalable formats.                   */
-  /*                                                                       */
-  /*    transform_matrix ::                                                */
-  /*      A 2x2 matrix of 16.16 coefficients used to transform glyph       */
-  /*      outlines after they are loaded from the font.  Only used by the  */
-  /*      convenience functions.                                           */
-  /*                                                                       */
-  /*    transform_delta ::                                                 */
-  /*      A translation vector used to transform glyph outlines after they */
-  /*      are loaded from the font.  Only used by the convenience          */
-  /*      functions.                                                       */
-  /*                                                                       */
-  /*    transform_flags ::                                                 */
-  /*      Some flags used to classify the transform.  Only used by the     */
-  /*      convenience functions.                                           */
-  /*                                                                       */
-  /*    services ::                                                        */
-  /*      A cache for frequently used services.  It should be only         */
-  /*      accessed with the macro `FT_FACE_LOOKUP_SERVICE'.                */
-  /*                                                                       */
-  /*    incremental_interface ::                                           */
-  /*      If non-null, the interface through which glyph data and metrics  */
-  /*      are loaded incrementally for faces that do not provide all of    */
-  /*      this data when first opened.  This field exists only if          */
-  /*      @FT_CONFIG_OPTION_INCREMENTAL is defined.                        */
-  /*                                                                       */
-  /*    no_stem_darkening ::                                               */
-  /*      Overrides the module-level default, see @stem-darkening[cff],    */
-  /*      for example.  FALSE and TRUE toggle stem darkening on and off,   */
-  /*      respectively, value~-1 means to use the module/driver default.   */
-  /*                                                                       */
-  /*    random_seed ::                                                     */
-  /*      If positive, override the seed value for the CFF `random'        */
-  /*      operator.  Value~0 means to use the font's value.  Value~-1      */
-  /*      means to use the CFF driver's default.                           */
-  /*                                                                       */
-  /*    lcd_weights      ::                                                */
-  /*    lcd_filter_func  ::                                                */
-  /*      If subpixel rendering is activated, the LCD filtering weights    */
-  /*      and callback function.                                           */
-  /*                                                                       */
-  /*    refcount ::                                                        */
-  /*      A counter initialized to~1 at the time an @FT_Face structure is  */
-  /*      created.  @FT_Reference_Face increments this counter, and        */
-  /*      @FT_Done_Face only destroys a face if the counter is~1,          */
-  /*      otherwise it simply decrements it.                               */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_Face_InternalRec
+   *
+   * @description:
+   *   This structure contains the internal fields of each FT_Face object.
+   *   These fields may change between different releases of FreeType.
+   *
+   * @fields:
+   *   max_points ::
+   *     The maximum number of points used to store the vectorial outline of
+   *     any glyph in this face.  If this value cannot be known in advance,
+   *     or if the face isn't scalable, this should be set to 0.  Only
+   *     relevant for scalable formats.
+   *
+   *   max_contours ::
+   *     The maximum number of contours used to store the vectorial outline
+   *     of any glyph in this face.  If this value cannot be known in
+   *     advance, or if the face isn't scalable, this should be set to 0.
+   *     Only relevant for scalable formats.
+   *
+   *   transform_matrix ::
+   *     A 2x2 matrix of 16.16 coefficients used to transform glyph outlines
+   *     after they are loaded from the font.  Only used by the convenience
+   *     functions.
+   *
+   *   transform_delta ::
+   *     A translation vector used to transform glyph outlines after they are
+   *     loaded from the font.  Only used by the convenience functions.
+   *
+   *   transform_flags ::
+   *     Some flags used to classify the transform.  Only used by the
+   *     convenience functions.
+   *
+   *   services ::
+   *     A cache for frequently used services.  It should be only accessed
+   *     with the macro `FT_FACE_LOOKUP_SERVICE`.
+   *
+   *   incremental_interface ::
+   *     If non-null, the interface through which glyph data and metrics are
+   *     loaded incrementally for faces that do not provide all of this data
+   *     when first opened.  This field exists only if
+   *     @FT_CONFIG_OPTION_INCREMENTAL is defined.
+   *
+   *   no_stem_darkening ::
+   *     Overrides the module-level default, see @stem-darkening[cff], for
+   *     example.  FALSE and TRUE toggle stem darkening on and off,
+   *     respectively, value~-1 means to use the module/driver default.
+   *
+   *   random_seed ::
+   *     If positive, override the seed value for the CFF 'random' operator.
+   *     Value~0 means to use the font's value.  Value~-1 means to use the
+   *     CFF driver's default.
+   *
+   *   lcd_weights ::
+   *   lcd_filter_func ::
+   *     These fields specify the LCD filtering weights and callback function
+   *     for ClearType-style subpixel rendering.
+   *
+   *   refcount ::
+   *     A counter initialized to~1 at the time an @FT_Face structure is
+   *     created.  @FT_Reference_Face increments this counter, and
+   *     @FT_Done_Face only destroys a face if the counter is~1, otherwise it
+   *     simply decrements it.
+   */
   typedef struct  FT_Face_InternalRec_
   {
     FT_Matrix  transform_matrix;
@@ -426,39 +381,44 @@ FT_BEGIN_HEADER
   } FT_Face_InternalRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_Slot_InternalRec                                                */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This structure contains the internal fields of each FT_GlyphSlot   */
-  /*    object.  These fields may change between different releases of     */
-  /*    FreeType.                                                          */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    loader            :: The glyph loader object used to load outlines */
-  /*                         into the glyph slot.                          */
-  /*                                                                       */
-  /*    flags             :: Possible values are zero or                   */
-  /*                         FT_GLYPH_OWN_BITMAP.  The latter indicates    */
-  /*                         that the FT_GlyphSlot structure owns the      */
-  /*                         bitmap buffer.                                */
-  /*                                                                       */
-  /*    glyph_transformed :: Boolean.  Set to TRUE when the loaded glyph   */
-  /*                         must be transformed through a specific        */
-  /*                         font transformation.  This is _not_ the same  */
-  /*                         as the face transform set through             */
-  /*                         FT_Set_Transform().                           */
-  /*                                                                       */
-  /*    glyph_matrix      :: The 2x2 matrix corresponding to the glyph     */
-  /*                         transformation, if necessary.                 */
-  /*                                                                       */
-  /*    glyph_delta       :: The 2d translation vector corresponding to    */
-  /*                         the glyph transformation, if necessary.       */
-  /*                                                                       */
-  /*    glyph_hints       :: Format-specific glyph hints management.       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_Slot_InternalRec
+   *
+   * @description:
+   *   This structure contains the internal fields of each FT_GlyphSlot
+   *   object.  These fields may change between different releases of
+   *   FreeType.
+   *
+   * @fields:
+   *   loader ::
+   *     The glyph loader object used to load outlines into the glyph slot.
+   *
+   *   flags ::
+   *     Possible values are zero or FT_GLYPH_OWN_BITMAP.  The latter
+   *     indicates that the FT_GlyphSlot structure owns the bitmap buffer.
+   *
+   *   glyph_transformed ::
+   *     Boolean.  Set to TRUE when the loaded glyph must be transformed
+   *     through a specific font transformation.  This is _not_ the same as
+   *     the face transform set through FT_Set_Transform().
+   *
+   *   glyph_matrix ::
+   *     The 2x2 matrix corresponding to the glyph transformation, if
+   *     necessary.
+   *
+   *   glyph_delta ::
+   *     The 2d translation vector corresponding to the glyph transformation,
+   *     if necessary.
+   *
+   *   glyph_hints ::
+   *     Format-specific glyph hints management.
+   *
+   *   load_flags ::
+   *     The load flags passed as an argument to @FT_Load_Glyph while
+   *     initializing the glyph slot.
+   */
 
 #define FT_GLYPH_OWN_BITMAP  0x1U
 
@@ -471,26 +431,30 @@ FT_BEGIN_HEADER
     FT_Vector       glyph_delta;
     void*           glyph_hints;
 
+    FT_Int32        load_flags;
+
   } FT_GlyphSlot_InternalRec;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_Size_InternalRec                                                */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    This structure contains the internal fields of each FT_Size        */
-  /*    object.                                                            */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    module_data      :: Data specific to a driver module.              */
-  /*                                                                       */
-  /*    autohint_mode    :: The used auto-hinting mode.                    */
-  /*                                                                       */
-  /*    autohint_metrics :: Metrics used by the auto-hinter.               */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_Size_InternalRec
+   *
+   * @description:
+   *   This structure contains the internal fields of each FT_Size object.
+   *
+   * @fields:
+   *   module_data ::
+   *     Data specific to a driver module.
+   *
+   *   autohint_mode ::
+   *     The used auto-hinting mode.
+   *
+   *   autohint_metrics ::
+   *     Metrics used by the auto-hinter.
+   *
+   */
 
   typedef struct  FT_Size_InternalRec_
   {
@@ -515,21 +479,24 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_ModuleRec                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A module object instance.                                          */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    clazz   :: A pointer to the module's class.                        */
-  /*                                                                       */
-  /*    library :: A handle to the parent library object.                  */
-  /*                                                                       */
-  /*    memory  :: A handle to the memory manager.                         */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_ModuleRec
+   *
+   * @description:
+   *   A module object instance.
+   *
+   * @fields:
+   *   clazz ::
+   *     A pointer to the module's class.
+   *
+   *   library ::
+   *     A handle to the parent library object.
+   *
+   *   memory ::
+   *     A handle to the memory manager.
+   */
   typedef struct  FT_ModuleRec_
   {
     FT_Module_Class*  clazz;
@@ -572,27 +539,29 @@ FT_BEGIN_HEADER
                                         FT_MODULE_DRIVER_HINTS_LIGHTLY )
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Get_Module_Interface                                            */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finds a module and returns its specific interface as a typeless    */
-  /*    pointer.                                                           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    library     :: A handle to the library object.                     */
-  /*                                                                       */
-  /*    module_name :: The module's name (as an ASCII string).             */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    A module-specific interface if available, 0 otherwise.             */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    You should better be familiar with FreeType internals to know      */
-  /*    which module to look for, and what its interface is :-)            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Get_Module_Interface
+   *
+   * @description:
+   *   Finds a module and returns its specific interface as a typeless
+   *   pointer.
+   *
+   * @input:
+   *   library ::
+   *     A handle to the library object.
+   *
+   *   module_name ::
+   *     The module's name (as an ASCII string).
+   *
+   * @return:
+   *   A module-specific interface if available, 0 otherwise.
+   *
+   * @note:
+   *   You should better be familiar with FreeType internals to know which
+   *   module to look for, and what its interface is :-)
+   */
   FT_BASE( const void* )
   FT_Get_Module_Interface( FT_Library   library,
                            const char*  mod_name );
@@ -643,44 +612,46 @@ FT_BEGIN_HEADER
 #define FT_FACE_SIZE( x )     FT_FACE( x )->size
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_New_GlyphSlot                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    It is sometimes useful to have more than one glyph slot for a      */
-  /*    given face object.  This function is used to create additional     */
-  /*    slots.  All of them are automatically discarded when the face is   */
-  /*    destroyed.                                                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face  :: A handle to a parent face object.                         */
-  /*                                                                       */
-  /* <Output>                                                              */
-  /*    aslot :: A handle to a new glyph slot object.                      */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_New_GlyphSlot
+   *
+   * @description:
+   *   It is sometimes useful to have more than one glyph slot for a given
+   *   face object.  This function is used to create additional slots.  All
+   *   of them are automatically discarded when the face is destroyed.
+   *
+   * @input:
+   *   face ::
+   *     A handle to a parent face object.
+   *
+   * @output:
+   *   aslot ::
+   *     A handle to a new glyph slot object.
+   *
+   * @return:
+   *   FreeType error code.  0 means success.
+   */
   FT_BASE( FT_Error )
   FT_New_GlyphSlot( FT_Face        face,
                     FT_GlyphSlot  *aslot );
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Done_GlyphSlot                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Destroys a given glyph slot.  Remember however that all slots are  */
-  /*    automatically destroyed with its parent.  Using this function is   */
-  /*    not always mandatory.                                              */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    slot :: A handle to a target glyph slot.                           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Done_GlyphSlot
+   *
+   * @description:
+   *   Destroys a given glyph slot.  Remember however that all slots are
+   *   automatically destroyed with its parent.  Using this function is not
+   *   always mandatory.
+   *
+   * @input:
+   *   slot ::
+   *     A handle to a target glyph slot.
+   */
   FT_BASE( void )
   FT_Done_GlyphSlot( FT_GlyphSlot  slot );
 
@@ -730,8 +701,9 @@ FT_BEGIN_HEADER
   ft_glyphslot_free_bitmap( FT_GlyphSlot  slot );
 
 
-  /* Preset bitmap metrics of an outline glyphslot prior to rendering. */
-  FT_BASE( void )
+  /* Preset bitmap metrics of an outline glyphslot prior to rendering */
+  /* and check whether the truncated bbox is too large for rendering. */
+  FT_BASE( FT_Bool )
   ft_glyphslot_preset_bitmap( FT_GlyphSlot      slot,
                               FT_Render_Mode    mode,
                               const FT_Vector*  origin );
@@ -802,28 +774,30 @@ FT_BEGIN_HEADER
 #define FT_DRIVER_CLASS( x )  FT_DRIVER( x )->clazz
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_DriverRec                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The root font driver class.  A font driver is responsible for      */
-  /*    managing and loading font files of a given format.                 */
-  /*                                                                       */
-  /*  <Fields>                                                             */
-  /*     root         :: Contains the fields of the root module class.     */
-  /*                                                                       */
-  /*     clazz        :: A pointer to the font driver's class.  Note that  */
-  /*                     this is NOT root.clazz.  `class' wasn't used      */
-  /*                     as it is a reserved word in C++.                  */
-  /*                                                                       */
-  /*     faces_list   :: The list of faces currently opened by this        */
-  /*                     driver.                                           */
-  /*                                                                       */
-  /*     glyph_loader :: Unused.  Used to be glyph loader for all faces    */
-  /*                     managed by this driver.                           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_DriverRec
+   *
+   * @description:
+   *   The root font driver class.  A font driver is responsible for managing
+   *   and loading font files of a given format.
+   *
+   * @fields:
+   *   root ::
+   *     Contains the fields of the root module class.
+   *
+   *   clazz ::
+   *     A pointer to the font driver's class.  Note that this is NOT
+   *     root.clazz.  'class' wasn't used as it is a reserved word in C++.
+   *
+   *   faces_list ::
+   *     The list of faces currently opened by this driver.
+   *
+   *   glyph_loader ::
+   *     Unused.  Used to be glyph loader for all faces managed by this
+   *     driver.
+   */
   typedef struct  FT_DriverRec_
   {
     FT_ModuleRec     root;
@@ -847,72 +821,77 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /* This hook is used by the TrueType debugger.  It must be set to an */
-  /* alternate truetype bytecode interpreter function.                 */
-#define FT_DEBUG_HOOK_TRUETYPE  0
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    FT_LibraryRec                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The FreeType library class.  This is the root of all FreeType      */
-  /*    data.  Use FT_New_Library() to create a library object, and        */
-  /*    FT_Done_Library() to discard it and all child objects.             */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    memory           :: The library's memory object.  Manages memory   */
-  /*                        allocation.                                    */
-  /*                                                                       */
-  /*    version_major    :: The major version number of the library.       */
-  /*                                                                       */
-  /*    version_minor    :: The minor version number of the library.       */
-  /*                                                                       */
-  /*    version_patch    :: The current patch level of the library.        */
-  /*                                                                       */
-  /*    num_modules      :: The number of modules currently registered     */
-  /*                        within this library.  This is set to 0 for new */
-  /*                        libraries.  New modules are added through the  */
-  /*                        FT_Add_Module() API function.                  */
-  /*                                                                       */
-  /*    modules          :: A table used to store handles to the currently */
-  /*                        registered modules. Note that each font driver */
-  /*                        contains a list of its opened faces.           */
-  /*                                                                       */
-  /*    renderers        :: The list of renderers currently registered     */
-  /*                        within the library.                            */
-  /*                                                                       */
-  /*    cur_renderer     :: The current outline renderer.  This is a       */
-  /*                        shortcut used to avoid parsing the list on     */
-  /*                        each call to FT_Outline_Render().  It is a     */
-  /*                        handle to the current renderer for the         */
-  /*                        FT_GLYPH_FORMAT_OUTLINE format.                */
-  /*                                                                       */
-  /*    auto_hinter      :: The auto-hinter module interface.              */
-  /*                                                                       */
-  /*    debug_hooks      :: An array of four function pointers that allow  */
-  /*                        debuggers to hook into a font format's         */
-  /*                        interpreter.  Currently, only the TrueType     */
-  /*                        bytecode debugger uses this.                   */
-  /*                                                                       */
-  /*    lcd_weights      :: If subpixel rendering is activated, the LCD    */
-  /*                        filter weights, if any.                        */
-  /*                                                                       */
-  /*    lcd_filter_func  :: If subpixel rendering is activated, the LCD    */
-  /*                        filtering callback function.                   */
-  /*                                                                       */
-  /*    pic_container    :: Contains global structs and tables, instead    */
-  /*                        of defining them globally.                     */
-  /*                                                                       */
-  /*    refcount         :: A counter initialized to~1 at the time an      */
-  /*                        @FT_Library structure is created.              */
-  /*                        @FT_Reference_Library increments this counter, */
-  /*                        and @FT_Done_Library only destroys a library   */
-  /*                        if the counter is~1, otherwise it simply       */
-  /*                        decrements it.                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   FT_LibraryRec
+   *
+   * @description:
+   *   The FreeType library class.  This is the root of all FreeType data.
+   *   Use FT_New_Library() to create a library object, and FT_Done_Library()
+   *   to discard it and all child objects.
+   *
+   * @fields:
+   *   memory ::
+   *     The library's memory object.  Manages memory allocation.
+   *
+   *   version_major ::
+   *     The major version number of the library.
+   *
+   *   version_minor ::
+   *     The minor version number of the library.
+   *
+   *   version_patch ::
+   *     The current patch level of the library.
+   *
+   *   num_modules ::
+   *     The number of modules currently registered within this library.
+   *     This is set to 0 for new libraries.  New modules are added through
+   *     the FT_Add_Module() API function.
+   *
+   *   modules ::
+   *     A table used to store handles to the currently registered
+   *     modules. Note that each font driver contains a list of its opened
+   *     faces.
+   *
+   *   renderers ::
+   *     The list of renderers currently registered within the library.
+   *
+   *   cur_renderer ::
+   *     The current outline renderer.  This is a shortcut used to avoid
+   *     parsing the list on each call to FT_Outline_Render().  It is a
+   *     handle to the current renderer for the FT_GLYPH_FORMAT_OUTLINE
+   *     format.
+   *
+   *   auto_hinter ::
+   *     The auto-hinter module interface.
+   *
+   *   debug_hooks ::
+   *     An array of four function pointers that allow debuggers to hook into
+   *     a font format's interpreter.  Currently, only the TrueType bytecode
+   *     debugger uses this.
+   *
+   *   lcd_weights ::
+   *     The LCD filter weights for ClearType-style subpixel rendering.
+   *
+   *   lcd_filter_func ::
+   *     The LCD filtering callback function for for ClearType-style subpixel
+   *     rendering.
+   *
+   *   lcd_geometry ::
+   *     This array specifies LCD subpixel geometry and controls Harmony LCD
+   *     rendering technique, alternative to ClearType.
+   *
+   *   pic_container ::
+   *     Contains global structs and tables, instead of defining them
+   *     globally.
+   *
+   *   refcount ::
+   *     A counter initialized to~1 at the time an @FT_Library structure is
+   *     created.  @FT_Reference_Library increments this counter, and
+   *     @FT_Done_Library only destroys a library if the counter is~1,
+   *     otherwise it simply decrements it.
+   */
   typedef struct  FT_LibraryRec_
   {
     FT_Memory          memory;           /* library's memory manager */
@@ -933,10 +912,8 @@ FT_BEGIN_HEADER
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
     FT_LcdFiveTapFilter      lcd_weights;      /* filter weights, if any */
     FT_Bitmap_LcdFilterFunc  lcd_filter_func;  /* filtering callback     */
-#endif
-
-#ifdef FT_CONFIG_OPTION_PIC
-    FT_PIC_Container   pic_container;
+#else
+    FT_Vector                lcd_geometry[3];  /* RGB subpixel positions */
 #endif
 
     FT_Int             refcount;
@@ -970,32 +947,33 @@ FT_BEGIN_HEADER
 
 #ifndef FT_CONFIG_OPTION_NO_DEFAULT_SYSTEM
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_New_Memory                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Creates a new memory object.                                       */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    A pointer to the new memory object.  0 in case of error.           */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_New_Memory
+   *
+   * @description:
+   *   Creates a new memory object.
+   *
+   * @return:
+   *   A pointer to the new memory object.  0 in case of error.
+   */
   FT_BASE( FT_Memory )
   FT_New_Memory( void );
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    FT_Done_Memory                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Discards memory manager.                                           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory :: A handle to the memory manager.                          */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @function:
+   *   FT_Done_Memory
+   *
+   * @description:
+   *   Discards memory manager.
+   *
+   * @input:
+   *   memory ::
+   *     A handle to the memory manager.
+   */
   FT_BASE( void )
   FT_Done_Memory( FT_Memory  memory );
 
@@ -1013,37 +991,16 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /*************************************************************************/
-  /*************************************************************************/
-  /*************************************************************************/
-  /****                                                                 ****/
-  /****                                                                 ****/
-  /****                      P I C   S U P P O R T                      ****/
-  /****                                                                 ****/
-  /****                                                                 ****/
-  /*************************************************************************/
-  /*************************************************************************/
-  /*************************************************************************/
-
-
-  /* PIC support macros for ftimage.h */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DEFINE_OUTLINE_FUNCS                                            */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to initialize an instance of FT_Outline_Funcs struct.         */
-  /*    When FT_CONFIG_OPTION_PIC is defined an init function will need    */
-  /*    to be called with a pre-allocated structure to be filled.          */
-  /*    When FT_CONFIG_OPTION_PIC is not defined the struct will be        */
-  /*    allocated in the global scope (or the scope where the macro        */
-  /*    is used).                                                          */
-  /*                                                                       */
-#ifndef FT_CONFIG_OPTION_PIC
-
+  /**************************************************************************
+   *
+   * @macro:
+   *   FT_DEFINE_OUTLINE_FUNCS
+   *
+   * @description:
+   *   Used to initialize an instance of FT_Outline_Funcs struct.  The struct
+   *   will be allocated in the global scope (or the scope where the macro is
+   *   used).
+   */
 #define FT_DEFINE_OUTLINE_FUNCS(           \
           class_,                          \
           move_to_,                        \
@@ -1062,47 +1019,17 @@ FT_BEGIN_HEADER
     delta_                                 \
   };
 
-#else /* FT_CONFIG_OPTION_PIC */
 
-#define FT_DEFINE_OUTLINE_FUNCS(                     \
-          class_,                                    \
-          move_to_,                                  \
-          line_to_,                                  \
-          conic_to_,                                 \
-          cubic_to_,                                 \
-          shift_,                                    \
-          delta_ )                                   \
-  static FT_Error                                    \
-  Init_Class_ ## class_( FT_Outline_Funcs*  clazz )  \
-  {                                                  \
-    clazz->move_to  = move_to_;                      \
-    clazz->line_to  = line_to_;                      \
-    clazz->conic_to = conic_to_;                     \
-    clazz->cubic_to = cubic_to_;                     \
-    clazz->shift    = shift_;                        \
-    clazz->delta    = delta_;                        \
-                                                     \
-    return FT_Err_Ok;                                \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DEFINE_RASTER_FUNCS                                             */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to initialize an instance of FT_Raster_Funcs struct.          */
-  /*    When FT_CONFIG_OPTION_PIC is defined an init function will need    */
-  /*    to be called with a pre-allocated structure to be filled.          */
-  /*    When FT_CONFIG_OPTION_PIC is not defined the struct will be        */
-  /*    allocated in the global scope (or the scope where the macro        */
-  /*    is used).                                                          */
-  /*                                                                       */
-#ifndef FT_CONFIG_OPTION_PIC
-
+  /**************************************************************************
+   *
+   * @macro:
+   *   FT_DEFINE_RASTER_FUNCS
+   *
+   * @description:
+   *   Used to initialize an instance of FT_Raster_Funcs struct.  The struct
+   *   will be allocated in the global scope (or the scope where the macro is
+   *   used).
+   */
 #define FT_DEFINE_RASTER_FUNCS(    \
           class_,                  \
           glyph_format_,           \
@@ -1121,48 +1048,17 @@ FT_BEGIN_HEADER
     raster_done_                   \
   };
 
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DEFINE_RASTER_FUNCS(                        \
-          class_,                                      \
-          glyph_format_,                               \
-          raster_new_,                                 \
-          raster_reset_,                               \
-          raster_set_mode_,                            \
-          raster_render_,                              \
-          raster_done_ )                               \
-  void                                                 \
-  FT_Init_Class_ ## class_( FT_Raster_Funcs*  clazz )  \
-  {                                                    \
-    clazz->glyph_format    = glyph_format_;            \
-    clazz->raster_new      = raster_new_;              \
-    clazz->raster_reset    = raster_reset_;            \
-    clazz->raster_set_mode = raster_set_mode_;         \
-    clazz->raster_render   = raster_render_;           \
-    clazz->raster_done     = raster_done_;             \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
 
 
-  /* PIC support macros for ftrender.h */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DEFINE_GLYPH                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to initialize an instance of FT_Glyph_Class struct.           */
-  /*    When FT_CONFIG_OPTION_PIC is defined an init function will need    */
-  /*    to be called with a pre-allocated structure to be filled.          */
-  /*    When FT_CONFIG_OPTION_PIC is not defined the struct will be        */
-  /*    allocated in the global scope (or the scope where the macro        */
-  /*    is used).                                                          */
-  /*                                                                       */
-#ifndef FT_CONFIG_OPTION_PIC
-
+  /**************************************************************************
+   *
+   * @macro:
+   *   FT_DEFINE_GLYPH
+   *
+   * @description:
+   *   The struct will be allocated in the global scope (or the scope where
+   *   the macro is used).
+   */
 #define FT_DEFINE_GLYPH(          \
           class_,                 \
           size_,                  \
@@ -1186,73 +1082,25 @@ FT_BEGIN_HEADER
     prepare_                      \
   };
 
-#else /* FT_CONFIG_OPTION_PIC */
 
-#define FT_DEFINE_GLYPH(                              \
-          class_,                                     \
-          size_,                                      \
-          format_,                                    \
-          init_,                                      \
-          done_,                                      \
-          copy_,                                      \
-          transform_,                                 \
-          bbox_,                                      \
-          prepare_ )                                  \
-  void                                                \
-  FT_Init_Class_ ## class_( FT_Glyph_Class*  clazz )  \
-  {                                                   \
-    clazz->glyph_size      = size_;                   \
-    clazz->glyph_format    = format_;                 \
-    clazz->glyph_init      = init_;                   \
-    clazz->glyph_done      = done_;                   \
-    clazz->glyph_copy      = copy_;                   \
-    clazz->glyph_transform = transform_;              \
-    clazz->glyph_bbox      = bbox_;                   \
-    clazz->glyph_prepare   = prepare_;                \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DECLARE_RENDERER                                                */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to create a forward declaration of a                          */
-  /*    FT_Renderer_Class struct instance.                                 */
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DEFINE_RENDERER                                                 */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to initialize an instance of FT_Renderer_Class struct.        */
-  /*                                                                       */
-  /*    When FT_CONFIG_OPTION_PIC is defined a `create' function will      */
-  /*    need to be called with a pointer where the allocated structure is  */
-  /*    returned.  And when it is no longer needed a `destroy' function    */
-  /*    needs to be called to release that allocation.                     */
-  /*    `ftinit.c' (ft_create_default_module_classes) already contains     */
-  /*    a mechanism to call these functions for the default modules        */
-  /*    described in `ftmodule.h'.                                         */
-  /*                                                                       */
-  /*    Notice that the created `create' and `destroy' functions call      */
-  /*    `pic_init' and `pic_free' to allow you to manually allocate and    */
-  /*    initialize any additional global data, like a module specific      */
-  /*    interface, and put them in the global pic container defined in     */
-  /*    `ftpic.h'.  If you don't need them just implement the functions as */
-  /*    empty to resolve the link error.  Also the `pic_init' and          */
-  /*    `pic_free' functions should be declared in `pic.h', to be referred */
-  /*    by the renderer definition calling `FT_DEFINE_RENDERER' in the     */
-  /*    following.                                                         */
-  /*                                                                       */
-  /*    When FT_CONFIG_OPTION_PIC is not defined the struct will be        */
-  /*    allocated in the global scope (or the scope where the macro        */
-  /*    is used).                                                          */
-  /*                                                                       */
-#ifndef FT_CONFIG_OPTION_PIC
-
+  /**************************************************************************
+   *
+   * @macro:
+   *   FT_DECLARE_RENDERER
+   *
+   * @description:
+   *   Used to create a forward declaration of a FT_Renderer_Class struct
+   *   instance.
+   *
+   * @macro:
+   *   FT_DEFINE_RENDERER
+   *
+   * @description:
+   *   Used to initialize an instance of FT_Renderer_Class struct.
+   *
+   *   The struct will be allocated in the global scope (or the scope where
+   *   the macro is used).
+   */
 #define FT_DECLARE_RENDERER( class_ )               \
   FT_EXPORT_VAR( const FT_Renderer_Class ) class_;
 
@@ -1295,176 +1143,33 @@ FT_BEGIN_HEADER
     raster_class_                            \
   };
 
-#else /* FT_CONFIG_OPTION_PIC */
 
-#define FT_DECLARE_RENDERER( class_ )  FT_DECLARE_MODULE( class_ )
-
-#define FT_DEFINE_RENDERER(                                      \
-          class_,                                                \
-          flags_,                                                \
-          size_,                                                 \
-          name_,                                                 \
-          version_,                                              \
-          requires_,                                             \
-          interface_,                                            \
-          init_,                                                 \
-          done_,                                                 \
-          get_interface_,                                        \
-          glyph_format_,                                         \
-          render_glyph_,                                         \
-          transform_glyph_,                                      \
-          get_glyph_cbox_,                                       \
-          set_mode_,                                             \
-          raster_class_ )                                        \
-  void                                                           \
-  FT_Destroy_Class_ ## class_( FT_Library        library,        \
-                               FT_Module_Class*  clazz )         \
-  {                                                              \
-    FT_Renderer_Class*  rclazz = (FT_Renderer_Class*)clazz;      \
-    FT_Memory           memory = library->memory;                \
-                                                                 \
-                                                                 \
-    class_ ## _pic_free( library );                              \
-    if ( rclazz )                                                \
-      FT_FREE( rclazz );                                         \
-  }                                                              \
-                                                                 \
-                                                                 \
-  FT_Error                                                       \
-  FT_Create_Class_ ## class_( FT_Library         library,        \
-                              FT_Module_Class**  output_class )  \
-  {                                                              \
-    FT_Renderer_Class*  clazz = NULL;                            \
-    FT_Error            error;                                   \
-    FT_Memory           memory = library->memory;                \
-                                                                 \
-                                                                 \
-    if ( FT_ALLOC( clazz, sizeof ( *clazz ) ) )                  \
-      return error;                                              \
-                                                                 \
-    error = class_ ## _pic_init( library );                      \
-    if ( error )                                                 \
-    {                                                            \
-      FT_FREE( clazz );                                          \
-      return error;                                              \
-    }                                                            \
-                                                                 \
-    FT_DEFINE_ROOT_MODULE( flags_,                               \
-                           size_,                                \
-                           name_,                                \
-                           version_,                             \
-                           requires_,                            \
-                           interface_,                           \
-                           init_,                                \
-                           done_,                                \
-                           get_interface_ )                      \
-                                                                 \
-    clazz->glyph_format    = glyph_format_;                      \
-                                                                 \
-    clazz->render_glyph    = render_glyph_;                      \
-    clazz->transform_glyph = transform_glyph_;                   \
-    clazz->get_glyph_cbox  = get_glyph_cbox_;                    \
-    clazz->set_mode        = set_mode_;                          \
-                                                                 \
-    clazz->raster_class    = raster_class_;                      \
-                                                                 \
-    *output_class = (FT_Module_Class*)clazz;                     \
-                                                                 \
-    return FT_Err_Ok;                                            \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
-
-
-  /* PIC support macros for ftmodapi.h **/
-
-
-#ifdef FT_CONFIG_OPTION_PIC
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <FuncType>                                                            */
-  /*    FT_Module_Creator                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A function used to create (allocate) a new module class object.    */
-  /*    The object's members are initialized, but the module itself is     */
-  /*    not.                                                               */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory       :: A handle to the memory manager.                    */
-  /*    output_class :: Initialized with the newly allocated class.        */
-  /*                                                                       */
-  typedef FT_Error
-  (*FT_Module_Creator)( FT_Memory          memory,
-                        FT_Module_Class**  output_class );
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <FuncType>                                                            */
-  /*    FT_Module_Destroyer                                                */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A function used to destroy (deallocate) a module class object.     */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory :: A handle to the memory manager.                          */
-  /*    clazz  :: Module class to destroy.                                 */
-  /*                                                                       */
-  typedef void
-  (*FT_Module_Destroyer)( FT_Memory         memory,
-                          FT_Module_Class*  clazz );
-
-#endif
-
-
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DECLARE_MODULE                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to create a forward declaration of a                          */
-  /*    FT_Module_Class struct instance.                                   */
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DEFINE_MODULE                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to initialize an instance of an FT_Module_Class struct.       */
-  /*                                                                       */
-  /*    When FT_CONFIG_OPTION_PIC is defined a `create' function needs     */
-  /*    to be called with a pointer where the allocated structure is       */
-  /*    returned.  And when it is no longer needed a `destroy' function    */
-  /*    needs to be called to release that allocation.                     */
-  /*    `ftinit.c' (ft_create_default_module_classes) already contains     */
-  /*    a mechanism to call these functions for the default modules        */
-  /*    described in `ftmodule.h'.                                         */
-  /*                                                                       */
-  /*    Notice that the created `create' and `destroy' functions call      */
-  /*    `pic_init' and `pic_free' to allow you to manually allocate and    */
-  /*    initialize any additional global data, like a module specific      */
-  /*    interface, and put them in the global pic container defined in     */
-  /*    `ftpic.h'.  If you don't need them just implement the functions as */
-  /*    empty to resolve the link error.  Also the `pic_init' and          */
-  /*    `pic_free' functions should be declared in `pic.h', to be referred */
-  /*    by the module definition calling `FT_DEFINE_MODULE' in the         */
-  /*    following.                                                         */
-  /*                                                                       */
-  /*    When FT_CONFIG_OPTION_PIC is not defined the struct will be        */
-  /*    allocated in the global scope (or the scope where the macro        */
-  /*    is used).                                                          */
-  /*                                                                       */
-  /* <Macro>                                                               */
-  /*    FT_DEFINE_ROOT_MODULE                                              */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Used to initialize an instance of an FT_Module_Class struct inside */
-  /*    another struct that contains it or in a function that initializes  */
-  /*    that containing struct.                                            */
-  /*                                                                       */
-#ifndef FT_CONFIG_OPTION_PIC
-
+  /**************************************************************************
+   *
+   * @macro:
+   *   FT_DECLARE_MODULE
+   *
+   * @description:
+   *   Used to create a forward declaration of a FT_Module_Class struct
+   *   instance.
+   *
+   * @macro:
+   *   FT_DEFINE_MODULE
+   *
+   * @description:
+   *   Used to initialize an instance of an FT_Module_Class struct.
+   *
+   *   The struct will be allocated in the global scope (or the scope where
+   *   the macro is used).
+   *
+   * @macro:
+   *   FT_DEFINE_ROOT_MODULE
+   *
+   * @description:
+   *   Used to initialize an instance of an FT_Module_Class struct inside
+   *   another struct that contains it or in a function that initializes that
+   *   containing struct.
+   */
 #define FT_DECLARE_MODULE( class_ )  \
   FT_CALLBACK_TABLE                  \
   const FT_Module_Class  class_;
@@ -1521,100 +1226,6 @@ FT_BEGIN_HEADER
     done_,                        \
     get_interface_,               \
   };
-
-
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DECLARE_MODULE( class_ )                               \
-  FT_Error                                                        \
-  FT_Create_Class_ ## class_( FT_Library         library,         \
-                              FT_Module_Class**  output_class );  \
-  void                                                            \
-  FT_Destroy_Class_ ## class_( FT_Library        library,         \
-                               FT_Module_Class*  clazz );
-
-#define FT_DEFINE_ROOT_MODULE(                      \
-          flags_,                                   \
-          size_,                                    \
-          name_,                                    \
-          version_,                                 \
-          requires_,                                \
-          interface_,                               \
-          init_,                                    \
-          done_,                                    \
-          get_interface_ )                          \
-    clazz->root.module_flags     = flags_;          \
-    clazz->root.module_size      = size_;           \
-    clazz->root.module_name      = name_;           \
-    clazz->root.module_version   = version_;        \
-    clazz->root.module_requires  = requires_;       \
-                                                    \
-    clazz->root.module_interface = interface_;      \
-                                                    \
-    clazz->root.module_init      = init_;           \
-    clazz->root.module_done      = done_;           \
-    clazz->root.get_interface    = get_interface_;
-
-#define FT_DEFINE_MODULE(                                        \
-          class_,                                                \
-          flags_,                                                \
-          size_,                                                 \
-          name_,                                                 \
-          version_,                                              \
-          requires_,                                             \
-          interface_,                                            \
-          init_,                                                 \
-          done_,                                                 \
-          get_interface_ )                                       \
-  void                                                           \
-  FT_Destroy_Class_ ## class_( FT_Library        library,        \
-                               FT_Module_Class*  clazz )         \
-  {                                                              \
-    FT_Memory memory = library->memory;                          \
-                                                                 \
-                                                                 \
-    class_ ## _pic_free( library );                              \
-    if ( clazz )                                                 \
-      FT_FREE( clazz );                                          \
-  }                                                              \
-                                                                 \
-                                                                 \
-  FT_Error                                                       \
-  FT_Create_Class_ ## class_( FT_Library         library,        \
-                              FT_Module_Class**  output_class )  \
-  {                                                              \
-    FT_Memory         memory = library->memory;                  \
-    FT_Module_Class*  clazz  = NULL;                             \
-    FT_Error          error;                                     \
-                                                                 \
-                                                                 \
-    if ( FT_ALLOC( clazz, sizeof ( *clazz ) ) )                  \
-      return error;                                              \
-    error = class_ ## _pic_init( library );                      \
-    if ( error )                                                 \
-    {                                                            \
-      FT_FREE( clazz );                                          \
-      return error;                                              \
-    }                                                            \
-                                                                 \
-    clazz->module_flags     = flags_;                            \
-    clazz->module_size      = size_;                             \
-    clazz->module_name      = name_;                             \
-    clazz->module_version   = version_;                          \
-    clazz->module_requires  = requires_;                         \
-                                                                 \
-    clazz->module_interface = interface_;                        \
-                                                                 \
-    clazz->module_init      = init_;                             \
-    clazz->module_done      = done_;                             \
-    clazz->get_interface    = get_interface_;                    \
-                                                                 \
-    *output_class = clazz;                                       \
-                                                                 \
-    return FT_Err_Ok;                                            \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
 
 
 FT_END_HEADER

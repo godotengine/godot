@@ -274,6 +274,10 @@ public:
 	inline bool empty() const { return list.empty(); }
 	inline int size() const { return list.size(); }
 
+	const void *id() const {
+		return list.id();
+	}
+
 	void clear() {
 		map.clear();
 		list.clear();

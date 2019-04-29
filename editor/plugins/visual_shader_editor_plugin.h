@@ -85,7 +85,7 @@ class VisualShaderEditor : public VBoxContainer {
 	RichTextLabel *node_desc;
 
 	void _tools_menu_option(int p_idx);
-	void _show_members_dialog();
+	void _show_members_dialog(bool at_mouse_pos);
 
 	void _update_graph();
 
@@ -166,10 +166,10 @@ class VisualShaderEditor : public VBoxContainer {
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
 
 	void _preview_select_port(int p_node, int p_port);
-	void _input(const Ref<InputEvent> p_event);
+	void _graph_gui_input(const Ref<InputEvent> p_event);
 
-	void _member_gui_input(const Ref<InputEvent> p_event);
 	void _member_filter_changed(const String &p_text);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _member_selected();
 	void _member_unselected();
 	void _member_create();
@@ -179,6 +179,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	bool _is_available(int p_flags);
+	void _update_created_node(GraphNode *node);
 
 protected:
 	void _notification(int p_what);

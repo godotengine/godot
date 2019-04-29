@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="clear_all_slots">
 			<return type="void">
@@ -137,7 +135,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if left (input) slot 'idx' is enabled. False otherwise.
+				Return [code]true[/code] if left (input) slot 'idx' is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
@@ -146,7 +144,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return true if right (output) slot 'idx' is enabled. False otherwise.
+				Return [code]true[/code] if right (output) slot 'idx' is enabled, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_slot">

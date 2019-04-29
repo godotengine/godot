@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_get_caption" qualifiers="virtual">
 			<return type="String">
@@ -145,7 +143,7 @@
 		</constant>
 		<constant name="STEP_PUSH_STACK_BIT" value="16777216">
 			Hint used by [method _step] to tell that control should return to it when there is no other node left to execute.
-			This is used by [VisualScriptCondition] to redirect the sequence to the "Done" port after the true/false branch has finished execution.
+			This is used by [VisualScriptCondition] to redirect the sequence to the "Done" port after the [code]true[/code]/[code]false[/code] branch has finished execution.
 		</constant>
 		<constant name="STEP_GO_BACK_BIT" value="33554432">
 			Hint used by [method _step] to tell that control should return back, either hitting a previous STEP_PUSH_STACK_BIT or exiting the function.

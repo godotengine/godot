@@ -16,8 +16,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/gui/index.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/2d/custom_drawing_in_2d.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="_clips_input" qualifiers="virtual">
 			<return type="bool">
@@ -684,7 +682,7 @@
 			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
 		</member>
 		<member name="rect_clip_content" type="bool" setter="set_clip_contents" getter="is_clipping_contents">
-			Enables whether rendering of children should be clipped to this control's rectangle. If true, parts of a child which would be visibly outside of this control's rectangle will not be rendered.
+			Enables whether rendering of children should be clipped to this control's rectangle. If [code]true[/code], parts of a child which would be visibly outside of this control's rectangle will not be rendered.
 		</member>
 		<member name="rect_global_position" type="Vector2" setter="set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).

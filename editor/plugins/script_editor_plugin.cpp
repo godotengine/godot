@@ -1801,6 +1801,16 @@ void ScriptEditor::_update_script_names() {
 	_update_script_colors();
 }
 
+void ScriptEditor::_update_script_connections() {
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(tab_container->get_child(i));
+		if (!ste) {
+			continue;
+		}
+		ste->_update_connected_methods();
+	}
+}
+
 Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -2203,6 +2213,7 @@ void ScriptEditor::_tree_changed() {
 
 	waiting_update_names = true;
 	call_deferred("_update_script_names");
+	call_deferred("_update_script_connections");
 }
 
 void ScriptEditor::_script_split_dragged(float) {
@@ -2482,22 +2493,39 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	for (int i = 0; i < scripts.size(); i++) {
 
 		String path = scripts[i];
+
+		Dictionary script_info = scripts[i];
+		if (!script_info.empty()) {
+			path = script_info["path"];
+		}
+
 		if (!FileAccess::exists(path))
 			continue;
 
 		if (extensions.find(path.get_extension())) {
 			Ref<Script> scr = ResourceLoader::load(path);
-			if (scr.is_valid()) {
-				edit(scr);
+			if (!scr.is_valid()) {
+				continue;
+			}
+			if (!edit(scr)) {
+				continue;
+			}
+		} else {
+			Error error;
+			Ref<TextFile> text_file = _load_text_file(path, &error);
+			if (error != OK || !text_file.is_valid()) {
+				continue;
+			}
+			if (!edit(text_file)) {
 				continue;
 			}
 		}
 
-		Error error;
-		Ref<TextFile> text_file = _load_text_file(path, &error);
-		if (error == OK && text_file.is_valid()) {
-			edit(text_file);
-			continue;
+		if (!script_info.empty()) {
+			ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(tab_container->get_tab_count() - 1));
+			if (se) {
+				se->set_edit_state(script_info["state"]);
+			}
 		}
 	}
 
@@ -2537,7 +2565,11 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 			if (!path.is_resource_file())
 				continue;
 
-			scripts.push_back(path);
+			Dictionary script_info;
+			script_info["path"] = path;
+			script_info["state"] = se->get_edit_state();
+
+			scripts.push_back(script_info);
 		}
 
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_child(i));
@@ -2856,6 +2888,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_autosave_scripts", &ScriptEditor::_autosave_scripts);
 	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
+	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_tree_changed", &ScriptEditor::_tree_changed);
 	ClassDB::bind_method("_members_overview_selected", &ScriptEditor::_members_overview_selected);
 	ClassDB::bind_method("_help_overview_selected", &ScriptEditor::_help_overview_selected);

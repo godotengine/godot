@@ -10,8 +10,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_bone">
 			<return type="void">
@@ -133,6 +131,12 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="localize_rests">
+			<return type="void">
+			</return>
 			<description>
 			</description>
 		</method>

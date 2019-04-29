@@ -5,9 +5,9 @@
 	<description>
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
+		<link>https://github.com/godotengine/tps-demo</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="advance">
 			<return type="void">

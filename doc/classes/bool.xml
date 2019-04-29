@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="bool">
 			<return type="bool">
@@ -17,7 +15,7 @@
 			<argument index="0" name="from" type="int">
 			</argument>
 			<description>
-				Cast an [int] value to a boolean value, this method will return true if called with an integer value different to 0 and false in other case.
+				Cast an [int] value to a boolean value, this method will return [code]true[/code] if called with an integer value different to 0 and [code]false[/code] in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -26,7 +24,7 @@
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
-				Cast a [float] value to a boolean value, this method will return true if called with a floating point value different to 0 and false in other case.
+				Cast a [float] value to a boolean value, this method will return [code]true[/code] if called with a floating point value different to 0 and [code]false[/code] in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -35,7 +33,7 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Cast a [String] value to a boolean value, this method will return true if called with a non empty string and false in other case. Examples: [code]bool('False')[/code] returns true, [code]bool('')[/code]. returns false
+				Cast a [String] value to a boolean value, this method will return [code]true[/code] if called with a non empty string and [code]false[/code] in other case. Examples: [code]bool('False')[/code] returns [code]true[/code], [code]bool('')[/code] returns [code]false[/code].
 			</description>
 		</method>
 	</methods>

@@ -10,8 +10,6 @@
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_animation">
 			<return type="int" enum="Error">
@@ -144,7 +142,7 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
-				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being true can play the animation backwards.
+				Play the animation with key [code]name[/code]. Custom speed and blend times can be set. If custom speed is negative (-1), 'from_end' being [code]true[/code] can play the animation backwards.
 				If the animation has been paused by [code]stop(true)[/code] it will be resumed. Calling [code]play()[/code] without arguments will also resume the animation.
 			</description>
 		</method>

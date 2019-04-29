@@ -61,6 +61,16 @@ void VisualServerScene::camera_set_orthogonal(RID p_camera, float p_size, float 
 	camera->zfar = p_z_far;
 }
 
+void VisualServerScene::camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
+	Camera *camera = camera_owner.get(p_camera);
+	ERR_FAIL_COND(!camera);
+	camera->type = Camera::FRUSTUM;
+	camera->size = p_size;
+	camera->offset = p_offset;
+	camera->znear = p_z_near;
+	camera->zfar = p_z_far;
+}
+
 void VisualServerScene::camera_set_transform(RID p_camera, const Transform &p_transform) {
 
 	Camera *camera = camera_owner.get(p_camera);
@@ -1730,6 +1740,17 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 			ortho = false;
 
 		} break;
+		case Camera::FRUSTUM: {
+
+			camera_matrix.set_frustum(
+					camera->size,
+					p_viewport_size.width / (float)p_viewport_size.height,
+					camera->offset,
+					camera->znear,
+					camera->zfar,
+					camera->vaspect);
+			ortho = false;
+		} break;
 	}
 
 	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
@@ -1871,7 +1892,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			//failure
 		} else if (ins->base_type == VS::INSTANCE_LIGHT && ins->visible) {
 
-			if (ins->visible && light_cull_count < MAX_LIGHTS_CULLED) {
+			if (light_cull_count < MAX_LIGHTS_CULLED) {
 
 				InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
@@ -1888,7 +1909,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			}
 		} else if (ins->base_type == VS::INSTANCE_REFLECTION_PROBE && ins->visible) {
 
-			if (ins->visible && reflection_probe_cull_count < MAX_REFLECTION_PROBES_CULLED) {
+			if (reflection_probe_cull_count < MAX_REFLECTION_PROBES_CULLED) {
 
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(ins->base_data);
 
@@ -2633,7 +2654,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 			for (int i = 0; i < 3; i++) {
 
-				if (ABS(light_axis[i]) < CMP_EPSILON)
+				if (Math::is_zero_approx(light_axis[i]))
 					continue;
 				clip[clip_planes].normal[i] = 1.0;
 
@@ -2768,7 +2789,7 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header, co
 
 				for (int c = 0; c < 3; c++) {
 
-					if (ABS(light_axis[c]) < CMP_EPSILON)
+					if (Math::is_zero_approx(light_axis[c]))
 						continue;
 					clip[clip_planes].normal[c] = 1.0;
 

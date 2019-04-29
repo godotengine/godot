@@ -1165,7 +1165,7 @@ int OS_X11::get_screen_dpi(int p_screen) const {
 	int height_mm = DisplayHeightMM(x11_display, p_screen);
 	double xdpi = (width_mm ? sc.width / (double)width_mm * 25.4 : 0);
 	double ydpi = (height_mm ? sc.height / (double)height_mm * 25.4 : 0);
-	if (xdpi || xdpi)
+	if (xdpi || ydpi)
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 
 	//could not get dpi
@@ -2041,15 +2041,11 @@ void OS_X11::process_xevents() {
 			case LeaveNotify: {
 				if (main_loop && !mouse_mode_grab)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
-				if (input)
-					input->set_mouse_in_window(false);
 
 			} break;
 			case EnterNotify: {
 				if (main_loop && !mouse_mode_grab)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-				if (input)
-					input->set_mouse_in_window(true);
 			} break;
 			case FocusIn:
 				minimized = false;
@@ -2722,6 +2718,11 @@ void OS_X11::set_cursor_shape(CursorShape p_shape) {
 	current_cursor = p_shape;
 }
 
+OS::CursorShape OS_X11::get_cursor_shape() const {
+
+	return current_cursor;
+}
+
 void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture> texture = p_cursor;
@@ -3035,34 +3036,40 @@ bool OS_X11::is_vsync_enabled() const {
 */
 void OS_X11::set_context(int p_context) {
 
-	char *config_name = NULL;
 	XClassHint *classHint = XAllocClassHint();
 
 	if (classHint) {
 
-		char *wm_class = (char *)"Godot";
-		if (p_context == CONTEXT_EDITOR)
-			classHint->res_name = (char *)"Godot_Editor";
-		if (p_context == CONTEXT_PROJECTMAN)
-			classHint->res_name = (char *)"Godot_ProjectList";
-
-		if (p_context == CONTEXT_ENGINE) {
-			classHint->res_name = (char *)"Godot_Engine";
-			String config_name_tmp = GLOBAL_GET("application/config/name");
-			if (config_name_tmp.length() > 0) {
-				config_name = strdup(config_name_tmp.utf8().get_data());
-			} else {
-				config_name = strdup("Godot Engine");
-			}
-
-			wm_class = config_name;
+		CharString name_str;
+		switch (p_context) {
+			case CONTEXT_EDITOR:
+				name_str = "Godot_Editor";
+				break;
+			case CONTEXT_PROJECTMAN:
+				name_str = "Godot_ProjectList";
+				break;
+			case CONTEXT_ENGINE:
+				name_str = "Godot_Engine";
+				break;
 		}
 
-		classHint->res_class = wm_class;
+		CharString class_str;
+		if (p_context == CONTEXT_ENGINE) {
+			String config_name = GLOBAL_GET("application/config/name");
+			if (config_name.length() == 0) {
+				class_str = "Godot_Engine";
+			} else {
+				class_str = config_name.utf8();
+			}
+		} else {
+			class_str = "Godot";
+		}
+
+		classHint->res_class = class_str.ptrw();
+		classHint->res_name = name_str.ptrw();
 
 		XSetClassHint(x11_display, x11_window, classHint);
 		XFree(classHint);
-		free(config_name);
 	}
 }
 

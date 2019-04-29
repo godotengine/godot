@@ -891,7 +891,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->loc = Vector3();
 								t->rot = Quat();
 								t->rot_blend_accum = 0;
-								t->scale = Vector3();
+								t->scale = Vector3(1, 1, 1);
 							}
 
 							float prev_time = time - delta;
@@ -952,10 +952,8 @@ void AnimationTree::_process_graph(float p_delta) {
 								t->loc = loc;
 								t->rot = rot;
 								t->rot_blend_accum = 0;
-								t->scale = Vector3();
+								t->scale = scale;
 							}
-
-							scale -= Vector3(1.0, 1.0, 1.0); //helps make it work properly with Add nodes
 
 							if (err != OK)
 								continue;
@@ -1240,8 +1238,6 @@ void AnimationTree::_process_graph(float p_delta) {
 
 					Transform xform;
 					xform.origin = t->loc;
-
-					t->scale += Vector3(1.0, 1.0, 1.0); //helps make it work properly with Add nodes and root motion
 
 					xform.basis.set_quat_scale(t->rot, t->scale);
 

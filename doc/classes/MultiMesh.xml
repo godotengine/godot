@@ -12,8 +12,6 @@
 	<tutorials>
 		<link>http://docs.godotengine.org/en/latest/tutorials/3d/vertex_animation/animating_thousands_of_fish.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB">
@@ -117,6 +115,8 @@
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat">
 			Format of transform used to transform mesh, either 2D or 3D.
+		</member>
+		<member name="visible_instance_count" type="int" setter="set_visible_instance_count" getter="get_visible_instance_count">
 		</member>
 	</members>
 	<constants>

@@ -597,6 +597,8 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 			if (!can_sleep) {
 				// Can't sleep
 				btBody->forceActivationState(DISABLE_DEACTIVATION);
+			} else {
+				btBody->forceActivationState(ACTIVE_TAG);
 			}
 			break;
 	}

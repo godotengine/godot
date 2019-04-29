@@ -8,13 +8,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
 		<member name="cone" type="bool" setter="set_cone" getter="is_cone">
-			If true a cone is created, the [member radius] will only apply to one side.
+			If [code]true[/code] a cone is created, the [member radius] will only apply to one side.
 		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height">
 			The height of the cylinder.
@@ -29,7 +27,7 @@
 			The number of sides of the cylinder, the higher this number the more detail there will be in the cylinder.
 		</member>
 		<member name="smooth_faces" type="bool" setter="set_smooth_faces" getter="get_smooth_faces">
-			If true the normals of the cylinder are set to give a smooth effect making the cylinder seem rounded. When false the cylinder will have a flat shaded look.
+			If [code]true[/code] the normals of the cylinder are set to give a smooth effect making the cylinder seem rounded. If [code]false[/code] the cylinder will have a flat shaded look.
 		</member>
 	</members>
 	<constants>

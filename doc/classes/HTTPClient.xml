@@ -13,8 +13,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/http_client_class.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="close">
 			<return type="void">
@@ -297,7 +295,7 @@
 			HTTP status code [code]303 See Other[/code]. The server is redirecting the user agent to a different resource, as indicated by a URI in the Location header field, which is intended to provide an indirect response to the original request.
 		</constant>
 		<constant name="RESPONSE_NOT_MODIFIED" value="304" enum="ResponseCode">
-			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to false.
+			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
 		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode">
 			HTTP status code [code]305 Use Proxy[/code]. Deprecated. Do not use.
@@ -348,7 +346,7 @@
 			HTTP status code [code]411 Length Required[/code]. The server refuses to accept the request without a defined Content-Length header.
 		</constant>
 		<constant name="RESPONSE_PRECONDITION_FAILED" value="412" enum="ResponseCode">
-			HTTP status code [code]412 Precondition Failed[/code]. One or more conditions given in the request header fields evaluated to false when tested on the server.
+			HTTP status code [code]412 Precondition Failed[/code]. One or more conditions given in the request header fields evaluated to [code]false[/code] when tested on the server.
 		</constant>
 		<constant name="RESPONSE_REQUEST_ENTITY_TOO_LARGE" value="413" enum="ResponseCode">
 			HTTP status code [code]413 Entity Too Large[/code]. The server is refusing to process a request because the request payload is larger than the server is willing or able to process.
