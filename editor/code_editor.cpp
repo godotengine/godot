@@ -311,6 +311,10 @@ bool FindReplaceBar::search_current() {
 
 bool FindReplaceBar::search_prev() {
 
+	if (!is_visible()) {
+		popup_search(true);
+	}
+
 	uint32_t flags = 0;
 	String text = get_search_text();
 
@@ -336,6 +340,10 @@ bool FindReplaceBar::search_prev() {
 }
 
 bool FindReplaceBar::search_next() {
+
+	if (!is_visible()) {
+		popup_search(true);
+	}
 
 	uint32_t flags = 0;
 	String text = get_search_text();
@@ -373,7 +381,7 @@ void FindReplaceBar::_hide_bar() {
 	hide();
 }
 
-void FindReplaceBar::_show_search() {
+void FindReplaceBar::_show_search(bool p_show_only) {
 
 	show();
 	search_text->call_deferred("grab_focus");
@@ -382,19 +390,19 @@ void FindReplaceBar::_show_search() {
 		search_text->set_text(text_edit->get_selection_text());
 	}
 
-	if (!get_search_text().empty()) {
+	if (!get_search_text().empty() && !p_show_only) {
 		search_text->select_all();
 		search_text->set_cursor_position(search_text->get_text().length());
 		search_current();
 	}
 }
 
-void FindReplaceBar::popup_search() {
+void FindReplaceBar::popup_search(bool p_show_only) {
 
 	replace_text->hide();
 	hbc_button_replace->hide();
 	hbc_option_replace->hide();
-	_show_search();
+	_show_search(p_show_only);
 }
 
 void FindReplaceBar::popup_replace() {
