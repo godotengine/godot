@@ -322,7 +322,7 @@ void ScriptCreateDialog::_browse_path(bool browse_parent, bool p_save) {
 
 	if (p_save) {
 		file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-		file_browse->set_title(TTR("Open Script/Choose Location"));
+		file_browse->set_title(TTR("Open Script / Choose Location"));
 		file_browse->get_ok()->set_text(TTR("Open"));
 	} else {
 		file_browse->set_mode(EditorFileDialog::MODE_OPEN_FILE);
@@ -369,27 +369,27 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	String p = p_path.strip_edges();
 
 	if (p == "") {
-		_msg_path_valid(false, TTR("Path is empty"));
+		_msg_path_valid(false, TTR("Path is empty."));
 		_update_dialog();
 		return;
 	}
 
 	if (p.get_file().get_basename() == "") {
-		_msg_path_valid(false, TTR("Filename is empty"));
+		_msg_path_valid(false, TTR("Filename is empty."));
 		_update_dialog();
 		return;
 	}
 
 	p = ProjectSettings::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {
-		_msg_path_valid(false, TTR("Path is not local"));
+		_msg_path_valid(false, TTR("Path is not local."));
 		_update_dialog();
 		return;
 	}
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(p.get_base_dir()) != OK) {
-		_msg_path_valid(false, TTR("Invalid base path"));
+		_msg_path_valid(false, TTR("Invalid base path."));
 		memdelete(d);
 		_update_dialog();
 		return;
@@ -402,11 +402,11 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	if (f->dir_exists(p)) {
 		is_new_script_created = false;
 		is_path_valid = false;
-		_msg_path_valid(false, TTR("Directory of the same name exists"));
+		_msg_path_valid(false, TTR("A directory with the same name exists."));
 	} else if (f->file_exists(p)) {
 		is_new_script_created = false;
 		is_path_valid = true;
-		_msg_path_valid(true, TTR("File exists, will be reused"));
+		_msg_path_valid(true, TTR("File exists, it will be reused."));
 	}
 	memdelete(f);
 	_update_dialog();
@@ -438,13 +438,13 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	}
 
 	if (!found) {
-		_msg_path_valid(false, TTR("Invalid extension"));
+		_msg_path_valid(false, TTR("Invalid extension."));
 		_update_dialog();
 		return;
 	}
 
 	if (!match) {
-		_msg_path_valid(false, TTR("Wrong extension chosen"));
+		_msg_path_valid(false, TTR("Wrong extension chosen."));
 		_update_dialog();
 		return;
 	}
@@ -496,20 +496,20 @@ void ScriptCreateDialog::_update_dialog() {
 	get_ok()->set_disabled(true);
 	if (!is_built_in) {
 		if (!is_path_valid) {
-			_msg_script_valid(false, TTR("Invalid Path"));
+			_msg_script_valid(false, TTR("Invalid path."));
 			script_ok = false;
 		}
 	}
 	if (has_named_classes && (is_new_script_created && !is_class_name_valid)) {
-		_msg_script_valid(false, TTR("Invalid class name"));
+		_msg_script_valid(false, TTR("Invalid class name."));
 		script_ok = false;
 	}
 	if (!is_parent_name_valid) {
-		_msg_script_valid(false, TTR("Invalid inherited parent name or path"));
+		_msg_script_valid(false, TTR("Invalid inherited parent name or path."));
 		script_ok = false;
 	}
 	if (script_ok) {
-		_msg_script_valid(true, TTR("Script valid"));
+		_msg_script_valid(true, TTR("Script is valid."));
 		get_ok()->set_disabled(false);
 	}
 
@@ -562,7 +562,7 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_name->set_editable(true);
 		parent_browse_button->set_disabled(false);
 		internal->set_disabled(!_can_be_built_in());
-		_msg_path_valid(true, TTR("Built-in script (into scene file)"));
+		_msg_path_valid(true, TTR("Built-in script (into scene file)."));
 	} else if (is_new_script_created) {
 		// New Script Created
 		get_ok()->set_text(TTR("Create"));
@@ -570,7 +570,7 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_browse_button->set_disabled(false);
 		internal->set_disabled(!_can_be_built_in());
 		if (is_path_valid) {
-			_msg_path_valid(true, TTR("Create new script file"));
+			_msg_path_valid(true, TTR("Will create a new script file."));
 		}
 	} else {
 		// Script Loaded
@@ -579,7 +579,7 @@ void ScriptCreateDialog::_update_dialog() {
 		parent_browse_button->set_disabled(true);
 		internal->set_disabled(!_can_be_built_in());
 		if (is_path_valid) {
-			_msg_path_valid(true, TTR("Load existing script file"));
+			_msg_path_valid(true, TTR("Will load an existing script file."));
 		}
 	}
 }

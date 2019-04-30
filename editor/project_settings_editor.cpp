@@ -181,7 +181,7 @@ void ProjectSettingsEditor::_action_edited() {
 			ti->set_text(0, old_name);
 			add_at = "input/" + old_name;
 
-			message->set_text(vformat(TTR("Action '%s' already exists!"), new_name));
+			message->set_text(vformat(TTR("An action with the name '%s' already exists."), new_name));
 			message->popup_centered(Size2(300, 100) * EDSCALE);
 			return;
 		}
@@ -927,7 +927,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 		}
 		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action)) {
 
-			action_add_error->set_text(TTR("Already existing"));
+			action_add_error->set_text(vformat(TTR("An action with the name '%s' already exists."), p_action));
 			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
@@ -1785,7 +1785,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
-	restart_label->set_text(TTR("Editor must be restarted for changes to take effect"));
+	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
@@ -2003,8 +2003,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(tmc);
 
 		translation_locale_filter_mode = memnew(OptionButton);
-		translation_locale_filter_mode->add_item(TTR("Show all locales"), SHOW_ALL_LOCALES);
-		translation_locale_filter_mode->add_item(TTR("Show only selected locales"), SHOW_ONLY_SELECTED_LOCALES);
+		translation_locale_filter_mode->add_item(TTR("Show All Locales"), SHOW_ALL_LOCALES);
+		translation_locale_filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 		translation_locale_filter_mode->select(0);
 		tmc->add_margin_child(TTR("Filter mode:"), translation_locale_filter_mode);
 		translation_locale_filter_mode->connect("item_selected", this, "_translation_filter_mode_changed");

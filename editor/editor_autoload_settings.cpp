@@ -638,12 +638,12 @@ void EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	String path = p_path;
 	if (!FileAccess::exists(path)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("File does not exist."));
+		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("File does not exist."));
 		return;
 	}
 
 	if (!path.begins_with("res://")) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("Not in resource path."));
+		EditorNode::get_singleton()->show_warning(TTR("Invalid path.") + "\n" + TTR("Not in resource path."));
 		return;
 	}
 

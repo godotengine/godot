@@ -949,7 +949,7 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	filter_dialog->add_child(filter_vbox);
 
 	filter_enabled = memnew(CheckBox);
-	filter_enabled->set_text(TTR("Enable filtering"));
+	filter_enabled->set_text(TTR("Enable Filtering"));
 	filter_enabled->connect("pressed", this, "_filter_toggled");
 	filter_vbox->add_child(filter_enabled);
 
