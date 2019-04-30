@@ -1254,15 +1254,17 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="max_steps" type="int">
+			<argument index="2" name="resolution" type="int" enum="VisualServer.EnvironmentSSRResolution">
 			</argument>
-			<argument index="3" name="fade_in" type="float">
+			<argument index="3" name="max_steps" type="int">
 			</argument>
-			<argument index="4" name="fade_out" type="float">
+			<argument index="4" name="fade_in" type="float">
 			</argument>
-			<argument index="5" name="depth_tolerance" type="float">
+			<argument index="5" name="fade_out" type="float">
 			</argument>
-			<argument index="6" name="roughness" type="bool">
+			<argument index="6" name="depth_tolerance" type="float">
+			</argument>
+			<argument index="7" name="roughness" type="bool">
 			</argument>
 			<description>
 			</description>

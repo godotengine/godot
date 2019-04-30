@@ -873,12 +873,13 @@ void RasterizerSceneGLES3::environment_set_glow(RID p_env, bool p_enable, int p_
 void RasterizerSceneGLES3::environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {
 }
 
-void RasterizerSceneGLES3::environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) {
+void RasterizerSceneGLES3::environment_set_ssr(RID p_env, bool p_enable, VS::EnvironmentSSRResolution p_resolution, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) {
 
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 
 	env->ssr_enabled = p_enable;
+	env->ssr_resolution = p_resolution;
 	env->ssr_max_steps = p_max_steps;
 	env->ssr_fade_in = p_fade_in;
 	env->ssr_fade_out = p_fade_out;
@@ -3548,10 +3549,23 @@ void RasterizerSceneGLES3::_render_mrts(Environment *env, const CameraMatrix &p_
 
 		state.ssr_shader.bind();
 
+		float resolution_multiplier = 0.5;
+		switch (env->ssr_resolution) {
+			case VS::ENV_SSR_RESOLUTION_FULL:
+				resolution_multiplier = 1.0;
+				break;
+			case VS::ENV_SSR_RESOLUTION_HALF:
+				resolution_multiplier = 0.5;
+				break;
+			case VS::ENV_SSR_RESOLUTION_QUARTER:
+				resolution_multiplier = 0.25;
+				break;
+		}
+
 		int ssr_w = storage->frame.current_rt->effects.mip_maps[1].sizes[0].width;
 		int ssr_h = storage->frame.current_rt->effects.mip_maps[1].sizes[0].height;
 
-		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::PIXEL_SIZE, Vector2(1.0 / (ssr_w * 0.5), 1.0 / (ssr_h * 0.5)));
+		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::PIXEL_SIZE, Vector2(1.0 / (ssr_w * resolution_multiplier), 1.0 / (ssr_h * resolution_multiplier)));
 		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::CAMERA_Z_NEAR, p_cam_projection.get_z_near());
 		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::CAMERA_Z_FAR, p_cam_projection.get_z_far());
 		state.ssr_shader.set_uniform(ScreenSpaceReflectionShaderGLES3::PROJECTION, p_cam_projection);

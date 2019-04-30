@@ -209,6 +209,8 @@
 		</member>
 		<member name="ss_reflections_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out">
 		</member>
+		<member name="ss_reflections_resolution" type="int" setter="set_ssr_resolution" getter="get_ssr_resolution" enum="Environment.SSRResolution">
+		</member>
 		<member name="ss_reflections_max_steps" type="int" setter="set_ssr_max_steps" getter="get_ssr_max_steps">
 		</member>
 		<member name="ss_reflections_roughness" type="bool" setter="set_ssr_rough" getter="is_ssr_rough">
