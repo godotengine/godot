@@ -72,7 +72,7 @@ public:
 
 	void clear_points();
 
-	void add_point(Vector2 pos);
+	void add_point(Vector2 pos, int atpos = -1);
 	void remove_point(int i);
 
 	void set_width(float width);
