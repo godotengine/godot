@@ -79,17 +79,32 @@ class AudioEffectPitchShiftInstance : public AudioEffectInstance {
 	SMBPitchShift shift_l;
 	SMBPitchShift shift_r;
 
+	int fft_size;
+
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	
 };
 
 class AudioEffectPitchShift : public AudioEffect {
 	GDCLASS(AudioEffectPitchShift, AudioEffect)
+public:
+	enum FFT_Size {
+		FFT_SIZE_256,
+		FFT_SIZE_512,
+		FFT_SIZE_1024,
+		FFT_SIZE_2048,
+		FFT_SIZE_4096,
+		FFT_SIZE_MAX
+	};
 
+public:
 	friend class AudioEffectPitchShiftInstance;
 
 	float pitch_scale;
-	int window_size;
+	int oversampling;
+	FFT_Size fft_size;
+	int window_size; // Not used... could be removed, right?
 	float wet;
 	float dry;
 	bool filter;
@@ -103,7 +118,15 @@ public:
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
+	void set_oversampling(int p_oversampling);
+	int get_oversampling() const;
+
+	void set_fft_size(FFT_Size);
+	FFT_Size get_fft_size() const;
+
 	AudioEffectPitchShift();
 };
+
+VARIANT_ENUM_CAST(AudioEffectPitchShift::FFT_Size);
 
 #endif // AUDIO_EFFECT_PITCH_SHIFT_H
