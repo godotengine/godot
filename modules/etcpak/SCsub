@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_etcpak = env_modules.Clone()
+
+# Thirdparty source files
+thirdparty_dir = "#thirdparty/etcpak/"
+thirdparty_sources = [
+    # "Application.cpp",
+    "Bitmap.cpp",
+    "BitmapDownsampled.cpp",
+    "BlockData.cpp",
+    "ColorSpace.cpp",
+    "CpuArch.cpp",
+    "DataProvider.cpp",
+    #"Debug.cpp",
+    "Dither.cpp",
+    "Error.cpp",
+    "mmap.cpp",
+    "ProcessAlpha.cpp",
+    "ProcessAlpha_AVX2.cpp", # EnableEnhancedInstructionSet
+    "ProcessRGB.cpp",
+    "ProcessRGB_AVX2.cpp", # EnableEnhancedInstructionSet
+    "System.cpp",
+    "Tables.cpp",
+    "TaskDispatch.cpp",
+    "Timing.cpp",
+    # "Bitmap.hpp",
+    # "BitmapDownsampled.hpp",
+    # "BlockData.hpp",
+    # "ColorSpace.hpp",
+    # "CpuArch.hpp",
+    # "DataProvider.hpp",
+    # "Debug.hpp",
+    # "Dither.hpp",
+    # "Error.hpp",
+    # "lz4\lz4.h",
+    "lz4/lz4.c",
+    # "Math.hpp",
+    # "MipMap.hpp",
+    # "mmap.hpp",
+    # "ProcessAlpha.hpp",
+    # "ProcessAlpha_AVX2.hpp",
+    # "ProcessCommon.hpp",
+    # "ProcessRGB.hpp",
+    # "ProcessRGB_AVX2.hpp",
+    # "Semaphore.hpp",
+    # "System.hpp",
+    # "Tables.hpp",
+    # "TaskDispatch.hpp",
+    # "Timing.hpp",
+    # "Vector.hpp",
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_etcpak.Append(CPPPATH=[thirdparty_dir])
+
+# upstream uses c++11
+if not env.msvc:
+	env_etcpak.Append(CXXFLAGS="-std=c++11")
+
+env_thirdparty = env_etcpak.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+# Godot source files
+env_etcpak.add_source_files(env.modules_sources, "*.cpp")
