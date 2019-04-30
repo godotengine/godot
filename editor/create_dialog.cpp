@@ -721,6 +721,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", this, "_favorite_selected");
 	favorites->connect("item_activated", this, "_favorite_activated");
 	favorites->set_drag_forwarding(this);
+	favorites->add_constant_override("draw_guides", 1);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);
 	vsc->add_child(rec_vb);
@@ -733,6 +734,7 @@ CreateDialog::CreateDialog() {
 	recent->set_hide_folding(true);
 	recent->connect("cell_selected", this, "_history_selected");
 	recent->connect("item_activated", this, "_history_activated");
+	recent->add_constant_override("draw_guides", 1);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	hsc->add_child(vbc);
