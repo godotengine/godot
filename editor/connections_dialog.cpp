@@ -317,6 +317,11 @@ void ConnectDialog::ok_pressed() {
 		return;
 	}
 	Node *target = tree->get_selected();
+	if (!target) {
+		error->set_text(TTR("No valid target selected!"));
+		error->popup_centered_minsize();
+		return;
+	}
 	if (target->get_script().is_null()) {
 		if (!target->has_method(dst_method->get_text())) {
 			error->set_text(TTR("Target method not found! Specify a valid method or attach a script to target Node."));
@@ -422,7 +427,14 @@ void ConnectDialog::_set_settings_flags(bool p_deferred, bool p_oneshot) {
 void ConnectDialog::_edit_arguments_pressed() {
 
 	args_dialog->set_title(TTR("Edit Signal Arguments"));
-	args_dialog->popup_centered_ratio(0.5);
+
+	Size2 popup_size = Size2(600, 700) * editor_get_scale();
+	Size2 window_size = get_viewport_rect().size;
+
+	popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+	popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+	args_dialog->popup_centered(popup_size);
 }
 
 void ConnectDialog::_bindings_changed() {
@@ -442,11 +454,8 @@ void ConnectDialog::_check_valid() {
 	error_label->add_color_override("font_color", get_color("error_color", "Editor"));
 
 	Node *target = tree->get_selected();
-	if (!target) {
-		return;
-	}
 
-	if (mode_list->get_selected_id() == Mode::EXISTING_METHOD) {
+	if (mode_list->get_selected_id() == Mode::EXISTING_METHOD && target) {
 
 		if (!target->has_method(dst_method->get_text())) {
 			error_label->set_text(TTR("Method not found in the selected node."));
@@ -459,7 +468,7 @@ void ConnectDialog::_check_valid() {
 			error_label->set_text(TTR("Scene does not contain any script."));
 			show_error = true;
 			disable_ok = true;
-		} else if (target->has_method(dst_method->get_text())) {
+		} else if (target && target->has_method(dst_method->get_text())) {
 			error_label->set_text(TTR("Method already defined. No new method will be created."));
 			error_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 			show_error = true;
@@ -981,7 +990,13 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 	connect_dialog->init(signalname, c, ConnectDialog::Mode::NEW_METHOD, false);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
 
-	connect_dialog->popup_centered_ratio();
+	Size2 popup_size = Size2(900, 700) * editor_get_scale();
+	Size2 window_size = get_viewport_rect().size;
+
+	popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+	popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+	connect_dialog->popup_centered(popup_size);
 }
 
 /*
@@ -996,7 +1011,13 @@ void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 		connect_dialog->init(cToEdit.signal, cToEdit, ConnectDialog::Mode::EXISTING_METHOD, true);
 		connect_dialog->set_title(TTR("Edit Connection:") + cToEdit.signal);
 
-		connect_dialog->popup_centered_ratio();
+		Size2 popup_size = Size2(900, 700) * editor_get_scale();
+		Size2 window_size = get_viewport_rect().size;
+
+		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
+		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
+
+		connect_dialog->popup_centered(popup_size);
 	}
 }
 
