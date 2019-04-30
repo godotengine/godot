@@ -359,7 +359,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "CheckButton", focus);
 
 	theme->set_icon("on", "CheckButton", make_icon(toggle_on_png));
+	theme->set_icon("on_disabled", "CheckButton", make_icon(toggle_on_disabled_png));
 	theme->set_icon("off", "CheckButton", make_icon(toggle_off_png));
+	theme->set_icon("off_disabled", "CheckButton", make_icon(toggle_off_disabled_png));
 
 	theme->set_font("font", "CheckButton", default_font);
 
