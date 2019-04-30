@@ -12,7 +12,7 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_opensimplex.Append(CPPPATH=[thirdparty_dir])
+env_opensimplex.Prepend(CPPPATH=[thirdparty_dir])
 
 env_thirdparty = env_opensimplex.Clone()
 env_thirdparty.disable_warnings()

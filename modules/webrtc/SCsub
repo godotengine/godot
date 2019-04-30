@@ -10,7 +10,6 @@ use_gdnative = env_webrtc["module_gdnative_enabled"]
 
 if use_gdnative: # GDNative is retained in Javascript for export compatibility
     env_webrtc.Append(CPPDEFINES=['WEBRTC_GDNATIVE_ENABLED'])
-    gdnative_includes = ["#modules/gdnative/include/"]
-    env_webrtc.Append(CPPPATH=gdnative_includes)
+    env_webrtc.Prepend(CPPPATH=["#modules/gdnative/include/"])
 
 env_webrtc.add_source_files(env.modules_sources, "*.cpp")
