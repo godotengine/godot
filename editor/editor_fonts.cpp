@@ -228,7 +228,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("doc", "EditorFonts", df_doc);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
 
-	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
+	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 
 	// Ruler font
