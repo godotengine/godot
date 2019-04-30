@@ -227,7 +227,7 @@ void ARVRInterfaceGDNative::notification(int p_what) {
 
 	// this is only available in interfaces that implement 1.1 or later
 	if ((interface->version.major > 1) || ((interface->version.major == 1) && (interface->version.minor > 0))) {
-		interface->notification(p_what);
+		interface->notification(data, p_what);
 	}
 }
 
