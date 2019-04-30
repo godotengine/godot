@@ -80,6 +80,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Vector<String> template_list;
 	String base_type;
 
+	void _path_hbox_sorted();
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _path_entered(const String &p_path = String());
