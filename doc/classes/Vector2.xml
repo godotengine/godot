@@ -216,7 +216,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Returns the vector rotated by [code]phi[/code] radians.
+				Returns the vector rotated by [code]phi[/code] radians. See also [method @GDScript.deg2rad].
 			</description>
 		</method>
 		<method name="round">
