@@ -45,6 +45,10 @@
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha">
 			If [code]true[/code], shows an alpha channel slider (transparency).
 		</member>
+		<member name="presets_enabled" type="bool" setter="set_presets_enabled" getter="are_presets_enabled">
+		</member>
+		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible">
+		</member>
 		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode">
 			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
 		</member>

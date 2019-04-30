@@ -10,15 +10,6 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/audio/audio_streams.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_mix_time" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			Returns the actual amount of time this stream player was mixing since play() was pressed.
-			To know the exact position this song is mixing right now, add the value to [method AudioServer.get_time_since_last_mix].
-			Also consider substracting [method AudioServer.get_output_latency] to that result.			
-			</description>
-		</method>
 		<method name="get_playback_position">
 			<return type="float">
 			</return>

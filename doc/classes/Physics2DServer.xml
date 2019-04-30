@@ -18,6 +18,8 @@
 			</argument>
 			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
+			</argument>
 			<description>
 				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
@@ -251,7 +253,7 @@
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
-			<argument index="2" name="disable" type="bool">
+			<argument index="2" name="disabled" type="bool">
 			</argument>
 			<description>
 				Disables a given shape in an area.
@@ -345,6 +347,8 @@
 			<argument index="1" name="shape" type="RID">
 			</argument>
 			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
@@ -746,7 +750,7 @@
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
-			<argument index="2" name="disable" type="bool">
+			<argument index="2" name="disabled" type="bool">
 			</argument>
 			<description>
 				Disables shape in body if [code]disable[/code] is [code]true[/code].

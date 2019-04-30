@@ -18,6 +18,8 @@
 			</argument>
 			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
+			</argument>
 			<description>
 				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
 			</description>
@@ -246,6 +248,18 @@
 				Substitutes a given area shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
+		<method name="area_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="area_set_shape_transform">
 			<return type="void">
 			</return>
@@ -333,6 +347,8 @@
 			<argument index="1" name="shape" type="RID">
 			</argument>
 			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
@@ -748,6 +764,18 @@
 			</argument>
 			<description>
 				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
+			</description>
+		</method>
+		<method name="body_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="body_set_shape_transform">

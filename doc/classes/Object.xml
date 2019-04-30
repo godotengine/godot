@@ -327,6 +327,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="remove_meta">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set">
 			<return type="void">
 			</return>
