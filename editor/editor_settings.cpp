@@ -407,6 +407,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/theme/color_theme", "Adaptive");
 	hints["text_editor/theme/color_theme"] = PropertyInfo(Variant::STRING, "text_editor/theme/color_theme", PROPERTY_HINT_ENUM, "Adaptive,Default,Custom");
 	_initial_set("text_editor/theme/line_spacing", 6);
+	hints["text_editor/theme/line_spacing"] = PropertyInfo(Variant::INT, "text_editor/theme/line_spacing", PROPERTY_HINT_RANGE, "0,50,1");
 
 	_load_default_text_editor_theme();
 
