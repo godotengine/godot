@@ -567,10 +567,10 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_set_space_override_mode", "area", "mode"), &Physics2DServer::area_set_space_override_mode);
 	ClassDB::bind_method(D_METHOD("area_get_space_override_mode", "area"), &Physics2DServer::area_get_space_override_mode);
 
-	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform"), &Physics2DServer::area_add_shape, DEFVAL(Transform2D()));
+	ClassDB::bind_method(D_METHOD("area_add_shape", "area", "shape", "transform", "disabled"), &Physics2DServer::area_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("area_set_shape", "area", "shape_idx", "shape"), &Physics2DServer::area_set_shape);
 	ClassDB::bind_method(D_METHOD("area_set_shape_transform", "area", "shape_idx", "transform"), &Physics2DServer::area_set_shape_transform);
-	ClassDB::bind_method(D_METHOD("area_set_shape_disabled", "area", "shape_idx", "disable"), &Physics2DServer::area_set_shape_disabled);
+	ClassDB::bind_method(D_METHOD("area_set_shape_disabled", "area", "shape_idx", "disabled"), &Physics2DServer::area_set_shape_disabled);
 
 	ClassDB::bind_method(D_METHOD("area_get_shape_count", "area"), &Physics2DServer::area_get_shape_count);
 	ClassDB::bind_method(D_METHOD("area_get_shape", "area", "shape_idx"), &Physics2DServer::area_get_shape);
@@ -606,7 +606,7 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_set_mode", "body", "mode"), &Physics2DServer::body_set_mode);
 	ClassDB::bind_method(D_METHOD("body_get_mode", "body"), &Physics2DServer::body_get_mode);
 
-	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform"), &Physics2DServer::body_add_shape, DEFVAL(Transform2D()));
+	ClassDB::bind_method(D_METHOD("body_add_shape", "body", "shape", "transform", "disabled"), &Physics2DServer::body_add_shape, DEFVAL(Transform2D()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("body_set_shape", "body", "shape_idx", "shape"), &Physics2DServer::body_set_shape);
 	ClassDB::bind_method(D_METHOD("body_set_shape_transform", "body", "shape_idx", "transform"), &Physics2DServer::body_set_shape_transform);
 	ClassDB::bind_method(D_METHOD("body_set_shape_metadata", "body", "shape_idx", "metadata"), &Physics2DServer::body_set_shape_metadata);
@@ -619,7 +619,7 @@ void Physics2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_remove_shape", "body", "shape_idx"), &Physics2DServer::body_remove_shape);
 	ClassDB::bind_method(D_METHOD("body_clear_shapes", "body"), &Physics2DServer::body_clear_shapes);
 
-	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disable"), &Physics2DServer::body_set_shape_disabled);
+	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disabled"), &Physics2DServer::body_set_shape_disabled);
 	ClassDB::bind_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin"), &Physics2DServer::body_set_shape_as_one_way_collision);
 
 	ClassDB::bind_method(D_METHOD("body_attach_object_instance_id", "body", "id"), &Physics2DServer::body_attach_object_instance_id);
