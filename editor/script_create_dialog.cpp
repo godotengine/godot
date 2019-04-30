@@ -567,23 +567,22 @@ void ScriptCreateDialog::_update_dialog() {
 		}
 	}
 
-	if (!_can_be_built_in())
-		internal->set_pressed(false);
-
 	/* Is Script created or loaded from existing file */
 
 	if (is_built_in) {
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_browse_button->set_disabled(false);
-		internal->set_disabled(!_can_be_built_in());
+		internal->set_visible(_can_be_built_in());
+		internal_label->set_visible(_can_be_built_in());
 		_msg_path_valid(true, TTR("Built-in script (into scene file)."));
 	} else if (is_new_script_created) {
 		// New Script Created
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
 		parent_browse_button->set_disabled(false);
-		internal->set_disabled(!_can_be_built_in());
+		internal->set_visible(_can_be_built_in());
+		internal_label->set_visible(_can_be_built_in());
 		if (is_path_valid) {
 			_msg_path_valid(true, TTR("Will create a new script file."));
 		}
@@ -753,13 +752,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Built-in Script */
 
 	internal = memnew(CheckButton);
+	internal->set_h_size_flags(0);
 	internal->connect("pressed", this, "_built_in_pressed");
-	hb = memnew(HBoxContainer);
-	hb->add_child(internal);
-	l = memnew(Label(TTR("Built-in Script")));
-	l->set_align(Label::ALIGN_RIGHT);
-	gc->add_child(l);
-	gc->add_child(hb);
+	internal_label = memnew(Label(TTR("Built-in Script")));
+	internal_label->set_text(TTR("Built-in Script"));
+	internal_label->set_align(Label::ALIGN_RIGHT);
+	gc->add_child(internal_label);
+	gc->add_child(internal);
 
 	/* Path */
 

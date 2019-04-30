@@ -58,6 +58,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *path_button;
 	EditorFileDialog *file_browse;
 	CheckButton *internal;
+	Label *internal_label;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
 	CreateDialog *select_class;
