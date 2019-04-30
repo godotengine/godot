@@ -147,6 +147,11 @@ Comment: Etc2Comp
 Copyright: 2015, Etc2Comp Authors
 License: Apache-2.0
 
+Files: ./thirdparty/etcpak/
+Comment: etcpak
+Copyright: 2013, Bartosz Taudul <wolf.pld@gmail.com>
+License: BSD-3-clause
+
 Files: ./thirdparty/fonts/DroidSans*.ttf
 Comment: DroidSans font
 Copyright: 2008, The Android Open Source Project
