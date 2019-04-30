@@ -75,7 +75,7 @@ if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # alrea
     else: # Unix socket
         thirdparty_sources += Glob(thirdparty_dir + "lib/plat/unix/*.c")
 
-    env_lws.Append(CPPPATH=[thirdparty_dir + 'include/'])
+    env_lws.Prepend(CPPPATH=[thirdparty_dir + 'include/'])
 
     if env['builtin_mbedtls']:
         mbedtls_includes = "#thirdparty/mbedtls/include"
@@ -85,14 +85,14 @@ if env['builtin_libwebsockets'] and not env["platform"] == "javascript": # alrea
     env_lws.Prepend(CPPPATH=wrapper_includes)
 
     if env["platform"] == "windows" or env["platform"] == "uwp":
-        env_lws.Append(CPPPATH=[helper_dir])
+        env_lws.Prepend(CPPPATH=[helper_dir])
 
     if env["platform"] == "uwp":
         env_lws.Append(CPPFLAGS=["/DLWS_MINGW_SUPPORT"])
 
     env_thirdparty = env_lws.Clone()
     env_thirdparty.disable_warnings()
-    env_thirdparty.Append(CPPPATH=[thirdparty_dir + 'lib/'])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + 'lib/'])
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 env_lws.add_source_files(env.modules_sources, "*.cpp")

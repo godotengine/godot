@@ -80,9 +80,9 @@ if env['builtin_zlib']:
 	]
 	thirdparty_zlib_sources = [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
 
-	env_thirdparty.Append(CPPPATH=[thirdparty_zlib_dir])
+	env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
 	# Needs to be available in main env too
-	env.Append(CPPPATH=[thirdparty_zlib_dir])
+	env.Prepend(CPPPATH=[thirdparty_zlib_dir])
 
 	env_thirdparty.add_source_files(env.core_sources, thirdparty_zlib_sources)
 
@@ -128,9 +128,9 @@ if env['builtin_zstd']:
     ]
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
-    env_thirdparty.Append(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
     env_thirdparty.Append(CPPFLAGS="-DZSTD_STATIC_LINKING_ONLY")
-    env.Append(CPPPATH=thirdparty_zstd_dir)
+    env.Prepend(CPPPATH=thirdparty_zstd_dir)
     # Also needed in main env includes will trigger warnings
     env.Append(CPPFLAGS="-DZSTD_STATIC_LINKING_ONLY")
 

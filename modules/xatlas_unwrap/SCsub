@@ -13,7 +13,7 @@ if env['builtin_xatlas']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_xatlas_unwrap.Append(CPPPATH=[thirdparty_dir])
+    env_xatlas_unwrap.Prepend(CPPPATH=[thirdparty_dir])
 
     # upstream uses c++11
     if (not env.msvc):

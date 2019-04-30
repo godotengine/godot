@@ -201,7 +201,7 @@ def configure_msvc(env, manual_msvc_config):
     env.AppendUnique(CXXFLAGS=['/TP']) # assume all sources are C++
     if manual_msvc_config: # should be automatic if SCons found it
         if os.getenv("WindowsSdkDir") is not None:
-            env.Append(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
+            env.Prepend(CPPPATH=[os.getenv("WindowsSdkDir") + "/Include"])
         else:
             print("Missing environment variable: WindowsSdkDir")
 
@@ -239,7 +239,7 @@ def configure_msvc(env, manual_msvc_config):
             env.AppendUnique(LINKFLAGS=['/LTCG'])
 
     if manual_msvc_config:
-        env.Append(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
+        env.Prepend(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
         env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
 
     # Incremental linking fix
@@ -342,7 +342,7 @@ def configure_mingw(env):
 
 def configure(env):
     # At this point the env has been set up with basic tools/compilers.
-    env.Append(CPPPATH=['#platform/windows'])
+    env.Prepend(CPPPATH=['#platform/windows'])
 
     print("Configuring for Windows: target=%s, bits=%s" % (env['target'], env['bits']))
 

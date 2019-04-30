@@ -24,7 +24,7 @@ thirdparty_sources = [
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_vhacd.Append(CPPPATH=[thirdparty_dir+"/inc"])
+env_vhacd.Prepend(CPPPATH=[thirdparty_dir + "/inc"])
 env_vhacd.Append(CPPFLAGS=["-DGODOT_ENET"])
 
 # upstream uses c++11

@@ -23,7 +23,7 @@ if env['builtin_recast']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_recast.Append(CPPPATH=[thirdparty_dir + "/Include"])
+    env_recast.Prepend(CPPPATH=[thirdparty_dir + "/Include"])
 
     env_thirdparty = env_recast.Clone()
     env_thirdparty.disable_warnings()

@@ -201,7 +201,7 @@ def configure(env):
 
     if not env['builtin_miniupnpc']:
         # No pkgconfig file so far, hardcode default paths.
-        env.Append(CPPPATH=["/usr/include/miniupnpc"])
+        env.Prepend(CPPPATH=["/usr/include/miniupnpc"])
         env.Append(LIBS=["miniupnpc"])
 
     # On Linux wchar_t should be 32-bits
@@ -215,7 +215,7 @@ def configure(env):
     if not env['builtin_zlib']:
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
-    env.Append(CPPPATH=['#platform/server'])
+    env.Prepend(CPPPATH=['#platform/server'])
     env.Append(CPPFLAGS=['-DSERVER_ENABLED', '-DUNIX_ENABLED'])
 
     if (platform.system() == "Darwin"):

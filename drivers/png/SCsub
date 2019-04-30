@@ -26,9 +26,9 @@ if env['builtin_libpng']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_png.Append(CPPPATH=[thirdparty_dir])
+    env_png.Prepend(CPPPATH=[thirdparty_dir])
     # Needed for drivers includes and in platform/javascript
-    env.Append(CPPPATH=[thirdparty_dir])
+    env.Prepend(CPPPATH=[thirdparty_dir])
 
     # Currently .ASM filter_neon.S does not compile on NT.
     import os
