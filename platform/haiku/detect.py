@@ -137,7 +137,7 @@ def configure(env):
 
     if not env['builtin_miniupnpc']:
         # No pkgconfig file so far, hardcode default paths.
-        env.Append(CPPPATH=["/system/develop/headers/x86/miniupnpc"])
+        env.Prepend(CPPPATH=["/system/develop/headers/x86/miniupnpc"])
         env.Append(LIBS=["miniupnpc"])
 
     # On Linux wchar_t should be 32-bits
@@ -147,7 +147,7 @@ def configure(env):
 
     ## Flags
 
-    env.Append(CPPPATH=['#platform/haiku'])
+    env.Prepend(CPPPATH=['#platform/haiku'])
     env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
     env.Append(CPPFLAGS=['-DMEDIA_KIT_ENABLED'])
     # env.Append(CPPFLAGS=['-DFREETYPE_ENABLED'])

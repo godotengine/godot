@@ -206,7 +206,7 @@ if env['builtin_opus']:
 
     # also requires libogg
     if env['builtin_libogg']:
-        env_opus.Append(CPPPATH=["#thirdparty/libogg"])
+        env_opus.Prepend(CPPPATH=["#thirdparty/libogg"])
 
     env_opus.Append(CPPFLAGS=["-DHAVE_CONFIG_H"])
 
@@ -218,7 +218,7 @@ if env['builtin_opus']:
         "silk/fixed",
         "silk/float",
     ]
-    env_opus.Append(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
+    env_opus.Prepend(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
     if env["platform"] == "android":
         if ("android_arch" in env and env["android_arch"] in ["armv6", "armv7"]):

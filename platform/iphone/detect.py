@@ -165,12 +165,12 @@ def configure(env):
     if env['icloud']:
         env.Append(CPPFLAGS=['-DICLOUD_ENABLED'])
 
-    env.Append(CPPPATH=['$IPHONESDK/usr/include',
-                        '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers',
-                        '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers',
-                        ])
+    env.Prepend(CPPPATH=['$IPHONESDK/usr/include',
+                         '$IPHONESDK/System/Library/Frameworks/OpenGLES.framework/Headers',
+                         '$IPHONESDK/System/Library/Frameworks/AudioUnit.framework/Headers',
+                         ])
 
     env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 
-    env.Append(CPPPATH=['#platform/iphone'])
+    env.Prepend(CPPPATH=['#platform/iphone'])
     env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DCOREAUDIO_ENABLED'])

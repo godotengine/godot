@@ -299,7 +299,7 @@ def configure(env):
     env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] +
                         '/toolchains/' + target_subpath + '/prebuilt/' + host_subpath + '/' + abi_subpath + '/lib'])
 
-    env.Append(CPPPATH=['#platform/android'])
+    env.Prepend(CPPPATH=['#platform/android'])
     env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL'])
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'android', 'log', 'z', 'dl'])
 

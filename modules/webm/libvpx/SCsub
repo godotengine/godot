@@ -256,7 +256,7 @@ libvpx_sources_arm_neon_gas_apple = [libvpx_dir + file for file in libvpx_source
 
 env_libvpx = env_modules.Clone()
 env_libvpx.disable_warnings()
-env_libvpx.Append(CPPPATH=[libvpx_dir])
+env_libvpx.Prepend(CPPPATH=[libvpx_dir])
 
 webm_multithread = env["platform"] != 'javascript'
 
@@ -380,7 +380,7 @@ if webm_cpu_x86:
 elif webm_cpu_arm:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm)
     if env["platform"] == 'android':
-        env_libvpx.Append(CPPPATH=[libvpx_dir + "third_party/android"])
+        env_libvpx.Prepend(CPPPATH=[libvpx_dir + "third_party/android"])
         env_libvpx.add_source_files(env.modules_sources, [libvpx_dir + "third_party/android/cpu-features.c"])
 
     env_libvpx_neon = env_libvpx.Clone()

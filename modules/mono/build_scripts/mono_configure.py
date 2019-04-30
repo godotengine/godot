@@ -70,7 +70,7 @@ def configure(env, env_mono):
         mono_lib_path = os.path.join(mono_root, 'lib')
 
         env.Append(LIBPATH=mono_lib_path)
-        env_mono.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
+        env_mono.Prepend(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
         if mono_static:
             lib_suffix = Environment()['LIBSUFFIX']
@@ -153,7 +153,7 @@ def configure(env, env_mono):
             mono_lib_path = os.path.join(mono_root, 'lib')
 
             env.Append(LIBPATH=mono_lib_path)
-            env_mono.Append(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
+            env_mono.Prepend(CPPPATH=os.path.join(mono_root, 'include', 'mono-2.0'))
 
             mono_lib = find_file_in_dir(mono_lib_path, mono_lib_names, prefix='lib', extension='.a')
 

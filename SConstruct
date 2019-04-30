@@ -189,7 +189,7 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#editor', '#'])
+env_base.Prepend(CPPPATH=['#', '#editor'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters

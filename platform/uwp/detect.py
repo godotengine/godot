@@ -77,7 +77,7 @@ def configure(env):
 
     # ANGLE
     angle_root = os.getenv("ANGLE_SRC_PATH")
-    env.Append(CPPPATH=[angle_root + '/include'])
+    env.Prepend(CPPPATH=[angle_root + '/include'])
     jobs = str(env.GetOption("num_jobs"))
     angle_build_cmd = "msbuild.exe " + angle_root + "/winrt/10/src/angle.sln /nologo /v:m /m:" + jobs + " /p:Configuration=Release /p:Platform="
 
@@ -137,7 +137,7 @@ def configure(env):
 
     ## Compile flags
 
-    env.Append(CPPPATH=['#platform/uwp', '#drivers/windows'])
+    env.Prepend(CPPPATH=['#platform/uwp', '#drivers/windows'])
     env.Append(CPPFLAGS=['/DUWP_ENABLED', '/DWINDOWS_ENABLED', '/DTYPED_METHOD_BIND'])
     env.Append(CPPFLAGS=['/DGLES_ENABLED', '/DGL_GLEXT_PROTOTYPES', '/DEGL_EGLEXT_PROTOTYPES', '/DANGLE_ENABLED'])
     winver = "0x0602" # Windows 8 is the minimum target for UWP build
