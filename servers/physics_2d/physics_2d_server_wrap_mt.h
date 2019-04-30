@@ -140,7 +140,7 @@ public:
 	FUNC2(area_set_space_override_mode, RID, AreaSpaceOverrideMode);
 	FUNC1RC(AreaSpaceOverrideMode, area_get_space_override_mode, RID);
 
-	FUNC3(area_add_shape, RID, RID, const Transform2D &);
+	FUNC4(area_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(area_set_shape, RID, int, RID);
 	FUNC3(area_set_shape_transform, RID, int, const Transform2D &);
 	FUNC3(area_set_shape_disabled, RID, int, bool);
@@ -183,7 +183,7 @@ public:
 	FUNC2(body_set_mode, RID, BodyMode);
 	FUNC1RC(BodyMode, body_get_mode, RID);
 
-	FUNC3(body_add_shape, RID, RID, const Transform2D &);
+	FUNC4(body_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
 	FUNC3(body_set_shape_transform, RID, int, const Transform2D &);
 	FUNC3(body_set_shape_metadata, RID, int, const Variant &);
