@@ -467,6 +467,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);
+	_initial_set("text_editor/help_source_font_size", 14);
+	hints["text_editor/help/help_source_font_size"] = PropertyInfo(Variant::REAL, "text_editor/help/help_source_font_size", PROPERTY_HINT_RANGE, "10, 50, 1");
 
 	/* Editors */
 
