@@ -104,7 +104,6 @@ public:
 	float pitch_scale;
 	int oversampling;
 	FFT_Size fft_size;
-	int window_size; // Not used... could be removed, right?
 	float wet;
 	float dry;
 	bool filter;
