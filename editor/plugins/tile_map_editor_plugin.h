@@ -193,9 +193,10 @@ class TileMapEditor : public VBoxContainer {
 	void _palette_selected(int index);
 	void _palette_multi_selected(int index, bool selected);
 
+	Dictionary _create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 autotile_coord);
 	void _start_undo(const String &p_action);
 	void _finish_undo();
-	void _create_set_cell_undo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new);
+	void _create_set_cell_undo_redo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new);
 	void _set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, const Point2i p_autotile_coord = Point2());
 
 	void _canvas_mouse_enter();
