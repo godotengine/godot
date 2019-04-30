@@ -105,8 +105,12 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 	if (p_string.length() == 0)
 		return false;
 
-	String path_chars = "\"res://";
-	bool is_val_path = ScriptServer::get_language(language_menu->get_selected())->can_inherit_from_file();
+	if (ScriptServer::get_language(language_menu->get_selected())->can_inherit_from_file() && p_string.is_quoted()) {
+		String p = p_string.substr(1, p_string.length() - 2);
+		if (_validate_path(p, true) == "")
+			return true;
+	}
+
 	for (int i = 0; i < p_string.length(); i++) {
 
 		if (i == 0) {
@@ -114,23 +118,77 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 				return false; // no start with number plz
 		}
 
-		if (i == p_string.length() - 1 && is_val_path)
-			return p_string[i] == '\"';
-
-		if (is_val_path && i < path_chars.length()) {
-			if (p_string[i] != path_chars[i])
-				is_val_path = false;
-			else
-				continue;
-		}
-
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '-' || (is_val_path && (p_string[i] == '/' || p_string[i] == '.'));
+		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '-';
 
 		if (!valid_char)
 			return false;
 	}
 
 	return true;
+}
+
+String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
+
+	String p = p_path.strip_edges();
+
+	if (p == "") return TTR("Path is empty.");
+	if (p.get_file().get_basename() == "") return TTR("Filename is empty.");
+
+	p = ProjectSettings::get_singleton()->localize_path(p);
+	if (!p.begins_with("res://")) return TTR("Path is not local.");
+
+	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (d->change_dir(p.get_base_dir()) != OK) {
+		memdelete(d);
+		return TTR("Invalid base path.");
+	}
+	memdelete(d);
+
+	/* Does file already exist */
+	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (f->dir_exists(p)) {
+		memdelete(f);
+		return TTR("A directory with the same name exists.");
+	} else if (p_file_must_exist && !f->file_exists(p)) {
+		memdelete(f);
+		return TTR("File does not exist.");
+	}
+	memdelete(f);
+
+	/* Check file extension */
+	String extension = p.get_extension();
+	List<String> extensions;
+
+	// get all possible extensions for script
+	for (int l = 0; l < language_menu->get_item_count(); l++) {
+		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
+	}
+
+	bool found = false;
+	bool match = false;
+	int index = 0;
+	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
+		if (E->get().nocasecmp_to(extension) == 0) {
+			//FIXME (?) - changing language this way doesn't update controls, needs rework
+			//language_menu->select(index); // change Language option by extension
+			found = true;
+			if (E->get() == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
+				match = true;
+			}
+			break;
+		}
+		index++;
+	}
+
+	if (!found) return TTR("Invalid extension.");
+	if (!match) return TTR("Wrong extension chosen.");
+
+	/* Let ScriptLanguage do custom validation */
+	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
+	if (path_error != "") return path_error;
+
+	/* All checks passed */
+	return "";
 }
 
 void ScriptCreateDialog::_class_name_changed(const String &p_name) {
@@ -400,97 +458,22 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 
 	is_path_valid = false;
 	is_new_script_created = true;
-	String p = p_path.strip_edges();
 
-	if (p == "") {
-		_msg_path_valid(false, TTR("Path is empty."));
-		_update_dialog();
-		return;
-	}
-
-	if (p.get_file().get_basename() == "") {
-		_msg_path_valid(false, TTR("Filename is empty."));
-		_update_dialog();
-		return;
-	}
-
-	p = ProjectSettings::get_singleton()->localize_path(p);
-	if (!p.begins_with("res://")) {
-		_msg_path_valid(false, TTR("Path is not local."));
-		_update_dialog();
-		return;
-	}
-
-	DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (d->change_dir(p.get_base_dir()) != OK) {
-		_msg_path_valid(false, TTR("Invalid base path."));
-		memdelete(d);
-		_update_dialog();
-		return;
-	}
-	memdelete(d);
-
-	/* Does file already exist */
-
-	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (f->dir_exists(p)) {
-		is_new_script_created = false;
-		is_path_valid = false;
-		_msg_path_valid(false, TTR("A directory with the same name exists."));
-	} else if (f->file_exists(p)) {
-		is_new_script_created = false;
-		is_path_valid = true;
-		_msg_path_valid(true, TTR("File exists, it will be reused."));
-	}
-	memdelete(f);
-	_update_dialog();
-
-	/* Check file extension */
-
-	String extension = p.get_extension();
-	List<String> extensions;
-
-	// get all possible extensions for script
-	for (int l = 0; l < language_menu->get_item_count(); l++) {
-		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
-	}
-
-	bool found = false;
-	bool match = false;
-	int index = 0;
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(extension) == 0) {
-			//FIXME (?) - changing language this way doesn't update controls, needs rework
-			//language_menu->select(index); // change Language option by extension
-			found = true;
-			if (E->get() == ScriptServer::get_language(language_menu->get_selected())->get_extension()) {
-				match = true;
-			}
-			break;
-		}
-		index++;
-	}
-
-	if (!found) {
-		_msg_path_valid(false, TTR("Invalid extension."));
-		_update_dialog();
-		return;
-	}
-
-	if (!match) {
-		_msg_path_valid(false, TTR("Wrong extension chosen."));
-		_update_dialog();
-		return;
-	}
-
-	String path_error = ScriptServer::get_language(language_menu->get_selected())->validate_path(p);
+	String path_error = _validate_path(p_path, false);
 	if (path_error != "") {
 		_msg_path_valid(false, path_error);
 		_update_dialog();
 		return;
 	}
 
-	/* All checks passed */
+	/* Does file already exist */
+	DirAccess *f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	String p = ProjectSettings::get_singleton()->localize_path(p_path.strip_edges());
+	if (f->file_exists(p)) {
+		is_new_script_created = false;
+		_msg_path_valid(true, TTR("File exists, it will be reused."));
+	}
+	memdelete(f);
 
 	is_path_valid = true;
 	_update_dialog();
