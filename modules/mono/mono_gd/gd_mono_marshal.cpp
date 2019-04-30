@@ -184,8 +184,13 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_e
 							reftype, &key_reftype, &value_reftype, &exc);
 					UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
-					r_export_info->dictionary.key_type = managed_to_variant_type(ManagedType::from_reftype(key_reftype));
-					r_export_info->dictionary.value_type = managed_to_variant_type(ManagedType::from_reftype(value_reftype));
+					ManagedType key_type = ManagedType::from_reftype(key_reftype);
+					ManagedType value_type = ManagedType::from_reftype(value_reftype);
+
+					r_export_info->dictionary.key_type = managed_to_variant_type(key_type);
+					r_export_info->dictionary.key_native_name = NATIVE_GDMONOCLASS_NAME(key_type.type_class);
+					r_export_info->dictionary.value_type = managed_to_variant_type(value_type);
+					r_export_info->dictionary.value_native_name = NATIVE_GDMONOCLASS_NAME(value_type.type_class);
 				}
 
 				return Variant::DICTIONARY;
@@ -205,7 +210,10 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type, ExportInfo *r_e
 							reftype, &elem_reftype, &exc);
 					UNLIKELY_UNHANDLED_EXCEPTION(exc);
 
-					r_export_info->array.element_type = managed_to_variant_type(ManagedType::from_reftype(elem_reftype));
+					ManagedType elem_type = ManagedType::from_reftype(elem_reftype);
+
+					r_export_info->array.element_type = managed_to_variant_type(elem_type);
+					r_export_info->array.element_native_name = NATIVE_GDMONOCLASS_NAME(elem_type.type_class);
 				}
 
 				return Variant::ARRAY;

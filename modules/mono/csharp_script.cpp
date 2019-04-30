@@ -2285,8 +2285,9 @@ bool CSharpScript::_get_member_export(GDMonoClass *p_class, IMonoClassMember *p_
 		hint = PROPERTY_HINT_RESOURCE_TYPE;
 		hint_string = NATIVE_GDMONOCLASS_NAME(field_native_class);
 	} else if (variant_type == Variant::ARRAY && export_info.array.element_type != Variant::NIL) {
+		String elem_type_str = itos(export_info.array.element_type);
 		hint = PROPERTY_HINT_TYPE_STRING;
-		hint_string = itos(export_info.array.element_type) + ":";
+		hint_string = elem_type_str + "/" + elem_type_str + ":" + export_info.array.element_native_name;
 	} else if (variant_type == Variant::DICTIONARY && export_info.dictionary.key_type != Variant::NIL && export_info.dictionary.value_type != Variant::NIL) {
 		// TODO: There is no hint for this yet
 	} else {
