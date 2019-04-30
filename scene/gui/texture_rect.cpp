@@ -96,7 +96,7 @@ void TextureRect::_notification(int p_what) {
 		size.width *= hflip ? -1.0f : 1.0f;
 		size.height *= vflip ? -1.0f : 1.0f;
 
-		if (region.no_area()) {
+		if (region.has_no_area()) {
 			draw_texture_rect(texture, Rect2(offset, size), tile);
 		} else {
 			draw_texture_rect_region(texture, Rect2(offset, size), region);
