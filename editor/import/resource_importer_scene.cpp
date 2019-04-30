@@ -1290,7 +1290,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		Object::cast_to<Spatial>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
 	}
 
-	scene->set_name(p_options["nodes/root_name"]);
+	if (p_options["nodes/root_name"] != "Scene Root")
+		scene->set_name(p_options["nodes/root_name"]);
+	else
+		scene->set_name(p_save_path.get_file().get_basename());
 
 	err = OK;
 
