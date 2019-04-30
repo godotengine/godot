@@ -600,6 +600,8 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 	}
 
 	List<Vector2> coords;
+	List<uint32_t> priorities;
+	uint32_t priority_sum = 0;
 	uint32_t mask;
 	uint16_t mask_;
 	uint16_t mask_ignore;
@@ -613,16 +615,34 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 		mask_ignore = mask >> 16;
 
 		if (((mask_ & (~mask_ignore)) == (p_bitmask & (~mask_ignore))) && (((~mask_) | mask_ignore) == ((~p_bitmask) | mask_ignore))) {
-			for (int i = 0; i < autotile_get_subtile_priority(p_id, E->key()); i++) {
-				coords.push_back(E->key());
-			}
+			uint32_t priority = autotile_get_subtile_priority(p_id, E->key());
+			priority_sum += priority;
+			priorities.push_back(priority);
+			coords.push_back(E->key());
 		}
 	}
 
 	if (coords.size() == 0) {
 		return autotile_get_icon_coordinate(p_id);
 	} else {
-		return coords[Math::rand() % coords.size()];
+		uint32_t picked_value = Math::rand() % priority_sum;
+		uint32_t upper_bound;
+		uint32_t lower_bound = 0;
+		Vector2 result = coords.front()->get();
+		List<Vector2>::Element *coords_E = coords.front();
+		List<uint32_t>::Element *priorities_E = priorities.front();
+		while (priorities_E) {
+			upper_bound = lower_bound + priorities_E->get();
+			if (lower_bound <= picked_value && picked_value < upper_bound) {
+				result = coords_E->get();
+				break;
+			}
+			lower_bound = upper_bound;
+			priorities_E = priorities_E->next();
+			coords_E = coords_E->next();
+		}
+
+		return result;
 	}
 }
 
