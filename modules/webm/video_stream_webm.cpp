@@ -321,8 +321,8 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							unsigned char *rRow = image.planes[2];
 							unsigned char *gRow = image.planes[0];
 							unsigned char *bRow = image.planes[1];
-							for (size_t i = 0; i < image.h; i++) {
-								for (size_t j = 0; j < image.w; j++) {
+							for (int i = 0; i < image.h; i++) {
+								for (int j = 0; j < image.w; j++) {
 									*wp++ = rRow[j];
 									*wp++ = gRow[j];
 									*wp++ = bRow[j];
