@@ -212,7 +212,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _input(const Ref<InputEvent> &p_event);
 
-	void _generic_search();
+	void _generic_search(String p_base_type = "");
 
 	void _members_gui_input(const Ref<InputEvent> &p_event);
 	void _on_nodes_delete();
