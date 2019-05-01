@@ -103,7 +103,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type);
 	String get_preferred_search_result_type();
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, StringName *original_node_class = NULL);
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, StringName *class_to_replace = NULL);
 
 	CreateDialog();
 };
