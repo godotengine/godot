@@ -62,13 +62,6 @@ if env['builtin_freetype']:
         # Globally too, as freetype is used in scene (see bottom)
         env.Append(CCFLAGS=['/FI', '"modules/freetype/uwpdef.h"'])
 
-    sfnt = thirdparty_dir + 'src/sfnt/sfnt.c'
-    if env['platform'] == 'javascript':
-        # Forcibly undefine this macro so SIMD is not used in this file,
-        # since currently unsupported in WASM
-        sfnt = env_freetype.Object(sfnt, CPPFLAGS=['-U__OPTIMIZE__'])
-    thirdparty_sources += [sfnt]
-
     env_freetype.Append(CPPPATH=[thirdparty_dir + "/include"])
     # Also needed in main env for scene/
     env.Append(CPPPATH=[thirdparty_dir + "/include"])
@@ -80,6 +73,16 @@ if env['builtin_freetype']:
     # Also requires libpng headers
     if env['builtin_libpng']:
         env_freetype.Append(CPPPATH=["#thirdparty/libpng"])
+
+    sfnt = thirdparty_dir + 'src/sfnt/sfnt.c'
+    # Must be done after all CPPFLAGS are being set so we can copy them.
+    if env['platform'] == 'javascript':
+        # Forcibly undefine this macro so SIMD is not used in this file,
+        # since currently unsupported in WASM
+        tmp_env = env_freetype.Clone()
+        tmp_env.Append(CPPFLAGS=['-U__OPTIMIZE__'])
+        sfnt = tmp_env.Object(sfnt)
+    thirdparty_sources += [sfnt]
 
     env_thirdparty = env_freetype.Clone()
     env_thirdparty.disable_warnings()
