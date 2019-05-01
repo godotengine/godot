@@ -72,9 +72,11 @@ if env['builtin_freetype']:
     # Also needed in main env for scene/
     env.Prepend(CPPPATH=[thirdparty_dir + "/include"])
 
-    env_freetype.Append(CPPFLAGS=['-DFT2_BUILD_LIBRARY', '-DFT_CONFIG_OPTION_USE_PNG'])
+    # Emscripten (JS export) does not seem to like CPPFLAGS.
+    # And this is a C library, let's use CCFLAGS.
+    env_freetype.Append(CCFLAGS=['-DFT2_BUILD_LIBRARY', '-DFT_CONFIG_OPTION_USE_PNG'])
     if (env['target'] != 'release'):
-        env_freetype.Append(CPPFLAGS=['-DZLIB_DEBUG'])
+        env_freetype.Append(CCFLAGS=['-DZLIB_DEBUG'])
 
     # Also requires libpng headers
     if env['builtin_libpng']:
