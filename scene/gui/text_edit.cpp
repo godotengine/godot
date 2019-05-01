@@ -2597,6 +2597,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				FALLTHROUGH;
 			}
+#ifdef APPLE_STYLE_KEYS
+			case KEY_B: {
+				if (!k->get_control()) {
+					scancode_handled = false;
+					break;
+				}
+				FALLTHROUGH;
+			}
+#endif
 			case KEY_LEFT: {
 
 				if (k->get_shift())
@@ -2673,6 +2682,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				FALLTHROUGH;
 			}
+#ifdef APPLE_STYLE_KEYS
+			case KEY_F: {
+				if (!k->get_control()) {
+					scancode_handled = false;
+					break;
+				}
+				FALLTHROUGH;
+			}
+#endif
 			case KEY_RIGHT: {
 
 				if (k->get_shift())
@@ -2734,6 +2752,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				FALLTHROUGH;
 			}
+#ifdef APPLE_STYLE_KEYS
+			case KEY_P: {
+				if (!k->get_control()) {
+					scancode_handled = false;
+					break;
+				}
+				FALLTHROUGH;
+			}
+#endif
 			case KEY_UP: {
 
 				if (k->get_alt()) {
@@ -2787,6 +2814,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				}
 				FALLTHROUGH;
 			}
+#ifdef APPLE_STYLE_KEYS
+			case KEY_N: {
+				if (!k->get_control()) {
+					scancode_handled = false;
+					break;
+				}
+				FALLTHROUGH;
+			}
+#endif
 			case KEY_DOWN: {
 
 				if (k->get_alt()) {
