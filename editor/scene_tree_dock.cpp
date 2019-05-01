@@ -391,7 +391,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 			script_create_dialog->config(inherits, path);
-			script_create_dialog->popup_centered();
+			script_create_dialog->popup_centered(Size2(300, 300) * EDSCALE);
 
 		} break;
 		case TOOL_CLEAR_SCRIPT: {
