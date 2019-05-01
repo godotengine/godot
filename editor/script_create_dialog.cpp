@@ -511,17 +511,15 @@ void ScriptCreateDialog::_update_dialog() {
 
 	// Is Script Valid (order from top to bottom)
 	get_ok()->set_disabled(true);
-	if (!is_built_in) {
-		if (!is_path_valid) {
-			_msg_script_valid(false, TTR("Invalid path."));
-			script_ok = false;
-		}
+	if (!is_built_in && !is_path_valid) {
+		_msg_script_valid(false, TTR("Invalid path."));
+		script_ok = false;
 	}
 	if (has_named_classes && (is_new_script_created && !is_class_name_valid)) {
 		_msg_script_valid(false, TTR("Invalid class name."));
 		script_ok = false;
 	}
-	if (!is_parent_name_valid) {
+	if (!is_parent_name_valid && is_new_script_created) {
 		_msg_script_valid(false, TTR("Invalid inherited parent name or path."));
 		script_ok = false;
 	}
