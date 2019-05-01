@@ -192,9 +192,9 @@ static void _compress_pvrtc4(Image *p_img) {
 	Ref<Image> img = p_img->duplicate();
 
 	bool make_mipmaps = false;
-	if (img->get_width() % 8 || img->get_height() % 8) {
+	if (!img->is_size_po2() || img->get_width() != img->get_height()) {
 		make_mipmaps = img->has_mipmaps();
-		img->resize(img->get_width() + (8 - (img->get_width() % 8)), img->get_height() + (8 - (img->get_height() % 8)));
+		img->resize_to_po2(true);
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	if (!img->has_mipmaps() && make_mipmaps)
@@ -204,7 +204,7 @@ static void _compress_pvrtc4(Image *p_img) {
 
 	Ref<Image> new_img;
 	new_img.instance();
-	new_img->create(img->get_width(), img->get_height(), true, use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
+	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
 
 	PoolVector<uint8_t> data = new_img->get_data();
 	{
@@ -221,7 +221,6 @@ static void _compress_pvrtc4(Image *p_img) {
 				/* red and Green colors are swapped.  */
 				new (dp) Javelin::ColorRgba<unsigned char>(r[ofs + 4 * j + 2], r[ofs + 4 * j + 1], r[ofs + 4 * j], r[ofs + 4 * j + 3]);
 			}
-
 			new_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::PvrTcEncoder::EncodeRgba4Bpp(&wr[ofs], bm);
 		}
