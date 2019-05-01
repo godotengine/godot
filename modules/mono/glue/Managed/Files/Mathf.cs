@@ -79,14 +79,27 @@ namespace Godot
             return (real_t)Math.Cosh(s);
         }
 
-        public static int Decimals(real_t step)
+        public static int StepDecimals(real_t step)
         {
-            return Decimals((decimal)step);
-        }
-
-        public static int Decimals(decimal step)
-        {
-            return BitConverter.GetBytes(decimal.GetBits(step)[3])[2];
+            double[] sd = new double[] {
+                0.9999,
+                0.09999,
+                0.009999,
+                0.0009999,
+                0.00009999,
+                0.000009999,
+                0.0000009999,
+                0.00000009999,
+                0.000000009999,
+            };
+            double abs = Mathf.Abs(step);
+            double decs = abs - (int)abs; // Strip away integer part
+            for (int i = 0; i < sd.Length; i++) {
+                if (decs >= sd[i]) {
+                    return i;
+                }
+            }
+            return 0;
         }
 
         public static real_t Deg2Rad(real_t deg)
