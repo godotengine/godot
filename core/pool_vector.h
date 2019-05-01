@@ -442,14 +442,51 @@ public:
 	}
 
 	String join(String delimiter) {
-		String rs = "";
 		int s = size();
+		if (s <= 0)
+			return "";
+
+		// determine string length
 		Read r = read();
+		int delim_length = delimiter.length();
+		int string_length = -delim_length; // skip last delimiter
 		for (int i = 0; i < s; i++) {
-			rs += r[i] + delimiter;
+			string_length += r[i].length() + delim_length;
 		}
-		rs.erase(rs.length() - delimiter.length(), delimiter.length());
-		return rs;
+
+		if (string_length <= 0)
+			return "";
+
+		CharType *buffer = memnew_arr(CharType, string_length);
+		int current_position = 0;
+
+		for (int i = 0; i < s; i++) {
+			// copy delimiter
+			if (delim_length > 0 && i >= 1) {
+				memcpy(buffer + current_position, delimiter.ptr(), delim_length * sizeof(CharType));
+
+				current_position += delim_length;
+			}
+
+			// copy string
+			const String &str = r[i];
+			int sl = str.length();
+
+			if (sl > 0) {
+				memcpy(buffer + current_position, str.ptr(), sl * sizeof(CharType));
+
+				current_position += sl;
+			}
+		}
+
+		// done
+		CRASH_COND(current_position != string_length);
+
+		String final_string = String(buffer, string_length);
+
+		memdelete_arr(buffer);
+
+		return final_string;
 	}
 
 	bool is_locked() const { return alloc && alloc->lock > 0; }
