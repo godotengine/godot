@@ -93,14 +93,14 @@ Size2 PopupMenu::get_minimum_size() const {
 		if (items[i].submenu != "")
 			size.width += get_icon("submenu")->get_width();
 
-		if (has_check)
-			size.width += check_w;
-		max_w = MAX(max_w, size.width + icon_w);
+		max_w = MAX(max_w, size.width);
 
 		minsize.height += size.height;
 	}
 
-	minsize.width += max_w + accel_max_w;
+	minsize.width += max_w + icon_w + accel_max_w;
+	if (has_check)
+		minsize.width += check_w;
 
 	return minsize;
 }
