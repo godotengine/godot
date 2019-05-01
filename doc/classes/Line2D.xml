@@ -99,6 +99,9 @@
 		<member name="width" type="float" setter="set_width" getter="get_width">
 			The line's width.
 		</member>
+		<member name="width_curve" type="Curve" setter="set_curve" getter="get_curve">
+			The line's width varies with the curve. The original width is simply multiply by the value of the Curve.
+		</member>
 	</members>
 	<constants>
 		<constant name="LINE_JOINT_SHARP" value="0" enum="LineJointMode">

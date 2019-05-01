@@ -84,10 +84,10 @@ void Line2D::set_points(const PoolVector<Vector2> &p_points) {
 	update();
 }
 
-void Line2D::set_width(float width) {
-	if (width < 0.0)
-		width = 0.0;
-	_width = width;
+void Line2D::set_width(float p_width) {
+	if (p_width < 0.0)
+		p_width = 0.0;
+	_width = p_width;
 	update();
 }
 
@@ -95,12 +95,32 @@ float Line2D::get_width() const {
 	return _width;
 }
 
+void Line2D::set_curve(const Ref<Curve> &p_curve) {
+	// Cleanup previous connection if any
+	if (_curve.is_valid()) {
+		_curve->disconnect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
+	}
+
+	_curve = p_curve;
+
+	// Connect to the curve so the line will update when it is changed
+	if (_curve.is_valid()) {
+		_curve->connect(CoreStringNames::get_singleton()->changed, this, "_curve_changed");
+	}
+
+	update();
+}
+
+Ref<Curve> Line2D::get_curve() const {
+	return _curve;
+}
+
 PoolVector<Vector2> Line2D::get_points() const {
 	return _points;
 }
 
-void Line2D::set_point_position(int i, Vector2 pos) {
-	_points.set(i, pos);
+void Line2D::set_point_position(int i, Vector2 p_pos) {
+	_points.set(i, p_pos);
 	update();
 }
 
@@ -120,11 +140,11 @@ void Line2D::clear_points() {
 	}
 }
 
-void Line2D::add_point(Vector2 pos, int atpos) {
-	if (atpos < 0 || _points.size() < atpos) {
-		_points.append(pos);
+void Line2D::add_point(Vector2 p_pos, int p_atpos) {
+	if (p_atpos < 0 || _points.size() < p_atpos) {
+		_points.append(p_pos);
 	} else {
-		_points.insert(atpos, pos);
+		_points.insert(p_atpos, p_pos);
 	}
 	update();
 }
@@ -134,8 +154,8 @@ void Line2D::remove_point(int i) {
 	update();
 }
 
-void Line2D::set_default_color(Color color) {
-	_default_color = color;
+void Line2D::set_default_color(Color p_color) {
+	_default_color = p_color;
 	update();
 }
 
@@ -143,18 +163,18 @@ Color Line2D::get_default_color() const {
 	return _default_color;
 }
 
-void Line2D::set_gradient(const Ref<Gradient> &gradient) {
+void Line2D::set_gradient(const Ref<Gradient> &p_gradient) {
 
 	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
-		(**_gradient).disconnect(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
+		_gradient->disconnect(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
 	}
 
-	_gradient = gradient;
+	_gradient = p_gradient;
 
 	// Connect to the gradient so the line will update when the ColorRamp is changed
 	if (_gradient.is_valid()) {
-		(**_gradient).connect(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
+		_gradient->connect(CoreStringNames::get_singleton()->changed, this, "_gradient_changed");
 	}
 
 	update();
@@ -164,8 +184,8 @@ Ref<Gradient> Line2D::get_gradient() const {
 	return _gradient;
 }
 
-void Line2D::set_texture(const Ref<Texture> &texture) {
-	_texture = texture;
+void Line2D::set_texture(const Ref<Texture> &p_texture) {
+	_texture = p_texture;
 	update();
 }
 
@@ -173,8 +193,8 @@ Ref<Texture> Line2D::get_texture() const {
 	return _texture;
 }
 
-void Line2D::set_texture_mode(const LineTextureMode mode) {
-	_texture_mode = mode;
+void Line2D::set_texture_mode(const LineTextureMode p_mode) {
+	_texture_mode = p_mode;
 	update();
 }
 
@@ -182,8 +202,8 @@ Line2D::LineTextureMode Line2D::get_texture_mode() const {
 	return _texture_mode;
 }
 
-void Line2D::set_joint_mode(LineJointMode mode) {
-	_joint_mode = mode;
+void Line2D::set_joint_mode(LineJointMode p_mode) {
+	_joint_mode = p_mode;
 	update();
 }
 
@@ -191,8 +211,8 @@ Line2D::LineJointMode Line2D::get_joint_mode() const {
 	return _joint_mode;
 }
 
-void Line2D::set_begin_cap_mode(LineCapMode mode) {
-	_begin_cap_mode = mode;
+void Line2D::set_begin_cap_mode(LineCapMode p_mode) {
+	_begin_cap_mode = p_mode;
 	update();
 }
 
@@ -200,8 +220,8 @@ Line2D::LineCapMode Line2D::get_begin_cap_mode() const {
 	return _begin_cap_mode;
 }
 
-void Line2D::set_end_cap_mode(LineCapMode mode) {
-	_end_cap_mode = mode;
+void Line2D::set_end_cap_mode(LineCapMode p_mode) {
+	_end_cap_mode = p_mode;
 	update();
 }
 
@@ -217,10 +237,10 @@ void Line2D::_notification(int p_what) {
 	}
 }
 
-void Line2D::set_sharp_limit(float limit) {
-	if (limit < 0.f)
-		limit = 0.f;
-	_sharp_limit = limit;
+void Line2D::set_sharp_limit(float p_limit) {
+	if (p_limit < 0.f)
+		p_limit = 0.f;
+	_sharp_limit = p_limit;
 	update();
 }
 
@@ -228,10 +248,10 @@ float Line2D::get_sharp_limit() const {
 	return _sharp_limit;
 }
 
-void Line2D::set_round_precision(int precision) {
-	if (precision < 1)
-		precision = 1;
-	_round_precision = precision;
+void Line2D::set_round_precision(int p_precision) {
+	if (p_precision < 1)
+		p_precision = 1;
+	_round_precision = p_precision;
 	update();
 }
 
@@ -267,10 +287,11 @@ void Line2D::_draw() {
 	lb.round_precision = _round_precision;
 	lb.sharp_limit = _sharp_limit;
 	lb.width = _width;
+	lb.curve = *_curve;
 
 	RID texture_rid;
 	if (_texture.is_valid()) {
-		texture_rid = (**_texture).get_rid();
+		texture_rid = _texture->get_rid();
 
 		lb.tile_aspect = _texture->get_size().aspect();
 	}
@@ -311,6 +332,10 @@ void Line2D::_gradient_changed() {
 	update();
 }
 
+void Line2D::_curve_changed() {
+	update();
+}
+
 // static
 void Line2D::_bind_methods() {
 
@@ -329,6 +354,9 @@ void Line2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &Line2D::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &Line2D::get_width);
+
+	ClassDB::bind_method(D_METHOD("set_curve", "curve"), &Line2D::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve"), &Line2D::get_curve);
 
 	ClassDB::bind_method(D_METHOD("set_default_color", "color"), &Line2D::set_default_color);
 	ClassDB::bind_method(D_METHOD("get_default_color"), &Line2D::get_default_color);
@@ -359,6 +387,7 @@ void Line2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
 	ADD_GROUP("Fill", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
@@ -385,4 +414,5 @@ void Line2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(LINE_TEXTURE_STRETCH);
 
 	ClassDB::bind_method(D_METHOD("_gradient_changed"), &Line2D::_gradient_changed);
+	ClassDB::bind_method(D_METHOD("_curve_changed"), &Line2D::_curve_changed);
 }
