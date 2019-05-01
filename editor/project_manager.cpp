@@ -997,7 +997,7 @@ void ProjectManager::_update_project_buttons() {
 		}
 	}
 	for (Map<String, String>::Element *E = list_all_projects.front(); E; E = E->next()) {
-		String project_name = E->key().replace("::", "/") + "/project.godot";
+		String project_name = E->key().replace(":::", ":/").replace("::", "/") + "/project.godot";
 		if (!FileAccess::exists(project_name)) {
 			missing_projects = true;
 			break;
@@ -1735,7 +1735,7 @@ void ProjectManager::_erase_missing_projects_confirm() {
 	int deleted_projects = 0;
 	int remaining_projects = 0;
 	for (Map<String, String>::Element *E = list_all_projects.front(); E; E = E->next()) {
-		String project_name = E->key().replace("::", "/") + "/project.godot";
+		String project_name = E->key().replace(":::", ":/").replace("::", "/") + "/project.godot";
 		if (!FileAccess::exists(project_name)) {
 			deleted_projects++;
 			EditorSettings::get_singleton()->erase("projects/" + E->key());
