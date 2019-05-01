@@ -387,26 +387,34 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 			draw_center--;
 		}
 
+		float src_area = draw_size - margin_begin - margin_end;
+		float dst_area = tex_size - margin_begin - margin_end;
 		if (np_repeat == 0) { //stretch
 			//convert to ratio
-			float ratio = (pixel - margin_begin) / (draw_size - margin_begin - margin_end);
+			float ratio = (pixel - margin_begin) / src_area;
 			//scale to source texture
-			return (margin_begin + ratio * (tex_size - margin_begin - margin_end)) * tex_pixel_size;
+			return (margin_begin + ratio * dst_area) * tex_pixel_size;
 		} else if (np_repeat == 1) { //tile
 			//convert to ratio
-			float ofs = mod((pixel - margin_begin), tex_size - margin_begin - margin_end);
+			float ofs = mod((pixel - margin_begin), dst_area);
 			//scale to source texture
 			return (margin_begin + ofs) * tex_pixel_size;
 		} else if (np_repeat == 2) { //tile fit
 			//convert to ratio
-			float src_area = draw_size - margin_begin - margin_end;
-			float dst_area = tex_size - margin_begin - margin_end;
 			float scale = max(1.0, floor(src_area / max(dst_area, 0.0000001) + 0.5));
-
-			//convert to ratio
 			float ratio = (pixel - margin_begin) / src_area;
 			ratio = mod(ratio * scale, 1.0);
 			return (margin_begin + ratio * dst_area) * tex_pixel_size;
+		} else if (np_repeat == 3) { //center
+			float center = (src_area - dst_area) / 2.0;
+			if (pixel <= margin_begin + center) {
+				// stretch begin
+				return (margin_begin + 1) * tex_pixel_size;
+			} else if (pixel >= draw_size - margin_end - center) {
+				// stretch end
+				return (tex_size - margin_end - 1) * tex_pixel_size;
+			}
+			return (pixel - center) * tex_pixel_size;
 		}
 	}
 }
