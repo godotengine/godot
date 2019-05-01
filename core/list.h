@@ -503,8 +503,7 @@ public:
 		if (p_I->prev_ptr)
 			p_I->prev_ptr->next_ptr = p_I->next_ptr;
 
-		if (p_I->next_ptr)
-			p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+		p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 
 		_data->last->next_ptr = p_I;
 		p_I->prev_ptr = _data->last;
@@ -538,8 +537,7 @@ public:
 		if (_data->last == p_I)
 			_data->last = p_I->prev_ptr;
 
-		if (p_I->prev_ptr)
-			p_I->prev_ptr->next_ptr = p_I->next_ptr;
+		p_I->prev_ptr->next_ptr = p_I->next_ptr;
 
 		if (p_I->next_ptr)
 			p_I->next_ptr->prev_ptr = p_I->prev_ptr;

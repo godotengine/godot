@@ -441,7 +441,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";

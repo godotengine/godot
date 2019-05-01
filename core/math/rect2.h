@@ -67,7 +67,7 @@ struct Rect2 {
 
 		if (p_point.x < position.x) {
 			real_t d = position.x - p_point.x;
-			dist = inside ? d : MIN(dist, d);
+			dist = d;
 			inside = false;
 		}
 		if (p_point.y < position.y) {

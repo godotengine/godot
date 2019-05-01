@@ -1471,10 +1471,14 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 					if (!use_single_axis || use_y) control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, false);
 					break;
 				case DRAG_ANCHOR_ALL:
-					if (!use_single_axis || !use_y) control->set_anchor(MARGIN_LEFT, new_anchor.x, false, true);
-					if (!use_single_axis || !use_y) control->set_anchor(MARGIN_RIGHT, new_anchor.x, false, true);
-					if (!use_single_axis || use_y) control->set_anchor(MARGIN_TOP, new_anchor.y, false, true);
-					if (!use_single_axis || use_y) control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, true);
+					if (!use_single_axis || !use_y) {
+						control->set_anchor(MARGIN_LEFT, new_anchor.x, false, true);
+						control->set_anchor(MARGIN_RIGHT, new_anchor.x, false, true);
+					}
+					if (!use_single_axis || use_y) {
+						control->set_anchor(MARGIN_TOP, new_anchor.y, false, true);
+						control->set_anchor(MARGIN_BOTTOM, new_anchor.y, false, true);
+					}
 					break;
 				default:
 					break;
