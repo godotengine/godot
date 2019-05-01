@@ -423,6 +423,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("completion", "TextEdit", make_stylebox(tree_bg_png, 3, 3, 3, 3, 0, 0, 0, 0));
 
 	theme->set_icon("tab", "TextEdit", make_icon(tab_png));
+	theme->set_icon("space", "TextEdit", make_icon(space_png));
 	theme->set_icon("folded", "TextEdit", make_icon(arrow_right_png));
 	theme->set_icon("fold", "TextEdit", make_icon(arrow_down_png));
 
