@@ -1,0 +1,41 @@
+#
+# RPM macros for godot
+#
+%__godot %{_bindir}/godot-headless
+
+# Macro: Prepare an export_presets.cfg file in the game's source.
+#        It will replace any of the custom_template/release fields
+#        with one that has a value of /usr/bin/godot-runner.
+# 
+# usage: %godot_prep [-f]
+#
+#   -f: Copy the installed export_presets.cfg file to game's source 
+#       even if one is already provided.
+#
+%godot_prep(f) \
+%__mkdir_p $HOME/.config/godot $HOME/.cache \
+if [ ! -f export_presets.cfg ] || [ -n "%{!-f:''}%{-f:"1"}" ]; then \
+  %__cp -fp %{_datadir}/godot/export_presets.cfg export_presets.cfg \
+fi \
+%__sed -i '/template\/release/ s/=\"\"/=\"\/usr\/bin\/godot\-runner\"/g' export_presets.cfg \
+%nil
+
+# Macro: Export game's data into PCK file. The file will be saved in the
+#        source directory with the name <package name>_<preset name>.pck.
+#
+#        usage:   %godot_export [-e preset]
+#
+#        preset:  Name of export preset within export_presets.cfg config.
+#                 Default value is 'Linux/X11'
+#
+%godot_export(e:) \
+preset="$(echo %{-e:%{-e*}})" \
+[ -z $preset ] && preset="Linux/X11" \
+suffix=$(echo "$preset" | tr '/' '_' | tr -d '[:space:]') \
+if grep "$preset" export_presets.cfg; then \
+  %__godot -v --path ./ --export "$preset" "%{name}_${suffix,,}.pck" \
+else \
+  echo "Export preset does not exist" \
+  exit 1 \
+fi \
+%nil
