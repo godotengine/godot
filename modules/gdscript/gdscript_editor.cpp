@@ -1951,7 +1951,7 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 					} else {
 						base_type.has_type = script->get_instance_base_type() != StringName();
 						base_type.kind = GDScriptParser::DataType::NATIVE;
-						base_type.script_type = script->get_instance_base_type();
+						base_type.native_type = script->get_instance_base_type();
 					}
 				} else {
 					return;
