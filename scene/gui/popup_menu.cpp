@@ -449,7 +449,7 @@ void PopupMenu::_notification(int p_what) {
 			for (int i = 0; i < items.size(); i++) {
 
 				if (!items[i].icon.is_null())
-					icon_ofs = MAX(items[i].icon->get_size().height, icon_ofs);
+					icon_ofs = MAX(items[i].icon->get_size().width, icon_ofs);
 
 				if (items[i].checkable_type)
 					has_check = true;
