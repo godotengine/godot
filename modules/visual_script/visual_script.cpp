@@ -45,15 +45,7 @@ bool VisualScriptNode::is_breakpoint() const {
 	return breakpoint;
 }
 
-void VisualScriptNode::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		validate_input_default_values();
-	}
-}
-
 void VisualScriptNode::ports_changed_notify() {
-	validate_input_default_values();
 	emit_signal("ports_changed");
 }
 
@@ -272,11 +264,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 	Function &func = functions[function];
 	Ref<VisualScriptNode> vsn = func.nodes[p_id].node;
 
-	if (OS::get_singleton()->get_main_loop() &&
-			Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop()) &&
-			Engine::get_singleton()->is_editor_hint()) {
-		vsn->validate_input_default_values(); //force validate default values when editing on editor
-	}
+	vsn->validate_input_default_values();
 
 	//must revalidate all the functions
 
@@ -352,6 +340,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 	Ref<VisualScriptNode> vsn = p_node;
 	vsn->connect("ports_changed", this, "_node_ports_changed", varray(p_id));
 	vsn->scripts_used.insert(this);
+	vsn->validate_input_default_values(); // Validate when fully loaded
 
 	func.nodes[p_id] = nd;
 }
