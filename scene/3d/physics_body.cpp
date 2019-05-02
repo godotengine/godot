@@ -1181,19 +1181,16 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	while (p_max_slides) {
 
 		Collision collision;
-
 		bool found_collision = false;
 
-		int test_type = 0;
-
-		do {
+		for (int i = 0; i < 2; ++i) {
 			bool collided;
-			if (test_type == 0) { //collide
+			if (i == 0) { //collide
 				collided = move_and_collide(motion, p_infinite_inertia, collision);
 				if (!collided) {
 					motion = Vector3(); //clear because no collision happened and motion completed
 				}
-			} else {
+			} else { //separate raycasts (if any)
 				collided = separate_raycast_shapes(p_infinite_inertia, collision);
 				if (collided) {
 					collision.remainder = motion; //keep
@@ -1219,7 +1216,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if ((lv_n + p_floor_direction).length() < 0.01) {
+							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel;
 								set_global_transform(gt);
@@ -1240,21 +1237,18 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					motion = motion.slide(p_floor_direction);
 					lv = lv.slide(p_floor_direction);
 				} else {
-
 					Vector3 n = collision.normal;
 					motion = motion.slide(n);
 					lv = lv.slide(n);
 				}
 
-				for (int i = 0; i < 3; i++) {
-					if (locked_axis & (1 << i)) {
-						lv[i] = 0;
+				for (int j = 0; j < 3; j++) {
+					if (locked_axis & (1 << j)) {
+						lv[j] = 0;
 					}
 				}
 			}
-
-			++test_type;
-		} while (!p_stop_on_slope && test_type < 2);
+		}
 
 		if (!found_collision || motion == Vector3())
 			break;

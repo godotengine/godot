@@ -39,6 +39,9 @@
 	@author AndreaCatania
 */
 
+// Epsilon to account for floating point inaccuracies
+#define RAY_PENETRATION_DEPTH_EPSILON 0.01
+
 GodotRayWorldAlgorithm::CreateFunc::CreateFunc(const btDiscreteDynamicsWorld *world) :
 		m_world(world) {}
 
@@ -100,8 +103,8 @@ void GodotRayWorldAlgorithm::processCollision(const btCollisionObjectWrapper *bo
 
 		btScalar depth(ray_shape->getScaledLength() * (btResult.m_closestHitFraction - 1));
 
-		if (depth >= -ray_shape->getMargin() * 0.5)
-			depth = 0;
+		if (depth > -RAY_PENETRATION_DEPTH_EPSILON)
+			depth = 0.0;
 
 		if (ray_shape->getSlipsOnSlope())
 			resultOut->addContactPoint(btResult.m_hitNormalWorld, btResult.m_hitPointWorld, depth);
