@@ -748,10 +748,10 @@
 			</return>
 			<argument index="0" name="from" type="int">
 			</argument>
-			<argument index="1" name="len" type="int">
+			<argument index="1" name="len" type="int" default="-1">
 			</argument>
 			<description>
-				Returns part of the string from the position [code]from[/code] with length [code]len[/code].
+				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using -1 will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii">

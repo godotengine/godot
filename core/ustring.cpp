@@ -2292,6 +2292,9 @@ String String::insert(int p_at_pos, const String &p_string) const {
 }
 String String::substr(int p_from, int p_chars) const {
 
+	if (p_chars == -1)
+		p_chars = length() - p_from;
+
 	if (empty() || p_from < 0 || p_from >= length() || p_chars <= 0)
 		return "";
 
