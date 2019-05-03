@@ -37,6 +37,7 @@
 #include "core/translation.h"
 #include "core/ucaps.h"
 #include "core/variant.h"
+#include "core/string_builder.h"
 
 #include "thirdparty/misc/md5.h"
 #include "thirdparty/misc/sha256.h"
@@ -950,14 +951,15 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 }
 
 String String::join(Vector<String> parts) {
-	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
+	int ps = parts.size();
+	StringBuilder sb;
+	for (int i = 0; i < ps; ++i) {
 		if (i > 0) {
-			ret += *this;
+			sb.append(*this);
 		}
-		ret += parts[i];
+		sb.append(parts[i]);
 	}
-	return ret;
+	return sb;
 }
 
 CharType String::char_uppercase(CharType p_char) {

@@ -32,21 +32,35 @@
 #define STRING_BUILDER_H
 
 #include "core/ustring.h"
-
-#include "core/vector.h"
+#include "core/cowdata.h"
 
 class StringBuilder {
 
+	struct Chunk {
+
+		const char* str_ptr;
+		String str_string; // if 'str_ptr' == nullptr
+		uint32_t length;
+
+		_FORCE_INLINE_ Chunk& operator = (const Chunk& c) { str_ptr = c.str_ptr; str_string = c.str_string; length = c.length; return *this; }
+		_FORCE_INLINE_ Chunk(const String& s) : str_ptr(nullptr), str_string(s), length((uint32_t)s.length()) {}
+		_FORCE_INLINE_ Chunk(const char* s) : str_ptr(s), length((uint32_t)strlen(s)) {}
+		_FORCE_INLINE_ Chunk() : str_ptr(nullptr), length(0) {}
+		_FORCE_INLINE_ ~Chunk() {}
+
+	};
+
 	uint32_t string_length;
+	int chunks_count;
 
-	Vector<String> strings;
-	Vector<const char *> c_strings;
+	CowData<Chunk> chunks;
 
-	// -1 means it's a Godot String
-	// a natural number means C string.
-	Vector<int32_t> appended_strings;
+private:
+
+	StringBuilder &append(const Chunk &p_chunk);
 
 public:
+
 	StringBuilder &append(const String &p_string);
 	StringBuilder &append(const char *p_cstring);
 
@@ -67,7 +81,7 @@ public:
 	}
 
 	_FORCE_INLINE_ int num_strings_appended() const {
-		return appended_strings.size();
+		return chunks_count;
 	}
 
 	_FORCE_INLINE_ uint32_t get_string_length() const {
@@ -82,6 +96,7 @@ public:
 
 	StringBuilder() {
 		string_length = 0;
+		chunks_count = 0;
 	}
 };
 

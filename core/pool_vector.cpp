@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "pool_vector.h"
+#include "string_builder.h"
 
 Mutex *pool_vector_lock = NULL;
 
@@ -68,4 +69,26 @@ void MemoryPool::cleanup() {
 
 	ERR_EXPLAINC("There are still MemoryPool allocs in use at exit!");
 	ERR_FAIL_COND(allocs_used > 0);
+}
+
+template<>
+String PoolVector<String>::join(String delimiter)
+{
+	int s = size();
+	if (s <= 0)
+		return "";
+
+	Read r = read();
+	bool useDelimiter = !delimiter.empty();
+	StringBuilder sb;
+
+	for (int i = 0; i < s; i++) {
+		if (useDelimiter && (i >= 1)) {
+			sb.append(delimiter);
+		}
+
+		sb.append(r[i]);
+	}
+
+	return sb.as_string();
 }

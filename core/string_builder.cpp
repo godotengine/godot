@@ -29,27 +29,58 @@
 /*************************************************************************/
 
 #include "string_builder.h"
-
+#include "core/math/math_funcs.h"
 #include <string.h>
+
+StringBuilder &StringBuilder::append(const StringBuilder::Chunk &p_chunk)
+{
+	const double growthFactor = 1.7;
+	const int minCapacity = 4;
+	const int capacity = chunks.size();
+
+	if (capacity <= 0) {
+		Error err = chunks.resize(minCapacity);
+		ERR_FAIL_COND_V(err, *this)
+	}
+	else if (capacity <= chunks_count) {
+		int newCapacity = (int)Math::floor((double)capacity * growthFactor);
+		ERR_FAIL_COND_V(newCapacity <= 0, *this)
+		ERR_FAIL_COND_V(newCapacity <= capacity, *this)
+
+		Error err = chunks.resize(newCapacity);
+		ERR_FAIL_COND_V(err, *this)
+	}
+
+	chunks.set(chunks_count, p_chunk);
+
+	chunks_count++;
+
+	return *this;
+}
 
 StringBuilder &StringBuilder::append(const String &p_string) {
 
-	strings.push_back(p_string);
-	appended_strings.push_back(-1);
+	if (p_string.empty())
+		return *this;
 
-	string_length += p_string.length();
+	Chunk c(p_string);
+	append(c);
+
+	string_length += c.length;
 
 	return *this;
 }
 
 StringBuilder &StringBuilder::append(const char *p_cstring) {
 
-	int32_t len = strlen(p_cstring);
+	Chunk c(p_cstring);
 
-	c_strings.push_back(p_cstring);
-	appended_strings.push_back(len);
+	if (c.length <= 0)
+		return *this;
 
-	string_length += len;
+	append(c);
+
+	string_length += (uint32_t)c.length;
 
 	return *this;
 }
@@ -61,36 +92,30 @@ String StringBuilder::as_string() const {
 
 	CharType *buffer = memnew_arr(CharType, string_length);
 
-	int current_position = 0;
+	uint32_t current_position = 0;
 
-	int godot_string_elem = 0;
-	int c_string_elem = 0;
+	for (int i = 0; i < chunks_count; i++) {
+		const Chunk& c = chunks.get(i);
 
-	for (int i = 0; i < appended_strings.size(); i++) {
-		if (appended_strings[i] == -1) {
+		if (c.str_ptr == nullptr) {
 			// Godot string
-			const String &s = strings[godot_string_elem];
+			memcpy(buffer + current_position, c.str_string.ptr(), c.length * sizeof(CharType));
 
-			memcpy(buffer + current_position, s.ptr(), s.length() * sizeof(CharType));
-
-			current_position += s.length();
-
-			godot_string_elem++;
+			current_position += c.length;
 		} else {
-
-			const char *s = c_strings[c_string_elem];
-
-			for (int32_t j = 0; j < appended_strings[i]; j++) {
-				buffer[current_position + j] = s[j];
+			// char* string
+			for (uint32_t j = 0; j < c.length; j++) {
+				buffer[current_position + j] = (const CharType)c.str_ptr[j];
 			}
 
-			current_position += appended_strings[i];
-
-			c_string_elem++;
+			current_position += c.length;
 		}
 	}
 
-	String final_string = String(buffer, string_length);
+	// done
+	CRASH_COND((uint32_t)current_position != string_length);
+
+	String final_string = String(buffer, (int)string_length);
 
 	memdelete_arr(buffer);
 
