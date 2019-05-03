@@ -35,7 +35,7 @@
 StringBuilder &StringBuilder::append(const StringBuilder::Chunk &p_chunk)
 {
 	const double growthFactor = 1.7;
-	const int minCapacity = 4;
+	const int minCapacity = 8;
 	const int capacity = chunks.size();
 
 	if (capacity <= 0) {
@@ -54,6 +54,10 @@ StringBuilder &StringBuilder::append(const StringBuilder::Chunk &p_chunk)
 	chunks.set(chunks_count, p_chunk);
 
 	chunks_count++;
+	string_length += p_chunk.length;
+
+	if (!resultCache.empty())
+		resultCache.clear();
 
 	return *this;
 }
@@ -63,10 +67,7 @@ StringBuilder &StringBuilder::append(const String &p_string) {
 	if (p_string.empty())
 		return *this;
 
-	Chunk c(p_string);
-	append(c);
-
-	string_length += c.length;
+	append(Chunk(p_string));
 
 	return *this;
 }
@@ -80,15 +81,16 @@ StringBuilder &StringBuilder::append(const char *p_cstring) {
 
 	append(c);
 
-	string_length += (uint32_t)c.length;
-
 	return *this;
 }
 
 String StringBuilder::as_string() const {
 
 	if (string_length == 0)
-		return "";
+		return String();
+
+	if (!resultCache.empty())
+		return resultCache;
 
 	CharType *buffer = memnew_arr(CharType, string_length);
 
@@ -115,9 +117,9 @@ String StringBuilder::as_string() const {
 	// done
 	CRASH_COND((uint32_t)current_position != string_length);
 
-	String final_string = String(buffer, (int)string_length);
+	resultCache = String(buffer, (int)string_length);
 
 	memdelete_arr(buffer);
 
-	return final_string;
+	return resultCache;
 }

@@ -54,6 +54,7 @@ class StringBuilder {
 	int chunks_count;
 
 	CowData<Chunk> chunks;
+	mutable String resultCache;
 
 private:
 
