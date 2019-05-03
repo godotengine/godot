@@ -81,6 +81,18 @@ public:
 		append(p_cstring);
 	}
 
+	_FORCE_INLINE_ int reserve_num_appends(int count) {
+		ERR_FAIL_COND_V(count < 0, 0);
+
+		if (count > chunks.size()) {
+			Error err = chunks.resize(count);
+			ERR_FAIL_COND_V(err, 0);
+			return count;
+		}
+
+		return chunks.size();
+	}
+
 	_FORCE_INLINE_ int num_strings_appended() const {
 		return chunks_count;
 	}

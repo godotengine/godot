@@ -80,7 +80,7 @@ String PoolVector<String>::join(String delimiter)
 
 	Read r = read();
 	bool useDelimiter = !delimiter.empty();
-	StringBuilder sb;
+	StringBuilder sb; sb.reserve_num_appends(useDelimiter ? s+s-1 : s);
 
 	for (int i = 0; i < s; i++) {
 		if (useDelimiter && (i >= 1)) {

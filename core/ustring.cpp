@@ -952,7 +952,7 @@ Vector<int> String::split_ints_mk(const Vector<String> &p_splitters, bool p_allo
 
 String String::join(Vector<String> parts) {
 	int ps = parts.size();
-	StringBuilder sb;
+	StringBuilder sb; sb.reserve_num_appends(ps);
 	for (int i = 0; i < ps; ++i) {
 		if (i > 0) {
 			sb.append(*this);
