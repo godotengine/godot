@@ -497,7 +497,13 @@ Size2 Font::get_string_size(const String &p_string) const {
 }
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
-	ERR_FAIL_COND(p_fallback == this);
+	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
+		if (fallback_child == this) {
+			ERR_EXPLAIN("Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
+			ERR_FAIL_COND(fallback_child == this);
+		}
+	}
+
 	fallback = p_fallback;
 }
 

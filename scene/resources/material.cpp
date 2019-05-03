@@ -34,7 +34,12 @@
 
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
-	ERR_FAIL_COND(p_pass == this);
+	for (Ref<Material> pass_child = p_pass; pass_child != NULL; pass_child = pass_child->get_next_pass()) {
+		if (pass_child == this) {
+			ERR_EXPLAIN("Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
+			ERR_FAIL_COND(pass_child == this);
+		}
+	}
 
 	if (next_pass == p_pass)
 		return;
