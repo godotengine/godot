@@ -58,9 +58,15 @@ void VisualShaderNodePlugin::_bind_methods() {
 
 void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 
-	bool first_init = false;
+	bool changed = false;
 	if (p_visual_shader) {
-		first_init = true;
+		if (visual_shader.is_null()) {
+			changed = true;
+		} else {
+			if (visual_shader.ptr() != p_visual_shader) {
+				changed = true;
+			}
+		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
 	} else {
 		visual_shader.unref();
@@ -69,7 +75,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	if (visual_shader.is_null()) {
 		hide();
 	} else {
-		if (first_init) { // to avoid tree collapse
+		if (changed) { // to avoid tree collapse
 			_update_options_menu();
 		}
 		_update_graph();
