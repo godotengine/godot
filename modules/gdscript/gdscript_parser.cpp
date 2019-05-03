@@ -4782,19 +4782,30 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 
-					if (member._export.type != Variant::NIL) {
+					Variant::Type initial_type = member.data_type.has_type ? member.data_type.builtin_type : member._export.type;
+
+					if (initial_type != Variant::NIL && initial_type != Variant::OBJECT) {
 						IdentifierNode *id = alloc_node<IdentifierNode>();
 						id->name = member.identifier;
 
-						ConstantNode *cn = alloc_node<ConstantNode>();
+						Node *expr;
 
-						Variant::CallError ce2;
-						cn->value = Variant::construct(member._export.type, NULL, 0, ce2);
+						// Make sure arrays and dictionaries are not shared
+						if (initial_type == Variant::ARRAY) {
+							expr = alloc_node<ArrayNode>();
+						} else if (initial_type == Variant::DICTIONARY) {
+							expr = alloc_node<DictionaryNode>();
+						} else {
+							ConstantNode *cn = alloc_node<ConstantNode>();
+							Variant::CallError ce2;
+							cn->value = Variant::construct(initial_type, NULL, 0, ce2);
+							expr = cn;
+						}
 
 						OperatorNode *op = alloc_node<OperatorNode>();
 						op->op = OperatorNode::OP_INIT_ASSIGN;
 						op->arguments.push_back(id);
-						op->arguments.push_back(cn);
+						op->arguments.push_back(expr);
 
 						p_class->initializer->statements.push_back(op);
 
@@ -7491,30 +7502,6 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 				v.data_type = expr_type;
 				v.data_type.is_constant = false;
 			}
-		} else if (v.data_type.has_type && v.data_type.kind == DataType::BUILTIN) {
-			// Create default value based on the type
-			IdentifierNode *id = alloc_node<IdentifierNode>();
-			id->line = v.line;
-			id->name = v.identifier;
-
-			ConstantNode *init = alloc_node<ConstantNode>();
-			init->line = v.line;
-			Variant::CallError err;
-			init->value = Variant::construct(v.data_type.builtin_type, NULL, 0, err);
-
-			OperatorNode *op = alloc_node<OperatorNode>();
-			op->line = v.line;
-			op->op = OperatorNode::OP_INIT_ASSIGN;
-			op->arguments.push_back(id);
-			op->arguments.push_back(init);
-
-			p_class->initializer->statements.push_front(op);
-			v.initial_assignment = op;
-#ifdef DEBUG_ENABLED
-			NewLineNode *nl = alloc_node<NewLineNode>();
-			nl->line = v.line - 1;
-			p_class->initializer->statements.push_front(nl);
-#endif
 		}
 
 		// Check export hint
