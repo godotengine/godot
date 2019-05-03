@@ -603,6 +603,8 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 			idx = history[history_pos].control->get_index();
 		}
 		tab_container->set_current_tab(idx);
+	} else {
+		_update_selected_editor_menu();
 	}
 
 	_update_history_arrows();
@@ -1001,6 +1003,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				return;
 
 			save_all_scripts();
+		} break;
+		case SEARCH_IN_FILES: {
+			_on_find_in_files_requested("");
 		} break;
 		case SEARCH_HELP: {
 
@@ -2694,10 +2699,22 @@ void ScriptEditor::_update_selected_editor_menu() {
 	}
 
 	EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_current_tab_control());
+	script_search_menu->get_popup()->clear();
 	if (eh) {
+
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
+		script_search_menu->get_popup()->add_separator();
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
 		script_search_menu->show();
 	} else {
-		script_search_menu->hide();
+
+		if (tab_container->get_child_count() == 0) {
+			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
+			script_search_menu->show();
+		} else {
+			script_search_menu->hide();
+		}
 	}
 }
 
@@ -3109,10 +3126,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu->set_text(TTR("Search"));
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
-	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
 	script_search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
-	script_search_menu->hide();
 
 	debug_menu = memnew(MenuButton);
 	menu_hb->add_child(debug_menu);
