@@ -833,14 +833,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
 
-	// ReferenceRect
-
-	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
-	ttnc->set_draw_center(false);
-
-	theme->set_stylebox("panelnc", "Panel", ttnc);
-	theme->set_stylebox("panelf", "Panel", tc_sb);
-
 	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 7, 7, 7, 7);
 	theme->set_stylebox("panel", "PanelContainer", sb_pc);
 
