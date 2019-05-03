@@ -17,7 +17,7 @@
 if [ ! -f export_presets.cfg ] || [ -n "%{!-f:''}%{-f:"1"}" ]; then \
   %__cp -fp %{_datadir}/godot/export_presets.cfg export_presets.cfg \
 fi \
-%__sed -i '/template\/release/ s/=\"\"/=\"\/usr\/bin\/godot\-runner\"/g' export_presets.cfg \
+%__sed -i '/template\/release/ s:="":="/usr/bin/godot-runner":g' export_presets.cfg \
 %nil
 
 # Macro: Export game's data into PCK file. The file will be saved in the
