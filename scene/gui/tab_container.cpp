@@ -732,6 +732,7 @@ void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
+	update();
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
@@ -749,6 +750,7 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_icon", p_icon);
+	update();
 }
 Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 
