@@ -2465,6 +2465,19 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
 
 		} break;
+		case RUN_LISTEN_DEBUG: {
+
+			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_LISTEN_DEBUG));
+
+			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_LISTEN_DEBUG), !ischecked);
+			if (ischecked) {
+				ScriptEditor::get_singleton()->get_debugger()->stop();
+			} else {
+				ScriptEditor::get_singleton()->get_debugger()->start();
+			}
+			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(!ischecked);
+
+		} break;
 		case RUN_DEPLOY_REMOTE_DEBUG: {
 
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
@@ -6126,6 +6139,8 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When exporting or deploying, the resulting executable will attempt to connect to the IP of this computer in order to be debugged."));
 	p->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTR("Small Deploy with Network FS")), RUN_FILE_SERVER);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("When this option is enabled, export or deploy will produce a minimal executable.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploy will use the USB cable for faster performance. This option speeds up testing for games with a large footprint."));
+	p->add_check_shortcut(ED_SHORTCUT("editor/listen_remote_debug", TTR("Listen for Remote Debug")), RUN_LISTEN_DEBUG);
+	p->set_item_tooltip(p->get_item_count() - 1, TTR("Listen for incoming debug connections at the IP of this computer."));
 	p->add_separator();
 	p->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTR("Visible Collision Shapes")), RUN_DEBUG_COLLISONS);
 	p->set_item_tooltip(p->get_item_count() - 1, TTR("Collision shapes and raycast nodes (for 2D and 3D) will be visible on the running game if this option is turned on."));
