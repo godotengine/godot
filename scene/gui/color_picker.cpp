@@ -93,6 +93,28 @@ void ColorPicker::set_focus_on_line_edit() {
 
 void ColorPicker::_update_controls() {
 
+	const char *rgb[3] = { "R", "G", "B" };
+	const char *hsv[3] = { "H", "S", "V" };
+
+	if (hsv_mode_enabled) {
+		for (int i = 0; i < 3; i++)
+			labels[i]->set_text(hsv[i]);
+	} else {
+		for (int i = 0; i < 3; i++)
+			labels[i]->set_text(rgb[i]);
+	}
+
+	if (hsv_mode_enabled) {
+		set_raw_mode(false);
+		btn_raw->set_disabled(true);
+	} else if (raw_mode_enabled) {
+		set_hsv_mode(false);
+		btn_hsv->set_disabled(true);
+	} else {
+		btn_raw->set_disabled(false);
+		btn_hsv->set_disabled(false);
+	}
+
 	if (edit_alpha) {
 		values[3]->show();
 		scroll[3]->show();
@@ -104,7 +126,7 @@ void ColorPicker::_update_controls() {
 	}
 }
 
-void ColorPicker::set_pick_color(const Color &p_color) {
+void ColorPicker::set_pick_color(const Color &p_color, bool p_update_sliders) {
 
 	color = p_color;
 	if (color != last_hsv) {
@@ -117,7 +139,7 @@ void ColorPicker::set_pick_color(const Color &p_color) {
 	if (!is_inside_tree())
 		return;
 
-	_update_color();
+	_update_color(p_update_sliders);
 }
 
 void ColorPicker::set_edit_alpha(bool p_show) {
@@ -142,11 +164,18 @@ void ColorPicker::_value_changed(double) {
 	if (updating)
 		return;
 
-	for (int i = 0; i < 4; i++) {
-		color.components[i] = scroll[i]->get_value() / (raw_mode_enabled ? 1.0 : 255.0);
+	if (hsv_mode_enabled) {
+		color.set_hsv(scroll[0]->get_value() / 360.0,
+				scroll[1]->get_value() / 100.0,
+				scroll[2]->get_value() / 100.0,
+				scroll[3]->get_value() / 100.0);
+	} else {
+		for (int i = 0; i < 4; i++) {
+			color.components[i] = scroll[i]->get_value() / (raw_mode_enabled ? 1.0 : 255.0);
+		}
 	}
 
-	set_pick_color(color);
+	set_pick_color(color, false);
 	emit_signal("color_changed", color);
 }
 
@@ -167,22 +196,40 @@ void ColorPicker::_html_entered(const String &p_html) {
 	emit_signal("color_changed", color);
 }
 
-void ColorPicker::_update_color() {
+void ColorPicker::_update_color(bool p_update_sliders) {
 
 	updating = true;
 
-	for (int i = 0; i < 4; i++) {
-		if (raw_mode_enabled) {
-			scroll[i]->set_step(0.01);
-			scroll[i]->set_max(100);
-			if (i == 3)
-				scroll[i]->set_max(1);
-			scroll[i]->set_value(color.components[i]);
+	if (p_update_sliders) {
+
+		if (hsv_mode_enabled) {
+			for (int i = 0; i < 4; i++) {
+				scroll[i]->set_step(0.1);
+			}
+
+			scroll[0]->set_max(360);
+			scroll[0]->set_value(h * 360.0);
+			scroll[1]->set_max(100);
+			scroll[1]->set_value(s * 100.0);
+			scroll[2]->set_max(100);
+			scroll[2]->set_value(v * 100.0);
+			scroll[3]->set_max(100);
+			scroll[3]->set_value(color.components[3] * 100.0);
 		} else {
-			scroll[i]->set_step(1);
-			const float byte_value = color.components[i] * 255.0;
-			scroll[i]->set_max(next_power_of_2(MAX(255, byte_value)) - 1);
-			scroll[i]->set_value(byte_value);
+			for (int i = 0; i < 4; i++) {
+				if (raw_mode_enabled) {
+					scroll[i]->set_step(0.01);
+					scroll[i]->set_max(100);
+					if (i == 3)
+						scroll[i]->set_max(1);
+					scroll[i]->set_value(color.components[i]);
+				} else {
+					scroll[i]->set_step(1);
+					const float byte_value = color.components[i] * 255.0;
+					scroll[i]->set_max(next_power_of_2(MAX(255, byte_value)) - 1);
+					scroll[i]->set_value(byte_value);
+				}
+			}
 		}
 	}
 
@@ -272,13 +319,33 @@ PoolColorArray ColorPicker::get_presets() const {
 	return arr;
 }
 
+void ColorPicker::set_hsv_mode(bool p_enabled) {
+
+	if (hsv_mode_enabled == p_enabled || raw_mode_enabled)
+		return;
+	hsv_mode_enabled = p_enabled;
+	if (btn_hsv->is_pressed() != p_enabled)
+		btn_hsv->set_pressed(p_enabled);
+
+	if (!is_inside_tree())
+		return;
+
+	_update_controls();
+	_update_color();
+}
+
+bool ColorPicker::is_hsv_mode() const {
+
+	return hsv_mode_enabled;
+}
+
 void ColorPicker::set_raw_mode(bool p_enabled) {
 
-	if (raw_mode_enabled == p_enabled)
+	if (raw_mode_enabled == p_enabled || hsv_mode_enabled)
 		return;
 	raw_mode_enabled = p_enabled;
-	if (btn_mode->is_pressed() != p_enabled)
-		btn_mode->set_pressed(p_enabled);
+	if (btn_raw->is_pressed() != p_enabled)
+		btn_raw->set_pressed(p_enabled);
 
 	if (!is_inside_tree())
 		return;
@@ -592,6 +659,8 @@ void ColorPicker::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPicker::get_pick_color);
+	ClassDB::bind_method(D_METHOD("set_hsv_mode", "mode"), &ColorPicker::set_hsv_mode);
+	ClassDB::bind_method(D_METHOD("is_hsv_mode"), &ColorPicker::is_hsv_mode);
 	ClassDB::bind_method(D_METHOD("set_raw_mode", "mode"), &ColorPicker::set_raw_mode);
 	ClassDB::bind_method(D_METHOD("is_raw_mode"), &ColorPicker::is_raw_mode);
 	ClassDB::bind_method(D_METHOD("set_deferred_mode", "mode"), &ColorPicker::set_deferred_mode);
@@ -623,6 +692,7 @@ void ColorPicker::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hsv_mode"), "set_hsv_mode", "is_hsv_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "raw_mode"), "set_raw_mode", "is_raw_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "presets_enabled"), "set_presets_enabled", "are_presets_enabled");
@@ -639,6 +709,7 @@ ColorPicker::ColorPicker() :
 	updating = true;
 	edit_alpha = true;
 	text_is_constructor = false;
+	hsv_mode_enabled = false;
 	raw_mode_enabled = false;
 	deferred_mode_enabled = false;
 	changing_color = false;
@@ -689,13 +760,12 @@ ColorPicker::ColorPicker() :
 	VBoxContainer *vbr = memnew(VBoxContainer);
 	add_child(vbr);
 	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
-	const char *lt[4] = { "R", "G", "B", "A" };
 
 	for (int i = 0; i < 4; i++) {
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
-		labels[i] = memnew(Label(lt[i]));
+		labels[i] = memnew(Label());
 		labels[i]->set_custom_minimum_size(Size2(get_constant("label_width"), 0));
 		labels[i]->set_v_size_flags(SIZE_SHRINK_CENTER);
 		hbc->add_child(labels[i]);
@@ -719,14 +789,20 @@ ColorPicker::ColorPicker() :
 
 		vbr->add_child(hbc);
 	}
+	labels[3]->set_text("A");
 
 	HBoxContainer *hhb = memnew(HBoxContainer);
 	vbr->add_child(hhb);
 
-	btn_mode = memnew(CheckButton);
-	hhb->add_child(btn_mode);
-	btn_mode->set_text(TTR("Raw Mode"));
-	btn_mode->connect("toggled", this, "set_raw_mode");
+	btn_hsv = memnew(CheckButton);
+	hhb->add_child(btn_hsv);
+	btn_hsv->set_text(TTR("HSV"));
+	btn_hsv->connect("toggled", this, "set_hsv_mode");
+
+	btn_raw = memnew(CheckButton);
+	hhb->add_child(btn_raw);
+	btn_raw->set_text(TTR("Raw"));
+	btn_raw->connect("toggled", this, "set_raw_mode");
 
 	text_type = memnew(Button);
 	hhb->add_child(text_type);
