@@ -49,8 +49,13 @@
 		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible">
 		</member>
+		<member name="hsv_mode" type="bool" setter="set_hsv_mode" getter="is_hsv_mode">
+			If [code]true[/code], allows to edit color with Hue/Saturation/Value sliders.
+			[b]Note:[/b] Cannot be enabled if raw mode is on.
+		</member>
 		<member name="raw_mode" type="bool" setter="set_raw_mode" getter="is_raw_mode">
 			If [code]true[/code], allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+			[b]Note:[/b] Cannot be enabled if hsv mode is on.
 		</member>
 	</members>
 	<signals>
