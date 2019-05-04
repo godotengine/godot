@@ -107,7 +107,7 @@ String StringBuilder::as_string() const {
 		} else {
 			// char* string
 			for (uint32_t j = 0; j < c.length; j++) {
-				buffer[current_position + j] = (const CharType)c.str_ptr[j];
+				buffer[current_position + j] = (CharType)c.str_ptr[j];
 			}
 
 			current_position += c.length;
