@@ -47,7 +47,7 @@
 			<argument index="0" name="key" type="Variant">
 			</argument>
 			<description>
-				Erase a dictionary key/value pair by key. Do not erase elements while iterating over the dictionary.
+				Erase a dictionary key/value pair by key. Returns [code]true[/code] if the given key was present in the dictionary, [code]false[/code] otherwise. Do not erase elements while iterating over the dictionary.
 			</description>
 		</method>
 		<method name="get">
