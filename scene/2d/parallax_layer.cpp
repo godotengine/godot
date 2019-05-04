@@ -105,6 +105,11 @@ void ParallaxLayer::_notification(int p_what) {
 			orig_scale = get_scale();
 			_update_mirroring();
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+
+			set_position(orig_offset);
+			set_scale(orig_scale);
+		} break;
 	}
 }
 
