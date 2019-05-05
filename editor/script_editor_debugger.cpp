@@ -299,6 +299,7 @@ void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
 
 	item_menu->clear();
 	item_menu->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
 	item_menu->set_global_position(get_global_mouse_position());
 	item_menu->popup();
 }
@@ -396,6 +397,7 @@ Size2 ScriptEditorDebugger::get_minimum_size() const {
 	ms.y = MAX(ms.y, 250 * EDSCALE);
 	return ms;
 }
+
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
 
 	if (p_msg == "debug_enter") {
@@ -1929,6 +1931,24 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 			}
 
 			file_dialog->popup_centered_ratio();
+		} break;
+		case ITEM_MENU_COPY_NODE_PATH: {
+
+			TreeItem *ti = inspect_scene_tree->get_selected();
+			String text = ti->get_text(0);
+
+			if (ti->get_parent() == NULL) {
+				text = ".";
+			} else if (ti->get_parent()->get_parent() == NULL) {
+				text = ".";
+			} else {
+				while (ti->get_parent()->get_parent() != inspect_scene_tree->get_root()) {
+					ti = ti->get_parent();
+					text = ti->get_text(0) + "/" + text;
+				}
+			}
+
+			OS::get_singleton()->set_clipboard(text);
 		} break;
 	}
 }
