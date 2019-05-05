@@ -291,7 +291,7 @@
 		</method>
 		<method name="shuffle">
 			<description>
-				Shuffles the array such that the items will have a random order.
+				Shuffles the array such that the items will have a random order. This function will generate reproducible values. To get random values in each runtime, consider using [method randomize].
 			</description>
 		</method>
 		<method name="size">
