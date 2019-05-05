@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include <locale>
+#include <sstream>
+
 #include "translation.h"
 
 #include "core/io/resource_loader.h"
@@ -778,6 +781,19 @@ static const char *locale_names[] = {
 	0
 };
 
+struct locale_integer_format {
+	locale_integer_format(char p_thousands_sep = ',', const char *p_grouping = "\3") :
+			thousands_sep(p_thousands_sep),
+			grouping(p_grouping) {}
+	char thousands_sep;
+	const char *grouping;
+};
+
+const char default_thousands_sep = ',';
+const char *default_grouping = "\3";
+
+static HashMap<String, locale_integer_format> locale_integer_formats;
+
 // Windows has some weird locale identifiers which do not honor the ISO 639-1
 // standardized nomenclature. Whenever those don't conflict with existing ISO
 // identifiers, we override them.
@@ -964,6 +980,21 @@ void TranslationServer::set_locale(const String &p_locale) {
 		locale = univ_locale;
 	}
 
+	//setup the thousands separator & number groupings for locale-correct number formatting
+	if (locale_integer_formats.has(p_locale)) {
+		thousands_sep = locale_integer_formats[locale].thousands_sep;
+		grouping = locale_integer_formats[locale].grouping;
+	} else {
+		String trimmed_locale = get_trimmed_locale(locale);
+		if (locale_integer_formats.has(trimmed_locale)) {
+			thousands_sep = locale_integer_formats[trimmed_locale].thousands_sep;
+			grouping = locale_integer_formats[trimmed_locale].grouping;
+		} else {
+			thousands_sep = default_thousands_sep;
+			grouping = default_grouping;
+		}
+	}
+
 	if (OS::get_singleton()->get_main_loop()) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
@@ -1114,6 +1145,29 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	return res;
 }
 
+struct formatter : std::numpunct<char> {
+	formatter(char p_thousands_sep, const char *p_grouping) :
+			thousands_sep(p_thousands_sep),
+			grouping(p_grouping) {}
+
+protected:
+	char do_thousands_sep() const { return this->thousands_sep; }
+	std::string do_grouping() const { return std::string(this->grouping); }
+	char thousands_sep;
+	const char *grouping;
+};
+
+String TranslationServer::format_integer(int p_integer) const {
+
+	std::ostringstream ss;
+	ss.imbue(std::locale(std::locale(""), new formatter(thousands_sep, grouping)));
+	ss << p_integer;
+
+	String formatted = ss.str().c_str();
+
+	return formatted;
+}
+
 TranslationServer *TranslationServer::singleton = NULL;
 
 bool TranslationServer::_load_translations(const String &p_from) {
@@ -1139,6 +1193,373 @@ bool TranslationServer::_load_translations(const String &p_from) {
 	return false;
 }
 
+void setup_locale_integer_formats() {
+	// 	"aa", //  Afar
+	// 			"aa_DJ", //  Afar (Djibouti)
+	// 			"aa_ER", //  Afar (Eritrea)
+	// 			"aa_ET", //  Afar (Ethiopia)
+	// 			"af", //  Afrikaans
+	// 			"af_ZA", //  Afrikaans (South Africa)
+	// 			"agr_PE", //  Aguaruna (Peru)
+	// 			"ak_GH", //  Akan (Ghana)
+	// 			"am_ET", //  Amharic (Ethiopia)
+	// 			"an_ES", //  Aragonese (Spain)
+	locale_integer_formats.set("anp_IN", locale_integer_format(',', "\3\2")); //	Angika (India)
+	// 			"ar", //  Arabic
+	// 			"ar_AE", //  Arabic (United Arab Emirates)
+	// 			"ar_BH", //  Arabic (Bahrain)
+	// 			"ar_DZ", //  Arabic (Algeria)
+	// 			"ar_EG", //  Arabic (Egypt)
+	locale_integer_formats.set("ar_IN", locale_integer_format(',', "\3\2")); //	Arabic (India)
+	// 			"ar_IQ", //  Arabic (Iraq)
+	// 			"ar_JO", //  Arabic (Jordan)
+	// 			"ar_KW", //  Arabic (Kuwait)
+	// 			"ar_LB", //  Arabic (Lebanon)
+	// 			"ar_LY", //  Arabic (Libya)
+	// 			"ar_MA", //  Arabic (Morocco)
+	// 			"ar_OM", //  Arabic (Oman)
+	// 			"ar_QA", //  Arabic (Qatar)
+	// 			"ar_SA", //  Arabic (Saudi Arabia)
+	// 			"ar_SD", //  Arabic (Sudan)
+	// 			"ar_SS", //  Arabic (South Soudan)
+	// 			"ar_SY", //  Arabic (Syria)
+	// 			"ar_TN", //  Arabic (Tunisia)
+	// 			"ar_YE", //  Arabic (Yemen)
+	locale_integer_formats.set("as_IN", locale_integer_format(',', "\3\2")); //	Assamese (India)
+	// 			"ast_ES", //  Asturian (Spain)
+	// 			"ayc_PE", //  Southern Aymara (Peru)
+	// 			"ay_PE", //  Aymara (Peru)
+	// 			"az_AZ", //  Azerbaijani (Azerbaijan)
+	// 			"be", //  Belarusian
+	// 			"be_BY", //  Belarusian (Belarus)
+	// 			"bem_ZM", //  Bemba (Zambia)
+	// 			"ber_DZ", //  Berber languages (Algeria)
+	// 			"ber_MA", //  Berber languages (Morocco)
+	// 			"bg", //  Bulgarian
+	// 			"bg_BG", //  Bulgarian (Bulgaria)
+	locale_integer_formats.set("bhb_IN", locale_integer_format(',', "\3\2")); //	Bhili (India)
+	locale_integer_formats.set("bho_IN", locale_integer_format(',', "\3\2")); //	Bhojpuri (India)
+	// 			"bi_TV", //  Bislama (Tuvalu)
+	locale_integer_formats.set("bn", locale_integer_format(',', "\3\2")); //	Bengali
+	locale_integer_formats.set("bn_BD", locale_integer_format(',', "\3\2")); //	Bengali (Bangladesh)
+	locale_integer_formats.set("bn_IN", locale_integer_format(',', "\3\2")); //	Bengali (India)
+	// 			"bo", //  Tibetan
+	// 			"bo_CN", //  Tibetan (China)
+	locale_integer_formats.set("bo_IN", locale_integer_format(',', "\3\2")); //	Tibetan (India)
+	// 			"br_FR", //  Breton (France)
+	locale_integer_formats.set("brx_IN", locale_integer_format(',', "\3\2")); //	Bodo (India)
+	locale_integer_formats.set("bs_BA", locale_integer_format('.', "\3")); //	Bosnian (Bosnia and Herzegovina)
+	// 			"byn_ER", //  Bilin (Eritrea)
+	// 			"ca", //  Catalan
+	// 			"ca_AD", //  Catalan (Andorra)
+	locale_integer_formats.set("ca_ES", locale_integer_format('.', "\3")); //	Catalan (Spain)
+	// 			"ca_FR", //  Catalan (France)
+	locale_integer_formats.set("ca_IT", locale_integer_format('.', "\3")); //	Catalan (Italy)
+	// 			"ce_RU", //  Chechen (Russia)
+	// 			"chr_US", //  Cherokee (United States)
+	locale_integer_formats.set("cmn_TW", locale_integer_format(',', "\3")); //	Mandarin Chinese (Taiwan)
+	// 			"crh_UA", //  Crimean Tatar (Ukraine)
+	// 			"csb_PL", //  Kashubian (Poland)
+	// 			"cs", //  Czech
+	// 			"cs_CZ", //  Czech (Czech Republic)
+	// 			"cv_RU", //  Chuvash (Russia)
+	// 			"cy_GB", //  Welsh (United Kingdom)
+	locale_integer_formats.set("da", locale_integer_format('.', "\3")); //	Danish
+	locale_integer_formats.set("da_DK", locale_integer_format('.', "\3")); //	Danish (Denmark)
+	locale_integer_formats.set("de", locale_integer_format('.', "\3")); //	German
+	locale_integer_formats.set("de_AT", locale_integer_format('.', "\3")); //	German (Austria)
+	locale_integer_formats.set("de_BE", locale_integer_format('.', "\3")); //	German (Belgium)
+	// 			"de_CH", //  German (Switzerland)
+	locale_integer_formats.set("de_DE", locale_integer_format('.', "\3")); //	German (Germany)
+	locale_integer_formats.set("de_IT", locale_integer_format('.', "\3")); //	German (Italy)
+	// 			"de_LU", //  German (Luxembourg)
+	// 			"doi_IN", //  Dogri (India)
+	// 			"dv_MV", //  Dhivehi (Maldives)
+	// 			"dz_BT", //  Dzongkha (Bhutan)
+	locale_integer_formats.set("el", locale_integer_format('.', "\3")); //	Greek
+	locale_integer_formats.set("el_CY", locale_integer_format('.', "\3")); //	Greek (Cyprus)
+	locale_integer_formats.set("el_GR", locale_integer_format('.', "\3")); //	Greek (Greece)
+	locale_integer_formats.set("en", locale_integer_format(',', "\3")); //	English
+	// 			"en_AG", //  English (Antigua and Barbuda)
+	// 			"en_AU", //  English (Australia)
+	// 			"en_BW", //  English (Botswana)
+	locale_integer_formats.set("en_CA", locale_integer_format(',', "\3")); //  English (Canada)
+	locale_integer_formats.set("en_DK", locale_integer_format('.', "\3")); //  English (Denmark)
+	locale_integer_formats.set("en_GB", locale_integer_format(',', "\3")); //  English (United Kingdom)
+	locale_integer_formats.set("en_HK", locale_integer_format(',', "\3")); //	English (Hong Kong)
+	locale_integer_formats.set("en_IE", locale_integer_format(',', "\3")); //	English(Ireland)
+	locale_integer_formats.set("en_IL", locale_integer_format(',', "\3")); //	English(Israel)
+	locale_integer_formats.set("en_IN", locale_integer_format(',', "\3\2")); //	English (India)
+	// 			"en_NG", //  English (Nigeria)
+	locale_integer_formats.set("en_NZ", locale_integer_format(',', "\3")); //	English(New Zealand)
+	locale_integer_formats.set("en_PH", locale_integer_format(',', "\3")); //	English(Philippines)
+	locale_integer_formats.set("en_SG", locale_integer_format(',', "\3")); //	English(Singapore)
+	locale_integer_formats.set("en_US", locale_integer_format(',', "\3")); //	English(United States)
+	// 			"en_ZA", //  English (South Africa)
+	// 			"en_ZM", //  English (Zambia)
+	// 			"en_ZW", //  English (Zimbabwe)
+	// 			"eo", //  Esperanto
+	// 			"es", //  Spanish
+	locale_integer_formats.set("es_AR", locale_integer_format('.', "\3")); //	Spanish (Argentina)
+	// 			"es_BO", //  Spanish (Bolivia)
+	locale_integer_formats.set("es_CL", locale_integer_format('.', "\3")); //	Spanish (Chile)
+	locale_integer_formats.set("es_CO", locale_integer_format('.', "\3")); //	Spanish (Colombia)
+	locale_integer_formats.set("es_CR", locale_integer_format('.', "\3")); //	Spanish (Costa Rica)
+	// 			"es_CU", //  Spanish (Cuba)
+	// 			"es_DO", //  Spanish (Dominican Republic)
+	// 			"es_EC", //  Spanish (Ecuador)
+	locale_integer_formats.set("es_ES", locale_integer_format('.', "\3")); //	Spanish (Spain)
+	// 			"es_GT", //  Spanish (Guatemala)
+	// 			"es_HN", //  Spanish (Honduras)
+	locale_integer_formats.set("es_MX", locale_integer_format(',', "\3")); //  Spanish (Mexico)
+	// 			"es_NI", //  Spanish (Nicaragua)
+	// 			"es_PA", //  Spanish (Panama)
+	// 			"es_PE", //  Spanish (Peru)
+	// 			"es_PR", //  Spanish (Puerto Rico)
+	// 			"es_PY", //  Spanish (Paraguay)
+	// 			"es_SV", //  Spanish (El Salvador)
+	// 			"es_US", //  Spanish (United States)
+	// 			"es_UY", //  Spanish (Uruguay)
+	// 			"es_VE", //  Spanish (Venezuela)
+	// 			"et", //  Estonian
+	// 			"et_EE", //  Estonian (Estonia)
+	// 			"eu", //  Basque
+	// 			"eu_ES", //  Basque (Spain)
+	// 			"fa", //  Persian
+	// 			"fa_IR", //  Persian (Iran)
+	// 			"ff_SN", //  Fulah (Senegal)
+	// 			"fi", //  Finnish
+	// 			"fi_FI", //  Finnish (Finland)
+	// 			"fil", //  Filipino
+	locale_integer_formats.set("fil_PH", locale_integer_format(',', "\3")); //	Filipino (Philippines)
+	// 			"fo_FO", //  Faroese (Faroe Islands)
+	// 			"fr", //  French
+	// 			"fr_BE", //  French (Belgium)
+	// 			"fr_CA", //  French (Canada)
+	// 			"fr_CH", //  French (Switzerland)
+	// 			"fr_FR", //  French (France)
+	// 			"fr_LU", //  French (Luxembourg)
+	locale_integer_formats.set("fur_IT", locale_integer_format('.', "\3")); //	Friulian (Italy)
+	locale_integer_formats.set("fy_DE", locale_integer_format('.', "\3")); //	Western Frisian (Germany)
+	locale_integer_formats.set("fy_NL", locale_integer_format('.', "\3")); //	Western Frisian (Netherlands)
+	locale_integer_formats.set("ga", locale_integer_format(',', "\3")); //  Irish
+	locale_integer_formats.set("ga_IE", locale_integer_format(',', "\3")); //  Irish (Ireland)
+	locale_integer_formats.set("gd_GB", locale_integer_format(',', "\3")); //  Scottish Gaelic (United Kingdom)
+	// 			"gez_ER", //  Geez (Eritrea)
+	// 			"gez_ET", //  Geez (Ethiopia)
+	// 			"gl_ES", //  Galician (Spain)
+	// 			"gu_IN", //  Gujarati (India)
+	// 			"gv_GB", //  Manx (United Kingdom)
+	locale_integer_formats.set("hak_TW", locale_integer_format(',', "\3")); //	Hakka Chinese (Taiwan)
+	// 			"ha_NG", //  Hausa (Nigeria)
+	// 			"he", //  Hebrew
+	// 			"he_IL", //  Hebrew (Israel)
+	// 			"hi", //  Hindi
+	// 			"hi_IN", //  Hindi (India)
+	// 			"hne_IN", //  Chhattisgarhi (India)
+	locale_integer_formats.set("hr", locale_integer_format('.', "\3")); //	Croatian
+	locale_integer_formats.set("hr_HR", locale_integer_format('.', "\3")); //	Croatian (Croatia)
+	// 			"hsb_DE", //  Upper Sorbian (Germany)
+	// 			"ht_HT", //  Haitian (Haiti)
+	// 			"hu", //  Hungarian
+	// 			"hu_HU", //  Hungarian (Hungary)
+	// 			"hus_MX", //  Huastec (Mexico)
+	// 			"hy_AM", //  Armenian (Armenia)
+	// 			"ia_FR", //  Interlingua (France)
+	locale_integer_formats.set("id", locale_integer_format('.', "\3")); //	Indonesian
+	locale_integer_formats.set("id_ID", locale_integer_format('.', "\3")); //	Indonesian (Indonesia)
+	// 			"ig_NG", //  Igbo (Nigeria)
+	// 			"ik_CA", //  Inupiaq (Canada)
+	// 			"is", //  Icelandic
+	// 			"is_IS", //  Icelandic (Iceland)
+	locale_integer_formats.set("it", locale_integer_format('.', "\3")); //	Italian
+	// 			"it_CH", //  Italian (Switzerland)
+	locale_integer_formats.set("it_IT", locale_integer_format('.', "\3")); //	Italian (Italy)
+	// 			"iu_CA", //  Inuktitut (Canada)
+	locale_integer_formats.set("ja", locale_integer_format(',', "\3")); //  Japanese
+	locale_integer_formats.set("ja_JP", locale_integer_format(',', "\3")); //  Japanese (Japan)
+	// 			"kab_DZ", //  Kabyle (Algeria)
+	// 			"ka", //  Georgian
+	// 			"ka_GE", //  Georgian (Georgia)
+	// 			"kk_KZ", //  Kazakh (Kazakhstan)
+	// 			"kl_GL", //  Kalaallisut (Greenland)
+	// 			"km_KH", //  Central Khmer (Cambodia)
+	// 			"kn_IN", //  Kannada (India)
+	// 			"kok_IN", //  Konkani (India)
+	locale_integer_formats.set("ko", locale_integer_format(',', "\3")); //  Korean
+	locale_integer_formats.set("ko_KR", locale_integer_format(',', "\3")); //  Korean (South Korea)
+	// 			"ks_IN", //  Kashmiri (India)
+	// 			"ku", //  Kurdish
+	// 			"ku_TR", //  Kurdish (Turkey)
+	// 			"kw_GB", //  Cornish (United Kingdom)
+	// 			"ky_KG", //  Kirghiz (Kyrgyzstan)
+	// 			"lb_LU", //  Luxembourgish (Luxembourg)
+	// 			"lg_UG", //  Ganda (Uganda)
+	locale_integer_formats.set("li_BE", locale_integer_format('.', "\3")); //	Limburgan (Belgium)
+	locale_integer_formats.set("li_NL", locale_integer_format('.', "\3")); //	Limburgan (Netherlands)
+	locale_integer_formats.set("lij_IT", locale_integer_format('.', "\3")); //	Ligurian (Italy)
+	// 			"ln_CD", //  Lingala (Congo)
+	// 			"lo_LA", //  Lao (Laos)
+	// 			"lt", //  Lithuanian
+	// 			"lt_LT", //  Lithuanian (Lithuania)
+	// 			"lv", //  Latvian
+	// 			"lv_LV", //  Latvian (Latvia)
+	locale_integer_formats.set("lzh_TW", locale_integer_format(',', "\3")); //	Literary Chinese (Taiwan)
+	// 			"mag_IN", //  Magahi (India)
+	// 			"mai_IN", //  Maithili (India)
+	// 			"mg_MG", //  Malagasy (Madagascar)
+	// 			"mh_MH", //  Marshallese (Marshall Islands)
+	// 			"mhr_RU", //  Eastern Mari (Russia)
+	// 			"mi", //  Māori
+	// 			"mi_NZ", //  Māori (New Zealand)
+	// 			"miq_NI", //  Mískito (Nicaragua)
+	// 			"mk", //  Macedonian
+	// 			"mk_MK", //  Macedonian (Macedonia)
+	// 			"ml", //  Malayalam
+	// 			"ml_IN", //  Malayalam (India)
+	// 			"mni_IN", //  Manipuri (India)
+	// 			"mn_MN", //  Mongolian (Mongolia)
+	// 			"mr_IN", //  Marathi (India)
+	locale_integer_formats.set("ms", locale_integer_format(',', "\3")); //  Malay
+	locale_integer_formats.set("ms_MY", locale_integer_format(',', "\3")); //  Malay (Malaysia)
+	// 			"mt", //  Maltese
+	// 			"mt_MT", //  Maltese (Malta)
+	// 			"my_MM", //  Burmese (Myanmar)
+	// 			"myv_RU", //  Erzya (Russia)
+	// 			"nah_MX", //  Nahuatl languages (Mexico)
+	locale_integer_formats.set("nan_TW", locale_integer_format(',', "\3")); //	Min Nan Chinese (Taiwan)
+	// 			"nb", //  Norwegian Bokmål
+	// 			"nb_NO", //  Norwegian Bokmål (Norway)
+	locale_integer_formats.set("nds_DE", locale_integer_format('.', "\3")); //	Low German (Germany)
+	locale_integer_formats.set("nds_NL", locale_integer_format('.', "\3")); //	Low German (Netherlands)
+	// 			"ne_NP", //  Nepali (Nepal)
+	// 			"nhn_MX", //  Central Nahuatl (Mexico)
+	// 			"niu_NU", //  Niuean (Niue)
+	// 			"niu_NZ", //  Niuean (New Zealand)
+	// 			"nl", //  Dutch
+	// 			"nl_AW", //  Dutch (Aruba)
+	locale_integer_formats.set("nl_BE", locale_integer_format('.', "\3")); //	Dutch (Belgium)
+	locale_integer_formats.set("nl_NL", locale_integer_format('.', "\3")); //	Dutch (Netherlands)
+	// 			"nn", //  Norwegian Nynorsk
+	// 			"nn_NO", //  Norwegian Nynorsk (Norway)
+	// 			"nr_ZA", //  South Ndebele (South Africa)
+	// 			"nso_ZA", //  Pedi (South Africa)
+	// 			"oc_FR", //  Occitan (France)
+	// 			"om", //  Oromo
+	// 			"om_ET", //  Oromo (Ethiopia)
+	// 			"om_KE", //  Oromo (Kenya)
+	// 			"or_IN", //  Oriya (India)
+	// 			"os_RU", //  Ossetian (Russia)
+	// 			"pa_IN", //  Panjabi (India)
+	// 			"pap", //  Papiamento
+	// 			"pap_AN", //  Papiamento (Netherlands Antilles)
+	// 			"pap_AW", //  Papiamento (Aruba)
+	// 			"pap_CW", //  Papiamento (Curaçao)
+	locale_integer_formats.set("pa_PK", locale_integer_format(',', "\3")); //	Panjabi (Pakistan)
+	// 			"pl", //  Polish
+	// 			"pl_PL", //  Polish (Poland)
+	// 			"pr", //  Pirate
+	// 			"ps_AF", //  Pushto (Afghanistan)
+	// 			"pt", //  Portuguese
+	locale_integer_formats.set("pt_BR", locale_integer_format('.', "\3")); //	Portuguese (Brazil)
+	// 			"pt_PT", //  Portuguese (Portugal)
+	// 			"quy_PE", //  Ayacucho Quechua (Peru)
+	// 			"quz_PE", //  Cusco Quechua (Peru)
+	// 			"raj_IN", //  Rajasthani (India)
+	locale_integer_formats.set("ro", locale_integer_format('.', "\3")); //	Romanian
+	locale_integer_formats.set("ro_RO", locale_integer_format('.', "\3")); //	Romanian (Romania)
+	// 			"ru", //  Russian
+	// 			"ru_RU", //  Russian (Russia)
+	// 			"ru_UA", //  Russian (Ukraine)
+	// 			"rw_RW", //  Kinyarwanda (Rwanda)
+	// 			"sa_IN", //  Sanskrit (India)
+	// 			"sat_IN", //  Santali (India)
+	locale_integer_formats.set("sc_IT", locale_integer_format('.', "\3")); //	Sardinian (Italy)
+	// 			"sco", //  Scots
+	// 			"sd_IN", //  Sindhi (India)
+	// 			"se_NO", //  Northern Sami (Norway)
+	// 			"sgs_LT", //  Samogitian (Lithuania)
+	// 			"shs_CA", //  Shuswap (Canada)
+	// 			"sid_ET", //  Sidamo (Ethiopia)
+	// 			"si", //  Sinhala
+	// 			"si_LK", //  Sinhala (Sri Lanka)
+	// 			"sk", //  Slovak
+	// 			"sk_SK", //  Slovak (Slovakia)
+	locale_integer_formats.set("sl", locale_integer_format('.', "\3")); //	Slovenian
+	locale_integer_formats.set("sl_SI", locale_integer_format('.', "\3")); //	Slovenian (Slovenia)
+	// 			"so", //  Somali
+	// 			"so_DJ", //  Somali (Djibouti)
+	// 			"so_ET", //  Somali (Ethiopia)
+	// 			"so_KE", //  Somali (Kenya)
+	// 			"so_SO", //  Somali (Somalia)
+	// 			"son_ML", //  Songhai languages (Mali)
+	// 			"sq", //  Albanian
+	// 			"sq_AL", //  Albanian (Albania)
+	// 			"sq_KV", //  Albanian (Kosovo)
+	// 			"sq_MK", //  Albanian (Macedonia)
+	// 			"sr", //  Serbian
+	// 			"sr_Cyrl", //  Serbian (Cyrillic)
+	// 			"sr_Latn", //  Serbian (Latin)
+	// 			"sr_ME", //  Serbian (Montenegro)
+	// 			"sr_RS", //  Serbian (Serbia)
+	// 			"ss_ZA", //  Swati (South Africa)
+	// 			"st_ZA", //  Southern Sotho (South Africa)
+	// 			"sv", //  Swedish
+	// 			"sv_FI", //  Swedish (Finland)
+	// 			"sv_SE", //  Swedish (Sweden)
+	// 			"sw_KE", //  Swahili (Kenya)
+	// 			"sw_TZ", //  Swahili (Tanzania)
+	// 			"szl_PL", //  Silesian (Poland)
+	// 			"ta", //  Tamil
+	// 			"ta_IN", //  Tamil (India)
+	// 			"ta_LK", //  Tamil (Sri Lanka)
+	// 			"tcy_IN", //  Tulu (India)
+	// 			"te", //  Telugu
+	// 			"te_IN", //  Telugu (India)
+	// 			"tg_TJ", //  Tajik (Tajikistan)
+	// 			"the_NP", //  Chitwania Tharu (Nepal)
+	locale_integer_formats.set("th", locale_integer_format(',', "\3")); //	Thai
+	locale_integer_formats.set("th_TH", locale_integer_format(',', "\3")); //	Thai (Thailand)
+	// 			"ti", //  Tigrinya
+	// 			"ti_ER", //  Tigrinya (Eritrea)
+	// 			"ti_ET", //  Tigrinya (Ethiopia)
+	// 			"tig_ER", //  Tigre (Eritrea)
+	// 			"tk_TM", //  Turkmen (Turkmenistan)
+	locale_integer_formats.set("tl_PH", locale_integer_format(',', "\3")); //	Tagalog (Philippines)
+	// 			"tn_ZA", //  Tswana (South Africa)
+	// 			"tr", //  Turkish
+	// 			"tr_CY", //  Turkish (Cyprus)
+	// 			"tr_TR", //  Turkish (Turkey)
+	// 			"ts_ZA", //  Tsonga (South Africa)
+	// 			"tt_RU", //  Tatar (Russia)
+	// 			"ug_CN", //  Uighur (China)
+	// 			"uk", //  Ukrainian
+	// 			"uk_UA", //  Ukrainian (Ukraine)
+	// 			"unm_US", //  Unami (United States)
+	// 			"ur", //  Urdu
+	// 			"ur_IN", //  Urdu (India)
+	locale_integer_formats.set("ur_PK", locale_integer_format(',', "\3")); //	Urdu (Pakistan)
+	// 			"uz", //  Uzbek
+	// 			"uz_UZ", //  Uzbek (Uzbekistan)
+	// 			"ve_ZA", //  Venda (South Africa)
+	// 			"vi", //  Vietnamese
+	// 			"vi_VN", //  Vietnamese (Vietnam)
+	// 			"wa_BE", //  Walloon (Belgium)
+	// 			"wae_CH", //  Walser (Switzerland)
+	// 			"wal_ET", //  Wolaytta (Ethiopia)
+	// 			"wo_SN", //  Wolof (Senegal)
+	// 			"xh_ZA", //  Xhosa (South Africa)
+	// 			"yi_US", //  Yiddish (United States)
+	// 			"yo_NG", //  Yoruba (Nigeria)
+	// 			"yue_HK", //  Yue Chinese (Hong Kong)
+	locale_integer_formats.set("zh", locale_integer_format(',', "\3")); //  Chinese
+	locale_integer_formats.set("zh_CN", locale_integer_format(',', "\3")); //  Chinese (China)
+	locale_integer_formats.set("zh_HK", locale_integer_format(',', "\3")); //  Chinese (Hong Kong)
+	locale_integer_formats.set("zh_SG", locale_integer_format(',', "\3")); //  Chinese (Singapore)
+	locale_integer_formats.set("zh_TW", locale_integer_format(',', "\3")); //	Chinese (Taiwan)
+	// 			"zu_ZA", //  Zulu (South Africa)
+}
+
 void TranslationServer::setup() {
 
 	String test = GLOBAL_DEF("locale/test", "");
@@ -1162,6 +1583,8 @@ void TranslationServer::setup() {
 		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
+
+	setup_locale_integer_formats();
 	//load translations
 }
 
@@ -1197,6 +1620,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
+
+	ClassDB::bind_method(D_METHOD("format_integer", "integer"), &TranslationServer::format_integer);
 }
 
 void TranslationServer::load_translations() {
@@ -1212,7 +1637,9 @@ void TranslationServer::load_translations() {
 
 TranslationServer::TranslationServer() :
 		locale("en"),
-		enabled(true) {
+		enabled(true),
+		thousands_sep(default_thousands_sep),
+		grouping(default_grouping) {
 	singleton = this;
 
 	for (int i = 0; locale_list[i]; ++i) {

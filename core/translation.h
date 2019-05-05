@@ -78,6 +78,9 @@ class TranslationServer : public Object {
 
 	bool enabled;
 
+	char thousands_sep;
+	const char *grouping;
+
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);
 
@@ -108,6 +111,8 @@ public:
 
 	void set_tool_translation(const Ref<Translation> &p_translation);
 	StringName tool_translate(const StringName &p_message) const;
+
+	String format_integer(int p_integer) const;
 
 	void setup();
 

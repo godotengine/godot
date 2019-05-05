@@ -27,6 +27,15 @@
 				Clears the server from all translations.
 			</description>
 		</method>
+		<method name="format_integer" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="integer" type="int">
+			</argument>
+			<description>
+				Formats an integer in a locale-aware way.
+			</description>
+		</method>
 		<method name="get_loaded_locales" qualifiers="const">
 			<return type="Array">
 			</return>
