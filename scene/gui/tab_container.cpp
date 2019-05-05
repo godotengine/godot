@@ -146,6 +146,11 @@ void TabContainer::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_RESIZED: {
 
 			Vector<Control *> tabs = _get_tabs();
@@ -181,7 +186,6 @@ void TabContainer::_notification(int p_what) {
 				first_tab_cache--;
 			}
 		} break;
-
 		case NOTIFICATION_DRAW: {
 
 			RID canvas = get_canvas_item();
