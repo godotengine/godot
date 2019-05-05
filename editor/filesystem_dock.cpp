@@ -755,7 +755,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		Ref<Texture> type_icon;
 		Ref<Texture> big_icon;
 
-		String tooltip = fname;
+		String tooltip = fpath;
 
 		// Select the icons
 		if (!finfo->import_broken) {
