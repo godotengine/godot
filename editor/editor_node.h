@@ -671,6 +671,7 @@ public:
 	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
+	void close_current_scene() { _menu_option_confirm(FILE_CLOSE, false); }
 
 	void set_docks_visible(bool p_show);
 	bool get_docks_visible() const;
