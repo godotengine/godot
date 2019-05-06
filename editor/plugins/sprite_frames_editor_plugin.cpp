@@ -456,6 +456,10 @@ void SpriteFramesEditor::_animation_select() {
 	if (updating)
 		return;
 
+	double value = anim_speed->get_line_edit()->get_text().to_double();
+	if (!Math::is_equal_approx(value, frames->get_animation_speed(edited_anim)))
+		_animation_fps_changed(value);
+
 	TreeItem *selected = animations->get_selected();
 	ERR_FAIL_COND(!selected);
 	edited_anim = selected->get_text(0);
