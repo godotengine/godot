@@ -172,7 +172,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _autoplay_pressed();
 	void _stop_pressed();
 	void _pause_pressed();
+	String _get_current_animation() const;
 	void _animation_selected(int p_which);
+	void _current_animation_updated();
 	void _animation_new();
 	void _animation_rename();
 	void _animation_name_edited();
