@@ -114,6 +114,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					tk.value.rot.y = ofs[6];
 					tk.value.rot.z = ofs[7];
 					tk.value.rot.w = ofs[8];
+					// used to sanitize rsc from ESCN file
+					tk.value.rot.normalize();
 
 					tk.value.scale.x = ofs[9];
 					tk.value.scale.y = ofs[10];
