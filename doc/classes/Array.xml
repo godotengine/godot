@@ -291,7 +291,7 @@
 		</method>
 		<method name="shuffle">
 			<description>
-				Shuffles the array such that the items will have a random order.
+				Shuffles the array such that the items will have a random order. Use [method @GDScript.randomize] to ensure random results.
 			</description>
 		</method>
 		<method name="size">
