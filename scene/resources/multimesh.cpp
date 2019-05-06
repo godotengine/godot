@@ -32,6 +32,8 @@
 #include "servers/visual_server.h"
 
 void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
+	if (transform_format != TRANSFORM_3D)
+		return;
 
 	PoolVector<Vector3> xforms = p_array;
 	int len = xforms.size();
@@ -55,6 +57,9 @@ void MultiMesh::_set_transform_array(const PoolVector<Vector3> &p_array) {
 
 PoolVector<Vector3> MultiMesh::_get_transform_array() const {
 
+	if (transform_format != TRANSFORM_3D)
+		return PoolVector<Vector3>();
+
 	if (instance_count == 0)
 		return PoolVector<Vector3>();
 
@@ -70,6 +75,54 @@ PoolVector<Vector3> MultiMesh::_get_transform_array() const {
 		w[i * 4 + 1] = t.basis[1];
 		w[i * 4 + 2] = t.basis[2];
 		w[i * 4 + 3] = t.origin;
+	}
+
+	return xforms;
+}
+
+void MultiMesh::_set_transform_2d_array(const PoolVector<Vector2> &p_array) {
+
+	if (transform_format != TRANSFORM_2D)
+		return;
+
+	PoolVector<Vector2> xforms = p_array;
+	int len = xforms.size();
+	ERR_FAIL_COND((len / 3) != instance_count);
+	if (len == 0)
+		return;
+
+	PoolVector<Vector2>::Read r = xforms.read();
+
+	for (int i = 0; i < len / 3; i++) {
+
+		Transform2D t;
+		t.elements[0] = r[i * 3 + 0];
+		t.elements[1] = r[i * 3 + 1];
+		t.elements[2] = r[i * 3 + 2];
+
+		set_instance_transform_2d(i, t);
+	}
+}
+
+PoolVector<Vector2> MultiMesh::_get_transform_2d_array() const {
+
+	if (transform_format != TRANSFORM_2D)
+		return PoolVector<Vector2>();
+
+	if (instance_count == 0)
+		return PoolVector<Vector2>();
+
+	PoolVector<Vector2> xforms;
+	xforms.resize(instance_count * 3);
+
+	PoolVector<Vector2>::Write w = xforms.write();
+
+	for (int i = 0; i < instance_count; i++) {
+
+		Transform2D t = get_instance_transform_2d(i);
+		w[i * 3 + 0] = t.elements[0];
+		w[i * 3 + 1] = t.elements[1];
+		w[i * 3 + 2] = t.elements[2];
 	}
 
 	return xforms;
@@ -210,6 +263,11 @@ Color MultiMesh::get_instance_custom_data(int p_instance) const {
 	return VisualServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
 }
 
+void MultiMesh::set_as_bulk_array(const PoolVector<float> &p_array) {
+
+	VisualServer::get_singleton()->multimesh_set_as_bulk_array(multimesh, p_array);
+}
+
 AABB MultiMesh::get_aabb() const {
 
 	return VisualServer::get_singleton()->multimesh_get_aabb(multimesh);
@@ -275,10 +333,13 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance_color", "instance"), &MultiMesh::get_instance_color);
 	ClassDB::bind_method(D_METHOD("set_instance_custom_data", "instance", "custom_data"), &MultiMesh::set_instance_custom_data);
 	ClassDB::bind_method(D_METHOD("get_instance_custom_data", "instance"), &MultiMesh::get_instance_custom_data);
+	ClassDB::bind_method(D_METHOD("set_as_bulk_array", "array"), &MultiMesh::set_as_bulk_array);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &MultiMesh::get_aabb);
 
 	ClassDB::bind_method(D_METHOD("_set_transform_array"), &MultiMesh::_set_transform_array);
 	ClassDB::bind_method(D_METHOD("_get_transform_array"), &MultiMesh::_get_transform_array);
+	ClassDB::bind_method(D_METHOD("_set_transform_2d_array"), &MultiMesh::_set_transform_2d_array);
+	ClassDB::bind_method(D_METHOD("_get_transform_2d_array"), &MultiMesh::_get_transform_2d_array);
 	ClassDB::bind_method(D_METHOD("_set_color_array"), &MultiMesh::_set_color_array);
 	ClassDB::bind_method(D_METHOD("_get_color_array"), &MultiMesh::_get_color_array);
 	ClassDB::bind_method(D_METHOD("_set_custom_data_array"), &MultiMesh::_set_custom_data_array);
@@ -291,6 +352,7 @@ void MultiMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_instance_count", PROPERTY_HINT_RANGE, "-1,16384,1,or_greater"), "set_visible_instance_count", "get_visible_instance_count");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "transform_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_transform_array", "_get_transform_array");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "transform_2d_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_transform_2d_array", "_get_transform_2d_array");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "color_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_color_array", "_get_color_array");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY, "custom_data_array", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_custom_data_array", "_get_custom_data_array");
 
