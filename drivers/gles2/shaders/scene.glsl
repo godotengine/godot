@@ -1693,6 +1693,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#if !defined(SHADOWS_DISABLED)
+
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
@@ -1723,6 +1725,8 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#endif //SHADOWS_DISABLED
+
 #endif //type omni
 
 #ifdef LIGHT_MODE_DIRECTIONAL
@@ -1732,6 +1736,8 @@ FRAGMENT_SHADER_CODE
 	L = normalize(light_vec);
 #endif
 	float depth_z = -vertex.z;
+
+#if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
 
@@ -1951,6 +1957,8 @@ FRAGMENT_SHADER_CODE
 
 #endif //use shadow
 
+#endif // SHADOWS_DISABLED
+
 #endif
 
 #ifdef LIGHT_MODE_SPOT
@@ -1987,6 +1995,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#if !defined(SHADOWS_DISABLED)
+
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
@@ -1995,6 +2005,8 @@ FRAGMENT_SHADER_CODE
 		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 	}
 #endif
+
+#endif // SHADOWS_DISABLED
 
 #endif // LIGHT_MODE_SPOT
 
