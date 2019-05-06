@@ -37,7 +37,7 @@
 #include "editor_settings.h"
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
-#define CONTRIBUTE2_URL "https://github.com/godotengine/godot-docs"
+#define CONTRIBUTE_CLASS_URL "https://github.com/godotengine/godot-docs/blob/master/classes/class_$class.rst"
 #define REQUEST_URL "https://github.com/godotengine/godot-docs/issues/new"
 
 DocData *EditorHelp::doc = NULL;
@@ -917,7 +917,9 @@ void EditorHelp::_update_doc() {
 			}
 		} else {
 			class_desc->push_color(comment_color);
-			class_desc->append_bbcode(TTR("There are currently no tutorials for this class, you can [color=$color][url=$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/url][/color].").replace("$url2", REQUEST_URL).replace("$url", CONTRIBUTE2_URL).replace("$color", link_color_text));
+			String bbcode = TTR("There are currently no tutorials for this class, you can [color=$color][url=$url]contribute one[/url][/color] or [color=$color][url=$url2]request one[/url][/color].");
+			String contribute_url = String(CONTRIBUTE_CLASS_URL).replace("$class", edited_class.to_lower());
+			class_desc->append_bbcode(bbcode.replace("$url2", REQUEST_URL).replace("$url", contribute_url).replace("$color", link_color_text));
 			class_desc->pop();
 		}
 		class_desc->pop();
