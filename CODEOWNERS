@@ -2,8 +2,6 @@
 # Each line is a file pattern followed by one or more owners.
 # Owners can be @users, @org/teams or emails
 
-/core/               @reduz
-
 /doc/                @godotengine/documentation
 doc_classes/*        @godotengine/documentation
 
@@ -22,22 +20,19 @@ doc_classes/*        @godotengine/documentation
 /drivers/winmidi/    @marcelofg55
 /drivers/xaudio2/    @marcelofg55
 
-# Porting
-/drivers/unix/       @reduz @hpvb
-/drivers/windows/    @reduz @hpvb
+/drivers/unix/       @hpvb
+/drivers/windows/    @hpvb
 
 /editor/icons/       @djrm
-
-/main/               @reduz
 
 /misc/               @akien-mga
 
 /modules/bullet/     @AndreaCatania
-/modules/csg/        @reduz @BastiaanOlij
+/modules/csg/        @BastiaanOlij
 /modules/enet/       @godotengine/network
 /modules/gdnative/   @karroffel
 /modules/gdnative/*arvr/ @BastiaanOlij
-/modules/gdscript/   @reduz @vnen @bojidar-bg
+/modules/gdscript/   @vnen @bojidar-bg
 /modules/mbedtls/    @godotengine/network
 /modules/mobile_vr/  @BastiaanOlij
 /modules/mono/       @neikeq
@@ -48,8 +43,6 @@ doc_classes/*        @godotengine/documentation
 
 /platform/javascript/ @eska014
 /platform/uwp/       @vnen
-
-/scene/main/         @reduz
 
 /server/physics*/    @reduz @AndreaCatania
 /server/visual*/     @reduz @karroffel
