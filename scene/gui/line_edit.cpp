@@ -159,6 +159,38 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 		if (!k->is_pressed())
 			return;
+
+#ifdef APPLE_STYLE_KEYS
+		if (k->get_control() && !k->get_shift() && !k->get_alt() && !k->get_command()) {
+			uint32_t remap_key = KEY_UNKNOWN;
+			switch (k->get_scancode()) {
+				case KEY_F: {
+					remap_key = KEY_RIGHT;
+				} break;
+				case KEY_B: {
+					remap_key = KEY_LEFT;
+				} break;
+				case KEY_P: {
+					remap_key = KEY_UP;
+				} break;
+				case KEY_N: {
+					remap_key = KEY_DOWN;
+				} break;
+				case KEY_D: {
+					remap_key = KEY_DELETE;
+				} break;
+				case KEY_H: {
+					remap_key = KEY_BACKSPACE;
+				} break;
+			}
+
+			if (remap_key != KEY_UNKNOWN) {
+				k->set_scancode(remap_key);
+				k->set_control(false);
+			}
+		}
+#endif
+
 		unsigned int code = k->get_scancode();
 
 		if (k->get_command()) {
