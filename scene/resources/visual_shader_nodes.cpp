@@ -2350,7 +2350,7 @@ VisualShaderNodeVectorRefract::VisualShaderNodeVectorRefract() {
 ////////////// Scalar Interp
 
 String VisualShaderNodeScalarInterp::get_caption() const {
-	return "ScalarInterp";
+	return "Mix";
 }
 
 int VisualShaderNodeScalarInterp::get_input_port_count() const {
@@ -2392,7 +2392,7 @@ VisualShaderNodeScalarInterp::VisualShaderNodeScalarInterp() {
 ////////////// Vector Interp
 
 String VisualShaderNodeVectorInterp::get_caption() const {
-	return "VectorInterp";
+	return "Mix";
 }
 
 int VisualShaderNodeVectorInterp::get_input_port_count() const {
