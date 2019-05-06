@@ -334,6 +334,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *scene = edited_scene;
 
 			if (!scene) {
+				EditorNode::get_singleton()->close_current_scene();
 				EditorNode::get_singleton()->new_inherited_scene();
 				break;
 			}
