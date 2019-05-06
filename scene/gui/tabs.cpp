@@ -222,6 +222,10 @@ void Tabs::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			rb_hover = -1;
 			cb_hover = -1;
@@ -232,7 +236,6 @@ void Tabs::_notification(int p_what) {
 			_update_cache();
 			_ensure_no_over_offset();
 			ensure_tab_visible(current);
-
 		} break;
 		case NOTIFICATION_DRAW: {
 			_update_cache();
@@ -394,7 +397,6 @@ void Tabs::_notification(int p_what) {
 			} else {
 				buttons_visible = false;
 			}
-
 		} break;
 	}
 }
