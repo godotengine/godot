@@ -708,6 +708,10 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 								default_anim->transform_track_interpolate(j, from, &p, &q, &s);
 								new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
 							}
+							if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+								Variant var = default_anim->value_track_interpolate(j, from);
+								new_anim->track_insert_key(dtrack, 0, var);
+							}
 						}
 					}
 
@@ -717,6 +721,10 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 						Vector3 s;
 						default_anim->transform_track_get_key(j, k, &p, &q, &s);
 						new_anim->transform_track_insert_key(dtrack, kt - from, p, q, s);
+					}
+					if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+						Variant var = default_anim->track_get_key_value(j, k);
+						new_anim->track_insert_key(dtrack, kt - from, var);
 					}
 				}
 
@@ -728,6 +736,10 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 						Vector3 s;
 						default_anim->transform_track_interpolate(j, to, &p, &q, &s);
 						new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
+					}
+					if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+						Variant var = default_anim->value_track_interpolate(j, to);
+						new_anim->track_insert_key(dtrack, to - from, var);
 					}
 				}
 			}
@@ -745,6 +757,12 @@ void ResourceImporterScene::_create_clips(Node *scene, const Array &p_clips, boo
 					new_anim->transform_track_insert_key(dtrack, 0, p, q, s);
 					default_anim->transform_track_interpolate(j, to, &p, &q, &s);
 					new_anim->transform_track_insert_key(dtrack, to - from, p, q, s);
+				}
+				if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
+					Variant var = default_anim->value_track_interpolate(j, from);
+					new_anim->track_insert_key(dtrack, 0, var);
+					Variant to_var = default_anim->value_track_interpolate(j, to);
+					new_anim->track_insert_key(dtrack, to - from, to_var);
 				}
 			}
 		}
