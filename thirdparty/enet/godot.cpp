@@ -95,7 +95,6 @@ ENetSocket enet_socket_create(ENetSocketType type) {
 	NetSocket *socket = NetSocket::create();
 	IP::Type ip_type = IP::TYPE_ANY;
 	socket->open(NetSocket::TYPE_UDP, ip_type);
-	socket->set_blocking_enabled(false);
 
 	return socket;
 }
@@ -215,6 +214,46 @@ int enet_socket_listen(ENetSocket socket, int backlog) {
 }
 
 int enet_socket_set_option(ENetSocket socket, ENetSocketOption option, int value) {
+
+	NetSocket *sock = (NetSocket *)socket;
+
+	switch (option) {
+		case ENET_SOCKOPT_NONBLOCK: {
+			sock->set_blocking_enabled(value ? false : true);
+			return 0;
+		} break;
+
+		case ENET_SOCKOPT_BROADCAST: {
+			sock->set_broadcasting_enabled(value ? true : false);
+			return 0;
+		} break;
+
+		case ENET_SOCKOPT_REUSEADDR: {
+			sock->set_reuse_address_enabled(value ? true : false);
+			return 0;
+		} break;
+
+		case ENET_SOCKOPT_RCVBUF: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_SNDBUF: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_RCVTIMEO: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_SNDTIMEO: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_NODELAY: {
+			sock->set_tcp_no_delay_enabled(value ? true : false);
+			return 0;
+		} break;
+	}
 
 	return -1;
 }
