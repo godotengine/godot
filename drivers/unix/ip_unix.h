@@ -43,7 +43,7 @@ class IP_Unix : public IP {
 	static IP *_create_unix();
 
 public:
-	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
+	virtual void get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const;
 
 	static void make_default();
 	IP_Unix();
