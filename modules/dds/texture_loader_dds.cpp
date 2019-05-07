@@ -31,6 +31,8 @@
 #include "texture_loader_dds.h"
 #include "core/os/file_access.h"
 
+#define PF_FOURCC(s) (((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0]))
+
 enum {
 	DDS_MAGIC = 0x20534444,
 	DDSD_CAPS = 0x00000001,
@@ -51,6 +53,7 @@ enum DDSFormat {
 	DDS_DXT5,
 	DDS_ATI1,
 	DDS_ATI2,
+	DDS_A2XY,
 	DDS_BGRA8,
 	DDS_BGR8,
 	DDS_RGBA8, //flipped in dds
@@ -74,9 +77,12 @@ struct DDSFormatInfo {
 };
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {
-	{ "DXT1", true, false, 4, 8, Image::FORMAT_DXT1 },
-	{ "DXT3", true, false, 4, 16, Image::FORMAT_DXT3 },
-	{ "DXT5", true, false, 4, 16, Image::FORMAT_DXT5 },
+	{ "DXT1/BC1", true, false, 4, 8, Image::FORMAT_DXT1 },
+	{ "DXT3/BC2", true, false, 4, 16, Image::FORMAT_DXT3 },
+	{ "DXT5/BC3", true, false, 4, 16, Image::FORMAT_DXT5 },
+	{ "ATI1/BC4", true, false, 4, 8, Image::FORMAT_RGTC_R },
+	{ "ATI2/3DC/BC5", true, false, 4, 16, Image::FORMAT_RGTC_RG },
+	{ "A2XY/DXN/BC5", true, false, 4, 16, Image::FORMAT_RGTC_RG },
 	{ "BGRA8", false, false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "BGR8", false, false, 1, 3, Image::FORMAT_RGB8 },
 	{ "RGBA8", false, false, 1, 4, Image::FORMAT_RGBA8 },
@@ -158,22 +164,25 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	DDSFormat dds_format;
 
-	if (format_flags & DDPF_FOURCC && format_fourcc == 0x31545844) { //'1TXD'
+	if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("DXT1")) {
 
 		dds_format = DDS_DXT1;
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x33545844) { //'3TXD'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("DXT3")) {
 
 		dds_format = DDS_DXT3;
 
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x35545844) { //'5TXD'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("DXT5")) {
 
 		dds_format = DDS_DXT5;
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x31495441) { //'1ITA'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("ATI1")) {
 
 		dds_format = DDS_ATI1;
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x32495441) { //'2ITA'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("ATI2")) {
 
 		dds_format = DDS_ATI2;
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("A2XY")) {
+
+		dds_format = DDS_A2XY;
 
 	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff && format_alpha_mask == 0xff000000) {
 
