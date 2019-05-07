@@ -34,6 +34,22 @@
 				Returns all of the user's current IPv4 and IPv6 addresses as an array.
 			</description>
 		</method>
+		<method name="get_local_interfaces" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+				Returns all network adapters as an array.
+				Each adapter is a dictionary of the form:
+				[codeblock]
+				{
+				    "index": "1", # Interface index.
+				    "name": "eth0", # Interface name.
+				    "friendly": "Ethernet One", # A friendly name (might be empty).
+				    "addresses": ["192.168.1.101"], # An array of IP addresses associated to this interface.
+				}
+				[/codeblock]
+			</description>
+		</method>
 		<method name="get_resolve_item_address" qualifiers="const">
 			<return type="String">
 			</return>
