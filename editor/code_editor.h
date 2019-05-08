@@ -242,6 +242,8 @@ public:
 
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
+	void validate_script();
+
 	CodeTextEditor();
 };
 

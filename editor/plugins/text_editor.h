@@ -145,6 +145,8 @@ public:
 	virtual Control *get_edit_menu();
 	virtual void clear_edit_menu();
 
+	virtual void validate();
+
 	static void register_editor();
 
 	TextEditor();

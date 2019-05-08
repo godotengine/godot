@@ -1330,9 +1330,12 @@ void CodeTextEditor::_on_settings_change() {
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
-
 	_validate_script();
 	emit_signal("validate_script");
+}
+
+void CodeTextEditor::validate_script() {
+	idle->start();
 }
 
 void CodeTextEditor::_warning_label_gui_input(const Ref<InputEvent> &p_event) {

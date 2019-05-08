@@ -3759,4 +3759,7 @@ void _VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_custom_node", "name", "category"), &_VisualScriptEditor::remove_custom_node);
 	ADD_SIGNAL(MethodInfo("custom_nodes_updated"));
 }
+
+void VisualScriptEditor::validate() {
+}
 #endif
