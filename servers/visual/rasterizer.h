@@ -550,10 +550,12 @@ public:
 		RENDER_TARGET_NO_SAMPLING,
 		RENDER_TARGET_HDR,
 		RENDER_TARGET_KEEP_3D_LINEAR,
+		RENDER_TARGET_DIRECT_TO_SCREEN,
 		RENDER_TARGET_FLAG_MAX
 	};
 
 	virtual RID render_target_create() = 0;
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height) = 0;
 	virtual RID render_target_get_texture(RID p_render_target) const = 0;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
