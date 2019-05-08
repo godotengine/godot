@@ -369,7 +369,6 @@ void ItemList::clear() {
 	update();
 	shape_changed = true;
 	defer_select_single = -1;
-	scroll_bar->set_value(0);
 }
 
 void ItemList::set_fixed_column_width(int p_size) {
