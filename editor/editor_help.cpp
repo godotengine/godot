@@ -37,7 +37,7 @@
 #include "editor_settings.h"
 
 #define CONTRIBUTE_URL "https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html"
-#define CONTRIBUTE_CLASS_URL "https://github.com/godotengine/godot-docs/blob/master/classes/class_$class.rst"
+#define CONTRIBUTE_CLASS_URL "https://github.com/godotengine/godot/blob/master/doc/classes/$class.xml"
 #define REQUEST_URL "https://github.com/godotengine/godot-docs/issues/new"
 
 DocData *EditorHelp::doc = NULL;
