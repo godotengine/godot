@@ -110,10 +110,12 @@ void ImageTexture::reload_from_file() {
 	Ref<Image> img;
 	img.instance();
 
-	Error err = ImageLoader::load_image(path, img);
-	ERR_FAIL_COND(err != OK);
-
-	create_from_image(img, flags);
+	if (ImageLoader::load_image(path, img) == OK) {
+		create_from_image(img, flags);
+	} else {
+		Resource::reload_from_file();
+		_change_notify();
+	}
 }
 
 bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
@@ -637,7 +639,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		bool mipmaps = df & FORMAT_BIT_HAS_MIPMAPS;
 
 		if (!mipmaps) {
-			int size = Image::get_image_data_size(tw, th, format, 0);
+			int size = Image::get_image_data_size(tw, th, format, false);
 
 			PoolVector<uint8_t> img_data;
 			img_data.resize(size);
@@ -659,7 +661,6 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 			int mipmaps2 = Image::get_image_required_mipmaps(tw, th, format);
 			int total_size = Image::get_image_data_size(tw, th, format, true);
 			int idx = 0;
-			int ofs = 0;
 
 			while (mipmaps2 > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
 
@@ -669,9 +670,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 				idx++;
 			}
 
-			if (idx > 0) {
-				ofs = Image::get_image_data_size(tw, th, format, idx - 1);
-			}
+			int ofs = Image::get_image_mipmap_offset(tw, th, format, idx);
 
 			if (total_size - ofs <= 0) {
 				memdelete(f);
