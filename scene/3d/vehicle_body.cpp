@@ -260,6 +260,9 @@ void VehicleWheel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_as_steering", "enable"), &VehicleWheel::set_use_as_steering);
 	ClassDB::bind_method(D_METHOD("is_used_as_steering"), &VehicleWheel::is_used_as_steering);
 
+	ClassDB::bind_method(D_METHOD("set_use_as_brake", "enable"), &VehicleWheel::set_use_as_brake);
+	ClassDB::bind_method(D_METHOD("is_used_as_brake"), &VehicleWheel::is_used_as_brake);
+
 	ClassDB::bind_method(D_METHOD("set_friction_slip", "length"), &VehicleWheel::set_friction_slip);
 	ClassDB::bind_method(D_METHOD("get_friction_slip"), &VehicleWheel::get_friction_slip);
 
@@ -272,6 +275,7 @@ void VehicleWheel::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_brake"), "set_use_as_brake", "is_used_as_brake");
 	ADD_GROUP("Wheel", "wheel_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wheel_roll_influence"), "set_roll_influence", "get_roll_influence");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wheel_radius"), "set_radius", "get_radius");
@@ -306,6 +310,16 @@ bool VehicleWheel::is_used_as_steering() const {
 	return steers;
 }
 
+void VehicleWheel::set_use_as_brake(bool p_enable) {
+
+	can_brake = p_enable;
+}
+
+bool VehicleWheel::is_used_as_brake() const {
+
+	return can_brake;
+}
+
 float VehicleWheel::get_skidinfo() const {
 
 	return m_skidInfo;
@@ -315,6 +329,7 @@ VehicleWheel::VehicleWheel() {
 
 	steers = false;
 	engine_traction = false;
+	can_brake = false;
 
 	m_steering = real_t(0.);
 	//m_engineForce = real_t(0.);
@@ -716,14 +731,15 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			real_t rollingFriction = 0.f;
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-				if (engine_force != 0.f && wheelInfo.engine_traction != false) {
-					rollingFriction = -engine_force * s->get_step();
-				} else {
+				if (engine_force != 0.f && wheelInfo.engine_traction) {
+					rollingFriction += -engine_force * s->get_step();
+				}
+				if (brake != 0.f && wheelInfo.can_brake) {
 					real_t defaultRollingFrictionImpulse = 0.f;
 					float cbrake = MAX(wheelInfo.m_brake, brake);
 					real_t maxImpulse = cbrake ? cbrake : defaultRollingFrictionImpulse;
 					btVehicleWheelContactPoint contactPt(s, wheelInfo.m_raycastInfo.m_groundObject, wheelInfo.m_raycastInfo.m_contactPointWS, m_forwardWS[wheel], maxImpulse);
-					rollingFriction = _calc_rolling_friction(contactPt);
+					rollingFriction += _calc_rolling_friction(contactPt);
 				}
 			}
 

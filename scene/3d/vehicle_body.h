@@ -45,6 +45,7 @@ class VehicleWheel : public Spatial {
 	Transform local_xform;
 	bool engine_traction;
 	bool steers;
+	bool can_brake;
 
 	Vector3 m_chassisConnectionPointCS; //const
 	Vector3 m_wheelDirectionCS; //const
@@ -126,6 +127,9 @@ public:
 
 	void set_use_as_steering(bool p_enabled);
 	bool is_used_as_steering() const;
+
+	void set_use_as_brake(bool p_enable);
+	bool is_used_as_brake() const;
 
 	bool is_in_contact() const;
 
