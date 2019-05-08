@@ -73,6 +73,7 @@ public:
 private:
 	enum FileMenu {
 		FILE_OPEN,
+		FILE_INHERIT,
 		FILE_INSTANCE,
 		FILE_ADD_FAVORITE,
 		FILE_REMOVE_FAVORITE,

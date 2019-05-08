@@ -1505,6 +1505,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 			}
 		} break;
 
+		case FILE_INHERIT: {
+			// Create a new scene inherited from the selected one
+			if (p_selected.size() == 1) {
+				emit_signal("inherit", p_selected[0]);
+			}
+		} break;
+
 		case FILE_INSTANCE: {
 			// Instance all selected scenes
 			Vector<String> paths;
@@ -2071,13 +2078,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (all_files) {
 
-		if (all_files_scenes && filenames.size() >= 1) {
-			p_popup->add_item(TTR("Open Scene(s)"), FILE_OPEN);
+		if (all_files_scenes) {
+			if (filenames.size() == 1) {
+				p_popup->add_item(TTR("Open Scene"), FILE_OPEN);
+				p_popup->add_item(TTR("New Inherited Scene"), FILE_INHERIT);
+			} else {
+				p_popup->add_item(TTR("Open Scenes"), FILE_OPEN);
+			}
 			p_popup->add_item(TTR("Instance"), FILE_INSTANCE);
 			p_popup->add_separator();
-		}
-
-		if (!all_files_scenes && filenames.size() == 1) {
+		} else if (filenames.size() == 1) {
 			p_popup->add_item(TTR("Open"), FILE_OPEN);
 			p_popup->add_separator();
 		}
@@ -2378,8 +2388,8 @@ void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_feature_profile_changed"), &FileSystemDock::_feature_profile_changed);
 
+	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
-	ADD_SIGNAL(MethodInfo("open"));
 
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
