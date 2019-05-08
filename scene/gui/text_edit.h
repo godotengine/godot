@@ -430,6 +430,9 @@ private:
 	void _confirm_completion();
 	void _update_completion_candidates();
 
+	int _calculate_spaces_till_next_left_indent(int column);
+	int _calculate_spaces_till_next_right_indent(int column);
+
 protected:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 

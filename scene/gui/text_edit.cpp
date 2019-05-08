@@ -104,6 +104,13 @@ static CharType _get_right_pair_symbol(CharType c) {
 	return 0;
 }
 
+static int _find_first_non_whitespace_column_of_line(const String &line) {
+	int left = 0;
+	while (left < line.length() && _is_whitespace(line[left]))
+		left++;
+	return left;
+}
+
 void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 
 	font = p_font;
@@ -1632,31 +1639,25 @@ void TextEdit::backspace_at_cursor() {
 		_consume_backspace_for_pair_symbol(prev_line, prev_column);
 	} else {
 		// handle space indentation
-		if (cursor.column - indent_size >= 0 && indent_using_spaces) {
-
-			// if there is enough spaces to count as a tab
+		if (cursor.column != 0 && indent_using_spaces) {
+			// check if there are no other chars before cursor, just indentation
 			bool unindent = true;
-			for (int i = 1; i <= indent_size; i++) {
-				if (text[cursor.line][cursor.column - i] != ' ') {
-					unindent = false;
-					break;
-				}
-			}
-
-			// and it is before the first character
 			int i = 0;
 			while (i < cursor.column && i < text[cursor.line].length()) {
-				if (text[cursor.line][i] != ' ' && text[cursor.line][i] != '\t') {
+				if (!_is_whitespace(text[cursor.line][i])) {
 					unindent = false;
 					break;
 				}
 				i++;
 			}
 
-			// then we can remove it as a single character.
+			// then we can remove all spaces as a single character.
 			if (unindent) {
-				_remove_text(cursor.line, cursor.column - indent_size, cursor.line, cursor.column);
-				prev_column = cursor.column - indent_size;
+				// we want to remove spaces up to closest indent
+				// or whole indent if cursor is pointing at it
+				int spaces_to_delete = _calculate_spaces_till_next_left_indent(cursor.column);
+				prev_column = cursor.column - spaces_to_delete;
+				_remove_text(cursor.line, prev_column, cursor.line, cursor.column);
 			} else {
 				_remove_text(prev_line, prev_column, cursor.line, cursor.column);
 			}
@@ -1673,6 +1674,10 @@ void TextEdit::indent_right() {
 
 	int start_line;
 	int end_line;
+
+	// this value informs us by how much we changed selection position by indenting right
+	// default is 1 for tab indentation
+	int selection_offset = 1;
 	begin_complex_operation();
 
 	if (is_selection_active()) {
@@ -1691,18 +1696,24 @@ void TextEdit::indent_right() {
 	for (int i = start_line; i <= end_line; i++) {
 		String line_text = get_line(i);
 		if (indent_using_spaces) {
-			line_text = space_indent + line_text;
+			// we don't really care where selection is - we just need to know indentation level at the beginning of the line
+			int left = _find_first_non_whitespace_column_of_line(line_text);
+			int spaces_to_add = _calculate_spaces_till_next_right_indent(left);
+			// since we will add this much spaces we want move whole selection and cursor by this much
+			selection_offset = spaces_to_add;
+			for (int j = 0; j < spaces_to_add; j++)
+				line_text = ' ' + line_text;
 		} else {
 			line_text = '\t' + line_text;
 		}
 		set_line(i, line_text);
 	}
 
-	// fix selection and cursor being off by one on the last line
+	// fix selection and cursor being off after shifting selection right
 	if (is_selection_active()) {
-		select(selection.from_line, selection.from_column + 1, selection.to_line, selection.to_column + 1);
+		select(selection.from_line, selection.from_column + selection_offset, selection.to_line, selection.to_column + selection_offset);
 	}
-	cursor_set_column(cursor.column + 1, false);
+	cursor_set_column(cursor.column + selection_offset, false);
 	end_complex_operation();
 	update();
 }
@@ -1711,6 +1722,15 @@ void TextEdit::indent_left() {
 
 	int start_line;
 	int end_line;
+
+	// moving cursor and selection after unindenting can get tricky
+	// because changing content of line can move cursor and selection on it's own (if new line ends before previous position of either)
+	// therefore we just remember initial values
+	// and at the end of the operation offset them by number of removed characters
+	int removed_characters = 0;
+	int initial_selection_end_column = selection.to_column;
+	int initial_cursor_column = cursor.column;
+
 	begin_complex_operation();
 
 	if (is_selection_active()) {
@@ -1733,19 +1753,41 @@ void TextEdit::indent_left() {
 		if (line_text.begins_with("\t")) {
 			line_text = line_text.substr(1, line_text.length());
 			set_line(i, line_text);
-		} else if (line_text.begins_with(space_indent)) {
-			line_text = line_text.substr(indent_size, line_text.length());
+			removed_characters = 1;
+		} else if (line_text.begins_with(" ")) {
+			// when unindenting we aim to remove spaces before line that has selection no matter what is selected
+			// so we start of by finding first non whitespace character of line
+			int left = _find_first_non_whitespace_column_of_line(line_text);
+
+			// here we remove only enough spaces to align text to nearest full multiple of indentation_size
+			// in case where selection begins at the start of indentation_size multiple we remove whole indentation level
+			int spaces_to_remove = _calculate_spaces_till_next_left_indent(left);
+
+			line_text = line_text.substr(spaces_to_remove, line_text.length());
 			set_line(i, line_text);
+			removed_characters = spaces_to_remove;
 		}
 	}
 
 	// fix selection and cursor being off by one on the last line
 	if (is_selection_active() && last_line_text != get_line(end_line)) {
-		select(selection.from_line, selection.from_column - 1, selection.to_line, selection.to_column - 1);
+		select(selection.from_line, selection.from_column - removed_characters,
+				selection.to_line, initial_selection_end_column - removed_characters);
 	}
-	cursor_set_column(cursor.column - 1, false);
+	cursor_set_column(initial_cursor_column - removed_characters, false);
 	end_complex_operation();
 	update();
+}
+
+int TextEdit::_calculate_spaces_till_next_left_indent(int column) {
+	int spaces_till_indent = column % indent_size;
+	if (spaces_till_indent == 0)
+		spaces_till_indent = indent_size;
+	return spaces_till_indent;
+}
+
+int TextEdit::_calculate_spaces_till_next_right_indent(int column) {
+	return indent_size - column % indent_size;
 }
 
 void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const {
@@ -2504,15 +2546,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				} else {
 					if (k->get_shift()) {
 
-						//simple unindent
+						// simple unindent
 						int cc = cursor.column;
-
-						const int len = text[cursor.line].length();
 						const String &line = text[cursor.line];
 
-						int left = 0; // number of whitespace chars at beginning of line
-						while (left < len && (line[left] == '\t' || line[left] == ' '))
-							left++;
+						int left = _find_first_non_whitespace_column_of_line(line);
 						cc = MIN(cc, left);
 
 						while (cc < indent_size && cc < left && line[cc] == ' ')
@@ -2520,24 +2558,18 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 						if (cc > 0 && cc <= text[cursor.line].length()) {
 							if (text[cursor.line][cc - 1] == '\t') {
+								// tabs unindentation
 								_remove_text(cursor.line, cc - 1, cursor.line, cc);
 								if (cursor.column >= left)
 									cursor_set_column(MAX(0, cursor.column - 1));
 								update();
 							} else {
-								int n = 0;
-
-								for (int i = 1; i <= MIN(cc, indent_size); i++) {
-									if (line[cc - i] != ' ') {
-										break;
-									}
-									n++;
-								}
-
-								if (n > 0) {
-									_remove_text(cursor.line, cc - n, cursor.line, cc);
-									if (cursor.column > left - n) // inside text?
-										cursor_set_column(MAX(0, cursor.column - n));
+								// spaces unindentation
+								int spaces_to_remove = _calculate_spaces_till_next_left_indent(cc);
+								if (spaces_to_remove > 0) {
+									_remove_text(cursor.line, cc - spaces_to_remove, cursor.line, cc);
+									if (cursor.column > left - spaces_to_remove) // inside text?
+										cursor_set_column(MAX(0, cursor.column - spaces_to_remove));
 									update();
 								}
 							}
@@ -2546,9 +2578,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 							update();
 						}
 					} else {
-						//simple indent
+						// simple indent
 						if (indent_using_spaces) {
-							_insert_text_at_cursor(space_indent);
+							// insert only as much spaces as needed till next indentation level
+							int spaces_to_add = _calculate_spaces_till_next_right_indent(cursor.column);
+							String indent_to_insert = String();
+							for (int i = 0; i < spaces_to_add; i++)
+								indent_to_insert = ' ' + indent_to_insert;
+							_insert_text_at_cursor(indent_to_insert);
 						} else {
 							_insert_text_at_cursor("\t");
 						}
