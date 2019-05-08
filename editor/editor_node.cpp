@@ -1271,6 +1271,11 @@ void EditorNode::_dialog_action(String p_file) {
 	switch (current_option) {
 		case FILE_NEW_INHERITED_SCENE: {
 
+			Node *scene = editor_data.get_edited_scene_root();
+			// If the previous scene is rootless, just close it in favor of the new one.
+			if (!scene)
+				_menu_option_confirm(FILE_CLOSE, false);
+
 			load_scene(p_file, false, true);
 		} break;
 		case FILE_OPEN_SCENE: {
