@@ -61,6 +61,7 @@
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale">
+			The animation speed is multiplied by this value.
 		</member>
 	</members>
 	<signals>
