@@ -1744,3 +1744,7 @@ void ScriptTextEditor::register_editor() {
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }
+
+void ScriptTextEditor::validate() {
+	this->code_editor->validate_script();
+}

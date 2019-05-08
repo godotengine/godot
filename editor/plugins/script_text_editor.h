@@ -215,6 +215,8 @@ public:
 	virtual void clear_edit_menu();
 	static void register_editor();
 
+	virtual void validate();
+
 	ScriptTextEditor();
 };
 

@@ -622,3 +622,6 @@ TextEditor::TextEditor() {
 
 	code_editor->get_text_edit()->set_drag_forwarding(this);
 }
+
+void TextEditor::validate() {
+}

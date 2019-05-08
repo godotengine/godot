@@ -280,6 +280,7 @@ public:
 	virtual Control *get_edit_menu();
 	virtual void clear_edit_menu();
 	virtual bool can_lose_focus_on_node_selection() { return false; }
+	virtual void validate();
 
 	static void register_editor();
 
