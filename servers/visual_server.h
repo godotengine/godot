@@ -610,6 +610,7 @@ public:
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
 
 	virtual void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), int p_screen = 0) = 0;
+	virtual void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable) = 0;
 	virtual void viewport_detach(RID p_viewport) = 0;
 
 	enum ViewportUpdateMode {

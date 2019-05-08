@@ -4568,8 +4568,15 @@ void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerSc
 
 void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
+	// do not allocate a render target with no size
 	if (rt->width <= 0 || rt->height <= 0)
 		return;
+
+	// do not allocate a render target that is attached to the screen
+	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
+		rt->fbo = RasterizerStorageGLES2::system_fbo;
+		return;
+	}
 
 	GLuint color_internal_format;
 	GLuint color_format;
@@ -4779,6 +4786,10 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 
 void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 
+	// there is nothing to clear when DIRECT_TO_SCREEN is used
+	if (rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN])
+		return;
+
 	if (rt->fbo) {
 		glDeleteFramebuffers(1, &rt->fbo);
 		glDeleteTextures(1, &rt->color);
@@ -4871,6 +4882,15 @@ RID RasterizerStorageGLES2::render_target_create() {
 	rt->texture = texture_owner.make_rid(t);
 
 	return render_target_owner.make_rid(rt);
+}
+
+void RasterizerStorageGLES2::render_target_set_position(RID p_render_target, int p_x, int p_y) {
+
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->x = p_x;
+	rt->y = p_y;
 }
 
 void RasterizerStorageGLES2::render_target_set_size(RID p_render_target, int p_width, int p_height) {
@@ -5001,6 +5021,14 @@ void RasterizerStorageGLES2::render_target_set_external_texture(RID p_render_tar
 void RasterizerStorageGLES2::render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
+
+	// When setting DIRECT_TO_SCREEN, you need to clear before the value is set, but allocate after as
+	// those functions change how they operate depending on the value of DIRECT_TO_SCREEN
+	if (p_flag == RENDER_TARGET_DIRECT_TO_SCREEN && p_value != rt->flags[RENDER_TARGET_DIRECT_TO_SCREEN]) {
+		_render_target_clear(rt);
+		rt->flags[p_flag] = p_value;
+		_render_target_allocate(rt);
+	}
 
 	rt->flags[p_flag] = p_value;
 
