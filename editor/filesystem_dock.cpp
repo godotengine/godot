@@ -462,6 +462,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 	_update_tree(_compute_uncollapsed_paths(), false, p_select_in_favorites);
 	if (display_mode == DISPLAY_MODE_SPLIT) {
 		_update_file_list(false);
+		files->get_v_scroll()->set_value(0);
 	}
 
 	String file_name = p_path.get_file();
