@@ -52,7 +52,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
 		_get_model = p_env->GetMethodID(cls, "getModel", "()Ljava/lang/String;");
 		_get_screen_DPI = p_env->GetMethodID(cls, "getScreenDPI", "()I");
-		_get_unique_ID = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
+		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
@@ -122,9 +122,9 @@ int GodotIOJavaWrapper::get_screen_dpi() {
 }
 
 String GodotIOJavaWrapper::get_unique_id() {
-	if (_get_unique_ID) {
+	if (_get_unique_id) {
 		JNIEnv *env = ThreadAndroid::get_env();
-		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_unique_ID);
+		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_unique_id);
 		return jstring_to_string(s, env);
 	} else {
 		return String();

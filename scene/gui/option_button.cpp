@@ -115,15 +115,15 @@ void OptionButton::pressed() {
 	popup->popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID) {
+void OptionButton::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id) {
 
-	popup->add_icon_radio_check_item(p_icon, p_label, p_ID);
+	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (popup->get_item_count() == 1)
 		select(0);
 }
-void OptionButton::add_item(const String &p_label, int p_ID) {
+void OptionButton::add_item(const String &p_label, int p_id) {
 
-	popup->add_radio_check_item(p_label, p_ID);
+	popup->add_radio_check_item(p_label, p_id);
 	if (popup->get_item_count() == 1)
 		select(0);
 }
@@ -136,9 +136,9 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 
 	popup->set_item_icon(p_idx, p_icon);
 }
-void OptionButton::set_item_id(int p_idx, int p_ID) {
+void OptionButton::set_item_id(int p_idx, int p_id) {
 
-	popup->set_item_id(p_idx, p_ID);
+	popup->set_item_id(p_idx, p_id);
 }
 
 void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
@@ -338,8 +338,8 @@ void OptionButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	// "selected" property must come after "items", otherwise GH-10213 occurs
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
-	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "ID")));
-	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "ID")));
+	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "id")));
 }
 
 OptionButton::OptionButton() {
