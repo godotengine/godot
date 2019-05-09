@@ -131,6 +131,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"instance_from_id",
 		"len",
 		"is_instance_valid",
+		"is_instance_is_valid"
 	};
 
 	return _names[p_func];
@@ -1421,6 +1422,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			}
 
 		} break;
+		case IS_INSTANCE_ID_VALID: {
+
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type() != Variant::INT) {
+				r_ret = false;
+			} else {
+				ObjectID instance_id = *p_args[0];
+				r_ret = ObjectDB::instance_id_validate(instance_id);
+			}
+
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL();
@@ -1997,6 +2009,11 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 		} break;
 		case IS_INSTANCE_VALID: {
 			MethodInfo mi("is_instance_valid", PropertyInfo(Variant::OBJECT, "instance"));
+			mi.return_val.type = Variant::BOOL;
+			return mi;
+		} break;
+		case IS_INSTANCE_ID_VALID: {
+			MethodInfo mi("is_instance_id_valid", PropertyInfo(Variant::INT, "instance_id"));
 			mi.return_val.type = Variant::BOOL;
 			return mi;
 		} break;

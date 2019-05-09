@@ -258,6 +258,13 @@
           ]
         },
         {
+          "name": "godot_is_instance_id_valid",
+          "return_type": "bool",
+          "arguments": [
+            ["godot_int", "p_instance_id"]
+          ]
+        },
+        {
           "name": "godot_quat_new_with_basis",
           "return_type": "void",
           "arguments": [

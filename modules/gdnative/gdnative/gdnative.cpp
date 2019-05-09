@@ -170,6 +170,10 @@ bool GDAPI godot_is_instance_valid(const godot_object *p_object) {
 	return ObjectDB::instance_validate((Object *)p_object);
 }
 
+bool GDAPI godot_is_instance_id_valid(godot_int p_instance_id) {
+	return ObjectDB::instance_id_validate(p_instance_id);
+}
+
 #ifdef __cplusplus
 }
 #endif

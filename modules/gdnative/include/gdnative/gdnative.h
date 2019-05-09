@@ -286,6 +286,10 @@ void GDAPI godot_print(const godot_string *p_message);
 
 bool GDAPI godot_is_instance_valid(const godot_object *p_object);
 
+// GDNATIVE CORE 1.0.2?
+
+bool GDAPI godot_is_instance_id_valid(godot_int p_instance_id);
+
 #ifdef __cplusplus
 }
 #endif

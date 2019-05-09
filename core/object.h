@@ -781,8 +781,17 @@ public:
 	static int get_object_count();
 
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
+                rw_lock->read_lock();
+		bool exists = instance_checks.has(p_ptr);
+                rw_lock->read_unlock();
+                return exists;
+	}
 
-		return instance_checks.has(p_ptr);
+	_FORCE_INLINE_ static bool instance_id_validate(ObjectID p_instance_id) {
+                rw_lock->read_lock();
+		bool exists = instances.has(p_instance_id);
+                rw_lock->read_unlock();
+		return exists;
 	}
 };
 
