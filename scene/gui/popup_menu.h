@@ -55,7 +55,7 @@ class PopupMenu : public Popup {
 		int state;
 		bool separator;
 		bool disabled;
-		int ID;
+		int id;
 		Variant metadata;
 		String submenu;
 		String tooltip;
@@ -120,26 +120,26 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_radio_check_item(const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_ID = -1, uint32_t p_accel = 0);
-	void add_submenu_item(const String &p_label, const String &p_submenu, int p_ID = -1);
+	void add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_icon_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_radio_check_item(const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_icon_radio_check_item(const Ref<Texture> &p_icon, const String &p_label, int p_id = -1, uint32_t p_accel = 0);
+	void add_submenu_item(const String &p_label, const String &p_submenu, int p_id = -1);
 
-	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
-	void add_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
-	void add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
-	void add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
-	void add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_ID = -1, bool p_global = false);
+	void add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
+	void add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id = -1, bool p_global = false);
 
-	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_ID = -1, uint32_t p_accel = 0);
+	void add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_id = -1, uint32_t p_accel = 0);
 
 	void set_item_text(int p_idx, const String &p_text);
 	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
 	void set_item_checked(int p_idx, bool p_checked);
-	void set_item_id(int p_idx, int p_ID);
+	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, uint32_t p_accel);
 	void set_item_metadata(int p_idx, const Variant &p_meta);
 	void set_item_disabled(int p_idx, bool p_disabled);
@@ -161,7 +161,7 @@ public:
 	Ref<Texture> get_item_icon(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
 	int get_item_id(int p_idx) const;
-	int get_item_index(int p_ID) const;
+	int get_item_index(int p_id) const;
 	uint32_t get_item_accelerator(int p_idx) const;
 	Variant get_item_metadata(int p_idx) const;
 	bool is_item_disabled(int p_idx) const;

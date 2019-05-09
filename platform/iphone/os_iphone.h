@@ -107,7 +107,7 @@ private:
 	void queue_event(const Ref<InputEvent> &p_event);
 
 	String data_dir;
-	String unique_ID;
+	String unique_id;
 	String locale_code;
 
 	InputDefault *input;
@@ -183,7 +183,7 @@ public:
 	void set_locale(String p_locale);
 	String get_locale() const;
 
-	void set_unique_id(String p_ID);
+	void set_unique_id(String p_id);
 	String get_unique_id() const;
 
 	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

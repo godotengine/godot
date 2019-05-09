@@ -144,10 +144,10 @@ public:
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
-	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
@@ -191,10 +191,10 @@ public:
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
 	virtual void body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin);
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
-	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_canvas_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_canvas_instance_id(RID p_body) const;
 
 	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode);
