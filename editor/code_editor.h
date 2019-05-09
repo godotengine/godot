@@ -165,6 +165,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _font_resize_timeout();
 	bool _add_font_size(int p_delta);
 
+	void _input(const Ref<InputEvent> &event);
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
 	void _zoom_in();
 	void _zoom_out();

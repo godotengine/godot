@@ -587,6 +587,26 @@ FindReplaceBar::FindReplaceBar() {
 
 /*** CODE EDITOR ****/
 
+// This function should be used to handle shortcuts that could otherwise
+// be handled too late if they weren't handled here.
+void CodeTextEditor::_input(const Ref<InputEvent> &event) {
+
+	const Ref<InputEventKey> key_event = event;
+	if (!key_event.is_valid() || !key_event->is_pressed())
+		return;
+
+	if (ED_IS_SHORTCUT("script_text_editor/move_up", key_event)) {
+		move_lines_up();
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("script_text_editor/move_down", key_event)) {
+		move_lines_down();
+		accept_event();
+		return;
+	}
+}
+
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1344,6 +1364,9 @@ void CodeTextEditor::_notification(int p_what) {
 			warning_button->set_icon(get_icon("NodeWarning", "EditorIcons"));
 			add_constant_override("separation", 4 * EDSCALE);
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process_input(is_visible_in_tree());
+		} break;
 		default:
 			break;
 	}
@@ -1359,6 +1382,7 @@ void CodeTextEditor::set_warning_nb(int p_warning_nb) {
 
 void CodeTextEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_input"), &CodeTextEditor::_input);
 	ClassDB::bind_method("_text_editor_gui_input", &CodeTextEditor::_text_editor_gui_input);
 	ClassDB::bind_method("_line_col_changed", &CodeTextEditor::_line_col_changed);
 	ClassDB::bind_method("_text_changed", &CodeTextEditor::_text_changed);
