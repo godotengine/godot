@@ -118,6 +118,8 @@ public:
 	String get_search_text() const;
 	String get_replace_text() const;
 
+	void copy_texts_from(FindReplaceBar *p_from);
+
 	bool is_case_sensitive() const;
 	bool is_whole_words() const;
 	bool is_selection_only() const;

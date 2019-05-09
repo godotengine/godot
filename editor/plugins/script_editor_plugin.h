@@ -233,6 +233,7 @@ class ScriptEditor : public PanelContainer {
 	ScriptCreateDialog *script_create_dialog;
 	ScriptEditorDebugger *debugger;
 	ToolButton *scripts_visible;
+	FindReplaceBar *last_editor_find_replace;
 
 	String current_theme;
 

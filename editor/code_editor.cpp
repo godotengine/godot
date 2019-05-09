@@ -527,6 +527,12 @@ String FindReplaceBar::get_replace_text() const {
 	return replace_text->get_text();
 }
 
+void FindReplaceBar::copy_texts_from(FindReplaceBar *p_from) {
+
+	search_text->set_text(p_from->search_text->get_text());
+	replace_text->set_text(p_from->replace_text->get_text());
+}
+
 bool FindReplaceBar::is_case_sensitive() const {
 
 	return case_sensitive->is_pressed();

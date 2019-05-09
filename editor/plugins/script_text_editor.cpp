@@ -992,6 +992,11 @@ void ScriptTextEditor::_update_connected_methods() {
 	}
 }
 
+FindReplaceBar *ScriptTextEditor::get_find_replace_bar() {
+
+	return code_editor->get_find_replace_bar();
+}
+
 void ScriptTextEditor::_lookup_connections(int p_row, String p_method) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
