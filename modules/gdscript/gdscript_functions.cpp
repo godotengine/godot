@@ -131,7 +131,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"instance_from_id",
 		"len",
 		"is_instance_valid",
-		"is_instance_is_valid"
+		"is_instance_id_valid"
 	};
 
 	return _names[p_func];
