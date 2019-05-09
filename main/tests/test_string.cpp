@@ -33,6 +33,7 @@
 //#include "core/math/math_funcs.h"
 #include "core/io/ip_address.h"
 #include "core/os/os.h"
+#include "modules/regex/regex.h"
 #include <stdio.h>
 
 #include "test_string.h"
@@ -429,9 +430,20 @@ bool test_25() {
 
 bool test_26() {
 
-	//TODO: Do replacement RegEx test
-	return true;
-};
+	OS::get_singleton()->print("\n\nTest 26: RegEx substitution\n");
+
+	String s = "Double all the vowels.";
+
+	OS::get_singleton()->print("\tString: %ls\n", s.c_str());
+	OS::get_singleton()->print("\tRepeating instances of 'aeiou' once\n");
+
+	RegEx re("(?<vowel>[aeiou])");
+	s = re.sub(s, "$0$vowel", true);
+
+	OS::get_singleton()->print("\tResult: %ls\n", s.c_str());
+
+	return (s == "Doouublee aall thee vooweels.");
+}
 
 struct test_27_data {
 	char const *data;
