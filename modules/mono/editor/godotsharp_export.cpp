@@ -94,7 +94,12 @@ void GodotSharpExport::_export_begin(const Set<String> &p_features, bool p_debug
 
 		ERR_FAIL_COND(!_add_file(scripts_metadata_path, scripts_metadata_path));
 
-		ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config));
+		// Turn export features into defines
+		Vector<String> godot_defines;
+		for (Set<String>::Element *E = p_features.front(); E; E = E->next()) {
+			godot_defines.push_back(E->get());
+		}
+		ERR_FAIL_COND(!GodotSharpBuilds::build_project_blocking(build_config, godot_defines));
 
 		// Add dependency assemblies
 
