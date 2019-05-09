@@ -54,7 +54,7 @@ class MessageQueue {
 
 	struct Message {
 
-		ObjectID instance_ID;
+		ObjectID instance_id;
 		StringName target;
 		int16_t type;
 		union {

@@ -142,7 +142,7 @@ public:
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled);
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
 	/// If you pass as p_area the SpaceBullet you can set some parameters as specified below
@@ -189,7 +189,7 @@ public:
 	virtual void body_clear_shapes(RID p_body);
 
 	// Used for Rigid and Soft Bodies
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);

@@ -50,7 +50,7 @@ private:
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
 	jmethodID _get_screen_DPI = 0;
-	jmethodID _get_unique_ID = 0;
+	jmethodID _get_unique_id = 0;
 	jmethodID _show_keyboard = 0;
 	jmethodID _hide_keyboard = 0;
 	jmethodID _set_screen_orientation = 0;

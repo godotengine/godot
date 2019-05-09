@@ -348,13 +348,13 @@ void BulletPhysicsServer::area_set_shape_disabled(RID p_area, int p_shape_idx, b
 	area->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
-void BulletPhysicsServer::area_attach_object_instance_id(RID p_area, ObjectID p_ID) {
+void BulletPhysicsServer::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
 	if (space_owner.owns(p_area)) {
 		return;
 	}
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
-	area->set_instance_id(p_ID);
+	area->set_instance_id(p_id);
 }
 
 ObjectID BulletPhysicsServer::area_get_object_instance_id(RID p_area) const {
@@ -569,11 +569,11 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 	body->remove_all_shapes();
 }
 
-void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
+void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
 	CollisionObjectBullet *body = get_collisin_object(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_instance_id(p_ID);
+	body->set_instance_id(p_id);
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {

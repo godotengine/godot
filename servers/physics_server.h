@@ -333,7 +333,7 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) = 0;
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const = 0;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) = 0;
@@ -385,7 +385,7 @@ public:
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) = 0;
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id) = 0;
 	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) = 0;
