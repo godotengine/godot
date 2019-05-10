@@ -6436,11 +6436,26 @@
         "next": null,
         "api": [
           {
-            "name": "godot_net_bind_webrtc_peer",
+            "name": "godot_net_set_webrtc_library",
+            "return_type": "godot_error",
+            "arguments": [
+              ["const godot_net_webrtc_library *", "p_library"]
+            ]
+          },
+          {
+            "name": "godot_net_bind_webrtc_peer_connection",
             "return_type": "void",
             "arguments": [
               ["godot_object *", "p_obj"],
-              ["const godot_net_webrtc_peer *", "p_interface"]
+              ["const godot_net_webrtc_peer_connection *", "p_interface"]
+            ]
+          },
+          {
+            "name": "godot_net_bind_webrtc_data_channel",
+            "return_type": "void",
+            "arguments": [
+              ["godot_object *", "p_obj"],
+              ["const godot_net_webrtc_data_channel *", "p_interface"]
             ]
           }
         ]

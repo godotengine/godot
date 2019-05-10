@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  webrtc_peer.cpp                                                      */
+/*  webrtc_data_channel.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,54 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "webrtc_peer.h"
+#include "webrtc_data_channel.h"
 
-WebRTCPeer *(*WebRTCPeer::_create)() = NULL;
+void WebRTCDataChannel::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("poll"), &WebRTCDataChannel::poll);
+	ClassDB::bind_method(D_METHOD("close"), &WebRTCDataChannel::close);
 
-Ref<WebRTCPeer> WebRTCPeer::create_ref() {
-
-	if (!_create)
-		return Ref<WebRTCPeer>();
-	return Ref<WebRTCPeer>(_create());
-}
-
-WebRTCPeer *WebRTCPeer::create() {
-
-	if (!_create)
-		return NULL;
-	return _create();
-}
-
-void WebRTCPeer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_offer"), &WebRTCPeer::create_offer);
-	ClassDB::bind_method(D_METHOD("set_local_description", "type", "sdp"), &WebRTCPeer::set_local_description);
-	ClassDB::bind_method(D_METHOD("set_remote_description", "type", "sdp"), &WebRTCPeer::set_remote_description);
-	ClassDB::bind_method(D_METHOD("poll"), &WebRTCPeer::poll);
-	ClassDB::bind_method(D_METHOD("add_ice_candidate", "media", "index", "name"), &WebRTCPeer::add_ice_candidate);
-
-	ClassDB::bind_method(D_METHOD("was_string_packet"), &WebRTCPeer::was_string_packet);
-	ClassDB::bind_method(D_METHOD("set_write_mode", "write_mode"), &WebRTCPeer::set_write_mode);
-	ClassDB::bind_method(D_METHOD("get_write_mode"), &WebRTCPeer::get_write_mode);
-	ClassDB::bind_method(D_METHOD("get_connection_state"), &WebRTCPeer::get_connection_state);
-
-	ADD_SIGNAL(MethodInfo("offer_created", PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::STRING, "sdp")));
-	ADD_SIGNAL(MethodInfo("new_ice_candidate", PropertyInfo(Variant::STRING, "media"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::STRING, "name")));
+	ClassDB::bind_method(D_METHOD("was_string_packet"), &WebRTCDataChannel::was_string_packet);
+	ClassDB::bind_method(D_METHOD("set_write_mode", "write_mode"), &WebRTCDataChannel::set_write_mode);
+	ClassDB::bind_method(D_METHOD("get_write_mode"), &WebRTCDataChannel::get_write_mode);
+	ClassDB::bind_method(D_METHOD("get_ready_state"), &WebRTCDataChannel::get_ready_state);
+	ClassDB::bind_method(D_METHOD("get_label"), &WebRTCDataChannel::get_label);
+	ClassDB::bind_method(D_METHOD("is_ordered"), &WebRTCDataChannel::is_ordered);
+	ClassDB::bind_method(D_METHOD("get_id"), &WebRTCDataChannel::get_id);
+	ClassDB::bind_method(D_METHOD("get_max_packet_life_time"), &WebRTCDataChannel::get_max_packet_life_time);
+	ClassDB::bind_method(D_METHOD("get_max_retransmits"), &WebRTCDataChannel::get_max_retransmits);
+	ClassDB::bind_method(D_METHOD("get_protocol"), &WebRTCDataChannel::get_protocol);
+	ClassDB::bind_method(D_METHOD("is_negotiated"), &WebRTCDataChannel::is_negotiated);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "write_mode", PROPERTY_HINT_ENUM), "set_write_mode", "get_write_mode");
 
 	BIND_ENUM_CONSTANT(WRITE_MODE_TEXT);
 	BIND_ENUM_CONSTANT(WRITE_MODE_BINARY);
 
-	BIND_ENUM_CONSTANT(STATE_NEW);
 	BIND_ENUM_CONSTANT(STATE_CONNECTING);
-	BIND_ENUM_CONSTANT(STATE_CONNECTED);
-	BIND_ENUM_CONSTANT(STATE_DISCONNECTED);
-	BIND_ENUM_CONSTANT(STATE_FAILED);
+	BIND_ENUM_CONSTANT(STATE_OPEN);
+	BIND_ENUM_CONSTANT(STATE_CLOSING);
 	BIND_ENUM_CONSTANT(STATE_CLOSED);
 }
 
-WebRTCPeer::WebRTCPeer() {
+WebRTCDataChannel::WebRTCDataChannel() {
 }
 
-WebRTCPeer::~WebRTCPeer() {
+WebRTCDataChannel::~WebRTCDataChannel() {
 }
