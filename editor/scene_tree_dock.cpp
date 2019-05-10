@@ -1844,6 +1844,11 @@ void SceneTreeDock::_create() {
 			Node *newnode = Object::cast_to<Node>(c);
 			ERR_FAIL_COND(!newnode);
 
+			// If the old node had the default name, rename it to match the new node type
+			if (n->get_name() == n->get_class()) {
+				n->set_name(newnode->get_class());
+			}
+
 			replace_node(n, newnode);
 		}
 	}
