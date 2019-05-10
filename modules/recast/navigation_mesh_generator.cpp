@@ -126,9 +126,10 @@ void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(con
 		for (unsigned int j = 0; j < ntris; j++) {
 			Vector<int> nav_indices;
 			nav_indices.resize(3);
+			// Polygon order in recast is opposite than godot's
 			nav_indices.write[0] = ((int)(bverts + tris[j * 4 + 0]));
-			nav_indices.write[1] = ((int)(bverts + tris[j * 4 + 1]));
-			nav_indices.write[2] = ((int)(bverts + tris[j * 4 + 2]));
+			nav_indices.write[1] = ((int)(bverts + tris[j * 4 + 2]));
+			nav_indices.write[2] = ((int)(bverts + tris[j * 4 + 1]));
 			p_nav_mesh->add_polygon(nav_indices);
 		}
 	}
