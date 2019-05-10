@@ -1489,6 +1489,15 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected)
 		} break;
 
 		case FILE_OPEN: {
+			// Open folders
+			TreeItem *selected = tree->get_root();
+			selected = tree->get_next_selected(selected);
+			while (selected) {
+				if (p_selected.find(selected->get_metadata(0)) >= 0) {
+					selected->set_collapsed(false);
+				}
+				selected = tree->get_next_selected(selected);
+			}
 			// Open the file
 			for (int i = 0; i < p_selected.size(); i++) {
 				_select_file(p_selected[i]);
