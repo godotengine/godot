@@ -684,8 +684,9 @@ void ClippedCamera::set_process_mode(ProcessMode p_mode) {
 	if (process_mode == p_mode) {
 		return;
 	}
-	set_process_internal(p_mode == CLIP_PROCESS_IDLE);
-	set_physics_process_internal(p_mode == CLIP_PROCESS_PHYSICS);
+	process_mode = p_mode;
+	set_process_internal(process_mode == CLIP_PROCESS_IDLE);
+	set_physics_process_internal(process_mode == CLIP_PROCESS_PHYSICS);
 }
 ClippedCamera::ProcessMode ClippedCamera::get_process_mode() const {
 	return process_mode;
@@ -748,7 +749,7 @@ void ClippedCamera::_notification(int p_what) {
 
 		float csafe, cunsafe;
 		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
-			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from).normalized() * csafe);
+			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * csafe);
 		}
 
 		_update_camera();
