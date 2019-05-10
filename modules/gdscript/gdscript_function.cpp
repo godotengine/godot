@@ -1583,15 +1583,26 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	if (ScriptDebugger::get_singleton())
-		GDScriptLanguage::get_singleton()->exit_function();
+	bool yielded = retvalue.is_ref() && Object::cast_to<GDScriptFunctionState>(retvalue);
+
+	// Check if this is the last time the function is resuming from yield
+	// Will be true if never yielded as well
+	// When it's the last resume it will postpone the exit from stack,
+	// so the debugger knows which function triggered the resume of the next function (if any)
+	if (!p_state || yielded) {
+		if (ScriptDebugger::get_singleton())
+			GDScriptLanguage::get_singleton()->exit_function();
 #endif
 
-	if (_stack_size) {
-		//free stack
-		for (int i = 0; i < _stack_size; i++)
-			stack[i].~Variant();
+		if (_stack_size) {
+			//free stack
+			for (int i = 0; i < _stack_size; i++)
+				stack[i].~Variant();
+		}
+
+#ifdef DEBUG_ENABLED
 	}
+#endif
 
 	return retvalue;
 }
@@ -1830,6 +1841,17 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	if (ScriptDebugger::get_singleton())
+		GDScriptLanguage::get_singleton()->exit_function();
+	if (state.stack_size) {
+		//free stack
+		Variant *stack = (Variant *)state.stack.ptr();
+		for (int i = 0; i < state.stack_size; i++)
+			stack[i].~Variant();
+	}
+#endif
+
 	return ret;
 }
 
@@ -1884,6 +1906,17 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		} else {
 			emit_signal("completed", ret);
 		}
+
+#ifdef DEBUG_ENABLED
+		if (ScriptDebugger::get_singleton())
+			GDScriptLanguage::get_singleton()->exit_function();
+		if (state.stack_size) {
+			//free stack
+			Variant *stack = (Variant *)state.stack.ptr();
+			for (int i = 0; i < state.stack_size; i++)
+				stack[i].~Variant();
+		}
+#endif
 	}
 
 	return ret;
