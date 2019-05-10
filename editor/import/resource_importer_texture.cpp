@@ -265,7 +265,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
-				image->generate_mipmaps();
+				if (!image->has_mipmaps()) {
+					image->generate_mipmaps();
+				}
 			} else {
 				image->clear_mipmaps();
 			}
@@ -294,7 +296,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		case COMPRESS_LOSSY: {
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
-				image->generate_mipmaps();
+				if (!image->has_mipmaps()) {
+					image->generate_mipmaps();
+				}
 			} else {
 				image->clear_mipmaps();
 			}
@@ -322,24 +326,29 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 		case COMPRESS_VIDEO_RAM: {
 
 			Ref<Image> image = p_image->duplicate();
-			if (resize_to_po2) {
-				image->resize_to_po2();
-			}
-			if (p_mipmaps) {
-				image->generate_mipmaps(p_force_normal);
-			}
 
-			if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
-				image->convert(Image::FORMAT_RGBE9995);
-			} else {
-				Image::CompressSource csource = Image::COMPRESS_SOURCE_GENERIC;
-				if (p_force_normal) {
-					csource = Image::COMPRESS_SOURCE_NORMAL;
-				} else if (p_texture_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
-					csource = Image::COMPRESS_SOURCE_SRGB;
+			if (!image->is_compressed()) {
+				if (resize_to_po2) {
+					image->resize_to_po2();
+				}
+				if (p_mipmaps) {
+					if (!image->has_mipmaps()) {
+						image->generate_mipmaps(p_force_normal);
+					}
 				}
 
-				image->compress(p_vram_compression, csource, p_lossy_quality);
+				if (p_force_rgbe && image->get_format() >= Image::FORMAT_R8 && image->get_format() <= Image::FORMAT_RGBE9995) {
+					image->convert(Image::FORMAT_RGBE9995);
+				} else {
+					Image::CompressSource csource = Image::COMPRESS_SOURCE_GENERIC;
+					if (p_force_normal) {
+						csource = Image::COMPRESS_SOURCE_NORMAL;
+					} else if (p_texture_flags & VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+						csource = Image::COMPRESS_SOURCE_SRGB;
+					}
+
+					image->compress(p_vram_compression, csource, p_lossy_quality);
+				}
 			}
 
 			format |= image->get_format();
@@ -355,7 +364,9 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 			Ref<Image> image = p_image->duplicate();
 			if (p_mipmaps) {
-				image->generate_mipmaps();
+				if (!image->has_mipmaps()) {
+					image->generate_mipmaps();
+				}
 			} else {
 				image->clear_mipmaps();
 			}
@@ -401,6 +412,20 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	if (err != OK)
 		return err;
 
+	bool is_s3tc_already = (image->get_format() >= Image::FORMAT_DXT1 && image->get_format() <= Image::FORMAT_RGTC_RG);
+	bool is_bptc_already = (image->get_format() >= Image::FORMAT_BPTC_RGBA && image->get_format() <= Image::FORMAT_BPTC_RGBFU);
+	bool is_etc_already = (image->get_format() == Image::FORMAT_ETC);
+	bool is_etc2_already = (image->get_format() >= Image::FORMAT_ETC2_R11 && image->get_format() <= Image::FORMAT_ETC2_RGB8A1);
+	bool is_pvrtc_already = (image->get_format() >= Image::FORMAT_PVRTC2 && image->get_format() <= Image::FORMAT_PVRTC4A);
+
+	bool image_modified = false;
+	Ref<Image> compressed_image = NULL;
+	if (image->is_compressed() && image->has_mipmaps() && compress_mode == COMPRESS_VIDEO_RAM) {
+		// Decompress the image, but keep the original compressed version in case it can be used directly
+		compressed_image = image->duplicate();
+		image->decompress();
+	}
+
 	Array formats_imported;
 
 	int tex_flags = 0;
@@ -435,14 +460,18 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		if (normal == 1) {
 			image->normalize();
 		}
+
+		image_modified = true;
 	}
 
 	if (fix_alpha_border) {
 		image->fix_alpha_edges();
+		image_modified = true;
 	}
 
 	if (premult_alpha) {
 		image->premultiply_alpha();
+		image_modified = true;
 	}
 
 	if (invert_color) {
@@ -456,6 +485,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			}
 		}
 		image->unlock();
+
+		image_modified = true;
 	}
 
 	bool detect_3d = p_options["detect_3d"];
@@ -494,10 +525,13 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		if (!can_bptc && is_hdr && !force_rgbe) {
 			//convert to ldr if this can't be stored hdr
 			image->convert(Image::FORMAT_RGBA8);
+			image_modified = true;
 		}
 
 		if (can_bptc || can_s3tc) {
-			_save_stex(image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, false);
+
+			Ref<Image> src_image = (!image_modified && (is_s3tc_already || is_bptc_already)) ? compressed_image : image;
+			_save_stex(src_image, p_save_path + ".s3tc.stex", compress_mode, lossy, can_bptc ? Image::COMPRESS_BPTC : Image::COMPRESS_S3TC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, false);
 			r_platform_variants->push_back("s3tc");
 			formats_imported.push_back("s3tc");
 			ok_on_pc = true;
@@ -505,20 +539,24 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
 
-			_save_stex(image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
+			Ref<Image> src_image = (!image_modified && is_etc2_already) ? compressed_image : image;
+			_save_stex(src_image, p_save_path + ".etc2.stex", compress_mode, lossy, Image::COMPRESS_ETC2, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
-			_save_stex(image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
+
+			Ref<Image> src_image = (!image_modified && is_etc_already) ? compressed_image : image;
+			_save_stex(src_image, p_save_path + ".etc.stex", compress_mode, lossy, Image::COMPRESS_ETC, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
 			r_platform_variants->push_back("etc");
 			formats_imported.push_back("etc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
 
-			_save_stex(image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
+			Ref<Image> src_image = (!image_modified && is_pvrtc_already) ? compressed_image : image;
+			_save_stex(src_image, p_save_path + ".pvrtc.stex", compress_mode, lossy, Image::COMPRESS_PVRTC4, mipmaps, tex_flags, stream, detect_3d, detect_srgb, force_rgbe, detect_normal, force_normal, true);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
 		}
