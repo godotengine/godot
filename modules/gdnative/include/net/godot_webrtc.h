@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_net.h                                                          */
+/*  godot_webrtc.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_NATIVENET_H
-#define GODOT_NATIVENET_H
+#ifndef GODOT_NATIVEWEBRTC_H
+#define GODOT_NATIVEWEBRTC_H
 
 #include <gdnative/gdnative.h>
 
@@ -37,32 +37,46 @@
 extern "C" {
 #endif
 
-// For future versions of the API we should only add new functions at the end of the structure and use the
-// version info to detect whether a call is available
+#define GODOT_NET_WEBRTC_API_MAJOR 3
+#define GODOT_NET_WEBRTC_API_MINOR 2
 
-// Use these to populate version in your plugin
-#define GODOT_NET_API_MAJOR 3
-#define GODOT_NET_API_MINOR 1
-
+/* Library Interface (used to set default GDNative WebRTC implementation */
 typedef struct {
-
 	godot_gdnative_api_version version; /* version of our API */
+
+	/* Called when the library is unset as default interface via godot_net_set_webrtc_library */
+	void (*unregistered)();
+
+	/* Used by WebRTCPeerConnection create when GDNative is the default implementation. */
+	/* Takes a pointer to WebRTCPeerConnectionGDNative, should bind and return OK, failure if binding was unsuccessful. */
+	godot_error (*create_peer_connection)(godot_object *);
+
+	void *next; /* For extension */
+} godot_net_webrtc_library;
+
+/* WebRTCPeerConnection interface */
+typedef struct {
+	godot_gdnative_api_version version; /* version of our API */
+
 	godot_object *data; /* User reference */
 
-	/* This is StreamPeer */
-	godot_error (*get_data)(void *user, uint8_t *p_buffer, int p_bytes);
-	godot_error (*get_partial_data)(void *user, uint8_t *p_buffer, int p_bytes, int *r_received);
-	godot_error (*put_data)(void *user, const uint8_t *p_data, int p_bytes);
-	godot_error (*put_partial_data)(void *user, const uint8_t *p_data, int p_bytes, int *r_sent);
+	/* This is WebRTCPeerConnection */
+	godot_int (*get_connection_state)(const void *);
 
-	int (*get_available_bytes)(const void *user);
+	godot_error (*initialize)(void *, const godot_dictionary *);
+	godot_object *(*create_data_channel)(void *, const char *p_channel_name, const godot_dictionary *);
+	godot_error (*create_offer)(void *);
+	godot_error (*create_answer)(void *); /* unused for now, should be done automatically on set_local_description */
+	godot_error (*set_remote_description)(void *, const char *, const char *);
+	godot_error (*set_local_description)(void *, const char *, const char *);
+	godot_error (*add_ice_candidate)(void *, const char *, int, const char *);
+	godot_error (*poll)(void *);
+	void (*close)(void *);
 
 	void *next; /* For extension? */
-} godot_net_stream_peer;
+} godot_net_webrtc_peer_connection;
 
-/* Binds a StreamPeerGDNative to the provided interface */
-void godot_net_bind_stream_peer(godot_object *p_obj, const godot_net_stream_peer *p_interface);
-
+/* WebRTCDataChannel interface */
 typedef struct {
 	godot_gdnative_api_version version; /* version of our API */
 
@@ -74,48 +88,35 @@ typedef struct {
 	godot_int (*get_available_packet_count)(const void *);
 	godot_int (*get_max_packet_size)(const void *);
 
+	/* This is WebRTCDataChannel */
+	void (*set_write_mode)(void *, godot_int);
+	godot_int (*get_write_mode)(const void *);
+	bool (*was_string_packet)(const void *);
+
+	godot_int (*get_ready_state)(const void *);
+	const char *(*get_label)(const void *);
+	bool (*is_ordered)(const void *);
+	int (*get_id)(const void *);
+	int (*get_max_packet_life_time)(const void *);
+	int (*get_max_retransmits)(const void *);
+	const char *(*get_protocol)(const void *);
+	bool (*is_negotiated)(const void *);
+
+	godot_error (*poll)(void *);
+	void (*close)(void *);
+
 	void *next; /* For extension? */
-} godot_net_packet_peer;
+} godot_net_webrtc_data_channel;
 
-/* Binds a PacketPeerGDNative to the provided interface */
-void GDAPI godot_net_bind_packet_peer(godot_object *p_obj, const godot_net_packet_peer *);
-
-typedef struct {
-	godot_gdnative_api_version version; /* version of our API */
-
-	godot_object *data; /* User reference */
-
-	/* This is PacketPeer */
-	godot_error (*get_packet)(void *, const uint8_t **, int *);
-	godot_error (*put_packet)(void *, const uint8_t *, int);
-	godot_int (*get_available_packet_count)(const void *);
-	godot_int (*get_max_packet_size)(const void *);
-
-	/* This is NetworkedMultiplayerPeer */
-	void (*set_transfer_mode)(void *, godot_int);
-	godot_int (*get_transfer_mode)(const void *);
-	// 0 = broadcast, 1 = server, <0 = all but abs(value)
-	void (*set_target_peer)(void *, godot_int);
-	godot_int (*get_packet_peer)(const void *);
-	godot_bool (*is_server)(const void *);
-	void (*poll)(void *);
-	// Must be > 0, 1 is for server
-	int32_t (*get_unique_id)(const void *);
-	void (*set_refuse_new_connections)(void *, godot_bool);
-	godot_bool (*is_refusing_new_connections)(const void *);
-	godot_int (*get_connection_status)(const void *);
-
-	void *next; /* For extension? Or maybe not... */
-} godot_net_multiplayer_peer;
-
-/* Binds a MultiplayerPeerGDNative to the provided interface */
-void GDAPI godot_net_bind_multiplayer_peer(godot_object *p_obj, const godot_net_multiplayer_peer *);
+/* Set the default GDNative library */
+godot_error GDAPI godot_net_set_webrtc_library(const godot_net_webrtc_library *);
+/* Binds a WebRTCPeerConnectionGDNative to the provided interface */
+void GDAPI godot_net_bind_webrtc_peer_connection(godot_object *p_obj, const godot_net_webrtc_peer_connection *);
+/* Binds a WebRTCDataChannelGDNative to the provided interface */
+void GDAPI godot_net_bind_webrtc_data_channel(godot_object *p_obj, const godot_net_webrtc_data_channel *);
 
 #ifdef __cplusplus
 }
 #endif
 
-// WebRTC Bindings
-#include "net/godot_webrtc.h"
-
-#endif /* GODOT_NATIVENET_H */
+#endif

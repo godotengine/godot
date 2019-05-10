@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  webrtc_peer_gdnative.h                                               */
+/*  webrtc_data_channel_gdnative.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,37 +30,39 @@
 
 #ifdef WEBRTC_GDNATIVE_ENABLED
 
-#ifndef WEBRTC_PEER_GDNATIVE_H
-#define WEBRTC_PEER_GDNATIVE_H
+#ifndef WEBRTC_DATA_CHANNEL_GDNATIVE_H
+#define WEBRTC_DATA_CHANNEL_GDNATIVE_H
 
 #include "modules/gdnative/include/net/godot_net.h"
-#include "webrtc_peer.h"
+#include "webrtc_data_channel.h"
 
-class WebRTCPeerGDNative : public WebRTCPeer {
-	GDCLASS(WebRTCPeerGDNative, WebRTCPeer);
+class WebRTCDataChannelGDNative : public WebRTCDataChannel {
+	GDCLASS(WebRTCDataChannelGDNative, WebRTCDataChannel);
 
 protected:
 	static void _bind_methods();
 
 private:
-	const godot_net_webrtc_peer *interface;
+	const godot_net_webrtc_data_channel *interface;
 
 public:
-	static WebRTCPeer *_create() { return memnew(WebRTCPeerGDNative); }
-	static void make_default() { WebRTCPeer::_create = WebRTCPeerGDNative::_create; }
-
-	void set_native_webrtc_peer(const godot_net_webrtc_peer *p_impl);
+	void set_native_webrtc_data_channel(const godot_net_webrtc_data_channel *p_impl);
 
 	virtual void set_write_mode(WriteMode mode);
 	virtual WriteMode get_write_mode() const;
 	virtual bool was_string_packet() const;
-	virtual ConnectionState get_connection_state() const;
 
-	virtual Error create_offer();
-	virtual Error set_remote_description(String type, String sdp);
-	virtual Error set_local_description(String type, String sdp);
-	virtual Error add_ice_candidate(String sdpMidName, int sdpMlineIndexName, String sdpName);
+	virtual ChannelState get_ready_state() const;
+	virtual String get_label() const;
+	virtual bool is_ordered() const;
+	virtual int get_id() const;
+	virtual int get_max_packet_life_time() const;
+	virtual int get_max_retransmits() const;
+	virtual String get_protocol() const;
+	virtual bool is_negotiated() const;
+
 	virtual Error poll();
+	virtual void close();
 
 	/** Inherited from PacketPeer: **/
 	virtual int get_available_packet_count() const;
@@ -69,10 +71,10 @@ public:
 
 	virtual int get_max_packet_size() const;
 
-	WebRTCPeerGDNative();
-	~WebRTCPeerGDNative();
+	WebRTCDataChannelGDNative();
+	~WebRTCDataChannelGDNative();
 };
 
-#endif // WEBRTC_PEER_GDNATIVE_H
+#endif // WEBRTC_DATA_CHANNEL_GDNATIVE_H
 
 #endif // WEBRTC_GDNATIVE_ENABLED

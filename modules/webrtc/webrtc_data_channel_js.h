@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  webrtc_data_channel_js.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,66 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifdef JAVASCRIPT_ENABLED
+
+#ifndef WEBRTC_DATA_CHANNEL_JS_H
+#define WEBRTC_DATA_CHANNEL_JS_H
+
 #include "webrtc_data_channel.h"
-#include "webrtc_peer_connection.h"
 
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "webrtc_peer_connection_js.h"
-#endif
-#ifdef WEBRTC_GDNATIVE_ENABLED
-#include "webrtc_data_channel_gdnative.h"
-#include "webrtc_peer_connection_gdnative.h"
-#endif
+class WebRTCDataChannelJS : public WebRTCDataChannel {
+	GDCLASS(WebRTCDataChannelJS, WebRTCDataChannel);
 
-void register_webrtc_types() {
-#ifdef JAVASCRIPT_ENABLED
-	WebRTCPeerConnectionJS::make_default();
-#elif defined(WEBRTC_GDNATIVE_ENABLED)
-	WebRTCPeerConnectionGDNative::make_default();
-#endif
+private:
+	String _label;
+	String _protocol;
 
-	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
-#ifdef WEBRTC_GDNATIVE_ENABLED
-	ClassDB::register_class<WebRTCPeerConnectionGDNative>();
-	ClassDB::register_class<WebRTCDataChannelGDNative>();
-#endif
-	ClassDB::register_virtual_class<WebRTCDataChannel>();
-}
+	bool _was_string;
+	WriteMode _write_mode;
 
-void unregister_webrtc_types() {}
+	enum {
+		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
+	};
+
+	int _js_id;
+	RingBuffer<uint8_t> in_buffer;
+	int queue_count;
+	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+
+public:
+	void _on_open();
+	void _on_close();
+	void _on_error();
+	void _on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string);
+
+	virtual void set_write_mode(WriteMode mode);
+	virtual WriteMode get_write_mode() const;
+	virtual bool was_string_packet() const;
+
+	virtual ChannelState get_ready_state() const;
+	virtual String get_label() const;
+	virtual bool is_ordered() const;
+	virtual int get_id() const;
+	virtual int get_max_packet_life_time() const;
+	virtual int get_max_retransmits() const;
+	virtual String get_protocol() const;
+	virtual bool is_negotiated() const;
+
+	virtual Error poll();
+	virtual void close();
+
+	/** Inherited from PacketPeer: **/
+	virtual int get_available_packet_count() const;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+
+	virtual int get_max_packet_size() const;
+
+	WebRTCDataChannelJS();
+	WebRTCDataChannelJS(int js_id);
+	~WebRTCDataChannelJS();
+};
+
+#endif // WEBRTC_DATA_CHANNEL_JS_H
+
+#endif // JAVASCRIPT_ENABLED

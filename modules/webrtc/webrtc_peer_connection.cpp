@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  webrtc_peer_connection.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "webrtc_data_channel.h"
 #include "webrtc_peer_connection.h"
 
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "webrtc_peer_connection_js.h"
-#endif
-#ifdef WEBRTC_GDNATIVE_ENABLED
-#include "webrtc_data_channel_gdnative.h"
-#include "webrtc_peer_connection_gdnative.h"
-#endif
+WebRTCPeerConnection *(*WebRTCPeerConnection::_create)() = NULL;
 
-void register_webrtc_types() {
-#ifdef JAVASCRIPT_ENABLED
-	WebRTCPeerConnectionJS::make_default();
-#elif defined(WEBRTC_GDNATIVE_ENABLED)
-	WebRTCPeerConnectionGDNative::make_default();
-#endif
+Ref<WebRTCPeerConnection> WebRTCPeerConnection::create_ref() {
 
-	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
-#ifdef WEBRTC_GDNATIVE_ENABLED
-	ClassDB::register_class<WebRTCPeerConnectionGDNative>();
-	ClassDB::register_class<WebRTCDataChannelGDNative>();
-#endif
-	ClassDB::register_virtual_class<WebRTCDataChannel>();
+	return create();
 }
 
-void unregister_webrtc_types() {}
+WebRTCPeerConnection *WebRTCPeerConnection::create() {
+
+	if (!_create)
+		return NULL;
+	return _create();
+}
+
+void WebRTCPeerConnection::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("initialize", "configuration"), &WebRTCPeerConnection::initialize, DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("create_data_channel", "label", "options"), &WebRTCPeerConnection::create_data_channel, DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("create_offer"), &WebRTCPeerConnection::create_offer);
+	ClassDB::bind_method(D_METHOD("set_local_description", "type", "sdp"), &WebRTCPeerConnection::set_local_description);
+	ClassDB::bind_method(D_METHOD("set_remote_description", "type", "sdp"), &WebRTCPeerConnection::set_remote_description);
+	ClassDB::bind_method(D_METHOD("add_ice_candidate", "media", "index", "name"), &WebRTCPeerConnection::add_ice_candidate);
+	ClassDB::bind_method(D_METHOD("poll"), &WebRTCPeerConnection::poll);
+	ClassDB::bind_method(D_METHOD("close"), &WebRTCPeerConnection::close);
+
+	ClassDB::bind_method(D_METHOD("get_connection_state"), &WebRTCPeerConnection::get_connection_state);
+
+	ADD_SIGNAL(MethodInfo("session_description_created", PropertyInfo(Variant::STRING, "type"), PropertyInfo(Variant::STRING, "sdp")));
+	ADD_SIGNAL(MethodInfo("ice_candidate_created", PropertyInfo(Variant::STRING, "media"), PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::STRING, "name")));
+	ADD_SIGNAL(MethodInfo("data_channel_received", PropertyInfo(Variant::OBJECT, "channel")));
+
+	BIND_ENUM_CONSTANT(STATE_NEW);
+	BIND_ENUM_CONSTANT(STATE_CONNECTING);
+	BIND_ENUM_CONSTANT(STATE_CONNECTED);
+	BIND_ENUM_CONSTANT(STATE_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATE_FAILED);
+	BIND_ENUM_CONSTANT(STATE_CLOSED);
+}
+
+WebRTCPeerConnection::WebRTCPeerConnection() {
+}
+
+WebRTCPeerConnection::~WebRTCPeerConnection() {
+}

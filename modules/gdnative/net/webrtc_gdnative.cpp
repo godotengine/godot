@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  webrtc_gdnative.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "webrtc_data_channel.h"
-#include "webrtc_peer_connection.h"
+#include "modules/gdnative/gdnative.h"
+#include "modules/gdnative/include/net/godot_net.h"
 
-#ifdef JAVASCRIPT_ENABLED
-#include "emscripten.h"
-#include "webrtc_peer_connection_js.h"
-#endif
 #ifdef WEBRTC_GDNATIVE_ENABLED
-#include "webrtc_data_channel_gdnative.h"
-#include "webrtc_peer_connection_gdnative.h"
+#include "modules/webrtc/webrtc_data_channel_gdnative.h"
+#include "modules/webrtc/webrtc_peer_connection_gdnative.h"
 #endif
 
-void register_webrtc_types() {
-#ifdef JAVASCRIPT_ENABLED
-	WebRTCPeerConnectionJS::make_default();
-#elif defined(WEBRTC_GDNATIVE_ENABLED)
-	WebRTCPeerConnectionGDNative::make_default();
-#endif
+extern "C" {
 
-	ClassDB::register_custom_instance_class<WebRTCPeerConnection>();
+void GDAPI godot_net_bind_webrtc_peer_connection(godot_object *p_obj, const godot_net_webrtc_peer_connection *p_impl) {
 #ifdef WEBRTC_GDNATIVE_ENABLED
-	ClassDB::register_class<WebRTCPeerConnectionGDNative>();
-	ClassDB::register_class<WebRTCDataChannelGDNative>();
+	((WebRTCPeerConnectionGDNative *)p_obj)->set_native_webrtc_peer_connection(p_impl);
 #endif
-	ClassDB::register_virtual_class<WebRTCDataChannel>();
 }
 
-void unregister_webrtc_types() {}
+void GDAPI godot_net_bind_webrtc_data_channel(godot_object *p_obj, const godot_net_webrtc_data_channel *p_impl) {
+#ifdef WEBRTC_GDNATIVE_ENABLED
+	((WebRTCDataChannelGDNative *)p_obj)->set_native_webrtc_data_channel(p_impl);
+#endif
+}
+
+godot_error GDAPI godot_net_set_webrtc_library(const godot_net_webrtc_library *p_lib) {
+#ifdef WEBRTC_GDNATIVE_ENABLED
+	return (godot_error)WebRTCPeerConnectionGDNative::set_default_library(p_lib);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+}
+}
