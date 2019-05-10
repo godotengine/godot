@@ -358,6 +358,7 @@ public:
 	RID get_canvas() const;
 	ObjectID get_canvas_layer_instance_id() const;
 	Ref<World2D> get_world_2d() const;
+	RID get_physics_space() const;
 
 	virtual void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;

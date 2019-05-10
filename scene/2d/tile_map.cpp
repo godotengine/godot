@@ -63,7 +63,7 @@ void TileMap::_notification(int p_what) {
 			pending_update = true;
 			_recreate_quadrants();
 			update_dirty_quadrants();
-			RID space = get_world_2d()->get_space();
+			RID space = get_physics_space();
 			_update_quadrant_transform();
 			_update_quadrant_space(space);
 
@@ -685,7 +685,7 @@ Map<TileMap::PosKey, TileMap::Quadrant>::Element *TileMap::_create_quadrant(cons
 
 	if (is_inside_tree()) {
 		xform = get_global_transform() * xform;
-		RID space = get_world_2d()->get_space();
+		RID space = get_physics_space();
 		Physics2DServer::get_singleton()->body_set_space(q.body, space);
 	}
 

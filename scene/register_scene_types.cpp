@@ -60,6 +60,7 @@
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite.h"
+#include "scene/2d/subspace_2d.h"
 #include "scene/2d/tile_map.h"
 #include "scene/2d/touch_screen_button.h"
 #include "scene/2d/visibility_notifier_2d.h"
@@ -156,6 +157,7 @@
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/sky.h"
+#include "scene/resources/space_2d.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/text_file.h"
@@ -547,6 +549,7 @@ void register_scene_types() {
 	ClassDB::register_class<KinematicBody2D>();
 	ClassDB::register_class<KinematicCollision2D>();
 	ClassDB::register_class<Area2D>();
+	ClassDB::register_class<Subspace2D>();
 	ClassDB::register_class<CollisionShape2D>();
 	ClassDB::register_class<CollisionPolygon2D>();
 	ClassDB::register_class<RayCast2D>();
@@ -628,6 +631,7 @@ void register_scene_types() {
 	ClassDB::register_class<World>();
 	ClassDB::register_class<Environment>();
 	ClassDB::register_class<World2D>();
+	ClassDB::register_class<Space2D>();
 	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<Sky>();
 	ClassDB::register_class<PanoramaSky>();

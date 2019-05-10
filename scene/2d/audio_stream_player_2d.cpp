@@ -187,7 +187,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			//check if any area is diverting sound into a bus
 
-			Physics2DDirectSpaceState *space_state = Physics2DServer::get_singleton()->space_get_direct_state(world_2d->get_space());
+			Physics2DDirectSpaceState *space_state = Physics2DServer::get_singleton()->space_get_direct_state(get_physics_space());
 
 			Physics2DDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
 

@@ -48,7 +48,7 @@ void CollisionObject2D::_notification(int p_what) {
 
 			last_transform = global_transform;
 
-			RID space = get_world_2d()->get_space();
+			RID space = get_physics_space();
 			if (area) {
 				Physics2DServer::get_singleton()->area_set_space(rid, space);
 			} else

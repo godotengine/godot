@@ -38,6 +38,10 @@ class Space2D : public Resource {
 
 	GDCLASS(Space2D, Resource);
 	bool active;
+	real_t gravity;
+	Vector2 gravity_vec;
+	real_t linear_damp;
+	real_t angular_damp;
 	RID space;
 
 protected:
@@ -46,6 +50,18 @@ protected:
 public:
 	void set_active(bool p_active);
 	bool is_active() const;
+
+	void set_gravity(real_t p_gravity);
+	real_t get_gravity() const;
+
+	void set_gravity_vector(const Vector2 &p_vec);
+	Vector2 get_gravity_vector() const;
+
+	void set_linear_damp(real_t p_linear_damp);
+	real_t get_linear_damp() const;
+
+	void set_angular_damp(real_t p_angular_damp);
+	real_t get_angular_damp() const;
 
 	virtual RID get_rid() const;
 

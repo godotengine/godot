@@ -32,6 +32,7 @@
 #include "core/message_queue.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/input.h"
+#include "scene/2d/subspace_2d.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/font.h"
@@ -1009,6 +1010,33 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 	}
 }
 
+RID CanvasItem::get_physics_space() const {
+	ERR_FAIL_COND_V(!is_inside_tree(), RID());
+
+	Node *n = Object::cast_to<Node>(const_cast<CanvasItem *>(this));
+
+	Subspace2D *subspace = Object::cast_to<Subspace2D>(n);
+	if (subspace)
+		return subspace->get_space_2d()->get_rid();
+
+	Viewport *viewport = Object::cast_to<Viewport>(n);
+	if (viewport)
+		return viewport->find_world_2d()->get_space();
+
+	while (Object::cast_to<Node>(n->get_parent())) {
+		n = Object::cast_to<Node>(n->get_parent());
+
+		subspace = Object::cast_to<Subspace2D>(n);
+		if (subspace)
+			return subspace->get_space_2d()->get_rid();
+
+		viewport = Object::cast_to<Viewport>(n);
+		if (viewport)
+			return viewport->find_world_2d()->get_space();
+	}
+	return RID();
+}
+
 RID CanvasItem::get_viewport_rid() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), RID());
@@ -1183,6 +1211,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
+	ClassDB::bind_method(D_METHOD("get_physics_space"), &CanvasItem::get_physics_space);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CanvasItem::set_material);
