@@ -1583,7 +1583,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	if (ScriptDebugger::get_singleton())
+	if (ScriptDebugger::get_singleton() && !p_state)
 		GDScriptLanguage::get_singleton()->exit_function();
 #endif
 
@@ -1885,6 +1885,11 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 			emit_signal("completed", ret);
 		}
 	}
+
+#ifdef DEBUG_ENABLED
+	if (ScriptDebugger::get_singleton())
+		GDScriptLanguage::get_singleton()->exit_function();
+#endif
 
 	return ret;
 }
