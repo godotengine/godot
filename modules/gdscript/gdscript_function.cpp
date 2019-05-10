@@ -1778,7 +1778,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
-		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
+		ERR_EXPLAIN("Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
 		ERR_FAIL_V(Variant());
 #else
 		return Variant();
@@ -1874,7 +1874,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
-		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
+		ERR_EXPLAIN("Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
 		ERR_FAIL_V(Variant());
 #else
 		return Variant();
