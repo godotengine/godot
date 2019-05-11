@@ -389,7 +389,7 @@ TreeItem *TreeItem::get_children() {
 	return children;
 }
 
-TreeItem *TreeItem::get_prev_visible() {
+TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 
 	TreeItem *current = this;
 
@@ -398,8 +398,20 @@ TreeItem *TreeItem::get_prev_visible() {
 	if (!prev) {
 
 		current = current->parent;
-		if (!current || (current == tree->root && tree->hide_root))
+		if (current == tree->root && tree->hide_root) {
 			return NULL;
+		} else if (!current) {
+			if (p_wrap) {
+				current = this;
+				TreeItem *temp = this->get_next_visible();
+				while (temp) {
+					current = temp;
+					temp = temp->get_next_visible();
+				}
+			} else {
+				return NULL;
+			}
+		}
 	} else {
 
 		current = prev;
@@ -415,7 +427,7 @@ TreeItem *TreeItem::get_prev_visible() {
 	return current;
 }
 
-TreeItem *TreeItem::get_next_visible() {
+TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 
 	TreeItem *current = this;
 
@@ -433,10 +445,14 @@ TreeItem *TreeItem::get_next_visible() {
 			current = current->parent;
 		}
 
-		if (current == NULL)
-			return NULL;
-		else
+		if (!current) {
+			if (p_wrap)
+				return tree->root;
+			else
+				return NULL;
+		} else {
 			current = current->next;
+		}
 	}
 
 	return current;
@@ -740,8 +756,8 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parent"), &TreeItem::get_parent);
 	ClassDB::bind_method(D_METHOD("get_children"), &TreeItem::get_children);
 
-	ClassDB::bind_method(D_METHOD("get_next_visible"), &TreeItem::get_next_visible);
-	ClassDB::bind_method(D_METHOD("get_prev_visible"), &TreeItem::get_prev_visible);
+	ClassDB::bind_method(D_METHOD("get_next_visible", "wrap"), &TreeItem::get_next_visible, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_prev_visible", "wrap"), &TreeItem::get_prev_visible, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("remove_child", "child"), &TreeItem::_remove_child);
 
@@ -3491,6 +3507,7 @@ void Tree::scroll_to_item(TreeItem *p_item) {
 
 TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards) {
 
+	TreeItem *from = p_at;
 	while (p_at) {
 
 		for (int i = 0; i < columns.size(); i++) {
@@ -3502,9 +3519,12 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 		}
 
 		if (p_backwards)
-			p_at = p_at->get_prev_visible();
+			p_at = p_at->get_prev_visible(true);
 		else
-			p_at = p_at->get_next_visible();
+			p_at = p_at->get_next_visible(true);
+
+		if ((p_at) == from)
+			break;
 	}
 
 	return NULL;
@@ -3512,10 +3532,14 @@ TreeItem *Tree::_search_item_text(TreeItem *p_at, const String &p_find, int *r_c
 
 TreeItem *Tree::search_item_text(const String &p_find, int *r_col, bool p_selectable) {
 
+	TreeItem *from = get_selected()->get_next_visible();
+
 	if (!root)
+		from = root;
+	if (!from)
 		return NULL;
 
-	return _search_item_text(root, p_find, r_col, p_selectable);
+	return _search_item_text(from, p_find, r_col, p_selectable);
 }
 
 void Tree::_do_incr_search(const String &p_add) {
@@ -3524,7 +3548,7 @@ void Tree::_do_incr_search(const String &p_add) {
 	uint64_t diff = time - last_keypress;
 	if (diff > uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000)))
 		incr_search = p_add;
-	else
+	else if (incr_search != p_add)
 		incr_search += p_add;
 
 	last_keypress = time;
