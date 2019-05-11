@@ -571,9 +571,11 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		Transform orig_camera_transform = p_camera->get_camera_transform();
 
-		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01) {
+		if (orig_camera_transform.origin.distance_squared_to(t.origin) > 0.01 &&
+				ABS(orig_camera_transform.basis.get_axis(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
 			p_camera->look_at(t.origin, Vector3(0, 1, 0));
 		}
+
 		Vector3 c0 = t.xform(Vector3(selectable_icon_size, selectable_icon_size, 0) * scale);
 		Vector3 c1 = t.xform(Vector3(-selectable_icon_size, -selectable_icon_size, 0) * scale);
 
@@ -582,7 +584,7 @@ bool EditorSpatialGizmo::intersect_ray(Camera *p_camera, const Point2 &p_point, 
 
 		p_camera->set_global_transform(orig_camera_transform);
 
-		Rect2 rect(p0, p1 - p0);
+		Rect2 rect(p0, (p1 - p0).abs());
 
 		rect.set_position(center - rect.get_size() / 2.0);
 
