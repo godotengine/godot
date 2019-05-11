@@ -123,7 +123,7 @@
 			<argument index="4" name="end" type="int" default="-1">
 			</argument>
 			<description>
-				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]\1[/code] and [code]\g&lt;name&gt;[/code] expanded and resolved. By default only the first instance is replaced but it can be changed for all instances (global replacement). The region to search within can be specified without modifying where the start and end anchor would be.
+				Searches the text for the compiled pattern and replaces it with the specified string. Escapes and backreferences such as [code]$1[/code] and [code]$name[/code] are expanded and resolved. By default only the first instance is replaced but it can be changed for all instances (global replacement). The region to search within can be specified without modifying where the start and end anchor would be.
 			</description>
 		</method>
 	</methods>
