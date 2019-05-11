@@ -2968,6 +2968,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							member_type = DataType(dt - 1);
 						} else if (l == 2) {
 							member_type = dt;
+						} else if (l == 3) {
+							member_type = DataType(dt + 1);
+						} else if (l == 4) {
+							member_type = DataType(dt + 2);
 						} else {
 							ok = false;
 							break;
@@ -3001,6 +3005,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							member_type = DataType(dt - 1);
 						} else if (l == 3) {
 							member_type = dt;
+						} else if (l == 4) {
+							member_type = DataType(dt + 1);
 						} else {
 							ok = false;
 							break;
