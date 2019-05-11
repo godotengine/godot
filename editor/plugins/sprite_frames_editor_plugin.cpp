@@ -51,32 +51,42 @@ void SpriteFramesEditor::_open_sprite_sheet() {
 }
 
 void SpriteFramesEditor::_sheet_preview_draw() {
+
 	Size2i size = split_sheet_preview->get_size();
 	int h = split_sheet_h->get_value();
 	int v = split_sheet_v->get_value();
+	int width = size.width / h;
+	int height = size.height / v;
 	const float a = 0.3;
 	for (int i = 1; i < h; i++) {
+
+		int x = i * width;
+		split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
+		split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
+
 		for (int j = 1; j < v; j++) {
 
-			int x = i * size.width / h;
-			int y = j * size.height / v;
-
-			split_sheet_preview->draw_line(Point2(x, 0), Point2(x, size.height), Color(1, 1, 1, a));
-			split_sheet_preview->draw_line(Point2(x + 1, 0), Point2(x + 1, size.height), Color(0, 0, 0, a));
+			int y = j * height;
 
 			split_sheet_preview->draw_line(Point2(0, y), Point2(size.width, y), Color(1, 1, 1, a));
 			split_sheet_preview->draw_line(Point2(0, y + 1), Point2(size.width, y + 1), Color(0, 0, 0, a));
 		}
 	}
 
+	if (frames_selected.size() == 0) {
+		split_sheet_dialog->get_ok()->set_disabled(true);
+		split_sheet_dialog->get_ok()->set_text(TTR("No Frames Selected"));
+		return;
+	}
+
 	Color accent = get_color("accent_color", "Editor");
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		int x = (idx % h) * size.width / h;
-		int y = (idx / v) * size.height / v;
-		int width = size.width / h;
-		int height = size.height / v;
+		int xp = idx % h;
+		int yp = (idx - xp) / h;
+		int x = xp * width;
+		int y = yp * height;
 
 		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 0.35), true);
 		split_sheet_preview->draw_rect(Rect2(x + 0, y + 0, width - 0, height - 0), Color(0, 0, 0, 1), false);
@@ -87,13 +97,8 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 		split_sheet_preview->draw_rect(Rect2(x + 5, y + 5, width - 10, height - 10), Color(0, 0, 0, 1), false);
 	}
 
-	if (frames_selected.size() == 0) {
-		split_sheet_dialog->get_ok()->set_disabled(true);
-		split_sheet_dialog->get_ok()->set_text(TTR("No Frames Selected"));
-	} else {
-		split_sheet_dialog->get_ok()->set_disabled(false);
-		split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
-	}
+	split_sheet_dialog->get_ok()->set_disabled(false);
+	split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
 }
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 
@@ -149,10 +154,12 @@ void SpriteFramesEditor::_sheet_add_frames() {
 
 	for (Set<int>::Element *E = frames_selected.front(); E; E = E->next()) {
 		int idx = E->get();
-		int x = (idx % h) * size.width / h;
-		int y = (idx / v) * size.height / v;
 		int width = size.width / h;
 		int height = size.height / v;
+		int xp = idx % h;
+		int yp = (idx - xp) / h;
+		int x = xp * width;
+		int y = yp * height;
 
 		Ref<AtlasTexture> at;
 		at.instance();
