@@ -31,6 +31,7 @@
 #include "popup_menu.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/translation.h"
 
@@ -378,6 +379,43 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	if (pan_gesture.is_valid()) {
 		if (get_global_position().y + get_size().y > get_viewport_rect().size.y || get_global_position().y < 0) {
 			_scroll(-pan_gesture->get_delta().y, pan_gesture->get_position());
+		}
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (allow_search && k.is_valid() && k->get_unicode()) {
+
+		uint64_t now = OS::get_singleton()->get_ticks_msec();
+		uint64_t diff = now - search_time_msec;
+		uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000));
+		search_time_msec = now;
+
+		if (diff > max_interval) {
+			search_string = "";
+		}
+
+		if (String::chr(k->get_unicode()) != search_string)
+			search_string += String::chr(k->get_unicode());
+
+		for (int i = mouse_over + 1; i <= items.size(); i++) {
+			if (i == items.size()) {
+				if (mouse_over <= 0)
+					break;
+				else
+					i = 0;
+			}
+
+			if (i == mouse_over)
+				break;
+
+			if (items[i].text.findn(search_string) == 0) {
+				mouse_over = i;
+				emit_signal("id_focused", i);
+				update();
+				accept_event();
+				break;
+			}
 		}
 	}
 }
@@ -1289,6 +1327,16 @@ float PopupMenu::get_submenu_popup_delay() const {
 	return submenu_timer->get_wait_time();
 }
 
+void PopupMenu::set_allow_search(bool p_allow) {
+
+	allow_search = p_allow;
+}
+
+bool PopupMenu::get_allow_search() const {
+
+	return allow_search;
+}
+
 void PopupMenu::set_hide_on_window_lose_focus(bool p_enabled) {
 
 	hide_on_window_lose_focus = p_enabled;
@@ -1407,6 +1455,9 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_on_window_lose_focus", "enable"), &PopupMenu::set_hide_on_window_lose_focus);
 	ClassDB::bind_method(D_METHOD("is_hide_on_window_lose_focus"), &PopupMenu::is_hide_on_window_lose_focus);
 
+	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &PopupMenu::set_allow_search);
+	ClassDB::bind_method(D_METHOD("get_allow_search"), &PopupMenu::get_allow_search);
+
 	ClassDB::bind_method(D_METHOD("_submenu_timeout"), &PopupMenu::_submenu_timeout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
@@ -1414,6 +1465,7 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_checkable_item_selection"), "set_hide_on_checkable_item_selection", "is_hide_on_checkable_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_on_state_item_selection"), "set_hide_on_state_item_selection", "is_hide_on_state_item_selection");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "submenu_popup_delay"), "set_submenu_popup_delay", "get_submenu_popup_delay");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_search"), "set_allow_search", "get_allow_search");
 
 	ADD_SIGNAL(MethodInfo("id_pressed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("id_focused", PropertyInfo(Variant::INT, "id")));
@@ -1434,6 +1486,10 @@ PopupMenu::PopupMenu() {
 	submenu_over = -1;
 	initial_button_mask = 0;
 	during_grabbed_click = false;
+
+	allow_search = false;
+	search_time_msec = 0;
+	search_string = "";
 
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);

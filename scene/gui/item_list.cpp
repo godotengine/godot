@@ -748,9 +748,21 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					search_string = "";
 				}
 
-				search_string += String::chr(k->get_unicode());
-				for (int i = 0; i < items.size(); i++) {
-					if (items[i].text.begins_with(search_string)) {
+				if (String::chr(k->get_unicode()) != search_string)
+					search_string += String::chr(k->get_unicode());
+
+				for (int i = current + 1; i <= items.size(); i++) {
+					if (i == items.size()) {
+						if (current == 0)
+							break;
+						else
+							i = 0;
+					}
+
+					if (i == current)
+						break;
+
+					if (items[i].text.findn(search_string) == 0) {
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
