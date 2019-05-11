@@ -291,7 +291,11 @@
 		</method>
 		<method name="shuffle">
 			<description>
+<<<<<<< HEAD
 				Shuffles the array such that the items will have a random order. This method uses the global random number generator common to methods such as [method @GDScript.randi]. Call [method @GDScript.randomize] to ensure that a new seed will be used each time if you want non-reproducible shuffling.
+=======
+				Shuffles the array such that the items will have a random order. This function will generate reproducible values. To get random values in each runtime, consider using [method randomize].
+>>>>>>> ce004e4f4a31af47ef3fe404476903ac3dcc6170
 			</description>
 		</method>
 		<method name="size">
