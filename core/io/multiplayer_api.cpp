@@ -634,7 +634,7 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	ERR_FAIL_COND(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED);
 
 	int node_id = network_peer->get_unique_id();
-	bool skip_rpc = false;
+	bool skip_rpc = node_id == p_peer_id;
 	bool call_local_native = false;
 	bool call_local_script = false;
 	bool is_master = p_node->is_network_master();
@@ -688,6 +688,9 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 			return;
 		}
 	}
+
+	ERR_EXPLAIN("RPC '" + p_method + "' on yourself is not allowed by selected mode");
+	ERR_FAIL_COND(skip_rpc && !(call_local_native || call_local_script));
 }
 
 void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
@@ -701,13 +704,11 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 	int node_id = network_peer->get_unique_id();
 	bool is_master = p_node->is_network_master();
-	bool skip_rset = false;
+	bool skip_rset = node_id == p_peer_id;
+	bool set_local = false;
 
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
 		// Check that send mode can use local call.
-
-		bool set_local = false;
-
 		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rset_mode(p_property);
 		if (E) {
 
@@ -749,8 +750,11 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 		}
 	}
 
-	if (skip_rset)
+	if (skip_rset) {
+		ERR_EXPLAIN("RSET for '" + p_property + "' on yourself is not allowed by selected mode");
+		ERR_FAIL_COND(!set_local);
 		return;
+	}
 
 	const Variant *vptr = &p_value;
 
