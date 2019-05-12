@@ -84,6 +84,8 @@ class VisualShaderEditor : public VBoxContainer {
 	LineEdit *node_filter;
 	RichTextLabel *node_desc;
 
+	Timer *build_timer;
+
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos);
 
@@ -128,6 +130,7 @@ class VisualShaderEditor : public VBoxContainer {
 	};
 
 	Vector<AddOption> add_options;
+	List<String> keyword_list;
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
@@ -160,13 +163,34 @@ class VisualShaderEditor : public VBoxContainer {
 	void _line_edit_changed(const String &p_text, Object *line_edit, int p_node_id);
 	void _line_edit_focus_out(Object *line_edit, int p_node_id);
 
+	void _port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output);
+
 	void _duplicate_nodes();
 
 	Vector<Ref<VisualShaderNodePlugin> > plugins;
 
 	void _mode_selected(int p_id);
+	void _rebuild();
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
+
+	void _add_input_port(int p_node, int p_port, int p_type, const String &p_name);
+	void _remove_input_port(int p_node, int p_port);
+	void _change_input_port_type(int p_type, int p_node, int p_port);
+	void _change_input_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+
+	void _add_output_port(int p_node, int p_port, int p_type, const String &p_name);
+	void _remove_output_port(int p_node, int p_port);
+	void _change_output_port_type(int p_type, int p_node, int p_port);
+	void _change_output_port_name(const String &p_text, Object *line_edit, int p_node, int p_port);
+
+	void _start_rebuild_timer(int p_delay);
+
+	void _set_expression(int p_node);
+	void _rebuild_timeout();
+
+	void _set_node_size(int p_type, int p_node, const Size2 &p_size);
+	void _node_resized(const Vector2 &p_new_size, int p_type, int p_node);
 
 	void _preview_select_port(int p_node, int p_port);
 	void _graph_gui_input(const Ref<InputEvent> p_event);
