@@ -1106,7 +1106,7 @@ void TextEdit::_notification(int p_what) {
 						if (line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
 							// draw the wrap indent offset highlight
 							if (line_wrap_index != 0 && j == 0) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin - indent_px, ofs_y, (char_ofs + char_margin), get_row_height()), cache.current_line_color);
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(char_ofs + char_margin - indent_px, ofs_y, indent_px, get_row_height()), cache.current_line_color);
 							}
 							// if its the last char draw to end of the line
 							if (j == str.length() - 1) {
