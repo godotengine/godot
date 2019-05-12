@@ -476,6 +476,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VisualShaderNode>();
 	ClassDB::register_class<VisualShaderNodeInput>();
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
+	ClassDB::register_class<VisualShaderNodeGroupBase>();
 	ClassDB::register_class<VisualShaderNodeScalarConstant>();
 	ClassDB::register_class<VisualShaderNodeBooleanConstant>();
 	ClassDB::register_class<VisualShaderNodeColorConstant>();
@@ -524,6 +525,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
 	ClassDB::register_class<VisualShaderNodeFresnel>();
+	ClassDB::register_class<VisualShaderNodeExpression>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();

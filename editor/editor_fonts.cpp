@@ -239,6 +239,9 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", "EditorFonts", df_code);
 
+	MAKE_SOURCE_FONT(df_expression, (int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("expression", "EditorFonts", df_expression);
+
 	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
 	p_theme->set_font("output_source", "EditorFonts", df_output_code);
 
