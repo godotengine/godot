@@ -99,16 +99,20 @@ public:
 	}
 
 	_FORCE_INLINE_ void set_load_once(bool p_load_once) {
+		config_file->set_value("general", "load_once", p_load_once);
 		load_once = p_load_once;
 	}
 	_FORCE_INLINE_ void set_singleton(bool p_singleton) {
+		config_file->set_value("general", "singleton", p_singleton);
 		singleton = p_singleton;
 	}
 	_FORCE_INLINE_ void set_symbol_prefix(String p_symbol_prefix) {
+		config_file->set_value("general", "symbol_prefix", p_symbol_prefix);
 		symbol_prefix = p_symbol_prefix;
 	}
 
 	_FORCE_INLINE_ void set_reloadable(bool p_reloadable) {
+		config_file->set_value("general", "reloadable", p_reloadable);
 		reloadable = p_reloadable;
 	}
 
