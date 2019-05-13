@@ -32,6 +32,9 @@
 
 void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	if (!is_recording) {
+		for (int i = 0; i < p_frame_count; i++) {
+			p_dst_frames[i] = p_src_frames[i];
+		}
 		return;
 	}
 
@@ -39,6 +42,7 @@ void AudioEffectRecordInstance::process(const AudioFrame *p_src_frames, AudioFra
 	const AudioFrame *src = p_src_frames;
 	AudioFrame *rb_buf = ring_buffer.ptrw();
 	for (int i = 0; i < p_frame_count; i++) {
+		p_dst_frames[i] = p_src_frames[i];
 		rb_buf[ring_buffer_pos & ring_buffer_mask] = src[i];
 		ring_buffer_pos++;
 	}
