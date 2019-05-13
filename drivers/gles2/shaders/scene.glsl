@@ -424,9 +424,12 @@ void main() {
 
 #endif
 
+	mat4 local_projection_matrix = projection_matrix;
+
 	mat4 modelview = camera_inverse_matrix * world_matrix;
 	float roughness = 1.0;
 
+#define projection_matrix local_projection_matrix
 #define world_transform world_matrix
 
 	{
