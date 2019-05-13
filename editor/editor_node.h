@@ -474,6 +474,7 @@ private:
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
 
+	void _inherit_request(String p_file);
 	void _instance_request(const Vector<String> &p_files);
 
 	void _display_top_editors(bool p_display);
