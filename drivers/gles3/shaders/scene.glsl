@@ -1814,25 +1814,6 @@ FRAGMENT_SHADER_CODE
 	specular_blob_intensity *= specular * 2.0;
 #endif
 
-#ifdef USE_FORWARD_LIGHTING
-
-	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
-	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
-	for (int i = 0; i < reflection_count; i++) {
-		reflection_process(reflection_indices[i], vertex, normal, binormal, tangent, roughness, anisotropy, ambient_light, env_reflection_light, reflection_accum, ambient_accum);
-	}
-
-	if (reflection_accum.a > 0.0) {
-		specular_light += reflection_accum.rgb / reflection_accum.a;
-	} else {
-		specular_light += env_reflection_light;
-	}
-#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
-	if (ambient_accum.a > 0.0) {
-		ambient_light = ambient_accum.rgb / ambient_accum.a;
-	}
-#endif
-
 	// scales the specular reflections, needs to be be computed before lighting happens,
 	// but after environment and reflection probes are added
 	// Environment brdf approximation (Lazarov 2013)
@@ -2035,6 +2016,25 @@ FRAGMENT_SHADER_CODE
 		} else {
 			ambient_light = captured.rgb;
 		}
+	}
+#endif
+
+#ifdef USE_FORWARD_LIGHTING
+
+	highp vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
+	highp vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
+	for (int i = 0; i < reflection_count; i++) {
+		reflection_process(reflection_indices[i], vertex, normal, binormal, tangent, roughness, anisotropy, ambient_light, env_reflection_light, reflection_accum, ambient_accum);
+	}
+
+	if (reflection_accum.a > 0.0) {
+		specular_light += reflection_accum.rgb / reflection_accum.a;
+	} else {
+		specular_light += env_reflection_light;
+	}
+#if !defined(USE_LIGHTMAP) && !defined(USE_LIGHTMAP_CAPTURE)
+	if (ambient_accum.a > 0.0) {
+		ambient_light = ambient_accum.rgb / ambient_accum.a;
 	}
 #endif
 
