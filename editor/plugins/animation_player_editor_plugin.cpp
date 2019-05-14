@@ -129,8 +129,10 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			autoplay_icon = get_icon("AutoPlay", "EditorIcons");
 			stop->set_icon(get_icon("Stop", "EditorIcons"));
 
+			onion_toggle->set_icon(get_icon("Onion", "EditorIcons"));
+			onion_skinning->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+
 			pin->set_icon(get_icon("Pin", "EditorIcons"));
-			onion_skinning->set_icon(get_icon("Onion", "EditorIcons"));
 
 			tool_anim->add_style_override("normal", get_stylebox("normal", "Button"));
 			track_editor->get_edit_menu()->add_style_override("normal", get_stylebox("normal", "Button"));
@@ -1229,7 +1231,6 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 		case ONION_SKINNING_ENABLE: {
 
 			onion.enabled = !onion.enabled;
-			menu->set_item_checked(idx, onion.enabled);
 
 			if (onion.enabled)
 				_start_onion_skinning();
@@ -1708,19 +1709,21 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	hb->add_child(track_editor->get_edit_menu());
 
+	hb->add_child(memnew(VSeparator));
+
+	onion_toggle = memnew(ToolButton);
+	onion_toggle->set_toggle_mode(true);
+	onion_toggle->set_tooltip(TTR("Enable Onion Skinning"));
+	onion_toggle->connect("pressed", this, "_onion_skinning_menu", varray(ONION_SKINNING_ENABLE));
+	hb->add_child(onion_toggle);
+
 	onion_skinning = memnew(MenuButton);
-	//onion_skinning->set_flat(false);
-	onion_skinning->set_tooltip(TTR("Onion Skinning"));
-	onion_skinning->get_popup()->add_check_shortcut(ED_SHORTCUT("animation_player_editor/onion_skinning", TTR("Enable Onion Skinning")), ONION_SKINNING_ENABLE);
-	onion_skinning->get_popup()->add_separator();
-	onion_skinning->get_popup()->add_item(TTR("Directions"), -1);
-	onion_skinning->get_popup()->set_item_disabled(onion_skinning->get_popup()->get_item_count() - 1, true);
+	onion_skinning->set_tooltip(TTR("Onion Skinning Options"));
+	onion_skinning->get_popup()->add_separator(TTR("Directions"));
 	onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
 	onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
 	onion_skinning->get_popup()->add_check_item(TTR("Future"), ONION_SKINNING_FUTURE);
-	onion_skinning->get_popup()->add_separator();
-	onion_skinning->get_popup()->add_item(TTR("Depth"), -1);
-	onion_skinning->get_popup()->set_item_disabled(onion_skinning->get_popup()->get_item_count() - 1, true);
+	onion_skinning->get_popup()->add_separator(TTR("Depth"));
 	onion_skinning->get_popup()->add_radio_check_item(TTR("1 step"), ONION_SKINNING_1_STEP);
 	onion_skinning->get_popup()->set_item_checked(onion_skinning->get_popup()->get_item_count() - 1, true);
 	onion_skinning->get_popup()->add_radio_check_item(TTR("2 steps"), ONION_SKINNING_2_STEPS);
@@ -1730,6 +1733,8 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
 	onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
 	hb->add_child(onion_skinning);
+
+	hb->add_child(memnew(VSeparator));
 
 	pin = memnew(ToolButton);
 	pin->set_toggle_mode(true);
