@@ -352,7 +352,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_debug";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_BITCODE = NO;
-				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "$binary";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "$binary/**";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -395,7 +395,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "$code_sign_identity_release";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_BITCODE = NO;
-				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "$binary";
+				"FRAMEWORK_SEARCH_PATHS[arch=*]" = "$binary/**";
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
