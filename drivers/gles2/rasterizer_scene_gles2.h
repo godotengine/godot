@@ -104,6 +104,7 @@ public:
 
 		GLuint immediate_buffer;
 		Color default_ambient;
+		Color default_bg;
 
 		// ResolveShaderGLES3 resolve_shader;
 		// ScreenSpaceReflectionShaderGLES3 ssr_shader;

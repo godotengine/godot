@@ -2469,6 +2469,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 				if (p_env) {
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, p_env->bg_energy);
+					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, p_env->bg_color);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, p_env->ambient_sky_contribution);
 
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, p_env->ambient_color);
@@ -2476,6 +2477,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 				} else {
 					state.scene_shader.set_uniform(SceneShaderGLES2::BG_ENERGY, 1.0);
+					state.scene_shader.set_uniform(SceneShaderGLES2::BG_COLOR, state.default_bg);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_SKY_CONTRIBUTION, 1.0);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_COLOR, state.default_ambient);
 					state.scene_shader.set_uniform(SceneShaderGLES2::AMBIENT_ENERGY, 1.0);
@@ -2578,7 +2580,6 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_LIGHTMAP_CAPTURE, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_DEPTH_ENABLED, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::FOG_HEIGHT_ENABLED, false);
-	state.scene_shader.set_conditional(SceneShaderGLES2::USE_RADIANCE_MAP, false);
 	state.scene_shader.set_conditional(SceneShaderGLES2::USE_DEPTH_PREPASS, false);
 }
 
@@ -2829,6 +2830,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	}
 
 	state.default_ambient = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
+	state.default_bg = Color(clear_color.r, clear_color.g, clear_color.b, 1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -2868,6 +2870,7 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 	if (probe_interior) {
 		env_radiance_tex = 0; //do not use radiance texture on interiors
 		state.default_ambient = Color(0, 0, 0, 1); //black as default ambient for interior
+		state.default_bg = Color(0, 0, 0, 1); //black as default background for interior
 	}
 
 	// render opaque things first
