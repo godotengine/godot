@@ -241,6 +241,7 @@ public:
 	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
+	void set_find_replace_bar(FindReplaceBar *p_bar);
 	virtual void apply_code() {}
 	void goto_error();
 

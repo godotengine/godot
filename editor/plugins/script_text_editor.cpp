@@ -992,11 +992,6 @@ void ScriptTextEditor::_update_connected_methods() {
 	}
 }
 
-FindReplaceBar *ScriptTextEditor::get_find_replace_bar() {
-
-	return code_editor->get_find_replace_bar();
-}
-
 void ScriptTextEditor::_lookup_connections(int p_row, String p_method) {
 	Node *base = get_tree()->get_edited_scene_root();
 	if (!base) {
@@ -1336,6 +1331,10 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	}
 
 	code_editor->toggle_inline_comment(delimiter);
+}
+
+CodeTextEditor *ScriptTextEditor::get_code_editor() const {
+	return code_editor;
 }
 
 void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {

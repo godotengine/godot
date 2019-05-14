@@ -145,6 +145,10 @@ void TextEditor::_load_theme_settings() {
 	colors_cache.string_color = string_color;
 }
 
+CodeTextEditor *TextEditor::get_code_editor() const {
+	return code_editor;
+}
+
 String TextEditor::get_name() {
 	String name;
 

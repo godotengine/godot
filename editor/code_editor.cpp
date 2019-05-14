@@ -556,8 +556,17 @@ void FindReplaceBar::set_error(const String &p_label) {
 void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
 	results_count = -1;
+	if (text_edit) {
+		text_edit->disconnect("text_changed", this, "_editor_text_changed");
+		text_edit->set_search_text("");
+	}
+
 	text_edit = p_text_edit;
 	text_edit->connect("text_changed", this, "_editor_text_changed");
+
+	if (is_visible()) {
+		text_edit->set_search_text(get_search_text());
+	}
 }
 
 void FindReplaceBar::_bind_methods() {
@@ -1441,6 +1450,20 @@ void CodeTextEditor::goto_error() {
 		text_editor->cursor_set_column(error_column);
 		text_editor->center_viewport_to_cursor();
 	}
+}
+
+void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	if (find_replace_bar && find_replace_bar != p_bar) {
+		//this method is intended to be used for shared find/replace bars, so the original one is removed
+		remove_child(find_replace_bar);
+		find_replace_bar->queue_delete();
+	}
+
+	find_replace_bar = p_bar;
+	if (p_bar->get_parent())
+		p_bar->get_parent()->remove_child(p_bar);
+	add_child_below_node(text_editor, p_bar);
+	p_bar->set_text_edit(text_editor);
 }
 
 void CodeTextEditor::_update_font() {

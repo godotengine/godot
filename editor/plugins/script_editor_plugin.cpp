@@ -430,18 +430,10 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 	history.push_back(sh);
 	history_pos++;
 
-	c = tab_container->get_current_tab_control();
-	if (Object::cast_to<ScriptTextEditor>(c)) {
-		last_editor_find_replace = Object::cast_to<ScriptTextEditor>(c)->get_find_replace_bar();
-	}
-
 	tab_container->set_current_tab(p_idx);
 
 	c = tab_container->get_current_tab_control();
 
-	if (Object::cast_to<ScriptTextEditor>(c) && last_editor_find_replace) {
-		Object::cast_to<ScriptTextEditor>(c)->get_find_replace_bar()->copy_texts_from(last_editor_find_replace);
-	}
 	if (Object::cast_to<ScriptEditorBase>(c)) {
 
 		script_name_label->set_text(Object::cast_to<ScriptEditorBase>(c)->get_name());
@@ -1601,6 +1593,12 @@ void ScriptEditor::ensure_select_current() {
 
 			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
+
+			if (Object::cast_to<ScriptTextEditor>(se)) { //sadly this is necessary, because code_editor is not a property of ScriptEditorBase
+				Object::cast_to<ScriptTextEditor>(se)->get_code_editor()->set_find_replace_bar(shared_find_replace_bar);
+			} else if (Object::cast_to<TextEditor>(se)) {
+				Object::cast_to<TextEditor>(se)->get_code_editor()->set_find_replace_bar(shared_find_replace_bar);
+			}
 		}
 	}
 
@@ -3140,7 +3138,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/open_scripts/show_members_overview");
 	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
 	editor = p_editor;
-	last_editor_find_replace = NULL;
+
+	shared_find_replace_bar = memnew(FindReplaceBar);
+	shared_find_replace_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+	shared_find_replace_bar->hide();
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	add_child(main_container);
