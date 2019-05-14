@@ -172,7 +172,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _delete_confirm();
 
-	void _toggle_editable_children();
+	void _toggle_editable_children_from_selection();
+	void _toggle_editable_children(Node *p_node);
 
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
