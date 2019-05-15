@@ -412,7 +412,16 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Saves the image as a PNG file to [code]path[/code].
+				Saves the image as a PNG file to [code]path[/code]. This path can be within the project itself using a [code]res://[/code] path or it can be an absolute path on disk.
+
+				[codeblock]
+				# Save the image within the project
+				image.save_png("res://this_is_my_png.png")
+				
+				# Save to an absolute path on disk
+				# on Windows we must use double slashes
+				image.save_png("C:\\Users\\Juan\\this_is_my_png.png")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_pixel">
