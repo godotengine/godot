@@ -1602,6 +1602,8 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		Ref<Script> existing = E->get()->get_script();
 		editor_data->get_undo_redo().add_do_method(E->get(), "set_script", p_script.get_ref_ptr());
 		editor_data->get_undo_redo().add_undo_method(E->get(), "set_script", existing);
+		editor_data->get_undo_redo().add_do_method(this, "_update_script_button");
+		editor_data->get_undo_redo().add_undo_method(this, "_update_script_button");
 	}
 
 	editor_data->get_undo_redo().commit_action();
