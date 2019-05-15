@@ -1266,7 +1266,8 @@ bool ScriptTextEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_
 	Dictionary d = p_data;
 	if (d.has("type") && (String(d["type"]) == "resource" ||
 								 String(d["type"]) == "files" ||
-								 String(d["type"]) == "nodes")) {
+								 String(d["type"]) == "nodes" ||
+								 String(d["type"]) == "files_and_dirs")) {
 
 		return true;
 	}
@@ -1328,7 +1329,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		te->insert_text_at_cursor(res->get_path());
 	}
 
-	if (d.has("type") && String(d["type"]) == "files") {
+	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
 
 		Array files = d["files"];
 
