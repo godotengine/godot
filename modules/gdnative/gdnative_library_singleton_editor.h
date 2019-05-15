@@ -36,17 +36,23 @@
 #include "editor/project_settings_editor.h"
 
 class GDNativeLibrarySingletonEditor : public VBoxContainer {
+	GDCLASS(GDNativeLibrarySingletonEditor, VBoxContainer);
+
+private:
 	Tree *libraries;
+	UndoRedo *undo_redo;
 
 	bool updating;
-	void _update_libraries();
 
-	void _find_gdnative_singletons(EditorFileSystemDirectory *p_dir, const Set<String> &enabled_list);
-	void _item_edited();
+	static Set<String> _find_singletons_recursive(EditorFileSystemDirectory *p_dir);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	void _discover_singletons();
+	void _item_edited();
+	void _update_libraries();
 
 public:
 	GDNativeLibrarySingletonEditor();
