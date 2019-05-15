@@ -717,8 +717,17 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
 		if (p_pressed != NULL)
 			*p_pressed = pressed;
-		if (p_strength != NULL)
-			*p_strength = pressed ? CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f) : 0.0f;
+		if (p_strength != NULL) {
+			if (pressed) {
+				if (p_deadzone == 1.0f) {
+					*p_strength = 1.0f;
+				} else {
+					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f);
+				}
+			} else {
+				*p_strength = 0.0f;
+			}
+		}
 	}
 	return match;
 }
