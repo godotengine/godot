@@ -2003,17 +2003,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="light_set_use_gi">
-			<return type="void">
-			</return>
-			<argument index="0" name="light" type="RID">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-        Sets whether GI probes capture light information from this light.
-			</description>
-		</method>
 		<method name="light_set_color">
 			<return type="void">
 			</return>
@@ -2094,6 +2083,17 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="light_set_use_gi">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets whether GI probes capture light information from this light.
 			</description>
 		</method>
 		<method name="lightmap_capture_create">
