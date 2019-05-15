@@ -1309,7 +1309,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 	for (Set<Vector<void *> *>::Element *E = binding_instances.front(); E; E = E->next()) {
 		Vector<void *> &binding_data = *E->get();
 
-		if (binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
+		if (p_idx < binding_data.size() && binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
 			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
 	}
 
