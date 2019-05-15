@@ -7,7 +7,7 @@
 		[codeblock]
 		var state_machine = anim_tree["parameters/StateMachine/playback"]
 		state_machine.travel("SomeState")
-		[codeblock]
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
