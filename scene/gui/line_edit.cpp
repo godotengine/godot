@@ -613,7 +613,7 @@ void LineEdit::_notification(int p_what) {
 #endif
 		case NOTIFICATION_RESIZED: {
 
-			window_pos = 0; //force scroll back since it's expanding to text length
+			window_pos = 0;
 			set_cursor_position(get_cursor_position());
 
 		} break;
