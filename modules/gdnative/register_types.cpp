@@ -50,97 +50,6 @@
 #include "editor/editor_node.h"
 #include "gdnative_library_editor_plugin.h"
 #include "gdnative_library_singleton_editor.h"
-// Class used to discover singleton gdnative files
-
-static void actual_discoverer_handler();
-
-class GDNativeSingletonDiscover : public Object {
-	// GDCLASS(GDNativeSingletonDiscover, Object)
-
-	virtual String get_class() const {
-		// okay, this is a really dirty hack.
-		// We're overriding get_class so we can connect it to a signal
-		// This works because get_class is a virtual method, so we don't
-		// need to register a new class to ClassDB just for this one
-		// little signal.
-
-		actual_discoverer_handler();
-
-		return "Object";
-	}
-};
-
-static Set<String> get_gdnative_singletons(EditorFileSystemDirectory *p_dir) {
-
-	Set<String> file_paths;
-
-	// check children
-
-	for (int i = 0; i < p_dir->get_file_count(); i++) {
-		String file_name = p_dir->get_file(i);
-		String file_type = p_dir->get_file_type(i);
-
-		if (file_type != "GDNativeLibrary") {
-			continue;
-		}
-
-		Ref<GDNativeLibrary> lib = ResourceLoader::load(p_dir->get_file_path(i));
-		if (lib.is_valid() && lib->is_singleton()) {
-			file_paths.insert(p_dir->get_file_path(i));
-		}
-	}
-
-	// check subdirectories
-	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
-		Set<String> paths = get_gdnative_singletons(p_dir->get_subdir(i));
-
-		for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
-			file_paths.insert(E->get());
-		}
-	}
-
-	return file_paths;
-}
-
-static void actual_discoverer_handler() {
-
-	EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->get_filesystem();
-
-	Set<String> file_paths = get_gdnative_singletons(dir);
-
-	bool changed = false;
-	Array current_files;
-	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
-		current_files = ProjectSettings::get_singleton()->get("gdnative/singletons");
-	}
-	Array files;
-	files.resize(file_paths.size());
-	int i = 0;
-	for (Set<String>::Element *E = file_paths.front(); E; i++, E = E->next()) {
-		if (!current_files.has(E->get())) {
-			changed = true;
-		}
-		files.set(i, E->get());
-	}
-
-	// Check for removed files
-	if (!changed) {
-		for (int j = 0; j < current_files.size(); j++) {
-			if (!file_paths.has(current_files[j])) {
-				changed = true;
-				break;
-			}
-		}
-	}
-
-	if (changed) {
-
-		ProjectSettings::get_singleton()->set("gdnative/singletons", files);
-		ProjectSettings::get_singleton()->save();
-	}
-}
-
-static GDNativeSingletonDiscover *discoverer = NULL;
 
 class GDNativeExportPlugin : public EditorExportPlugin {
 
@@ -275,9 +184,6 @@ static void editor_init_callback() {
 	library_editor->set_name(TTR("GDNative"));
 	ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(library_editor);
 
-	discoverer = memnew(GDNativeSingletonDiscover);
-	EditorFileSystem::get_singleton()->connect("filesystem_changed", discoverer, "get_class");
-
 	Ref<GDNativeExportPlugin> export_plugin;
 	export_plugin.instance();
 
@@ -335,30 +241,36 @@ void register_gdnative_types() {
 	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons")) {
 		singletons = ProjectSettings::get_singleton()->get("gdnative/singletons");
 	}
-
-	singleton_gdnatives.resize(singletons.size());
+	Array excluded = Array();
+	if (ProjectSettings::get_singleton()->has_setting("gdnative/singletons_disabled")) {
+		excluded = ProjectSettings::get_singleton()->get("gdnative/singletons_disabled");
+	}
 
 	for (int i = 0; i < singletons.size(); i++) {
 		String path = singletons[i];
 
+		if (excluded.has(path))
+			continue;
+
 		Ref<GDNativeLibrary> lib = ResourceLoader::load(path);
+		Ref<GDNative> singleton;
+		singleton.instance();
+		singleton->set_library(lib);
 
-		singleton_gdnatives.write[i].instance();
-		singleton_gdnatives.write[i]->set_library(lib);
-
-		if (!singleton_gdnatives.write[i]->initialize()) {
+		if (!singleton->initialize()) {
 			// Can't initialize. Don't make a native_call then
 			continue;
 		}
 
 		void *proc_ptr;
-		Error err = singleton_gdnatives[i]->get_symbol(
+		Error err = singleton->get_symbol(
 				lib->get_symbol_prefix() + "gdnative_singleton",
 				proc_ptr);
 
 		if (err != OK) {
-			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton_gdnatives[i]->get_library()->get_current_library_path()) + "\" found").utf8().get_data());
+			ERR_PRINT((String("No godot_gdnative_singleton in \"" + singleton->get_library()->get_current_library_path()) + "\" found").utf8().get_data());
 		} else {
+			singleton_gdnatives.push_back(singleton);
 			((void (*)())proc_ptr)();
 		}
 	}
@@ -387,12 +299,6 @@ void unregister_gdnative_types() {
 	unregister_net_types();
 
 	memdelete(GDNativeCallRegistry::singleton);
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() && discoverer != NULL) {
-		memdelete(discoverer);
-	}
-#endif
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_gdnlib);
 	resource_loader_gdnlib.unref();
