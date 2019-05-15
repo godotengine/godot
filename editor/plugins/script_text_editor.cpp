@@ -1739,7 +1739,7 @@ void ScriptTextEditor::register_editor() {
 #ifdef OSX_ENABLED
 	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE);
 #else
-	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_SHIFT | KEY_F1);
+	ED_SHORTCUT("script_text_editor/contextual_help", TTR("Contextual Help"), KEY_MASK_ALT | KEY_F1);
 #endif
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
