@@ -327,6 +327,8 @@ if selected_platform in platform_list:
         env.Append(CCFLAGS=['/EHsc'])
         if (env["werror"]):
             env.Append(CCFLAGS=['/WX'])
+        # Force to use Unicode encoding
+        env.Append(MSVC_FLAGS=['/utf8'])
     else: # Rest of the world
         shadow_local_warning = []
         all_plus_warnings = ['-Wwrite-strings']
