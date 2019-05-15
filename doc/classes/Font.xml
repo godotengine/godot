@@ -77,6 +77,16 @@
 				Return the size of a string, taking kerning and advance into account.
 			</description>
 		</method>
+		<method name="get_wordwrap_string_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="string" type="String">
+			</argument>
+			<argument index="1" name="p_width" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_outline" qualifiers="const">
 			<return type="bool">
 			</return>

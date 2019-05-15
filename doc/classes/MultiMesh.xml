@@ -59,7 +59,7 @@
 		<method name="set_as_bulk_array">
 			<return type="void">
 			</return>
-			<argument index="0" name="arg0" type="PoolRealArray">
+			<argument index="0" name="array" type="PoolRealArray">
 			</argument>
 			<description>
 				Set all data related to the instances in one go. This is especially useful when loading the data from disk or preparing the data from GDNative.

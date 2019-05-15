@@ -259,12 +259,12 @@
 			</description>
 		</method>
 		<method name="decimals">
-			<return type="float">
+			<return type="int">
 			</return>
 			<argument index="0" name="step" type="float">
 			</argument>
 			<description>
-				Deprecated alias for "[method step_decimals]". 
+				Deprecated alias for "[method step_decimals]".
 			</description>
 		</method>
 		<method name="dectime">
@@ -1020,7 +1020,7 @@
 			</description>
 		</method>
 		<method name="step_decimals">
-			<return type="float">
+			<return type="int">
 			</return>
 			<argument index="0" name="step" type="float">
 			</argument>

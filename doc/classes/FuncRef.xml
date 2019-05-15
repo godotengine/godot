@@ -17,6 +17,12 @@
 				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref].
 			</description>
 		</method>
+		<method name="is_valid" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_function">
 			<return type="void">
 			</return>
