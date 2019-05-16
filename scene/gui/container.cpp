@@ -196,5 +196,6 @@ void Container::_bind_methods() {
 
 Container::Container() {
 
+	is_container = true;
 	pending_sort = false;
 }

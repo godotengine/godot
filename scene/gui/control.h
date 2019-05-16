@@ -278,6 +278,8 @@ public:
 
 	};
 
+	bool is_container;
+
 	/* EDITOR */
 	virtual Dictionary _edit_get_state() const;
 	virtual void _edit_set_state(const Dictionary &p_state);

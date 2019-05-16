@@ -274,7 +274,7 @@ void Control::_update_minimum_size() {
 		return;
 
 	Size2 minsize = get_combined_minimum_size();
-	if (minsize.x > data.size_cache.x ||
+	if (is_container || minsize.x > data.size_cache.x ||
 			minsize.y > data.size_cache.y) {
 		_size_changed();
 	}
@@ -3002,6 +3002,8 @@ Control::Control() {
 	}
 	data.focus_mode = FOCUS_NONE;
 	data.modal_prev_focus_owner = 0;
+
+	is_container = false;
 }
 
 Control::~Control() {
