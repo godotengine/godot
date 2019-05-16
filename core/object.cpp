@@ -608,18 +608,16 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 	}
 	bool valid = false;
 
-	Variant current_value = get(p_names[0]);
+	Variant current_value = get(p_names[0], &valid);
 	for (int i = 1; i < p_names.size(); i++) {
 		current_value = current_value.get_named(p_names[i], &valid);
 
-		if (!valid) {
-			if (r_valid)
-				*r_valid = false;
-			return Variant();
-		}
+		if (!valid)
+			break;
 	}
 	if (r_valid)
-		*r_valid = true;
+		*r_valid = valid;
+
 	return current_value;
 }
 
