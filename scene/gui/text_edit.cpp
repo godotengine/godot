@@ -1072,10 +1072,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						if ((char_ofs + char_margin + char_w) >= xmargin_end) {
-							if (syntax_coloring)
-								continue;
-							else
-								break;
+							break;
 						}
 
 						bool in_search_result = false;
